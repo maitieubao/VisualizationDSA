@@ -5,8 +5,8 @@ Tài liệu này ghi nhận trạng thái kiểm thử đơn vị tự động (
 ---
 
 ## 📌 Trạng Thái Bao Phủ Kiểm Thử (Test Coverage Status)
-*   **Tổng số tính năng hạt nhân:** 23/23 Tính năng + Phase 1 Animation Engine (23 tests) + Phase 1 Custom Input (38 tests) + Phase 1 DSA Modules (40 tests mới) + Phase 1 E-Lecture Mode (28 tests mới) + Phase 1 Execution Control (23 tests mới) + Phase 1 Interactive Playground (31 tests mới) + Phase 1 Pseudocode Sync (37 tests mới) + Phase 1 Quiz System (54 tests mới) + Phase 2 Code-to-Visualization (32 tests mới) + Phase 2 Compare Algorithms (33 tests mới) + Phase 2 Concurrency Visualizer (35 tests mới) + Phase 2 Debug Mode (49 tests mới) + Phase 2 Design Patterns (50 tests mới).
-*   **Trạng thái Vitest Suite:** 🟢 100% PASSED (509/510 — 1 pre-existing ForceDirectedLayout failure).
+*   **Tổng số tính năng hạt nhân:** 23/23 Tính năng + Phase 1 Animation Engine (23 tests) + Phase 1 Custom Input (38 tests) + Phase 1 DSA Modules (40 tests mới) + Phase 1 E-Lecture Mode (28 tests mới) + Phase 1 Execution Control (23 tests mới) + Phase 1 Interactive Playground (31 tests mới) + Phase 1 Pseudocode Sync (37 tests mới) + Phase 1 Quiz System (54 tests mới) + Phase 2 Code-to-Visualization (32 tests mới) + Phase 2 Compare Algorithms (33 tests mới) + Phase 2 Concurrency Visualizer (35 tests mới) + Phase 2 Debug Mode (49 tests mới) + Phase 2 Design Patterns (50 tests mới) + Phase 2 DI Visualization (78 tests mới).
+*   **Trạng thái Vitest Suite:** 🟢 100% PASSED (587/588 — 1 pre-existing ForceDirectedLayout failure).
 *   **Công cụ chạy kiểm thử:** Vitest Core.
 *   **Thời gian phản hồi test suite:** ~180ms (độ nhạy cực cao dưới máy khách).
 
@@ -551,3 +551,75 @@ Tài liệu này ghi nhận trạng thái kiểm thử đơn vị tự động (
 | 474 | **Scenario Data** | getAllScenarioIds returns 3 | strategy-pattern, observer-pattern, solid-dip | PASSED |
 | 475 | **Scenario Data** | SCENARIO_LABELS correct | All 3 labels defined | PASSED |
 | 476 | **Scenario Data** | getNodeById undefined for non-existent | Returns undefined | PASSED |
+| 477 | **IoC Simulator** | Register service with correct properties | regs[ILogger] defined, implementationType=ConsoleLogger | PASSED |
+| 478 | **IoC Simulator** | Register multiple services | Object.keys(regs).length = 2 | PASSED |
+| 479 | **IoC Simulator** | Overwrite registration same serviceType | implementationType changed to FileLogger | PASSED |
+| 480 | **IoC Simulator** | Resolve service no dependencies | instance._type=ConsoleLogger, lifetime=SINGLETON | PASSED |
+| 481 | **IoC Simulator** | Resolve transient with dependencies | injectedDependencies[0]._type=ConsoleLogger | PASSED |
+| 482 | **IoC Simulator** | Reuse singleton instance across resolves | a._injectedDependencies[0] === b._injectedDependencies[0] | PASSED |
+| 483 | **IoC Simulator** | Create new transient each time | s1 !== s2, both _type=MyService | PASSED |
+| 484 | **IoC Simulator** | Throw CircularDependencyException | A→B→A throws CircularDependencyException | PASSED |
+| 485 | **IoC Simulator** | Throw ServiceNotRegisteredException | INonExistent throws ServiceNotRegisteredException | PASSED |
+| 486 | **IoC Simulator** | Resolve deep dependency chain | ctrl→svc→repo→client 4-level chain correct | PASSED |
+| 487 | **IoC Simulator** | Empty steps before resolve | getResolutionSteps() = [] | PASSED |
+| 488 | **IoC Simulator** | INSTANTIATE step for leaf | steps[0].type=INSTANTIATE, serviceType=ILogger | PASSED |
+| 489 | **IoC Simulator** | LOOKUP/INJECT/INSTANTIATE chain | All 3 step types present | PASSED |
+| 490 | **IoC Simulator** | RETRIEVE_SINGLETON on second resolve | retrieveSteps[0].serviceType=IRepo | PASSED |
+| 491 | **IoC Simulator** | Clear steps correctly | clearSteps() → length 0 | PASSED |
+| 492 | **IoC Simulator** | Empty vault initially | getSingletonVault() keys = 0 | PASSED |
+| 493 | **IoC Simulator** | Store singleton after resolve | vault[ILogger]._type=ConsoleLogger | PASSED |
+| 494 | **IoC Simulator** | No transient in vault | vault[IService] undefined | PASSED |
+| 495 | **IoC Simulator** | buildResolutionTree null unregistered | tree = null | PASSED |
+| 496 | **IoC Simulator** | Build leaf node no deps | tree.serviceType=ILogger, children=0 | PASSED |
+| 497 | **IoC Simulator** | Build tree with children | tree.children[0].serviceType=ILogger | PASSED |
+| 498 | **IoC Simulator** | Assign x/y coordinates | x>0, y>0, child.y > parent.y | PASSED |
+| 499 | **IoC Simulator** | Tree null for circular | buildResolutionTree returns null | PASSED |
+| 500 | **IoC Simulator** | Reset clears all state | regs=0, vault=0, steps=0, tree=null | PASSED |
+| 501 | **IoC Simulator** | detectCircularDependency no cycle | hasCycle=false for valid graph | PASSED |
+| 502 | **IoC Simulator** | detectCircularDependency A→B→A | hasCycle=true, cyclePath.length>0 | PASSED |
+| 503 | **IoC Simulator** | detectCircularDependency A→B→C→A | hasCycle=true (indirect cycle) | PASSED |
+| 504 | **IoC Simulator** | checkCaptiveDependency false | hasCaptive=false for valid lifetime | PASSED |
+| 505 | **IoC Simulator** | checkCaptiveDependency singleton→transient | hasCaptive=true, singletonType/transientType correct | PASSED |
+| 506 | **IoC Simulator** | Web API full chain resolve | ctrl._type=UserController, 4-level chain | PASSED |
+| 507 | **IoC Simulator** | Web API exactly 2 singletons | vault keys = 2 (SupabaseClient + UserRepository) | PASSED |
+| 508 | **IoC Simulator** | Web API reuse singletons | repo1===repo2, RETRIEVE_SINGLETON steps present | PASSED |
+| 509 | **IoC Simulator** | Web API resolution tree 4 nodes | nodeCount=4, root=IUserController | PASSED |
+| 510 | **IoC Store** | Initialize IDLE status | status=IDLE, currentStepIndex=-1, totalSteps=0 | PASSED |
+| 511 | **IoC Store** | Load web-api-standard scenario | registrationList.length=4, selectedService=IUserController | PASSED |
+| 512 | **IoC Store** | Load circular-dependency scenario | registrationList.length=2 | PASSED |
+| 513 | **IoC Store** | Load captive-dependency scenario | registrationList.length=3 | PASSED |
+| 514 | **IoC Store** | Register new service | registrationList.length=1 | PASSED |
+| 515 | **IoC Store** | Remove service | registrationList reduced, ILogger undefined | PASSED |
+| 516 | **IoC Store** | Detect circular ERROR_CIRCULAR | status=ERROR_CIRCULAR, isCircularErrorDetected=true | PASSED |
+| 517 | **IoC Store** | Resolve web-api start playback | status=RESOLVING, totalSteps>0, currentStepIndex=0 | PASSED |
+| 518 | **IoC Store** | Advance steps with timer | currentStepIndex increments after 800ms | PASSED |
+| 519 | **IoC Store** | Complete playback all steps | status=RESOLVED after all timer ticks | PASSED |
+| 520 | **IoC Store** | Detect captive dependency warning | isCaptiveDependencyWarning=true, message contains CAPTIVE | PASSED |
+| 521 | **IoC Store** | No start if no service selected | status stays IDLE | PASSED |
+| 522 | **IoC Store** | Singleton count after resolve | singletonCount=2 | PASSED |
+| 523 | **IoC Store** | Build resolution tree | resolutionTree.serviceType=IUserController | PASSED |
+| 524 | **IoC Store** | Step forward | currentStepIndex increments by 1 | PASSED |
+| 525 | **IoC Store** | Step backward | currentStepIndex decrements by 1 | PASSED |
+| 526 | **IoC Store** | No step backward below 0 | currentStepIndex stays 0 | PASSED |
+| 527 | **IoC Store** | No step forward beyond total | currentStepIndex stays at last, status=RESOLVED | PASSED |
+| 528 | **IoC Store** | Jump to specific step | currentStepIndex=3 | PASSED |
+| 529 | **IoC Store** | Return current step | currentStep.type defined | PASSED |
+| 530 | **IoC Store** | Null currentStep when -1 | currentStep=null | PASSED |
+| 531 | **IoC Store** | isResolving computed | false→true after startResolution | PASSED |
+| 532 | **IoC Store** | isError computed | true after circular start | PASSED |
+| 533 | **IoC Store** | activeScenario computed | title=Standard Web API | PASSED |
+| 534 | **IoC Store** | Reset all state | status=IDLE, registrations=0, tree=null | PASSED |
+| 535 | **IoC Store** | Scenario switching resets state | registrations=2, currentStepIndex=-1 | PASSED |
+| 536 | **IoC Store** | Load clean-architecture scenario | registrationList.length=5 | PASSED |
+| 537 | **IoC Scenarios** | ALL_SCENARIOS has 4 items | ALL_SCENARIOS.length=4 | PASSED |
+| 538 | **IoC Scenarios** | WEB_API scenarioId correct | scenarioId=web-api-standard | PASSED |
+| 539 | **IoC Scenarios** | WEB_API 4 registrations | registrations.length=4 | PASSED |
+| 540 | **IoC Scenarios** | WEB_API 2 singletons 2 transients | correct lifetime counts | PASSED |
+| 541 | **IoC Scenarios** | WEB_API SupabaseClient root | lifetime=SINGLETON, dependencies=[] | PASSED |
+| 542 | **IoC Scenarios** | WEB_API UserController deps | dependencies contains IUserService | PASSED |
+| 543 | **IoC Scenarios** | CIRCULAR 2 regs forming cycle | A→B, B→A | PASSED |
+| 544 | **IoC Scenarios** | CAPTIVE singleton holds transient | singleton depends on transient | PASSED |
+| 545 | **IoC Scenarios** | CLEAN_ARCHITECTURE 5 regs | registrations.length=5 | PASSED |
+| 546 | **IoC Scenarios** | CLEAN_ARCHITECTURE DbContext singleton | lifetime=SINGLETON | PASSED |
+| 547 | **IoC Scenarios** | All scenarios have required fields | scenarioId, title, description, registrations | PASSED |
+| 548 | **IoC Scenarios** | All registrations have required fields | serviceType, implementationType, lifetime, dependencies | PASSED |

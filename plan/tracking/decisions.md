@@ -381,3 +381,36 @@ Các ADR sau đây được ghi trong tài liệu đặc tả nhưng **chưa có
   - Module: design-patterns/index.ts (barrel export)
   - Integration: App.vue ("Patterns" tab — replaced PatternSandbox)
   - Tests: DesignPatternVisualizerEngine.spec.ts (18), useDesignPatternsStore.spec.ts (22), scenarioData.spec.ts (10) — 50 tests total
+
+---
+
+## ADR-18: IoC Container Visualizer — Client-side Reflection DI Simulator with VCR Playback
+
+- **Trạng thái:** ✅ IMPLEMENTED
+- **Ngữ cảnh:** Khái niệm IoC Container và DI rất trừu tượng. Sinh viên cần thấy trực quan vòng đời Singleton vs Transient, luồng phân giải đệ quy constructor, và lỗi phụ thuộc vòng tròn/giam cầm. Backend DI (.NET Core) resolve quá nhanh (<5ms), không thể thấy các bước trung gian.
+- **Quyết định:** Triển khai IoC Container Simulator 100% client-side TypeScript:
+  1. **IoCContainerSimulator** — recursive DFS resolve ghi lại ResolutionStep trace (LOOKUP→INJECT→INSTANTIATE→RETRIEVE_SINGLETON), Singleton Vault reuse pattern, visited Set<string> circular guard.
+  2. **DFS Circular Dependency Detector** — static method quét đồ thị đăng ký trước khi resolve, trả về cyclePath.
+  3. **Captive Dependency Detector** — static method phát hiện Singleton chứa Transient (lỗi kiến trúc phổ biến ASP.NET Core).
+  4. **Resolution Tree Builder** — buildResolutionTree generates node hierarchy with layoutTree recursive positioning (spread reduction per depth level).
+  5. **VCR Playback Store** — Pinia store điều khiển hoạt ảnh step-by-step 800ms auto-advance với setTimeout, stepForward/stepBackward/jumpToStep tua tùy ý.
+  6. **3D Glassmorphic Cabinet** — 2-chamber grid: Singleton Vault (gold radial gradient, amber border) + Transient Lab (silver, slate border).
+  7. **SVG Resolution Tree** — Cubic Bezier paths (parent→child) with laser Neon injection animation (stroke-dashoffset keyframes), REUSE badges for retrieved singletons.
+  8. **4 Scenario Presets** — Web API Standard (4 regs), Circular Dependency (2 regs cycle), Captive Dependency (3 regs), Clean Architecture CQRS (5 regs).
+- **Kiến trúc:**
+  - `IoCContainerSimulator` — register, resolve, buildResolutionTree, getResolutionSteps, detectCircularDependency, checkCaptiveDependency
+  - `useIoCDebuggerStore` — Pinia setup store: loadScenario, startResolution, stepForward/stepBackward/jumpToStep, status FSM, VCR playback timer
+  - `IoCContainerCabinet.vue` — Singleton Vault / Transient Lab chambers
+  - `ResolutionTreeCanvas.vue` — SVG tree + laser paths
+  - `IoCWorkspace.vue` — Orchestrator with scenario selector + VCR controls + keyboard shortcuts
+  - 4 scenario presets in scenarioData.ts
+- **Hệ quả:** Sinh viên thấy trực quan Singleton Vault (gold node tái sử dụng) vs Transient Lab (silver node tạo mới mỗi lần), laser Neon tiêm phụ thuộc constructor, DFS phát hiện vòng lặp chớp đỏ Rose, cảnh báo Captive Dependency chớp Amber. Toàn bộ tua-able step-by-step.
+- **File liên quan:**
+  - Types: di-sandbox/types/ioc.types.ts
+  - Engine: di-sandbox/engine/IoCContainerSimulator.ts
+  - Store: di-sandbox/store/useIoCDebuggerStore.ts
+  - Scenarios: di-sandbox/scenarios/scenarioData.ts (4 presets)
+  - Components: IoCWorkspace.vue, IoCContainerCabinet.vue, ResolutionTreeCanvas.vue
+  - Module: di-sandbox/index.ts (barrel export)
+  - Integration: App.vue ("DI/IoC" tab — replaced DISandbox with IoCWorkspace)
+  - Tests: IoCContainerSimulator.spec.ts (30), useIoCDebuggerStore.spec.ts (30), scenarioData.spec.ts (18) — 78 tests total

@@ -31,7 +31,7 @@ Tài liệu này theo dõi chi tiết tiến độ hoàn thành **code thực t�
 | **Sprint 5**  | Sân chơi vẽ đồ thị tự do & Nạp mảng                 | ✅ CODE DONE    | `ForceDirectedLayout` (Coulomb + Hooke physics), drag-drop vertices trong `CustomInputPanel.vue`, auto-layout toggle, 6 tests pass                                                    |
 | **Sprint 6**  | OOP Sandbox, đóng gói & VTable đa hình              | ✅ CODE DONE    | `OOPReflectionEngine` + `OOPSandbox.vue` mounted, Encapsulation locks (red/yellow/green), VTable dispatch visualization, Heap allocator UI                                            |     |
 | **Sprint 7**  | Chỉ số kết dính SRP LCOM4 DFS & LSP vỡ kính         | ✅ CODE DONE    | `SOLIDLCOM4Calculator` + `LspGlassCracker` + `SOLIDSandbox.vue` mounted, cracked glass animation, cohesion analyzer                                                                   |
-| **Sprint 8**  | IoC Container Singleton/Transient & Vòng lặp        | ✅ CODE DONE    | `DIContainerEngine` với DFS cycle detection, `DISandbox.vue` mounted, Transient/Singleton visualization, dependency graph Bezier                                                      |
+| **Sprint 8**  | IoC Container Singleton/Transient & Vòng lặp        | ✅ CODE DONE    | `DIContainerEngine` + `IoCContainerSimulator` (recursive DFS resolve, resolution steps trace, Singleton Vault, circular/captive dependency detection, resolution tree builder), `useIoCDebuggerStore.ts` (Pinia VCR playback), `IoCWorkspace.vue` + `IoCContainerCabinet.vue` (3D Glassmorphic Singleton Vault gold / Transient Lab silver) + `ResolutionTreeCanvas.vue` (SVG Bezier resolution tree + laser Neon injection), 4 scenario presets, 78 tests |
 | **Sprint 9**  | Mẫu thiết kế Observer Strategy Neon Bezier          | ✅ CODE DONE    | `PatternEngine` + `PatternSandbox.vue` mounted, Observer notification flow, Strategy switcher, Factory product creation                                                               |
 | **Sprint 10** | Giám sát Call Stack 3D Stack-to-Heap Bezier         | ✅ CODE DONE    | `CallStackEngine` + `DSLEngine` + `StateInspector.vue` mounted, 3D stack-heap visualization, DSL compiler                                                                             |
 | **Sprint 11** | Cân bằng tải Server bốc khói & DB Replication lag   | ✅ CODE DONE    | `LoadBalancerEngine` + `SystemSandbox.vue` mounted, Round-robin LB, smoke particles, DB replication lag                                                                               |
@@ -213,6 +213,22 @@ Tài liệu này theo dõi chi tiết tiến độ hoàn thành **code thực t�
 | **Component** | DesignPatternsWorkspace.vue (Orchestrator) | ✅ CODE DONE | `components/DesignPatternsWorkspace.vue` — Scenario tab selector (3 tabs), Strategy runtime swap buttons (BubbleSort/QuickSort), Observer Notify button, DIP toggle + Coupling Index widget (85% Rose → 20% Cyan), link type legend, node/link count badges |
 | **Integration** | App.vue "Patterns" tab | ✅ CODE DONE | Replaced PatternSandbox with DesignPatternsWorkspace in `App.vue`, `index.ts` barrel export |
 | **Tests** | 50 Unit Tests | ✅ CODE DONE | `DesignPatternVisualizerEngine.spec.ts` (18), `useDesignPatternsStore.spec.ts` (22), `scenarioData.spec.ts` (10) — ALL 50 PASS |
+
+---
+
+### Phase 2 DI Visualization — IoC Container Dependency Visualizer (Upgraded)
+
+| Bước | Nội dung | Trạng thái CODE | Chi tiết |
+| :--- | :--- | :--- | :--- |
+| **Types** | Lifetime, IoCRegistration, ResolutionStep, ResolutionTreeNode, DIScenarioPayload | ✅ CODE DONE | `di-sandbox/types/ioc.types.ts` — Lifetime (SINGLETON/TRANSIENT), IoCRegistration (serviceType, implementationType, lifetime, dependencies), ResolutionStep (LOOKUP/INJECT/INSTANTIATE/RETRIEVE_SINGLETON), ResolutionTreeNode (id, x/y, children, isRetrievedSingleton), DIScenarioPayload |
+| **Engine** | IoCContainerSimulator (recursive DFS resolve + tree builder) | ✅ CODE DONE | `engine/IoCContainerSimulator.ts` — register, resolve (DFS visited set, circular guard, singleton vault reuse), buildResolutionTree (layoutTree recursive positioning), getResolutionSteps trace, detectCircularDependency (static DFS cycle), checkCaptiveDependency (static singleton→transient warning) |
+| **Scenarios** | 4 preset scenarios | ✅ CODE DONE | `scenarios/scenarioData.ts` — Web API Standard (4 regs, 2 singleton + 2 transient), Circular Dependency Demo (2 regs cycle), Captive Dependency Warning (singleton holds transient), Clean Architecture CQRS (5 regs) |
+| **Store** | useIoCDebuggerStore (Pinia VCR playback) | ✅ CODE DONE | `store/useIoCDebuggerStore.ts` — status FSM (IDLE→RESOLVING→RESOLVED→ERROR_CIRCULAR→ERROR_NOT_FOUND), VCR playback 800ms auto-advance, stepForward/stepBackward/jumpToStep, scenario loader, captive/circular detection, transientCount/singletonCount computed |
+| **Component** | IoCContainerCabinet.vue (3D Glassmorphic Cabinet) | ✅ CODE DONE | `components/IoCContainerCabinet.vue` — 2-chamber grid (Singleton Vault gold radial gradient + Transient Lab silver), instance node cards (amber border/silver border, backdrop-blur), service registry table, active step highlight |
+| **Component** | ResolutionTreeCanvas.vue (SVG Resolution Tree) | ✅ CODE DONE | `components/ResolutionTreeCanvas.vue` — SVG Cubic Bezier paths (parent→child), laser Neon injection animation (stroke-dashoffset keyframes), REUSE badge for retrieved singletons, node-active-pulse CSS, step explanation panel |
+| **Component** | IoCWorkspace.vue (Orchestrator) | ✅ CODE DONE | `components/IoCWorkspace.vue` — scenario selector dropdown, VCR controls (⏮ ⏭), Resolve<T>() button, status badge (IDLE/RESOLVING/RESOLVED/ERROR), captive Amber warning pulse, circular Rose error pulse, keyboard shortcuts (Arrow/Space/R), singleton/transient stat counters |
+| **Integration** | App.vue "DI/IoC" tab | ✅ CODE DONE | Replaced DISandbox with IoCWorkspace in `App.vue`, `index.ts` barrel export updated |
+| **Tests** | 78 Unit Tests | ✅ CODE DONE | `IoCContainerSimulator.spec.ts` (30 tests), `useIoCDebuggerStore.spec.ts` (30 tests), `scenarioData.spec.ts` (18 tests) — ALL 78 PASS |
 
 ---
 

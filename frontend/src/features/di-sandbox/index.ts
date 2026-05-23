@@ -1,9 +1,10 @@
 // ============================================================
 // di-sandbox module — Public API
-// Sprint 8: Dependency Injection & IoC Container Visualizer
+// Phase 2: IoC Container Dependency Visualizer (Upgraded)
 // ============================================================
 
 export { default as DISandbox } from './components/DISandbox.vue';
+export { default as IoCWorkspace } from './components/IoCWorkspace.vue';
 
 export {
   DIContainerEngine,
@@ -14,3 +15,14 @@ export {
   type CycleDetectionResult,
   type ResolutionResult,
 } from './DIContainerEngine';
+
+export { IoCContainerSimulator } from './engine/IoCContainerSimulator';
+export { useIoCDebuggerStore } from './store/useIoCDebuggerStore';
+export type {
+  Lifetime,
+  IoCRegistration,
+  ResolutionStep,
+  ResolvedInstance,
+  ResolutionTreeNode,
+  DIScenarioPayload,
+} from './types/ioc.types';

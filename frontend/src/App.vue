@@ -134,7 +134,7 @@
             <SOLIDSandbox v-else-if="activeTab === 'solid'" />
 
             <!-- DI/IoC -->
-            <DISandbox v-else-if="activeTab === 'di'" />
+            <IoCWorkspace v-else-if="activeTab === 'di'" />
 
             <!-- Patterns -->
             <DesignPatternsWorkspace v-else-if="activeTab === 'patterns'" />
@@ -234,7 +234,7 @@ import { VisualizationPlayer } from "./features/animation-engine";
 import { DSAPlayer } from "./features/dsa-modules";
 import { OOPSandbox } from "./features/oop-sandbox";
 import { SOLIDSandbox } from "./features/solid-sandbox";
-import { DISandbox } from "./features/di-sandbox";
+import { IoCWorkspace } from "./features/di-sandbox";
 import { PatternSandbox } from "./features/pattern-sandbox";
 import { DesignPatternsWorkspace } from "./features/design-patterns";
 import { StateInspector } from "./features/state-sandbox";
