@@ -20,7 +20,10 @@
            QUICK START GUIDE (new)
       ══════════════════════════════════════════ -->
       <div class="dash-card quickstart-card">
-        <h3 class="dash-card__title">🎯 Bắt Đầu Nhanh</h3>
+        <h3 class="dash-card__title">
+          <BaseIcon name="playground" class="w-4 h-4 text-accent inline-block mr-1 align-text-bottom" />
+          Bắt Đầu Nhanh
+        </h3>
         <p class="quickstart-intro">Bạn mới đến? Hãy bắt đầu từ đây:</p>
         <div class="quickstart-steps">
           <router-link to="/sorting" class="quickstart-item">
@@ -57,7 +60,8 @@
           </router-link>
         </div>
         <button class="quickstart-tour-btn" @click="startSortingTour">
-          📖 Xem hướng dẫn đầy đủ
+          <BaseIcon name="quiz" class="w-4 h-4 text-accent inline-block mr-1 align-text-bottom" />
+          Xem hướng dẫn đầy đủ
         </button>
       </div>
 
@@ -96,7 +100,7 @@
         <h3 class="dash-card__title">Huy hiệu đã mở</h3>
         <div class="badges-grid">
           <div v-for="badge in topBadges" :key="badge.id" class="badge-item">
-            <span class="badge-item__icon">{{ badge.icon }}</span>
+            <BaseIcon :name="getBadgeIconName(badge.icon)" class="badge-item__icon" />
             <span class="badge-item__name">{{ badge.name }}</span>
           </div>
           <div v-if="topBadges.length === 0" class="badges-empty">
@@ -110,19 +114,19 @@
         <h3 class="dash-card__title">Truy cập nhanh</h3>
         <div class="quicklinks">
           <router-link to="/sorting" class="quicklink">
-            <span class="quicklink__icon">📊</span>
+            <BaseIcon name="sorting" class="quicklink__icon" />
             <span>Sắp xếp</span>
           </router-link>
           <router-link to="/quiz" class="quicklink">
-            <span class="quicklink__icon">📝</span>
+            <BaseIcon name="quiz" class="quicklink__icon" />
             <span>Trắc nghiệm</span>
           </router-link>
           <router-link to="/gamification" class="quicklink">
-            <span class="quicklink__icon">🏆</span>
+            <BaseIcon name="gamification" class="quicklink__icon" />
             <span>Bảng xếp hạng</span>
           </router-link>
           <router-link v-if="authStore.isTeacher" to="/teacher" class="quicklink quicklink--teacher">
-            <span class="quicklink__icon">🎓</span>
+            <BaseIcon name="academic" class="quicklink__icon" />
             <span>Quản lý Giảng viên</span>
           </router-link>
         </div>
@@ -181,6 +185,20 @@ const topBadges = computed<BadgeDisplay[]>(() => {
     };
   });
 });
+
+function getBadgeIconName(emojiIcon: string): string {
+  const map: Record<string, string> = {
+    '🏆': 'dsa-champion',
+    '📊': 'sorting-wizard',
+    '🧬': 'oop-guru',
+    '🏗️': 'solid-master',
+    '🎨': 'pattern-hunter',
+    '💉': 'system-architect',
+    '📝': 'first-steps',
+    '🏅': 'badge'
+  };
+  return map[emojiIcon] || 'badge';
+}
 
 async function startSortingTour() {
   await router.push('/sorting');
@@ -433,7 +451,9 @@ async function startSortingTour() {
 }
 
 .badge-item__icon {
-  font-size: 1.25rem;
+  width: 1.25rem;
+  height: 1.25rem;
+  color: var(--color-accent-primary);
 }
 
 .badge-item__name {
@@ -475,7 +495,9 @@ async function startSortingTour() {
 }
 
 .quicklink__icon {
-  font-size: 1.1rem;
+  width: 1.1rem;
+  height: 1.1rem;
+  color: var(--color-accent-primary);
 }
 
 /* ── Responsive ─────────────────────── */

@@ -154,16 +154,10 @@ builder.Services.AddCors(options =>
     });
 });
 
-// Configure Database (PostgreSQL with Connection Resiliency Retry strategy)
+// Configure Database (SQLite)
 builder.Services.AddDbContextPool<ApplicationDbContext>(options =>
     options
-        .UseNpgsql(
-            builder.Configuration.GetConnectionString("DefaultConnection"),
-            npgsqlOptions => npgsqlOptions.EnableRetryOnFailure(
-                maxRetryCount: 5,
-                maxRetryDelay: TimeSpan.FromSeconds(30),
-                errorCodesToAdd: null)
-        )
+        .UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection"))
         // Bảo vệ tính bất biến của Event Sourcing Ledger (chặn UPDATE/DELETE).
         .AddInterceptors(new ImmutableAuditInterceptor()));
 
@@ -206,12 +200,8 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         };
     });
 
-// Health checks — DB connection + self
-builder.Services.AddHealthChecks()
-    .AddNpgSql(builder.Configuration.GetConnectionString("DefaultConnection")
-               ?? throw new InvalidOperationException("Connection string missing."),
-               name: "postgres",
-               tags: new[] { "db", "ready" });
+// Health checks — self
+builder.Services.AddHealthChecks();
 
 // ── Rate Limiting (built-in .NET 7+) — bảo vệ auth endpoints & chống spam ──
 builder.Services.AddRateLimiter(options =>
@@ -330,9 +320,8 @@ try
     using (var scope = app.Services.CreateScope())
     {
         var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-        // Sử dụng Migrate() thay vì EnsureCreated() để đảm bảo EF Core Migrations
-        // được thực thi đúng cách, tránh mất dữ liệu khi schema thay đổi ở production.
-        context.Database.Migrate();
+        // Sử dụng EnsureCreated() cho SQLite
+        context.Database.EnsureCreated();
         
         var seeder = new DbSeeder(context);
         await seeder.SeedAsync();

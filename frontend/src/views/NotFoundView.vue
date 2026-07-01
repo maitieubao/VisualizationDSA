@@ -45,7 +45,7 @@
         <div class="quick-nav-links">
           <router-link to="/sorting" class="quick-link">Sắp xếp</router-link>
           <router-link to="/graph" class="quick-link">Đồ thị</router-link>
-          <router-link to="/compare" class="quick-link">So sánh</router-link>
+          <router-link to="/oop" class="quick-link">OOP</router-link>
           <router-link to="/gamification" class="quick-link">Bảng xếp hạng</router-link>
         </div>
       </div>

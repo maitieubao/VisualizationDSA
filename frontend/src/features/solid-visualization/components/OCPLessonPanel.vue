@@ -21,78 +21,77 @@
     <!-- Concept Explainer -->
     <div class="ocp-explainer">
       <div class="ocp-rule">
-        <span class="rule-icon open">✅ OPEN</span>
-        <span class="rule-text">Mở rộng hành vi qua kế thừa / interface mới</span>
+        <span class="rule-icon open"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg> OPEN</span>
+        <span class="rule-text">Mở rộng hành vi bằng cách thêm Class chiến lược chiết khấu mới</span>
       </div>
       <div class="ocp-rule">
-        <span class="rule-icon closed">🔒 CLOSED</span>
-        <span class="rule-text">Không sửa code lõi đã được kiểm thử</span>
+        <span class="rule-icon closed"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg> CLOSED</span>
+        <span class="rule-text">Đóng mã nguồn lõi DiscountCalculator tránh nguy cơ lỗi</span>
       </div>
     </div>
 
     <!-- Class Architecture Diagram -->
     <div class="ocp-diagram">
-      <!-- Base class / interface -->
+      <!-- High-level Client class -->
+      <div class="ocp-client-class">
+        <div class="class-header client">
+          <span class="class-name">DiscountCalculator</span>
+        </div>
+        <div class="class-method font-mono">+ calculate(strategy: DiscountStrategy)</div>
+      </div>
+
+      <!-- Arrow down from client to interface -->
+      <div class="ocp-client-arrow my-1">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-accent-purple">
+          <line x1="12" y1="0" x2="12" y2="20"/>
+          <polyline points="7,15 12,20 17,15"/>
+        </svg>
+      </div>
+
+      <!-- Base interface -->
       <div class="ocp-base-class">
         <div class="class-header abstract">
-          <span class="class-type-badge">«abstract»</span>
-          <span class="class-name">Shape</span>
+          <span class="class-type-badge">«interface»</span>
+          <span class="class-name">DiscountStrategy</span>
         </div>
-        <div class="class-method"><span class="method-abstract">+</span> calculateArea(): double</div>
-        <div class="class-method"><span class="method-abstract">+</span> draw(): void</div>
+        <div class="class-method"><span class="method-abstract">+</span> calculate(amount): number</div>
       </div>
 
       <!-- Extension arrow -->
       <div class="ocp-extends-arrows">
         <svg width="100%" height="40" viewBox="0 0 300 40" xmlns="http://www.w3.org/2000/svg">
           <defs>
-            <marker id="ocp-arrow" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
-              <path d="M0,0 L0,6 L8,3 z" fill="#10b981" fill-opacity="0.85" />
+            <marker id="ocp-arrow" markerWidth="8" markerHeight="8" refX="4" refY="3" orient="auto">
+              <path d="M0,0 L0,6 L6,3 z" fill="#10b981" fill-opacity="0.85" />
             </marker>
           </defs>
-          <line x1="75" y1="2" x2="75" y2="35" stroke="#10b981" stroke-width="1.5" opacity="0.6" marker-end="url(#ocp-arrow)" />
-          <line x1="150" y1="2" x2="150" y2="35" stroke="#10b981" stroke-width="1.5" opacity="0.6" marker-end="url(#ocp-arrow)" />
-          <line x1="225" y1="2" x2="225" y2="35" stroke="#10b981" stroke-width="1.5" opacity="0.6" stroke-dasharray="5,3" marker-end="url(#ocp-arrow)" />
+          <line x1="60" y1="35" x2="110" y2="5" stroke="#10b981" stroke-width="1.5" opacity="0.6" marker-end="url(#ocp-arrow)" />
+          <line x1="150" y1="35" x2="150" y2="5" stroke="#10b981" stroke-width="1.5" opacity="0.6" marker-end="url(#ocp-arrow)" />
+          <line x1="240" y1="35" x2="190" y2="5" stroke="#10b981" stroke-width="1.5" opacity="0.6" stroke-dasharray="4,2" marker-end="url(#ocp-arrow)" />
         </svg>
       </div>
 
       <!-- Concrete implementations -->
       <div class="ocp-impls">
         <div class="ocp-impl-class">
-          <div class="class-header concrete"><span class="class-name">Circle</span></div>
-          <div class="class-method impl">calculateArea() → πr²</div>
-          <div class="class-method impl">draw() → 🔵</div>
+          <div class="class-header concrete"><span class="class-name">RegularDiscount</span></div>
+          <div class="class-method impl">calculate() → 5%</div>
         </div>
         <div class="ocp-impl-class">
-          <div class="class-header concrete"><span class="class-name">Rectangle</span></div>
-          <div class="class-method impl">calculateArea() → w×h</div>
-          <div class="class-method impl">draw() → 🟦</div>
+          <div class="class-header concrete"><span class="class-name">VIPDiscount</span></div>
+          <div class="class-method impl">calculate() → 10%</div>
         </div>
         <div class="ocp-impl-class" :class="isExtended ? 'impl-new' : 'impl-inactive'">
           <div class="class-header new-class">
             <span v-if="isExtended" class="new-badge">NEW</span>
-            <span class="class-name">{{ isExtended ? 'Triangle' : '+ ExtendHere' }}</span>
+            <span class="class-name">{{ isExtended ? 'StudentDiscount' : '+ Extend' }}</span>
           </div>
           <div v-if="isExtended">
-            <div class="class-method impl">calculateArea() → ½bh</div>
-            <div class="class-method impl">draw() → 🔺</div>
+            <div class="class-method impl">calculate() → 15%</div>
           </div>
-          <div v-else class="add-slot">Click "Add Triangle" →</div>
+          <div v-else class="add-slot">Sắp thêm Student...</div>
         </div>
       </div>
-    </div>
-
-    <!-- Action Button -->
-    <div class="flex gap-3">
-      <button
-        class="flex-1 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider transition-all"
-        :class="isExtended
-          ? 'bg-accent-red/30 text-accent-red border border-accent-red/40 hover:bg-accent-red/50'
-          : 'bg-accent-green/30 text-accent-green border border-accent-green/40 hover:bg-accent-green/50'"
-        @click="toggleExtend"
-      >
-        {{ isExtended ? '🗑 Remove Triangle' : '🔺 Add Triangle (No Core Changes)' }}
-      </button>
     </div>
 
     <!-- Diagnostic Box -->
@@ -103,16 +102,16 @@
         : 'bg-accent-yellow/10 text-accent-yellow border-accent-yellow/30'"
     >
       {{ isExtended
-        ? '✅ OCP đạt: Thêm Triangle mà không sửa một dòng code nào trong Shape, Circle hay Rectangle.'
-        : '💡 Nguyên lý: Class Shape không bao giờ bị sửa đổi — chỉ được mở rộng thông qua kế thừa.' }}
+        ? 'OCP đạt: Thêm StudentDiscount mà không cần sửa code cũ của DiscountCalculator.'
+        : 'Nguyên lý: Lớp DiscountCalculator đóng đối với sửa đổi trực tiếp nhưng mở đối với việc mở rộng hành vi qua các chiến lược mới.' }}
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue';
-const isExtended = ref(false);
-function toggleExtend() { isExtended.value = !isExtended.value; }
+defineProps<{
+  isExtended: boolean;
+}>();
 </script>
 
 <style scoped>
@@ -147,10 +146,24 @@ function toggleExtend() { isExtended.value = !isExtended.value; }
   flex-direction: column;
   align-items: center;
   gap: 0;
-  padding: 8px;
+  padding: 12px;
   background: rgba(15,23,42,0.4);
   border-radius: 12px;
   border: 1px solid rgba(255,255,255,0.05);
+}
+
+.ocp-client-class {
+  width: 200px;
+  border-radius: 10px;
+  border: 1px solid rgba(147, 197, 253, 0.4);
+  background: rgba(147, 197, 253, 0.08);
+  overflow: hidden;
+}
+
+.class-header.client {
+  background: rgba(147, 197, 253, 0.2);
+  padding: 6px 12px;
+  text-align: center;
 }
 
 .ocp-base-class {
@@ -179,7 +192,7 @@ function toggleExtend() { isExtended.value = !isExtended.value; }
   font-size: 12px;
   font-weight: 700;
   color: #e2e8f0;
-  font-family: monospace;
+  font-family: var(--font-mono);
 }
 .new-badge {
   font-size: 9px;
@@ -195,7 +208,7 @@ function toggleExtend() { isExtended.value = !isExtended.value; }
   font-size: 10px;
   color: #64748b;
   border-top: 1px solid rgba(255,255,255,0.05);
-  font-family: monospace;
+  font-family: var(--font-mono);
 }
 .class-method.impl { color: #06b6d4; }
 .method-abstract { color: #a78bfa; margin-right: 4px; }

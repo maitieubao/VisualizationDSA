@@ -139,7 +139,7 @@
                 dominant-baseline="middle"
                 fill="#e2e8f0"
                 font-size="8"
-                font-family="monospace"
+                font-family="JetBrains Mono, monospace"
               >{{ shortLabel(nodeName) }}</text>
             </g>
           </svg>
@@ -380,12 +380,12 @@ onMounted(() => registerSampleServices());
   font-size: 12px;
   font-weight: 600;
   color: #e2e8f0;
-  font-family: monospace;
+  font-family: var(--font-mono);
 }
 .service-impl {
   font-size: 11px;
   color: #94a3b8;
-  font-family: monospace;
+  font-family: var(--font-mono);
 }
 .service-meta {
   display: flex;
@@ -414,7 +414,7 @@ onMounted(() => registerSampleServices());
 .dep-list {
   font-size: 9px;
   color: #64748b;
-  font-family: monospace;
+  font-family: var(--font-mono);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;

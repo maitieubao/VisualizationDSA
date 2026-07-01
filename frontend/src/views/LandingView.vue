@@ -35,7 +35,7 @@
       <h2 class="features__heading">Modules học tập</h2>
       <div class="features__grid">
         <div v-for="feature in features" :key="feature.icon" class="feature-card">
-          <span class="feature-card__icon">{{ feature.icon }}</span>
+          <BaseIcon :name="feature.icon" class="feature-card__icon" />
           <h3 class="feature-card__title">{{ feature.title }}</h3>
           <p class="feature-card__desc">{{ feature.desc }}</p>
         </div>
@@ -69,14 +69,14 @@ function handleCta(): void {
 }
 
 const features = [
-  { icon: '📊', title: 'Thuật toán Sắp xếp', desc: '7 thuật toán sắp xếp với hoạt ảnh VCR từng bước' },
-  { icon: '🔗', title: 'Sân chơi Đồ thị', desc: 'BFS, DFS, Dijkstra — kéo thả đồ thị tương tác' },
-  { icon: '🧬', title: 'Trực quan OOP', desc: 'Encapsulation, Inheritance, Polymorphism trực quan' },
-  { icon: '🏗️', title: 'Nguyên tắc SOLID', desc: '5 nguyên tắc SOLID với ví dụ vi phạm & tuân thủ' },
-  { icon: '🎨', title: 'Mẫu thiết kế', desc: 'Observer, Strategy, Factory — UML + mã nguồn' },
-  { icon: '💉', title: 'DI/IoC Container', desc: 'Dependency Injection với Singleton, Transient, Scoped' },
-  { icon: '📝', title: 'Hệ thống Trắc nghiệm', desc: '27+ câu hỏi trắc nghiệm tiếng Việt kèm giải thích' },
-  { icon: '🏆', title: 'Trò chơi hóa', desc: 'XP, Level, Huy hiệu, Bảng xếp hạng — học mà chơi' },
+  { icon: 'sorting', title: 'Thuật toán Sắp xếp', desc: '7 thuật toán sắp xếp với hoạt ảnh VCR từng bước' },
+  { icon: 'graph', title: 'Sân chơi Đồ thị', desc: 'BFS, DFS, Dijkstra — kéo thả đồ thị tương tác' },
+  { icon: 'oop', title: 'Trực quan OOP', desc: 'Encapsulation, Inheritance, Polymorphism trực quan' },
+  { icon: 'solid', title: 'Nguyên tắc SOLID', desc: '5 nguyên tắc SOLID với ví dụ vi phạm & tuân thủ' },
+  { icon: 'patterns', title: 'Mẫu thiết kế', desc: 'Observer, Strategy, Factory — UML + mã nguồn' },
+  { icon: 'di', title: 'DI/IoC Container', desc: 'Dependency Injection với Singleton, Transient, Scoped' },
+  { icon: 'quiz', title: 'Hệ thống Trắc nghiệm', desc: '27+ câu hỏi trắc nghiệm tiếng Việt kèm giải thích' },
+  { icon: 'gamification', title: 'Trò chơi hóa', desc: 'XP, Level, Huy hiệu, Bảng xếp hạng — học mà chơi' },
 ] as const;
 
 const stats = [
@@ -133,7 +133,7 @@ const stats = [
 .hero__title {
   font-size: 3.5rem;
   font-weight: 700;
-  font-family: 'Space Mono', monospace;
+  font-family: var(--font-display);
   margin-bottom: 1rem;
 }
 
@@ -242,9 +242,11 @@ const stats = [
 }
 
 .feature-card__icon {
-  font-size: 2rem;
+  width: 2rem;
+  height: 2rem;
   display: block;
   margin-bottom: 0.75rem;
+  color: var(--color-accent-primary, #6366f1);
 }
 
 .feature-card__title {

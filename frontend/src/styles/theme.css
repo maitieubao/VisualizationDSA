@@ -17,24 +17,23 @@
  */
 
 /* =============================================================================
- * THEME: terminal-dark (DEFAULT)
- * Phong cach: Terminal / Code Editor -- toi gian, chuyen nghiep
- * Cam hung: VSCode Dark+, GitHub Dark, skillsmp.io
+ * THEME: quizlet (DEFAULT)
+ * Phong cach: Quizlet dark mode — deep navy/indigo + electric purple-blue
  *
- * BO MAU SKILLSMP.IO (trich xuat tu anh tham khao):
- *   Nen chinh:      #0b0b0b  (am, khong phai den tuyen)
- *   Nen card:       #181818
- *   Accent CTA:     #e8825a  (salmon/coral -- nut "Get Started", "Load More")
- *   Green terminal: #3db87a  (prompt $, "from" links)
- *   Text primary:   #f2f2f2  (trang am)
- *   Text secondary: #8a8a8a
- *   Yellow star:    #f0b429
+ * BO MAU QUIZLET DARK MODE (trich xuat chinh xac):
+ *   Nen chinh:      #1a1d2e  (deep navy)
+ *   Nen card:       #282e3e  (navy slate)
+ *   Accent chinh:   #4255ff  (electric indigo, Quizlet brand)
+ *   Yellow:         #ffcd3c  (warm gold flashcard)
+ *   Green:          #23b26d  (correct answer green)
+ *   Text primary:   #ffffff
+ *   Text secondary: #939bb4  (muted slate-blue)
  * ============================================================================= */
 :root,
 :root[data-theme="terminal-dark"] {
 
   /* == FONT FAMILIES ========================================================= */
-  --font-display:   "Space Mono", "JetBrains Mono", ui-monospace, monospace;
+  --font-display:   "JetBrains Mono", ui-monospace, monospace;
   --font-sans:      "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI",
                     Roboto, Helvetica, Arial, sans-serif;
   --font-mono:      "JetBrains Mono", "Fira Code", ui-monospace, SFMono-Regular,
@@ -59,67 +58,76 @@
   --font-bold:     700;
 
   /* == BACKGROUNDS =========================================================== */
-  /* Nen chinh -- skillsmp.io: gan den am, khong phai den tuyen */
-  --color-bg-primary:    #0b0b0b;
-  /* Nen thu cap -- header, sidebar, terminal blocks */
-  --color-bg-secondary:  #111111;
-  /* Nen be mat card/modal -- skillsmp.io card background */
-  --color-bg-surface:    #181818;
+  /* Quizlet dark: deep navy, lop nen co chieu sau */
+  --color-bg-primary:    #1a1d2e;
+  /* Nen thu cap -- header, sidebar */
+  --color-bg-secondary:  #12152a;
+  /* Nen be mat card/modal -- Quizlet card bg */
+  --color-bg-surface:    #282e3e;
   /* Nen hover state */
-  --color-bg-hover:      #1e1e1e;
+  --color-bg-hover:      #313748;
   /* Nen selected/active */
-  --color-bg-active:     #232323;
+  --color-bg-active:     #383f55;
   /* Nen overlay (modals) */
-  --color-bg-overlay:    rgba(0, 0, 0, 0.75);
-  /* Nen terminal block -- dark input bar skillsmp.io */
-  --color-bg-terminal:   #121212;
+  --color-bg-overlay:    rgba(10, 12, 30, 0.80);
+  /* Nen terminal/code block */
+  --color-bg-terminal:   #0f1120;
 
   /* == TEXT HIERARCHY ======================================================== */
-  /* Text chinh -- trang am skillsmp.io */
-  --color-text-primary:   #f2f2f2;
-  /* Text phu -- xam trung */
-  --color-text-secondary: #8a8a8a;
-  /* Text mo -- placeholder, metadata */
-  --color-text-muted:     #555555;
-  /* Text disabled */
-  --color-text-disabled:  #333333;
-  /* Text tren nen mau (buttons) */
-  --color-text-inverse:   #0b0b0b;
+  /*
+   * Quizlet dark mode text palette (3 tier):
+   *   Heading/label:  #ffffff  (tiêu đề, badge, giá trị số)
+   *   Body text:      #d9dde8  (xanh trắng nhạt — NOT pure white, dễ đọc hơn)
+   *   Secondary:      #939bb4  (slate-blue muted — caption, metadata)
+   *   Muted/disabled: #6b7385  (rất nhạt)
+   */
+  --color-text-primary:   #d9dde8;   /* body text — Quizlet's off-white blue */
+  --color-text-heading:   #ffffff;   /* tiêu đề H1/H2/số liệu nổi bật */
+  --color-text-secondary: #939bb4;   /* caption, label phụ */
+  --color-text-muted:     #6b7385;   /* placeholder, helper text */
+  --color-text-disabled:  #3f4668;   /* disabled state */
+  --color-text-inverse:   #ffffff;   /* text trên button màu */
 
-  /* == ACCENT -- SALMON/CORAL (PRIMARY) -- skillsmp.io CTA color ============= */
-  /* Mau accent chinh -- salmon/coral chinh xac tu skillsmp.io "Get Started" */
-  --color-accent-primary:       #e8825a;
-  --color-accent-primary-light: #f09070;
-  --color-accent-primary-dark:  #c96848;
-  --color-accent-primary-glow:  rgba(232, 130, 90, 0.25);
-  --color-accent-primary-dim:   rgba(232, 130, 90, 0.10);
+  /* == ACCENT -- QUIZLET INDIGO (PRIMARY) ==================================== */
+  /*
+   * #4255ff = Quizlet brand blue dùng cho buttons, badges trên nền sáng.
+   * Khi dùng làm TEXT trên nền navy tối, dùng --color-accent-primary-text
+   * (#7b89f4) để đảm bảo contrast đủ chuẩn WCAG AA.
+   */
+  --color-accent-primary:       #4255ff;
+  --color-accent-primary-light: #6b7bff;
+  --color-accent-primary-dark:  #2f42e8;
+  --color-accent-primary-text:  #7b89f4;   /* dùng làm text/link trên nền tối */
+  --color-accent-primary-glow:  rgba(66, 85, 255, 0.30);
+  --color-accent-primary-dim:   rgba(66, 85, 255, 0.12);
 
-  /* == ACCENT -- TERMINAL GREEN (SUCCESS / $ prompt) ========================= */
-  /* skillsmp.io: xanh la tuoi cho $ prompt, "from" links */
-  --color-accent-green:       #3db87a;
-  --color-accent-green-light: #4fd490;
-  --color-accent-green-glow:  rgba(61, 184, 122, 0.25);
-  --color-accent-green-dim:   rgba(61, 184, 122, 0.12);
+  /* == ACCENT -- GREEN (SUCCESS / correct answer) ============================ */
+  /* Quizlet: xanh la cho dap an dung */
+  --color-accent-green:       #23b26d;
+  --color-accent-green-light: #2fd484;
+  --color-accent-green-glow:  rgba(35, 178, 109, 0.28);
+  --color-accent-green-dim:   rgba(35, 178, 109, 0.12);
 
   /* == ACCENT -- BLUE (INFO / LINK) ========================================== */
-  /* skillsmp.io: xanh duong cho hyperlinks */
-  --color-accent-blue:       #5b9cf6;
-  --color-accent-blue-light: #79b0ff;
-  --color-accent-blue-glow:  rgba(91, 156, 246, 0.25);
-  --color-accent-blue-dim:   rgba(91, 156, 246, 0.12);
+  /* Quizlet: xanh nhat cho links */
+  --color-accent-blue:       #75b3ff;
+  --color-accent-blue-light: #9ac8ff;
+  --color-accent-blue-glow:  rgba(117, 179, 255, 0.25);
+  --color-accent-blue-dim:   rgba(117, 179, 255, 0.12);
 
   /* == ACCENT -- RED (ERROR / DANGER) ======================================== */
-  --color-accent-red:       #e05252;
-  --color-accent-red-light: #f06060;
-  --color-accent-red-glow:  rgba(224, 82, 82, 0.25);
-  --color-accent-red-dim:   rgba(224, 82, 82, 0.12);
+  /* Quizlet: do cho wrong answer */
+  --color-accent-red:       #ff4136;
+  --color-accent-red-light: #ff6b63;
+  --color-accent-red-glow:  rgba(255, 65, 54, 0.28);
+  --color-accent-red-dim:   rgba(255, 65, 54, 0.12);
 
-  /* == ACCENT -- YELLOW (WARNING / STAR RATING) ============================== */
-  /* skillsmp.io: vang cho star ratings */
-  --color-accent-yellow:       #f0b429;
-  --color-accent-yellow-light: #f8cc5a;
-  --color-accent-yellow-glow:  rgba(240, 180, 41, 0.25);
-  --color-accent-yellow-dim:   rgba(240, 180, 41, 0.12);
+  /* == ACCENT -- YELLOW (FLASHCARD GOLD) ===================================== */
+  /* Quizlet: vang am cho flashcard highlight */
+  --color-accent-yellow:       #ffcd3c;
+  --color-accent-yellow-light: #ffe066;
+  --color-accent-yellow-glow:  rgba(255, 205, 60, 0.28);
+  --color-accent-yellow-dim:   rgba(255, 205, 60, 0.12);
 
   /* == ACCENT -- CYAN (VISUALIZATION / SPECIAL) ============================== */
   /* Giu lai cyan cho canvas visualization -- semantic color, khong thay */
@@ -127,21 +135,22 @@
   --color-accent-cyan-glow:  rgba(6, 182, 212, 0.25);
   --color-accent-cyan-dim:   rgba(6, 182, 212, 0.12);
 
-  /* == ACCENT -- PURPLE (GAMIFICATION) ======================================= */
-  --color-accent-purple:      #a78bfa;
-  --color-accent-purple-glow:  rgba(167, 139, 250, 0.25);
-  --color-accent-purple-dim:   rgba(167, 139, 250, 0.12);
+  /* == ACCENT -- PURPLE (GAMIFICATION / STREAK) ============================== */
+  /* Quizlet: tim nhat cho streak, gamification */
+  --color-accent-purple:      #c084fc;
+  --color-accent-purple-glow:  rgba(192, 132, 252, 0.28);
+  --color-accent-purple-dim:   rgba(192, 132, 252, 0.12);
 
   /* == SYNTAX HIGHLIGHTING COLORS (Code Blocks) ============================== */
-  --color-syntax-keyword:    #e8825a;
-  --color-syntax-string:     #3db87a;
-  --color-syntax-number:     #f0b429;
-  --color-syntax-comment:    #555555;
-  --color-syntax-type:       #5b9cf6;
-  --color-syntax-variable:   #f2f2f2;
-  --color-syntax-function:   #a78bfa;
-  --color-syntax-operator:   #8a8a8a;
-  --color-syntax-punctuation:#8a8a8a;
+  --color-syntax-keyword:    #6b7bff;
+  --color-syntax-string:     #23b26d;
+  --color-syntax-number:     #ffcd3c;
+  --color-syntax-comment:    #5c6382;
+  --color-syntax-type:       #75b3ff;
+  --color-syntax-variable:   #ffffff;
+  --color-syntax-function:   #c084fc;
+  --color-syntax-operator:   #939bb4;
+  --color-syntax-punctuation:#939bb4;
 
   /* == TRAFFIC LIGHT DOTS (Terminal Window Controls) ========================= */
   --color-dot-close:   #ff5f57;
@@ -149,20 +158,20 @@
   --color-dot-max:     #28c840;
 
   /* == BORDERS =============================================================== */
-  /* skillsmp.io: border rat nhe, gan nhu vo hinh */
-  --color-border-subtle:     rgba(255, 255, 255, 0.06);
-  --color-border-default:    rgba(255, 255, 255, 0.08);
-  --color-border-strong:     rgba(255, 255, 255, 0.14);
+  /* Quizlet: border tinh te tren nen navy */
+  --color-border-subtle:     rgba(255, 255, 255, 0.07);
+  --color-border-default:    rgba(255, 255, 255, 0.10);
+  --color-border-strong:     rgba(255, 255, 255, 0.18);
   --color-border-focus:      var(--color-accent-primary);
-  --color-border-accent:     rgba(232, 130, 90, 0.30);
+  --color-border-accent:     rgba(66, 85, 255, 0.35);
   --color-border-card:       rgba(255, 255, 255, 0.08);
-  --color-border-card-hover: rgba(255, 255, 255, 0.14);
+  --color-border-card-hover: rgba(66, 85, 255, 0.22);
 
   /* == GLASS / BACKDROP ====================================================== */
-  --glass-bg:      rgba(24, 24, 24, 0.75);
-  --glass-border:  var(--color-border-subtle);
-  --glass-blur:    12px;
-  --glass-shadow:  0 8px 32px rgba(0, 0, 0, 0.5);
+  --glass-bg:      rgba(28, 32, 54, 0.78);
+  --glass-border:  rgba(66, 85, 255, 0.12);
+  --glass-blur:    16px;
+  --glass-shadow:  0 8px 32px rgba(0, 0, 0, 0.55);
 
   /* == BORDER RADIUS ========================================================= */
   --radius-none: 0px;
@@ -210,7 +219,7 @@
 
   /* Header */
   --header-bg:         var(--color-bg-secondary);
-  --header-border:     var(--color-border-subtle);
+  --header-border:     rgba(66, 85, 255, 0.15);
   --header-height:     48px;
   --header-logo-color: var(--color-accent-primary);
 
@@ -230,11 +239,11 @@
   --card-shadow:     var(--shadow-md);
   --card-header-bg:  var(--color-bg-hover);
 
-  /* Button -- Primary (salmon CTA nhu skillsmp.io) */
+  /* Button -- Primary (Quizlet electric indigo) */
   --btn-primary-bg:       var(--color-accent-primary);
   --btn-primary-bg-hover: var(--color-accent-primary-light);
   --btn-primary-text:     #ffffff;
-  --btn-primary-shadow:   0 0 16px var(--color-accent-primary-glow);
+  --btn-primary-shadow:   0 0 20px var(--color-accent-primary-glow);
 
   /* Button -- Ghost */
   --btn-ghost-bg:       transparent;
@@ -266,16 +275,14 @@
   --code-radius:     var(--radius-md);
 
   /* Canvas / Visualization -- Semantic colors khong thay doi */
-  --canvas-bg:           #080808;
-  --canvas-grid-color:   rgba(255, 255, 255, 0.03);
-  --canvas-node-default: var(--color-accent-cyan);
-  --canvas-node-active:  var(--color-accent-primary);
-  --canvas-edge-default: rgba(255, 255, 255, 0.2);
+  --canvas-bg:           #0d1020;
+  --canvas-grid-color:   rgba(66, 85, 255, 0.04);
+  --canvas-node-default: var(--color-accent-primary);
+  --canvas-node-active:  var(--color-accent-yellow);
+  --canvas-edge-default: rgba(255, 255, 255, 0.18);
   --canvas-edge-active:  var(--color-accent-primary);
 
   /* == VISUALIZATION PANEL TOKENS (sandbox inspector panels) ================= */
-  /* Dung cho LomutoInspector, SortingDetailPanel, MergeInspector...           */
-  /* Thay the cac hardcode #090f19, #0e1726, #0b121e (cyberpunk blue palette)  */
   --vis-panel-bg:        var(--color-bg-surface);
   --vis-panel-bg-deep:   var(--color-bg-secondary);
   --vis-panel-bg-inner:  var(--color-bg-hover);
@@ -283,13 +290,13 @@
   --vis-panel-header-bg: var(--color-bg-hover);
 
   /* Visualization semantic colors -- giu nguyen ngu nghia hoc thuat */
-  --vis-color-pivot:   #f0b429;   /* Vang -- pivot (QuickSort) */
-  --vis-color-active:  #06b6d4;   /* Cyan -- dang xet */
-  --vis-color-sorted:  #3db87a;   /* Xanh -- da sap xep */
-  --vis-color-swap:    #e05252;   /* Do -- dang hoan vi */
-  --vis-color-compare: #a78bfa;   /* Tim -- dang so sanh */
-  --vis-color-bucket:  #5b9cf6;   /* Xanh duong -- bucket */
-  --vis-color-default: #8a8a8a;   /* Xam -- mac dinh */
+  --vis-color-pivot:   #ffcd3c;   /* Vang -- pivot (QuickSort) */
+  --vis-color-active:  #4255ff;   /* Indigo -- dang xet */
+  --vis-color-sorted:  #23b26d;   /* Xanh -- da sap xep */
+  --vis-color-swap:    #ff4136;   /* Do -- dang hoan vi */
+  --vis-color-compare: #c084fc;   /* Tim -- dang so sanh */
+  --vis-color-bucket:  #75b3ff;   /* Xanh duong -- bucket */
+  --vis-color-default: #5c6382;   /* Xam -- mac dinh */
 }
 
 /* =============================================================================

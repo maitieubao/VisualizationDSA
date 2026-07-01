@@ -70,7 +70,7 @@ const {
   flex-shrink: 0;
 }
 .r-insp-badge {
-  font-size: 10.5px; font-family: monospace; font-weight: 700;
+  font-size: 10.5px; font-family: var(--font-mono); font-weight: 700;
   padding: 2px 7px; border-radius: 999px; border: 1px solid;
 }
 .r-ib--dist { background: var(--color-accent-yellow-dim); color: var(--color-accent-yellow); border-color: color-mix(in srgb, var(--color-accent-yellow) 30%, transparent); }
@@ -78,8 +78,8 @@ const {
 
 .r-stats { display: flex; flex-wrap: wrap; gap: 6px; flex-shrink: 0; }
 .r-stat  { display: flex; flex-direction: column; gap: 2px; background: color-mix(in srgb, var(--color-bg-primary) 20%, transparent); border: 1px solid var(--color-border-subtle); border-radius: 7px; padding: 7px 11px; min-width: 96px; }
-.r-slbl  { font-size: 9.5px; font-family: monospace; color: var(--color-text-muted); text-transform: uppercase; letter-spacing: .07em; }
-.r-sval  { font-size: 14.5px; font-weight: 700; font-family: monospace; }
+.r-slbl  { font-size: 9.5px; font-family: var(--font-mono); color: var(--color-text-muted); text-transform: uppercase; letter-spacing: .07em; }
+.r-sval  { font-size: 14.5px; font-weight: 700; font-family: var(--font-mono); }
 .r-sval--c { color: var(--color-accent-cyan); }
 .r-sval--w { color: var(--color-text-primary); }
 .r-sval--y { color: var(--color-accent-yellow); }

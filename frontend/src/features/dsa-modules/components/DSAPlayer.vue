@@ -1,65 +1,23 @@
 <template>
-  <div class="flex flex-col h-full w-full gap-2">
-    <!-- Mode: Dashboard (no algorithm selected) -->
-    <template v-if="!algoStore.currentAlgorithm">
-      <AlgorithmDashboard :allowedCategories="allowedCategories" @select="onAlgorithmSelected" />
-    </template>
+  <div class="dsa-player-wrapper flex h-full w-full gap-4 relative" :class="{ 'theory-expanded-layout': isTheoryOpen && isDesktopWide }">
+    <div class="flex-1 flex flex-col h-full w-full gap-2 min-w-0">
+      <!-- Mode: Dashboard (no algorithm selected) -->
+      <template v-if="!algoStore.currentAlgorithm">
+        <AlgorithmDashboard :allowedCategories="allowedCategories" @select="onAlgorithmSelected" />
+      </template>
 
-    <!-- Mode: Visualization (algorithm selected) -->
-    <template v-else>
-      <DSAHeader
-        :algorithm="algoStore.currentAlgorithm"
-        :metadata="algoStore.metadata"
-        :isExecuting="isExecuting"
-        @back="goBack"
-        @execute="executeVisualization"
-      />
-
-      <!-- Mode: Theory or Simulation -->
-      <div v-if="algoStore.viewMode === 'theory'" class="flex-1 flex gap-4 min-h-0">
-        <!-- Theory Content (60%) -->
-        <div class="flex-[60] flex flex-col gap-4">
-          <div class="rounded-xl bg-bg-secondary/60 border border-white/5 backdrop-blur-xl p-6 shadow-lg flex-1 overflow-y-auto">
-            <h3 class="text-lg font-bold text-text-primary mb-3">📚 Bài học Lý thuyết: {{ algoStore.currentAlgorithm.name }}</h3>
-            
-            <p class="text-sm text-text-secondary leading-relaxed mb-6">
-              {{ algoStore.metadata?.description || 'Chưa có mô tả lý thuyết cho thuật toán này.' }}
-            </p>
-            
-            <div class="grid grid-cols-2 gap-4 mb-6">
-              <div class="p-4 rounded-xl bg-bg-surface border border-border-default/50">
-                <div class="text-[10px] text-text-disabled uppercase tracking-wider">Độ phức tạp thời gian</div>
-                <div class="text-xl font-bold text-accent mt-1">{{ algoStore.metadata?.timeComplexity || 'N/A' }}</div>
-              </div>
-              <div class="p-4 rounded-xl bg-bg-surface border border-border-default/50">
-                <div class="text-[10px] text-text-disabled uppercase tracking-wider">Độ phức tạp bộ nhớ</div>
-                <div class="text-xl font-bold text-accent mt-1">{{ algoStore.metadata?.spaceComplexity || 'N/A' }}</div>
-              </div>
-            </div>
-
-            <div class="flex gap-3 mt-4">
-              <button @click="algoStore.setViewMode('simulation'); executeVisualization();"
-                class="px-5 py-2.5 rounded-xl text-xs font-bold bg-accent text-white hover:bg-accent/80 transition-all duration-200 shadow-md flex items-center gap-2">
-                <span>🎬 Bắt đầu Chạy mô phỏng</span>
-              </button>
-            </div>
-          </div>
-        </div>
-
-        <!-- Reference Code / Pseudo (40%) -->
-        <div class="flex-[40] flex flex-col">
-          <div class="rounded-xl bg-bg-secondary/60 border border-white/5 backdrop-blur-xl p-5 shadow-lg flex-1 flex flex-col min-h-0">
-            <h4 class="text-xs font-bold uppercase tracking-wider text-text-secondary mb-3">Mã giả tham khảo (Pseudocode)</h4>
-            <div class="flex-1 overflow-y-auto font-mono text-xs bg-bg-surface/50 p-4 rounded-lg border border-border-default/30">
-              <div v-for="(line, idx) in algoStore.metadata?.pseudoCode" :key="idx" class="py-1.5 border-b border-border-default/10 text-text-primary whitespace-pre-wrap">
-                {{ line }}
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
+      <!-- Mode: Visualization (algorithm selected) -->
       <template v-else>
+        <DSAHeader
+          :algorithm="algoStore.currentAlgorithm"
+          :metadata="algoStore.metadata"
+          :isExecuting="isExecuting"
+          :isTheoryOpen="isTheoryOpen"
+          @back="goBack"
+          @execute="executeVisualization"
+          @toggleTheory="isTheoryOpen = !isTheoryOpen"
+        />
+
         <div class="flex-1 flex gap-2 min-h-0">
           <!-- Canvas Visualizer (65%) -->
           <div class="flex-[65] rounded-xl overflow-hidden border border-border-subtle shadow-lg relative">
@@ -102,12 +60,19 @@
           @speedChange="animStore.setSpeed"
         />
       </template>
-    </template>
+    </div>
+
+    <!-- Collapsible theory panel -->
+    <TheoryCollapsiblePanel
+      v-model:isOpen="isTheoryOpen"
+      :document="dsaTheoryDoc"
+      :activeSectionId="activeTheorySectionId"
+    />
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue';
+import { ref, computed, watch, onMounted, onUnmounted, nextTick } from 'vue';
 import { useAlgorithmStore } from '../store/useAlgorithmStore';
 import { useAnimationStore } from '../../animation-engine/store/useAnimationStore';
 import { executeDSAAlgorithm } from '../services/dsaApi';
@@ -119,6 +84,8 @@ import DSAInputForm from './DSAInputForm.vue';
 import PseudocodeViewer from './PseudocodeViewer.vue';
 import AnimationVcrControls from '../../animation-engine/components/AnimationVcrControls.vue';
 import { useDSAKeyboard } from '../composables/useDSAKeyboard';
+import TheoryCollapsiblePanel from '../../../shared/components/TheoryCollapsiblePanel.vue';
+import type { TheoryDocument } from '../../../shared/types/theory.types';
 
 const props = defineProps<{
   allowedCategories?: string[];
@@ -129,7 +96,74 @@ const animStore   = useAnimationStore();
 const inputText   = ref('5, 3, 8, 1, 9, 2, 7');
 const isExecuting = ref(false);
 
+const isTheoryOpen = ref(false);
+const isDesktopWide = ref(false);
+const activeTheorySectionId = ref<string | null>(null);
+
+const checkWidth = () => {
+  isDesktopWide.value = window.innerWidth >= 1700;
+};
+
+onMounted(() => {
+  checkWidth();
+  window.addEventListener('resize', checkWidth);
+});
+
+onUnmounted(() => {
+  window.removeEventListener('resize', checkWidth);
+});
+
 useDSAKeyboard(() => !!algoStore.currentAlgorithm, animStore as any);
+
+const dsaTheoryDoc = computed<TheoryDocument | null>(() => {
+  const algo = algoStore.currentAlgorithm;
+  const meta = algoStore.metadata;
+  if (!algo || !meta) return null;
+  return {
+    id: `dsa-${algo.id}`,
+    title: `Lý thuyết: ${algo.name}`,
+    sections: [
+      {
+        id: 'algo-concept',
+        title: '1. Khái niệm & Nguyên lý',
+        content: meta.description,
+        keywordTags: [algo.name, algo.category, 'khai niem', 'nguyen ly']
+      },
+      {
+        id: 'algo-complexity',
+        title: '2. Phân tích Độ phức tạp',
+        content: `**Độ phức tạp thời gian (Time Complexity)**: \`${meta.timeComplexity}\`
+\n\n**Độ phức tạp bộ nhớ (Space Complexity)**: \`${meta.spaceComplexity}\`
+\n\nĐây là các thông số đánh giá hiệu năng tối ưu của thuật toán khi dữ liệu đầu vào quy mô lớn (Big-O notation).`,
+        keywordTags: ['do phuc tap', 'time complexity', 'space complexity', 'big-o']
+      },
+      {
+        id: 'algo-pseudocode',
+        title: '3. Mã giả & Mã mẫu C#',
+        content: `Dưới đây là mã giả tham khảo của thuật toán. Bạn có thể sao chép để biên dịch thử nghiệm trong môi trường của mình.`,
+        codeSample: meta.pseudoCode.join('\n'),
+        keywordTags: ['ma gia', 'pseudocode', 'c#', 'code']
+      }
+    ]
+  };
+});
+
+// Watch current frame to sync active section in Theory Panel
+watch(() => animStore.currentIndex, (newIdx) => {
+  if (newIdx === 0) {
+    activeTheorySectionId.value = 'algo-concept';
+  } else if (animStore.currentFrame?.activeLine !== undefined) {
+    activeTheorySectionId.value = 'algo-pseudocode';
+  }
+});
+
+// Watch viewMode of store. If selected as theory from dashboard, auto open panel
+watch(() => algoStore.viewMode, (newMode) => {
+  if (newMode === 'theory') {
+    isTheoryOpen.value = true;
+    algoStore.setViewMode('simulation'); // reset to simulation mode so layout render stays active
+  }
+});
 
 function onAlgorithmSelected(algo: Algorithm): void {
   generateDefaultInput(algo);
@@ -158,3 +192,14 @@ async function executeVisualization(): Promise<void> {
 
 function goBack(): void { animStore.stop(); algoStore.clearActive(); }
 </script>
+
+<style scoped>
+@media (min-width: 1700px) {
+  .dsa-player-wrapper.theory-expanded-layout {
+    display: flex;
+    flex-direction: row;
+    gap: 20px;
+    max-width: 100%;
+  }
+}
+</style>

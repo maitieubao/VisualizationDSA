@@ -277,7 +277,7 @@ function shortLabel(name: string): string {
   font-size: 12px;
   font-weight: 700;
   color: #e2e8f0;
-  font-family: monospace;
+  font-family: var(--font-mono);
 }
 .status-label {
   font-size: 9px;
@@ -290,7 +290,7 @@ function shortLabel(name: string): string {
 .cohesion-score {
   font-size: 9px;
   font-weight: 800;
-  font-family: monospace;
+  font-family: var(--font-mono);
   padding: 2px 6px;
   border-radius: 4px;
 }
@@ -308,7 +308,7 @@ function shortLabel(name: string): string {
   align-items: center;
   gap: 5px;
   font-size: 10px;
-  font-family: monospace;
+  font-family: var(--font-mono);
   padding: 2px 4px;
   border-radius: 4px;
 }
@@ -350,7 +350,7 @@ function shortLabel(name: string): string {
 .metric-value {
   font-size: 20px;
   font-weight: 800;
-  font-family: monospace;
+  font-family: var(--font-mono);
   color: #e2e8f0;
   line-height: 1;
 }
@@ -366,7 +366,7 @@ function shortLabel(name: string): string {
 .dep-svg { width: 100%; display: block; }
 .node-label-svg {
   font-size: 9px;
-  font-family: monospace;
+  font-family: var(--font-mono);
   font-weight: 800;
   fill: #94a3b8;
 }

@@ -4,7 +4,8 @@
     <header class="panel-header">
       <div class="header-main">
         <h1 class="panel-title">
-          🛡️ Hệ thống Quản trị Admin
+          <BaseIcon name="shield" style="width:28px;height:28px;color:#f87171" />
+          Hệ thống Quản trị Admin
           <span class="panel-title__badge">Super Admin</span>
         </h1>
         <p class="panel-subtitle">Quản lý toàn bộ người dùng, quyền hệ thống, dữ liệu quiz và theo dõi doanh thu thanh toán.</p>
@@ -19,7 +20,7 @@
           :class="{ 'tab-btn--active': activeTab === tab.id }"
           @click="activeTab = tab.id"
         >
-          <span class="tab-icon">{{ tab.icon }}</span>
+          <BaseIcon :name="tab.icon" style="width:16px;height:16px" />
           {{ tab.name }}
         </button>
       </div>
@@ -36,9 +37,9 @@
             <span class="stat-card__val">{{ dashboardData.users.total }}</span>
             <span class="stat-card__label">Tổng Người dùng</span>
             <div class="stat-card__breakdown">
-              <span>🎓 {{ dashboardData.users.students }} HS</span>
-              <span>👨‍🏫 {{ dashboardData.users.teachers }} GV</span>
-              <span>🔑 {{ dashboardData.users.admins }} Admin</span>
+              <span><BaseIcon name="academic" style="width:12px;height:12px" /> {{ dashboardData.users.students }} HS</span>
+               <span><BaseIcon name="teacher" style="width:12px;height:12px" /> {{ dashboardData.users.teachers }} GV</span>
+               <span><BaseIcon name="key" style="width:12px;height:12px" /> {{ dashboardData.users.admins }} Admin</span>
             </div>
           </div>
           <div class="stat-card">
@@ -61,7 +62,7 @@
         <div class="dashboard-tables">
           <!-- Top Active Users -->
           <div class="card card--top-users">
-            <h3 class="card-heading">🏆 Top 5 Học viên tích cực nhất (XP)</h3>
+            <h3 class="card-heading"><BaseIcon name="trophy" style="width:18px;height:18px" /> Top 5 Học viên tích cực nhất (XP)</h3>
             <div class="table-container">
               <table class="simple-table">
                 <thead>
@@ -95,7 +96,7 @@
 
           <!-- Audit Activity Logs -->
           <div class="card card--logs">
-            <h3 class="card-heading">📜 Nhật ký hệ thống mới nhất</h3>
+            <h3 class="card-heading"><BaseIcon name="clipboard-list" style="width:18px;height:18px" /> Nhật ký hệ thống mới nhất</h3>
             <div class="console-box">
               <div v-for="(log, idx) in auditLogs" :key="idx" class="console-line">
                 <span class="console-time">[{{ log.time }}]</span>
@@ -111,11 +112,11 @@
       <section v-if="activeTab === 'users'" class="tab-section fade-in">
         <div class="card card--users">
           <div class="card-header-row">
-            <h3 class="card-heading">👥 Quản lý Thành viên & Quyền hạn</h3>
+            <h3 class="card-heading"><BaseIcon name="users" style="width:18px;height:18px" /> Quản lý Thành viên & Quyền hạn</h3>
             <input 
               v-model="searchQuery" 
               class="search-input" 
-              placeholder="🔍 Tìm kiếm Email, Username..."
+              placeholder="Tìm kiếm Email, Username..."
               @input="onSearch"
             />
           </div>
@@ -155,23 +156,25 @@
                     <button 
                       class="toggle-btn"
                       :class="u.isPremium ? 'toggle-btn--active' : 'toggle-btn--inactive'"
-                      @click="toggleUserPremium(u.id, u.isPremium)"
-                    >
-                    {{ u.isPremium ? 'Premium 💎' : 'Miễn phí' }}
-                    </button>
+                       @click="toggleUserPremium(u.id, u.isPremium)"
+                     >
+                     <template v-if="u.isPremium">Premium <BaseIcon name="gem" style="width:13px;height:13px" /></template>
+                     <template v-else>Miễn phí</template>
+                     </button>
                   </td>
                   <td><span class="level-badge">Lv.{{ u.currentLevel }}</span></td>
                   <td>{{ u.totalXP }} XP</td>
                   <td>
-                    <button class="btn-audit-detail" @click="showUserAudit(u)">📝 Xem</button>
+                    <button class="btn-audit-detail" @click="showUserAudit(u)"><BaseIcon name="clipboard-list" style="width:13px;height:13px" /> Xem</button>
                     <button
                       class="ban-btn"
                       :class="u.isActive !== false ? 'ban-btn--active' : 'ban-btn--banned'"
                       @click="toggleUserBan(u.id, u.isActive !== false)"
                     >
-                      {{ u.isActive !== false ? '🔓 Hoạt động' : '🔒 Bị khóa' }}
-                    </button>
-                    <button class="btn-impersonate" @click="impersonateUser(u.id)">🎭 Đóng vai</button>
+                      <BaseIcon :name="u.isActive !== false ? 'unlock' : 'lock'" style="width:13px;height:13px" />
+                       {{ u.isActive !== false ? 'Hoạt động' : 'Bị khóa' }}
+                     </button>
+                     <button class="btn-impersonate" @click="impersonateUser(u.id)"><BaseIcon name="impersonate" style="width:14px;height:14px" /> Đóng vai</button>
                   </td>
                 </tr>
                 <tr v-if="usersList.length === 0">
@@ -188,7 +191,7 @@
               :disabled="currentPage === 1" 
               @click="changePage(currentPage - 1)"
             >
-              ◀️ Trước
+              <BaseIcon name="chevron-left" style="width:14px;height:14px" /> Trước
             </button>
             <span class="pagination-info">Trang {{ currentPage }} / {{ totalPages }}</span>
             <button 
@@ -196,7 +199,7 @@
               :disabled="currentPage >= totalPages" 
               @click="changePage(currentPage + 1)"
             >
-              Tiếp ▶️
+              Tiếp <BaseIcon name="chevron-right" style="width:14px;height:14px" />
             </button>
           </div>
         </div>
@@ -205,7 +208,7 @@
       <!-- ── 3. QUẢN LÝ QUIZ (QUIZZES) ───────────────────────── -->
       <section v-if="activeTab === 'quizzes'" class="tab-section fade-in">
         <div class="card card--quizzes">
-          <h3 class="card-heading">📋 Ngân hàng Quiz hiện có</h3>
+          <h3 class="card-heading"><BaseIcon name="clipboard-list" style="width:18px;height:18px" /> Ngân hàng Quiz hiện có</h3>
           <div class="table-container">
             <table class="data-table">
               <thead>
@@ -234,7 +237,7 @@
                     <td>{{ q.questionCount }} câu</td>
                     <td>
                       <button class="btn-delete" @click.stop="deleteQuiz(q.id, q.title)">
-                        🗑️ Xóa
+                        <BaseIcon name="trash" style="width:14px;height:14px" /> Xóa
                       </button>
                     </td>
                   </tr>
@@ -242,7 +245,7 @@
                   <tr v-if="expandedQuizId === q.id" class="quiz-details-row">
                     <td colspan="7" style="padding: 0">
                       <div class="quiz-details-panel">
-                        <div v-if="quizDetailsLoading" class="quiz-loading">⏳ Đang tải câu hỏi...</div>
+                        <div v-if="quizDetailsLoading" class="quiz-loading"><BaseIcon name="hourglass" style="width:14px;height:14px" /> Đang tải câu hỏi...</div>
                         <div v-else-if="quizDetails.length === 0" class="quiz-loading">Không có câu hỏi nào.</div>
                         <div v-else class="quiz-questions-list">
                           <div v-for="(qs, idx) in quizDetails" :key="idx" class="quiz-question-item">
@@ -256,15 +259,15 @@
                                 :key="oi"
                                 class="qs-option"
                                 :class="{ 'qs-option--correct': oi === qs.correctIndex }"
-                              >
-                                <span class="qs-opt-letter">{{ ['A', 'B', 'C', 'D'][oi] }}.</span>
-                                {{ opt }}
-                                <span v-if="oi === qs.correctIndex" class="qs-correct-badge">✅ Đáp án đúng</span>
+                               >
+                                 <span class="qs-opt-letter">{{ ['A', 'B', 'C', 'D'][oi] }}.</span>
+                                 {{ opt }}
+                                 <span v-if="oi === qs.correctIndex" class="qs-correct-badge"><BaseIcon name="check-circle" style="width:13px;height:13px" /> Đáp án đúng</span>
                               </div>
                             </div>
                             <div v-if="qs.explanation" class="qs-explanation">
-                              💡 {{ qs.explanation }}
-                            </div>
+                               <BaseIcon name="bulb" style="width:13px;height:13px" /> {{ qs.explanation }}
+                             </div>
                           </div>
                         </div>
                       </div>
@@ -285,7 +288,7 @@
         <div class="system-layout">
           <!-- Server Status Card -->
           <div class="card card--system-status">
-            <h3 class="card-heading">⚙️ Thông tin Máy chủ & API</h3>
+            <h3 class="card-heading"><BaseIcon name="cog" style="width:18px;height:18px" /> Thông tin Máy chủ & API</h3>
             <div class="system-info-grid">
               <div class="info-item">
                 <span class="info-label">API Base URL:</span>
@@ -297,7 +300,7 @@
               </div>
               <div class="info-item">
                 <span class="info-label">Trạng thái kết nối CSDL:</span>
-                <span class="info-val text-success">Đang kết nối (PostgreSQL) 🟢</span>
+                <span class="info-val text-success">Đang kết nối (PostgreSQL) ✓</span>
               </div>
               <div class="info-item">
                 <span class="info-label">Môi trường hoạt động:</span>
@@ -307,14 +310,14 @@
 
             <div class="system-actions">
               <button class="btn-primary" @click="runSystemDiagnostics">
-                ⚡ Chạy chẩn đoán hệ thống
+                <BaseIcon name="lightning" style="width:15px;height:15px" /> Chạy chẩn đoán hệ thống
               </button>
             </div>
           </div>
 
           <!-- Quick settings -->
           <div class="card card--settings">
-            <h3 class="card-heading">🛠️ Cài đặt hệ thống</h3>
+            <h3 class="card-heading"><BaseIcon name="tool" style="width:18px;height:18px" /> Cài đặt hệ thống</h3>
             <div class="settings-form">
               <div class="setting-row">
                 <div class="setting-desc">
@@ -358,31 +361,31 @@
           <div class="user-modal-stats">
             <div class="modal-stat-item">
               <span class="modal-stat-val">{{ selectedUser?.totalXP ?? 0 }}</span>
-              <span class="modal-stat-label">⚡ Tổng XP</span>
+              <span class="modal-stat-label"><BaseIcon name="lightning" style="width:13px;height:13px" /> Tổng XP</span>
             </div>
             <div class="modal-stat-item">
               <span class="modal-stat-val">{{ selectedUser?.currentLevel ?? 1 }}</span>
-              <span class="modal-stat-label">🎯 Cấp độ</span>
+              <span class="modal-stat-label"><BaseIcon name="trophy" style="width:13px;height:13px" /> Cấp độ</span>
             </div>
             <div class="modal-stat-item">
               <span class="modal-stat-val">{{ selectedUser?.streakDays ?? 0 }}</span>
-              <span class="modal-stat-label">🔥 Streak</span>
+              <span class="modal-stat-label"><BaseIcon name="fire" style="width:13px;height:13px" /> Streak</span>
             </div>
             <div class="modal-stat-item">
               <span class="modal-stat-val" :class="selectedUser?.isPremium ? 'text-premium' : ''">
                 {{ selectedUser?.isPremium ? 'Premium' : 'Miễn phí' }}
               </span>
-              <span class="modal-stat-label">💎 Gói dịch vụ</span>
+              <span class="modal-stat-label"><BaseIcon name="gem" style="width:13px;height:13px" /> Gói dịch vụ</span>
             </div>
           </div>
 
           <div class="user-modal-details">
             <div class="modal-detail-row">
-              <span class="modal-detail-label">📅 Ngày tham gia</span>
+              <span class="modal-detail-label"><BaseIcon name="calendar" style="width:13px;height:13px" /> Ngày tham gia</span>
               <span class="modal-detail-val">{{ selectedUser ? new Date(selectedUser.createdAt).toLocaleDateString('vi-VN', { year: 'numeric', month: 'long', day: 'numeric' }) : '—' }}</span>
             </div>
             <div class="modal-detail-row">
-              <span class="modal-detail-label">🕑 Đăng nhập gần nhất</span>
+              <span class="modal-detail-label"><BaseIcon name="clock" style="width:13px;height:13px" /> Đăng nhập gần nhất</span>
               <span class="modal-detail-val">{{ selectedUser?.lastLogin ? new Date(selectedUser.lastLogin).toLocaleString('vi-VN') : 'Chưa có dữ liệu' }}</span>
             </div>
           </div>
@@ -410,10 +413,10 @@ interface Tab {
 }
 
 const tabs: Tab[] = [
-  { id: 'dashboard', name: 'Tổng quan', icon: '📊' },
-  { id: 'users', name: 'Người dùng', icon: '👥' },
-  { id: 'quizzes', name: 'Quản lý Quiz', icon: '📋' },
-  { id: 'system', name: 'Hệ thống', icon: '⚙️' },
+  { id: 'dashboard', name: 'Tổng quan', icon: 'chart-bar' },
+  { id: 'users', name: 'Người dùng', icon: 'users' },
+  { id: 'quizzes', name: 'Quản lý Quiz', icon: 'clipboard-list' },
+  { id: 'system', name: 'Hệ thống', icon: 'cog' },
 ];
 
 const activeTab = ref('dashboard');
@@ -533,7 +536,7 @@ function getDifficultyLabel(diff: string): string {
 function runSystemDiagnostics(): void {
   pushLog('INFO', 'Đang bắt đầu chẩn đoán hệ thống...');
   setTimeout(() => {
-    pushLog('INFO', 'Ping API Server: 25ms - Khỏe mạnh 🟢');
+    pushLog('INFO', 'Ping API Server: 25ms - Khỏe mạnh ✓');
     pushLog('INFO', 'CSDL PostgreSQL: OK - Mức chiếm dụng đĩa 4.2%');
     pushLog('INFO', 'Hệ thống chẩn đoán kết thúc không phát hiện lỗi.');
     alert('Diagnostics hoàn tất. Mọi tài nguyên hoạt động bình thường!');

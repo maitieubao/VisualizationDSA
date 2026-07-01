@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using System;
+using System.Linq;
 using VisualizationDSA.Domain.Entities;
 
 namespace VisualizationDSA.Infrastructure.Data
@@ -41,10 +42,13 @@ namespace VisualizationDSA.Infrastructure.Data
                 // ✅ FIX 3.4: LastActivityDate — nullable, dùng để tính streak chính xác
                 entity.Property(e => e.LastActivityDate).IsRequired(false);
                 entity.Property(e => e.Role).IsRequired().HasMaxLength(20).HasDefaultValue("Student");
-                entity.Property<uint>("xmin")
-                    .HasColumnType("xid")
-                    .ValueGeneratedOnAddOrUpdate()
-                    .IsRowVersion();
+                if (!Database.IsSqlite())
+                {
+                    entity.Property<uint>("xmin")
+                        .HasColumnType("xid")
+                        .ValueGeneratedOnAddOrUpdate()
+                        .IsRowVersion();
+                }
             });
 
             // Badge configuration
@@ -140,7 +144,18 @@ namespace VisualizationDSA.Infrastructure.Data
                 entity.Property(e => e.Category).IsRequired().HasMaxLength(60);
                 entity.Property(e => e.Description).HasMaxLength(2000);
                 // Vector embedding ngữ nghĩa — ánh xạ sang double precision[] của PostgreSQL.
-                entity.Property(e => e.Embedding).HasColumnType("double precision[]");
+                var embeddingProp = entity.Property(e => e.Embedding);
+                if (Database.IsSqlite())
+                {
+                    embeddingProp.HasConversion(
+                        v => v == null ? null : string.Join(",", v),
+                        v => string.IsNullOrEmpty(v) ? Array.Empty<double>() : v.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries).Select(double.Parse).ToArray()
+                    );
+                }
+                else
+                {
+                    embeddingProp.HasColumnType("double precision[]");
+                }
                 entity.Property(e => e.Importance).HasDefaultValue(0.0);
             });
 
@@ -179,7 +194,11 @@ namespace VisualizationDSA.Infrastructure.Data
                 entity.Property(e => e.HttpMethod).HasMaxLength(10);
                 entity.Property(e => e.Path).HasMaxLength(500);
                 // Payload thô lưu dạng JSONB của PostgreSQL.
-                entity.Property(e => e.Payload).HasColumnType("jsonb");
+                var payloadProp = entity.Property(e => e.Payload);
+                if (!Database.IsSqlite())
+                {
+                    payloadProp.HasColumnType("jsonb");
+                }
             });
         }
     }

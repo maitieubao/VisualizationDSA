@@ -1,173 +1,196 @@
 /**
  * useDesignPatternsStore — Pinia Setup Store
  *
- * Manages UML diagram state: nodes, links, active scenario,
- * DIP toggle, Observer notify pulse, Strategy runtime swap,
- * and coupling index metric.
+ * Manages Design Patterns visualization state: scenario step player,
+ * active pattern, playback speed, nodes, links, and animations.
  */
 
 import { defineStore } from 'pinia';
 import { ref, computed } from 'vue';
-import type { UMLNode, UMLLink, PatternScenarioId } from '../types/design-patterns.types';
-import { DesignPatternVisualizerEngine } from '../engine/DesignPatternVisualizerEngine';
-import { getScenario } from '../scenarios/scenarioData';
-import { applyDIPEnabled, applyDIPDisabled, rebuildEngine } from './dipHelpers';
-import { executeDesignPatternScenario, type DesignPatternFrameResponse } from '../services/designPatternsApi';
+import { DESIGN_PATTERN_SCENARIOS, type DPScenario, type DPScenarioStep, type DPAnimationType, type DPAnimationTarget, type DPClassNode, type DPLink } from '../scenarios/designPatternsScenarios';
+import { parseEmojiToSvg } from '../../../utils/emojiParser';
 
 export const useDesignPatternsStore = defineStore('designPatterns', () => {
+  // ==========================================
   // STATE
-  const nodes = ref<UMLNode[]>([]);
-  const links = ref<UMLLink[]>([]);
-  const activePatternId       = ref<PatternScenarioId>('strategy-pattern');
-  const activeScenarioTitle   = ref('');
-  const isDIPEnabled          = ref(false);
-  const isObserverNotifying   = ref(false);
-  const activeStrategyTargetId = ref<string>('Bubble');
-  const pathCache             = ref<Map<string, string>>(new Map());
+  // ==========================================
+  const activePatternId = ref<string>('strategy-pattern');
+  const scenarioStepIndex = ref<number>(0);
+  
+  // Playback Control
+  const isAutoplay = ref<boolean>(false);
+  const playbackSpeed = ref<number>(1);
+  const autoplayTimerId = ref<ReturnType<typeof setTimeout> | null>(null);
 
-  let visualizerEngine: DesignPatternVisualizerEngine | null = null;
+  // Visualization State
+  const nodes = ref<DPClassNode[]>([]);
+  const links = ref<DPLink[]>([]);
 
-  // GETTERS
-  const couplingIndexMetric = computed(() => {
-    if (activePatternId.value === 'solid-dip') return isDIPEnabled.value ? 20 : 85;
-    return 35;
+  // Animation State
+  const currentAnimation = ref<DPAnimationType>('none');
+  const currentAnimationTarget = ref<DPAnimationTarget>({});
+  const animationTimerId = ref<ReturnType<typeof setTimeout> | null>(null);
+
+  // ==========================================
+  // COMPUTED
+  // ==========================================
+  const currentScenario = computed<DPScenario | null>(() => {
+    return DESIGN_PATTERN_SCENARIOS.find((s) => s.id === activePatternId.value) ?? null;
   });
 
-  const couplingLabel = computed(() => {
-    const idx = couplingIndexMetric.value;
-    if (idx >= 70) return 'RẤT CHẶT';
-    if (idx >= 40) return 'TRUNG BÌNH';
-    return 'LỎNG LẺO';
+  const totalSteps = computed<number>(() => {
+    return currentScenario.value?.steps.length ?? 0;
   });
 
-  const nodeCount = computed(() => nodes.value.length);
-  const linkCount = computed(() => links.value.length);
+  const currentExplanation = computed<string>(() => {
+    if (!currentScenario.value) return '';
+    const step = currentScenario.value.steps[scenarioStepIndex.value];
+    return step ? parseEmojiToSvg(step.explanation) : '';
+  });
 
+  const currentLessonQuestion = computed<string>(() => {
+    return currentScenario.value ? parseEmojiToSvg(currentScenario.value.lessonQuestion) : '';
+  });
+
+  const activeScenarioTitle = computed<string>(() => currentScenario.value?.title ?? '');
+
+  // ==========================================
   // ACTIONS
-  function recalculatePaths(): void {
-    if (!visualizerEngine) return;
-    pathCache.value = visualizerEngine.calculateAllPaths();
-  }
-
-  function initializeScenario(patternId: PatternScenarioId): void {
-    const scenario = getScenario(patternId);
+  // ==========================================
+  function initializeScenario(patternId: string): void {
+    const scenario = DESIGN_PATTERN_SCENARIOS.find((s) => s.id === patternId);
     if (!scenario) return;
-    activePatternId.value     = patternId;
-    activeScenarioTitle.value = scenario.title;
-    isObserverNotifying.value = false;
-    isDIPEnabled.value        = false;
-    nodes.value = scenario.nodes.map(n => ({ ...n }));
-    links.value = scenario.links.map(l => ({ ...l }));
-    if (patternId === 'strategy-pattern') activeStrategyTargetId.value = 'Bubble';
-    visualizerEngine = new DesignPatternVisualizerEngine(nodes.value, links.value);
-    recalculatePaths();
+
+    activePatternId.value = patternId;
+    
+    // Deep clone nodes and links so animations can modify them without mutating the scenario definition
+    nodes.value = JSON.parse(JSON.stringify(scenario.nodes));
+    links.value = JSON.parse(JSON.stringify(scenario.links));
+    
+    stopAutoplay();
+    scenarioStepIndex.value = 0;
+    triggerStepAnimation();
   }
 
-  function handleNodeDrag(nodeId: string, x: number, y: number, canvasWidth = 900, canvasHeight = 600): void {
-    if (!visualizerEngine) return;
-    visualizerEngine.updateNodePosition(nodeId, x, y, canvasWidth, canvasHeight);
-    const node = nodes.value.find(n => n.id === nodeId);
-    if (node) { const updated = visualizerEngine.getNodeById(nodeId); if (updated) { node.x = updated.x; node.y = updated.y; } }
-    recalculatePaths();
-  }
-
-  function switchStrategy(targetId: string): void {
-    if (!visualizerEngine || activePatternId.value !== 'strategy-pattern') return;
-    activeStrategyTargetId.value = targetId;
-    visualizerEngine.swapStrategyTarget('ClientToStrategy', targetId);
-    const link = links.value.find(l => l.id === 'ClientToStrategy');
-    if (link) link.targetId = targetId;
-    recalculatePaths();
-  }
-
-  function triggerObserverNotify(): void {
-    if (activePatternId.value !== 'observer-pattern') return;
-    isObserverNotifying.value = true;
-    setTimeout(() => { isObserverNotifying.value = false; }, 2000);
-  }
-
-  function toggleDIP(): void {
-    if (activePatternId.value !== 'solid-dip') return;
-    isDIPEnabled.value = !isDIPEnabled.value;
-    if (isDIPEnabled.value) applyDIPEnabled(nodes, links);
-    else applyDIPDisabled(nodes, links);
-    visualizerEngine = rebuildEngine(nodes, links);
-    recalculatePaths();
-  }
-
-  function cleanup(): void {
-    visualizerEngine = null;
-    nodes.value = [];
-    links.value = [];
-    pathCache.value = new Map();
-    isObserverNotifying.value = false;
-    isDIPEnabled.value = false;
-  }
-
-  // ==========================================
-  // VCR STATE (Backend API frames)
-  // ==========================================
-  const vcrFrames = ref<DesignPatternFrameResponse[]>([]);
-  const vcrCurrentIndex = ref(0);
-  const isVcrMode = ref(false);
-  const isVcrLoading = ref(false);
-  const vcrError = ref<string | null>(null);
-
-  const vcrCurrentFrame = computed(() =>
-    vcrFrames.value[vcrCurrentIndex.value] ?? null
-  );
-  const vcrTotalFrames = computed(() => vcrFrames.value.length);
-
-  async function loadVcrScenario(scenarioId: string): Promise<void> {
-    isVcrLoading.value = true;
-    vcrError.value = null;
-    try {
-      const frames = await executeDesignPatternScenario(scenarioId);
-      vcrFrames.value = frames;
-      vcrCurrentIndex.value = 0;
-      isVcrMode.value = true;
-    } catch (err: unknown) {
-      vcrError.value = err instanceof Error ? err.message : 'API call failed';
-      isVcrMode.value = false;
-    } finally {
-      isVcrLoading.value = false;
-    }
-  }
-
+  // --- Playback Controls ---
   function vcrNext(): void {
-    if (vcrCurrentIndex.value < vcrFrames.value.length - 1) {
-      vcrCurrentIndex.value++;
+    if (scenarioStepIndex.value < totalSteps.value - 1) {
+      scenarioStepIndex.value++;
+      triggerStepAnimation();
+    } else {
+      stopAutoplay();
     }
   }
 
   function vcrPrev(): void {
-    if (vcrCurrentIndex.value > 0) {
-      vcrCurrentIndex.value--;
+    if (scenarioStepIndex.value > 0) {
+      scenarioStepIndex.value--;
+      triggerStepAnimation();
     }
   }
 
   function vcrReset(): void {
-    vcrCurrentIndex.value = 0;
+    scenarioStepIndex.value = 0;
+    stopAutoplay();
+    triggerStepAnimation();
   }
 
-  function exitVcrMode(): void {
-    isVcrMode.value = false;
-    vcrFrames.value = [];
-    vcrCurrentIndex.value = 0;
-    vcrError.value = null;
+  function toggleAutoplay(): void {
+    isAutoplay.value = !isAutoplay.value;
+    if (isAutoplay.value) {
+      if (scenarioStepIndex.value === totalSteps.value - 1) {
+        scenarioStepIndex.value = 0;
+      }
+      triggerStepAnimation(); // trigger immediately
+      startAutoplayLoop();
+    } else {
+      stopAutoplay();
+    }
+  }
+
+  function setSpeed(speed: number): void {
+    playbackSpeed.value = speed;
+    if (isAutoplay.value) {
+      stopAutoplay();
+      startAutoplayLoop();
+    }
+  }
+
+  function startAutoplayLoop(): void {
+    if (autoplayTimerId.value) clearTimeout(autoplayTimerId.value);
+    const baseInterval = 3500;
+    const interval = baseInterval / playbackSpeed.value;
+    
+    autoplayTimerId.value = setTimeout(() => {
+      if (scenarioStepIndex.value < totalSteps.value - 1) {
+        scenarioStepIndex.value++;
+        triggerStepAnimation();
+        startAutoplayLoop();
+      } else {
+        stopAutoplay();
+      }
+    }, interval);
+  }
+
+  function stopAutoplay(): void {
+    isAutoplay.value = false;
+    if (autoplayTimerId.value) {
+      clearTimeout(autoplayTimerId.value);
+      autoplayTimerId.value = null;
+    }
+  }
+
+  // --- Animation ---
+  function triggerStepAnimation(): void {
+    if (animationTimerId.value) {
+      clearTimeout(animationTimerId.value);
+      animationTimerId.value = null;
+    }
+
+    const scenario = currentScenario.value;
+    if (!scenario) return;
+
+    const step = scenario.steps[scenarioStepIndex.value];
+    if (!step) return;
+
+    currentAnimation.value = step.animation;
+    currentAnimationTarget.value = { ...step.animationTarget };
+
+    // Reset animation after a duration based on speed
+    const duration = 2500 / playbackSpeed.value;
+    animationTimerId.value = setTimeout(() => {
+      currentAnimation.value = 'none';
+      currentAnimationTarget.value = {};
+    }, duration);
+  }
+
+  function cleanup(): void {
+    stopAutoplay();
+    if (animationTimerId.value) clearTimeout(animationTimerId.value);
+    nodes.value = [];
+    links.value = [];
   }
 
   return {
-    nodes, links, activePatternId, activeScenarioTitle, isDIPEnabled, isObserverNotifying,
-    activeStrategyTargetId, pathCache,
-    couplingIndexMetric, couplingLabel, nodeCount, linkCount,
-    // VCR State
-    vcrFrames, vcrCurrentIndex, isVcrMode, isVcrLoading, vcrError,
-    vcrCurrentFrame, vcrTotalFrames,
-    // Actions
-    initializeScenario, handleNodeDrag, switchStrategy, triggerObserverNotify, toggleDIP,
-    recalculatePaths, cleanup,
-    // VCR Actions
-    loadVcrScenario, vcrNext, vcrPrev, vcrReset, exitVcrMode,
+    activePatternId,
+    scenarioStepIndex,
+    isAutoplay,
+    playbackSpeed,
+    nodes,
+    links,
+    currentAnimation,
+    currentAnimationTarget,
+    currentScenario,
+    totalSteps,
+    currentExplanation,
+    currentLessonQuestion,
+    activeScenarioTitle,
+    initializeScenario,
+    vcrNext,
+    vcrPrev,
+    vcrReset,
+    toggleAutoplay,
+    setSpeed,
+    cleanup
   };
 });

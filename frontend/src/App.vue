@@ -2,7 +2,7 @@
   <!--
     App Shell — VisualizationDSA
     Phong cách: Terminal / Code Editor aesthetic
-    Font: Space Mono (logo), Inter (nav/UI), JetBrains Mono (code)
+    Font: JetBrains Mono (logo/code), Inter (nav/UI)
     Theme: data-theme attribute được set trên <html> trong index.html
   -->
   <div class="app-shell">
@@ -112,7 +112,14 @@
     ══════════════════════════════════════════════════════════ -->
     <div class="app-body">
       <!-- ── LEFT SIDEBAR — Vertical Tab Navigation (hidden on landing) ── -->
-      <aside v-if="!isLandingPage" class="app-sidebar" aria-label="Sidebar navigation">
+      <aside v-if="!isLandingPage" class="app-sidebar" :class="{ 'app-sidebar--collapsed': isSidebarCollapsed }" aria-label="Sidebar navigation">
+        <!-- Collapse Button for Desktop -->
+        <div class="sidebar-toggle-container">
+          <button class="collapse-toggle-btn" @click="toggleSidebar" :title="isSidebarCollapsed ? 'Mở rộng sidebar' : 'Thu gọn sidebar'">
+            <svg v-if="isSidebarCollapsed" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="13 17 18 12 13 7"/><polyline points="6 17 11 12 6 7"/></svg>
+            <svg v-else width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="11 17 6 12 11 7"/><polyline points="18 17 13 12 18 7"/></svg>
+          </button>
+        </div>
         <nav class="sidebar-nav">
           <template v-for="tabOrGroup in filteredTabs" :key="'groupName' in tabOrGroup ? tabOrGroup.groupName : tabOrGroup.id">
             <!-- If it is a group -->
@@ -217,6 +224,15 @@ const route          = useRoute();
 const router         = useRouter();
 const showLoginModal = ref(false);
 const isSyncingProgress = ref(false);
+
+const isSidebarCollapsed = ref(localStorage.getItem('sidebar_collapsed') === 'true');
+function toggleSidebar() {
+  isSidebarCollapsed.value = !isSidebarCollapsed.value;
+  localStorage.setItem('sidebar_collapsed', String(isSidebarCollapsed.value));
+  setTimeout(() => {
+    window.dispatchEvent(new Event('resize'));
+  }, 200);
+}
 
 async function handleRetrySync(): Promise<void> {
   isSyncingProgress.value = true;
@@ -405,7 +421,75 @@ onMounted(() => {
     overflow-x: hidden;
     padding: var(--space-4) var(--space-3);
     padding-bottom: 60px; /* Safe bottom padding to prevent cutoff on low-height viewports */
+    transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1), padding 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   }
+}
+
+.sidebar-toggle-container {
+  display: none;
+}
+
+@media (min-width: 1024px) {
+  .sidebar-toggle-container {
+    display: flex;
+    justify-content: flex-end;
+    margin-bottom: 8px;
+    padding: 0 8px;
+    width: 100%;
+    box-sizing: border-box;
+  }
+}
+
+.collapse-toggle-btn {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  color: var(--color-text-muted);
+  width: 26px;
+  height: 26px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.collapse-toggle-btn:hover {
+  background: var(--color-bg-hover);
+  color: var(--color-text-primary);
+  border-color: var(--color-border-default);
+}
+
+@media (min-width: 1024px) {
+  .app-sidebar--collapsed {
+    width: 68px !important;
+    padding: var(--space-4) 8px !important;
+    align-items: center !important;
+  }
+
+  .app-sidebar--collapsed .sidebar-toggle-container {
+    justify-content: center;
+    padding: 0;
+  }
+
+  .app-sidebar--collapsed .sidebar-group__title,
+  .app-sidebar--collapsed .nav-tab__label {
+    display: none !important;
+  }
+
+  .app-sidebar--collapsed .nav-tab {
+    justify-content: center;
+    padding: 8px 0 !important;
+    width: 44px;
+  }
+
+  .app-sidebar--collapsed .sidebar-group {
+    align-items: center;
+    width: 100%;
+  }
+}
+
+@media (min-width: 1024px) {
   .app-sidebar::-webkit-scrollbar {
     width: 4px;
     display: block;

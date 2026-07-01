@@ -1,7 +1,7 @@
 // ============================================================
 // useSOLIDVisualizerStore — Pinia Setup Store
-// Orchestrates SOLID principle lessons: SRP thermal cards,
-// LSP laser fracture, DIP neon flowing path direction
+// Orchestrates SOLID principle lessons with step-by-step scenario
+// playback, autoplay controls, and interactive animations.
 // ============================================================
 
 import { defineStore } from 'pinia';
@@ -19,6 +19,14 @@ import {
   GLASS_BREAK_SOUND_EVENT,
 } from '../types/solid-visualization.types';
 import { executeSOLIDScenario, type SOLIDFrameResponse } from '../services/solidApi';
+import {
+  SOLID_SCENARIOS,
+  type SOLIDScenario,
+  type SOLIDScenarioStep,
+  type SOLIDAnimationType,
+  type SOLIDAnimationTarget
+} from '../scenarios/solidScenarios';
+import { parseEmojiToSvg } from '../../../utils/emojiParser';
 
 // ==========================================
 // DEMO DATA: UserManager God Class (SRP)
@@ -92,8 +100,33 @@ export const useSOLIDVisualizerStore = defineStore('solidVisualizer', () => {
   const lastDiagnosticResult = ref<string | null>(null);
   const lspTimerId = ref<ReturnType<typeof setTimeout> | null>(null);
 
+  // Scenario playback states
+  const scenarioStepIndex = ref<number>(0);
+  const isPlayingScenario = ref<boolean>(true);
+  const activeCodeLineRange = ref<[number, number] | null>(null);
+  const activeCodeLine = computed(() => activeCodeLineRange.value ? activeCodeLineRange.value[0] : null);
+  const activeCodeLines = computed<number[]>(() => {
+    if (!activeCodeLineRange.value) return [];
+    const [start, end] = activeCodeLineRange.value;
+    const lines = [];
+    for (let i = start; i <= end; i++) {
+      lines.push(i);
+    }
+    return lines;
+  });
+  const showGoodCode = ref<boolean>(false);
+
+  // Autoplay states
+  const isAutoplayRunning = ref<boolean>(false);
+  const playbackSpeed = ref<number>(1);
+  const autoplayTimerId = ref<ReturnType<typeof setTimeout> | null>(null);
+
+  // Animation states
+  const currentAnimation = ref<SOLIDAnimationType>('none');
+  const currentAnimationTarget = ref<SOLIDAnimationTarget>({});
+
   // ==========================================
-  // VCR STATE (Backend API frames)
+  // VCR STATE (Backend API frames - preserved for backward compatibility)
   // ==========================================
   const vcrFrames = ref<SOLIDFrameResponse[]>([]);
   const vcrCurrentIndex = ref(0);
@@ -137,6 +170,20 @@ export const useSOLIDVisualizerStore = defineStore('solidVisualizer', () => {
     return labels[activeLesson.value];
   });
 
+  const currentScenario = computed(() => {
+    return SOLID_SCENARIOS.find((s) => s.id === activeLesson.value) ?? null;
+  });
+
+  const currentExplanation = computed(() => {
+    if (!currentScenario.value) return '';
+    const step = currentScenario.value.steps[scenarioStepIndex.value];
+    return step ? parseEmojiToSvg(step.explanation) : '';
+  });
+
+  const totalSteps = computed(() => {
+    return currentScenario.value?.steps.length ?? 0;
+  });
+
   // ==========================================
   // ACTIONS
   // ==========================================
@@ -145,6 +192,7 @@ export const useSOLIDVisualizerStore = defineStore('solidVisualizer', () => {
     activeLesson.value = lesson;
     resetState();
     initializeDemoData();
+    loadScenario(lesson);
   }
 
   function initializeDemoData(): void {
@@ -202,6 +250,7 @@ export const useSOLIDVisualizerStore = defineStore('solidVisualizer', () => {
     const res = SOLIDEvaluatorEngine.evaluateLSP('fly', throwsException);
 
     if (res.isViolating) {
+      if (lspTimerId.value !== null) clearTimeout(lspTimerId.value);
       lspTimerId.value = setTimeout(() => {
         isLspShattered.value = true;
         lspPhase.value = 'SHATTERED';
@@ -209,6 +258,7 @@ export const useSOLIDVisualizerStore = defineStore('solidVisualizer', () => {
         triggerGlassBreakSound();
       }, LSP_LASER_DELAY_MS);
     } else {
+      if (lspTimerId.value !== null) clearTimeout(lspTimerId.value);
       lspPhase.value = 'PASSED';
       isLspShattered.value = false;
       lastDiagnosticResult.value =
@@ -244,6 +294,14 @@ export const useSOLIDVisualizerStore = defineStore('solidVisualizer', () => {
     };
     lastDiagnosticResult.value = null;
 
+    scenarioStepIndex.value = 0;
+    activeCodeLineRange.value = null;
+    showGoodCode.value = false;
+    currentAnimation.value = 'none';
+    currentAnimationTarget.value = {};
+
+    pauseAutoplay();
+
     if (lspTimerId.value !== null) {
       clearTimeout(lspTimerId.value);
       lspTimerId.value = null;
@@ -254,6 +312,7 @@ export const useSOLIDVisualizerStore = defineStore('solidVisualizer', () => {
     resetState();
     activeLesson.value = 'SRP';
     initializeDemoData();
+    loadScenario('SRP');
   }
 
   function destroyStore(): void {
@@ -261,7 +320,139 @@ export const useSOLIDVisualizerStore = defineStore('solidVisualizer', () => {
   }
 
   // ==========================================
-  // VCR ACTIONS (Backend API)
+  // SCENARIO PLAYBACK ACTIONS
+  // ==========================================
+
+  function loadScenario(scenarioId: SOLIDPrinciple): void {
+    scenarioStepIndex.value = 0;
+    isPlayingScenario.value = true;
+    applyScenarioStep();
+  }
+
+  function applyScenarioStep(): void {
+    const scenario = currentScenario.value;
+    if (!scenario) return;
+
+    const step = scenario.steps[scenarioStepIndex.value];
+    if (!step) return;
+
+    activeCodeLineRange.value = step.codeLineRange;
+    currentAnimation.value = step.animation;
+    currentAnimationTarget.value = step.animationTarget;
+
+    // Explicitly set showGoodCode based on step.appliesTo
+    showGoodCode.value = step.appliesTo === 'good';
+
+    // Trigger state transitions on the store automatically
+    if (activeLesson.value === 'SRP') {
+      if (step.animation === 'srp-split') {
+        triggerSRPSplit('user-manager-node');
+      } else {
+        initializeSRPDemo();
+      }
+    } else if (activeLesson.value === 'LSP') {
+      if (step.animation === 'lsp-laser-fire') {
+        executeLSPSubstitution(true);
+      } else if (step.animation === 'lsp-refactor' || scenarioStepIndex.value >= 3) {
+        executeLSPSubstitution(false);
+      } else {
+        lspPhase.value = 'IDLE';
+        isLspShattered.value = false;
+        lastDiagnosticResult.value = null;
+        if (lspTimerId.value !== null) {
+          clearTimeout(lspTimerId.value);
+          lspTimerId.value = null;
+        }
+      }
+    } else if (activeLesson.value === 'DIP') {
+      if (step.animation === 'dip-inversion-inserted' || scenarioStepIndex.value >= 2) {
+        insertDIPInterface();
+      } else {
+        resetDIP();
+      }
+    }
+  }
+
+  function nextScenarioStep(): void {
+    if (scenarioStepIndex.value >= totalSteps.value - 1) return;
+    scenarioStepIndex.value++;
+    applyScenarioStep();
+  }
+
+  function prevScenarioStep(): void {
+    if (scenarioStepIndex.value <= 0) return;
+    scenarioStepIndex.value--;
+    applyScenarioStep();
+  }
+
+  function resetScenario(): void {
+    pauseAutoplay();
+    scenarioStepIndex.value = 0;
+    applyScenarioStep();
+  }
+
+  function toggleGoodCode(val?: boolean): void {
+    const nextVal = val !== undefined ? val : !showGoodCode.value;
+    showGoodCode.value = nextVal;
+
+    const scenario = currentScenario.value;
+    if (!scenario) return;
+
+    if (nextVal) {
+      // Find the first step that shows the refactored code (usually the last step)
+      scenarioStepIndex.value = scenario.steps.length - 1;
+      applyScenarioStep();
+    } else {
+      // Go back to the initial step
+      scenarioStepIndex.value = 0;
+      applyScenarioStep();
+    }
+  }
+
+  // ==========================================
+  // AUTOPLAY ACTIONS
+  // ==========================================
+
+  function startAutoplay(): void {
+    if (isAutoplayRunning.value) return;
+    isAutoplayRunning.value = true;
+    const delay = 3500 / playbackSpeed.value;
+    autoplayTimerId.value = setTimeout(runAutoplayStep, delay);
+  }
+
+  function pauseAutoplay(): void {
+    isAutoplayRunning.value = false;
+    if (autoplayTimerId.value !== null) {
+      clearTimeout(autoplayTimerId.value);
+      autoplayTimerId.value = null;
+    }
+  }
+
+  function runAutoplayStep(): void {
+    if (!isAutoplayRunning.value) return;
+
+    if (scenarioStepIndex.value < totalSteps.value - 1) {
+      nextScenarioStep();
+      const delay = 3500 / playbackSpeed.value;
+      autoplayTimerId.value = setTimeout(runAutoplayStep, delay);
+    } else {
+      pauseAutoplay();
+    }
+  }
+
+  function changePlaybackSpeed(speed: number): void {
+    playbackSpeed.value = speed;
+    if (isAutoplayRunning.value) {
+      if (autoplayTimerId.value !== null) {
+        clearTimeout(autoplayTimerId.value);
+      }
+      const delay = 3500 / playbackSpeed.value;
+      autoplayTimerId.value = setTimeout(runAutoplayStep, delay);
+    }
+  }
+
+  // ==========================================
+  // VCR ACTIONS (Preserved for compatibility)
   // ==========================================
   const vcrCurrentFrame = computed(() =>
     vcrFrames.value[vcrCurrentIndex.value] ?? null
@@ -328,6 +519,16 @@ export const useSOLIDVisualizerStore = defineStore('solidVisualizer', () => {
     isLspShattered,
     dipState,
     lastDiagnosticResult,
+    scenarioStepIndex,
+    isPlayingScenario,
+    activeCodeLineRange,
+    activeCodeLine,
+    activeCodeLines,
+    showGoodCode,
+    isAutoplayRunning,
+    playbackSpeed,
+    currentAnimation,
+    currentAnimationTarget,
     // VCR State
     vcrFrames,
     vcrCurrentIndex,
@@ -342,6 +543,9 @@ export const useSOLIDVisualizerStore = defineStore('solidVisualizer', () => {
     isLSPTransmitting,
     isDIPCorrect,
     activeLessonLabel,
+    currentScenario,
+    currentExplanation,
+    totalSteps,
     vcrCurrentFrame,
     vcrTotalFrames,
     // Actions
@@ -356,6 +560,16 @@ export const useSOLIDVisualizerStore = defineStore('solidVisualizer', () => {
     resetState,
     resetAll,
     destroyStore,
+    // Scenario Actions
+    loadScenario,
+    applyScenarioStep,
+    nextScenarioStep,
+    prevScenarioStep,
+    resetScenario,
+    toggleGoodCode,
+    startAutoplay,
+    pauseAutoplay,
+    changePlaybackSpeed,
     // VCR Actions
     loadVcrScenario,
     vcrNext,

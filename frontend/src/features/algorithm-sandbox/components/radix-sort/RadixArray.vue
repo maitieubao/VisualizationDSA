@@ -112,7 +112,7 @@ const {
 .r-dim      { opacity: .2; }
 .r-hot      { font-weight: 900; color: var(--color-accent-cyan); transition: all .3s; display: inline-block; }
 .r-hot--on  { color: var(--color-accent-yellow); transform: scale(1.2); filter: drop-shadow(0 0 8px var(--color-accent-yellow-glow)); text-decoration: underline 2px; }
-.r-idx      { font-family: monospace; opacity: .35; font-size: 9.5px; margin-top: 2px; color: var(--color-text-muted); }
+.r-idx      { font-family: var(--font-mono); opacity: .35; font-size: 9.5px; margin-top: 2px; color: var(--color-text-muted); }
 
 /* Transition animations */
 .sort-list-move         { transition: transform .4s cubic-bezier(.25,.8,.25,1); }

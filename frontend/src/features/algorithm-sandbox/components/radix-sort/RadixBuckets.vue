@@ -68,7 +68,7 @@ const {
 .r-barrow--on   { color: var(--color-accent-yellow); filter: drop-shadow(0 0 4px var(--color-accent-yellow-glow)); animation: bounce-arr .6s ease-in-out infinite alternate; }
 @keyframes bounce-arr { from { transform: translateY(0); } to { transform: translateY(-2px); } }
 
-.r-blbl         { font-family: monospace; font-size: 11px; font-weight: 700; color: var(--color-text-muted); flex-shrink: 0; }
+.r-blbl         { font-family: var(--font-mono); font-size: 11px; font-weight: 700; color: var(--color-text-muted); flex-shrink: 0; }
 .r-blbl--on     { color: var(--color-accent-yellow); }
 
 .r-bitems {
@@ -79,7 +79,7 @@ const {
 .r-bitem {
   width: 100%; text-align: center; padding: 2px 0;
   border-radius: 4px; border: 1px solid;
-  font-family: monospace; font-weight: 700; font-size: 11.5px;
+  font-family: var(--font-mono); font-weight: 700; font-size: 11.5px;
   transition: all .3s ease;
 }
 .r-bitem--idle   { border-color: color-mix(in srgb, var(--color-accent-cyan) 18%, transparent); background: var(--color-accent-cyan-dim); color: color-mix(in srgb, var(--color-accent-cyan) 55%, transparent); opacity: .6; }

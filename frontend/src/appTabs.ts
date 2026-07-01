@@ -17,8 +17,6 @@ export const APP_TABS: readonly (TabGroup | TabItem)[] = [
     items: [
       { id: 'sorting',     path: '/sorting',     name: 'Sắp xếp' },
       { id: 'graph',       path: '/graph',       name: 'Đồ thị' },
-      { id: 'compare',     path: '/compare',     name: 'So sánh' },
-      { id: 'concurrency', path: '/concurrency', name: 'Đa luồng' },
       { id: 'code-ide',    path: '/code-ide',    name: 'Gỡ lỗi Code' }
     ]
   },
@@ -36,8 +34,7 @@ export const APP_TABS: readonly (TabGroup | TabItem)[] = [
     groupName: 'Tương tác',
     items: [
       { id: 'quiz',          path: '/quiz',          name: 'Trắc nghiệm' },
-      { id: 'gamification',  path: '/gamification',  name: 'Bảng xếp hạng' },
-      { id: 'state',         path: '/state',         name: 'State Inspector' },
+      { id: 'gamification',  path: '/gamification',  name: 'Bảng xếp hạng' }
     ]
   },
   {

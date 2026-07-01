@@ -1,163 +1,92 @@
 // ============================================================
-// useOOPVisualizerStore — Pinia Setup Store
-// Orchestrates class registry, Heap allocation, VTable dispatch,
-// encapsulation violation detection, laser animation state,
-// 4 OOP pillars navigation, VCR autoplay, and step-by-step scenarios.
+// useOOPVisualizerStore — Simplified Pinia Store
+// Focused on scenario playback with animation state tracking
+// Removed: Heap allocation, VTable dispatch, Laser animation
 // ============================================================
 
 import { defineStore } from 'pinia';
 import { ref, computed } from 'vue';
-import { OOPReflectionEngine } from '../engine/OOPReflectionEngine';
-import type {
-  ClassDefinition,
-  HeapObjectInstance,
-  ExecutionPointer,
-  EncapsulationViolation,
-  OOPFrame,
-  HeapObjectSnapshot,
-} from '../types/oop-visualization.types';
-import {
-  MAX_HEAP_OBJECTS,
-  DISPATCH_LASER_DELAY_MS,
-  VIOLATION_SHAKE_DURATION_MS,
-} from '../types/oop-visualization.types';
-import { OOP_SCENARIOS } from '../scenarios/oopScenarios';
-import {
-  executeOOPScenario as apiExecuteScenario,
-} from '../services/oopApi';
+import type { ClassDefinition } from '../types/oop-visualization.types';
+import { OOP_SCENARIOS, type OOPScenario, type ScenarioStep, type AnimationType, type AnimationTarget } from '../scenarios/oopScenarios';
+import { parseEmojiToSvg } from '../../../utils/emojiParser';
+import { OOP_MEMORY_STATES, type MemoryState } from '../scenarios/oopMemoryStates';
 
 export const useOOPVisualizerStore = defineStore('oopVisualizer', () => {
-  // ==========================================
-  // ENGINE INSTANCE
-  // ==========================================
-  const engine = new OOPReflectionEngine();
-
   // ==========================================
   // STATE
   // ==========================================
   const registeredClasses = ref<ClassDefinition[]>([]);
-  const heapObjects = ref<HeapObjectInstance[]>([]);
 
-  const activeExecutionPointer = ref<ExecutionPointer>({
-    callerClass: 'Main',
-    activeObjectAddress: '',
-    activeMethod: '',
-    dispatchStatus: 'IDLE',
-    resolvedClass: undefined,
-  });
+  // 4 Pillars navigation
+  const activePillar = ref<'encapsulation' | 'inheritance' | 'polymorphism' | 'abstraction' | 'interface'>('encapsulation');
 
-  const lastEncapsulationViolation = ref<EncapsulationViolation | null>(null);
-  const selectedClassName = ref<string>('Circle');
-  const selectedMethodCall = ref<string | null>(null);
-  const dispatchTimerId = ref<ReturnType<typeof setTimeout> | null>(null);
-  const violationTimerId = ref<ReturnType<typeof setTimeout> | null>(null);
-
-  // New States for Runtime upgrades & 4 Pillars Restructure
-  const activePillar = ref<'encapsulation' | 'inheritance' | 'polymorphism' | 'abstraction'>('encapsulation');
-  const selectedObjectAddress = ref<string | null>(null);
+  // Scenario playback
   const selectedScenarioId = ref<string | null>(null);
   const scenarioStepIndex = ref<number>(0);
-  const callStack = ref<string[]>(['Main()']);
-  const activeCodeLine = ref<number | null>(null);
   const isPlayingScenario = ref<boolean>(false);
+  const activeCodeLines = ref<number[]>([]);
 
-  // Autoplay states
+  // Autoplay
   const isAutoplayRunning = ref<boolean>(false);
-  const playbackSpeed = ref<number>(1); // Preset multipliers: 0.5, 1, 2
+  const playbackSpeed = ref<number>(1);
   const autoplayTimerId = ref<ReturnType<typeof setTimeout> | null>(null);
 
-  // ── API / Backend-driven VCR Mode State ──
-  const isApiMode = ref<boolean>(false);
-  const apiFrames = ref<OOPFrame[]>([]);
-  const isLoadingApi = ref<boolean>(false);
-  const apiError = ref<string | null>(null);
+  // Animation state — drives VisuAlgo-style animations
+  const currentAnimation = ref<AnimationType>('none');
+  const currentAnimationTarget = ref<AnimationTarget>({});
+  const animationTimerId = ref<ReturnType<typeof setTimeout> | null>(null);
+
+  // Created objects tracker (for visual objects on screen)
+  const createdObjects = ref<Array<{ className: string; id: number }>>([]);
+  let objectIdCounter = 0;
+
+  // Violation state (for shake animations)
+  const lastViolation = ref<{ className: string; memberName: string; message: string } | null>(null);
 
   // ==========================================
   // COMPUTED
   // ==========================================
-  const heapObjectCount = computed(() => heapObjects.value.length);
-
-  const canAllocate = computed(
-    () => heapObjects.value.length < MAX_HEAP_OBJECTS
-  );
-
-  const isDispatching = computed(
-    () => activeExecutionPointer.value.dispatchStatus === 'SEEKING_VTABLE'
-  );
-
-  const isViolated = computed(
-    () => activeExecutionPointer.value.dispatchStatus === 'ACCESS_VIOLATED'
-  );
-
-  const availableClassNames = computed(() =>
-    registeredClasses.value.map((c) => c.className)
-  );
-
   const totalSteps = computed<number>(() => {
-    if (isApiMode.value) {
-      return apiFrames.value.length;
-    }
     const scenario = OOP_SCENARIOS.find((s) => s.id === selectedScenarioId.value);
     return scenario?.steps.length ?? 0;
   });
 
   const currentExplanation = computed<string>(() => {
-    if (isApiMode.value) {
-      const frame = apiFrames.value[scenarioStepIndex.value];
-      return frame?.explanation ?? '';
-    }
     const scenario = OOP_SCENARIOS.find((s) => s.id === selectedScenarioId.value);
     if (!scenario) return '';
     const step = scenario.steps[scenarioStepIndex.value];
-    return step?.explanation ?? '';
+    return step ? parseEmojiToSvg(step.explanation) : '';
   });
 
-  const currentActionName = computed<string>(() => {
-    if (isApiMode.value) {
-      const frame = apiFrames.value[scenarioStepIndex.value];
-      return frame?.actionName ?? '';
-    }
+  const currentLessonQuestion = computed<string>(() => {
     const scenario = OOP_SCENARIOS.find((s) => s.id === selectedScenarioId.value);
-    if (!scenario) return '';
-    const step = scenario.steps[scenarioStepIndex.value];
-    return step?.actionName ?? '';
+    return scenario ? parseEmojiToSvg(scenario.lessonQuestion) : '';
   });
 
-  const vTableForSelectedClass = computed(() => {
-    let instance = heapObjects.value.find((o) => o.address === selectedObjectAddress.value);
-    if (!instance) {
-      instance = heapObjects.value.find((o) => o.className === selectedClassName.value);
-    }
-    if (!instance) return [];
+  const currentScenario = computed(() => {
+    if (!selectedScenarioId.value) return null;
+    return OOP_SCENARIOS.find((s) => s.id === selectedScenarioId.value) ?? null;
+  });
 
-    const entries: Array<{
-      methodName: string;
-      resolvedClass: string;
-      isOverridden: boolean;
-    }> = [];
+  const availableClassNames = computed(() =>
+    registeredClasses.value.map((c) => c.className)
+  );
 
-    for (const [methodName, resolvedClass] of instance.vTable) {
-      const classDef = engine.getClass(resolvedClass);
-      const method = classDef?.members.find(
-        (m) => m.name === methodName && m.type === 'METHOD'
-      );
-      entries.push({
-        methodName,
-        resolvedClass,
-        isOverridden: method?.isOverridden ?? false,
-      });
-    }
-
-    return entries;
+  const activeMemoryState = computed<MemoryState>(() => {
+    if (!selectedScenarioId.value) return { stack: [], heap: [], callStack: [] };
+    const states = OOP_MEMORY_STATES[selectedScenarioId.value];
+    if (!states) return { stack: [], heap: [], callStack: [] };
+    return states[scenarioStepIndex.value] ?? { stack: [], heap: [], callStack: [] };
   });
 
   // ==========================================
   // ACTIONS
   // ==========================================
+
   function initializeDemoClasses(): void {
-    engine.clearRegistry();
     registeredClasses.value = [];
-    heapObjects.value = [];
+    createdObjects.value = [];
+    objectIdCounter = 0;
 
     const pillar = activePillar.value;
     let classes: ClassDefinition[] = [];
@@ -165,239 +94,165 @@ export const useOOPVisualizerStore = defineStore('oopVisualizer', () => {
     if (pillar === 'encapsulation') {
       classes = [
         {
-          className: 'Shape',
+          className: 'BankAccount',
           members: [
-            { name: 'x', type: 'FIELD', accessModifier: 'PUBLIC', returnType: 'number' },
-            { name: 'y', type: 'FIELD', accessModifier: 'PUBLIC', returnType: 'number' },
-            { name: 'color', type: 'FIELD', accessModifier: 'PROTECTED', returnType: 'string' },
-            { name: 'draw', type: 'METHOD', accessModifier: 'PUBLIC', returnType: 'void' },
-          ],
-        },
-        {
-          className: 'Circle',
-          parentClass: 'Shape',
-          members: [
-            { name: 'radius', type: 'FIELD', accessModifier: 'PRIVATE', returnType: 'number' },
-            { name: 'setRadius', type: 'METHOD', accessModifier: 'PUBLIC', returnType: 'void' },
-            { name: 'draw', type: 'METHOD', accessModifier: 'PUBLIC', returnType: 'void', isOverridden: true },
+            { name: 'balance', type: 'FIELD', accessModifier: 'PRIVATE', returnType: 'double' },
+            { name: 'BankAccount', type: 'METHOD', accessModifier: 'PUBLIC', returnType: 'constructor' },
+            { name: 'Deposit', type: 'METHOD', accessModifier: 'PUBLIC', returnType: 'void' },
+            { name: 'Withdraw', type: 'METHOD', accessModifier: 'PUBLIC', returnType: 'bool' },
+            { name: 'GetBalance', type: 'METHOD', accessModifier: 'PUBLIC', returnType: 'double' },
           ],
         },
       ];
     } else if (pillar === 'inheritance') {
       classes = [
         {
-          className: 'Shape',
+          className: 'Animal',
           members: [
-            { name: 'draw', type: 'METHOD', accessModifier: 'PUBLIC', returnType: 'void' },
-            { name: 'area', type: 'METHOD', accessModifier: 'PUBLIC', returnType: 'number' },
+            { name: 'age', type: 'FIELD', accessModifier: 'PRIVATE', returnType: 'int' },
+            { name: 'Name', type: 'FIELD', accessModifier: 'PROTECTED', returnType: 'string' },
+            { name: 'Eat', type: 'METHOD', accessModifier: 'PUBLIC', returnType: 'void' },
+            { name: 'Sleep', type: 'METHOD', accessModifier: 'PUBLIC', returnType: 'void' },
           ],
         },
         {
-          className: 'Circle',
-          parentClass: 'Shape',
+          className: 'Dog',
+          parentClass: 'Animal',
           members: [
-            // inherits everything
+            { name: 'Fetch', type: 'METHOD', accessModifier: 'PUBLIC', returnType: 'void' },
+            { name: 'Introduce', type: 'METHOD', accessModifier: 'PUBLIC', returnType: 'void' },
+          ],
+        },
+        {
+          className: 'Cat',
+          parentClass: 'Animal',
+          members: [
+            { name: 'Purr', type: 'METHOD', accessModifier: 'PUBLIC', returnType: 'void' },
           ],
         },
       ];
     } else if (pillar === 'polymorphism') {
       classes = [
         {
-          className: 'Shape',
+          className: 'Animal',
           members: [
-            { name: 'draw', type: 'METHOD', accessModifier: 'PUBLIC', returnType: 'void' },
+            { name: 'Speak', type: 'METHOD', accessModifier: 'PUBLIC', returnType: 'string' },
           ],
         },
         {
-          className: 'Circle',
-          parentClass: 'Shape',
+          className: 'Dog',
+          parentClass: 'Animal',
           members: [
-            { name: 'draw', type: 'METHOD', accessModifier: 'PUBLIC', returnType: 'void', isOverridden: true },
+            { name: 'Speak', type: 'METHOD', accessModifier: 'PUBLIC', returnType: 'string', isOverridden: true },
+          ],
+        },
+        {
+          className: 'Cat',
+          parentClass: 'Animal',
+          members: [
+            { name: 'Speak', type: 'METHOD', accessModifier: 'PUBLIC', returnType: 'string', isOverridden: true },
+          ],
+        },
+        {
+          className: 'Fish',
+          parentClass: 'Animal',
+          members: [
+            { name: 'Speak', type: 'METHOD', accessModifier: 'PUBLIC', returnType: 'string' },
           ],
         },
       ];
     } else if (pillar === 'abstraction') {
       classes = [
         {
-          className: 'Shape',
+          className: 'Vehicle',
           isAbstract: true,
           members: [
-            { name: 'draw', type: 'METHOD', accessModifier: 'PUBLIC', returnType: 'void', isAbstract: true },
+            { name: 'Brand', type: 'FIELD', accessModifier: 'PUBLIC', returnType: 'string' },
+            { name: 'GetDescription', type: 'METHOD', accessModifier: 'PUBLIC', returnType: 'string' },
+            { name: 'Start', type: 'METHOD', accessModifier: 'PUBLIC', returnType: 'string', isAbstract: true },
+            { name: 'FuelType', type: 'METHOD', accessModifier: 'PUBLIC', returnType: 'string', isAbstract: true },
           ],
         },
         {
-          className: 'Circle',
-          parentClass: 'Shape',
+          className: 'Car',
+          parentClass: 'Vehicle',
           members: [
-            { name: 'draw', type: 'METHOD', accessModifier: 'PUBLIC', returnType: 'void', isOverridden: true },
+            { name: 'Start', type: 'METHOD', accessModifier: 'PUBLIC', returnType: 'string', isOverridden: true },
+            { name: 'FuelType', type: 'METHOD', accessModifier: 'PUBLIC', returnType: 'string', isOverridden: true },
+          ],
+        },
+        {
+          className: 'Bike',
+          parentClass: 'Vehicle',
+          members: [
+            { name: 'Start', type: 'METHOD', accessModifier: 'PUBLIC', returnType: 'string', isOverridden: true },
+            { name: 'FuelType', type: 'METHOD', accessModifier: 'PUBLIC', returnType: 'string', isOverridden: true },
+          ],
+        },
+      ];
+    } else if (pillar === 'interface') {
+      classes = [
+        {
+          className: 'IPayment',
+          isInterface: true,
+          members: [
+            { name: 'ProcessPayment', type: 'METHOD', accessModifier: 'PUBLIC', returnType: 'bool' },
+            { name: 'GetProviderName', type: 'METHOD', accessModifier: 'PUBLIC', returnType: 'string' },
+          ],
+        },
+        {
+          className: 'ILoggable',
+          isInterface: true,
+          members: [
+            { name: 'Log', type: 'METHOD', accessModifier: 'PUBLIC', returnType: 'void' },
+          ],
+        },
+        {
+          className: 'CreditCard',
+          interfaces: ['IPayment', 'ILoggable'],
+          members: [
+            { name: 'ProcessPayment', type: 'METHOD', accessModifier: 'PUBLIC', returnType: 'bool' },
+            { name: 'GetProviderName', type: 'METHOD', accessModifier: 'PUBLIC', returnType: 'string' },
+            { name: 'Log', type: 'METHOD', accessModifier: 'PUBLIC', returnType: 'void' },
+          ],
+        },
+        {
+          className: 'MoMo',
+          interfaces: ['IPayment'],
+          members: [
+            { name: 'ProcessPayment', type: 'METHOD', accessModifier: 'PUBLIC', returnType: 'bool' },
+            { name: 'GetProviderName', type: 'METHOD', accessModifier: 'PUBLIC', returnType: 'string' },
+          ],
+        },
+        {
+          className: 'OrderService',
+          members: [
+            { name: '_payment', type: 'FIELD', accessModifier: 'PRIVATE', returnType: 'IPayment' },
+            { name: 'Checkout', type: 'METHOD', accessModifier: 'PUBLIC', returnType: 'void' },
           ],
         },
       ];
     }
 
-    for (const classDef of classes) {
-      engine.registerClass(classDef);
-      registeredClasses.value.push(classDef);
-    }
+    registeredClasses.value = classes;
   }
 
-  function registerClass(config: ClassDefinition): void {
-    try {
-      engine.registerClass(config);
-      registeredClasses.value.push(config);
-    } catch (error) {
-      console.error((error as Error).message);
-    }
-  }
+  // ==========================================
+  // SCENARIO PLAYBACK
+  // ==========================================
 
-  function instantiateNewObject(className: string): string {
-    try {
-      const instance = engine.instantiateObject(className);
-      heapObjects.value = [...engine.getHeapInstances()];
-      selectedObjectAddress.value = instance.address;
-      selectedClassName.value = className;
-      return instance.address;
-    } catch (error) {
-      console.error((error as Error).message);
-      return '';
-    }
-  }
-
-  function removeHeapObject(address: string): void {
-    engine.removeHeapInstance(address);
-    heapObjects.value = [...engine.getHeapInstances()];
-    if (selectedObjectAddress.value === address) {
-      selectedObjectAddress.value = heapObjects.value[0]?.address ?? null;
-      selectedClassName.value = heapObjects.value[0]?.className ?? 'Circle';
-    }
-  }
-
-  function triggerPolymorphicCall(
-    objectAddress: string,
-    methodName: string,
-    callerClass: string = 'Main'
-  ): void {
-    const obj = heapObjects.value.find((o) => o.address === objectAddress);
-    if (!obj) return;
-
-    clearTimers();
-
-    selectedMethodCall.value = `${obj.className}.${methodName}`;
-    selectedObjectAddress.value = objectAddress;
-    selectedClassName.value = obj.className;
-    callStack.value = [`${callerClass}()`];
-
-    activeExecutionPointer.value = {
-      callerClass,
-      activeObjectAddress: objectAddress,
-      activeMethod: methodName,
-      dispatchStatus: 'SEEKING_VTABLE',
-      resolvedClass: undefined,
-    };
-
-    dispatchTimerId.value = setTimeout(() => {
-      const result = engine.dispatchMethod(obj, methodName);
-      if (result) {
-        activeExecutionPointer.value = {
-          ...activeExecutionPointer.value,
-          dispatchStatus: 'DISPATCHED',
-          resolvedClass: result.resolvedClass,
-        };
-        callStack.value = [`${callerClass}()`, `${result.resolvedClass}.${methodName}()`];
-      }
-      dispatchTimerId.value = null;
-    }, DISPATCH_LASER_DELAY_MS);
-  }
-
-  function tryAccessProperty(
-    targetClass: string,
-    propertyName: string,
-    callerClass: string = 'ExternalClass'
-  ): boolean {
-    const result = engine.validateEncapsulationAccess(
-      targetClass,
-      propertyName,
-      callerClass
-    );
-
-    if (!result.hasAccess) {
-      clearTimers();
-
-      lastEncapsulationViolation.value = {
-        targetClass,
-        memberName: propertyName,
-        callerClass,
-        errorMessage:
-          result.errorReason ?? 'Vi phạm quyền đóng gói.',
-        timestamp: Date.now(),
-      };
-
-      activeExecutionPointer.value = {
-        ...activeExecutionPointer.value,
-        dispatchStatus: 'ACCESS_VIOLATED',
-      };
-
-      violationTimerId.value = setTimeout(() => {
-        lastEncapsulationViolation.value = null;
-        activeExecutionPointer.value = {
-          ...activeExecutionPointer.value,
-          dispatchStatus: 'IDLE',
-        };
-        violationTimerId.value = null;
-      }, VIOLATION_SHAKE_DURATION_MS);
-
-      return false;
-    }
-
-    lastEncapsulationViolation.value = null;
-    return true;
-  }
-
-  function selectClass(className: string): void {
-    selectedClassName.value = className;
-  }
-
-  function selectObjectAddress(address: string | null): void {
-    selectedObjectAddress.value = address;
-    if (address) {
-      const obj = heapObjects.value.find((o) => o.address === address);
-      if (obj) {
-        selectedClassName.value = obj.className;
-      }
-    }
-  }
-
-  async function setPillar(pillar: 'encapsulation' | 'inheritance' | 'polymorphism' | 'abstraction'): Promise<void> {
+  function setPillar(pillar: 'encapsulation' | 'inheritance' | 'polymorphism' | 'abstraction' | 'interface'): void {
     activePillar.value = pillar;
-    await loadScenario(pillar);
+    loadScenario(pillar);
   }
 
-  // ==========================================
-  // SCENARIO MODE ACTIONS
-  // ==========================================
-  async function loadScenario(scenarioId: string): Promise<void> {
+  function loadScenario(scenarioId: string): void {
     resetAll();
     selectedScenarioId.value = scenarioId;
     initializeDemoClasses();
     scenarioStepIndex.value = 0;
     isPlayingScenario.value = true;
-    apiError.value = null;
-
-    // Try fetching frames from backend API
-    try {
-      isLoadingApi.value = true;
-      const frames = await apiExecuteScenario(scenarioId);
-      apiFrames.value = frames;
-      isApiMode.value = true;
-      applyApiFrame();
-    } catch {
-      // Fallback to local scenario steps
-      isApiMode.value = false;
-      apiFrames.value = [];
-      applyScenarioStep();
-    } finally {
-      isLoadingApi.value = false;
-    }
+    applyScenarioStep();
   }
 
   function applyScenarioStep(): void {
@@ -408,143 +263,146 @@ export const useOOPVisualizerStore = defineStore('oopVisualizer', () => {
     const step = scenario.steps[scenarioStepIndex.value];
     if (!step) return;
 
-    activeCodeLine.value = step.codeLineIndex;
-    clearTimers();
-    lastEncapsulationViolation.value = null;
-
-    if (step.actionName === 'RESET') {
-      activeExecutionPointer.value = {
-        callerClass: 'Main',
-        activeObjectAddress: '',
-        activeMethod: '',
-        dispatchStatus: 'IDLE',
-        resolvedClass: undefined,
-      };
-      callStack.value = ['Main()'];
-      selectedMethodCall.value = null;
-      heapObjects.value = [];
-    } else if (step.actionName === 'CLONE_MEMBERS') {
-      // Show class structures but clear heap
-      heapObjects.value = [];
-      callStack.value = ['Main()'];
-      selectedMethodCall.value = null;
-    } else if (step.actionName === 'INSTANTIATE') {
-      const addr = instantiateNewObject(step.actionPayload.className);
-      selectedObjectAddress.value = addr;
-      callStack.value = ['Main()'];
-      activeExecutionPointer.value = {
-        callerClass: 'Main',
-        activeObjectAddress: '',
-        activeMethod: '',
-        dispatchStatus: 'IDLE',
-        resolvedClass: undefined,
-      };
-      selectedMethodCall.value = null;
-    } else if (step.actionName === 'CALL_METHOD') {
-      const addr = selectedObjectAddress.value;
-      const methodName = step.actionPayload.methodName;
-      if (!addr) return;
-
-      const obj = heapObjects.value.find((o) => o.address === addr);
-      if (!obj) return;
-
-      selectedMethodCall.value = `${obj.className}.${methodName}`;
-
-      if (step.actionPayload.state === 'seeking') {
-        activeExecutionPointer.value = {
-          callerClass: 'Main',
-          activeObjectAddress: addr,
-          activeMethod: methodName,
-          dispatchStatus: 'SEEKING_VTABLE',
-          resolvedClass: undefined,
-        };
-        callStack.value = ['Main()'];
-      } else if (step.actionPayload.state === 'resolved') {
-        const targetClass = step.actionPayload.targetClass || obj.className;
-        activeExecutionPointer.value = {
-          callerClass: 'Main',
-          activeObjectAddress: addr,
-          activeMethod: methodName,
-          dispatchStatus: 'DISPATCHED',
-          resolvedClass: targetClass,
-        };
-        callStack.value = ['Main()', `${targetClass}.${methodName}()`];
+    activeCodeLines.value = [];
+    if (step.codeLineRange) {
+      for (let i = step.codeLineRange[0]; i <= step.codeLineRange[1]; i++) {
+        activeCodeLines.value.push(i);
       }
-    } else if (step.actionName === 'VIOLATE_ACCESS') {
-      const className = step.actionPayload.className;
-      const memberName = step.actionPayload.memberName;
-      tryAccessProperty(className, memberName, 'Main');
-    } else if (step.actionName === 'VALIDATE_SETTER') {
-      // Modify value on Heap
-      const addr = selectedObjectAddress.value;
-      const memberName = step.actionPayload.memberName;
-      const value = step.actionPayload.value;
-
-      if (addr) {
-        const obj = heapObjects.value.find((o) => o.address === addr);
-        if (obj) {
-          obj.fieldsData.set(memberName, value);
-        }
-      }
-      activeExecutionPointer.value = {
-        callerClass: 'Main',
-        activeObjectAddress: addr || '',
-        activeMethod: 'setRadius',
-        dispatchStatus: 'DISPATCHED',
-        resolvedClass: 'Circle',
-      };
-      callStack.value = ['Main()'];
-    } else if (step.actionName === 'SHOW_ABSTRACT_ERROR') {
-      lastEncapsulationViolation.value = {
-        targetClass: 'Shape',
-        memberName: 'Shape',
-        callerClass: 'Main',
-        errorMessage: 'ABSTRACT_CLASS_ERROR: Không thể khởi tạo đối tượng từ lớp trừu tượng (abstract class) Shape.',
-        timestamp: Date.now(),
-      };
-      activeExecutionPointer.value = {
-        callerClass: 'Main',
-        activeObjectAddress: '',
-        activeMethod: '',
-        dispatchStatus: 'ACCESS_VIOLATED',
-        resolvedClass: undefined,
-      };
-      callStack.value = ['Main()'];
     }
+
+    // Clear previous animation state
+    clearAnimationTimer();
+    lastViolation.value = null;
+
+    // Apply animation
+    currentAnimation.value = step.animation;
+    currentAnimationTarget.value = step.animationTarget;
+
+    // Handle special animation actions
+    if (step.animation === 'create-object' && step.animationTarget.className) {
+      // Add object to created objects list (for visual)
+      const alreadyExists = createdObjects.value.some(
+        (o) => o.className === step.animationTarget.className
+      );
+      if (!alreadyExists) {
+        createdObjects.value.push({
+          className: step.animationTarget.className!,
+          id: ++objectIdCounter,
+        });
+      }
+    }
+
+    if (step.animation === 'access-denied' && step.animationTarget.className) {
+      lastViolation.value = {
+        className: step.animationTarget.className,
+        memberName: step.animationTarget.memberName ?? '',
+        message: `❌ Truy cập bị từ chối! Trường "${step.animationTarget.memberName}" là PRIVATE.`,
+      };
+    }
+
+    if (step.animation === 'abstract-error' && step.animationTarget.className) {
+      lastViolation.value = {
+        className: step.animationTarget.className,
+        memberName: '',
+        message: `❌ Không thể khởi tạo! "${step.animationTarget.className}" là lớp abstract.`,
+      };
+    }
+
+    if (step.animation === 'compile-error' && step.animationTarget.className) {
+      lastViolation.value = {
+        className: step.animationTarget.className,
+        memberName: step.animationTarget.memberName ?? '',
+        message: `❌ Lỗi biên dịch! Trình biên dịch C# từ chối vì vi phạm quyền truy cập hoặc lỗi kiểu dữ liệu ở "${step.animationTarget.memberName}".`,
+      };
+    }
+
+    if (step.animation === 'warning' && step.animationTarget.className) {
+      lastViolation.value = {
+        className: step.animationTarget.className,
+        memberName: step.animationTarget.memberName ?? '',
+        message: `⚠️ Cảnh báo! Hành vi che khuất (new) không phải là đa hình thực sự.`,
+      };
+    }
+
+    // Auto-clear animation highlight after duration
+    animationTimerId.value = setTimeout(() => {
+      // Keep the animation visible, just mark it as settled
+    }, 2000);
   }
 
   function nextScenarioStep(): void {
     if (!selectedScenarioId.value) return;
     if (scenarioStepIndex.value >= totalSteps.value - 1) return;
-
     scenarioStepIndex.value++;
-    if (isApiMode.value) {
-      applyApiFrame();
-    } else {
-      applyScenarioStep();
-    }
+    applyScenarioStep();
   }
 
   function prevScenarioStep(): void {
     if (!selectedScenarioId.value || scenarioStepIndex.value <= 0) return;
 
-    scenarioStepIndex.value--;
-    if (isApiMode.value) {
-      applyApiFrame();
-    } else {
-      applyScenarioStep();
+    // Reset created objects when going back
+    const scenario = OOP_SCENARIOS.find((s) => s.id === selectedScenarioId.value);
+    if (scenario) {
+      // Rebuild created objects from step 0 to target step
+      createdObjects.value = [];
+      objectIdCounter = 0;
+      const targetIndex = scenarioStepIndex.value - 1;
+      for (let i = 0; i <= targetIndex; i++) {
+        const s = scenario.steps[i];
+        if (s.animation === 'create-object' && s.animationTarget.className) {
+          const alreadyExists = createdObjects.value.some(
+            (o) => o.className === s.animationTarget.className
+          );
+          if (!alreadyExists) {
+            createdObjects.value.push({
+              className: s.animationTarget.className!,
+              id: ++objectIdCounter,
+            });
+          }
+        }
+      }
     }
+
+    scenarioStepIndex.value--;
+    applyScenarioStep();
   }
 
   function resetScenario(): void {
     if (!selectedScenarioId.value) return;
     pauseAutoplay();
     scenarioStepIndex.value = 0;
-    if (isApiMode.value) {
-      applyApiFrame();
-    } else {
-      applyScenarioStep();
+    createdObjects.value = [];
+    objectIdCounter = 0;
+    applyScenarioStep();
+  }
+
+  function jumpToStep(idx: number): void {
+    if (!selectedScenarioId.value) return;
+    if (idx < 0 || idx >= totalSteps.value) return;
+    
+    // Rebuild object list on backward/forward jump
+    const scenario = OOP_SCENARIOS.find((s) => s.id === selectedScenarioId.value);
+    if (scenario) {
+      createdObjects.value = [];
+      objectIdCounter = 0;
+      for (let i = 0; i <= idx; i++) {
+        const s = scenario.steps[i];
+        if (s.animation === 'create-object' && s.animationTarget.className) {
+          const alreadyExists = createdObjects.value.some(
+            (o) => o.className === s.animationTarget.className
+          );
+          if (!alreadyExists) {
+            createdObjects.value.push({
+              className: s.animationTarget.className!,
+              id: ++objectIdCounter,
+            });
+          }
+        }
+      }
     }
+    
+    scenarioStepIndex.value = idx;
+    applyScenarioStep();
   }
 
   function exitScenario(): void {
@@ -552,104 +410,23 @@ export const useOOPVisualizerStore = defineStore('oopVisualizer', () => {
     isPlayingScenario.value = false;
     selectedScenarioId.value = null;
     scenarioStepIndex.value = 0;
-    activeCodeLine.value = null;
-    isApiMode.value = false;
-    apiFrames.value = [];
-    apiError.value = null;
+    activeCodeLines.value = [];
+    createdObjects.value = [];
+    objectIdCounter = 0;
+    currentAnimation.value = 'none';
+    currentAnimationTarget.value = {};
+    lastViolation.value = null;
     resetAll();
     initializeDemoClasses();
   }
 
-  // ============================================================
-  // API FRAME APPLICATION — maps backend OOPFrame to reactive state
-  // ============================================================
-
-  /** Convert backend HeapObjectSnapshot (plain objects) to frontend HeapObjectInstance (Maps) */
-  function snapshotToInstance(snapshot: HeapObjectSnapshot): HeapObjectInstance {
-    return {
-      address: snapshot.address,
-      className: snapshot.className,
-      fieldsData: new Map(Object.entries(snapshot.fieldsData)),
-      vTable: new Map(Object.entries(snapshot.vTable)),
-    };
-  }
-
-  /** Apply the current API frame's state snapshot to all reactive refs */
-  function applyApiFrame(): void {
-    const frame = apiFrames.value[scenarioStepIndex.value];
-    if (!frame) return;
-
-    // Update code line highlight
-    activeCodeLine.value = frame.codeLineIndex;
-
-    // Apply class definitions from frame
-    registeredClasses.value = frame.classDefinitions.map((c) => ({ ...c }));
-
-    // Apply heap objects — convert plain objects to Maps
-    heapObjects.value = frame.heapObjects.map(snapshotToInstance);
-
-    // Track selected object address from heap
-    if (frame.heapObjects.length > 0) {
-      selectedObjectAddress.value = frame.heapObjects[frame.heapObjects.length - 1].address;
-      selectedClassName.value = frame.heapObjects[frame.heapObjects.length - 1].className;
-    }
-
-    // Apply execution pointer
-    if (frame.executionPointer) {
-      activeExecutionPointer.value = {
-        callerClass: frame.executionPointer.callerClass,
-        activeObjectAddress: frame.executionPointer.activeObjectAddress,
-        activeMethod: frame.executionPointer.activeMethod,
-        dispatchStatus: frame.executionPointer.dispatchStatus,
-        resolvedClass: frame.executionPointer.resolvedClass ?? undefined,
-      };
-      if (frame.executionPointer.resolvedClass && frame.executionPointer.activeMethod) {
-        selectedMethodCall.value = `${frame.executionPointer.resolvedClass}.${frame.executionPointer.activeMethod}`;
-        callStack.value = [
-          `${frame.executionPointer.callerClass}()`,
-          `${frame.executionPointer.resolvedClass}.${frame.executionPointer.activeMethod}()`,
-        ];
-      } else if (frame.executionPointer.activeMethod) {
-        selectedMethodCall.value = frame.executionPointer.activeMethod;
-        callStack.value = [`${frame.executionPointer.callerClass}()`];
-      }
-    } else {
-      activeExecutionPointer.value = {
-        callerClass: 'Main',
-        activeObjectAddress: '',
-        activeMethod: '',
-        dispatchStatus: 'IDLE',
-        resolvedClass: undefined,
-      };
-      selectedMethodCall.value = null;
-      callStack.value = ['Main()'];
-    }
-
-    // Apply encapsulation violation
-    if (frame.violation) {
-      lastEncapsulationViolation.value = {
-        targetClass: frame.violation.targetClass,
-        memberName: frame.violation.memberName,
-        callerClass: frame.violation.callerClass,
-        errorMessage: frame.violation.errorMessage,
-        timestamp: Date.now(),
-      };
-      activeExecutionPointer.value = {
-        ...activeExecutionPointer.value,
-        dispatchStatus: 'ACCESS_VIOLATED',
-      };
-    } else if (!frame.executionPointer || frame.executionPointer.dispatchStatus !== 'ACCESS_VIOLATED') {
-      lastEncapsulationViolation.value = null;
-    }
-  }
-
   // ==========================================
-  // AUTOPLAY LIFECYCLE
+  // AUTOPLAY
   // ==========================================
   function startAutoplay(): void {
     if (isAutoplayRunning.value) return;
     isAutoplayRunning.value = true;
-    const delay = 2500 / playbackSpeed.value;
+    const delay = 3500 / playbackSpeed.value;
     autoplayTimerId.value = setTimeout(runAutoplayStep, delay);
   }
 
@@ -666,7 +443,7 @@ export const useOOPVisualizerStore = defineStore('oopVisualizer', () => {
 
     if (scenarioStepIndex.value < totalSteps.value - 1) {
       nextScenarioStep();
-      const delay = 2500 / playbackSpeed.value;
+      const delay = 3500 / playbackSpeed.value;
       autoplayTimerId.value = setTimeout(runAutoplayStep, delay);
     } else {
       pauseAutoplay();
@@ -679,118 +456,72 @@ export const useOOPVisualizerStore = defineStore('oopVisualizer', () => {
       if (autoplayTimerId.value !== null) {
         clearTimeout(autoplayTimerId.value);
       }
-      const delay = 2500 / playbackSpeed.value;
+      const delay = 3500 / playbackSpeed.value;
       autoplayTimerId.value = setTimeout(runAutoplayStep, delay);
     }
   }
 
+  // ==========================================
+  // CLEANUP
+  // ==========================================
   function resetAll(): void {
-    clearTimers();
+    clearAnimationTimer();
     pauseAutoplay();
-    engine.clearRegistry();
     registeredClasses.value = [];
-    heapObjects.value = [];
-    activeExecutionPointer.value = {
-      callerClass: 'Main',
-      activeObjectAddress: '',
-      activeMethod: '',
-      dispatchStatus: 'IDLE',
-      resolvedClass: undefined,
-    };
-    lastEncapsulationViolation.value = null;
-    selectedClassName.value = 'Circle';
-    selectedObjectAddress.value = null;
-    selectedMethodCall.value = null;
-    callStack.value = ['Main()'];
+    createdObjects.value = [];
+    objectIdCounter = 0;
+    currentAnimation.value = 'none';
+    currentAnimationTarget.value = {};
+    lastViolation.value = null;
+    activeCodeLines.value = [];
   }
 
-  function resetDispatchState(): void {
-    clearTimers();
-    activeExecutionPointer.value = {
-      callerClass: 'Main',
-      activeObjectAddress: '',
-      activeMethod: '',
-      dispatchStatus: 'IDLE',
-      resolvedClass: undefined,
-    };
-    selectedMethodCall.value = null;
-    callStack.value = ['Main()'];
+  function clearAnimationTimer(): void {
+    if (animationTimerId.value !== null) {
+      clearTimeout(animationTimerId.value);
+      animationTimerId.value = null;
+    }
   }
 
   function destroyStore(): void {
-    clearTimers();
+    clearAnimationTimer();
     pauseAutoplay();
-    engine.clearRegistry();
-  }
-
-  function clearTimers(): void {
-    if (dispatchTimerId.value !== null) {
-      clearTimeout(dispatchTimerId.value);
-      dispatchTimerId.value = null;
-    }
-    if (violationTimerId.value !== null) {
-      clearTimeout(violationTimerId.value);
-      violationTimerId.value = null;
-    }
-  }
-
-  function getEngine(): OOPReflectionEngine {
-    return engine;
   }
 
   return {
     // State
     registeredClasses,
-    heapObjects,
-    activeExecutionPointer,
-    lastEncapsulationViolation,
-    selectedClassName,
-    selectedMethodCall,
     activePillar,
-    selectedObjectAddress,
     selectedScenarioId,
     scenarioStepIndex,
-    callStack,
-    activeCodeLine,
     isPlayingScenario,
+    activeCodeLines,
     isAutoplayRunning,
     playbackSpeed,
+    currentAnimation,
+    currentAnimationTarget,
+    createdObjects,
+    lastViolation,
     // Computed
-    heapObjectCount,
-    canAllocate,
-    isDispatching,
-    isViolated,
-    availableClassNames,
-    vTableForSelectedClass,
     totalSteps,
     currentExplanation,
-    currentActionName,
-    // API State
-    isApiMode,
-    apiFrames,
-    isLoadingApi,
-    apiError,
+    currentLessonQuestion,
+    currentScenario,
+    availableClassNames,
+    activeMemoryState,
     // Actions
     initializeDemoClasses,
-    registerClass,
-    instantiateNewObject,
-    removeHeapObject,
-    triggerPolymorphicCall,
-    tryAccessProperty,
-    selectClass,
-    selectObjectAddress,
     setPillar,
     loadScenario,
     nextScenarioStep,
     prevScenarioStep,
     resetScenario,
+    jumpToStep,
     exitScenario,
     startAutoplay,
     pauseAutoplay,
     changePlaybackSpeed,
     resetAll,
-    resetDispatchState,
     destroyStore,
-    getEngine,
   };
 });

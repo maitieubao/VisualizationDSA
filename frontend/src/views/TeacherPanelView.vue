@@ -1,7 +1,8 @@
 <template>
   <div class="teacher-panel">
     <h1 class="panel-title">
-      🎓 Bảng điều khiển Giảng viên
+      <BaseIcon name="academic" class="w-6 h-6 text-accent inline-block mr-2 align-bottom" />
+      Bảng điều khiển Giảng viên
       <span class="panel-title__badge">Giảng viên</span>
     </h1>
 
@@ -27,7 +28,8 @@
             :class="{ 'btn-toggle-form--active': activeFormType === 'manual' }"
             @click="toggleForm('manual')"
           >
-            {{ activeFormType === 'manual' ? '✕ Đóng Form' : '＋ Tạo trắc nghiệm thủ công' }}
+            <span v-if="activeFormType === 'manual'"><BaseIcon name="close" class="w-3.5 h-3.5 inline mr-1 align-text-bottom" /> Đóng Form</span>
+            <span v-else><BaseIcon name="plus" class="w-3.5 h-3.5 inline mr-1 align-text-bottom" /> Tạo trắc nghiệm thủ công</span>
           </button>
           <button 
             type="button" 
@@ -35,7 +37,8 @@
             :class="{ 'btn-toggle-form--active': activeFormType === 'excel' }"
             @click="toggleForm('excel')"
           >
-            {{ activeFormType === 'excel' ? '✕ Đóng Form' : '📥 Nhập từ Excel' }}
+            <span v-if="activeFormType === 'excel'"><BaseIcon name="close" class="w-3.5 h-3.5 inline mr-1 align-text-bottom" /> Đóng Form</span>
+            <span v-else><BaseIcon name="export-share" class="w-3.5 h-3.5 inline mr-1 align-text-bottom" /> Nhập từ Excel</span>
           </button>
         </div>
       </div>
@@ -43,7 +46,8 @@
       <!-- Form Thêm / Chỉnh sửa Quiz thủ công -->
       <form v-if="activeFormType === 'manual'" class="quiz-form mb-8 animate-fade-in" @submit.prevent="submitQuiz">
         <h3 class="form-title-context">
-          {{ isEditMode ? '✏️ Chỉnh sửa bài trắc nghiệm' : '＋ Thêm câu hỏi trắc nghiệm mới' }}
+          <span v-if="isEditMode"><BaseIcon name="edit" class="w-4 h-4 text-accent inline mr-1 align-middle" /> Chỉnh sửa bài trắc nghiệm</span>
+          <span v-else><BaseIcon name="plus" class="w-4 h-4 text-accent inline mr-1 align-middle" /> Thêm câu hỏi trắc nghiệm mới</span>
         </h3>
         <div class="form-row">
           <label class="form-label">Tiêu đề trắc nghiệm</label>
@@ -159,15 +163,15 @@
                       {{ formatDifficulty(q.difficulty) }}
                     </span>
                   </td>
-                  <td class="font-mono text-amber-400 font-bold">💎 +{{ q.xpReward }} XP</td>
+                  <td class="font-mono text-amber-400 font-bold"><BaseIcon name="diamond" class="w-4 h-4 text-amber-400 inline mr-1 align-text-bottom" />+{{ q.xpReward }} XP</td>
                   <td class="font-mono text-slate-300">{{ q.questionCount }} câu</td>
                   <td>
                     <div class="flex justify-center gap-2" @click.stop>
                       <button type="button" class="btn-action btn-action--edit" @click="editQuiz(q.id)" title="Chỉnh sửa">
-                        ✏️ Sửa
+                        <BaseIcon name="edit" class="w-3.5 h-3.5 inline mr-1 align-text-bottom" /> Sửa
                       </button>
                       <button type="button" class="btn-action btn-action--delete" @click="deleteQuiz(q.id)" title="Xóa">
-                        🗑️ Xóa
+                        <BaseIcon name="trash" class="w-3.5 h-3.5 inline mr-1 align-text-bottom" /> Xóa
                       </button>
                     </div>
                   </td>
@@ -181,9 +185,9 @@
                     </div>
                     <div v-else-if="quizDetails[String(q.id)]" class="quiz-detail-panel animate-fade-in">
                       <div class="flex justify-between items-center mb-4">
-                        <h4 class="detail-title text-indigo-400 font-bold m-0">📝 Chỉnh sửa câu hỏi con</h4>
+                        <h4 class="detail-title text-indigo-400 font-bold m-0"><BaseIcon name="quiz" class="w-4 h-4 text-indigo-400 inline mr-1 align-text-bottom" /> Chỉnh sửa câu hỏi con</h4>
                         <button type="button" class="btn-add-inline" @click="addInlineQuestion(String(q.id))">
-                          ＋ Thêm câu hỏi mới
+                          <BaseIcon name="plus" class="w-3.5 h-3.5 inline mr-1 align-text-bottom" /> Thêm câu hỏi mới
                         </button>
                       </div>
 
@@ -195,7 +199,7 @@
                         <div class="flex justify-between items-center mb-3">
                           <span class="sub-q-num text-amber-400 font-bold">Câu hỏi {{ Number(qi) + 1 }}</span>
                           <button type="button" class="btn-remove-inline" @click="removeInlineQuestion(String(q.id), Number(qi))">
-                            ✕ Xóa câu này
+                            <BaseIcon name="close" class="w-3 h-3 inline mr-1 align-text-bottom" /> Xóa câu này
                           </button>
                         </div>
 
@@ -222,7 +226,8 @@
 
                       <div class="flex justify-end gap-2 mt-4">
                         <button type="button" class="btn-save-inline" @click="saveInlineQuiz(String(q.id))" :disabled="savingDetail[String(q.id)]">
-                          {{ savingDetail[String(q.id)] ? 'Đang lưu...' : '💾 Lưu tất cả thay đổi' }}
+                          <span v-if="savingDetail[String(q.id)]">Đang lưu...</span>
+                          <span v-else><BaseIcon name="save" class="w-3.5 h-3.5 inline mr-1 align-text-bottom" /> Lưu tất cả thay đổi</span>
                         </button>
                         <button type="button" class="btn-close-inline" @click="expandedQuizId = null">
                           Đóng
@@ -1061,7 +1066,7 @@ onMounted(() => {
 .font-bold { font-weight: 700; }
 .text-white { color: #fff; }
 .text-center { text-align: center; }
-.font-mono { font-family: monospace; }
+.font-mono { font-family: var(--font-mono); }
 .text-amber-400 { color: #fbbf24; }
 .text-slate-300 { color: #cbd5e1; }
 

@@ -14,20 +14,23 @@
           ? 'bg-accent-red/50 text-accent-red border border-accent-red/40'
           : 'bg-accent-green/50 text-accent-green border border-accent-green/40'"
       >
-        {{ isViolating ? 'DIRECT COUPLING (Ghép nối trực tiếp ❌)' : 'INVERTED (Đảo ngược ✅)' }}
+        {{ isViolating ? 'DIRECT COUPLING (Ghép nối trực tiếp)' : 'INVERTED (Đảo ngược)' }}
       </span>
     </div>
 
     <!-- DIP Explanation Panel -->
     <div class="p-3.5 rounded-xl bg-bg-secondary/40 border border-white/5 backdrop-blur-md text-xs text-text-secondary leading-relaxed">
-      <span class="font-bold text-text-primary">💡 Nguyên lý Đảo ngược Phụ thuộc (DIP):</span> Module cấp cao không nên phụ thuộc trực tiếp vào các module cấp thấp. Cả hai nên phụ thuộc vào sự trừu tượng (Interface).
-      <br><span class="mt-1 block text-[11px] text-text-disabled">👉 Bấm <b>Chèn Interface trừu tượng</b> để ngắt ghép nối trực tiếp giữa OrderService (Module cao) và MySQLDatabase (Module thấp) thông qua IDatabase Interface!</span>
+      <span class="font-bold text-text-primary"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--accent-yellow, #eab308)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:middle;margin-right:4px"><path d="M9 18h6"/><path d="M10 22h4"/><path d="M12 2a7 7 0 0 0-4 12.7V17h8v-2.3A7 7 0 0 0 12 2Z"/></svg>Nguyên lý Đảo ngược Phụ thuộc (DIP):</span> Lớp cấp cao không nên phụ thuộc trực tiếp vào các lớp cụ thể cấp thấp. Cả hai nên phụ thuộc vào sự trừu tượng (Interface).
+      <br><span class="mt-1 block text-[11px] text-text-disabled">Hãy xem cách chèn Interface trừu tượng <b>IEngine</b> để ngắt ghép nối trực tiếp giữa <b>Car</b> (Module cao) và <b>GasolineEngine</b> (Module thấp)!</span>
     </div>
 
     <!-- Neon Flowing Path -->
     <NeonFlowingPath
       :is-violating="isViolating"
       :has-interface="hasInterface"
+      high-level-class="Car"
+      low-level-class="GasolineEngine"
+      interface-name="IEngine"
     />
 
     <!-- Action Buttons -->

@@ -39,3 +39,17 @@ pnpm-debug.log*
 # Gemini
 .gemini/
 antigravity/
+
+# Python
+__pycache__/
+*.pyc
+
+# Word temp files
+~$*
+
+# Docs temp
+all_docs_temp.txt
+
+# Databases
+*.db
+backend/src/WebApi/visualization_dsa.db

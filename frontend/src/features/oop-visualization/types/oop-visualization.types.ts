@@ -25,7 +25,9 @@ export interface ClassMember {
 export interface ClassDefinition {
   className: string;
   parentClass?: string;
+  interfaces?: string[];
   isAbstract?: boolean;
+  isInterface?: boolean;
   members: ClassMember[];
 }
 

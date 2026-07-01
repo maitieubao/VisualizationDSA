@@ -157,7 +157,7 @@ body {
 .terminal-dot--min    { background: var(--color-dot-min); }
 .terminal-dot--max    { background: var(--color-dot-max); }
 
-/* Display font helper — Space Mono cho headings */
+/* Display font helper — JetBrains Mono cho headings */
 .font-display { font-family: var(--font-display); }
 .font-mono    { font-family: var(--font-mono); }
 .font-sans    { font-family: var(--font-sans); }
@@ -196,6 +196,41 @@ body {
   );
   background-size: 24px 24px;
 }
+
+/* =============================================================================
+ * QUIZLET COLOR REMAPPING — Global override cho hardcoded Slate colors cu
+ * Cac component cu dung hardcode #94a3b8, #64748b, #f1f5f9 tren nen den.
+ * Tren nen navy Quizlet, chung can duoc remap sang tong mau phu hop.
+ * =============================================================================
+ * Cach hoat dong: Dinh nghia lai CSS custom props de bat tat ca var() su dung
+ * dung bien ten, va bo sung global class uu tien cao (specificity trick).
+ * ============================================================================= */
+:root {
+  /* Remap Slate 400 (#94a3b8) -> Quizlet secondary text */
+  --slate-400: #939bb4;
+  /* Remap Slate 500 (#64748b) -> Quizlet muted text */
+  --slate-500: #6b7385;
+  /* Remap Slate 200 (#e2e8f0) -> Quizlet off-white */
+  --slate-200: #d9dde8;
+  /* Remap Slate 50 (#f8fafc) / 100 (#f1f5f9) -> heading white */
+  --slate-50:  #ffffff;
+  --slate-100: #d9dde8;
+}
+
+/* Body text default — apply Quizlet off-white tone globally */
+body, #app {
+  color: var(--color-text-primary);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Heading text -- dung var(--color-text-heading) neu co */
+h1, h2, h3, h4, h5, h6 {
+  color: var(--color-text-heading, #ffffff);
+}
+
+/* Accent text helpers (updated) */
+.text-accent   { color: var(--color-accent-primary-text, #7b89f4); }
+.text-heading  { color: var(--color-text-heading, #ffffff); }
 
 /* =============================================================================
  * MONACO EDITOR OVERRIDES

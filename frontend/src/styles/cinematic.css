@@ -51,8 +51,8 @@
 }
 
 @keyframes vcr-glow {
-  from { box-shadow: 0 0 4px rgba(6, 182, 212, 0.2); }
-  to   { box-shadow: 0 0 12px rgba(6, 182, 212, 0.4); }
+  from { box-shadow: 0 0 4px rgba(66, 85, 255, 0.22); }
+  to   { box-shadow: 0 0 16px rgba(66, 85, 255, 0.44); }
 }
 
 /* Staggered list entry animation */

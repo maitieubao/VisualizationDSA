@@ -16,7 +16,10 @@
             <div class="profile-card__avatar" :class="{ 'profile-card__avatar--premium': authStore.isPremium }">
               {{ initials }}
             </div>
-            <span v-if="authStore.isPremium" class="profile-card__premium-badge">👑 PRO</span>
+            <span v-if="authStore.isPremium" class="profile-card__premium-badge">
+              <BaseIcon name="diamond" class="w-3.5 h-3.5 inline-block mr-1 text-inherit" />
+              PRO
+            </span>
           </div>
 
           <div class="profile-card__details">
@@ -48,14 +51,14 @@
           <!-- Quick Statistics -->
           <div class="profile-stats">
             <div class="profile-stat-item">
-              <span class="profile-stat-item__icon">🔥</span>
+              <BaseIcon name="fire" class="profile-stat-item__icon" />
               <div class="profile-stat-item__content">
                 <span class="profile-stat-item__val">{{ authStore.currentUser?.streakDays || 0 }} ngày</span>
                 <span class="profile-stat-item__lbl">Chuỗi học</span>
               </div>
             </div>
             <div class="profile-stat-item">
-              <span class="profile-stat-item__icon">🏅</span>
+              <BaseIcon name="badge" class="profile-stat-item__icon" />
               <div class="profile-stat-item__content">
                 <span class="profile-stat-item__val">{{ badgesList.length }}</span>
                 <span class="profile-stat-item__lbl">Huy hiệu</span>
@@ -66,7 +69,10 @@
 
         <!-- Badges section -->
         <div class="dash-card badges-card">
-          <h3 class="dash-card__title">🏅 Huy hiệu đã nhận ({{ badgesList.length }})</h3>
+          <h3 class="dash-card__title">
+            <BaseIcon name="medal" class="w-4 h-4 text-accent inline-block mr-1 align-text-bottom" />
+            Huy hiệu đã nhận ({{ badgesList.length }})
+          </h3>
           <div v-if="badgesList.length > 0" class="badges-grid-full">
             <div 
               v-for="badge in badgesList" 
@@ -75,7 +81,7 @@
               :style="{ '--badge-color': badge.color }"
             >
               <div class="badge-item-detail__icon" :style="{ backgroundColor: badge.color + '22', color: badge.color }">
-                {{ badge.icon }}
+                <BaseIcon :name="getBadgeIconName(badge.icon)" class="w-6 h-6" />
               </div>
               <div class="badge-item-detail__content">
                 <h4 class="badge-item-detail__name">{{ badge.name }}</h4>
@@ -96,7 +102,10 @@
       <!-- Right side: Profile Form -->
       <div class="profile-view__right">
         <div class="dash-card form-card">
-          <h3 class="dash-card__title">⚙️ Thiết lập tài khoản</h3>
+          <h3 class="dash-card__title">
+            <BaseIcon name="admin" class="w-4 h-4 text-accent inline-block mr-1 align-text-bottom" />
+            Thiết lập tài khoản
+          </h3>
 
           <form @submit.prevent="handleSave" class="profile-form">
             <div class="form-group">
@@ -245,6 +254,20 @@ interface Badge {
   icon: string;
   color: string;
   earnedAt: string;
+}
+
+function getBadgeIconName(emojiIcon: string): string {
+  const map: Record<string, string> = {
+    '🏆': 'dsa-champion',
+    '📊': 'sorting-wizard',
+    '🧬': 'oop-guru',
+    '🏗️': 'solid-master',
+    '🎨': 'pattern-hunter',
+    '💉': 'system-architect',
+    '📝': 'first-steps',
+    '🏅': 'badge'
+  };
+  return map[emojiIcon] || 'badge';
 }
 
 const badgesList = computed<Badge[]>(() => {
@@ -473,7 +496,9 @@ async function handleSave() {
 }
 
 .profile-stat-item__icon {
-  font-size: 1.5rem;
+  width: 1.5rem;
+  height: 1.5rem;
+  color: var(--color-accent-primary);
 }
 
 .profile-stat-item__content {

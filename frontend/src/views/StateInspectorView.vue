@@ -1,19 +1,10 @@
 <template>
-  <section class="flex-1 min-h-0 relative">
-    <StateInspectorWorkspace />
-    <HelpButton />
-  </section>
+  <div class="p-6">
+    <h1 class="text-xl font-bold">Archived Feature</h1>
+    <p class="text-text-muted mt-2">This feature is currently archived and disabled.</p>
+  </div>
 </template>
 
 <script setup lang="ts">
-import { onMounted } from 'vue';
-import { StateInspectorWorkspace } from '../features/state-inspector';
-import HelpButton from '../features/guided-tour/components/HelpButton.vue';
-import { useGuidedTourStore } from '../features/guided-tour/store/useGuidedTourStore';
-
-const tourStore = useGuidedTourStore();
-
-onMounted(() => {
-  tourStore.startPageTour('/state', false);
-});
+// Archived
 </script>

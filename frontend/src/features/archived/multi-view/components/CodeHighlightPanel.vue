@@ -1,7 +1,7 @@
 <template>
   <div class="code-highlight-panel">
     <div class="panel-header">
-      <span class="panel-icon">📝</span>
+      <BaseIcon name="code-ide" class="panel-icon" />
       <span class="panel-title">Code Editor</span>
       <span class="panel-badge" v-if="activeLine > 0">Dòng {{ activeLine }}</span>
     </div>
@@ -71,7 +71,9 @@ const codeLines = [
 }
 
 .panel-icon {
-  font-size: 14px;
+  width: 0.875rem;
+  height: 0.875rem;
+  color: var(--color-accent-primary);
 }
 
 .panel-title {
@@ -94,7 +96,7 @@ const codeLines = [
   flex: 1;
   overflow-y: auto;
   padding: 8px 0;
-  font-family: 'Fira Code', 'Cascadia Code', monospace;
+  font-family: var(--font-mono);
   font-size: 12px;
   line-height: 1.8;
 }

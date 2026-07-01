@@ -20,7 +20,7 @@
 
     <!-- Concept Summary -->
     <div class="isp-quote">
-      💬 <em>"Clients should not be forced to depend on methods they do not use."</em>
+      <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:middle;margin-right:4px"><path d="m3 21 1.9-5.7a8.5 8.5 0 1 1 3.8 3.8z"/></svg><em>"Clients should not be forced to depend on methods they do not use."</em>
     </div>
 
     <!-- Toggle Tabs -->
@@ -32,7 +32,7 @@
           : 'bg-bg-secondary/30 text-text-muted border-border-subtle/40 hover:bg-bg-secondary/50'"
         @click="activeTab = 'violation'"
       >
-        ❌ Vi phạm ISP
+        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:middle;margin-right:3px"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>Vi phạm ISP
       </button>
       <button
         class="flex-1 py-2 rounded-xl text-xs font-bold uppercase tracking-wider transition-all border"
@@ -41,7 +41,7 @@
           : 'bg-bg-secondary/30 text-text-muted border-border-subtle/40 hover:bg-bg-secondary/50'"
         @click="activeTab = 'ok'"
       >
-        ✅ Tuân thủ ISP
+        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:middle;margin-right:3px"><path d="M20 6L9 17l-5-5"/></svg>Tuân thủ ISP
       </button>
     </div>
 
@@ -74,17 +74,17 @@
       <div class="isp-impls-row">
         <div class="impl-box impl-human">
           <div class="impl-header">HumanWorker</div>
-          <div class="impl-method ok">work() ✅</div>
-          <div class="impl-method ok">eat() ✅</div>
-          <div class="impl-method ok">sleep() ✅</div>
-          <div class="impl-method ok">takeBreak() ✅</div>
+          <div class="impl-method ok">work() <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:middle"><path d="M20 6L9 17l-5-5"/></svg></div>
+          <div class="impl-method ok">eat() <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:middle"><path d="M20 6L9 17l-5-5"/></svg></div>
+          <div class="impl-method ok">sleep() <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:middle"><path d="M20 6L9 17l-5-5"/></svg></div>
+          <div class="impl-method ok">takeBreak() <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:middle"><path d="M20 6L9 17l-5-5"/></svg></div>
         </div>
         <div class="impl-box impl-robot">
           <div class="impl-header">RobotWorker</div>
-          <div class="impl-method ok">work() ✅</div>
-          <div class="impl-method bad">eat() ❌ throws!</div>
-          <div class="impl-method bad">sleep() ❌ throws!</div>
-          <div class="impl-method bad">takeBreak() ❌ throws!</div>
+          <div class="impl-method ok">work() <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:middle"><path d="M20 6L9 17l-5-5"/></svg></div>
+          <div class="impl-method bad">eat() <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:middle"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg> throws!</div>
+          <div class="impl-method bad">sleep() <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:middle"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg> throws!</div>
+          <div class="impl-method bad">takeBreak() <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:middle"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg> throws!</div>
         </div>
       </div>
     </div>
@@ -136,14 +136,14 @@
             <span class="isp-badge">IEatable</span>
             <span class="isp-badge">ISleepable</span>
           </div>
-          <div class="impl-method ok">All methods used ✅</div>
+          <div class="impl-method ok">All methods used <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:middle"><path d="M20 6L9 17l-5-5"/></svg></div>
         </div>
         <div class="impl-box impl-robot-ok">
           <div class="impl-header">RobotWorker</div>
           <div class="impl-badge-list">
             <span class="isp-badge">IWorkable only</span>
           </div>
-          <div class="impl-method ok">work() ✅ — no bloat!</div>
+          <div class="impl-method ok">work() <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:middle"><path d="M20 6L9 17l-5-5"/></svg> — no bloat!</div>
         </div>
       </div>
     </div>
@@ -156,15 +156,24 @@
         : 'bg-accent-green/10 text-accent-green border-accent-green/30'"
     >
       {{ activeTab === 'violation'
-        ? '❌ Vi phạm ISP: RobotWorker buộc phải implement eat()/sleep() dù không cần, dẫn đến UnsupportedOperationException.'
-        : '✅ ISP đạt: Mỗi class chỉ implement interfaces phù hợp. Robot không bị ép nhận các hành vi không dùng đến.' }}
+        ? 'Vi phạm ISP: RobotWorker buộc phải implement eat()/sleep() dù không cần, dẫn đến UnsupportedOperationException.'
+        : 'ISP đạt: Mỗi class chỉ implement interfaces phù hợp. Robot không bị ép nhận các hành vi không dùng đến.' }}
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue';
+import { ref, watch } from 'vue';
+
+const props = defineProps<{
+  isOk: boolean;
+}>();
+
 const activeTab = ref<'violation' | 'ok'>('violation');
+
+watch(() => props.isOk, (val) => {
+  activeTab.value = val ? 'ok' : 'violation';
+}, { immediate: true });
 </script>
 
 <style scoped>
@@ -226,11 +235,11 @@ const activeTab = ref<'violation' | 'ok'>('violation');
 .interface-header.fat { background: rgba(239,68,68,0.15); }
 .interface-header.ok-if { background: rgba(16,185,129,0.1); }
 .class-type-badge { font-size: 8px; color: #94a3b8; font-style: italic; }
-.class-name { font-size: 12px; font-weight: 700; color: #e2e8f0; font-family: monospace; }
+.class-name { font-size: 12px; font-weight: 700; color: #e2e8f0; font-family: var(--font-mono); }
 .interface-method {
   padding: 3px 10px;
   font-size: 10px;
-  font-family: monospace;
+  font-family: var(--font-mono);
   border-top: 1px solid rgba(255,255,255,0.04);
 }
 .interface-method.required { color: #06b6d4; }
@@ -253,14 +262,14 @@ const activeTab = ref<'violation' | 'ok'>('violation');
   font-size: 11px;
   font-weight: 700;
   color: #e2e8f0;
-  font-family: monospace;
+  font-family: var(--font-mono);
   background: rgba(255,255,255,0.05);
   text-align: center;
 }
 .impl-method {
   padding: 3px 8px;
   font-size: 10px;
-  font-family: monospace;
+  font-family: var(--font-mono);
   border-top: 1px solid rgba(255,255,255,0.04);
 }
 .impl-method.ok { color: #10b981; }

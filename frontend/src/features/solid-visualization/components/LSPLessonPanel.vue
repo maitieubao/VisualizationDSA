@@ -18,8 +18,8 @@
 
     <!-- LSP Explanation Panel -->
     <div class="p-3.5 rounded-xl bg-bg-secondary/40 border border-white/5 backdrop-blur-md text-xs text-text-secondary leading-relaxed">
-      <span class="font-bold text-text-primary">💡 Nguyên lý Thay thế Liskov:</span> Nếu lớp con <span class="text-accent font-semibold">Ostrich (Đà điểu)</span> kế thừa lớp cha <span class="text-accent font-semibold">Bird (Chim)</span>, thì bất kỳ nơi nào dùng <span class="text-accent">Bird</span> đều phải thay thế được bằng <span class="text-accent">Ostrich</span> mà chương trình không bị lỗi.
-      <br><span class="mt-1 block text-[11px] text-text-disabled">👉 Hãy bấm nút <b>Thay thế Ostrich</b> để xem lỗi vi phạm (đà điểu kế thừa chim nhưng không thể bay), hoặc bấm <b>Thay thế Eagle</b> để xem hành vi hợp lệ!</span>
+      <span class="font-bold text-text-primary"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--accent-yellow, #eab308)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:middle;margin-right:4px"><path d="M9 18h6"/><path d="M10 22h4"/><path d="M12 2a7 7 0 0 0-4 12.7V17h8v-2.3A7 7 0 0 0 12 2Z"/></svg>Nguyên lý Thay thế Liskov:</span> Nếu lớp con <span class="text-accent font-semibold">Ostrich (Đà điểu)</span> kế thừa lớp cha <span class="text-accent font-semibold">Bird (Chim)</span>, thì bất kỳ nơi nào dùng <span class="text-accent">Bird</span> đều phải thay thế được bằng <span class="text-accent">Ostrich</span> mà chương trình không bị lỗi.
+      <br><span class="mt-1 block text-[11px] text-text-disabled">Hãy bấm nút <b>Thay thế Ostrich</b> để xem lỗi vi phạm (đà điểu kế thừa chim nhưng không thể bay), hoặc bấm <b>Thay thế Eagle</b> để xem hành vi hợp lệ!</span>
     </div>
 
     <!-- Laser Fracture Overlay -->
@@ -41,7 +41,7 @@
         :disabled="lspPhase === 'TRANSMITTING'"
         @click="$emit('runViolation')"
       >
-        🦤 Thay thế Ostrich (Vi phạm)
+        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:middle;margin-right:3px"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>Thay thế Ostrich (Vi phạm)
       </button>
       <button
         class="flex-1 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider
@@ -50,7 +50,7 @@
         :disabled="lspPhase === 'TRANSMITTING'"
         @click="$emit('runValid')"
       >
-        🕊️ Thay thế Eagle (Đạt)
+        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:middle;margin-right:3px"><path d="M20 6L9 17l-5-5"/></svg>Thay thế Eagle (Đạt)
       </button>
     </div>
 

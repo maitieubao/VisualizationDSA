@@ -18,6 +18,13 @@
       </span>
     </div>
     <button
+      class="text-xs border border-border-default hover:bg-bg-hover text-text-secondary px-3 py-1.5 rounded-lg font-medium transition-colors"
+      :class="{ 'bg-accent-primary-dim text-accent-primary border-accent-primary': isTheoryOpen }"
+      @click="$emit('toggleTheory')"
+    >
+      📚 Lý thuyết
+    </button>
+    <button
       class="text-xs bg-accent hover:bg-accent-light text-text-primary px-3 py-1.5 rounded-lg font-medium transition-colors"
       :disabled="isExecuting"
       @click="$emit('execute')"
@@ -37,10 +44,12 @@ defineProps<{
     spaceComplexity: string;
   } | null;
   isExecuting: boolean;
+  isTheoryOpen: boolean;
 }>();
 
 defineEmits<{
   (e: 'back'): void;
   (e: 'execute'): void;
+  (e: 'toggleTheory'): void;
 }>();
 </script>

@@ -1,9 +1,10 @@
 <template>
-  <section class="flex-1 min-h-0">
-    <MultiViewWorkspace />
-  </section>
+  <div class="p-6">
+    <h1 class="text-xl font-bold">Archived Feature</h1>
+    <p class="text-text-muted mt-2">This feature is currently archived and disabled.</p>
+  </div>
 </template>
 
 <script setup lang="ts">
-import { MultiViewWorkspace } from '../features/multi-view';
+// Archived
 </script>

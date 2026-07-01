@@ -1,9 +1,10 @@
 <template>
-  <section class="flex-1 min-h-0">
-    <LearningPathWorkspace />
-  </section>
+  <div class="p-6">
+    <h1 class="text-xl font-bold">Archived Feature</h1>
+    <p class="text-text-muted mt-2">This feature is currently archived and disabled.</p>
+  </div>
 </template>
 
 <script setup lang="ts">
-import { LearningPathWorkspace } from '../features/learning-path';
+// Archived
 </script>

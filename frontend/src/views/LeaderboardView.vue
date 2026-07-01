@@ -1,18 +1,10 @@
 <template>
-  <div class="leaderboard-view">
-    <LeaderboardPanel :limit="20" />
+  <div class="p-6">
+    <h1 class="text-xl font-bold">Archived Feature</h1>
+    <p class="text-text-muted mt-2">This feature is currently archived and disabled.</p>
   </div>
 </template>
 
 <script setup lang="ts">
-import LeaderboardPanel from '../features/leaderboard/components/LeaderboardPanel.vue';
+// Archived
 </script>
-
-<style scoped>
-.leaderboard-view {
-  height: 100%;
-  min-height: 0;
-  display: flex;
-  flex-direction: column;
-}
-</style>

@@ -23,6 +23,7 @@ namespace VisualizationDSA.Infrastructure.Data
             await SeedBadgesAsync();
             await SeedLeaderboardUsersAsync();
             await SeedQuizzesAsync();
+            await SeedSemanticGraphAsync();
         }
 
         private async Task SeedBadgesAsync()
@@ -215,6 +216,38 @@ namespace VisualizationDSA.Infrastructure.Data
         {
             var bytes = SHA256.HashData(Encoding.UTF8.GetBytes(password + "visualizationdsa-salt"));
             return Convert.ToHexString(bytes).ToLowerInvariant();
+        }
+
+        private async Task SeedSemanticGraphAsync()
+        {
+            if (_context.SemanticConceptNodes.Any()) return;
+
+            var oop = new SemanticConceptNode("oop.encapsulation", "Encapsulation", "OOP", "Hành vi đóng gói che giấu chi tiết triển khai và bảo vệ dữ liệu bên trong.", new[] { 0.1, 0.2, 0.3 }, 0.9);
+            var inheritance = new SemanticConceptNode("oop.inheritance", "Inheritance", "OOP", "Cho phép các lớp con kế thừa lại cấu trúc và phương thức từ lớp cha.", new[] { 0.15, 0.25, 0.35 }, 0.85);
+            var polymorphism = new SemanticConceptNode("oop.polymorphism", "Polymorphism", "OOP", "Đa hình cho phép đối tượng thực hiện các hành vi khác nhau dựa trên kiểu runtime của nó.", new[] { 0.2, 0.3, 0.4 }, 0.8);
+            
+            var srp = new SemanticConceptNode("solid.srp", "Single Responsibility", "SOLID", "Nguyên lý đơn trách nhiệm: Mỗi lớp chỉ nên đảm nhận duy nhất một lý do để thay đổi.", new[] { 0.3, 0.4, 0.5 }, 0.95);
+            var ocp = new SemanticConceptNode("solid.ocp", "Open/Closed", "SOLID", "Nguyên lý đóng mở: Lớp nên mở rộng cho việc kế thừa kế tiếp nhưng đóng cho việc sửa trực tiếp.", new[] { 0.35, 0.45, 0.55 }, 0.9);
+            var dip = new SemanticConceptNode("solid.dip", "Dependency Inversion", "SOLID", "Nguyên lý đảo ngược phụ thuộc: Các module cấp cao không nên phụ thuộc trực tiếp module cấp thấp.", new[] { 0.4, 0.5, 0.6 }, 0.85);
+
+            var array = new SemanticConceptNode("dsa.array", "Array", "DSA", "Mảng là cấu trúc dữ liệu lưu trữ tuyến tính các phần tử cùng kiểu liên tiếp.", new[] { 0.5, 0.6, 0.7 }, 0.75);
+            var bst = new SemanticConceptNode("dsa.bst", "Binary Search Tree", "DSA", "Cây tìm kiếm nhị phân sắp xếp các đỉnh sao cho nhánh trái nhỏ hơn và nhánh phải lớn hơn đỉnh gốc.", new[] { 0.6, 0.7, 0.8 }, 0.8);
+
+            await _context.SemanticConceptNodes.AddRangeAsync(oop, inheritance, polymorphism, srp, ocp, dip, array, bst);
+            await _context.SaveChangesAsync();
+
+            // Seed Edges
+            var edges = new List<KnowledgeEdge>
+            {
+                new KnowledgeEdge(inheritance.Id, oop.Id, "DependsOn", 1.2),
+                new KnowledgeEdge(polymorphism.Id, inheritance.Id, "DependsOn", 1.5),
+                new KnowledgeEdge(ocp.Id, polymorphism.Id, "DependsOn", 1.3),
+                new KnowledgeEdge(dip.Id, oop.Id, "DependsOn", 1.4),
+                new KnowledgeEdge(bst.Id, array.Id, "DependsOn", 1.1)
+            };
+
+            await _context.KnowledgeEdges.AddRangeAsync(edges);
+            await _context.SaveChangesAsync();
         }
     }
 }
