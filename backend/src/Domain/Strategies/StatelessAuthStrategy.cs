@@ -316,11 +316,53 @@ namespace VisualizationDSA.Domain.Strategies
             _refreshTokens[token] = userId;
         }
 
+        public void AddUser(string id, string email, string username, string passwordHash, string role, bool isPremium)
+        {
+            var user = new InMemoryUser
+            {
+                Id = id,
+                Email = email,
+                Username = username,
+                PasswordHash = passwordHash,
+                Role = role,
+                IsPremium = isPremium,
+                CreatedAt = DateTime.UtcNow,
+                LastLoginAt = DateTime.UtcNow,
+                Badges = new List<InMemoryBadge>()
+            };
+            _usersById[id] = user;
+            _usersByEmail[email] = user;
+        }
+
+        public void RemoveUser(string id)
+        {
+            if (_usersById.TryRemove(id, out var user))
+            {
+                _usersByEmail.TryRemove(user.Email, out _);
+            }
+        }
+
         public void SetUserPremium(string userId, bool isPremium)
         {
             if (_usersById.TryGetValue(userId, out var user))
             {
                 user.IsPremium = isPremium;
+            }
+        }
+
+        public void UpdateUserRole(string userId, string newRole)
+        {
+            if (_usersById.TryGetValue(userId, out var user))
+            {
+                user.Role = newRole;
+            }
+        }
+
+        public void UpdateUserPassword(string userId, string newPasswordHash)
+        {
+            if (_usersById.TryGetValue(userId, out var user))
+            {
+                user.PasswordHash = newPasswordHash;
             }
         }
 

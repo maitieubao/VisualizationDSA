@@ -41,6 +41,9 @@ export const routes: RouteRecordRaw[] = [
   // { path: '/state',         name: 'state',         component: () => import('../views/StateInspectorView.vue'),   meta: { title: 'State Inspector', icon: 'state' } },
   // { path: '/timeline',      name: 'timeline',      component: () => import('../views/TimelinePlaybackView.vue'), meta: { title: 'Timeline',        icon: 'timeline' } },
   { path: '/profile',       name: 'profile',       component: () => import('../views/ProfileView.vue'),          meta: { title: 'Hồ sơ cá nhân',   requiresAuth: true } },
+  { path: '/courses',       name: 'courses',       component: () => import('../views/CoursesListView.vue'),      meta: { title: 'Khóa học',        icon: 'learning-path', public: true } },
+  { path: '/courses/:id',   name: 'course-detail', component: () => import('../views/CourseDetailView.vue'),    meta: { title: 'Chi tiết Khóa học', requiresAuth: true } },
+  { path: '/lessons/:id',   name: 'lesson-study',  component: () => import('../views/LessonStudyView.vue'),     meta: { title: 'Học Bài giảng',    requiresAuth: true } },
 
   // ── Admin Panel ───────────────────────────────────────────────────────
   { path: '/admin',         name: 'admin',         component: () => import('../views/AdminPanelView.vue'),       meta: { title: 'Quản trị Admin',  requiresAuth: true, requiresRole: 'Admin' } },

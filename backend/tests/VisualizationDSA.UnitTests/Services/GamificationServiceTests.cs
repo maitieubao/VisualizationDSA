@@ -86,7 +86,7 @@ namespace VisualizationDSA.UnitTests.Services
             
             _mockUow.Setup(u => u.Badges).Returns(mockBadgeRepo.Object);
             mockBadgeRepo.Setup(r => r.GetAllAsync()).ReturnsAsync(badgeList);
-            _mockUserRepo.Setup(r => r.GetByIdWithDetailsAsync(userId)).ReturnsAsync(user);
+            _mockUserRepo.Setup(r => r.GetByIdWithDetailsAsync(userId, It.IsAny<bool>())).ReturnsAsync(user);
 
             // Act
             var awardedBadges = await _service.CheckAndAwardBadgesAsync(userId);

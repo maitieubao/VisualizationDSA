@@ -31,7 +31,7 @@ def build_phan4(doc: Document) -> None:
         ('Frontend', 'Pinia', '2.x', 'State Management: vcrStore, userStore, algorithmStore'),
         ('Frontend', 'HTML5 Canvas 2D', 'Native', 'Vẽ đồ họa animation 60 FPS với kỹ thuật Double Buffering'),
         ('Frontend', 'TailwindCSS + SCSS', '3.x', 'Styling nhanh, responsive, hỗ trợ Dark/Light mode và Glassmorphism'),
-        ('Backend', 'ASP.NET Core Web API', '.NET 10 / C#', 'Framework API RESTful hiệu năng cao, Clean Architecture, DI Container tích hợp'),
+        ('Backend', 'ASP.NET Core Web API', '.NET 9 / C#', 'Framework API RESTful hiệu năng cao, Clean Architecture, DI Container tích hợp'),
         ('Backend', 'Entity Framework Core', '9.x', 'ORM ánh xạ Domain Entities sang PostgreSQL, quản lý Migration tự động'),
         ('Backend', 'JWT (JSON Web Token)', 'Bearer', 'Xác thực stateless, bảo mật phiên làm việc, hỗ trợ phân quyền RBAC'),
         ('Backend', 'Serilog', '3.x', 'Structured logging với nhiều sink (Console, File, Seq)'),
@@ -89,11 +89,12 @@ def build_phan4(doc: Document) -> None:
 
     add_heading3(doc, '4.2.2. Nguyên tắc thiết kế giao diện')
     design_principles = [
-        'Glassmorphism Dark Theme: Nền tối Slate #0f172a, các Card và Panel dùng hiệu ứng kính mờ (backdrop-filter: blur), viền trong suốt 8% trắng.',
-        'Bảng màu Neon HSL chuẩn hóa: Cyan (#06b6d4) cho trạng thái đang chạy, Emerald (#10b981) cho đúng/thành công, Amber (#f59e0b) cho cảnh báo, Crimson (#ef4444) cho lỗi.',
+        'Glassmorphism Dark/Light Theme: Nền tối Slate #0f172a / Nền sáng, các Card và Panel dùng hiệu ứng kính mờ (backdrop-filter: blur), viền trong suốt 8% trắng. Hỗ trợ chuyển đổi theme toàn bộ hệ thống.',
+        'Bảng màu HSL Neon chuẩn hóa: Cyan (#06b6d4) cho trạng thái đang chạy, Emerald (#10b981) cho đúng/thành công, Amber (#f59e0b) cho cảnh báo, Crimson (#ef4444) cho lỗi. Đặt biệt, hiển thị banner ghim màu đỏ nổi bật ở đầu trang khi Admin đang đóng vai người dùng khác.',
         'Typography: Font Inter/Arial cho văn bản, Font Courier New cho code và pseudocode. Kích thước tối thiểu 14px.',
-        'Micro-interactions: Hover effect có transition 200ms, button click có ripple effect, card load có fade-in animation.',
-        'Responsive Layout: Hỗ trợ đầy đủ màn hình 1920px, 1440px, 1280px. Sidebar co gọn trên màn hình nhỏ hơn 768px.',
+        'Micro-interactions & Confetti: Hover effect có transition 200ms, button click có ripple effect, card load có fade-in animation, pháo hoa canvas chúc mừng khi làm quiz đạt điểm tuyệt đối hoặc nâng cấp Premium thành công.',
+        'Responsive Mobile Layout: Hỗ trợ linh hoạt các màn hình 1920px, 1440px, 1280px. Trên thiết bị di động (screen < 768px), giao diện tự động chuyển từ chia đôi màn hình (Split screen) sang giao diện Tabs (Lý thuyết / Trực quan) hoặc cuộn dọc Stacked Layout co giãn.',
+        'Keyboard Accessibility: Điều khiển VCR Playback dễ dàng bằng phím tắt (Space để play/pause, phím mũi tên Trái/Phải để step backward/forward, Esc để thoát chế độ fullscreen).',
     ]
     for principle in design_principles:
         add_bullet(doc, principle)
@@ -316,7 +317,7 @@ erDiagram
 
     add_heading3(doc, '4.4.1. Sơ đồ lớp – Kiến trúc Clean Architecture')
     add_image(doc, os.path.join(os.path.dirname(os.path.abspath(__file__)), 'images', 'class_clean_arch.png'),
-              'Hình 4.6: Sơ đồ lớp – Kiến trúc Clean Architecture (.NET 10)', width_cm=14.0)
+              'Hình 4.6: Sơ đồ lớp – Kiến trúc Clean Architecture (.NET 9)', width_cm=14.0)
 
     plantuml_arch = """\
 @startuml ClassDiagram_CleanArch

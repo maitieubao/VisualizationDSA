@@ -36,6 +36,7 @@ namespace VisualizationDSA.Domain.Entities
         public virtual ICollection<UserBadge>         UserBadges         { get; private set; }
         public virtual ICollection<QuizAttempt>       QuizAttempts       { get; private set; }
         public virtual ICollection<LearningProgress>  LearningProgresses { get; private set; }
+        public virtual ICollection<UserLessonProgress> UserLessonProgresses { get; private set; }
 
         private User() { } // EF Core protected constructor
 
@@ -56,6 +57,7 @@ namespace VisualizationDSA.Domain.Entities
             UserBadges         = new List<UserBadge>();
             QuizAttempts       = new List<QuizAttempt>();
             LearningProgresses = new List<LearningProgress>();
+            UserLessonProgresses = new List<UserLessonProgress>();
         }
 
         public void AwardXP(int amount)
@@ -105,6 +107,12 @@ namespace VisualizationDSA.Domain.Entities
         public void SetActiveStatus(bool isActive)
         {
             IsActive = isActive;
+        }
+
+        public void ChangePassword(string newPasswordHash)
+        {
+            if (!string.IsNullOrWhiteSpace(newPasswordHash))
+                PasswordHash = newPasswordHash;
         }
 
         // ── Private ───────────────────────────────────────────────────────────

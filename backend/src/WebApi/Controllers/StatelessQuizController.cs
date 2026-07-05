@@ -8,6 +8,7 @@ using VisualizationDSA.Domain.Engine;
 using VisualizationDSA.Domain.Entities;
 using VisualizationDSA.Domain.Strategies;
 using VisualizationDSA.Infrastructure.Data;
+using VisualizationDSA.WebApi.Filters;
 
 namespace VisualizationDSA.WebApi.Controllers
 {
@@ -83,37 +84,100 @@ namespace VisualizationDSA.WebApi.Controllers
         /// POST /api/v1/concepts/quiz/submit
         /// </summary>
         [HttpPost("submit")]
+        [RequireJwtRole]  // ✅ PB-705: Yêu cầu token hợp lệ (bất kỳ role)
         public async Task<IActionResult> SubmitAttempt([FromBody] StatelessQuizAttemptRequest request)
         {
-            var authCheck = RequireToken();
-            if (authCheck != null) return authCheck;
-
             try
             {
                 var result = _quizBank.EvaluateAttempt(request);
 
                 // ✅ Persist quiz attempt vào DB — không dùng RAM-only nữa
                 var quiz = await _dbContext.Quizzes
-                    .AsNoTracking()
                     .FirstOrDefaultAsync(q => q.Title == request.QuizId || q.Id.ToString() == request.QuizId);
                 if (quiz != null)
                 {
-                    // Tìm user theo email từ auth header (nếu có)
-                    var authHeader = Request.Headers["Authorization"].FirstOrDefault();
-                    var userId = ExtractSubFromToken(authHeader);
-                    var user = userId != null
-                        ? await _dbContext.Users.FirstOrDefaultAsync(u => u.Id.ToString() == userId)
+                    var userIdStr = JwtHelper.ExtractSubFromToken(Request);
+                    var user = userIdStr != null
+                        ? await _dbContext.Users.FirstOrDefaultAsync(u => u.Id.ToString() == userIdStr)
                         : null;
 
                     if (user != null)
                     {
-                        // Award XP nếu pass
-                        if (result.Passed && result.XpAwarded > 0)
+                        // Tạo và lưu QuizAttempt
+                        var attempt = new QuizAttempt(
+                            user.Id,
+                            quiz.Id,
+                            request.Answers.ToArray(),
+                            result.Score,
+                            result.MaxScore
+                        );
+                        _dbContext.QuizAttempts.Add(attempt);
+
+                        // Award XP if passed with upgrade criteria:
+                        // - First time passing: award full XP.
+                        // - Subsequent passes: award XP only if the score is higher than all previous passes
+                        //   and improvements is >= 20% or reaches 100% score for the first time.
+                        // - Capped at 2 XP awards total per quiz.
+                        int xpEarned = 0;
+                        if (result.Passed)
                         {
-                            user.AwardXP(result.XpAwarded);
-                            user.RecordActivity();
-                            await _dbContext.SaveChangesAsync();
+                            var previousAttempts = await _dbContext.QuizAttempts
+                                .Where(a => a.UserId == user.Id && a.QuizId == quiz.Id)
+                                .ToListAsync();
+
+                            var chronologicalPasses = previousAttempts
+                                .Where(a => a.Passed && a.Id != attempt.Id) // exclude current attempt
+                                .OrderBy(a => a.AttemptedAt)
+                                .ToList();
+
+                            if (chronologicalPasses.Count == 0)
+                            {
+                                // First time passing
+                                xpEarned = quiz.XPReward;
+                            }
+                            else
+                            {
+                                int runningMax = chronologicalPasses[0].Score;
+                                bool hasEarnedSecondReward = false;
+                                for (int i = 1; i < chronologicalPasses.Count; i++)
+                                {
+                                    var p = chronologicalPasses[i];
+                                    bool isImprovement = p.Score > runningMax;
+                                    bool meetsUpgrade = (p.Score - runningMax) / (double)result.MaxScore >= 0.20 || (p.Score == result.MaxScore && runningMax < result.MaxScore);
+                                    if (isImprovement && meetsUpgrade)
+                                    {
+                                        hasEarnedSecondReward = true;
+                                        break;
+                                    }
+                                    if (p.Score > runningMax)
+                                    {
+                                        runningMax = p.Score;
+                                    }
+                                }
+
+                                if (!hasEarnedSecondReward)
+                                {
+                                    int overallMaxPrevScore = chronologicalPasses.Max(a => a.Score);
+                                    bool isCurrentImprovement = result.Score > overallMaxPrevScore;
+                                    bool currentMeetsUpgrade = (result.Score - overallMaxPrevScore) / (double)result.MaxScore >= 0.20 || (result.Score == result.MaxScore && overallMaxPrevScore < result.MaxScore);
+                                    if (isCurrentImprovement && currentMeetsUpgrade)
+                                    {
+                                        xpEarned = quiz.XPReward;
+                                    }
+                                }
+                            }
                         }
+
+                        // Override the result XpAwarded
+                        result.XpAwarded = xpEarned;
+
+                        if (xpEarned > 0)
+                        {
+                            user.AwardXP(xpEarned);
+                            user.RecordActivity();
+                        }
+
+                        await _dbContext.SaveChangesAsync();
                     }
                 }
 
@@ -135,16 +199,38 @@ namespace VisualizationDSA.WebApi.Controllers
         /// POST /api/v1/concepts/quiz/manage
         /// </summary>
         [HttpPost("manage")]
+        [RequireJwtRole("Teacher,Admin")]  // ✅ PB-705: Centralized guard
         public async Task<IActionResult> ManageQuiz([FromBody] StatelessQuizDto quiz)
         {
-            var authCheck = RequireToken();
-            if (authCheck != null) return authCheck;
 
-            if (!IsTeacherOrAdmin())
-                return StatusCode(403, new { error = "FORBIDDEN", message = "Chỉ Giảng viên hoặc Admin mới được thêm quiz." });
+            if (quiz == null)
+                return BadRequest(new { error = "INVALID_QUIZ", message = "Dữ liệu quiz trống." });
 
-            if (string.IsNullOrWhiteSpace(quiz.Title) || quiz.Questions.Count == 0)
-                return BadRequest(new { error = "INVALID_QUIZ", message = "Quiz phải có tiêu đề và ít nhất 1 câu hỏi." });
+            if (string.IsNullOrWhiteSpace(quiz.Title))
+                return BadRequest(new { error = "INVALID_QUIZ", message = "Quiz phải có tiêu đề." });
+
+            if (quiz.Title.Length > 200)
+                return BadRequest(new { error = "INVALID_QUIZ", message = "Tiêu đề quiz không được vượt quá 200 ký tự." });
+
+            if (quiz.Questions == null || quiz.Questions.Count == 0)
+                return BadRequest(new { error = "INVALID_QUIZ", message = "Quiz phải có ít nhất 1 câu hỏi." });
+
+            if (quiz.Questions.Count > 100)
+                return BadRequest(new { error = "INVALID_QUIZ", message = "Số lượng câu hỏi trong một bài quiz tối đa là 100." });
+
+            // Validate each question
+            for (int i = 0; i < quiz.Questions.Count; i++)
+            {
+                var q = quiz.Questions[i];
+                if (string.IsNullOrWhiteSpace(q.Text))
+                    return BadRequest(new { error = "INVALID_QUIZ", message = $"Câu hỏi thứ {i + 1} không được để trống nội dung." });
+                if (q.Text.Length > 1000)
+                    return BadRequest(new { error = "INVALID_QUIZ", message = $"Nội dung câu hỏi thứ {i + 1} không được dài quá 1000 ký tự." });
+                if (q.Options == null || q.Options.Count < 2 || q.Options.Count > 10)
+                    return BadRequest(new { error = "INVALID_QUIZ", message = $"Câu hỏi thứ {i + 1} phải có từ 2 đến 10 đáp án lựa chọn." });
+                if (q.CorrectIndex < 0 || q.CorrectIndex >= q.Options.Count)
+                    return BadRequest(new { error = "INVALID_QUIZ", message = $"Đáp án đúng của câu hỏi thứ {i + 1} không hợp lệ." });
+            }
 
             // Chuẩn hóa văn bản chống trùng
             quiz.Title = NormalizeText(quiz.Title);
@@ -183,16 +269,38 @@ namespace VisualizationDSA.WebApi.Controllers
         /// PUT /api/v1/concepts/quiz/manage/{quizId}
         /// </summary>
         [HttpPut("manage/{quizId}")]
+        [RequireJwtRole("Teacher,Admin")]  // ✅ PB-705: Centralized guard
         public async Task<IActionResult> UpdateQuiz(string quizId, [FromBody] StatelessQuizDto quiz)
         {
-            var authCheck = RequireToken();
-            if (authCheck != null) return authCheck;
 
-            if (!IsTeacherOrAdmin())
-                return StatusCode(403, new { error = "FORBIDDEN", message = "Chỉ Giảng viên hoặc Admin mới được chỉnh sửa quiz." });
+            if (quiz == null)
+                return BadRequest(new { error = "INVALID_QUIZ", message = "Dữ liệu quiz trống." });
 
-            if (string.IsNullOrWhiteSpace(quiz.Title) || quiz.Questions.Count == 0)
-                return BadRequest(new { error = "INVALID_QUIZ", message = "Quiz phải có tiêu đề và ít nhất 1 câu hỏi." });
+            if (string.IsNullOrWhiteSpace(quiz.Title))
+                return BadRequest(new { error = "INVALID_QUIZ", message = "Quiz phải có tiêu đề." });
+
+            if (quiz.Title.Length > 200)
+                return BadRequest(new { error = "INVALID_QUIZ", message = "Tiêu đề quiz không được vượt quá 200 ký tự." });
+
+            if (quiz.Questions == null || quiz.Questions.Count == 0)
+                return BadRequest(new { error = "INVALID_QUIZ", message = "Quiz phải có ít nhất 1 câu hỏi." });
+
+            if (quiz.Questions.Count > 100)
+                return BadRequest(new { error = "INVALID_QUIZ", message = "Số lượng câu hỏi trong một bài quiz tối đa là 100." });
+
+            // Validate each question
+            for (int i = 0; i < quiz.Questions.Count; i++)
+            {
+                var q = quiz.Questions[i];
+                if (string.IsNullOrWhiteSpace(q.Text))
+                    return BadRequest(new { error = "INVALID_QUIZ", message = $"Câu hỏi thứ {i + 1} không được để trống nội dung." });
+                if (q.Text.Length > 1000)
+                    return BadRequest(new { error = "INVALID_QUIZ", message = $"Nội dung câu hỏi thứ {i + 1} không được dài quá 1000 ký tự." });
+                if (q.Options == null || q.Options.Count < 2 || q.Options.Count > 10)
+                    return BadRequest(new { error = "INVALID_QUIZ", message = $"Câu hỏi thứ {i + 1} phải có từ 2 đến 10 đáp án lựa chọn." });
+                if (q.CorrectIndex < 0 || q.CorrectIndex >= q.Options.Count)
+                    return BadRequest(new { error = "INVALID_QUIZ", message = $"Đáp án đúng của câu hỏi thứ {i + 1} không hợp lệ." });
+            }
 
             // Chuẩn hóa văn bản chống trùng
             quiz.Title = NormalizeText(quiz.Title);
@@ -242,13 +350,9 @@ namespace VisualizationDSA.WebApi.Controllers
         /// DELETE /api/v1/concepts/quiz/manage/{quizId}
         /// </summary>
         [HttpDelete("manage/{quizId}")]
+        [RequireJwtRole("Teacher,Admin")]  // ✅ PB-705: Centralized guard
         public async Task<IActionResult> DeleteQuiz(string quizId)
         {
-            var authCheck = RequireToken();
-            if (authCheck != null) return authCheck;
-
-            if (!IsTeacherOrAdmin())
-                return StatusCode(403, new { error = "FORBIDDEN", message = "Chỉ Giảng viên hoặc Admin mới được xóa quiz." });
 
             // Delete in-memory
             var deletedInMemory = _quizBank.DeleteQuiz(quizId);
@@ -269,27 +373,64 @@ namespace VisualizationDSA.WebApi.Controllers
         }
 
         /// <summary>
-        /// Teacher analytics: thống kê tổng quan hoạt động quiz từ DB.
+        /// Teacher analytics: thống kê tổng quan hoạt động quiz từ DB (PostgreSQL).
+        /// ✅ PB-306: Chuyển hoàn toàn từ in-memory sang DB aggregate queries.
         /// GET /api/v1/concepts/quiz/analytics
         /// </summary>
         [HttpGet("analytics")]
+        [RequireJwtRole("Teacher,Admin")]  // ✅ PB-705: Centralized guard
         public async Task<IActionResult> GetAnalytics()
         {
-            var authCheck = RequireToken();
-            if (authCheck != null) return authCheck;
+            // ── Tất cả dữ liệu analytics giờ đều lấy từ PostgreSQL ──
 
-            if (!IsTeacherOrAdmin())
-                return StatusCode(403, new { error = "FORBIDDEN", message = "Chỉ Giảng viên hoặc Admin mới xem analytics." });
+            // 1. Tổng quiz và câu hỏi trong DB
+            var totalQuizzes         = await _dbContext.Quizzes.CountAsync();
+            var totalQuestionsInBank = await _dbContext.QuizQuestions.CountAsync();
 
-            var totalQuizzes          = _quizBank.GetAllQuizzes().Count;
-            var totalQuestionsInBank  = _quizBank.GetAllQuizzes().Sum(q => q.Questions.Count);
-            var topicBreakdown        = _quizBank.GetTopics().Select(t => new
-            {
-                topic     = t,
-                quizCount = _quizBank.GetQuizzesByTopic(t).Count
-            });
+            // 2. Phân bổ theo chủ đề (GROUP BY topic)
+            var topicBreakdown = await _dbContext.Quizzes
+                .GroupBy(q => q.Topic)
+                .Select(g => new
+                {
+                    topic     = g.Key,
+                    quizCount = g.Count()
+                })
+                .OrderByDescending(t => t.quizCount)
+                .ToListAsync();
 
-            // Lấy số lượt từ DB thực (không phải RAM)
+            // 3. Tổng quan quiz attempts từ DB
+            var totalAttempts = await _dbContext.QuizAttempts.CountAsync();
+            var totalPassed   = await _dbContext.QuizAttempts.CountAsync(a => a.Passed);
+            var passRate      = totalAttempts > 0
+                ? Math.Round((double)totalPassed / totalAttempts * 100, 1)
+                : 0.0;
+            var averageScore  = totalAttempts > 0
+                ? Math.Round(await _dbContext.QuizAttempts.AverageAsync(a => (double)a.Score / a.MaxScore * 100), 1)
+                : 0.0;
+
+            // 4. Thống kê chi tiết per quiz (JOIN QuizAttempts)
+            var perQuizStats = await _dbContext.Quizzes
+                .Select(q => new
+                {
+                    quizId        = q.Id.ToString(),
+                    title         = q.Title,
+                    topic         = q.Topic,
+                    difficulty    = q.Difficulty == 1 ? "easy" : q.Difficulty == 5 ? "hard" : "medium",
+                    questionCount = q.Questions.Count,
+                    xpReward      = q.XPReward,
+                    totalAttempts = q.Attempts.Count,
+                    passedCount   = q.Attempts.Count(a => a.Passed),
+                    avgScore      = q.Attempts.Count > 0
+                        ? Math.Round(q.Attempts.Average(a => (double)a.Score / a.MaxScore * 100), 1)
+                        : 0.0,
+                    passRatePercent = q.Attempts.Count > 0
+                        ? Math.Round((double)q.Attempts.Count(a => a.Passed) / q.Attempts.Count * 100, 1)
+                        : 0.0
+                })
+                .OrderByDescending(q => q.totalAttempts)
+                .ToListAsync();
+
+            // 5. User stats
             var totalUsers   = await _dbContext.Users.CountAsync();
             var premiumUsers = await _dbContext.Users.CountAsync(u => u.IsPremium);
 
@@ -297,119 +438,57 @@ namespace VisualizationDSA.WebApi.Controllers
             {
                 totalQuizzes,
                 totalQuestionsInBank,
+                totalAttempts,
+                totalPassed,
+                passRate,
+                averageScore,
                 totalUsers,
                 premiumUsers,
-                topicBreakdown
+                topicBreakdown,
+                perQuizStats
             });
         }
 
-        // ── JWT Helper ──────────────────────────────────────────────────────
 
-        private IActionResult? RequireToken()
+        /// <summary>
+        /// Lấy lịch sử làm bài quiz của học viên.
+        /// GET /api/v1/concepts/quiz/history
+        /// </summary>
+        [HttpGet("history")]
+        [RequireJwtRole]  // ✅ PB-705: Yêu cầu token hợp lệ
+        public async Task<IActionResult> GetHistory([FromQuery] string? userId)
         {
-            var header = Request.Headers["Authorization"].FirstOrDefault();
-            if (string.IsNullOrWhiteSpace(header) || !header.StartsWith("Bearer "))
-                return Unauthorized(new { error = "UNAUTHORIZED", message = "Yêu cầu đăng nhập để truy cập tài nguyên này." });
-
-            var token = header["Bearer ".Length..].Trim();
-            var parts = token.Split('.');
-            if (parts.Length != 3)
-                return Unauthorized(new { error = "UNAUTHORIZED", message = "Mã xác thực không hợp lệ." });
-
-            try
+            var currentUserId = JwtHelper.ExtractSubFromToken(Request);
+            var targetUserId = userId ?? currentUserId;
+            if (targetUserId != currentUserId && !JwtHelper.IsTeacherOrAdmin(Request))
             {
-                var jwtHeader = parts[0];
-                var jwtPayload = parts[1];
-                var jwtSignature = parts[2];
+                return StatusCode(403, new { error = "FORBIDDEN", message = "Bạn không có quyền xem lịch sử của người khác." });
+            }
 
-                // Verify Signature using Dev Secret Key
-                var key = Encoding.UTF8.GetBytes("VisualizationDSA-Stateless-Dev-Secret-Key-2024-Phase6-256bit!");
-                var expectedSignature = Convert.ToBase64String(
-                    HMACSHA256.HashData(key, Encoding.UTF8.GetBytes($"{jwtHeader}.{jwtPayload}"))
-                );
+            if (!Guid.TryParse(targetUserId, out var guidUserId))
+            {
+                return BadRequest(new { error = "INVALID_USER_ID" });
+            }
 
-                if (jwtSignature != expectedSignature)
-                    return Unauthorized(new { error = "UNAUTHORIZED", message = "Chữ ký xác thực không hợp lệ." });
-
-                // Verify Expiration
-                var padding = (4 - jwtPayload.Length % 4) % 4;
-                var paddedPayload = jwtPayload + new string('=', padding);
-                paddedPayload = paddedPayload.Replace('-', '+').Replace('_', '/');
-                var json = Encoding.UTF8.GetString(Convert.FromBase64String(paddedPayload));
-
-                using var doc = JsonDocument.Parse(json);
-                if (doc.RootElement.TryGetProperty("exp", out var expEl))
+            var attempts = await _dbContext.QuizAttempts
+                .Include(a => a.Quiz)
+                .Where(a => a.UserId == guidUserId)
+                .OrderByDescending(a => a.AttemptedAt)
+                .Select(a => new
                 {
-                    var expUnix = expEl.GetInt64();
-                    var expTime = DateTimeOffset.FromUnixTimeSeconds(expUnix);
-                    if (expTime < DateTimeOffset.UtcNow)
-                        return Unauthorized(new { error = "UNAUTHORIZED", message = "Phiên đăng nhập đã hết hạn." });
-                }
-            }
-            catch
-            {
-                return Unauthorized(new { error = "UNAUTHORIZED", message = "Không thể xác thực token." });
-            }
+                    a.Id,
+                    a.QuizId,
+                    quizTitle = a.Quiz.Title,
+                    quizTopic = a.Quiz.Topic,
+                    a.Score,
+                    a.MaxScore,
+                    a.Passed,
+                    a.AttemptedAt,
+                    a.Answers
+                })
+                .ToListAsync();
 
-            return null;
-        }
-
-        private bool IsTeacherOrAdmin()
-        {
-            var role = ExtractRoleFromToken(Request.Headers["Authorization"].FirstOrDefault());
-            return role == "Teacher" || role == "Admin";
-        }
-
-        private static string? ExtractRoleFromToken(string? authHeader)
-        {
-            if (string.IsNullOrWhiteSpace(authHeader) || !authHeader.StartsWith("Bearer "))
-                return null;
-
-            var token = authHeader["Bearer ".Length..].Trim();
-            var parts = token.Split('.');
-            if (parts.Length != 3) return null;
-
-            try
-            {
-                var payloadBase64 = parts[1];
-                var padding = (4 - payloadBase64.Length % 4) % 4;
-                payloadBase64 += new string('=', padding);
-                payloadBase64 = payloadBase64.Replace('-', '+').Replace('_', '/');
-
-                var json = System.Text.Encoding.UTF8.GetString(Convert.FromBase64String(payloadBase64));
-                using var doc = System.Text.Json.JsonDocument.Parse(json);
-                if (doc.RootElement.TryGetProperty("role", out var roleEl))
-                    return roleEl.GetString();
-            }
-            catch { }
-
-            return null;
-        }
-
-        private static string? ExtractSubFromToken(string? authHeader)
-        {
-            if (string.IsNullOrWhiteSpace(authHeader) || !authHeader.StartsWith("Bearer "))
-                return null;
-
-            var token = authHeader["Bearer ".Length..].Trim();
-            var parts = token.Split('.');
-            if (parts.Length != 3) return null;
-
-            try
-            {
-                var payloadBase64 = parts[1];
-                var padding = (4 - payloadBase64.Length % 4) % 4;
-                payloadBase64 += new string('=', padding);
-                payloadBase64 = payloadBase64.Replace('-', '+').Replace('_', '/');
-
-                var json = System.Text.Encoding.UTF8.GetString(Convert.FromBase64String(payloadBase64));
-                using var doc = System.Text.Json.JsonDocument.Parse(json);
-                if (doc.RootElement.TryGetProperty("sub", out var subEl))
-                    return subEl.GetString();
-            }
-            catch { }
-
-            return null;
+            return Ok(attempts);
         }
 
         private static string NormalizeText(string text)

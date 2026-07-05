@@ -182,6 +182,16 @@ def build_phan6(doc: Document) -> None:
          'current_level tăng lên, Level Up popup hiện',
          'Level tăng từ 3→4, animation Level Up',
          '✅ PASS'),
+        ('TC-Q07', 'Cơ chế chống gian lận bài học',
+         'Chưa xem visualizer, click Đã hoàn thành',
+         'Nút bị disable, không thể click nhận XP',
+         'Nút mờ, cursor-not-allowed, không gửi API',
+         '✅ PASS'),
+        ('TC-Q08', 'Mua Đóng băng Streak (Streak Freeze)',
+         'Học viên có 600 XP, click mua Streak Freeze',
+         'Trừ 500 XP, streak_freezes_count = 1',
+         'XP còn 100, streak_freezes_count tăng lên 1',
+         '✅ PASS'),
     ]
 
     table_quiz = create_table(doc,
@@ -250,11 +260,11 @@ def build_phan6(doc: Document) -> None:
     summary = [
         ('Module Authentication',      '8',  '8',  '0',  '100%', '✅'),
         ('Module Algorithm Visualization','10','10','0', '100%', '✅'),
-        ('Module Quiz System',          '6',  '6',  '0',  '100%', '✅'),
+        ('Module Quiz System',          '8',  '8',  '0',  '100%', '✅'),
         ('Module Admin Panel',          '6',  '6',  '0',  '100%', '✅'),
         ('Module Gamification',         '5',  '5',  '0',  '100%', '✅'),
         ('Module Payment',              '4',  '4',  '0',  '100%', '✅'),
-        ('TỔNG CỘNG',                  '39', '39', '0',  '100%', '✅'),
+        ('TỔNG CỘNG',                  '41', '41', '0',  '100%', '✅'),
     ]
     table_sum = create_table(doc,
         ['Module', 'Tổng TC', 'PASS', 'FAIL', 'Tỷ lệ', 'Đánh giá'],

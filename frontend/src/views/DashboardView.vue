@@ -113,6 +113,10 @@
       <div class="dash-card quicklinks-card">
         <h3 class="dash-card__title">Truy cập nhanh</h3>
         <div class="quicklinks">
+          <router-link to="/courses" class="quicklink">
+            <BaseIcon name="learning-path" class="quicklink__icon" />
+            <span>Khóa học</span>
+          </router-link>
           <router-link to="/sorting" class="quicklink">
             <BaseIcon name="sorting" class="quicklink__icon" />
             <span>Sắp xếp</span>

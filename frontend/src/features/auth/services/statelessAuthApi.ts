@@ -138,4 +138,13 @@ export const statelessAuthApi = {
     });
     return handleResponse<StatelessAuthResponse>(res);
   },
+
+  async changePassword(userId: string, currentPassword: string, newPassword: string): Promise<{ message: string }> {
+    const res = await fetch(`${BASE_URL}/api/v1/concepts/auth/change-password`, {
+      method: 'PUT',
+      headers: JSON_HEADERS,
+      body: JSON.stringify({ userId, currentPassword, newPassword }),
+    });
+    return handleResponse<{ message: string }>(res);
+  },
 };

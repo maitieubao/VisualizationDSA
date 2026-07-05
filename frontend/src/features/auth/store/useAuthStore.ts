@@ -249,6 +249,20 @@ export const useAuthStore = defineStore('auth', () => {
     }
   }
 
+  async function changePassword(currentPassword: string, newPassword: string): Promise<void> {
+    const userId = currentUser.value?.id;
+    if (!userId) throw new Error('Yêu cầu đăng nhập để đổi mật khẩu.');
+    isLoading.value = true; authError.value = null;
+    try {
+      await statelessAuthApi.changePassword(userId, currentPassword, newPassword);
+    } catch (err: unknown) {
+      authError.value = err instanceof Error ? err.message : 'Đổi mật khẩu thất bại.';
+      throw err;
+    } finally {
+      isLoading.value = false;
+    }
+  }
+
   const impersonateTrigger = ref(0);
   const isImpersonating = computed(() => {
     const _ = impersonateTrigger.value;
@@ -326,7 +340,7 @@ export const useAuthStore = defineStore('auth', () => {
     init, register, logIn, logOut, getAccessToken, refreshAccessToken,
     // Stateless backend
     statelessUser, isStatelessMode,
-    statelessLogin, statelessRegister, statelessLogout, statelessInit, loadStatelessProfile, updateProfile,
+    statelessLogin, statelessRegister, statelessLogout, statelessInit, loadStatelessProfile, updateProfile, changePassword,
     // Impersonation
     isImpersonating, impersonate, startImpersonating, stopImpersonating
   };

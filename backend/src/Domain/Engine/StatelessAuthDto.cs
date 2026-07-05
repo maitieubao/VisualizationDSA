@@ -91,4 +91,11 @@ namespace VisualizationDSA.Domain.Engine
         public int Amount { get; set; }
         public string Reason { get; set; } = string.Empty;
     }
+
+    public class StatelessChangePasswordRequest
+    {
+        public string? UserId { get; set; }
+        public string CurrentPassword { get; set; } = string.Empty;
+        public string NewPassword { get; set; } = string.Empty;
+    }
 }

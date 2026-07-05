@@ -38,12 +38,23 @@ CREATE TABLE users (
     total_xp          INT          NOT NULL DEFAULT 0,
     current_level     INT          NOT NULL DEFAULT 1,
     streak_days       INT          NOT NULL DEFAULT 0,
+    streak_freezes_count INT       NOT NULL DEFAULT 0, -- Vật phẩm bảo lưu streak
     is_premium        BOOLEAN      NOT NULL DEFAULT FALSE,
     role              VARCHAR(20)  NOT NULL DEFAULT 'Student',
     is_active         BOOLEAN      NOT NULL DEFAULT TRUE,
     created_at        TIMESTAMP    NOT NULL DEFAULT NOW(),
     last_login_at     TIMESTAMP,
     last_activity_date TIMESTAMP
+);
+
+-- Bảng Enrollments (Khóa học đăng ký)
+CREATE TABLE enrollments (
+    id                     UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_id                UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    course_id              UUID NOT NULL,
+    completed_lesson_count INT  NOT NULL DEFAULT 0, -- Cột counter cache tối ưu hóa truy vấn
+    is_completed           BOOLEAN NOT NULL DEFAULT FALSE,
+    enrolled_at            TIMESTAMP NOT NULL DEFAULT NOW()
 );
 
 -- Bảng Quizzes
@@ -101,7 +112,7 @@ CREATE TABLE user_badges (
     PRIMARY KEY (user_id, badge_id)
 );
 
--- Bảng Orders
+-- Bảng Orders (Thanh toán)
 CREATE TABLE orders (
     id               UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     user_id          UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
@@ -110,7 +121,7 @@ CREATE TABLE orders (
     currency         VARCHAR(5)      NOT NULL DEFAULT 'VND',
     status           VARCHAR(20)     NOT NULL DEFAULT 'pending',
     payment_provider VARCHAR(30),
-    transaction_id   VARCHAR(100),
+    transaction_id   VARCHAR(100)    UNIQUE, -- Ràng buộc UNIQUE phục vụ Idempotency
     created_at       TIMESTAMP NOT NULL DEFAULT NOW(),
     expires_at       TIMESTAMP
 );

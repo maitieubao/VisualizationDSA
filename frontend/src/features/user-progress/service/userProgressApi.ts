@@ -38,6 +38,27 @@ export interface XPSyncResult {
   currentLevel: number;
 }
 
+// ── Custom Error with HTTP status ────────────────────────────────────────────
+
+export class ApiError extends Error {
+  public readonly status: number;
+  constructor(message: string, status: number) {
+    super(message);
+    this.name = 'ApiError';
+    this.status = status;
+  }
+}
+
+async function handleResponse<T>(response: Response): Promise<T> {
+  if (!response.ok) {
+    const body = await response.json().catch(() => null);
+    const msg  = body?.message ?? `HTTP ${response.status}: ${response.statusText}`;
+    throw new ApiError(msg, response.status);
+  }
+  return response.json() as Promise<T>;
+}
+
+
 // ── Helper ───────────────────────────────────────────────────────────────────
 
 function getAuthHeaders(token: string): HeadersInit {
@@ -47,16 +68,8 @@ function getAuthHeaders(token: string): HeadersInit {
   };
 }
 
-async function handleResponse<T>(response: Response): Promise<T> {
-  if (!response.ok) {
-    const body = await response.json().catch(() => null);
-    const msg  = body?.message ?? `HTTP ${response.status}: ${response.statusText}`;
-    throw new Error(msg);
-  }
-  return response.json() as Promise<T>;
-}
-
 // ── API Calls ─────────────────────────────────────────────────────────────────
+
 
 /**
  * Lấy tiến trình đầy đủ từ server khi đăng nhập.

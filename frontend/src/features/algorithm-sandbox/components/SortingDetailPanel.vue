@@ -25,6 +25,13 @@
         >
           Trace Watcher
         </button>
+        <button 
+          @click="activeTab = 'code'" 
+          class="flex-1 py-1.5 text-xs font-bold rounded-lg border transition-all duration-250 cursor-pointer text-center"
+          :class="activeTab === 'code' ? 'bg-cyan-500/10 text-cyan-400 border-cyan-500/35 shadow-[0_0_10px_rgba(6,182,212,0.15)]' : 'vis-btn-ghost border border-white/5 hover:text-white'"
+        >
+          Code Sandbox
+        </button>
       </div>
     </div>
 
@@ -232,6 +239,11 @@
         </div>
       </div>
     </div>
+
+    <!-- Tab 3: Interactive Code Sandbox -->
+    <div v-show="activeTab === 'code'" class="flex-1 min-h-[420px] flex flex-col gap-4">
+      <CodeEditor class="flex-1" />
+    </div>
   </div>
 </template>
 
@@ -239,13 +251,14 @@
 import { ref, computed } from 'vue';
 import { useVcrStore, type VcrBaseFrame } from '../../vcr-player';
 import type { SortFrame } from '../types/sorting.types';
+import { CodeEditor } from '../../code-editor';
 
 function isSortFrame(frame: VcrBaseFrame): frame is SortFrame {
   return 'arrayState' in frame && 'algorithm' in frame;
 }
 
 const vcrStore = useVcrStore();
-const activeTab = ref<'info' | 'trace'>('info');
+const activeTab = ref<'info' | 'trace' | 'code'>('info');
 
 const currentFrame = computed<SortFrame | null>(() => {
   const frame = vcrStore.currentFrame;

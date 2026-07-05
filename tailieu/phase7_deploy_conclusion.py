@@ -26,7 +26,7 @@ def build_phan7(doc: Document) -> None:
 
     env_reqs = [
         ('Node.js', '≥ 18.x LTS', 'Runtime để build và chạy Frontend Vue 3 + Vite'),
-        ('.NET SDK', '10.0', 'SDK để build và chạy Backend ASP.NET Core Web API'),
+        ('.NET SDK', '9.0', 'SDK để build và chạy Backend ASP.NET Core Web API'),
         ('PostgreSQL', '16.x', 'Database server (hoặc kết nối Supabase Cloud)'),
         ('Git', '≥ 2.40', 'Quản lý phiên bản source code'),
         ('Docker', '≥ 24.x (tùy chọn)', 'Container hóa backend và database'),
@@ -108,7 +108,7 @@ npm run build
 npm run preview"""
     add_code_block(doc, frontend_build, lang='Shell')
 
-    add_heading3(doc, '7.3.2. Build Backend (ASP.NET Core .NET 10)')
+    add_heading3(doc, '7.3.2. Build Backend (ASP.NET Core .NET 9)')
     backend_build = """\
 # 1. Vào thư mục backend
 cd backend
@@ -146,7 +146,7 @@ echo   VISUALIZATION DSA — DEV STARTUP
 echo ======================================
 
 REM Khởi động Backend
-echo [1/2] Khoi dong Backend (.NET 10 / Port 5055)...
+echo [1/2] Khoi dong Backend (.NET 9 / Port 5055)...
 start "Backend Server" cmd /k "cd /d %~dp0backend && dotnet run --project src/WebApi/WebApi.csproj"
 
 REM Delay 3 giây để Backend khởi động xong
@@ -186,13 +186,13 @@ git push origin main
     add_heading3(doc, 'Backend — Docker Container')
     dockerfile_content = """\
 # Dockerfile — Backend ASP.NET Core
-FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
+FROM mcr.microsoft.com/dotnet/sdk:9.0 AS build
 WORKDIR /src
 COPY backend/ .
 RUN dotnet restore src/WebApi/WebApi.csproj
-RUN dotnet publish src/WebApi/WebApi.csproj -c Release -o /app/publish
+RUN dotnet publish src/WebApi/WebApi.csproj -c Release -o /app/publish --no-restore
 
-FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS runtime
+FROM mcr.microsoft.com/dotnet/aspnet:9.0 AS runtime
 WORKDIR /app
 COPY --from=build /app/publish .
 EXPOSE 5055
@@ -282,7 +282,7 @@ def build_tai_lieu_tham_khao(doc: Document) -> None:
     references = [
         ('[1]', 'Robert C. Martin, "Clean Architecture: A Craftsman\'s Guide to Software Structure and Design", Prentice Hall, 2017.'),
         ('[2]', 'Gang of Four (Gamma, Helm, Johnson, Vlissides), "Design Patterns: Elements of Reusable Object-Oriented Software", Addison-Wesley, 1994.'),
-        ('[3]', 'Microsoft Corporation, "ASP.NET Core Documentation", Phiên bản .NET 10. Truy cập từ: https://learn.microsoft.com/en-us/aspnet/core'),
+        ('[3]', 'Microsoft Corporation, "ASP.NET Core Documentation", Phiên bản .NET 9. Truy cập từ: https://learn.microsoft.com/en-us/aspnet/core'),
         ('[4]', 'Vue.js Team, "Vue 3 Official Documentation", 2024. Truy cập từ: https://vuejs.org/guide/'),
         ('[5]', 'TypeScript Team, "TypeScript Documentation", Microsoft, 2024. Truy cập từ: https://www.typescriptlang.org/docs/'),
         ('[6]', 'Pinia Team, "Pinia Documentation – Vue Store", 2024. Truy cập từ: https://pinia.vuejs.org/'),

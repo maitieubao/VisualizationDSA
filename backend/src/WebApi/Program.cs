@@ -69,6 +69,7 @@ builder.Services.AddControllers(options =>
 builder.Services.AddFluentValidationAutoValidation();
 builder.Services.AddValidatorsFromAssemblyContaining<Program>();
 builder.Services.AddMemoryCache();
+builder.Services.AddSignalR();
 builder.Services.AddApiVersioning(options =>
 {
     options.DefaultApiVersion = new ApiVersion(1, 0);
@@ -198,10 +199,29 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             NameClaimType = "sub",
             RoleClaimType = "role",
         };
+
+        options.Events = new JwtBearerEvents
+        {
+            OnMessageReceived = context =>
+            {
+                var accessToken = context.Request.Query["access_token"];
+
+                // If the request is for our hub...
+                var path = context.HttpContext.Request.Path;
+                if (!string.IsNullOrEmpty(accessToken) &&
+                    (path.StartsWithSegments("/hubs/notifications") || path.StartsWithSegments("/hubs/quiz-room")))
+                {
+                    // Read the token out of the query string
+                    context.Token = accessToken;
+                }
+                return Task.CompletedTask;
+            }
+        };
     });
 
-// Health checks — self
-builder.Services.AddHealthChecks();
+// Health checks — self and DbContext
+builder.Services.AddHealthChecks()
+    .AddCheck<VisualizationDSA.WebApi.Filters.DatabaseHealthCheck>("Database");
 
 // ── Rate Limiting (built-in .NET 7+) — bảo vệ auth endpoints & chống spam ──
 builder.Services.AddRateLimiter(options =>
@@ -291,6 +311,11 @@ app.UseAuthorization();
 app.UseUserLogging();
 app.UseRateLimiter();
 app.MapControllers();
+
+// Map SignalR Hubs
+app.MapHub<VisualizationDSA.WebApi.Hubs.LeaderboardHub>("/hubs/leaderboard");
+app.MapHub<VisualizationDSA.WebApi.Hubs.NotificationHub>("/hubs/notifications");
+app.MapHub<VisualizationDSA.WebApi.Hubs.QuizRoomHub>("/hubs/quiz-room");
 
 // Health check endpoint — GET /health
 app.MapHealthChecks("/health", new HealthCheckOptions

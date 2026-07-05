@@ -5,11 +5,11 @@
     Font: JetBrains Mono (logo/code), Inter (nav/UI)
     Theme: data-theme attribute được set trên <html> trong index.html
   -->
-  <div class="app-shell">
+  <div class="app-shell" :class="{ 'is-embed': isMinimalMode }">
     <!-- ══════════════════════════════════════════════════════════
          HEADER — Logo + Right Controls only
     ══════════════════════════════════════════════════════════ -->
-    <header class="app-header">
+    <header v-if="!isMinimalMode" class="app-header">
       <div class="app-header__inner">
 
         <!-- ── Logo: ~/VisualizationDSA style ── -->
@@ -37,6 +37,8 @@
 
           <!-- Authenticated user badge -->
           <template v-if="authStore.isAuthenticated">
+            <!-- Notification Bell -->
+            <NotificationBell />
             <!-- Premium Crown Badge -->
             <span v-if="authStore.isPremium" class="premium-crown" title="Thành viên Premium">👑</span>
             <div class="user-badge" :class="{ 'user-badge--premium': authStore.isPremium }" @click="router.push('/profile')" title="Xem hồ sơ cá nhân">
@@ -112,7 +114,7 @@
     ══════════════════════════════════════════════════════════ -->
     <div class="app-body">
       <!-- ── LEFT SIDEBAR — Vertical Tab Navigation (hidden on landing) ── -->
-      <aside v-if="!isLandingPage" class="app-sidebar" :class="{ 'app-sidebar--collapsed': isSidebarCollapsed }" aria-label="Sidebar navigation">
+      <aside v-if="!isLandingPage && !isMinimalMode" class="app-sidebar" :class="{ 'app-sidebar--collapsed': isSidebarCollapsed }" aria-label="Sidebar navigation">
         <!-- Collapse Button for Desktop -->
         <div class="sidebar-toggle-container">
           <button class="collapse-toggle-btn" @click="toggleSidebar" :title="isSidebarCollapsed ? 'Mở rộng sidebar' : 'Thu gọn sidebar'">
@@ -216,6 +218,7 @@ import ToastContainer from './components/ToastContainer.vue';
 import GuidedTourOverlay from './features/guided-tour/components/GuidedTourOverlay.vue';
 import { useGuidedTourStore } from './features/guided-tour/store/useGuidedTourStore';
 import { useUserProgressStore } from './features/user-progress/store/useUserProgressStore';
+import NotificationBell from './features/e-lecture/components/NotificationBell.vue';
 
 const authStore      = useAuthStore();
 const tourStore      = useGuidedTourStore();
@@ -244,6 +247,7 @@ async function handleRetrySync(): Promise<void> {
 }
 
 const isLandingPage = computed(() => route.name === 'landing');
+const isMinimalMode = computed(() => route.path === '/embed' && route.query.algo !== undefined);
 
 const filteredTabs = computed(() => {
   return APP_TABS.filter((tabOrGroup) => {

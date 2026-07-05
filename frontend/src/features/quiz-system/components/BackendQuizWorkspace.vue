@@ -52,6 +52,9 @@
         <div v-if="store.backendResult.xpAwarded > 0" class="text-sm text-accent mb-4">
           +{{ store.backendResult.xpAwarded }} XP
         </div>
+        <div v-else-if="store.backendResult.passed" class="text-xs text-text-secondary mb-4 bg-white/5 border border-white/10 rounded-lg p-2.5">
+          💡 Bạn đã nhận XP tối đa cho bài quiz này. Làm lại để ôn tập sẽ không nhận thêm XP.
+        </div>
 
         <!-- Question Results -->
         <div class="text-left mt-4 space-y-2">

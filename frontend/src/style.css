@@ -298,3 +298,38 @@ h1, h2, h3, h4, h5, h6 {
   /* Toast → full width */
   .toast-container { left: 0.5rem; right: 0.5rem; width: auto; }
 }
+
+/* =============================================================================
+ * EMBED PLAYER STYLES (is-embed mode)
+ * ============================================================================= */
+.is-embed .app-header,
+.is-embed .app-sidebar,
+.is-embed .algo-header,
+.is-embed .algo-intro,
+.is-embed .back-to-dashboard,
+.is-embed .theory-panel-toggle,
+.is-embed .course-header-banner,
+.is-embed .lesson-back-btn,
+.is-embed .page-header {
+  display: none !important;
+}
+
+.is-embed .app-main {
+  padding: 0 !important;
+  margin: 0 !important;
+  width: 100vw !important;
+  height: 100vh !important;
+  overflow: hidden !important;
+  background: transparent !important;
+}
+
+.is-embed .app-body {
+  height: 100vh !important;
+  overflow: hidden !important;
+}
+
+.is-embed .app-shell {
+  min-height: 100vh !important;
+  height: 100vh !important;
+  overflow: hidden !important;
+}

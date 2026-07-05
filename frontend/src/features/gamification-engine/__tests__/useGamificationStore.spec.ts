@@ -41,7 +41,7 @@ describe('useGamificationStore', () => {
 
     it('should have initial streak freezes count', () => {
       const store = useGamificationStore();
-      expect(store.streakFreezesCount).toBe(2);
+      expect(store.streakFreezesCount).toBe(3);
     });
 
     it('should have empty leaderboard data', () => {
@@ -121,14 +121,15 @@ describe('useGamificationStore', () => {
     it('should decrement streak freezes count', () => {
       const store = useGamificationStore();
       store.useStreakFreeze();
-      expect(store.streakFreezesCount).toBe(1);
+      expect(store.streakFreezesCount).toBe(2);
     });
 
     it('should not go below zero freezes', () => {
       const store = useGamificationStore();
       store.useStreakFreeze();
       store.useStreakFreeze();
-      store.useStreakFreeze(); // third attempt
+      store.useStreakFreeze();
+      store.useStreakFreeze(); // fourth attempt
       expect(store.streakFreezesCount).toBe(0);
     });
 
@@ -140,6 +141,7 @@ describe('useGamificationStore', () => {
 
     it('should return false when no freezes remain', () => {
       const store = useGamificationStore();
+      store.useStreakFreeze();
       store.useStreakFreeze();
       store.useStreakFreeze();
       const result = store.useStreakFreeze();

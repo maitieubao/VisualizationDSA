@@ -5,7 +5,9 @@ using System.Text;
 using System.Text.Json;
 using System.Security.Cryptography;
 using VisualizationDSA.Domain.Strategies;
+using VisualizationDSA.Domain.Entities;
 using VisualizationDSA.Infrastructure.Data;
+using VisualizationDSA.WebApi.Filters;
 
 namespace VisualizationDSA.WebApi.Controllers
 {
@@ -17,6 +19,7 @@ namespace VisualizationDSA.WebApi.Controllers
     [ApiVersion("1.0")]
     [ApiController]
     [Route("api/v{version:apiVersion}/concepts/admin")]
+    [RequireJwtRole("Admin")]  // ✅ PB-705: Centralized JWT guard — tất cả endpoints yêu cầu Admin role
     public class AdminController : ControllerBase
     {
         private readonly ApplicationDbContext _dbContext;
@@ -33,129 +36,7 @@ namespace VisualizationDSA.WebApi.Controllers
             _quizBank = quizBank;
         }
 
-        // ── JWT Role Guard Helper ────────────────────────────────────────────
 
-        /// <summary>
-        /// Giải mã JWT payload, trả về role nếu hợp lệ.
-        /// Token format: header.payload.signature (Base64)
-        /// </summary>
-        private static string? ExtractRoleFromToken(string? authHeader)
-        {
-            if (string.IsNullOrWhiteSpace(authHeader) || !authHeader.StartsWith("Bearer "))
-                return null;
-
-            var token = authHeader["Bearer ".Length..].Trim();
-            var parts = token.Split('.');
-            if (parts.Length != 3) return null;
-
-            try
-            {
-                // Pad Base64 if needed
-                var payloadBase64 = parts[1];
-                var padding = (4 - payloadBase64.Length % 4) % 4;
-                payloadBase64 += new string('=', padding);
-                payloadBase64 = payloadBase64.Replace('-', '+').Replace('_', '/');
-
-                var json = Encoding.UTF8.GetString(Convert.FromBase64String(payloadBase64));
-                using var doc = JsonDocument.Parse(json);
-                if (doc.RootElement.TryGetProperty("role", out var roleEl))
-                    return roleEl.GetString();
-            }
-            catch { /* Invalid JWT format */ }
-
-            return null;
-        }
-
-        private static string? ExtractSubFromToken(string? authHeader)
-        {
-            if (string.IsNullOrWhiteSpace(authHeader) || !authHeader.StartsWith("Bearer "))
-                return null;
-
-            var token = authHeader["Bearer ".Length..].Trim();
-            var parts = token.Split('.');
-            if (parts.Length != 3) return null;
-
-            try
-            {
-                var payloadBase64 = parts[1];
-                var padding = (4 - payloadBase64.Length % 4) % 4;
-                payloadBase64 += new string('=', padding);
-                payloadBase64 = payloadBase64.Replace('-', '+').Replace('_', '/');
-
-                var json = Encoding.UTF8.GetString(Convert.FromBase64String(payloadBase64));
-                using var doc = JsonDocument.Parse(json);
-                if (doc.RootElement.TryGetProperty("sub", out var subEl))
-                    return subEl.GetString();
-            }
-            catch { }
-
-            return null;
-        }
-
-        /// <summary>
-        /// Lớp bảo vệ đầu tiên: trả 401 nếu không có Authorization header.
-        /// Null = token hợp lệ có mặt, tiếp tục xử lý.
-        /// </summary>
-        private IActionResult? RequireToken()
-        {
-            var header = Request.Headers["Authorization"].FirstOrDefault();
-            if (string.IsNullOrWhiteSpace(header) || !header.StartsWith("Bearer "))
-                return Unauthorized(new { error = "UNAUTHORIZED", message = "Yêu cầu đăng nhập để truy cập tài nguyên này." });
-
-            var token = header["Bearer ".Length..].Trim();
-            var parts = token.Split('.');
-            if (parts.Length != 3)
-                return Unauthorized(new { error = "UNAUTHORIZED", message = "Mã xác thực không hợp lệ." });
-
-            try
-            {
-                var jwtHeader = parts[0];
-                var jwtPayload = parts[1];
-                var jwtSignature = parts[2];
-
-                // Verify Signature using Dev Secret Key
-                var key = Encoding.UTF8.GetBytes("VisualizationDSA-Stateless-Dev-Secret-Key-2024-Phase6-256bit!");
-                var expectedSignature = Convert.ToBase64String(
-                    HMACSHA256.HashData(key, Encoding.UTF8.GetBytes($"{jwtHeader}.{jwtPayload}"))
-                );
-
-                if (jwtSignature != expectedSignature)
-                    return Unauthorized(new { error = "UNAUTHORIZED", message = "Chữ ký xác thực không hợp lệ." });
-
-                // Verify Expiration
-                var padding = (4 - jwtPayload.Length % 4) % 4;
-                var paddedPayload = jwtPayload + new string('=', padding);
-                paddedPayload = paddedPayload.Replace('-', '+').Replace('_', '/');
-                var json = Encoding.UTF8.GetString(Convert.FromBase64String(paddedPayload));
-
-                using var doc = JsonDocument.Parse(json);
-                if (doc.RootElement.TryGetProperty("exp", out var expEl))
-                {
-                    var expUnix = expEl.GetInt64();
-                    var expTime = DateTimeOffset.FromUnixTimeSeconds(expUnix);
-                    if (expTime < DateTimeOffset.UtcNow)
-                        return Unauthorized(new { error = "UNAUTHORIZED", message = "Phiên đăng nhập đã hết hạn." });
-                }
-            }
-            catch
-            {
-                return Unauthorized(new { error = "UNAUTHORIZED", message = "Không thể xác thực token." });
-            }
-
-            return null;
-        }
-
-        private bool IsAdmin()
-        {
-            var role = ExtractRoleFromToken(Request.Headers["Authorization"].FirstOrDefault());
-            return role == "Admin";
-        }
-
-        private bool IsTeacherOrAdmin()
-        {
-            var role = ExtractRoleFromToken(Request.Headers["Authorization"].FirstOrDefault());
-            return role == "Teacher" || role == "Admin";
-        }
 
         // ── Dashboard Analytics ──────────────────────────────────────────────
 
@@ -166,11 +47,6 @@ namespace VisualizationDSA.WebApi.Controllers
         [HttpGet("dashboard")]
         public async Task<IActionResult> GetDashboard()
         {
-            var authCheck = RequireToken();
-            if (authCheck != null) return authCheck;
-            if (!IsAdmin())
-                return StatusCode(403, new { error = "FORBIDDEN", message = "Yêu cầu quyền Admin." });
-
             try
             {
                 var totalUsers   = await _dbContext.Users.CountAsync();
@@ -180,7 +56,7 @@ namespace VisualizationDSA.WebApi.Controllers
                 var premiumUsers = await _dbContext.Users.CountAsync(u => u.IsPremium);
                 var totalQuizzes = await _dbContext.Quizzes.CountAsync();
                 var totalOrders  = await _dbContext.Orders.CountAsync();
-                var paidOrders   = await _dbContext.Orders.CountAsync(o => o.Status == "paid");
+                var paidOrders   = await _dbContext.Orders.CountAsync(o => o.Status == "Completed" || o.Status == "paid");
 
                 // Top 5 active users by XP
                 var topUsers = await _dbContext.Users
@@ -189,12 +65,47 @@ namespace VisualizationDSA.WebApi.Controllers
                     .Select(u => new { u.Email, u.Username, u.TotalXP, u.CurrentLevel, u.Role })
                     .ToListAsync();
 
+                // Lịch sử đăng ký trong 7 ngày gần nhất
+                var sevenDaysAgo = DateTime.UtcNow.Date.AddDays(-6);
+                var registrationList = await _dbContext.Users
+                    .Where(u => u.CreatedAt >= sevenDaysAgo)
+                    .GroupBy(u => u.CreatedAt.Date)
+                    .Select(g => new { Date = g.Key, Count = g.Count() })
+                    .ToListAsync();
+
+                var registrationsLast7Days = Enumerable.Range(0, 7)
+                    .Select(i => DateTime.UtcNow.Date.AddDays(-6 + i))
+                    .Select(date => new
+                    {
+                        date = date.ToString("yyyy-MM-dd"),
+                        count = registrationList.FirstOrDefault(r => r.Date == date)?.Count ?? 0
+                    })
+                    .ToList();
+
+                // Top 3 khóa học phổ biến nhất
+                var popularCourses = await _dbContext.UserLessonProgresses
+                    .Include(p => p.Lesson)
+                    .ThenInclude(l => l.Course)
+                    .Where(p => p.Lesson != null && p.Lesson.Course != null)
+                    .GroupBy(p => p.Lesson.CourseId)
+                    .Select(g => new
+                    {
+                        courseId = g.Key,
+                        title = g.First().Lesson.Course.Title,
+                        enrollmentsCount = g.Select(p => p.UserId).Distinct().Count()
+                    })
+                    .OrderByDescending(c => c.enrollmentsCount)
+                    .Take(3)
+                    .ToListAsync();
+
                 return Ok(new
                 {
                     users = new { total = totalUsers, students = totalStudents, teachers = totalTeachers, admins = totalAdmins, premium = premiumUsers },
                     quizzes = new { total = totalQuizzes },
                     orders  = new { total = totalOrders, paid = paidOrders },
-                    topUsers
+                    topUsers,
+                    registrationsLast7Days,
+                    popularCourses
                 });
             }
             catch (Exception ex)
@@ -213,12 +124,30 @@ namespace VisualizationDSA.WebApi.Controllers
                     .Select(u => new { u.Email, u.Username, u.TotalXP, u.CurrentLevel, u.Role })
                     .ToList();
 
+                var registrationsLast7Days = Enumerable.Range(0, 7)
+                    .Select(i => DateTime.UtcNow.Date.AddDays(-6 + i))
+                    .Select(date => new
+                    {
+                        date = date.ToString("yyyy-MM-dd"),
+                        count = new Random().Next(0, 3)
+                    })
+                    .ToList();
+
+                var popularCourses = new[]
+                {
+                    new { courseId = Guid.NewGuid(), title = "Thuật toán Sắp xếp Cơ bản (Simulated)", enrollmentsCount = 15 },
+                    new { courseId = Guid.NewGuid(), title = "Cấu trúc dữ liệu Đồ thị (Simulated)", enrollmentsCount = 10 },
+                    new { courseId = Guid.NewGuid(), title = "Nguyên lý Thiết kế SOLID (Simulated)", enrollmentsCount = 6 }
+                };
+
                 return Ok(new
                 {
                     users = new { total = totalUsers, students = totalStudents, teachers = totalTeachers, admins = totalAdmins, premium = premiumUsers },
                     quizzes = new { total = _quizBank.GetAllQuizzes().Count },
                     orders  = new { total = 0, paid = 0 },
-                    topUsers
+                    topUsers,
+                    registrationsLast7Days,
+                    popularCourses
                 });
             }
         }
@@ -230,12 +159,9 @@ namespace VisualizationDSA.WebApi.Controllers
         /// GET /api/v1/concepts/admin/users?page=1&amp;pageSize=20&amp;search=
         /// </summary>
         [HttpGet("users")]
+        [RequireJwtRole("Teacher,Admin")]  // ✅ PB-705: Teacher cũng được xem danh sách user
         public async Task<IActionResult> GetUsers([FromQuery] int page = 1, [FromQuery] int pageSize = 20, [FromQuery] string? search = null)
         {
-            var authCheck = RequireToken();
-            if (authCheck != null) return authCheck;
-            if (!IsTeacherOrAdmin())
-                return StatusCode(403, new { error = "FORBIDDEN", message = "Yêu cầu quyền Teacher hoặc Admin." });
 
             try
             {
@@ -312,10 +238,6 @@ namespace VisualizationDSA.WebApi.Controllers
         [HttpPut("users/{id}/role")]
         public async Task<IActionResult> UpdateUserRole(string id, [FromBody] UpdateRoleRequest request)
         {
-            var authCheck = RequireToken();
-            if (authCheck != null) return authCheck;
-            if (!IsAdmin())
-                return StatusCode(403, new { error = "FORBIDDEN", message = "Yêu cầu quyền Admin." });
 
             if (request.Role != "Student" && request.Role != "Teacher" && request.Role != "Admin")
                 return BadRequest(new { error = "INVALID_ROLE", message = "Role phải là Student, Teacher hoặc Admin." });
@@ -324,8 +246,18 @@ namespace VisualizationDSA.WebApi.Controllers
             if (user == null)
                 return NotFound(new { error = "USER_NOT_FOUND" });
 
+            var oldRole = user.Role;
             user.SetRole(request.Role);
             await _dbContext.SaveChangesAsync();
+            
+            // Đồng bộ sang in-memory cache
+            _authStrategy.UpdateUserRole(id, request.Role);
+
+            // Log Audit
+            if (Guid.TryParse(id, out var targetGuid))
+            {
+                await LogAdminAction("UpdateUserRole", targetGuid, $"Đổi vai trò của {user.Username} từ {oldRole} sang {request.Role}.");
+            }
 
             return Ok(new { message = $"Đã đổi role của {user.Email} thành {request.Role}.", userId = id, newRole = request.Role });
         }
@@ -337,19 +269,146 @@ namespace VisualizationDSA.WebApi.Controllers
         [HttpPut("users/{id}/premium")]
         public async Task<IActionResult> TogglePremium(string id, [FromBody] TogglePremiumRequest request)
         {
-            var authCheck = RequireToken();
-            if (authCheck != null) return authCheck;
-            if (!IsAdmin())
-                return StatusCode(403, new { error = "FORBIDDEN", message = "Yêu cầu quyền Admin." });
 
             var user = await _dbContext.Users.FirstOrDefaultAsync(u => u.Id.ToString() == id);
             if (user == null)
                 return NotFound(new { error = "USER_NOT_FOUND" });
 
+            var oldStatus = user.IsPremium;
             user.SetPremiumStatus(request.IsPremium);
             await _dbContext.SaveChangesAsync();
 
+            // Đồng bộ sang in-memory cache
+            _authStrategy.SetUserPremium(id, request.IsPremium);
+
+            // Log Audit
+            if (Guid.TryParse(id, out var targetGuid))
+            {
+                await LogAdminAction("TogglePremium", targetGuid, $"Thay đổi trạng thái Premium của {user.Username} từ {oldStatus} sang {request.IsPremium}.");
+            }
+
             return Ok(new { message = $"Đã {(request.IsPremium ? "bật" : "tắt")} Premium cho {user.Email}.", userId = id, isPremium = request.IsPremium });
+        }
+
+        /// <summary>
+        /// Tạo người dùng mới.
+        /// POST /api/v1/concepts/admin/users
+        /// </summary>
+        [HttpPost("users")]
+        public async Task<IActionResult> CreateUser([FromBody] CreateUserRequest request)
+        {
+            if (string.IsNullOrWhiteSpace(request.Email) || string.IsNullOrWhiteSpace(request.Username) || string.IsNullOrWhiteSpace(request.Password))
+            {
+                return BadRequest(new { error = "INVALID_INPUT", message = "Email, username và mật khẩu không được để trống." });
+            }
+
+            // Check if user already exists in DB
+            var existingUser = await _dbContext.Users.AnyAsync(u => u.Email.ToLower() == request.Email.ToLower() || u.Username.ToLower() == request.Username.ToLower());
+            if (existingUser)
+            {
+                return BadRequest(new { error = "USER_EXISTS", message = "Email hoặc Username đã được sử dụng." });
+            }
+
+            var passwordHash = BCrypt.Net.BCrypt.HashPassword(request.Password, workFactor: 12);
+            var newUser = new User(request.Email, request.Username, passwordHash);
+            
+            newUser.SetRole(request.Role);
+            newUser.SetPremiumStatus(request.IsPremium);
+
+            _dbContext.Users.Add(newUser);
+            await _dbContext.SaveChangesAsync();
+
+            // Sync to stateless in-memory cache
+            _authStrategy.AddUser(
+                newUser.Id.ToString(),
+                newUser.Email,
+                newUser.Username,
+                newUser.PasswordHash,
+                newUser.Role,
+                newUser.IsPremium
+            );
+
+            // Log Audit
+            await LogAdminAction("CreateUser", newUser.Id, $"Tạo người dùng mới: {newUser.Username} ({newUser.Email}), vai trò: {newUser.Role}, Premium: {newUser.IsPremium}.");
+
+            return Ok(new
+            {
+                message = "Tạo người dùng mới thành công.",
+                user = new
+                {
+                    id = newUser.Id.ToString(),
+                    newUser.Email,
+                    newUser.Username,
+                    newUser.Role,
+                    newUser.IsPremium,
+                    newUser.CurrentLevel,
+                    newUser.TotalXP,
+                    newUser.StreakDays,
+                    newUser.CreatedAt
+                }
+            });
+        }
+
+        /// <summary>
+        /// Xóa người dùng.
+        /// DELETE /api/v1/concepts/admin/users/{id}
+        /// </summary>
+        [HttpDelete("users/{id}")]
+        public async Task<IActionResult> DeleteUser(string id)
+        {
+            var user = await _dbContext.Users.FirstOrDefaultAsync(u => u.Id.ToString() == id);
+            if (user == null)
+            {
+                return NotFound(new { error = "USER_NOT_FOUND", message = "Không tìm thấy người dùng." });
+            }
+
+            _dbContext.Users.Remove(user);
+            await _dbContext.SaveChangesAsync();
+
+            // Sync to stateless in-memory cache
+            _authStrategy.RemoveUser(id);
+
+            // Log Audit
+            if (Guid.TryParse(id, out var targetGuid))
+            {
+                await LogAdminAction("DeleteUser", targetGuid, $"Xóa người dùng {user.Username} ({user.Email}) khỏi hệ thống.");
+            }
+
+            return Ok(new { message = $"Đã xóa người dùng {user.Username} ({user.Email}) thành công." });
+        }
+
+        /// <summary>
+        /// Đặt lại mật khẩu cho người dùng.
+        /// PUT /api/v1/concepts/admin/users/{id}/reset-password
+        /// </summary>
+        [HttpPut("users/{id}/reset-password")]
+        public async Task<IActionResult> ResetPassword(string id, [FromBody] ResetPasswordRequest request)
+        {
+            if (string.IsNullOrWhiteSpace(request.NewPassword) || request.NewPassword.Length < 8)
+            {
+                return BadRequest(new { error = "INVALID_PASSWORD", message = "Mật khẩu mới phải có tối thiểu 8 ký tự." });
+            }
+
+            var user = await _dbContext.Users.FirstOrDefaultAsync(u => u.Id.ToString() == id);
+            if (user == null)
+            {
+                return NotFound(new { error = "USER_NOT_FOUND", message = "Không tìm thấy người dùng." });
+            }
+
+            var newHash = BCrypt.Net.BCrypt.HashPassword(request.NewPassword, workFactor: 12);
+            user.ChangePassword(newHash);
+            await _dbContext.SaveChangesAsync();
+
+            // Sync to stateless in-memory cache
+            _authStrategy.UpdateUserPassword(id, newHash);
+
+            // Log Audit
+            if (Guid.TryParse(id, out var targetGuid))
+            {
+                await LogAdminAction("ResetPassword", targetGuid, $"Đặt lại mật khẩu của người dùng {user.Username}.");
+            }
+
+            return Ok(new { message = $"Đã đặt lại mật khẩu cho người dùng {user.Username} thành công." });
         }
 
         // ── Quiz Management ──────────────────────────────────────────────────
@@ -359,12 +418,9 @@ namespace VisualizationDSA.WebApi.Controllers
         /// GET /api/v1/concepts/admin/quizzes
         /// </summary>
         [HttpGet("quizzes")]
+        [RequireJwtRole("Teacher,Admin")]  // ✅ PB-705: Teacher cũng được xem quiz list
         public async Task<IActionResult> GetQuizzes()
         {
-            var authCheck = RequireToken();
-            if (authCheck != null) return authCheck;
-            if (!IsTeacherOrAdmin())
-                return StatusCode(403, new { error = "FORBIDDEN", message = "Yêu cầu quyền Teacher hoặc Admin." });
 
             try
             {
@@ -412,12 +468,9 @@ namespace VisualizationDSA.WebApi.Controllers
         /// DELETE /api/v1/concepts/admin/quizzes/{id}
         /// </summary>
         [HttpDelete("quizzes/{id}")]
+        [RequireJwtRole("Teacher,Admin")]  // ✅ PB-705
         public async Task<IActionResult> DeleteQuiz(string id)
         {
-            var authCheck = RequireToken();
-            if (authCheck != null) return authCheck;
-            if (!IsTeacherOrAdmin())
-                return StatusCode(403, new { error = "FORBIDDEN", message = "Yêu cầu quyền Teacher hoặc Admin." });
 
             var quiz = await _dbContext.Quizzes.FirstOrDefaultAsync(q => q.Id.ToString() == id);
             if (quiz == null)
@@ -434,12 +487,9 @@ namespace VisualizationDSA.WebApi.Controllers
         /// GET /api/v1/concepts/admin/analytics/quiz
         /// </summary>
         [HttpGet("analytics/quiz")]
+        [RequireJwtRole("Teacher,Admin")]  // ✅ PB-705
         public async Task<IActionResult> GetQuizAnalytics()
         {
-            var authCheck = RequireToken();
-            if (authCheck != null) return authCheck;
-            if (!IsTeacherOrAdmin())
-                return StatusCode(403, new { error = "FORBIDDEN", message = "Yêu cầu quyền Teacher hoặc Admin." });
 
             var quizAttempts = await _dbContext.Quizzes
                 .OrderBy(q => q.Title)
@@ -473,10 +523,6 @@ namespace VisualizationDSA.WebApi.Controllers
         [HttpPut("users/{id}/ban")]
         public async Task<IActionResult> BanUser(string id, [FromBody] BanUserRequest request)
         {
-            var authCheck = RequireToken();
-            if (authCheck != null) return authCheck;
-            if (!IsAdmin())
-                return StatusCode(403, new { error = "FORBIDDEN", message = "Yêu cầu quyền Admin." });
 
             var user = await _dbContext.Users.FirstOrDefaultAsync(u => u.Id.ToString() == id);
             if (user == null)
@@ -496,12 +542,8 @@ namespace VisualizationDSA.WebApi.Controllers
         [HttpPost("users/{id}/impersonate")]
         public async Task<IActionResult> ImpersonateUser(string id)
         {
-            var authCheck = RequireToken();
-            if (authCheck != null) return authCheck;
-            if (!IsAdmin())
-                return StatusCode(403, new { error = "FORBIDDEN", message = "Yêu cầu quyền Admin." });
 
-            var adminId = ExtractSubFromToken(Request.Headers["Authorization"].FirstOrDefault()) ?? "unknown-admin";
+            var adminId = JwtHelper.ExtractSubFromToken(Request) ?? "unknown-admin";
 
             string email, username, role;
             int level;
@@ -552,6 +594,12 @@ namespace VisualizationDSA.WebApi.Controllers
             var impersonatedRefreshToken = Guid.NewGuid().ToString("N") + Guid.NewGuid().ToString("N");
             _authStrategy.ForceAddRefreshToken(impersonatedRefreshToken, id);
 
+            // Log Audit
+            if (Guid.TryParse(id, out var targetGuid))
+            {
+                await LogAdminAction("ImpersonateUser", targetGuid, $"Đóng vai (Impersonate) tài khoản học viên {username} ({email}).");
+            }
+
             return Ok(new
             {
                 accessToken = impersonatedToken,
@@ -584,6 +632,44 @@ namespace VisualizationDSA.WebApi.Controllers
             );
             return $"{header}.{payload}.{signature}";
         }
+
+        /// <summary>
+        /// Lấy danh sách nhật ký quản trị (Audit Logs).
+        /// GET /api/v1/concepts/admin/audit-logs
+        /// </summary>
+        [HttpGet("audit-logs")]
+        public async Task<IActionResult> GetAuditLogs([FromQuery] int page = 1, [FromQuery] int pageSize = 50)
+        {
+            var query = _dbContext.AuditLogs.AsQueryable();
+            var total = await query.CountAsync();
+            var logs = await query
+                .OrderByDescending(l => l.CreatedAt)
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+
+            return Ok(new { total, page, pageSize, logs });
+        }
+
+        private async Task LogAdminAction(string action, Guid? targetId, string details)
+        {
+            var adminIdStr = JwtHelper.ExtractSubFromToken(Request);
+            var adminName = "SystemAdmin";
+            Guid adminId = Guid.Empty;
+            if (adminIdStr != null && Guid.TryParse(adminIdStr, out var parsedId))
+            {
+                adminId = parsedId;
+                var adminUser = await _dbContext.Users.FindAsync(adminId);
+                if (adminUser != null)
+                {
+                    adminName = adminUser.Username;
+                }
+            }
+
+            var log = new AuditLog(action, adminId, adminName, targetId, details);
+            _dbContext.AuditLogs.Add(log);
+            await _dbContext.SaveChangesAsync();
+        }
     }
 
     // ── DTOs ─────────────────────────────────────────────────────────────────
@@ -591,4 +677,6 @@ namespace VisualizationDSA.WebApi.Controllers
     public record UpdateRoleRequest(string Role);
     public record TogglePremiumRequest(bool IsPremium);
     public record BanUserRequest(bool IsActive);
+    public record CreateUserRequest(string Email, string Username, string Password, string Role, bool IsPremium);
+    public record ResetPasswordRequest(string NewPassword);
 }

@@ -90,7 +90,11 @@ namespace VisualizationDSA.WebApi.Controllers
                 var computedHash = hmac.ComputeHash(System.Text.Encoding.UTF8.GetBytes(rawMessage));
                 var computedSignature = Convert.ToHexString(computedHash).ToLower();
 
-                if (!computedSignature.Equals(signatureHeader.Trim(), StringComparison.OrdinalIgnoreCase))
+                var computedBytes = System.Text.Encoding.UTF8.GetBytes(computedSignature);
+                var headerBytes = System.Text.Encoding.UTF8.GetBytes(signatureHeader.Trim().ToLowerInvariant());
+
+                if (computedBytes.Length != headerBytes.Length || 
+                    !System.Security.Cryptography.CryptographicOperations.FixedTimeEquals(computedBytes, headerBytes))
                 {
                     return Unauthorized(new { message = "Chữ ký webhook không hợp lệ." });
                 }
@@ -105,7 +109,16 @@ namespace VisualizationDSA.WebApi.Controllers
                 }
 
                 var expectedHeaderValue = $"Apikey {expectedApiKey}";
-                if (string.IsNullOrEmpty(authHeader) || !authHeader.Equals(expectedHeaderValue, StringComparison.Ordinal))
+                if (string.IsNullOrEmpty(authHeader))
+                {
+                    return Unauthorized(new { message = "Khóa xác thực Webhook không hợp lệ." });
+                }
+
+                var authHeaderBytes = System.Text.Encoding.UTF8.GetBytes(authHeader);
+                var expectedHeaderBytes = System.Text.Encoding.UTF8.GetBytes(expectedHeaderValue);
+
+                if (authHeaderBytes.Length != expectedHeaderBytes.Length || 
+                    !System.Security.Cryptography.CryptographicOperations.FixedTimeEquals(authHeaderBytes, expectedHeaderBytes))
                 {
                     return Unauthorized(new { message = "Khóa xác thực Webhook không hợp lệ." });
                 }

@@ -175,6 +175,104 @@
             </div>
           </form>
         </div>
+
+        <!-- Quiz Attempt History -->
+        <div class="dash-card form-card profile-card-spacing">
+          <h3 class="dash-card__title">
+            <BaseIcon name="clipboard-list" class="w-4 h-4 text-accent inline-block mr-1 align-text-bottom" />
+            Lịch sử làm bài trắc nghiệm
+          </h3>
+
+          <div v-if="loadingHistory" class="history-loading">
+            Đang tải lịch sử làm bài...
+          </div>
+          <div v-else-if="quizHistory.length === 0" class="history-empty">
+            Bạn chưa thực hiện bài trắc nghiệm nào.
+          </div>
+          <div v-else class="table-responsive">
+            <table class="history-table">
+              <thead>
+                <tr>
+                  <th>Bài trắc nghiệm</th>
+                  <th>Điểm số</th>
+                  <th>Kết quả</th>
+                  <th>Ngày thực hiện</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="attempt in quizHistory" :key="attempt.id">
+                  <td class="font-bold text-white">{{ attempt.quizTitle }}</td>
+                  <td class="font-mono text-indigo-300 font-bold">{{ attempt.score }} / {{ attempt.maxScore }}</td>
+                  <td>
+                    <span 
+                      class="badge-status" 
+                      :class="attempt.passed ? 'badge-status--passed' : 'badge-status--failed'"
+                    >
+                      {{ attempt.passed ? 'Đạt ✓' : 'Chưa đạt ✗' }}
+                    </span>
+                  </td>
+                  <td class="text-xs text-slate-400">{{ formatAttemptDate(attempt.attemptedAt) }}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="dash-card form-card profile-card-spacing">
+          <h3 class="dash-card__title">
+            <BaseIcon name="shield" class="w-4 h-4 text-accent inline-block mr-1 align-text-bottom" />
+            Đổi mật khẩu
+          </h3>
+
+          <form @submit.prevent="handleChangePassword" class="profile-form">
+            <div class="form-group">
+              <label for="currentPassword">Mật khẩu hiện tại</label>
+              <input 
+                id="currentPassword"
+                v-model="passwordForm.currentPassword" 
+                type="password" 
+                placeholder="Nhập mật khẩu hiện tại..."
+                class="form-control"
+                required
+              />
+            </div>
+
+            <div class="form-group">
+              <label for="newPassword">Mật khẩu mới</label>
+              <input 
+                id="newPassword"
+                v-model="passwordForm.newPassword" 
+                type="password" 
+                placeholder="Nhập mật khẩu mới (tối thiểu 8 ký tự)..."
+                class="form-control"
+                required
+              />
+            </div>
+
+            <div class="form-group">
+              <label for="confirmNewPassword">Xác nhận mật khẩu mới</label>
+              <input 
+                id="confirmNewPassword"
+                v-model="passwordForm.confirmNewPassword" 
+                type="password" 
+                placeholder="Xác nhận lại mật khẩu mới..."
+                class="form-control"
+                required
+              />
+            </div>
+
+            <div class="form-actions">
+              <button 
+                type="submit" 
+                class="btn btn-primary submit-btn"
+                :disabled="isChangingPassword"
+              >
+                <span v-if="isChangingPassword">Đang cập nhật...</span>
+                <span v-else>Cập nhật mật khẩu</span>
+              </button>
+            </div>
+          </form>
+        </div>
       </div>
     </div>
   </div>
@@ -199,9 +297,85 @@ const form = reactive({
   bio: ''
 });
 
+const isChangingPassword = ref(false);
+const passwordForm = reactive({
+  currentPassword: '',
+  newPassword: '',
+  confirmNewPassword: ''
+});
+
+async function handleChangePassword() {
+  if (!passwordForm.currentPassword) {
+    toastStore.error('Vui lòng nhập mật khẩu hiện tại.');
+    return;
+  }
+  if (passwordForm.newPassword.length < 8) {
+    toastStore.error('Mật khẩu mới phải từ 8 ký tự trở lên.');
+    return;
+  }
+  if (passwordForm.newPassword !== passwordForm.confirmNewPassword) {
+    toastStore.error('Xác nhận mật khẩu mới không khớp.');
+    return;
+  }
+  
+  isChangingPassword.value = true;
+  try {
+    await authStore.changePassword(passwordForm.currentPassword, passwordForm.newPassword);
+    toastStore.success('Đổi mật khẩu thành công!');
+    // Clear form
+    passwordForm.currentPassword = '';
+    passwordForm.newPassword = '';
+    passwordForm.confirmNewPassword = '';
+  } catch (err: any) {
+    const errorMsg = err.message || 'Không thể đổi mật khẩu.';
+    toastStore.error(errorMsg);
+  } finally {
+    isChangingPassword.value = false;
+  }
+}
+
+const loadingHistory = ref(false);
+const quizHistory = ref<any[]>([]);
+const BASE_URL = import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:5055';
+
+function formatAttemptDate(dateString: string): string {
+  try {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('vi-VN', {
+      year: 'numeric',
+      month: 'numeric',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  } catch {
+    return dateString;
+  }
+}
+
+async function loadQuizHistory() {
+  loadingHistory.value = true;
+  try {
+    const token = authStore.getAccessToken();
+    const res = await fetch(`${BASE_URL}/api/v1/concepts/quiz/history`, {
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
+    });
+    if (res.ok) {
+      quizHistory.value = await res.json();
+    }
+  } catch (err) {
+    console.error('Failed to load quiz history:', err);
+  } finally {
+    loadingHistory.value = false;
+  }
+}
+
 // Load profile info on mount
 onMounted(async () => {
   await authStore.loadStatelessProfile();
+  await loadQuizHistory();
   
   if (authStore.currentUser) {
     form.username = authStore.currentUser.username || '';
@@ -674,5 +848,60 @@ async function handleSave() {
   opacity: 0.6;
   cursor: not-allowed;
   transform: none;
+}
+
+.profile-card-spacing {
+  margin-top: 2rem;
+}
+
+.history-loading, .history-empty {
+  text-align: center;
+  padding: 2rem;
+  color: var(--text-tertiary);
+  font-size: 0.9rem;
+}
+
+.table-responsive {
+  width: 100%;
+  overflow-x: auto;
+  margin-top: 1rem;
+}
+
+.history-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+}
+
+.history-table th, .history-table td {
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  font-size: 0.85rem;
+}
+
+.history-table th {
+  color: var(--text-secondary);
+  font-weight: 600;
+  text-transform: uppercase;
+  font-size: 0.75rem;
+  letter-spacing: 0.05em;
+}
+
+.badge-status {
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.badge-status--passed {
+  background: rgba(16, 185, 129, 0.15);
+  color: #10b981;
+}
+
+.badge-status--failed {
+  background: rgba(239, 68, 68, 0.15);
+  color: #ef4444;
 }
 </style>

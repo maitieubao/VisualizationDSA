@@ -15,7 +15,7 @@ echo ============================================================
 echo.
 
 REM --- Start Backend in a new terminal window ---
-start "VisualizationDSA Backend" cmd /k "cd /d %~dp0 && set ASPNETCORE_ENVIRONMENT=Development&& dotnet run --project backend\src\WebApi\WebApi.csproj --urls http://localhost:5055"
+start "VisualizationDSA Backend" cmd /k "set ASPNETCORE_ENVIRONMENT=Development&& dotnet run --project backend\src\WebApi\WebApi.csproj --urls http://localhost:5055"
 
 
 
@@ -23,7 +23,7 @@ REM --- Wait briefly for backend to begin initializing ---
 timeout /t 3 /nobreak >nul
 
 REM --- Start Frontend in a new terminal window ---
-start "VisualizationDSA Frontend" cmd /k "cd /d %~dp0frontend && set VITE_API_BASE_URL=http://localhost:5055&& npm run dev"
+start "VisualizationDSA Frontend" cmd /k "cd frontend && set VITE_API_BASE_URL=http://localhost:5055&& npm run dev"
 
 
 

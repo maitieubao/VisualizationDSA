@@ -78,13 +78,63 @@ namespace VisualizationDSA.Infrastructure.Services
             var attempt = new QuizAttempt(userId, quiz.Id, request.Answers, score, maxScore);
             await _unitOfWork.QuizAttempts.AddAsync(attempt);
 
-            // Award XP if passed
+            // Award XP if passed with upgrade criteria:
+            // - First time passing: award full XP.
+            // - Subsequent passes: award XP only if the score is higher than all previous passes
+            //   and improvements is >= 20% or reaches 100% score for the first time.
+            // - Capped at 2 XP awards total per quiz.
             int xpEarned = 0;
             if (passed)
             {
-                xpEarned = quiz.XPReward;
-                await _gamificationService.AwardXPAsync(userId, xpEarned, $"Completed quiz: {quiz.Title}");
-                await _gamificationService.CompleteModuleAsync(userId, $"quiz-{quiz.Topic}");
+                var previousAttempts = await _unitOfWork.QuizAttempts.FindAsync(a => a.UserId == userId && a.QuizId == quiz.Id);
+                var chronologicalPasses = previousAttempts
+                    .Where(a => a.Passed && a.Id != attempt.Id) // exclude current attempt
+                    .OrderBy(a => a.AttemptedAt)
+                    .ToList();
+
+                if (chronologicalPasses.Count == 0)
+                {
+                    // First time passing
+                    xpEarned = quiz.XPReward;
+                }
+                else
+                {
+                    // Chronological analysis to check if they already claimed a second reward
+                    int runningMax = chronologicalPasses[0].Score;
+                    bool hasEarnedSecondReward = false;
+                    for (int i = 1; i < chronologicalPasses.Count; i++)
+                    {
+                        var p = chronologicalPasses[i];
+                        bool isImprovement = p.Score > runningMax;
+                        bool meetsUpgrade = (p.Score - runningMax) / (double)maxScore >= 0.20 || (p.Score == maxScore && runningMax < maxScore);
+                        if (isImprovement && meetsUpgrade)
+                        {
+                            hasEarnedSecondReward = true;
+                            break;
+                        }
+                        if (p.Score > runningMax)
+                        {
+                            runningMax = p.Score;
+                        }
+                    }
+
+                    if (!hasEarnedSecondReward)
+                    {
+                        int overallMaxPrevScore = chronologicalPasses.Max(a => a.Score);
+                        bool isCurrentImprovement = score > overallMaxPrevScore;
+                        bool currentMeetsUpgrade = (score - overallMaxPrevScore) / (double)maxScore >= 0.20 || (score == maxScore && overallMaxPrevScore < maxScore);
+                        if (isCurrentImprovement && currentMeetsUpgrade)
+                        {
+                            xpEarned = quiz.XPReward;
+                        }
+                    }
+                }
+
+                if (xpEarned > 0)
+                {
+                    await _gamificationService.AwardXPAsync(userId, xpEarned, $"Completed quiz: {quiz.Title}");
+                    await _gamificationService.CompleteModuleAsync(userId, $"quiz-{quiz.Topic}");
+                }
             }
 
             await _unitOfWork.CommitAsync();

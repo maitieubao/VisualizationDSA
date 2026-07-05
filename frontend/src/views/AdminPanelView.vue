@@ -59,6 +59,92 @@
           </div>
         </div>
 
+        <!-- Charts Grid (Sprint G) -->
+        <div class="dashboard-charts grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+          <!-- SVG Line/Bar Chart: Registration last 7 days -->
+          <div class="card card--chart">
+            <h3 class="card-heading">
+              <BaseIcon name="chart-bar" style="width:18px;height:18px;color:#38bdf8" />
+              Lượng học viên đăng ký mới (7 ngày gần nhất)
+            </h3>
+            <div class="chart-container flex items-center justify-center p-4">
+              <!-- Inline SVG for bar/line chart -->
+              <svg viewBox="0 0 500 200" class="w-full h-48">
+                <!-- Grid Lines -->
+                <line x1="40" y1="20" x2="480" y2="20" stroke="rgba(255,255,255,0.05)" stroke-dasharray="4" />
+                <line x1="40" y1="70" x2="480" y2="70" stroke="rgba(255,255,255,0.05)" stroke-dasharray="4" />
+                <line x1="40" y1="120" x2="480" y2="120" stroke="rgba(255,255,255,0.05)" stroke-dasharray="4" />
+                <line x1="40" y1="170" x2="480" y2="170" stroke="rgba(255,255,255,0.1)" />
+
+                <!-- X Axis Labels -->
+                <text v-for="(day, idx) in dashboardData.registrationsLast7Days" :key="idx"
+                  :x="60 + idx * 65" y="190" fill="#64748b" font-size="9" text-anchor="middle">
+                  {{ formatDateLabel(day.date) }}
+                </text>
+
+                <!-- Bars & Counts -->
+                <g v-for="(day, idx) in dashboardData.registrationsLast7Days" :key="'bar-' + idx">
+                  <!-- Scale height: y = 170 - (val * 25) to look nice, since count is usually 0-5. Limit to max y=30 -->
+                  <rect
+                    :x="60 + idx * 65 - 15"
+                    :y="170 - Math.min(5, Math.max(0.2, day.count)) * 25"
+                    width="30"
+                    :height="Math.min(5, Math.max(0.2, day.count)) * 25"
+                    rx="4"
+                    fill="url(#chartGrad)"
+                    class="transition-all duration-500 hover:opacity-80"
+                  />
+                  <!-- Count Badge -->
+                  <text
+                    :x="60 + idx * 65"
+                    :y="160 - Math.min(5, Math.max(0.2, day.count)) * 25"
+                    fill="#38bdf8"
+                    font-weight="bold"
+                    font-size="10"
+                    text-anchor="middle"
+                  >
+                    {{ day.count }}
+                  </text>
+                </g>
+
+                <!-- Gradient definitions -->
+                <defs>
+                  <linearGradient id="chartGrad" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stop-color="#06b6d4" />
+                    <stop offset="100%" stop-color="#3b82f6" stop-opacity="0.1" />
+                  </linearGradient>
+                </defs>
+              </svg>
+            </div>
+          </div>
+
+          <!-- Popular Courses Progress Statistics -->
+          <div class="card card--chart">
+            <h3 class="card-heading">
+              <BaseIcon name="collection" style="width:18px;height:18px;color:#a855f7" />
+              Khóa học phổ biến nhất (Lượt tương tác)
+            </h3>
+            <div class="course-stats-container p-6 space-y-4">
+              <div v-for="course in dashboardData.popularCourses" :key="course.courseId" class="space-y-1.5">
+                <div class="flex items-center justify-between text-xs">
+                  <span class="font-bold text-slate-200">{{ course.title }}</span>
+                  <span class="text-purple-400 font-semibold">{{ course.enrollmentsCount }} lượt học</span>
+                </div>
+                <div class="w-full bg-slate-950/80 rounded-full h-3 overflow-hidden border border-white/5">
+                  <!-- CSS progress bar with animation -->
+                  <div
+                    class="bg-gradient-to-r from-purple-500 to-indigo-500 h-full rounded-full transition-all duration-1000"
+                    :style="{ width: getCoursePercentage(course.enrollmentsCount) + '%' }"
+                  ></div>
+                </div>
+              </div>
+              <div v-if="!dashboardData.popularCourses || dashboardData.popularCourses.length === 0" class="text-center text-xs text-slate-500 py-8">
+                Chưa có dữ liệu khóa học tương tác.
+              </div>
+            </div>
+          </div>
+        </div>
+
         <div class="dashboard-tables">
           <!-- Top Active Users -->
           <div class="card card--top-users">
@@ -113,12 +199,17 @@
         <div class="card card--users">
           <div class="card-header-row">
             <h3 class="card-heading"><BaseIcon name="users" style="width:18px;height:18px" /> Quản lý Thành viên & Quyền hạn</h3>
-            <input 
-              v-model="searchQuery" 
-              class="search-input" 
-              placeholder="Tìm kiếm Email, Username..."
-              @input="onSearch"
-            />
+            <div class="flex gap-2 items-center">
+              <input 
+                v-model="searchQuery" 
+                class="search-input" 
+                placeholder="Tìm kiếm Email, Username..."
+                @input="onSearch"
+              />
+              <button class="btn-create-user flex items-center gap-1" @click="openCreateUserModal">
+                <BaseIcon name="plus" style="width:12px;height:12px" /> Tạo tài khoản
+              </button>
+            </div>
           </div>
 
           <div class="table-container">
@@ -164,17 +255,24 @@
                   </td>
                   <td><span class="level-badge">Lv.{{ u.currentLevel }}</span></td>
                   <td>{{ u.totalXP }} XP</td>
-                  <td>
-                    <button class="btn-audit-detail" @click="showUserAudit(u)"><BaseIcon name="clipboard-list" style="width:13px;height:13px" /> Xem</button>
+                  <td class="flex flex-wrap gap-1.5 items-center">
+                    <button class="btn-audit-detail" @click="showUserAudit(u)" title="Xem chi tiết"><BaseIcon name="clipboard-list" style="width:13px;height:13px" /> Xem</button>
                     <button
                       class="ban-btn"
                       :class="u.isActive !== false ? 'ban-btn--active' : 'ban-btn--banned'"
                       @click="toggleUserBan(u.id, u.isActive !== false)"
+                      title="Khóa/mở khóa"
                     >
                       <BaseIcon :name="u.isActive !== false ? 'unlock' : 'lock'" style="width:13px;height:13px" />
-                       {{ u.isActive !== false ? 'Hoạt động' : 'Bị khóa' }}
-                     </button>
-                     <button class="btn-impersonate" @click="impersonateUser(u.id)"><BaseIcon name="impersonate" style="width:14px;height:14px" /> Đóng vai</button>
+                      {{ u.isActive !== false ? 'Hoạt động' : 'Bị khóa' }}
+                    </button>
+                    <button class="btn-reset-password btn-impersonate" @click="openResetPasswordModal(u)" title="Đặt lại mật khẩu">
+                      <BaseIcon name="shield" style="width:13px;height:13px" /> Đổi Pass
+                    </button>
+                    <button class="btn-impersonate" @click="impersonateUser(u.id)" title="Đóng vai"><BaseIcon name="impersonate" style="width:14px;height:14px" /> Đóng vai</button>
+                    <button class="ban-btn ban-btn--banned flex items-center gap-1" @click="deleteUser(u.id, u.username)" title="Xóa tài khoản">
+                      <BaseIcon name="close" style="width:11px;height:11px" /> Xóa
+                    </button>
                   </td>
                 </tr>
                 <tr v-if="usersList.length === 0">
@@ -338,6 +436,60 @@
         </div>
       </section>
 
+      <!-- ── 5. NHẬT KÝ QUẢN TRỊ (AUDIT LOGS) ───────────────── -->
+      <section v-if="activeTab === 'audit'" class="tab-section fade-in">
+        <div class="card card--audit-logs bg-slate-900/40 border border-white/5 rounded-3xl p-6">
+          <div class="card-header-row flex justify-between items-center mb-6">
+            <h3 class="card-heading flex items-center gap-2 m-0 text-white text-base font-black">
+              <BaseIcon name="shield" style="width:18px;height:18px;color:#f87171" /> 
+              Nhật ký Hoạt động Quản trị (Admin Audit Logs)
+            </h3>
+            <button class="btn-create-user flex items-center gap-1 bg-white/5 border border-white/5 px-3 py-1.5 rounded-xl text-xs text-white hover:bg-white/10 transition-all font-bold cursor-pointer" @click="loadAuditLogs">
+              Làm mới ↻
+            </button>
+          </div>
+
+          <div class="table-container">
+            <div v-if="loadingAuditLogs" class="loading-state py-12 text-center text-slate-500 text-xs">
+              <div class="spinner inline-block w-6 h-6 border-2 border-indigo-500/20 border-t-indigo-400 rounded-full animate-spin mr-2"></div>
+              Đang tải nhật ký kiểm toán...
+            </div>
+            <div v-else-if="auditLogsList.length === 0" class="empty-state py-12 text-center text-slate-500 text-xs">
+              Chưa ghi nhận hoạt động quản trị nào.
+            </div>
+            <div v-else class="table-responsive overflow-x-auto">
+              <table class="data-table w-full text-left border-collapse">
+                <thead>
+                  <tr class="text-slate-400 text-xs border-b border-white/10">
+                    <th class="pb-3">Thời gian</th>
+                    <th class="pb-3">Hành động</th>
+                    <th class="pb-3">Quản trị viên</th>
+                    <th class="pb-3">Đối tượng tác động (Target ID)</th>
+                    <th class="pb-3">Chi tiết mô tả</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr v-for="log in auditLogsList" :key="log.id" class="border-b border-white/5 text-xs hover:bg-white/[0.02] transition-colors">
+                    <td class="py-3 font-mono text-slate-400 whitespace-nowrap">{{ formatAuditDate(log.createdAt) }}</td>
+                    <td class="py-3">
+                      <span 
+                        class="px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider whitespace-nowrap"
+                        :class="getAuditActionClass(log.action)"
+                      >
+                        {{ log.action }}
+                      </span>
+                    </td>
+                    <td class="py-3 font-bold text-white">{{ log.actorName }} <span class="text-[10px] text-slate-500 font-mono">({{ log.actorId.substring(0,8) }}...)</span></td>
+                    <td class="py-3 font-mono text-slate-400">{{ log.targetId ? log.targetId.substring(0,8) + '...' : '—' }}</td>
+                    <td class="py-3 text-slate-300">{{ log.details }}</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </section>
+
     </div>
   </div>
 
@@ -397,10 +549,121 @@
       </div>
     </Transition>
   </Teleport>
+
+  <!-- ── Create User Modal ────────────────────────── -->
+  <Teleport to="body">
+    <Transition name="modal-fade">
+      <div v-if="showCreateUserModal" class="user-modal-backdrop" @click.self="closeCreateUserModal">
+        <div class="user-modal-card">
+          <div class="user-modal-header">
+            <h2 class="user-modal-name text-white">Tạo người dùng mới</h2>
+            <button class="user-modal-close" @click="closeCreateUserModal">&times;</button>
+          </div>
+
+          <form @submit.prevent="submitCreateUser" class="modal-form mt-4">
+            <div class="form-group mb-4">
+              <label for="adminCreateUsername" class="block text-xs font-bold text-slate-400 mb-1.5 uppercase">Username</label>
+              <input 
+                id="adminCreateUsername"
+                v-model="createUserForm.username" 
+                type="text" 
+                class="form-control w-full" 
+                placeholder="Nhập username..."
+                required
+              />
+            </div>
+            
+            <div class="form-group mb-4">
+              <label for="adminCreateEmail" class="block text-xs font-bold text-slate-400 mb-1.5 uppercase">Email</label>
+              <input 
+                id="adminCreateEmail"
+                v-model="createUserForm.email" 
+                type="email" 
+                class="form-control w-full" 
+                placeholder="example@visualizationdsa.dev"
+                required
+              />
+            </div>
+
+            <div class="form-group mb-4">
+              <label for="adminCreatePassword" class="block text-xs font-bold text-slate-400 mb-1.5 uppercase">Mật khẩu ban đầu</label>
+              <input 
+                id="adminCreatePassword"
+                v-model="createUserForm.password" 
+                type="password" 
+                class="form-control w-full" 
+                placeholder="Tối thiểu 8 ký tự..."
+                required
+              />
+            </div>
+
+            <div class="form-group mb-4">
+              <label for="adminCreateRole" class="block text-xs font-bold text-slate-400 mb-1.5 uppercase">Vai trò (Role)</label>
+              <select id="adminCreateRole" v-model="createUserForm.role" class="form-control w-full">
+                <option value="Student">Học viên</option>
+                <option value="Teacher">Giảng viên</option>
+                <option value="Admin">Quản trị viên</option>
+              </select>
+            </div>
+
+            <div class="form-group mb-6 flex items-center gap-2">
+              <input id="adminCreatePremium" v-model="createUserForm.isPremium" type="checkbox" class="w-4 h-4 rounded border-slate-700 bg-slate-950/40 text-indigo-500 focus:ring-indigo-500" />
+              <label for="adminCreatePremium" class="text-xs font-bold text-slate-300 select-none cursor-pointer">Kích hoạt tài khoản Premium</label>
+            </div>
+
+            <div class="user-modal-footer">
+              <button type="button" class="btn-modal-close-secondary mr-2" @click="closeCreateUserModal">Hủy bỏ</button>
+              <button type="submit" class="submit-btn" :disabled="submittingUser">
+                {{ submittingUser ? 'Đang tạo...' : 'Tạo tài khoản' }}
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </Transition>
+  </Teleport>
+
+  <!-- ── Reset Password Modal ────────────────────────── -->
+  <Teleport to="body">
+    <Transition name="modal-fade">
+      <div v-if="showResetPasswordModal" class="user-modal-backdrop" @click.self="closeResetPasswordModal">
+        <div class="user-modal-card">
+          <div class="user-modal-header">
+            <div>
+              <h2 class="user-modal-name text-white">Đặt lại mật khẩu</h2>
+              <p class="text-xs text-slate-400 mt-1">Đổi mật khẩu cho: {{ targetUserForReset?.username }}</p>
+            </div>
+            <button class="user-modal-close" @click="closeResetPasswordModal">&times;</button>
+          </div>
+
+          <form @submit.prevent="submitResetPassword" class="modal-form mt-4">
+            <div class="form-group mb-6">
+              <label for="adminResetPassword" class="block text-xs font-bold text-slate-400 mb-1.5 uppercase">Mật khẩu mới</label>
+              <input 
+                id="adminResetPassword"
+                v-model="resetPasswordForm.password" 
+                type="password" 
+                class="form-control w-full" 
+                placeholder="Tối thiểu 8 ký tự..."
+                required
+              />
+            </div>
+
+            <div class="user-modal-footer">
+              <button type="button" class="btn-modal-close-secondary mr-2" @click="closeResetPasswordModal">Hủy</button>
+              <button type="submit" class="submit-btn" :disabled="submittingUser">
+                {{ submittingUser ? 'Đang cập nhật...' : 'Xác nhận đổi' }}
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </Transition>
+  </Teleport>
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue';
+import { ref, reactive, computed, onMounted } from 'vue';
 import { useAuthStore } from '../features/auth/store/useAuthStore';
 
 const BASE_URL = import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:5055';
@@ -417,6 +680,7 @@ const tabs: Tab[] = [
   { id: 'users', name: 'Người dùng', icon: 'users' },
   { id: 'quizzes', name: 'Quản lý Quiz', icon: 'clipboard-list' },
   { id: 'system', name: 'Hệ thống', icon: 'cog' },
+  { id: 'audit', name: 'Nhật ký Quản trị', icon: 'shield' },
 ];
 
 const activeTab = ref('dashboard');
@@ -444,13 +708,24 @@ interface DashboardData {
     currentLevel: number;
     role: string;
   }>;
+  registrationsLast7Days?: Array<{
+    date: string;
+    count: number;
+  }>;
+  popularCourses?: Array<{
+    courseId: string;
+    title: string;
+    enrollmentsCount: number;
+  }>;
 }
 
 const dashboardData = ref<DashboardData>({
   users: { total: 0, students: 0, teachers: 0, admins: 0, premium: 0 },
   quizzes: { total: 0 },
   orders: { total: 0, paid: 0 },
-  topUsers: []
+  topUsers: [],
+  registrationsLast7Days: [],
+  popularCourses: []
 });
 
 const premiumRatio = computed(() => {
@@ -462,6 +737,24 @@ const conversionRate = computed(() => {
   if (dashboardData.value.orders.total === 0) return 0;
   return Math.round((dashboardData.value.orders.paid / dashboardData.value.orders.total) * 100);
 });
+
+function formatDateLabel(dateStr: string): string {
+  try {
+    const parts = dateStr.split('-');
+    if (parts.length >= 3) {
+      return `${parts[2]}/${parts[1]}`;
+    }
+    return dateStr;
+  } catch {
+    return dateStr;
+  }
+}
+
+function getCoursePercentage(count: number): number {
+  if (!dashboardData.value.popularCourses || dashboardData.value.popularCourses.length === 0) return 0;
+  const max = Math.max(...dashboardData.value.popularCourses.map(c => c.enrollmentsCount), 1);
+  return Math.min(100, Math.round((count / max) * 100));
+}
 
 // User Management States
 interface UserItem {
@@ -595,6 +888,16 @@ async function changeUserRole(userId: string, event: Event): Promise<void> {
   const select = event.target as HTMLSelectElement;
   const newRole = select.value;
 
+  const u = usersList.value.find(user => user.id === userId);
+  const oldRole = u ? u.role : '';
+
+  if (!confirm(`Bạn có chắc chắn muốn đổi vai trò của người dùng ${u?.email || userId} từ ${oldRole} thành ${newRole}?`)) {
+    if (u) {
+      select.value = oldRole;
+    }
+    return;
+  }
+
   try {
     const res = await fetch(`${BASE_URL}/api/v1/concepts/admin/users/${userId}/role`, {
       method: 'PUT',
@@ -607,13 +910,17 @@ async function changeUserRole(userId: string, event: Event): Promise<void> {
 
     if (res.ok) {
       pushLog('INFO', `Đã cập nhật vai trò người dùng ${userId} thành ${newRole}`);
+      if (u) u.role = newRole;
       await loadDashboardData();
+      await loadUsers(currentPage.value);
     } else {
       pushLog('ERROR', `Lỗi cập nhật vai trò người dùng ${userId}`);
       alert('Lỗi cập nhật quyền. Hãy chắc chắn bạn là Admin.');
+      await loadUsers(currentPage.value);
     }
   } catch {
     alert('Lỗi kết nối khi cập nhật role.');
+    await loadUsers(currentPage.value);
   }
 }
 
@@ -687,6 +994,137 @@ async function deleteQuiz(quizId: string, title: string): Promise<void> {
 
 const showUserModal = ref(false);
 const selectedUser = ref<UserItem | null>(null);
+
+// Create User state
+const showCreateUserModal = ref(false);
+const submittingUser = ref(false);
+const createUserForm = reactive({
+  username: '',
+  email: '',
+  password: '',
+  role: 'Student',
+  isPremium: false
+});
+
+function openCreateUserModal() {
+  createUserForm.username = '';
+  createUserForm.email = '';
+  createUserForm.password = '';
+  createUserForm.role = 'Student';
+  createUserForm.isPremium = false;
+  showCreateUserModal.value = true;
+}
+
+function closeCreateUserModal() {
+  showCreateUserModal.value = false;
+}
+
+async function submitCreateUser() {
+  if (createUserForm.password.length < 8) {
+    alert('Mật khẩu tối thiểu phải có 8 ký tự.');
+    return;
+  }
+  submittingUser.value = true;
+  try {
+    const res = await fetch(`${BASE_URL}/api/v1/concepts/admin/users`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${authStore.getAccessToken()}`
+      },
+      body: JSON.stringify(createUserForm)
+    });
+    if (res.ok) {
+      alert('Tạo người dùng mới thành công!');
+      showCreateUserModal.value = false;
+      await loadDashboardData();
+      await loadUsers(currentPage.value);
+    } else {
+      const err = await res.json();
+      alert(err.message || 'Lỗi khi tạo người dùng.');
+    }
+  } catch (err) {
+    console.error(err);
+    alert('Lỗi kết nối mạng.');
+  } finally {
+    submittingUser.value = false;
+  }
+}
+
+// Reset password state
+const showResetPasswordModal = ref(false);
+const targetUserForReset = ref<UserItem | null>(null);
+const resetPasswordForm = reactive({
+  password: ''
+});
+
+function openResetPasswordModal(user: UserItem) {
+  targetUserForReset.value = user;
+  resetPasswordForm.password = '';
+  showResetPasswordModal.value = true;
+}
+
+function closeResetPasswordModal() {
+  showResetPasswordModal.value = false;
+  targetUserForReset.value = null;
+}
+
+async function submitResetPassword() {
+  if (!targetUserForReset.value) return;
+  if (resetPasswordForm.password.length < 8) {
+    alert('Mật khẩu tối thiểu phải có 8 ký tự.');
+    return;
+  }
+  submittingUser.value = true;
+  try {
+    const res = await fetch(`${BASE_URL}/api/v1/concepts/admin/users/${targetUserForReset.value.id}/reset-password`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${authStore.getAccessToken()}`
+      },
+      body: JSON.stringify({ newPassword: resetPasswordForm.password })
+    });
+    if (res.ok) {
+      alert('Đặt lại mật khẩu thành công!');
+      showResetPasswordModal.value = false;
+    } else {
+      const err = await res.json();
+      alert(err.message || 'Lỗi khi đặt lại mật khẩu.');
+    }
+  } catch (err) {
+    console.error(err);
+    alert('Lỗi kết nối mạng.');
+  } finally {
+    submittingUser.value = false;
+  }
+}
+
+// Delete user
+async function deleteUser(userId: string, username: string) {
+  if (!confirm(`Bạn có chắc chắn muốn XÓA VĨNH VIỄN tài khoản người dùng "${username}"? Hành động này không thể hoàn tác!`)) {
+    return;
+  }
+  try {
+    const res = await fetch(`${BASE_URL}/api/v1/concepts/admin/users/${userId}`, {
+      method: 'DELETE',
+      headers: {
+        'Authorization': `Bearer ${authStore.getAccessToken()}`
+      }
+    });
+    if (res.ok) {
+      alert('Đã xóa tài khoản thành công!');
+      await loadDashboardData();
+      await loadUsers(currentPage.value);
+    } else {
+      const err = await res.json();
+      alert(err.message || 'Lỗi khi xóa người dùng.');
+    }
+  } catch (err) {
+    console.error(err);
+    alert('Lỗi kết nối mạng.');
+  }
+}
 
 function showUserAudit(user: UserItem): void {
   selectedUser.value = user;
@@ -781,10 +1219,72 @@ async function toggleQuizDetails(quizId: string): Promise<void> {
   }
 }
 
+// Audit Logs Tab State
+interface AuditLogItem {
+  id: string;
+  action: string;
+  actorId: string;
+  actorName: string;
+  targetId: string | null;
+  details: string;
+  createdAt: string;
+}
+
+const auditLogsList = ref<AuditLogItem[]>([]);
+const loadingAuditLogs = ref(false);
+
+async function loadAuditLogs() {
+  loadingAuditLogs.value = true;
+  try {
+    const res = await fetch(`${BASE_URL}/api/v1/concepts/admin/audit-logs?page=1&pageSize=100`, {
+      headers: {
+        'Authorization': `Bearer ${authStore.getAccessToken()}`,
+        'Content-Type': 'application/json'
+      }
+    });
+    if (res.ok) {
+      const data = await res.json();
+      auditLogsList.value = data.logs ?? [];
+    }
+  } catch (err) {
+    console.error('Failed to load audit logs:', err);
+  } finally {
+    loadingAuditLogs.value = false;
+  }
+}
+
+function formatAuditDate(dateStr: string) {
+  try {
+    return new Date(dateStr).toLocaleString('vi-VN', {
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric'
+    });
+  } catch (e) {
+    return dateStr;
+  }
+}
+
+function getAuditActionClass(action: string) {
+  switch (action) {
+    case 'CreateUser': return 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20';
+    case 'DeleteUser': return 'bg-rose-500/10 text-rose-400 border border-rose-500/20';
+    case 'ResetPassword': return 'bg-amber-500/10 text-amber-400 border border-amber-500/20';
+    case 'UpdateUserRole': return 'bg-indigo-500/10 text-indigo-400 border border-indigo-500/20';
+    case 'TogglePremium': return 'bg-purple-500/10 text-purple-400 border border-purple-500/20';
+    case 'ImpersonateUser': return 'bg-sky-500/10 text-sky-400 border border-sky-500/20';
+    default: return 'bg-slate-500/10 text-slate-400 border border-slate-500/20';
+  }
+}
+
 onMounted(() => {
   loadDashboardData();
   loadUsers(1);
   loadQuizzes();
+  loadAuditLogs();
 });
 </script>
 
@@ -1660,5 +2160,39 @@ onMounted(() => {
   background: rgba(168, 85, 247, 0.25);
   border-color: rgba(168, 85, 247, 0.4);
   box-shadow: 0 0 10px rgba(168, 85, 247, 0.15);
+}
+
+.btn-create-user {
+  background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+  color: white;
+  border: none;
+  padding: 0.4rem 0.8rem;
+  border-radius: 8px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+.btn-create-user:hover {
+  opacity: 0.9;
+  transform: translateY(-1px);
+}
+.btn-reset-password {
+  background: rgba(245, 158, 11, 0.12) !important;
+  border: 1px solid rgba(245, 158, 11, 0.25) !important;
+  color: #f59e0b !important;
+}
+.btn-reset-password:hover {
+  background: rgba(245, 158, 11, 0.25) !important;
+  border-color: rgba(245, 158, 11, 0.4) !important;
+}
+.modal-form label {
+  color: var(--color-text-secondary, #94a3b8);
+  font-weight: 600;
+}
+.modal-form select.form-control {
+  background-color: rgba(10, 15, 26, 0.8);
+  color: white;
 }
 </style>

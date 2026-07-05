@@ -338,6 +338,81 @@ namespace VisualizationDSA.WebApi.Controllers
         }
 
         /// <summary>
+        /// Đổi mật khẩu của user — in-memory + PostgreSQL persistence.
+        /// PUT /api/v1/concepts/auth/change-password
+        /// </summary>
+        [HttpPut("change-password")]
+        public async Task<IActionResult> ChangePassword([FromBody] StatelessChangePasswordRequest request)
+        {
+            if (string.IsNullOrWhiteSpace(request.CurrentPassword) || string.IsNullOrWhiteSpace(request.NewPassword))
+            {
+                return BadRequest(new { error = "INVALID_INPUT", message = "Mật khẩu hiện tại và mật khẩu mới không được để trống." });
+            }
+
+            if (request.NewPassword.Length < 8)
+            {
+                return BadRequest(new { error = "INVALID_INPUT", message = "Mật khẩu mới phải có ít nhất 8 ký tự." });
+            }
+
+            var id = request.UserId ?? "demo-user-001";
+            
+            if (id != "demo-user-001" && Guid.TryParse(id, out var dbUserId))
+            {
+                var dbUser = await _dbContext.Users.FindAsync(dbUserId);
+                if (dbUser == null)
+                {
+                    return NotFound(new { error = "USER_NOT_FOUND", message = "Không tìm thấy người dùng." });
+                }
+
+                if (!StatelessAuthStrategy.VerifyPasswordDelegate(request.CurrentPassword, dbUser.PasswordHash))
+                {
+                    return BadRequest(new { error = "INCORRECT_PASSWORD", message = "Mật khẩu hiện tại không chính xác." });
+                }
+
+                var newHash = HashPasswordSHA256(request.NewPassword);
+                dbUser.ChangePassword(newHash);
+                dbUser.RecordActivity();
+                await _dbContext.SaveChangesAsync();
+
+                _authStrategy.EnsureUserInMemory(
+                    dbUser.Id.ToString(),
+                    dbUser.Email,
+                    dbUser.Username,
+                    dbUser.PasswordHash,
+                    dbUser.IsPremium,
+                    dbUser.Role,
+                    dbUser.TotalXP,
+                    dbUser.CurrentLevel,
+                    dbUser.StreakDays
+                );
+                _authStrategy.UpdateUserPassword(id, newHash);
+            }
+            else if (id == "demo-user-001")
+            {
+                try
+                {
+                    var profile = _authStrategy.GetProfile(id);
+                    if (request.CurrentPassword != "Demo@2024")
+                    {
+                        return BadRequest(new { error = "INCORRECT_PASSWORD", message = "Mật khẩu hiện tại không chính xác." });
+                    }
+                    var newHash = HashPasswordSHA256(request.NewPassword);
+                    _authStrategy.UpdateUserPassword(id, newHash);
+                }
+                catch (KeyNotFoundException ex)
+                {
+                    return NotFound(new { error = "USER_NOT_FOUND", message = ex.Message });
+                }
+            }
+            else
+            {
+                return BadRequest(new { error = "INVALID_USER_ID", message = "ID người dùng không hợp lệ." });
+            }
+
+            return Ok(new { message = "Đổi mật khẩu thành công!" });
+        }
+
+        /// <summary>
         /// Cộng XP cho user — in-memory + PostgreSQL persistence.
         /// POST /api/v1/concepts/auth/award-xp
         /// </summary>

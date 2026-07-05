@@ -36,7 +36,7 @@ def build_phan3(doc: Document) -> None:
                    ▼
 +─────────────────────────────────────────────────────+
 │          TẦNG WEB API (Presentation/API Layer)       │
-│   ASP.NET Core Web API (.NET 10) | Port: 5055       │
+│   ASP.NET Core Web API (.NET 9) | Port: 5055        │
 │   22 Controllers | Middleware JWT | CORS Policy     │
 +──────────────────┬──────────────────────────────────+
                    │ Dependency Injection
@@ -333,11 +333,11 @@ Admin --> A10
         ('Mã UC', 'UC-03'),
         ('Tên Use Case', 'Làm bài Quiz tương tác và nhận điểm XP thưởng'),
         ('Actor', 'Student'),
-        ('Mô tả', 'Học viên đã đăng nhập làm bài trắc nghiệm tương tác liên kết với module bài học, nộp bài và nhận XP thưởng nếu đạt điểm tối thiểu.'),
+        ('Mô tả', 'Học viên đã đăng nhập làm bài trắc nghiệm tương tác liên kết với bài học, nộp bài và nhận XP thưởng nếu vượt qua ngưỡng điểm đạt.'),
         ('Điều kiện tiên quyết', 'Student đã đăng nhập, JWT Token còn hiệu lực.'),
-        ('Luồng chính', '1. Student chọn module bài học và nhấp vào Quiz.\n2. Hệ thống hiển thị 3–5 câu hỏi trắc nghiệm.\n3. Student chọn đáp án cho từng câu hỏi.\n4. Nhấn nút "Nộp bài".\n5. Frontend gọi POST /api/v1/quizzes/submit với JWT.\n6. Backend chấm điểm, so sánh đáp án.\n7. Nếu đạt >= passing_score: cộng XP vào user_progress.\n8. Kiểm tra và mở khóa huy hiệu thành tựu nếu đủ điều kiện.\n9. Trả về kết quả: điểm, XP nhận, level mới nếu thăng cấp.'),
-        ('Luồng thay thế', 'A1: Token hết hạn → Trả lỗi 401, yêu cầu đăng nhập lại.\nA2: Không đạt điểm tối thiểu → Hiển thị kết quả, không cộng XP.\nA3: Đã làm quiz này trước đó → XP chỉ nhận lần đầu vượt qua.'),
-        ('Điều kiện sau', 'Điểm số được lưu vào user_submissions, XP cộng vào user_progress.'),
+        ('Luồng chính', '1. Student chọn bài học và nhấp vào Quiz.\n2. Hệ thống hiển thị các câu hỏi trắc nghiệm/điền khuyết.\n3. Student chọn đáp án hoặc nhập đoạn code còn thiếu.\n4. Nhấn nút "Nộp bài".\n5. Frontend gọi POST /api/v1/quizzes/submit với JWT.\n6. Backend chuẩn hóa mã nguồn (loại bỏ khoảng trắng thừa, chuẩn hóa dấu nháy) để chấm điểm chính xác câu hỏi điền khuyết.\n7. Nếu tổng điểm đạt >= passing_score (ngưỡng đỗ cấu hình riêng cho từng bài): cộng XP vào user_progress.\n8. Kiểm tra và mở khóa huy hiệu (thêm vào Bộ sưu tập trên Profile, cho phép chia sẻ Web Share API).\n9. Trả về kết quả: điểm số, trạng thái Đạt/Không đạt, XP nhận (chỉ trao lần đầu để chống cày điểm), và giải thích đáp án (bao gồm chỉ số chọn đúng X/Y đáp án đối với câu hỏi chọn nhiều).'),
+        ('Luồng thay thế', 'A1: Token hết hạn → Trả lỗi 401, yêu cầu đăng nhập lại.\nA2: Không đạt điểm tối thiểu → Hiển thị kết quả Không đạt, hiển thị giải thích đáp án, không cộng XP.\nA3: Đã vượt qua quiz này trước đó → Trả kết quả thành công, hiển thị thông báo "Bạn đã nhận XP cho bài kiểm tra này rồi".'),
+        ('Điều kiện sau', 'Lịch sử nộp bài được lưu vào user_submissions, XP cộng vào user_progress (chỉ cộng lần đầu).'),
         ('File liên quan', 'StatelessQuizController.cs, QuizBankStrategy.cs, GamificationStrategy.cs'),
     ]
     table_uc03 = create_table(doc, ['Thuộc tính', 'Nội dung đặc tả'],

@@ -226,16 +226,39 @@ async function handleFileUpload(event: Event): Promise<void> {
   if (!target.files || target.files.length === 0) return;
 
   const file = target.files[0];
+  
+  // 1. Giới hạn kích thước file tải lên (Tối đa 5MB)
+  const maxSizeBytes = 5 * 1024 * 1024;
+  if (file.size > maxSizeBytes) {
+    alert("Kích thước file vượt quá giới hạn cho phép (Tối đa 5MB).");
+    target.value = ''; // Reset file input
+    return;
+  }
+
   const reader = new FileReader();
 
   reader.onload = (e) => {
-    const data = new Uint8Array(e.target?.result as ArrayBuffer);
-    const workbook = XLSX.read(data, { type: 'array' });
-    const sheetName = workbook.SheetNames[0];
-    const worksheet = workbook.Sheets[sheetName];
-    const rows = XLSX.utils.sheet_to_json<ExcelRowInput>(worksheet);
+    try {
+      const data = new Uint8Array(e.target?.result as ArrayBuffer);
+      const workbook = XLSX.read(data, { type: 'array' });
+      const sheetName = workbook.SheetNames[0];
+      const worksheet = workbook.Sheets[sheetName];
+      const rows = XLSX.utils.sheet_to_json<ExcelRowInput>(worksheet);
 
-    parsedQuizzes.value = parseExcelRows(rows);
+      // 2. Giới hạn số lượng câu hỏi/dòng tối đa (Tối đa 2000 dòng)
+      if (rows.length > 2000) {
+        alert("File Excel chứa quá nhiều câu hỏi (Giới hạn tối đa là 2000 dòng).");
+        target.value = ''; // Reset file input
+        parsedQuizzes.value = [];
+        return;
+      }
+
+      parsedQuizzes.value = parseExcelRows(rows);
+    } catch (err) {
+      alert("Đã xảy ra lỗi khi đọc file Excel. Vui lòng kiểm tra lại định dạng file.");
+      target.value = ''; // Reset file input
+      parsedQuizzes.value = [];
+    }
   };
 
   reader.readAsArrayBuffer(file);

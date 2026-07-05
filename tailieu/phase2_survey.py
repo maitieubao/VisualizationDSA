@@ -81,9 +81,9 @@ def build_phan2(doc: Document) -> None:
         col_widths=[0.7, 1.4, 3.5, 0.9, 0.9])
     for i, row in enumerate(func_reqs):
         add_table_row(table_fr, list(row),
-                      centers=[True, False, False, True, True],
-                      bolds=[True, True, False, False, False],
-                      alt_row=(i % 2 == 1))
+                       centers=[True, False, False, True, True],
+                       bolds=[True, True, False, False, False],
+                       alt_row=(i % 2 == 1))
     doc.add_paragraph()
     add_caption(doc, 'Bảng 2.1: Danh sách yêu cầu chức năng (Functional Requirements)')
 
@@ -121,9 +121,9 @@ def build_phan2(doc: Document) -> None:
         col_widths=[0.8, 1.2, 4.9])
     for i, row in enumerate(nonfunc_reqs):
         add_table_row(table_nfr, list(row),
-                      centers=[True, False, False],
-                      bolds=[True, True, False],
-                      alt_row=(i % 2 == 1))
+                       centers=[True, False, False],
+                       bolds=[True, True, False],
+                       alt_row=(i % 2 == 1))
     doc.add_paragraph()
     add_caption(doc, 'Bảng 2.2: Danh sách yêu cầu phi chức năng (Non-Functional Requirements)')
 
@@ -149,13 +149,13 @@ def build_phan2(doc: Document) -> None:
          'DSA Visualization: Sorting, Graph; Animation Engine 60 FPS',
          'Bảo, Sơn (80%), Thư, Phúc (20%)'),
         ('Sprint 5', 'Tuần 9–10',
-         'OOP/SOLID/DI Visualization; Quiz System; Gamification Engine',
+         'OOP/SOLID/DI Visualization; Quiz System (Code matching); Gamification (Streak Freeze, Badge Share)',
          'Bảo, Sơn (75%), Thư, Phúc (25%)'),
         ('Sprint 6', 'Tuần 11–12',
-         'Admin Panel, Teacher Panel; Payment; Leaderboard; Playground',
+         'Admin/Teacher Panel (LaTeX, Mermaid); Payment (VietQR Polling, Confetti, Email, Preview Locks); Leaderboard; Playground',
          'Bảo, Sơn (70%), Thư, Phúc (30%)'),
         ('Sprint 7', 'Tuần 13–14',
-         'Kiểm thử toàn diện, fix bugs, hoàn thiện tài liệu, deploy',
+         'Kiểm thử toàn diện (Playwright E2E, xUnit, Vitest), fix bugs, hoàn thiện tài liệu, deploy',
          'Thư, Phúc (60%), Bảo, Sơn (40%)'),
     ]
 
@@ -205,15 +205,15 @@ def build_phan2(doc: Document) -> None:
          'Sơn', 'Sơn', '6 ngày', '✅'),
         ('T-14', 'Xây dựng Quiz System & QuizBankStrategy (30+ câu hỏi)',
          'Sơn', 'Sơn', '4 ngày', '✅'),
-        ('T-15', 'Xây dựng Gamification Engine (XP, Level, Badge, Streak)',
+        ('T-15', 'Xây dựng Gamification (XP, Level thăng cấp kép, Badge Share, Streak Freeze Shop)',
          'Sơn', 'Bảo, Sơn', '3 ngày', '✅'),
-        ('T-16', 'Xây dựng Admin Panel & Teacher Panel',
+        ('T-16', 'Xây dựng Admin Panel (Impersonation Banner) & Teacher Panel (LaTeX, Mermaid)',
          'Bảo, Sơn', 'Bảo, Sơn', '4 ngày', '✅'),
         ('T-17', 'Xây dựng Landing Page, Dashboard, Profile (Vue.js)',
          'Thư', 'Thư, Sơn', '4 ngày', '✅'),
         ('T-18', 'Xây dựng Quiz UI, Leaderboard, Payment UI (Vue.js)',
          'Phúc', 'Phúc, Sơn', '3 ngày', '✅'),
-        ('T-19', 'Tích hợp Payment & Premium Subscription',
+        ('T-19', 'Tích hợp Payment (VietQR Polling, Confetti, Email, Preview Locks)',
          'Sơn', 'Bảo, Sơn', '3 ngày', '✅'),
         ('T-20', 'Viết Test Cases & thực hiện kiểm thử',
          'Phúc, Thư', 'Phúc, Thư', '5 ngày', '✅'),

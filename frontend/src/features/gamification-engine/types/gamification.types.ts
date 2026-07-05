@@ -42,7 +42,7 @@ export interface ConfettiParticle {
 
 export const GRACE_HOURS_OFFSET = 2;
 export const MAX_XP_PER_QUIZ = 200;
-export const MAX_STREAK_FREEZES = 2;
+export const MAX_STREAK_FREEZES = 3;
 export const RATE_LIMIT_SECONDS = 30;
 export const CONFETTI_PARTICLE_COUNT = 150;
 export const CONFETTI_COLORS = ['#FF007F', '#06B6D4', '#10B981', '#F59E0B', '#8B5CF6'];

@@ -21,6 +21,12 @@ namespace VisualizationDSA.Infrastructure.Data
         public DbSet<SemanticConceptNode> SemanticConceptNodes { get; set; }
         public DbSet<KnowledgeEdge>       KnowledgeEdges       { get; set; }
         public DbSet<SystemAuditEventStream> SystemAuditEventStreams { get; set; }
+        public DbSet<Course>         Courses         { get; set; }
+        public DbSet<Lesson>         Lessons         { get; set; }
+        public DbSet<UserLessonProgress> UserLessonProgresses { get; set; }
+        public DbSet<LessonComment>  LessonComments  { get; set; }
+        public DbSet<AuditLog>       AuditLogs       { get; set; }
+        public DbSet<Notification>   Notifications   { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -199,6 +205,94 @@ namespace VisualizationDSA.Infrastructure.Data
                 {
                     payloadProp.HasColumnType("jsonb");
                 }
+            });
+
+            // Course configuration
+            modelBuilder.Entity<Course>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+                entity.Property(e => e.Title).IsRequired().HasMaxLength(200);
+                entity.Property(e => e.Category).IsRequired().HasMaxLength(50);
+                entity.Property(e => e.Difficulty).HasMaxLength(30);
+                entity.HasOne(e => e.Teacher)
+                      .WithMany()
+                      .HasForeignKey(e => e.TeacherId)
+                      .OnDelete(DeleteBehavior.Restrict);
+            });
+
+            // Lesson configuration
+            modelBuilder.Entity<Lesson>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+                entity.Property(e => e.Title).IsRequired().HasMaxLength(200);
+                entity.Property(e => e.SandboxType).HasMaxLength(50);
+                entity.HasOne(e => e.Course)
+                      .WithMany(c => c.Lessons)
+                      .HasForeignKey(e => e.CourseId)
+                      .OnDelete(DeleteBehavior.Cascade);
+                entity.HasOne(e => e.Quiz)
+                      .WithMany()
+                      .HasForeignKey(e => e.QuizId)
+                      .OnDelete(DeleteBehavior.SetNull);
+            });
+
+            // UserLessonProgress configuration
+            modelBuilder.Entity<UserLessonProgress>(entity =>
+            {
+                entity.HasKey(e => new { e.UserId, e.LessonId });
+                entity.Property(e => e.Status).IsRequired().HasMaxLength(30).HasDefaultValue("NotStarted");
+                entity.Property(e => e.LastActiveFrameIndex).HasDefaultValue(0);
+                entity.Property(e => e.LastScrollPercent).HasDefaultValue(0.0);
+                entity.HasOne(e => e.User)
+                      .WithMany(u => u.UserLessonProgresses)
+                      .HasForeignKey(e => e.UserId)
+                      .OnDelete(DeleteBehavior.Cascade);
+                entity.HasOne(e => e.Lesson)
+                      .WithMany(l => l.Progresses)
+                      .HasForeignKey(e => e.LessonId)
+                      .OnDelete(DeleteBehavior.Cascade);
+            });
+
+            // LessonComment configuration
+            modelBuilder.Entity<LessonComment>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+                entity.Property(e => e.Content).IsRequired().HasMaxLength(2000);
+                entity.HasOne(e => e.Lesson)
+                      .WithMany()
+                      .HasForeignKey(e => e.LessonId)
+                      .OnDelete(DeleteBehavior.Cascade);
+                entity.HasOne(e => e.User)
+                      .WithMany()
+                      .HasForeignKey(e => e.UserId)
+                      .OnDelete(DeleteBehavior.Cascade);
+                entity.HasOne(e => e.ParentComment)
+                      .WithMany(c => c.Replies)
+                      .HasForeignKey(e => e.ParentId)
+                      .OnDelete(DeleteBehavior.Cascade);
+            });
+
+            // AuditLog configuration
+            modelBuilder.Entity<AuditLog>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+                entity.Property(e => e.Action).IsRequired().HasMaxLength(100);
+                entity.Property(e => e.ActorName).IsRequired().HasMaxLength(100);
+                entity.Property(e => e.Details).HasMaxLength(2000);
+                entity.HasIndex(e => e.CreatedAt);
+            });
+
+            // Notification configuration
+            modelBuilder.Entity<Notification>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+                entity.Property(e => e.Content).IsRequired().HasMaxLength(1000);
+                entity.Property(e => e.LinkUrl).HasMaxLength(500);
+                entity.HasIndex(e => e.CreatedAt);
+                entity.HasOne(e => e.User)
+                      .WithMany()
+                      .HasForeignKey(e => e.UserId)
+                      .OnDelete(DeleteBehavior.Cascade);
             });
         }
     }

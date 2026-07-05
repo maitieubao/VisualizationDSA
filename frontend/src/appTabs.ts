@@ -13,6 +13,12 @@ export interface TabGroup {
 
 export const APP_TABS: readonly (TabGroup | TabItem)[] = [
   {
+    groupName: 'Học tập',
+    items: [
+      { id: 'learning-path', path: '/courses', name: 'Khóa học' }
+    ]
+  },
+  {
     groupName: 'Giải thuật',
     items: [
       { id: 'sorting',     path: '/sorting',     name: 'Sắp xếp' },
