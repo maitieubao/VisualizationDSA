@@ -1,0 +1,91 @@
+import type { ScenarioStep, ThreadInstance } from '../types/concurrency.types';
+
+export function makeThread(id: string, name: string): ThreadInstance {
+  return { id, name, state: 'READY', progress: 0, heldLocks: [], waitingForLock: null };
+}
+
+export const raceConditionSteps: ScenarioStep[] = [
+  { threadId: 'T1', action: 'MOVE', progressTarget: 20 },
+  { threadId: 'T2', action: 'MOVE', progressTarget: 20 },
+  { threadId: 'T1', action: 'MOVE', progressTarget: 40 },
+  { threadId: 'T2', action: 'MOVE', progressTarget: 40 },
+  { threadId: 'T1', action: 'ACQUIRE_LOCK', lockId: 'MUTEX' },
+  { threadId: 'T1', action: 'MOVE', progressTarget: 50 },
+  { threadId: 'T2', action: 'ACQUIRE_LOCK', lockId: 'MUTEX' },
+  { threadId: 'T1', action: 'READ_COUNTER' },
+  { threadId: 'T1', action: 'INCREMENT_COUNTER' },
+  { threadId: 'T1', action: 'MOVE', progressTarget: 60 },
+  { threadId: 'T1', action: 'READ_COUNTER' },
+  { threadId: 'T1', action: 'INCREMENT_COUNTER' },
+  { threadId: 'T1', action: 'MOVE', progressTarget: 80 },
+  { threadId: 'T1', action: 'RELEASE_LOCK', lockId: 'MUTEX' },
+  { threadId: 'T1', action: 'MOVE', progressTarget: 100 },
+  { threadId: 'T2', action: 'MOVE', progressTarget: 50 },
+  { threadId: 'T2', action: 'READ_COUNTER' },
+  { threadId: 'T2', action: 'INCREMENT_COUNTER' },
+  { threadId: 'T2', action: 'MOVE', progressTarget: 60 },
+  { threadId: 'T2', action: 'READ_COUNTER' },
+  { threadId: 'T2', action: 'INCREMENT_COUNTER' },
+  { threadId: 'T2', action: 'MOVE', progressTarget: 80 },
+  { threadId: 'T2', action: 'RELEASE_LOCK', lockId: 'MUTEX' },
+  { threadId: 'T2', action: 'MOVE', progressTarget: 100 },
+];
+
+export const deadlockDemoSteps: ScenarioStep[] = [
+  { threadId: 'T1', action: 'MOVE', progressTarget: 20 },
+  { threadId: 'T2', action: 'MOVE', progressTarget: 20 },
+  { threadId: 'T1', action: 'MOVE', progressTarget: 40 },
+  { threadId: 'T2', action: 'MOVE', progressTarget: 40 },
+  { threadId: 'T1', action: 'ACQUIRE_LOCK', lockId: 'L1' },
+  { threadId: 'T2', action: 'ACQUIRE_LOCK', lockId: 'L2' },
+  { threadId: 'T1', action: 'MOVE', progressTarget: 60 },
+  { threadId: 'T2', action: 'MOVE', progressTarget: 60 },
+  { threadId: 'T1', action: 'MOVE', progressTarget: 70 },
+  { threadId: 'T2', action: 'MOVE', progressTarget: 70 },
+  { threadId: 'T1', action: 'ACQUIRE_LOCK', lockId: 'L2' },
+  { threadId: 'T2', action: 'ACQUIRE_LOCK', lockId: 'L1' },
+];
+
+export const producerConsumerSteps: ScenarioStep[] = [
+  { threadId: 'P1', action: 'MOVE', progressTarget: 20 },
+  { threadId: 'C1', action: 'MOVE', progressTarget: 20 },
+  { threadId: 'P1', action: 'ACQUIRE_LOCK', lockId: 'BUFFER_LOCK' },
+  { threadId: 'P1', action: 'MOVE', progressTarget: 40 },
+  { threadId: 'P1', action: 'INCREMENT_COUNTER' },
+  { threadId: 'P1', action: 'MOVE', progressTarget: 60 },
+  { threadId: 'P1', action: 'INCREMENT_COUNTER' },
+  { threadId: 'P1', action: 'RELEASE_LOCK', lockId: 'BUFFER_LOCK' },
+  { threadId: 'P1', action: 'MOVE', progressTarget: 80 },
+  { threadId: 'C1', action: 'ACQUIRE_LOCK', lockId: 'BUFFER_LOCK' },
+  { threadId: 'C1', action: 'MOVE', progressTarget: 40 },
+  { threadId: 'C1', action: 'READ_COUNTER' },
+  { threadId: 'C1', action: 'MOVE', progressTarget: 60 },
+  { threadId: 'C1', action: 'READ_COUNTER' },
+  { threadId: 'C1', action: 'RELEASE_LOCK', lockId: 'BUFFER_LOCK' },
+  { threadId: 'C1', action: 'MOVE', progressTarget: 80 },
+  { threadId: 'P1', action: 'MOVE', progressTarget: 100 },
+  { threadId: 'C1', action: 'MOVE', progressTarget: 100 },
+];
+
+export const diningPhilosophersSteps: ScenarioStep[] = [
+  { threadId: 'P0', action: 'MOVE', progressTarget: 20 },
+  { threadId: 'P1', action: 'MOVE', progressTarget: 20 },
+  { threadId: 'P2', action: 'MOVE', progressTarget: 20 },
+  { threadId: 'P3', action: 'MOVE', progressTarget: 20 },
+  { threadId: 'P4', action: 'MOVE', progressTarget: 20 },
+  { threadId: 'P0', action: 'ACQUIRE_LOCK', lockId: 'F0' },
+  { threadId: 'P1', action: 'ACQUIRE_LOCK', lockId: 'F1' },
+  { threadId: 'P2', action: 'ACQUIRE_LOCK', lockId: 'F2' },
+  { threadId: 'P3', action: 'ACQUIRE_LOCK', lockId: 'F3' },
+  { threadId: 'P4', action: 'ACQUIRE_LOCK', lockId: 'F4' },
+  { threadId: 'P0', action: 'MOVE', progressTarget: 50 },
+  { threadId: 'P1', action: 'MOVE', progressTarget: 50 },
+  { threadId: 'P2', action: 'MOVE', progressTarget: 50 },
+  { threadId: 'P3', action: 'MOVE', progressTarget: 50 },
+  { threadId: 'P4', action: 'MOVE', progressTarget: 50 },
+  { threadId: 'P0', action: 'ACQUIRE_LOCK', lockId: 'F1' },
+  { threadId: 'P1', action: 'ACQUIRE_LOCK', lockId: 'F2' },
+  { threadId: 'P2', action: 'ACQUIRE_LOCK', lockId: 'F3' },
+  { threadId: 'P3', action: 'ACQUIRE_LOCK', lockId: 'F4' },
+  { threadId: 'P4', action: 'ACQUIRE_LOCK', lockId: 'F0' },
+];

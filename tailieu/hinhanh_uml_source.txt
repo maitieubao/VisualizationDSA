@@ -1,0 +1,564 @@
+================================================================================
+DIAGRAM SOURCE: Text Architecture Diagram
+================================================================================
++─────────────────────────────────────────────────────+
+│           TẦNG TRÌNH BÀY (Presentation Layer)       │
+│     Vue 3 SPA (Vite + TypeScript + Pinia Store)     │
+│   Port: 5173 | Glassmorphic UI | Canvas 60 FPS      │
++──────────────────┬──────────────────────────────────+
+                   │ HTTPS / JWT Bearer
+                   ▼
++─────────────────────────────────────────────────────+
+│          TẦNG WEB API (Presentation/API Layer)       │
+│   ASP.NET Core Web API (.NET 9) | Port: 5055        │
+│   22 Controllers | Middleware JWT | CORS Policy     │
++──────────────────┬──────────────────────────────────+
+                   │ Dependency Injection
+                   ▼
++─────────────────────────────────────────────────────+
+│         TẦNG ỨNG DỤNG (Application Layer)           │
+│       Services | DTOs | Validators | Interfaces     │
+│         AuthService | GamificationService           │
++──────────────────┬──────────────────────────────────+
+                   │
+                   ▼
++─────────────────────────────────────────────────────+
+│           TẦNG MIỀN (Domain Layer)                  │
+│     Entities | Strategy Pattern (29 Strategies)     │
+│   User | Quiz | Badge | Order | LearningProgress    │
++──────────────────┬──────────────────────────────────+
+                   │ EF Core ORM
+                   ▼
++─────────────────────────────────────────────────────+
+│       TẦNG HẠ TẦNG (Infrastructure Layer)           │
+│     PostgreSQL (Supabase) | EF Core DbContext       │
+│            Migrations | Repositories               │
++─────────────────────────────────────────────────────+
+
+================================================================================
+DIAGRAM SOURCE: PlantUML
+================================================================================
+@startuml UC_GUEST
+skinparam actorStyle awesome
+skinparam backgroundColor #1a1a2e
+skinparam actor {
+  BackgroundColor #0f3460
+  BorderColor #e94560
+  FontColor white
+}
+skinparam usecase {
+  BackgroundColor #16213e
+  BorderColor #e94560
+  FontColor white
+}
+
+left to right direction
+actor "Guest\n(Khách vãng lai)" as Guest #0f3460
+
+rectangle "VisualizationDSA System" {
+  usecase "UC-G01\nXem Landing Page" as G1
+  usecase "UC-G02\nXem demo\nVisualization" as G2
+  usecase "UC-G03\nXem giới thiệu\ncác Module" as G3
+  usecase "UC-G04\nĐăng ký\ntài khoản" as G4
+  usecase "UC-G05\nĐăng nhập\ntài khoản" as G5
+}
+
+Guest --> G1
+Guest --> G2
+Guest --> G3
+Guest --> G4
+Guest --> G5
+G4 .> G5 : <<include>>
+@enduml
+
+================================================================================
+DIAGRAM SOURCE: PlantUML
+================================================================================
+@startuml UC_STUDENT
+skinparam actorStyle awesome
+left to right direction
+actor "Student\n(Học viên)" as Student
+
+rectangle "VisualizationDSA – Student Functions" {
+  package "Visualization" {
+    usecase "UC-S01 Xem Visualization\nDSA (Sort, Graph, Tree)" as S1
+    usecase "UC-S02 Điều khiển VCR\n(Play/Pause/Seek)" as S2
+    usecase "UC-S03 Nhập dữ liệu\ntùy chỉnh" as S3
+    usecase "UC-S04 So sánh\nthuật toán" as S4
+    usecase "UC-S05 Vẽ Graph\ntự do (Playground)" as S5
+  }
+  package "OOP & SE Concepts" {
+    usecase "UC-S06 Xem OOP\nVisualization" as S6
+    usecase "UC-S07 Xem SOLID\nPrinciples Viz" as S7
+    usecase "UC-S08 Xem Design\nPatterns Viz" as S8
+    usecase "UC-S09 Xem DI Container\nSimulation" as S9
+  }
+  package "Learning & Gamification" {
+    usecase "UC-S10 Xem E-Lecture\nbài giảng" as S10
+    usecase "UC-S11 Làm Quiz\nvà nộp bài" as S11
+    usecase "UC-S12 Nhận điểm XP\nvà thăng cấp" as S12
+    usecase "UC-S13 Xem huy hiệu\nthành tựu" as S13
+    usecase "UC-S14 Xem bảng\nxếp hạng" as S14
+  }
+  package "Account" {
+    usecase "UC-S15 Quản lý\nhồ sơ cá nhân" as S15
+    usecase "UC-S16 Nâng cấp\nPremium" as S16
+  }
+}
+
+Student --> S1
+S1 .> S2 : <<include>>
+S1 .> S3 : <<extend>>
+Student --> S4
+Student --> S5
+Student --> S6
+Student --> S7
+Student --> S8
+Student --> S9
+Student --> S10
+Student --> S11
+S11 .> S12 : <<include>>
+Student --> S13
+Student --> S14
+Student --> S15
+Student --> S16
+@enduml
+
+================================================================================
+DIAGRAM SOURCE: PlantUML
+================================================================================
+@startuml UC_TEACHER
+skinparam actorStyle awesome
+left to right direction
+actor "Teacher\n(Giảng viên)" as Teacher
+actor "Student\n(Học viên)" as Student
+
+rectangle "VisualizationDSA – Teacher Panel" {
+  usecase "UC-T01 Đăng nhập\nTeacher Panel" as T1
+  usecase "UC-T02 Xem Dashboard\nthống kê lớp" as T2
+  usecase "UC-T03 Quản lý Quiz\n(CRUD)" as T3
+  usecase "UC-T04 Thêm câu hỏi\nmới vào Quiz" as T4
+  usecase "UC-T05 Sửa câu hỏi\nhiện có" as T5
+  usecase "UC-T06 Xóa câu hỏi\nkhỏi Quiz" as T6
+  usecase "UC-T07 Xem danh sách\nhọc viên" as T7
+  usecase "UC-T08 Xem kết quả\nnộp bài học viên" as T8
+  usecase "UC-T09 Thực hiện\ncác chức năng Student" as T9
+}
+
+Teacher --> T1
+T1 .> T2 : <<include>>
+Teacher --> T3
+T3 .> T4 : <<extend>>
+T3 .> T5 : <<extend>>
+T3 .> T6 : <<extend>>
+Teacher --> T7
+Teacher --> T8
+Teacher --> T9
+T9 ..> Student : <<generalize>>
+@enduml
+
+================================================================================
+DIAGRAM SOURCE: PlantUML
+================================================================================
+@startuml UC_ADMIN
+skinparam actorStyle awesome
+left to right direction
+actor "Admin\n(Quản trị viên)" as Admin
+
+rectangle "VisualizationDSA – Admin Panel" {
+  package "Dashboard" {
+    usecase "UC-A01 Xem Dashboard\nthống kê hệ thống" as A1
+  }
+  package "User Management" {
+    usecase "UC-A02 Xem danh sách\ntất cả người dùng" as A2
+    usecase "UC-A03 Tìm kiếm\nngười dùng" as A3
+    usecase "UC-A04 Phân quyền\nRole (Student/Teacher)" as A4
+    usecase "UC-A05 Khóa / Mở khóa\ntài khoản" as A5
+    usecase "UC-A06 Nâng cấp / Hủy\nPremium người dùng" as A6
+    usecase "UC-A07 Đóng vai\n(Impersonate) người dùng" as A7
+  }
+  package "Quiz Management" {
+    usecase "UC-A08 Xem danh sách\nQuiz toàn hệ thống" as A8
+    usecase "UC-A09 Xóa Quiz\nkhỏi hệ thống" as A9
+  }
+  package "System" {
+    usecase "UC-A10 Thực hiện\ncác chức năng Teacher" as A10
+  }
+}
+
+Admin --> A1
+Admin --> A2
+A2 .> A3 : <<extend>>
+Admin --> A4
+Admin --> A5
+Admin --> A6
+Admin --> A7
+Admin --> A8
+A8 .> A9 : <<extend>>
+Admin --> A10
+@enduml
+
+================================================================================
+DIAGRAM SOURCE: Sitemap Tree
+================================================================================
+/ (Landing Page)
+├── /dashboard          → Dashboard học viên (XP, Level, Achievements)
+├── /dsa                → DSA Modules Hub
+│   ├── /sorting        → Sorting Visualization (Bubble, Quick, Merge, Heap, Radix, Counting, Bucket)
+│   ├── /graph          → Graph Visualization (BFS, DFS, Dijkstra)
+│   ├── /search         → Search Algorithms (Binary Search, Linear Search)
+│   └── /structures     → Data Structures (Stack, Queue, Monotonic Stack)
+├── /oop                → OOP Concepts Visualization
+├── /solid              → SOLID Principles Visualization  
+├── /patterns           → Design Patterns Visualization
+├── /di                 → DI Container Simulation
+├── /system             → System Design Visualization
+├── /compare            → Algorithm Comparison Tool
+├── /playground         → Interactive Playground (Draw Graph)
+├── /quiz               → Quiz Hub
+│   └── /quiz/:id       → Làm Quiz cụ thể
+├── /leaderboard        → Bảng xếp hạng
+├── /profile            → Hồ sơ cá nhân
+├── /premium            → Nâng cấp Premium (Checkout)
+├── /teacher            → Teacher Panel (Role: Teacher)
+├── /admin              → Admin Panel (Role: Admin)
+└── /404                → Not Found Page
+
+================================================================================
+DIAGRAM SOURCE: Wireframe ASCII
+================================================================================
++─────────────────────────────────────────────────────────────+
+│  HEADER: Logo | Nav Links | User Avatar | XP Bar | Level    │
++──────────────┬──────────────────────────────────────────────+
+│              │                                              │
+│   SIDEBAR    │          MAIN CANVAS AREA (Canvas 2D)        │
+│  (Algorithm  │    ┌────────────────────────────────────┐   │
+│   List)      │    │  [ Visualization Canvas 60 FPS ]   │   │
+│              │    │  Bars / Nodes / Graph / Tree...     │   │
+│  • Sort      │    └────────────────────────────────────┘   │
+│  • Graph     │                                              │
+│  • Tree      │    [ VCR Controls: ◀ ⏸ ▶ ⏭ ]  Speed: 1x  │
+│  • OOP       │    [████████████░░░░░░░░░░░░] Seekbar        │
+│  • SOLID     │                                              │
+│  • DI        │    ┌─────────────┐  ┌───────────────────┐   │
+│              │    │  Pseudocode │  │   Code Editor     │   │
+│  [PREMIUM]   │    │  Viewer     │  │  (Monaco Editor)  │   │
+│              │    └─────────────┘  └───────────────────┘   │
++──────────────┴──────────────────────────────────────────────+
+
+================================================================================
+DIAGRAM SOURCE: Mermaid ERD
+================================================================================
+erDiagram
+    USERS ||--o{ QUIZ_ATTEMPTS : "submits"
+    USERS ||--o{ LEARNING_PROGRESSES : "tracks"
+    USERS ||--o{ USER_BADGES : "earns"
+    USERS ||--o{ ORDERS : "places"
+    USERS ||--o{ REFRESH_TOKENS : "has"
+
+    QUIZZES ||--o{ QUIZ_ATTEMPTS : "attempted via"
+    QUIZZES ||--o{ QUIZ_QUESTIONS : "contains"
+    BADGES ||--o{ USER_BADGES : "awarded in"
+
+    USERS {
+        UUID id PK
+        string email UK
+        string username
+        string password_hash
+        int total_xp
+        int current_level
+        int streak_days
+        bool is_premium
+        string role
+        bool is_active
+        datetime created_at
+        datetime last_login_at
+        datetime last_activity_date
+    }
+    QUIZZES {
+        UUID id PK
+        string title
+        string topic
+        string difficulty
+        int xp_reward
+        int passing_score
+        string created_by
+        datetime created_at
+    }
+    QUIZ_QUESTIONS {
+        UUID id PK
+        UUID quiz_id FK
+        string question_text
+        string question_type
+        jsonb options
+        string correct_answer
+        int order_index
+    }
+    QUIZ_ATTEMPTS {
+        UUID id PK
+        UUID user_id FK
+        UUID quiz_id FK
+        int score
+        int max_score
+        bool passed
+        int xp_awarded
+        jsonb answers
+        datetime attempted_at
+    }
+    BADGES {
+        UUID id PK
+        string name
+        string description
+        string icon_emoji
+        string requirement_type
+        int requirement_value
+        int xp_reward
+    }
+    USER_BADGES {
+        UUID user_id PK,FK
+        UUID badge_id PK,FK
+        datetime earned_at
+    }
+    ORDERS {
+        UUID id PK
+        UUID user_id FK
+        string package_type
+        decimal amount
+        string currency
+        string status
+        string payment_provider
+        string transaction_id
+        datetime created_at
+        datetime expires_at
+    }
+    LEARNING_PROGRESSES {
+        UUID id PK
+        UUID user_id FK
+        string module_id
+        datetime completed_at
+    }
+
+================================================================================
+DIAGRAM SOURCE: PlantUML
+================================================================================
+@startuml ClassDiagram_CleanArch
+skinparam classAttributeIconSize 0
+skinparam backgroundColor #1a1a2e
+skinparam class {
+  BackgroundColor #16213e
+  BorderColor #e94560
+  FontColor white
+  ArrowColor #e94560
+}
+
+package "WebApi Layer" {
+  class AlgorithmsController {
+    -_strategies: IEnumerable<IAlgorithmStrategy>
+    +GetAll(): ActionResult
+    +Execute(req): ActionResult<AlgorithmResult>
+    +CustomExecute(req): Task<ActionResult>
+    +Compare(req): ActionResult
+  }
+  class AdminController {
+    -_dbContext: ApplicationDbContext
+    -_authStrategy: StatelessAuthStrategy
+    +GetDashboard(): IActionResult
+    +GetUsers(): IActionResult
+    +SetRole(id, req): IActionResult
+    +TogglePremium(id, req): IActionResult
+  }
+  class StatelessAuthController {
+    -_authStrategy: StatelessAuthStrategy
+    +Register(req): IActionResult
+    +Login(req): IActionResult
+    +GetProfile(): IActionResult
+  }
+}
+
+package "Application Layer" {
+  interface IAlgorithmStrategy {
+    +AlgorithmId: string
+    +Name: string
+    +Category: string
+    +Execute(input, ct): List<FrameDTO>
+    +GetMetadata(): AlgorithmMetadata
+  }
+  class AuthService {
+    +Register(email, password): Task<User>
+    +Login(email, password): Task<string>
+    +ValidateToken(token): ClaimsPrincipal
+  }
+}
+
+package "Domain Layer" {
+  class User {
+    +Id: Guid
+    +Email: string
+    +TotalXP: int
+    +CurrentLevel: int
+    +Role: string
+    +IsActive: bool
+    +AwardXP(amount): void
+    +RecordActivity(): void
+    +SetRole(role): void
+    +SetActiveStatus(active): void
+  }
+  class BubbleSortStrategy {
+    +AlgorithmId: string = "bubble-sort"
+    +Execute(input, ct): List<FrameDTO>
+    +GetMetadata(): AlgorithmMetadata
+  }
+  class DijkstraStrategy {
+    +AlgorithmId: string = "dijkstra"
+    +Execute(input, ct): List<FrameDTO>
+  }
+  class StatelessAuthStrategy {
+    -_users: List<InMemoryUser>
+    +Authenticate(email, pwd): InMemoryUser?
+    +Register(email, username, pwd): InMemoryUser
+    +GetAllUsers(): List<InMemoryUser>
+    +GenerateToken(user): string
+  }
+}
+
+package "Infrastructure Layer" {
+  class ApplicationDbContext {
+    +Users: DbSet<User>
+    +Quizzes: DbSet<Quiz>
+    +Badges: DbSet<Badge>
+    +Orders: DbSet<Order>
+    +OnModelCreating(): void
+  }
+}
+
+AlgorithmsController --> IAlgorithmStrategy
+AdminController --> ApplicationDbContext
+AdminController --> StatelessAuthStrategy
+StatelessAuthController --> StatelessAuthStrategy
+BubbleSortStrategy ..|> IAlgorithmStrategy
+DijkstraStrategy ..|> IAlgorithmStrategy
+ApplicationDbContext --> User
+AuthService --> ApplicationDbContext
+@enduml
+
+================================================================================
+DIAGRAM SOURCE: PlantUML
+================================================================================
+@startuml SequenceDiagram_AlgoExecute
+actor User
+participant "Vue 3 Frontend
+(DSAModulesView)" as FE
+participant "Pinia Store
+(vcrStore)" as Store
+participant "ASP.NET Core
+AlgorithmsController" as API
+participant "BubbleSortStrategy
+(Domain Layer)" as Strategy
+
+User -> FE : Chọn Bubble Sort, nhập [5,3,8,1,9]
+FE -> API : POST /api/v1/algorithms/custom-execute
+{ algorithmId: "bubble-sort", rawInput: "5,3,8,1,9" }
+activate API
+API -> API : InputParser.ParseArray("5,3,8,1,9")
+API -> Strategy : strategy.Execute([5,3,8,1,9], cancelToken)
+activate Strategy
+Strategy -> Strategy : yield return Frame (mỗi bước hoán đổi)
+Strategy -> Strategy : yield return Frame (so sánh, highlight)
+Strategy --> API : List<FrameDTO> (47 frames)
+deactivate Strategy
+API --> FE : 200 OK { frames: [...47 frames...], pseudoCode: "..." }
+deactivate API
+FE -> Store : vcrStore.loadFrames(frames)
+FE -> FE : Canvas.play() → requestAnimationFrame loop
+loop Mỗi frame (60 FPS)
+  FE -> Store : vcrStore.currentFrame++
+  FE -> FE : Canvas.draw(currentFrame)
+  FE -> User : Hiển thị hoạt hình thanh biểu đồ
+end
+@enduml
+
+================================================================================
+DIAGRAM SOURCE: PlantUML
+================================================================================
+@startuml SequenceDiagram_JWT_Auth
+actor User
+participant "Frontend
+(LoginView.vue)" as FE
+participant "StatelessAuth
+Controller" as Auth
+participant "StatelessAuth
+Strategy" as Strategy
+participant "PostgreSQL
+Database" as DB
+
+User -> FE : Nhập email + mật khẩu, nhấn "Đăng nhập"
+FE -> Auth : POST /api/v1/stateless-auth/login
+{ email: "...", password: "..." }
+activate Auth
+Auth -> Strategy : Authenticate(email, password)
+activate Strategy
+Strategy -> DB : SELECT * FROM users WHERE email = ?
+alt DB Available
+  DB --> Strategy : User record
+  Strategy -> Strategy : BCrypt.Verify(password, hash)
+else DB Offline (Fallback)
+  Strategy -> Strategy : Kiểm tra InMemory _users list
+end
+alt Xác thực thành công
+  Strategy -> Strategy : JwtSecurityTokenHandler.CreateToken()
+  Strategy --> Auth : { token, userId, role }
+  deactivate Strategy
+  Auth --> FE : 200 OK { token: "eyJ...", user: {...} }
+  FE -> FE : userStore.setToken(token)
+  FE -> User : Chuyển đến Dashboard
+else Xác thực thất bại
+  Auth --> FE : 401 INVALID_CREDENTIALS
+  FE -> User : Hiển thị thông báo lỗi đăng nhập
+end
+deactivate Auth
+@enduml
+
+================================================================================
+DIAGRAM SOURCE: PlantUML
+================================================================================
+@startuml ActivityDiagram_Quiz
+start
+:Student truy cập module bài học;
+:Hệ thống hiển thị nút "Làm Quiz";
+:Student nhấn nút Quiz;
+:Hệ thống tải danh sách câu hỏi
+GET /api/v1/quizzes/{id}/questions;
+:Hiển thị 3-5 câu hỏi trắc nghiệm;
+repeat
+  :Student chọn đáp án cho câu hỏi hiện tại;
+repeat while (Còn câu hỏi chưa trả lời?) is (Có)
+:Student nhấn nút "Nộp bài";
+:POST /api/v1/quizzes/{id}/submit với JWT;
+if (JWT Token hợp lệ?) then (Không)
+  :Trả lỗi 401 Unauthorized;
+  :Yêu cầu đăng nhập lại;
+  stop
+else (Có)
+  :Backend chấm điểm, so sánh đáp án;
+  if (Điểm >= passing_score?) then (Có)
+    :Cộng XP vào user_progress;
+    :Kiểm tra điều kiện mở Badge;
+    if (Đủ điều kiện mở Badge?) then (Có)
+      :Tạo user_badges record;
+      :Hiển thị thông báo "Đã mở huy hiệu";
+    else (Không)
+    endif
+    if (Đủ XP để thăng cấp?) then (Có)
+      :Tăng current_level;
+      :Hiển thị Level Up Animation;
+    else (Không)
+    endif
+    :Hiển thị kết quả: Điểm, XP nhận, đáp án đúng;
+  else (Không)
+    :Hiển thị kết quả: Thất bại, đáp án đúng;
+    :Khuyến khích xem lại bài học;
+  endif
+endif
+stop
+@enduml
+

@@ -1,0 +1,12 @@
+export const INITIAL_SLIDES = [
+  { slideId: 'slide-1', title: 'Khởi tạo Mảng & Vòng lặp Ngoài (i-loop)', content: 'Tại bước này, thuật toán chuẩn bị duyệt qua mảng đầu vào. Biến chạy i đại diện cho số lượt sắp xếp ngoài. Sau mỗi lượt, một phần tử lớn nhất sẽ nổi bọt về phía cuối mảng.', triggerFrameIndex: 0 },
+  { slideId: 'slide-2', title: 'Duyệt So sánh Lân cận (j-loop)', content: 'Chúng ta so sánh hai phần tử liên tiếp là arr[j] và arr[j+1]. Nếu phần tử đứng trước lớn hơn phần tử đứng sau, ta sẽ chuẩn bị thực hiện phép tráo đổi giá trị để đưa giá trị lớn hơn về phía sau.', triggerFrameIndex: 3 },
+  { slideId: 'slide-3', title: 'Thao tác Tráo đổi (Swap) sử dụng biến tạm Temp', content: 'Để tráo đổi hai phần tử, ta cần lưu giá trị của arr[j] vào một biến tạm temp để tránh bị ghi đè. Phép gán arr[j] = arr[j+1] được thực thi, sau đó arr[j+1] nhận giá trị từ temp.', triggerFrameIndex: 8 },
+  { slideId: 'slide-4', title: 'Đóng băng Vị trí Đã Sắp Xếp (Highlight Done)', content: 'Kết thúc mỗi chu kỳ của vòng lặp i, phần tử lớn nhất trong mảng chưa được sắp xếp sẽ đạt tới vị trí cuối cùng thích hợp của nó. Ta đánh dấu trạng thái của phần tử này là HOÀN TẤT (Highlight).', triggerFrameIndex: 15 }
+];
+
+export const QUIZ_QUESTIONS = [
+  { id: 'q1', title: 'Độ phức tạp thời gian trung bình (Average-case) của thuật toán sắp xếp nổi bọt (Bubble Sort) là gì?', options: [{ key: 'A', text: 'O(N log N)' }, { key: 'B', text: 'O(N)' }, { key: 'C', text: 'O(N^2)' }, { key: 'D', text: 'O(1)' }], correctAnswer: 'C', maxScore: 10 },
+  { id: 'q2', title: 'Thuật toán sắp xếp nổi bọt (Bubble Sort) có tính chất ổn định (Stable) hay không?', options: [{ key: 'A', text: 'Có, là thuật toán ổn định' }, { key: 'B', text: 'Không, không phải thuật toán ổn định' }, { key: 'C', text: 'Tùy thuộc vào cách cài đặt vòng lặp ngược' }, { key: 'D', text: 'Chỉ ổn định với các mảng có độ dài dưới 10' }], correctAnswer: 'A', maxScore: 10 },
+  { id: 'q3', title: 'Tại sao phép so sánh và tráo đổi trong Bubble Sort chỉ diễn ra giữa hai phần tử kề nhau?', options: [{ key: 'A', text: 'Vì cấu trúc phần cứng máy tính chỉ hỗ trợ so sánh lân cận' }, { key: 'B', text: 'Để đảm bảo tính chất nổi bọt tuyến tính và bảo toàn độ phức tạp không gian O(1)' }, { key: 'C', text: 'Để thuật toán chạy nhanh hơn Quick Sort' }, { key: 'D', text: 'Không có lý do cụ thể, chỉ là do quy ước của tác giả' }], correctAnswer: 'B', maxScore: 10 }
+];

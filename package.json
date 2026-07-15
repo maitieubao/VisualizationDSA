@@ -1,0 +1,17 @@
+{
+  "name": "visualizationdsa-root",
+  "version": "1.0.0",
+  "description": "Root workspace for VisualizationDSA E-Learning Platform",
+  "main": "index.js",
+  "scripts": {
+    "dev:frontend": "npm run dev --prefix frontend",
+    "dev:backend": "dotnet run --project backend/src/WebApi/WebApi.csproj --environment Development",
+    "dev": "concurrently \"npm run dev:backend\" \"npm run dev:frontend\"",
+    "install:all": "npm install --prefix frontend && npm install",
+    "build:frontend": "npm run build --prefix frontend",
+    "build:backend": "dotnet build backend/src/WebApi/WebApi.csproj"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  }
+}

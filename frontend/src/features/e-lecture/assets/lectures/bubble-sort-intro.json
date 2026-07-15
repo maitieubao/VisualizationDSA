@@ -1,0 +1,52 @@
+{
+  "lectureId": "bubble-sort-intro-101",
+  "algorithmId": "bubble-sort",
+  "title": "Bubble Sort - Sắp xếp Nổi bọt từ Cơ bản đến Thành thạo",
+  "slides": [
+    {
+      "slideId": 1,
+      "type": "theory",
+      "content": "<h3>Bubble Sort là gì?</h3><p><b>Bubble Sort</b> (Sắp xếp Nổi bọt) là giải thuật sắp xếp đơn giản nhất. Nguyên lý hoạt động: duyệt qua mảng nhiều lần, mỗi lần so sánh hai phần tử liền kề và hoán đổi nếu chúng sai thứ tự. Phần tử lớn nhất sẽ <em>\"nổi lên\"</em> cuối mảng sau mỗi lượt duyệt — giống bong bóng nổi lên mặt nước.</p><p><b>Độ phức tạp:</b> O(n²) thời gian | O(1) không gian bổ sung.</p>",
+      "action": {
+        "command": "RESET_CANVAS",
+        "targetFrame": 0
+      }
+    },
+    {
+      "slideId": 2,
+      "type": "guided-animation",
+      "content": "<p>Hãy quan sát lượt duyệt đầu tiên: giải thuật so sánh từng cặp phần tử liền kề <b>(tô màu vàng cam)</b> và hoán đổi nếu cần <b>(tô màu đỏ)</b>. Phần tử lớn nhất sẽ di chuyển dần về cuối mảng.</p>",
+      "action": {
+        "command": "PLAY_UNTIL",
+        "targetFrame": 8
+      }
+    },
+    {
+      "slideId": 3,
+      "type": "interactive-check",
+      "content": "<p>Tuyệt vời! Sau lượt duyệt đầu tiên, phần tử <b>lớn nhất</b> đã được đẩy về vị trí cuối cùng <b>(tô màu xanh lá)</b>. Bạn có nhận ra quy luật không? Mỗi lượt duyệt sẽ đưa đúng một phần tử lớn nhất còn lại về vị trí đúng.</p><p><em>Nhấn \"Tiếp tục\" để xem các lượt duyệt tiếp theo.</em></p>",
+      "action": {
+        "command": "PAUSE",
+        "targetFrame": 8
+      }
+    },
+    {
+      "slideId": 4,
+      "type": "guided-animation",
+      "content": "<p>Tiếp tục quan sát: giải thuật lặp lại quá trình so sánh và hoán đổi cho phần còn lại của mảng (trừ các phần tử đã sắp xếp ở cuối). Mỗi lượt duyệt, vùng chưa sắp xếp thu hẹp lại.</p>",
+      "action": {
+        "command": "PLAY_UNTIL",
+        "targetFrame": 18
+      }
+    },
+    {
+      "slideId": 5,
+      "type": "theory",
+      "content": "<h3>Tổng kết Bubble Sort</h3><p>Qua bài giảng, bạn đã thấy cách Bubble Sort hoạt động:</p><ul><li>Mỗi lượt duyệt đẩy phần tử lớn nhất về cuối</li><li>Cần tối đa <b>N-1</b> lượt duyệt cho N phần tử</li><li>Mỗi lượt duyệt giảm bớt 1 phần tử cần xét</li></ul><p>Nhấn <b>\"Thoát Bài giảng\"</b> để tự do khám phá với mảng dữ liệu của riêng bạn!</p>",
+      "action": {
+        "command": "PAUSE",
+        "targetFrame": 18
+      }
+    }
+  ]
+}

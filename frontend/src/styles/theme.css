@@ -1,0 +1,385 @@
+/* =============================================================================
+ * VISUALIZATIONDSA -- CENTRALIZED DESIGN TOKEN SYSTEM
+ * =============================================================================
+ * DAY LA FILE NGUON SU THAT DUY NHAT cho toan bo mau sac, font, spacing
+ * va shadow cua du an.
+ *
+ * CAU TRUC MULTI-THEME:
+ *   :root[data-theme="terminal-dark"]  <- Mac dinh: Terminal/Code aesthetic
+ *   :root[data-theme="light"]          <- Future: Light mode
+ *   :root[data-theme="cyberpunk"]      <- Future: Cyberpunk neon
+ *
+ * QUY TAC SU DUNG:
+ *   - Components CHI duoc phep dung cac bien --* duoc dinh nghia o day
+ *   - KHONG duoc hardcode gia tri mau truc tiep trong component nao
+ *   - De them mau moi: them vao TAT CA cac theme block ben duoi
+ * =============================================================================
+ */
+
+/* =============================================================================
+ * THEME: quizlet (DEFAULT)
+ * Phong cach: Quizlet dark mode — deep navy/indigo + electric purple-blue
+ *
+ * BO MAU QUIZLET DARK MODE (trich xuat chinh xac):
+ *   Nen chinh:      #1a1d2e  (deep navy)
+ *   Nen card:       #282e3e  (navy slate)
+ *   Accent chinh:   #4255ff  (electric indigo, Quizlet brand)
+ *   Yellow:         #ffcd3c  (warm gold flashcard)
+ *   Green:          #23b26d  (correct answer green)
+ *   Text primary:   #ffffff
+ *   Text secondary: #939bb4  (muted slate-blue)
+ * ============================================================================= */
+:root,
+:root[data-theme="terminal-dark"] {
+
+  /* == FONT FAMILIES ========================================================= */
+  --font-display:   "JetBrains Mono", ui-monospace, monospace;
+  --font-sans:      "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI",
+                    Roboto, Helvetica, Arial, sans-serif;
+  --font-mono:      "JetBrains Mono", "Fira Code", ui-monospace, SFMono-Regular,
+                    Menlo, Monaco, Consolas, monospace;
+
+  /* == FONT SIZES ============================================================ */
+  --text-xs:    0.75rem;
+  --text-sm:    0.8125rem;
+  --text-base:  0.875rem;
+  --text-md:    1rem;
+  --text-lg:    1.125rem;
+  --text-xl:    1.25rem;
+  --text-2xl:   1.5rem;
+  --text-3xl:   1.875rem;
+  --text-4xl:   2.25rem;
+
+  /* == FONT WEIGHTS ========================================================== */
+  --font-light:    300;
+  --font-normal:   400;
+  --font-medium:   500;
+  --font-semibold: 600;
+  --font-bold:     700;
+
+  /* == BACKGROUNDS =========================================================== */
+  /* Quizlet dark: deep navy, lop nen co chieu sau */
+  --color-bg-primary:    #1a1d2e;
+  /* Nen thu cap -- header, sidebar */
+  --color-bg-secondary:  #12152a;
+  /* Nen be mat card/modal -- Quizlet card bg */
+  --color-bg-surface:    #282e3e;
+  /* Nen hover state */
+  --color-bg-hover:      #313748;
+  /* Nen selected/active */
+  --color-bg-active:     #383f55;
+  /* Nen overlay (modals) */
+  --color-bg-overlay:    rgba(10, 12, 30, 0.80);
+  /* Nen terminal/code block */
+  --color-bg-terminal:   #0f1120;
+
+  /* == TEXT HIERARCHY ======================================================== */
+  /*
+   * Quizlet dark mode text palette (3 tier):
+   *   Heading/label:  #ffffff  (tiêu đề, badge, giá trị số)
+   *   Body text:      #d9dde8  (xanh trắng nhạt — NOT pure white, dễ đọc hơn)
+   *   Secondary:      #939bb4  (slate-blue muted — caption, metadata)
+   *   Muted/disabled: #6b7385  (rất nhạt)
+   */
+  --color-text-primary:   #d9dde8;   /* body text — Quizlet's off-white blue */
+  --color-text-heading:   #ffffff;   /* tiêu đề H1/H2/số liệu nổi bật */
+  --color-text-secondary: #939bb4;   /* caption, label phụ */
+  --color-text-muted:     #6b7385;   /* placeholder, helper text */
+  --color-text-disabled:  #3f4668;   /* disabled state */
+  --color-text-inverse:   #ffffff;   /* text trên button màu */
+
+  /* == ACCENT -- QUIZLET INDIGO (PRIMARY) ==================================== */
+  /*
+   * #4255ff = Quizlet brand blue dùng cho buttons, badges trên nền sáng.
+   * Khi dùng làm TEXT trên nền navy tối, dùng --color-accent-primary-text
+   * (#7b89f4) để đảm bảo contrast đủ chuẩn WCAG AA.
+   */
+  --color-accent-primary:       #4255ff;
+  --color-accent-primary-light: #6b7bff;
+  --color-accent-primary-dark:  #2f42e8;
+  --color-accent-primary-text:  #7b89f4;   /* dùng làm text/link trên nền tối */
+  --color-accent-primary-glow:  rgba(66, 85, 255, 0.30);
+  --color-accent-primary-dim:   rgba(66, 85, 255, 0.12);
+
+  /* == ACCENT -- GREEN (SUCCESS / correct answer) ============================ */
+  /* Quizlet: xanh la cho dap an dung */
+  --color-accent-green:       #23b26d;
+  --color-accent-green-light: #2fd484;
+  --color-accent-green-glow:  rgba(35, 178, 109, 0.28);
+  --color-accent-green-dim:   rgba(35, 178, 109, 0.12);
+
+  /* == ACCENT -- BLUE (INFO / LINK) ========================================== */
+  /* Quizlet: xanh nhat cho links */
+  --color-accent-blue:       #75b3ff;
+  --color-accent-blue-light: #9ac8ff;
+  --color-accent-blue-glow:  rgba(117, 179, 255, 0.25);
+  --color-accent-blue-dim:   rgba(117, 179, 255, 0.12);
+
+  /* == ACCENT -- RED (ERROR / DANGER) ======================================== */
+  /* Quizlet: do cho wrong answer */
+  --color-accent-red:       #ff4136;
+  --color-accent-red-light: #ff6b63;
+  --color-accent-red-glow:  rgba(255, 65, 54, 0.28);
+  --color-accent-red-dim:   rgba(255, 65, 54, 0.12);
+
+  /* == ACCENT -- YELLOW (FLASHCARD GOLD) ===================================== */
+  /* Quizlet: vang am cho flashcard highlight */
+  --color-accent-yellow:       #ffcd3c;
+  --color-accent-yellow-light: #ffe066;
+  --color-accent-yellow-glow:  rgba(255, 205, 60, 0.28);
+  --color-accent-yellow-dim:   rgba(255, 205, 60, 0.12);
+
+  /* == ACCENT -- CYAN (VISUALIZATION / SPECIAL) ============================== */
+  /* Giu lai cyan cho canvas visualization -- semantic color, khong thay */
+  --color-accent-cyan:      #06b6d4;
+  --color-accent-cyan-glow:  rgba(6, 182, 212, 0.25);
+  --color-accent-cyan-dim:   rgba(6, 182, 212, 0.12);
+
+  /* == ACCENT -- PURPLE (GAMIFICATION / STREAK) ============================== */
+  /* Quizlet: tim nhat cho streak, gamification */
+  --color-accent-purple:      #c084fc;
+  --color-accent-purple-glow:  rgba(192, 132, 252, 0.28);
+  --color-accent-purple-dim:   rgba(192, 132, 252, 0.12);
+
+  /* == SYNTAX HIGHLIGHTING COLORS (Code Blocks) ============================== */
+  --color-syntax-keyword:    #6b7bff;
+  --color-syntax-string:     #23b26d;
+  --color-syntax-number:     #ffcd3c;
+  --color-syntax-comment:    #5c6382;
+  --color-syntax-type:       #75b3ff;
+  --color-syntax-variable:   #ffffff;
+  --color-syntax-function:   #c084fc;
+  --color-syntax-operator:   #939bb4;
+  --color-syntax-punctuation:#939bb4;
+
+  /* == TRAFFIC LIGHT DOTS (Terminal Window Controls) ========================= */
+  --color-dot-close:   #ff5f57;
+  --color-dot-min:     #febc2e;
+  --color-dot-max:     #28c840;
+
+  /* == BORDERS =============================================================== */
+  /* Quizlet: border tinh te tren nen navy */
+  --color-border-subtle:     rgba(255, 255, 255, 0.07);
+  --color-border-default:    rgba(255, 255, 255, 0.10);
+  --color-border-strong:     rgba(255, 255, 255, 0.18);
+  --color-border-focus:      var(--color-accent-primary);
+  --color-border-accent:     rgba(66, 85, 255, 0.35);
+  --color-border-card:       rgba(255, 255, 255, 0.08);
+  --color-border-card-hover: rgba(66, 85, 255, 0.22);
+
+  /* == GLASS / BACKDROP ====================================================== */
+  --glass-bg:      rgba(28, 32, 54, 0.78);
+  --glass-border:  rgba(66, 85, 255, 0.12);
+  --glass-blur:    16px;
+  --glass-shadow:  0 8px 32px rgba(0, 0, 0, 0.55);
+
+  /* == BORDER RADIUS ========================================================= */
+  --radius-none: 0px;
+  --radius-sm:   4px;
+  --radius-md:   6px;
+  --radius-lg:   8px;
+  --radius-xl:   12px;
+  --radius-2xl:  16px;
+  --radius-full: 9999px;
+
+  /* == SPACING SCALE ========================================================= */
+  --space-1:  0.25rem;
+  --space-2:  0.5rem;
+  --space-3:  0.75rem;
+  --space-4:  1rem;
+  --space-5:  1.25rem;
+  --space-6:  1.5rem;
+  --space-8:  2rem;
+  --space-10: 2.5rem;
+  --space-12: 3rem;
+  --space-16: 4rem;
+
+  /* == SHADOWS =============================================================== */
+  --shadow-sm:     0 1px 3px rgba(0, 0, 0, 0.5);
+  --shadow-md:     0 4px 12px rgba(0, 0, 0, 0.6);
+  --shadow-lg:     0 8px 24px rgba(0, 0, 0, 0.7);
+  --shadow-xl:     0 16px 48px rgba(0, 0, 0, 0.8);
+  --shadow-accent: 0 0 20px var(--color-accent-primary-glow);
+  --shadow-cyan:   0 0 20px var(--color-accent-cyan-glow);
+
+  /* == TRANSITIONS =========================================================== */
+  --transition-fast:   all 0.12s ease;
+  --transition-smooth: all 0.22s cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-slow:   all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+
+  /* == Z-INDEX SCALE ========================================================= */
+  --z-base:    0;
+  --z-raised:  10;
+  --z-overlay: 100;
+  --z-modal:   1000;
+  --z-toast:   2000;
+  --z-tooltip: 3000;
+
+  /* == COMPONENT-SPECIFIC TOKENS ============================================= */
+
+  /* Header */
+  --header-bg:         var(--color-bg-secondary);
+  --header-border:     rgba(66, 85, 255, 0.15);
+  --header-height:     48px;
+  --header-logo-color: var(--color-accent-primary);
+
+  /* Nav Tab */
+  --tab-bg-default:    transparent;
+  --tab-bg-hover:      var(--color-bg-hover);
+  --tab-bg-active:     var(--color-bg-active);
+  --tab-text-default:  var(--color-text-muted);
+  --tab-text-hover:    var(--color-text-secondary);
+  --tab-text-active:   var(--color-text-primary);
+  --tab-border-active: var(--color-accent-primary);
+
+  /* Card / Panel */
+  --card-bg:         var(--color-bg-surface);
+  --card-border:     var(--color-border-card);
+  --card-radius:     var(--radius-lg);
+  --card-shadow:     var(--shadow-md);
+  --card-header-bg:  var(--color-bg-hover);
+
+  /* Button -- Primary (Quizlet electric indigo) */
+  --btn-primary-bg:       var(--color-accent-primary);
+  --btn-primary-bg-hover: var(--color-accent-primary-light);
+  --btn-primary-text:     #ffffff;
+  --btn-primary-shadow:   0 0 20px var(--color-accent-primary-glow);
+
+  /* Button -- Ghost */
+  --btn-ghost-bg:       transparent;
+  --btn-ghost-bg-hover: var(--color-bg-hover);
+  --btn-ghost-text:     var(--color-text-secondary);
+  --btn-ghost-border:   var(--color-border-default);
+
+  /* Input */
+  --input-bg:           var(--color-bg-terminal);
+  --input-border:       var(--color-border-default);
+  --input-border-focus: var(--color-accent-primary);
+  --input-text:         var(--color-text-primary);
+  --input-placeholder:  var(--color-text-muted);
+
+  /* Badge */
+  --badge-bg:     var(--color-bg-active);
+  --badge-text:   var(--color-text-secondary);
+  --badge-border: var(--color-border-subtle);
+
+  /* Scrollbar */
+  --scrollbar-thumb:       rgba(255, 255, 255, 0.10);
+  --scrollbar-thumb-hover: rgba(255, 255, 255, 0.20);
+  --scrollbar-track:       transparent;
+
+  /* Code / Terminal block -- skillsmp.io style dark terminal */
+  --code-bg:         var(--color-bg-terminal);
+  --code-border:     var(--color-border-subtle);
+  --code-header-bg:  var(--color-bg-secondary);
+  --code-radius:     var(--radius-md);
+
+  /* Canvas / Visualization -- Semantic colors khong thay doi */
+  --canvas-bg:           #0d1020;
+  --canvas-grid-color:   rgba(66, 85, 255, 0.04);
+  --canvas-node-default: var(--color-accent-primary);
+  --canvas-node-active:  var(--color-accent-yellow);
+  --canvas-edge-default: rgba(255, 255, 255, 0.18);
+  --canvas-edge-active:  var(--color-accent-primary);
+
+  /* == VISUALIZATION PANEL TOKENS (sandbox inspector panels) ================= */
+  --vis-panel-bg:        var(--color-bg-surface);
+  --vis-panel-bg-deep:   var(--color-bg-secondary);
+  --vis-panel-bg-inner:  var(--color-bg-hover);
+  --vis-panel-border:    var(--color-border-default);
+  --vis-panel-header-bg: var(--color-bg-hover);
+
+  /* Visualization semantic colors -- giu nguyen ngu nghia hoc thuat */
+  --vis-color-pivot:   #ffcd3c;   /* Vang -- pivot (QuickSort) */
+  --vis-color-active:  #4255ff;   /* Indigo -- dang xet */
+  --vis-color-sorted:  #23b26d;   /* Xanh -- da sap xep */
+  --vis-color-swap:    #ff4136;   /* Do -- dang hoan vi */
+  --vis-color-compare: #c084fc;   /* Tim -- dang so sanh */
+  --vis-color-bucket:  #75b3ff;   /* Xanh duong -- bucket */
+  --vis-color-default: #5c6382;   /* Xam -- mac dinh */
+}
+
+/* =============================================================================
+ * THEME: light (FUTURE)
+ * Chi override cac token can thay doi so voi terminal-dark
+ * ============================================================================= */
+:root[data-theme="light"] {
+  --color-bg-primary:    #f8f8f8;
+  --color-bg-secondary:  #ffffff;
+  --color-bg-surface:    #f0f0f0;
+  --color-bg-hover:      #e8e8e8;
+  --color-bg-active:     #e0e0e0;
+  --color-bg-overlay:    rgba(0, 0, 0, 0.4);
+  --color-bg-terminal:   #f5f5f5;
+
+  --color-text-primary:   #1a1a1a;
+  --color-text-secondary: #444444;
+  --color-text-muted:     #888888;
+  --color-text-disabled:  #cccccc;
+  --color-text-inverse:   #f8f8f8;
+
+  --color-border-subtle:     rgba(0, 0, 0, 0.06);
+  --color-border-default:    rgba(0, 0, 0, 0.10);
+  --color-border-strong:     rgba(0, 0, 0, 0.18);
+  --color-border-card:       rgba(0, 0, 0, 0.08);
+  --color-border-card-hover: rgba(0, 0, 0, 0.14);
+
+  --glass-bg:     rgba(255, 255, 255, 0.8);
+  --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
+
+  --header-bg:      #ffffff;
+  --header-border:  rgba(0, 0, 0, 0.08);
+
+  --code-bg:         #f5f5f5;
+  --code-header-bg:  #ebebeb;
+  --canvas-bg:       #fafafa;
+  --canvas-grid-color: rgba(0, 0, 0, 0.04);
+
+  --vis-panel-bg:       #f0f0f0;
+  --vis-panel-bg-deep:  #ffffff;
+  --vis-panel-bg-inner: #e8e8e8;
+  --vis-panel-border:   rgba(0, 0, 0, 0.10);
+}
+
+/* =============================================================================
+ * THEME: cyberpunk (FUTURE)
+ * Giu lai cyberpunk palette cu de khong mat di
+ * ============================================================================= */
+:root[data-theme="cyberpunk"] {
+  --color-bg-primary:    #070b13;
+  --color-bg-secondary:  #0e1726;
+  --color-bg-surface:    #090f19;
+  --color-bg-hover:      #0d1826;
+  --color-bg-active:     #122030;
+  --color-bg-terminal:   #060a10;
+
+  --color-accent-primary:       #06b6d4;
+  --color-accent-primary-light:  #22d3ee;
+  --color-accent-primary-dark:   #0891b2;
+  --color-accent-primary-glow:   rgba(6, 182, 212, 0.35);
+  --color-accent-primary-dim:    rgba(6, 182, 212, 0.12);
+
+  --color-border-subtle:     rgba(30, 41, 59, 0.8);
+  --color-border-default:    rgba(30, 41, 59, 0.9);
+  --color-border-card:       rgba(6, 182, 212, 0.12);
+  --color-border-card-hover: rgba(6, 182, 212, 0.25);
+  --color-border-focus:      var(--color-accent-primary);
+  --color-border-accent:     rgba(6, 182, 212, 0.35);
+
+  --glass-bg:     rgba(14, 23, 38, 0.75);
+  --glass-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+
+  --header-bg:         var(--color-bg-secondary);
+  --header-logo-color: var(--color-accent-primary);
+  --tab-border-active: var(--color-accent-primary);
+
+  --code-bg:         #040810;
+  --code-header-bg:  #060c18;
+  --canvas-bg:       #040810;
+  --canvas-grid-color: rgba(6, 182, 212, 0.03);
+
+  --vis-panel-bg:       #090f19;
+  --vis-panel-bg-deep:  #060c18;
+  --vis-panel-bg-inner: #0d1826;
+  --vis-panel-border:   rgba(6, 182, 212, 0.15);
+}

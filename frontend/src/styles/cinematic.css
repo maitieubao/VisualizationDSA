@@ -1,0 +1,89 @@
+/* ── Cinematic VCR Frame Transitions ────────────────────────────── */
+
+.vcr-frame-enter {
+  animation: vcr-slide-in var(--duration-vcr) var(--ease-smooth) forwards;
+}
+
+@keyframes vcr-slide-in {
+  from {
+    opacity: 0;
+    transform: translateY(12px) scale(0.97);
+    filter: blur(2px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    filter: blur(0);
+  }
+}
+
+/* Spring hover for interactive cards */
+.spring-hover {
+  transition: transform var(--duration-slow) var(--ease-spring),
+              box-shadow var(--duration-medium) ease;
+}
+.spring-hover:hover {
+  transform: translateY(-4px) scale(1.015);
+  box-shadow: var(--shadow-card-hover), var(--glow-accent);
+}
+.spring-hover:active {
+  transform: translateY(-1px) scale(0.99);
+  transition-duration: var(--duration-fast);
+}
+
+/* Glassmorphism base class */
+.glass-panel {
+  background: var(--glass-bg);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--shadow-elevated), var(--glass-inset-highlight);
+}
+
+.glass-panel--light {
+  background: var(--glass-bg-light);
+  border-color: var(--glass-border);
+}
+
+/* Subtle pulse glow for active VCR elements */
+.vcr-active-glow {
+  animation: vcr-glow 2s ease-in-out infinite alternate;
+}
+
+@keyframes vcr-glow {
+  from { box-shadow: 0 0 4px rgba(66, 85, 255, 0.22); }
+  to   { box-shadow: 0 0 16px rgba(66, 85, 255, 0.44); }
+}
+
+/* Staggered list entry animation */
+.stagger-enter {
+  animation: stagger-fade-in var(--duration-medium) ease-out forwards;
+  opacity: 0;
+}
+
+@keyframes stagger-fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ── Shared VCR Banner Transition ──────────────────────────────── */
+.vcr-banner-fade-enter-active {
+  transition: opacity 0.25s ease, transform 0.25s var(--ease-smooth);
+}
+.vcr-banner-fade-leave-active {
+  transition: opacity var(--duration-fast) ease, transform var(--duration-fast) ease;
+}
+.vcr-banner-fade-enter-from {
+  opacity: 0;
+  transform: translateY(8px) scale(0.97);
+}
+.vcr-banner-fade-leave-to {
+  opacity: 0;
+  transform: translateY(-4px) scale(0.98);
+}

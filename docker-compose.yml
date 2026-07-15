@@ -1,0 +1,57 @@
+version: "3.9"
+
+services:
+  # ── PostgreSQL Database ──────────────────────────────────
+  database:
+    image: postgres:15-alpine
+    container_name: vdsa-database
+    environment:
+      POSTGRES_DB: visualization_dsa_dev
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password123
+    ports:
+      - "5433:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d visualization_dsa_dev"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+    restart: unless-stopped
+
+  # ── .NET 9 Backend API ───────────────────────────────────
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: vdsa-backend
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=http://+:5055
+      - ConnectionStrings__DefaultConnection=Host=database;Database=visualization_dsa_dev;Username=postgres;Password=password123
+    ports:
+      - "5055:5055"
+    depends_on:
+      database:
+        condition: service_healthy
+    restart: unless-stopped
+
+  # ── Vue 3 Frontend (nginx) ──────────────────────────────
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        VITE_API_BASE_URL: http://localhost:5055
+    container_name: vdsa-frontend
+    ports:
+      - "5173:80"
+    depends_on:
+      - backend
+    restart: unless-stopped
+
+volumes:
+  pgdata:
+    driver: local
