@@ -13,7 +13,6 @@ const app  = createApp(App)
 const pinia = createPinia()
 
 app.use(pinia)
-app.use(router)
 app.use(MotionPlugin)
 app.component('BaseIcon', BaseIcon)
 
@@ -78,5 +77,8 @@ const progressStore = useUserProgressStore()
 authStore.init().then(() => {
   return progressStore.initFromServer()
 }).finally(() => {
-  app.mount('#app')
+  app.use(router)
+  router.isReady().then(() => {
+    app.mount('#app')
+  })
 })

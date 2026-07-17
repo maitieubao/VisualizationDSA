@@ -79,7 +79,11 @@ function runCompilation(): void {
   compilerStore.compileAndExecuteCode();
 }
 
-onMounted(() => parseInputArray());
+onMounted(() => {
+  animStore.clear();
+  compilerStore.clearLogs();
+  parseInputArray();
+});
 
 onBeforeUnmount(() => {
   compilerStore.cancelExecution();

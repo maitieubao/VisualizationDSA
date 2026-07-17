@@ -14,6 +14,7 @@ import {
 } from './sortingGenerators';
 import { generateStack, generateQueue, generateBST } from './dataStructureGenerators';
 import { generateBFS, generateDFS, generateDijkstra, generateSlidingWindow, generateMonotonicStack } from './premiumGenerators';
+import { LOCAL_METADATA } from '../store/algorithmLocalMetadata';
 
 function defaultHighlights(overrides?: Partial<HighlightIndices>): HighlightIndices {
   return { compare: [], swap: [], sorted: [], dimmed: [], active: [], ...overrides };
@@ -46,8 +47,8 @@ export function generateDummyResult(algorithmId: string, inputData: number[]): A
   if (!generator) {
     return {
       algorithmId,
-      pseudoCode: ['// Không có mã giả cho thuật toán này'],
-      frames: [{ stepId: 1, activeLine: 0, explanation: `Thuật toán '${algorithmId}' chưa có dummy generator.`, dataState: [...inputData], highlights: defaultHighlights() }],
+      pseudoCode: LOCAL_METADATA[algorithmId]?.pseudoCode || ['// Không có mã giả cho thuật toán này'],
+      frames: [{ stepId: 1, activeLine: 0, explanation: `Thuật toán '${algorithmId}' chưa có logic sinh frame động.`, dataState: [...inputData], highlights: defaultHighlights() }],
     };
   }
   return generator(inputData);

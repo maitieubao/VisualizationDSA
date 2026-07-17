@@ -216,7 +216,7 @@ export class CompilerStepExecutor {
 
       const isCommentOrEmpty = !trimmed || trimmed.startsWith('//');
       // Bỏ qua các dòng đóng ngoặc nhọn đơn thuần hoặc cấu trúc điều khiển rẽ nhánh
-      const isBlockControl = trimmed.startsWith('}') || trimmed === 'else {' || trimmed.startsWith('else if');
+      const isBlockControl = trimmed.startsWith('}') || trimmed.startsWith('else');
 
       if (isCommentOrEmpty || isBlockControl) {
         instrumentedLines.push(line);

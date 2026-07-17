@@ -1,7 +1,7 @@
 <template>
-  <div class="graph-view-root flex flex-col h-full w-full gap-4 p-4 max-w-[1600px] mx-auto overflow-hidden">
+  <div class="graph-view-root flex flex-col h-full w-full gap-4 p-4 overflow-hidden">
     <!-- Header Sub-Tabs Switcher (Glassmorphic) -->
-    <div class="tabs-header-bar flex items-center justify-between px-4 py-2 border rounded-xl" data-tour-id="algo-tab-switch"
+    <div class="tabs-header-bar flex items-center justify-between px-4 py-2 border rounded-xl relative z-50" data-tour-id="algo-tab-switch"
       style="background: rgba(15, 23, 42, 0.45); backdrop-filter: blur(12px); border-color: rgba(255, 255, 255, 0.05);"
     >
       <div class="flex gap-2">
@@ -31,6 +31,7 @@
         <InteractivePlayground class="w-full h-full" />
         
         <div
+          v-show="!playgroundStore.isAlgorithmMode"
           class="absolute right-4 top-[72px] bottom-4 z-[1005] flex flex-col transition-all duration-300 ease-in-out pointer-events-none"
           :style="{ width: isPanelCollapsed ? '0px' : '360px' }"
         >
@@ -69,7 +70,7 @@
     </div>
 
     <!-- Nút Trợ giúp Guided Tour -->
-    <HelpButton />
+    <HelpButton tour-key="/graph" />
   </div>
 </template>
 
@@ -81,10 +82,12 @@ import { DSAPlayer } from '../features/dsa-modules';
 import BaseIcon from '../shared/components/BaseIcon.vue';
 import HelpButton from '../features/guided-tour/components/HelpButton.vue';
 import { useGuidedTourStore } from '../features/guided-tour/store/useGuidedTourStore';
+import { usePlaygroundStore } from '../features/interactive-playground/store/usePlaygroundStore';
 
 const activeTab = ref('graph');
 const isPanelCollapsed = ref(false);
 const tourStore = useGuidedTourStore();
+const playgroundStore = usePlaygroundStore();
 
 const tabs = [
   { id: 'graph', name: 'Sân chơi Đồ thị', icon: 'graph' },
@@ -93,7 +96,7 @@ const tabs = [
 
 const activeProps = computed(() => {
   if (activeTab.value === 'dsa') {
-    return { allowedCategories: ['Tree'] };
+    return { allowedCategories: ['Tree', 'Graph'] };
   }
   return {};
 });

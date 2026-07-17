@@ -10,7 +10,7 @@ public class DijkstraStrategy : AlgorithmStrategyBase
 {
     public override string AlgorithmId => "dijkstra";
     public override string Name => "Dijkstra's Shortest Path (Đường đi ngắn nhất)";
-    public override string Category => "Tree";
+    public override string Category => "Graph";
 
     private class BSTNode
     {

@@ -29,9 +29,9 @@ describe('useAlgorithmStore', () => {
     expect(store.isLoading).toBe(false);
   });
 
-  it('fetchAlgorithms loads from API when available', async () => {
+  it('fetchAlgorithms merges API data with local catalog', async () => {
     const mockAlgorithms = [
-      { id: 'linear-search', name: 'Linear Search', category: 'Searching', difficulty: 'Easy', timeComplexity: 'O(N)', spaceComplexity: 'O(1)' },
+      { id: 'new-api-algo', name: 'New API Algo', category: 'Graph', difficulty: 'Hard', timeComplexity: 'O(1)', spaceComplexity: 'O(1)' },
     ];
     vi.spyOn(globalThis, 'fetch').mockResolvedValue({
       ok: true,
@@ -41,8 +41,13 @@ describe('useAlgorithmStore', () => {
     const store = useAlgorithmStore();
     await store.fetchAlgorithms();
 
-    expect(store.algorithms.length).toBe(1);
-    expect(store.algorithms[0].id).toBe('linear-search');
+    // Should contain all catalog items + 1 new item from API
+    expect(store.algorithms.length).toBe(ALGORITHM_CATALOG.length + 1);
+    
+    // The new item should be present
+    const newAlgo = store.algorithms.find(a => a.id === 'new-api-algo');
+    expect(newAlgo).not.toBeUndefined();
+    expect(newAlgo?.name).toBe('New API Algo');
   });
 
   it('selectAlgorithm sets currentAlgorithm and loads local metadata', () => {

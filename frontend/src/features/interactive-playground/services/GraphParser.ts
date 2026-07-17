@@ -17,7 +17,6 @@ export class GraphParser {
       const toNode = nodes.find(n => n.id === edge.to);
       if (fromNode && toNode) {
         adjacencyList[fromNode.label].push({ target: toNode.label, weight: edge.weight });
-        adjacencyList[toNode.label].push({ target: fromNode.label, weight: edge.weight });
       }
     }
     return { algorithmId, inputType: 'adjacency-list', nodes: nodes.map(n => n.label), adjacencyList };

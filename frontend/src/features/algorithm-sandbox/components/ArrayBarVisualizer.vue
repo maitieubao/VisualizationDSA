@@ -11,10 +11,9 @@
     <!-- Background grid -->
     <div class="canvas-grid absolute inset-0 opacity-[0.18] pointer-events-none [mask-image:radial-gradient(ellipse_65%_55%_at_50%_50%,#000_60%,transparent_100%)]" />
 
-    <!-- Header: HUD label + algorithm picker — shrink-0, ~52px -->
+    <!-- Header: HUD label — shrink-0, ~52px -->
     <div class="relative z-10 flex items-start justify-between px-4 pt-3 pb-2 shrink-0">
       <SortingHudOverlay :stepDescription="stepDescription" />
-      <SortingAlgorithmControls :selectedAlgo="selectedAlgo" @select="selectAlgorithm" />
     </div>
 
     <!--
@@ -25,13 +24,8 @@
     <div class="relative z-10 flex-1 min-h-0 flex flex-col px-4 pb-4 overflow-hidden">
       <!-- Visualizer Canvas -->
       <div class="flex-1 min-h-[0] overflow-x-auto overflow-y-hidden">
-        <BubbleSortVisualizer   v-if="selectedAlgo === 'bubble'"      :frame="currentSortFrame" />
-        <QuickSortVisualizer    v-else-if="selectedAlgo === 'quick'"  :frame="currentSortFrame" />
-        <MergeSortVisualizer    v-else-if="selectedAlgo === 'merge'"  :frame="currentSortFrame" />
-        <HeapSortVisualizer     v-else-if="selectedAlgo === 'heap'"   :frame="currentSortFrame" />
-        <RadixSortVisualizer    v-else-if="selectedAlgo === 'radix'"  :frame="currentSortFrame" />
-        <CountingSortVisualizer v-else-if="selectedAlgo === 'counting'" :frame="currentSortFrame" />
-        <BucketSortVisualizer   v-else-if="selectedAlgo === 'bucket'"   :frame="currentSortFrame" />
+        <!-- We use BubbleSortVisualizer as a Generic Bar Chart Visualizer for all JS-compiled array algorithms -->
+        <BubbleSortVisualizer :frame="displayFrame" />
       </div>
     </div>
 
@@ -41,29 +35,69 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted } from 'vue';
+import { onMounted, computed, ref, watch } from 'vue';
 import { useVcrStore } from "../../vcr-player";
 import { useSortingAnimation } from "../composables/useSortingAnimation";
 import SortingHudOverlay from "./SortingHudOverlay.vue";
-import SortingAlgorithmControls from "./SortingAlgorithmControls.vue";
+
 import SortingProgressBar from "./SortingProgressBar.vue";
 import BubbleSortVisualizer from "./BubbleSortVisualizer.vue";
-import QuickSortVisualizer from "./QuickSortVisualizer.vue";
-import MergeSortVisualizer from "./MergeSortVisualizer.vue";
-import HeapSortVisualizer from "./HeapSortVisualizer.vue";
-import RadixSortVisualizer from "./RadixSortVisualizer.vue";
-import CountingSortVisualizer from "./CountingSortVisualizer.vue";
-import BucketSortVisualizer from "./BucketSortVisualizer.vue";
+import type { SortFrame } from "../types/sorting.types";
+import { enrichFramesWithIds } from "../helpers/sortingIdEnricher";
 
 const vcrStore = useVcrStore();
 const {
-  selectedAlgo, currentSortFrame, stepDescription,
-  progressPercent, recompileForAlgo, selectAlgorithm,
+  selectedAlgo, currentSortFrame, recompileForAlgo, selectAlgorithm,
 } = useSortingAnimation();
 
+const mappedSortFrames = ref<SortFrame[]>([]);
+
+watch(() => vcrStore.playbackFrames, (newFrames) => {
+  if (!newFrames || newFrames.length === 0) {
+    mappedSortFrames.value = [];
+    return;
+  }
+
+  // Pre-map all frames and enrich with stable IDs for smooth animations
+  const mapped = newFrames.map(frame => {
+    if ('canvasStateSnapshot' in frame) {
+      const snap = (frame as any).canvasStateSnapshot;
+      return {
+        stepIndex: frame.stepIndex,
+        description: frame.description || '',
+        arrayState: [...snap.array],
+        comparingIndices: snap.comparingIndices || [],
+        swappedIndices: snap.swappingIndices || [],
+        sortedIndices: snap.highlightedIndices || []
+      } as SortFrame;
+    }
+    return frame as SortFrame;
+  });
+
+  enrichFramesWithIds(mapped);
+  mappedSortFrames.value = mapped;
+}, { immediate: true });
+
+// Compute the frame to display based on current index
+const displayFrame = computed<SortFrame | null>(() => {
+  if (mappedSortFrames.value.length === 0) return currentSortFrame.value;
+  return mappedSortFrames.value[vcrStore.currentFrameIndex] || null;
+});
+
+const stepDescription = computed(() => displayFrame.value?.description ?? "Viết code và chạy thuật toán của bạn ▶");
+
+const progressPercent = computed(() => {
+  const total = vcrStore.playbackFrames.length;
+  if (!total) return 0;
+  return (vcrStore.currentFrameIndex / (total - 1)) * 100;
+});
+
+// We no longer override customCompileFn here because we want the Code Sandbox (JS) to execute natively.
 onMounted(() => {
-  vcrStore.customCompileFn = () => recompileForAlgo(selectedAlgo.value);
-  recompileForAlgo("bubble");
+  // If the user hasn't written any code yet, compile the default code
+  if (vcrStore.playbackFrames.length === 0) {
+    vcrStore.compileAndLoad();
+  }
 });
 </script>
 

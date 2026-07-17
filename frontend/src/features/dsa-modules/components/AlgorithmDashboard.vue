@@ -245,6 +245,7 @@ import { ref, computed, onMounted, onBeforeUnmount, h } from 'vue';
 import { useAlgorithmStore } from '../store/useAlgorithmStore';
 import type { Algorithm } from '../types/algorithm.types';
 import { ALGORITHM_CATALOG } from '../services/algorithmCatalog';
+import { LOCAL_METADATA } from '../store/algorithmLocalMetadata';
 import SkeletonLoader from '../../../components/SkeletonLoader.vue';
 import SkeletonCard from '../../../components/SkeletonCard.vue';
 
@@ -404,30 +405,10 @@ function difficultyClass(difficulty: string): string {
 
 
 function getDesc(algoId: string): string {
-  switch (algoId) {
-    case 'linear-search':
-      return 'Duyệt lần lượt qua từng phần tử của mảng để tìm vị trí khớp giá trị.';
-    case 'binary-search':
-      return 'Tìm kiếm cực nhanh trên mảng đã sắp xếp bằng cách chia đôi phạm vi sau mỗi bước so sánh.';
-    case 'sliding-window':
-      return 'Duy trì một khung con trỏ trượt động trên mảng để giải quyết bài toán chuỗi liên tiếp tối ưu.';
-    case 'stack':
-      return 'Mô phỏng cấu trúc ngăn xếp LIFO (Vào sau - Ra trước) với thao tác Push/Pop.';
-    case 'queue':
-      return 'Mô phỏng cấu trúc hàng đợi FIFO (Vào trước - Ra trước) với thao tác Enqueue/Dequeue.';
-    case 'monotonic-stack':
-      return 'Ngăn xếp đặc biệt duy trì tính tăng hoặc giảm đơn điệu để giải bài toán phần tử lớn hơn tiếp theo.';
-    case 'bst':
-      return 'Cây nhị phân tìm kiếm duy trì tính chất node trái nhỏ hơn node cha và nhỏ hơn node phải.';
-    case 'bfs':
-      return 'Duyệt đồ thị theo chiều rộng, quét layer-by-layer bằng cách sử dụng cấu trúc hàng đợi Queue.';
-    case 'dfs':
-      return 'Duyệt đồ thị theo chiều sâu, đi sâu nhất có thể dọc theo mỗi nhánh trước khi quay lui.';
-    case 'dijkstra':
-      return 'Thuật toán tìm đường đi ngắn nhất từ một đỉnh nguồn tới tất cả các đỉnh khác trong đồ thị.';
-    default:
-      return 'Mô phỏng cấu trúc dữ liệu và giải thuật một cách trực quan và sư phạm nhất.';
+  if (LOCAL_METADATA[algoId] && LOCAL_METADATA[algoId].description) {
+    return LOCAL_METADATA[algoId].description;
   }
+  return 'Mô phỏng cấu trúc dữ liệu và giải thuật một cách trực quan và sư phạm nhất.';
 }
 
 // 6. Action handlers
@@ -462,6 +443,13 @@ function getCategoryIcon(catName: string) {
     return {
       render: () => h('svg', { class: 'w-4 h-4 text-[#ff7c5c]', fill: 'none', viewBox: '0 0 24 24', stroke: 'currentColor', 'stroke-width': '2.5' }, [
         h('path', { 'stroke-linecap': 'round', 'stroke-linejoin': 'round', d: 'M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2H5a2 2 0 00-2 2v2m14 0V5a2 2 0 00-2-2H5a2 2 0 00-2 2v6' })
+      ])
+    };
+  }
+  if (catName === 'Graph') {
+    return {
+      render: () => h('svg', { class: 'w-4 h-4 text-[#ff7c5c]', fill: 'none', viewBox: '0 0 24 24', stroke: 'currentColor', 'stroke-width': '2.5' }, [
+        h('path', { 'stroke-linecap': 'round', 'stroke-linejoin': 'round', d: 'M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1' })
       ])
     };
   }
@@ -572,6 +560,11 @@ function getMiniVisualizer(algoId: string) {
             ]);
             
           case 'dijkstra':
+          case 'bellman-ford':
+          case 'kruskal':
+          case 'prim':
+          case 'tarjan':
+          case 'a-star':
             return h('div', { class: hCls }, [
               h('div', { class: 'w-14 h-10 relative flex items-center justify-between' }, [
                 h('div', { class: 'w-3.5 h-3.5 rounded-full border border-zinc-800 bg-zinc-950 dij-node-start relative' }, [
