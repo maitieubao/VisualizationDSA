@@ -125,11 +125,11 @@
           <span class="text-[9px] text-text-muted font-bold uppercase select-none">Mật độ</span>
           <select
             v-model="genDensity"
-            class="builder-select text-xs py-1 px-1.5 font-bold"
+            class="builder-select text-xs py-1 px-1.5 font-bold bg-white/5 border border-white/10 outline-none rounded-md cursor-pointer transition-colors hover:border-white/20"
           >
-            <option value="low">Thưa (Low)</option>
-            <option value="medium">Vừa (Medium)</option>
-            <option value="high">Dày (High)</option>
+            <option value="low" class="bg-slate-900 text-slate-100">Thưa (Low)</option>
+            <option value="medium" class="bg-slate-900 text-slate-100">Vừa (Medium)</option>
+            <option value="high" class="bg-slate-900 text-slate-100">Dày (High)</option>
           </select>
         </div>
       </div>

@@ -112,6 +112,13 @@ export const useAnimationStore = defineStore('animation', () => {
     currentIndex.value = 0;
   }
 
+  function clear(): void {
+    stop();
+    algorithmId.value = '';
+    pseudoCode.value = [];
+    frames.value = [];
+  }
+
   function stepForward(): void {
     pause();
     if (currentIndex.value < frames.value.length - 1) {
@@ -218,6 +225,7 @@ export const useAnimationStore = defineStore('animation', () => {
     play,
     pause,
     stop,
+    clear,
     stepForward,
     stepBackward,
     scrubTo,

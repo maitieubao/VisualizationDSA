@@ -102,10 +102,10 @@ export const useUserProgressStore = defineStore('userProgress', () => {
    * Gọi trong App.vue sau khi useAuthStore.init() hoàn thành.
    */
   async function loadProgress(): Promise<void> {
+    isSyncError.value = false; // Reset error state đầu tiên
+    
     const token = authStore.getAccessToken();
     if (!token) return;
-
-    isSyncError.value = false;
 
     try {
       // Gọi fetchUserProgress — global fetch interceptor (main.ts) đã tự động:

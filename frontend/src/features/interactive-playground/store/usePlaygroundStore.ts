@@ -19,6 +19,7 @@ export const usePlaygroundStore = defineStore('playground', () => {
   const sourceNodeId = ref<string | null>(null);
   const hoveredNodeId = ref<string | null>(null);
   const hoveredEdgeId = ref<string | null>(null);
+  const isGuideDismissed = ref(false);
 
   const canAddNode = computed(() => nodes.value.length < MAX_NODES);
   const nodeCount = computed(() => nodes.value.length);
@@ -75,6 +76,7 @@ export const usePlaygroundStore = defineStore('playground', () => {
   const setSourceNodeId = (id: string | null) => { sourceNodeId.value = id; };
   const setHoveredNodeId = (id: string | null) => { hoveredNodeId.value = id; };
   const setHoveredEdgeId = (id: string | null) => { hoveredEdgeId.value = id; };
+  const dismissGuide = () => { isGuideDismissed.value = true; };
 
   return {
     mode, nodes, edges, selectedNodeId, selectedEdgeId, isPhysicsEnabled,
@@ -83,5 +85,6 @@ export const usePlaygroundStore = defineStore('playground', () => {
     updateEdgeWeight, moveNode, deleteNode, deleteEdge, clearAll,
     clearSelection, selectNode, selectEdge, togglePhysics,
     setAlgorithmMode, setSelectedAlgorithm, setSourceNodeId, setHoveredNodeId, setHoveredEdgeId,
+    isGuideDismissed, dismissGuide,
   };
 });

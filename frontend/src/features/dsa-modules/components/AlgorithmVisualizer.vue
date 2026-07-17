@@ -65,6 +65,7 @@ const activeRenderer = computed<Component>(() => {
     case 'searching':
       return BoxArrayRenderer;
     case 'tree':
+    case 'graph':
       return TreeRenderer;
     case 'stack-queue':
       return TubeRenderer;

@@ -50,4 +50,4 @@ export interface AlgorithmResult {
   frames: FrameDTO[];
 }
 
-export type RendererCategory = 'sorting' | 'searching' | 'stack-queue' | 'tree';
+export type RendererCategory = 'sorting' | 'searching' | 'stack-queue' | 'tree' | 'graph';

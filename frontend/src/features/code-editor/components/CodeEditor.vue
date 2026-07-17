@@ -1,12 +1,14 @@
 <template>
-  <div class="code-editor-card backdrop-blur-md border border-border-subtle/80 rounded-2xl p-6 shadow-xl flex flex-col gap-5 h-full">
-    <CodeEditorPresetTabs
-      :presets="PRESETS"
-      :active-preset="activePreset"
-      @select="loadPreset"
-    />
-    <CodeEditorApiHints />
-    <div class="flex-1 relative flex flex-col min-h-0 editor-wrapper rounded-xl border border-border-subtle overflow-hidden">
+  <div class="flex flex-col h-full w-full" data-tour-id="pseudocode-syncer">
+    <div class="px-4 pt-4 pb-2">
+      <CodeEditorPresetTabs
+        :presets="PRESETS"
+        :active-preset="activePreset"
+        @select="loadPreset"
+      />
+    </div>
+
+    <div class="flex-1 relative flex flex-col min-h-0 overflow-hidden w-full">
       <div v-if="editorLoadError" class="w-full h-full flex flex-col items-center justify-center p-6 text-center bg-bg-surface/30">
         <span class="text-2xl mb-2">⚠️</span>
         <p class="text-xs font-semibold text-text-primary mb-1">Không thể tải Monaco Editor</p>
@@ -28,7 +30,6 @@ import loader from "@monaco-editor/loader";
 import { useVcrStore } from "../../vcr-player/store/useVcrStore";
 import { MonacoLineSyncerCoordinator } from "../../algorithm-sandbox/engine/MonacoLineSyncerCoordinator";
 import CodeEditorPresetTabs from "./CodeEditorPresetTabs.vue";
-import CodeEditorApiHints from "./CodeEditorApiHints.vue";
 
 const vcrStore = useVcrStore();
 const editorContainer = ref<HTMLDivElement | null>(null);
@@ -107,7 +108,12 @@ onMounted(async () => {
     fontFamily: "JetBrains Mono, Fira Code, monospace",
     scrollbar: { vertical: "visible", horizontal: "visible", verticalScrollbarSize: 8, horizontalScrollbarSize: 8 },
   });
-  editorInstance.onDidChangeModelContent(() => { vcrStore.code = editorInstance.getValue(); });
+  editorInstance.onDidChangeModelContent(() => { 
+    vcrStore.code = editorInstance.getValue(); 
+    // Invalidate current playback so hitting Play recompiles the new code
+    vcrStore.playbackFrames = [];
+    vcrStore.reset();
+  });
   syncerCoordinator = new MonacoLineSyncerCoordinator(editorInstance, vcrStore);
 });
 
@@ -123,15 +129,11 @@ function loadPreset(key: string): void {
   vcrStore.code = newCode;
   editorInstance?.setValue(newCode);
   vcrStore.compileAndLoad();
+  // Bỏ auto-play để người dùng có thể chỉnh sửa code trước khi chạy
 }
 </script>
 
 <style scoped>
-.code-editor-card {
-  background-color: color-mix(in srgb, var(--vis-panel-bg) 70%, transparent);
-}
-.editor-wrapper {
-  background-color: var(--color-bg-primary);
-}
+/* No extra backgrounds needed, letting it inherit from parent */
 </style>
 

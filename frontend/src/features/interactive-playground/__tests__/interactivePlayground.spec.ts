@@ -340,29 +340,37 @@ describe('ForceDirectedEngine', () => {
 // 4. GraphParser Tests
 // =========================================
 describe('GraphParser', () => {
-  const nodes: NodeDTO[] = [
-    { id: 'n1', label: 'A', x: 100, y: 150, radius: 20 },
-    { id: 'n2', label: 'B', x: 300, y: 250, radius: 20 },
-    { id: 'n3', label: 'C', x: 150, y: 400, radius: 20 },
+  const nodes = [
+    { id: 'n1', label: 'A', x: 0, y: 0, radius: 20 },
+    { id: 'n2', label: 'B', x: 0, y: 0, radius: 20 },
+    { id: 'n3', label: 'C', x: 0, y: 0, radius: 20 },
   ];
-
-  const edges: EdgeDTO[] = [
-    { id: 'e1', from: 'n1', to: 'n2', weight: 8 },
+  const edges = [
+    { id: 'e1', from: 'n1', to: 'n2', weight: 10 },
     { id: 'e2', from: 'n2', to: 'n3', weight: 5 },
   ];
 
-  it('converts to adjacency list with both directions (undirected)', () => {
+  it('converts to adjacency list (directed)', () => {
     const payload = GraphParser.toAdjacencyList(nodes, edges, 'dijkstra');
-
     expect(payload.algorithmId).toBe('dijkstra');
     expect(payload.inputType).toBe('adjacency-list');
     expect(payload.nodes).toEqual(['A', 'B', 'C']);
-    expect(payload.adjacencyList['A']).toEqual([{ target: 'B', weight: 8 }]);
-    expect(payload.adjacencyList['B']).toHaveLength(2);
-    expect(payload.adjacencyList['C']).toEqual([{ target: 'B', weight: 5 }]);
+    expect(payload.adjacencyList['A']).toEqual([{ target: 'B', weight: 10 }]);
+    expect(payload.adjacencyList['B']).toEqual([{ target: 'C', weight: 5 }]);
+    expect(payload.adjacencyList['C']).toEqual([]);
   });
 
   it('finds isolated nodes (disconnected graph)', () => {
+    const nodes: NodeDTO[] = [
+      { id: 'n1', label: 'A', x: 100, y: 150, radius: 20 },
+      { id: 'n2', label: 'B', x: 300, y: 250, radius: 20 },
+      { id: 'n3', label: 'C', x: 150, y: 400, radius: 20 },
+    ];
+
+    const edges: EdgeDTO[] = [
+      { id: 'e1', from: 'n1', to: 'n2', weight: 8 },
+      { id: 'e2', from: 'n2', to: 'n3', weight: 5 },
+    ];
     const allNodes = [
       ...nodes,
       { id: 'n4', label: 'D', x: 500, y: 500, radius: 20 },
@@ -384,7 +392,7 @@ describe('GraphParser', () => {
     expect(result!.nodes).toHaveLength(3);
     expect(result!.edges).toHaveLength(2);
     expect(result!.nodes[0].label).toBe('A');
-    expect(result!.edges[0].weight).toBe(8);
+    expect(result!.edges[0].weight).toBe(10);
   });
 
   it('returns null for invalid JSON import', () => {

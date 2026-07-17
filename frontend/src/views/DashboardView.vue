@@ -95,6 +95,9 @@
         <p class="xp-card__hint">{{ xpToNext }} XP để lên level tiếp theo</p>
       </div>
 
+      <!-- Skill Radar Chart -->
+      <SkillRadarChart />
+
       <!-- Top Badges -->
       <div class="dash-card badges-card">
         <h3 class="dash-card__title">Huy hiệu đã mở</h3>
@@ -144,6 +147,7 @@ import { computed } from 'vue';
 import { useRouter } from 'vue-router';
 import { useAuthStore } from '../features/auth/store/useAuthStore';
 import { useGuidedTourStore } from '../features/guided-tour/store/useGuidedTourStore';
+import SkillRadarChart from '../features/user-progress/components/SkillRadarChart.vue';
 
 const authStore = useAuthStore();
 const tourStore = useGuidedTourStore();

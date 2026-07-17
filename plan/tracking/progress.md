@@ -1283,3 +1283,8 @@ TÃ¡ÂºÂ¥t cÃ¡ÂºÂ£ cÃƒÂ¡c mÃ¡Â»Â¥c tiÃƒÂªu Sprint 5 Ã�
 | **Monaco AST Loop Protection** | Xác minh cơ chế tiêm guard block __loopCounter giới hạn 5000 lần lặp trong ASTInstrumentationEngine.ts để bảo vệ tab trình duyệt khỏi treo đơ. | ✅ CODE DONE | ASTInstrumentationEngine.ts |
 | **Web Worker Lifecycle Termination** | Xác minh Web Worker được chấm dứt ngay lập tức thông qua cancelExecution() trong onBeforeUnmount của CodeWorkspace.vue khi rời khỏi IDE. | ✅ CODE DONE | CodeWorkspace.vue, WorkerLifecycleCoordinator.ts |
 
+# # #   A d v a n c e d   G r a p h   C o u r s e   ( 1 4 / 0 7 / 2 0 2 6 ) 
+ -   '  T h � m   d a n h   m �c   ' G r a p h '   v � o   C a t a l o g   ( B e l l m a n - F o r d ,   K r u s k a l ,   P r i m ,   T a r j a n ,   A * ) . 
+ -   '  B �  s u n g   m �   g i �  ( p s e u d o c o d e ) ,   �  p h �c   t �p ,   v �   d i �n   g i �i   h �c   t h u �t . 
+ -   '  T � c h   h �p   v � o   U I   A l g o r i t h m   D a s h b o a r d ,   f a l l b a c k   m �   p h �n g   t )n h   t h � n h   c � n g .  
+ 

@@ -30,6 +30,20 @@ const switchToTab2 = () => {
   if (tabBtn) tabBtn.click();
 };
 
+// Switch inner tab to Code Sandbox inside the Detail Panel
+const switchToTabCode = () => {
+  if (typeof document === 'undefined') return;
+  const tabBtn = document.querySelectorAll('.sorting-detail-panel button')[1] as HTMLElement;
+  if (tabBtn) tabBtn.click();
+};
+
+const switchToSortingAndControls = () => {
+  switchToTab1();
+  if (typeof document === 'undefined') return;
+  const tabBtn = document.querySelectorAll('.sorting-detail-panel button')[0] as HTMLElement;
+  if (tabBtn) tabBtn.click();
+};
+
 // ─────────────────────────────────────────────────────────────────────────────
 // Page-specific tour definitions
 // key = route path, value = tour steps
@@ -48,7 +62,7 @@ const PAGE_TOURS: Record<string, TourStep[]> = {
       title: '2. Thanh cấu hình dữ liệu 📝',
       description: 'Nhập mảng số nguyên tùy ý của bạn (Cách nhau bằng dấu phẩy, tối đa 15 số) hoặc nhấn Random để hệ thống tự sinh mảng.',
       highlightSelector: '[data-tour-id="vcr-input-bar"]',
-      beforeAction: switchToTab1,
+      beforeAction: switchToSortingAndControls,
       avatarState: 'EXPLAINING',
       actionScript: [
         { type: 'click', targetSelector: '[data-tour-id="vcr-input-bar"]' }
@@ -58,56 +72,56 @@ const PAGE_TOURS: Record<string, TourStep[]> = {
       title: '3. Sinh mảng ngẫu nhiên 🎲',
       description: 'Nhấn nút Random trên thanh dữ liệu để sinh nhanh một mảng số ngẫu nhiên nằm trong giới hạn an toàn của thuật toán.',
       highlightSelector: '[data-tour-id="vcr-input-bar"] button',
-      beforeAction: switchToTab1,
+      beforeAction: switchToSortingAndControls,
       avatarState: 'SIMULATING',
     },
     {
       title: '4. Phát hoạt hình (Play) ▶️',
       description: 'Nhấn Play (hoặc phím Space) để chạy hoạt cảnh mô phỏng. Các thanh đồ họa trên Canvas sẽ dịch chuyển Lerp mượt mà.',
       highlightSelector: '[data-tour-id="vcr-play-btn"]',
-      beforeAction: switchToTab1,
+      beforeAction: switchToSortingAndControls,
       avatarState: 'SIMULATING',
     },
     {
       title: '5. Tạm dừng mô phỏng ⏸️',
       description: 'Khi thuật toán đang chạy, bạn có thể nhấn nút Pause bất kỳ lúc nào để đóng băng trạng thái của mảng và nghiên cứu sâu hơn.',
       highlightSelector: '[data-tour-id="vcr-play-btn"]',
-      beforeAction: switchToTab1,
+      beforeAction: switchToSortingAndControls,
       avatarState: 'EXPLAINING',
     },
     {
       title: '6. Tiến từng bước (Step Forward) ⏭️',
       description: 'Khi đang Tạm dừng, sử dụng nút tiến bước (hoặc mũi tên phải →) để thực thi chính xác 1 bước (1 frame chuyển đổi) tiếp theo.',
       highlightSelector: '[data-tour-id="vcr-step-debug"]',
-      beforeAction: switchToTab1,
+      beforeAction: switchToSortingAndControls,
       avatarState: 'SIMULATING',
     },
     {
       title: '7. Lùi từng bước (Step Backward) ⏮️',
       description: 'Nhấn nút lùi bước (hoặc mũi tên trái ←) để khôi phục trạng thái mảng về 1 bước trước đó, giúp bạn phân tích kỹ lỗi logic.',
       highlightSelector: '[data-tour-id="vcr-step-debug"]',
-      beforeAction: switchToTab1,
+      beforeAction: switchToSortingAndControls,
       avatarState: 'SIMULATING',
     },
     {
       title: '8. Tùy chọn tốc độ mô phỏng ⏱️',
       description: 'Điều chỉnh tốc độ chạy hoạt ảnh từ rất chậm (0.25x) để soi kỹ hoán vị, cho đến cực nhanh (4x) để hoàn thành sớm mô phỏng.',
       highlightSelector: '[data-tour-id="vcr-speed-select"]',
-      beforeAction: switchToTab1,
+      beforeAction: switchToSortingAndControls,
       avatarState: 'EXPLAINING',
     },
     {
       title: '9. Bảng theo dõi biến (Trace Watcher) 📊',
       description: 'Khung hiển thị bảng biến trạng thái (Biến vòng lặp i, j, con trỏ Low, High) giúp bạn hiểu rõ các biến FSM chạy dưới nền.',
       highlightSelector: '[data-tour-id="trace-watcher-panel"]',
-      beforeAction: switchToTab1,
+      beforeAction: switchToSortingAndControls,
       avatarState: 'EXPLAINING',
     },
     {
-      title: '10. Mã giả đồng bộ (Pseudocode) 💻',
-      description: 'Dòng mã giả Pseudocode tương ứng đang sáng vàng theo thời gian thực tương ứng với bước thực thi hiện tại của thuật toán.',
+      title: '10. Giao diện Code Sandbox 💻',
+      description: 'Chuyển sang tab Code Sandbox để tự do gõ thuật toán JavaScript của riêng bạn. Code sẽ được tự động biên dịch và vẽ thành biểu đồ 60 FPS!',
       highlightSelector: '[data-tour-id="pseudocode-syncer"]',
-      beforeAction: switchToTab1,
+      beforeAction: switchToTabCode,
       avatarState: 'EXPLAINING',
     },
     {
@@ -573,35 +587,35 @@ const PAGE_TOURS: Record<string, TourStep[]> = {
     },
     {
       title: '2. Chọn Chế độ vẽ đồ thị 🛠️',
-      description: 'Dùng bảng Mode Bar để chuyển đổi giữa các công cụ vẽ: Chọn (Select), Thêm đỉnh (Add Node), Nối cạnh (Add Edge), Gán trọng số.',
+      description: 'Dùng bảng Mode Bar để chuyển đổi giữa các công cụ vẽ: Di chuyển, + Đỉnh, ↔ Cạnh, ✎ Trọng số, 🗑 Xóa.',
       highlightSelector: '[data-tour-id="graph-tool-select"]',
       beforeAction: switchToTab1,
       avatarState: 'EXPLAINING',
     },
     {
-      title: '3. Thêm đỉnh mới (Add Node) 🔵',
+      title: '3. Thêm đỉnh mới (+ Đỉnh) 🔵',
       description: 'Kích hoạt công cụ này và nhấp chuột vào bất cứ đâu trên Canvas để tạo ra các đỉnh (Node) có nhãn tăng dần A, B, C.',
       highlightSelector: '[data-tour-id="graph-tool-add-node"]',
       beforeAction: switchToTab1,
       avatarState: 'SIMULATING',
     },
     {
-      title: '4. Vẽ cạnh nối (Add Edge) ➖',
-      description: 'Kích hoạt Add Edge, kéo chuột từ đỉnh này nối sang đỉnh kia để tạo ra các liên kết cạnh (Edge) có hướng hoặc vô hướng.',
+      title: '4. Vẽ cạnh nối (↔ Cạnh) ➖',
+      description: 'Kích hoạt công cụ này, kéo chuột từ đỉnh này nối sang đỉnh kia để tạo ra các liên kết cạnh (Edge) có hướng hoặc vô hướng.',
       highlightSelector: '[data-tour-id="graph-tool-add-edge"]',
       beforeAction: switchToTab1,
       avatarState: 'SIMULATING',
     },
     {
-      title: '5. Gán trọng số cạnh (Weight) 🔢',
-      description: 'Kích hoạt công cụ Weight, nhấp vào một cạnh để gán giá trị độ dài/chi phí của cạnh phục vụ cho giải thuật Dijkstra.',
+      title: '5. Gán trọng số cạnh (✎ Trọng số) 🔢',
+      description: 'Kích hoạt công cụ này, nhấp vào một cạnh để gán giá trị độ dài/chi phí của cạnh phục vụ cho giải thuật Dijkstra.',
       highlightSelector: '[data-tour-id="graph-tool-weight"]',
       beforeAction: switchToTab1,
       avatarState: 'SIMULATING',
     },
     {
-      title: '6. Xóa thành phần đỉnh/cạnh (Delete) ❌',
-      description: 'Chọn công cụ Delete và click vào đỉnh hoặc cạnh bất kỳ để dọn dẹp phần thừa trên đồ thị của bạn.',
+      title: '6. Xóa thành phần đỉnh/cạnh (🗑 Xóa) ❌',
+      description: 'Chọn công cụ này và click vào đỉnh hoặc cạnh bất kỳ để dọn dẹp phần thừa trên đồ thị của bạn.',
       highlightSelector: '[data-tour-id="graph-tool-delete"]',
       beforeAction: switchToTab1,
       avatarState: 'SIMULATING',

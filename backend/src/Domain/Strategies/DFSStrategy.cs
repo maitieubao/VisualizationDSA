@@ -9,7 +9,7 @@ public class DFSStrategy : AlgorithmStrategyBase
 {
     public override string AlgorithmId => "dfs";
     public override string Name => "Depth-First Search (Duyệt chiều sâu)";
-    public override string Category => "Tree";
+    public override string Category => "Graph";
 
     private class BSTNode
     {

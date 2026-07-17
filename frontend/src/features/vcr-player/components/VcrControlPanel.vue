@@ -1,12 +1,6 @@
 <template>
   <div class="vcr-control-panel">
-    <VcrArrayInput
-      :raw-input-array="vcrStore.rawInputArray"
-      :compilation-error="compilationError"
-      @randomize="randomizeArray"
-      @compile="compileInput"
-      @update:rawInputArray="vcrStore.rawInputArray = $event"
-    />
+    <!-- Playback controls only -->
 
     <!-- Progress -->
     <div class="progress-section">
@@ -55,7 +49,7 @@
     </div>
 
     <!-- Speed -->
-    <div class="speed-row">
+    <div class="speed-row" data-tour-id="vcr-speed-select">
       <span class="speed-label">Speed</span>
       <div class="speed-buttons">
         <button v-for="speed in [0.5, 1, 2, 4]" :key="speed"
@@ -70,38 +64,13 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onBeforeUnmount } from "vue";
+import { onMounted, onBeforeUnmount } from "vue";
 import { useVcrStore } from "../store/useVcrStore";
-import VcrArrayInput from "./VcrArrayInput.vue";
 
 const vcrStore = useVcrStore();
-const compilationError = ref<string | null>(null);
 
 const handleScrub = (e: Event): void => {
   vcrStore.jumpToFrame(parseInt((e.target as HTMLInputElement).value, 10));
-};
-
-const compileInput = (): void => {
-  compilationError.value = null;
-
-  // Kiểm tra số phần tử trước khi compile — giới hạn tối đa 15
-  const elements = vcrStore.rawInputArray
-    .split(',')
-    .map((s) => s.trim())
-    .filter((s) => s !== '' && !isNaN(Number(s)));
-  if (elements.length > 15) {
-    compilationError.value = `⚠️ Vượt quá giới hạn! Chỉ hiển thị 15 phần tử đầu tiên (bạn đã nhập ${elements.length}).`;
-  }
-
-  const res = vcrStore.compileAndLoad();
-  if (!res.success) compilationError.value = res.error || "Lỗi không xác định khi biên dịch";
-};
-
-const randomizeArray = (): void => {
-  const length = Math.floor(Math.random() * 5) + 6;
-  const arr = Array.from({ length }, () => Math.floor(Math.random() * 90) + 10);
-  vcrStore.rawInputArray = arr.join(", ");
-  compileInput();
 };
 
 const handleGlobalKeydown = (e: KeyboardEvent): void => {

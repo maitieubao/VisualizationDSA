@@ -67,28 +67,32 @@ namespace VisualizationDSA.WebApi.Controllers
         {
             try
             {
-                // Persist to PostgreSQL first
-                var existingUser = await _dbContext.Users
-                    .FirstOrDefaultAsync(u => u.Email == request.Email);
-                string dbUserId;
-                if (existingUser == null)
+                // ✅ FIX: Bọc DB call trong try-catch để fallback sang in-memory khi DB không khả dụng
+                string dbUserId = Guid.NewGuid().ToString();
+                try
                 {
-                    var passwordHash = HashPasswordSHA256(request.Password);
-                    var dbUser = new User(request.Email, request.Username, passwordHash);
-                    _dbContext.Users.Add(dbUser);
-                    await _dbContext.SaveChangesAsync();
-                    dbUserId = dbUser.Id.ToString();
+                    var existingUser = await _dbContext.Users
+                        .FirstOrDefaultAsync(u => u.Email == request.Email);
+                    if (existingUser == null)
+                    {
+                        var passwordHash = HashPasswordSHA256(request.Password);
+                        var dbUser = new User(request.Email, request.Username, passwordHash);
+                        _dbContext.Users.Add(dbUser);
+                        await _dbContext.SaveChangesAsync();
+                        dbUserId = dbUser.Id.ToString();
+                    }
+                    else
+                    {
+                        dbUserId = existingUser.Id.ToString();
+                    }
                 }
-                else
+                catch (Exception dbEx)
                 {
-                    dbUserId = existingUser.Id.ToString();
+                    Serilog.Log.Warning(dbEx, "Không thể kết nối DB khi đăng ký. Tiếp tục bằng in-memory auth.");
                 }
 
                 var response = _authStrategy.Register(request, dbUserId);
-
-                // Ensure response reflects DB role
                 response.User.Role = "Student";
-
                 return Ok(response);
             }
             catch (ArgumentException ex)

@@ -9,7 +9,7 @@ public class BFSStrategy : AlgorithmStrategyBase
 {
     public override string AlgorithmId => "bfs";
     public override string Name => "Breadth-First Search (Duyệt chiều rộng)";
-    public override string Category => "Tree";
+    public override string Category => "Graph";
 
     private class BSTNode
     {

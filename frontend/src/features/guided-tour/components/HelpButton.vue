@@ -13,12 +13,14 @@
 import { useRoute } from 'vue-router';
 import { useGuidedTourStore } from '../store/useGuidedTourStore';
 
+const props = defineProps<{ tourKey?: string }>();
+
 const route = useRoute();
 const tourStore = useGuidedTourStore();
 
 function triggerTour() {
-  const currentPath = route.path;
-  tourStore.startPageTour(currentPath, true);
+  const key = props.tourKey || route.path;
+  tourStore.startPageTour(key, true);
 }
 </script>
 

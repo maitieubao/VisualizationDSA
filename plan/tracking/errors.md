@@ -580,3 +580,40 @@ edirect: '/'.
     - Cáº¥u hinh `IMemoryCache` tren AnalyticsController cho public statistics (cache GetOverview trong 2 phut, GetPopularModules trong 10 phut) va clamp tham so limit de tranh query ton tai nguyen DB.
     - Khai bao 2 chinh sach rate limit tai `Program.cs`: `"api"` (60 request/phut) va `"heavy"` (15 request/phut, 0 queue de fail-fast) theo IP nguoi dung.
     - Ap dung decorator `[EnableRateLimiting("heavy")]` cho tat ca cac simulation controllers va `[EnableRateLimiting("api")]` cho AnalyticsController.
+# # #   S ía   L ×i   1 7 4 :   T h u ­t   T o á n   S ¯p   X ¿p   C h è n   C h ¡y   N g ¯n   ( E R R _ S A N D B O X _ E L S E _ C A T C H _ B U G ) 
+ *       * * M ô   t £: * *   S a n d b o x   b i ê n   d Ëc h   m ã   n g u Ón   c ça   I n s e r t i o n   S o r t   b Ë  d ën g   Ùt   n g Ùt   ( c h ¡y   r ¥t   n g ¯n )   v à   b á o   l ×i   c ú   p h á p   n g §m   t r o n g   c o n s o l e   k h i   g ·p   l Çn h   \ e l s e \ . 
+ *       * * M ã   L ×i : * *   E R R _ S A N D B O X _ E L S E _ C A T C H _ B U G 
+ *       * * N g u y ê n   n h â n   g Ñc : * *   R e g e x   t i ê m   v ¿t   ( i n s t r u m e n t a t i o n )   t r o n g   \ C o m p i l e r S t e p E x e c u t o r . t s \   t h ê m   t r a c k i n g   s a i   v à o   k h Ñi   \ e l s e \   m à   k h ô n g   k i Ãm   t r a   c ¥u   t r ú c   b l o c k ,   p h á   v á  c ú   p h á p   J a v a S c r i p t ,   b u Ùc   s a n d b o x   p h £i   c h u y Ãn   s a n g   c h ¿  Ù  f a l l b a c k   t )n h   ( k h ô n g   c h ¡y   °ãc   l o g i c   v ò n g   l ·p   p h éc   t ¡p ) . 
+ *       * * C á c h   k h ¯c   p h åc : * *   C ­p   n h ­t   r e g e x   v à   l o g i c   x í  l ý   \ e l s e \   t r o n g   \ C o m p i l e r S t e p E x e c u t o r \   Ã  b Ï  q u a   t i ê m   m ã   l Çn h   t h e o   d õ i   s a i   v Ë  t r í . 
+ 
+ # # #   S ía   L ×i   1 7 5 :   C o d e   S a n d b o x   K h ô n g   C ­p   N h ­t   C o d e   M Ûi   ( E R R _ S A N D B O X _ S T A L E _ C O D E ) 
+ *       * * M ô   t £: * *   N g °Ýi   d ù n g   c h Én h   s ía   c o d e   t r o n g   t a b   C o d e   S a n d b o x ,   s a u   ó   b ¥m   c h ¡y ,   n h °n g   h Ç  t h Ñn g   v «n   t i ¿p   t åc   c h ¡y   t h u ­t   t o á n   c i  ( h o ·c   c o d e   c i)   m à   k h ô n g   c ó   l ×i   b á o . 
+ *       * * M ã   L ×i : * *   E R R _ S A N D B O X _ S T A L E _ C O D E 
+ *       * * N g u y ê n   n h â n   g Ñc : * *   T r ¡n g   t h á i   c a c h e   \ p l a y b a c k F r a m e s \   t r o n g   \  c r S t o r e \   k h ô n g   b Ë  x ó a   k h i   n g °Ýi   d ù n g   s ía   m ã   n g u Ón   t r o n g   \ C o d e E d i t o r . v u e \ .   K h i   ¥n   c h ¡y   l ¡i ,   s t o r e   t h ¥y   f r a m e s   >   0   n ê n   t r ñc   t i ¿p   p l a y   l ¡i   b Ù  f r a m e s   c i  t h a y   v ì   b i ê n   d Ëc h   l ¡i   c o d e   m Ûi . 
+ *       * * C á c h   k h ¯c   p h åc : * *   T h ê m   s ñ  k i Çn   l ¯n g   n g h e   \ o n C o d e C h a n g e \   t r o n g   \ C o d e E d i t o r . v u e \ .   B ¥t   c é  k h i   n à o   c o d e   t h a y   Õi ,   g Íi   \  c r S t o r e . r e s e t ( ) \   Ã  x ó a   t r ¯n g   \ p l a y b a c k F r a m e s \   b u Ùc   h Ç  t h Ñn g   p h £i   d Ëc h   l ¡i .   Ón g   t h Ýi   b Ï  \  u t o - p l a y \   k h i   c h Ín   t h u ­t   t o á n . 
+ 
+ # # #   S ía   L ×i   1 7 6 :   T £i   L ¡i   T r a n g   ( F 5 )   L u ô n   B Ë  V n g   R a   L a n d i n g   P a g e   ( E R R _ R O U T E R _ F 5 _ A U T H _ R A C E ) 
+ *       * * M ô   t £: * *   a n g   ß  t r o n g   b à i   h Íc   ( L e s s o n V i e w )   h o ·c   D a s h b o a r d ,   n g °Ýi   d ù n g   ¥n   F 5   t h ì   l u ô n   b Ë  ©y   r a   n g o à i   t r a n g   c h ç  \ / l a n d i n g \ ,   m ·c   d ù   t r ¡n g   t h á i   n g   n h ­p   ( t o k e n )   v «n   c ò n   t r o n g   l o c a l S t o r a g e . 
+ *       * * M ã   L ×i : * *   E R R _ R O U T E R _ F 5 _ A U T H _ R A C E 
+ *       * * N g u y ê n   n h â n   g Ñc : * *   R a c e   c o n d i t i o n   ( b ¥t   Ón g   b Ù)   t r o n g   V u e   S P A .   T r ì n h   Ën h   t u y ¿n   \  o u t e r \   k h ßi   c h ¡y   v à   á n h   g i á   g u a r d   \  e q u i r e s A u t h \   n g a y   l ­p   t éc   t r °Ûc   k h i   \  u t h S t o r e . i n i t ( ) \   k Ëp   k h ô i   p h åc   l ¡i   t r ¡n g   t h á i   T o k e n   t ë  l o c a l S t o r a g e   ( p h £i   Íc   q u a   P r o m i s e ) ,   d «n   ¿n   v i Çc   r o u t e r   n g h )  n g °Ýi   d ù n g   c h °a   n g   n h ­p . 
+ *       * * C á c h   k h ¯c   p h åc : * *   T r o n g   \ m a i n . t s \ ,   k ì m   h ã m   k h ô n g   g Íi   \  p p . u s e ( r o u t e r ) \   c h o   ¿n   k h i   \  u t h S t o r e . i n i t ( ) \   ã   h o à n   t ¥t   k h ô i   p h åc   t r ¡n g   t h á i   v à o   b Ù  n h Û.  
+ 
+### Bug: Sân chõi ð? th? b? màn h?nh hý?ng d?n che khu?t và không th? t?t
+- **Nguyên nhân:** B?ng hý?ng d?n (Onboarding guide) ? ch? ð? pointer-events-none khi?n click xuyên qua, nhýng do ch? ð? m?c ð?nh c?a Canvas là SELECT nên click vào không v? ðý?c ð?nh m?i. Ngý?i dùng tý?ng b?ng b? k?t và che khu?t mà không có nút ðóng r? ràng.
+- **Cách kh?c ph?c:** C?p nh?t usePlaygroundStore.ts thêm c? isGuideDismissed. C?p nh?t InteractivePlayground.vue thêm nút 'Ð? hi?u và B?t ð?u v?' v?i pointer-events-auto ð? ðóng b?ng hý?ng d?n và cho phép v? t? do.
+
+### Bug: M?c l?c bài h?c b? 'Tr? l? d?ng ð? th?' ðè lên
+- **Nguyên nhân:** Compoment CustomInputPanel trong Sân chõi ð? th? ðý?c gán z-index: 1005 (Tailwind: z-[1005]), trong khi thanh ngãn kéo (Drawer) M?c l?c khoá h?c ? LessonStudyView ch? ðý?c gán z-index: 50 (z-50). Do ðó panel nh?p li?u hi?n th? ðè lên Drawer, che m?t n?i dung m?c l?c.
+- **Cách kh?c ph?c:** C?p nh?t LessonStudyView.vue, nâng z-index c?a thanh Drawer lên z-[2000] và l?p n?n m? overlay lên z-[1999] ð? luôn hi?n th? cao nh?t.
+
+### Bug: Nút tr? giúp (?) AI không hi?n th? tour hý?ng d?n trong khoá h?c ð? th?
+- **Nguyên nhân:** Nút HelpButton m?c ð?nh g?i k?ch b?n AI d?a trên URL hi?n t?i (oute.path). Khi ? trong khoá h?c, URL là d?ng /courses/:id/lessons/:id ch? không ph?i là /graph. Trong khi ðó, k?ch b?n hý?ng d?n l?i ðãng k? dý?i key /graph ? useGuidedTourStore, d?n ð?n vi?c h? th?ng không t?m th?y k?ch b?n týõng ?ng ð? ch?y.
+- **Cách kh?c ph?c:** C?p nh?t file GraphView.vue truy?n c?ng tham s? 	our-key=/graph` cho component <HelpButton /> ð? nó luôn n?p ðúng k?ch b?n hý?ng d?n b?t k? URL bên ngoài là g?.
+
+### Bug: N?i dung hý?ng d?n AI (Guided Tour) không kh?p v?i tên g?i công c? trên UI
+- **Nguyên nhân:** L?i tho?i hý?ng d?n c?a tr? l? ?o trong file useGuidedTourStore.ts dùng các thu?t ng? c? ho?c ti?ng Anh (nhý Select, Add Node, Add Edge...) trong khi thanh công c? th?c t? trên UI ð? ðý?c vi?t hóa (Di chuy?n, + Ð?nh, ? C?nh, ? Tr?ng s?, ?? Xóa). Ngoài ra, có t?n t?i m?t b?n ghi c?u h?nh tour /graph b? trùng l?p.
+- **Cách kh?c ph?c:** Xóa b? b?n ghi tour c?u h?nh trùng l?p c? và c?p nh?t ð?ng b? toàn b? n?i dung hý?ng d?n t? bý?c 2 ð?n bý?c 6 cho kh?p tuy?t ð?i v?i nh?n (label) c?a các công c? v? trên màn h?nh.
+
+### Bug: Listbox (Dropdown ch?n gi?i thu?t) b? m?, khó nh?n trên n?n tr?ng
+- **Nguyên nhân:** Các th? \<option>\ bên trong dropdown ðang s? d?ng các bi?n màu CSS custom (\g-bg-secondary\, \	ext-text-primary\). Tr?nh duy?t Windows thý?ng không render chu?n các bi?n màu này bên trong component dropdown g?c (native UI), d?n ð?n vi?c n?n b? tr?ng toát và ch? b? m? nh?t (low contrast).
+- **Cách kh?c ph?c:** Ch?nh s?a file \InteractivePlayground.vue\ và \CustomInputPanel.vue\, g? b? class màu custom và thay th? b?ng h? màu t?nh chu?n c?a Tailwind (ví d?: \g-slate-900 text-slate-100\) ð? ép bu?c tr?nh duy?t render màu t?i (dark theme) cho toàn b? các m?c ch?n bên trong Listbox.

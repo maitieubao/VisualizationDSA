@@ -36,6 +36,7 @@ export const useVcrStore = defineStore('vcr-player', () => {
   const isPlaying          = ref<boolean>(false);
   const playbackSpeed      = ref<number>(1); // 0.5x | 1x | 2x | 4x
   const isLooping          = ref<boolean>(false);
+  const compilationError   = ref<string | null>(null);
 
   // ─── DERIVED STATE ───────────────────────────────────────────────────────────
   const currentFrame = computed<VcrBaseFrame | null>(() => {
@@ -55,6 +56,7 @@ export const useVcrStore = defineStore('vcr-player', () => {
 
   /** Biên dịch mã nguồn + mảng đầu vào → sinh ra danh sách PlaybackFrames */
   const compileAndLoad = () => {
+    compilationError.value = null;
     try {
       if (customCompileFn.value) {
         customCompileFn.value();
@@ -69,11 +71,18 @@ export const useVcrStore = defineStore('vcr-player', () => {
     } catch (err: unknown) {
       console.error('[VcrStore] Lỗi biên dịch mã giả:', err);
       const message = err instanceof Error ? err.message : String(err);
+      compilationError.value = message;
       return { success: false, error: message };
     }
   };
 
-  const play   = () => { if (playbackFrames.value.length === 0) compileAndLoad(); if (playbackFrames.value.length > 0) isPlaying.value = true; };
+  const play   = () => { 
+    if (playbackFrames.value.length === 0) compileAndLoad(); 
+    if (playbackFrames.value.length > 0) isPlaying.value = true; 
+    else if (compilationError.value) {
+      alert("LỖI BIÊN DỊCH CODE:\n\n" + compilationError.value);
+    }
+  };
   const pause  = () => { isPlaying.value = false; };
   const togglePlay = () => { isPlaying.value ? pause() : play(); };
 
@@ -98,7 +107,7 @@ export const useVcrStore = defineStore('vcr-player', () => {
   // ─── PUBLIC API ──────────────────────────────────────────────────────────────
   return {
     sourceCode, code, rawInputArray, inputArray, playbackFrames, currentFrameIndex,
-    isPlaying, playbackSpeed, isLooping,
+    isPlaying, playbackSpeed, isLooping, compilationError,
     currentFrame, currentLineNumber, totalFrames, isAtStart, isAtEnd,
     customCompileFn, compileAndLoad, play, pause, togglePlay,
     stepNext, stepPrev, reset, jumpToFrame,

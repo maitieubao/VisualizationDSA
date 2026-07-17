@@ -56,9 +56,9 @@
             data-tour-id="graph-algorithm-select"
             class="bg-white/5 border border-white/10 rounded-lg px-2.5 py-1.5 text-xs text-text-primary font-bold outline-none cursor-pointer hover:border-white/20 transition-all"
           >
-            <option value="BFS" class="bg-bg-secondary text-text-primary">BFS (Chiều rộng)</option>
-            <option value="DFS" class="bg-bg-secondary text-text-primary">DFS (Chiều sâu)</option>
-            <option value="DIJKSTRA" class="bg-bg-secondary text-text-primary">Dijkstra (Đường đi ngắn nhất)</option>
+            <option value="BFS" class="bg-slate-900 text-slate-100">BFS (Chiều rộng)</option>
+            <option value="DFS" class="bg-slate-900 text-slate-100">DFS (Chiều sâu)</option>
+            <option value="DIJKSTRA" class="bg-slate-900 text-slate-100">Dijkstra (Đường đi ngắn nhất)</option>
           </select>
         </div>
 
@@ -71,8 +71,8 @@
             data-tour-id="graph-source-node-select"
             class="bg-white/5 border border-white/10 rounded-lg px-2.5 py-1.5 text-xs text-text-primary font-bold outline-none cursor-pointer hover:border-white/20 transition-all font-mono"
           >
-            <option value="" disabled class="bg-bg-secondary text-text-muted">Chọn đỉnh...</option>
-            <option v-for="node in store.nodes" :key="node.id" :value="node.id" class="bg-bg-secondary text-text-primary">
+            <option value="" disabled class="bg-slate-900 text-slate-500">Chọn đỉnh...</option>
+            <option v-for="node in store.nodes" :key="node.id" :value="node.id" class="bg-slate-900 text-slate-100">
               Đỉnh {{ node.label }}
             </option>
           </select>
@@ -144,8 +144,8 @@
     <!-- Center Canvas Area -->
     <div class="relative flex-1 min-h-[200px] overflow-hidden" ref="canvasAreaRef" data-tour-id="graph-canvas">
       <!-- Onboarding guide overlay -->
-      <div v-if="store.nodes.length === 0 && !store.isAlgorithmMode" class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none z-10 p-6 text-center">
-        <div class="max-w-md bg-bg-secondary/75 backdrop-blur-lg border border-white/10 p-6 rounded-2xl shadow-2xl transition-all select-none">
+      <div v-if="store.nodes.length === 0 && !store.isAlgorithmMode && !store.isGuideDismissed" class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none z-10 p-6 text-center">
+        <div class="max-w-md bg-bg-secondary/90 backdrop-blur-lg border border-white/20 p-6 rounded-2xl shadow-2xl transition-all select-none pointer-events-auto">
           <div class="w-12 h-12 rounded-full bg-accent-emerald/10 flex items-center justify-center mx-auto mb-4 border border-accent-emerald/20 text-accent-emerald animate-bounce">
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <path d="M12 20h9" /><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z" />
@@ -167,18 +167,19 @@
               <span>Chọn <strong>Trọng Số (W)</strong> và nhấp vào chỉ số cạnh để thay đổi giá trị.</span>
             </div>
           </div>
+          <button @click="store.dismissGuide()" class="mt-4 w-full py-2.5 rounded-lg bg-accent-emerald/10 text-accent-emerald hover:bg-accent-emerald/20 border border-accent-emerald/20 transition-all font-bold text-xs">Đã hiểu và Bắt đầu vẽ</button>
         </div>
       </div>
 
       <PlaygroundCanvas @weight-input="onWeightInput" />
 
       <!-- Floating Pseudocode & Explanation Card -->
-      <div v-if="store.isAlgorithmMode && animStore.currentFrame" class="absolute top-4 right-4 w-[290px] z-[1002] bg-bg-secondary/85 backdrop-blur-md border border-white/10 rounded-xl shadow-2xl p-4 flex flex-col gap-3 transition-all duration-300">
+      <div v-if="store.isAlgorithmMode && animStore.currentFrame" class="absolute top-4 right-4 w-[360px] z-[1002] bg-bg-secondary/85 backdrop-blur-md border border-white/10 rounded-xl shadow-2xl p-4 flex flex-col gap-3 transition-all duration-300">
         <div class="text-xs font-bold text-accent-cyan uppercase tracking-wider flex justify-between items-center">
           <span>Giải thuật: {{ store.selectedAlgorithm }}</span>
           <span class="text-[10px] text-text-muted font-mono font-normal">Bước {{ animStore.currentIndex + 1 }}/{{ animStore.totalSteps }}</span>
         </div>
-        <div class="font-mono text-[11px] leading-relaxed text-text-secondary select-none overflow-y-auto max-h-[200px] border border-white/5 rounded-lg p-2 bg-black/20">
+        <div class="font-mono text-[11px] leading-relaxed text-text-secondary select-none overflow-y-auto max-h-[400px] border border-white/5 rounded-lg p-2 bg-black/20">
           <div
             v-for="(line, idx) in animStore.pseudoCode"
             :key="idx"

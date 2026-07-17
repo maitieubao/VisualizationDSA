@@ -206,7 +206,8 @@ export class GraphAlgorithmSimulator {
     let stepId = 1;
 
     const visited = new Set<string>();
-    const stack: string[] = [];
+    // Stack stores [nodeId, edgeId_that_discovered_it]
+    const stack: { id: string; edgeId: string | null }[] = [];
     const visitedEdges: string[] = [];
 
     // Frame 0: Init
@@ -220,7 +221,7 @@ export class GraphAlgorithmSimulator {
       queueStack: []
     });
 
-    stack.push(startId);
+    stack.push({ id: startId, edgeId: null });
     const startLabel = this.getNodeLabel(nodes, startId);
 
     // Frame 1: Push source
@@ -235,12 +236,17 @@ export class GraphAlgorithmSimulator {
     });
 
     while (stack.length > 0) {
-      const currId = stack.pop()!;
+      const { id: currId, edgeId: incomingEdgeId } = stack.pop()!;
       const currLabel = this.getNodeLabel(nodes, currId);
-      const sLabels = stack.map(id => this.getNodeLabel(nodes, id));
+      const sLabels = stack.map(item => this.getNodeLabel(nodes, item.id));
 
       if (!visited.has(currId)) {
         visited.add(currId);
+        
+        // Add the tree edge that successfully discovered this node
+        if (incomingEdgeId && !visitedEdges.includes(incomingEdgeId)) {
+          visitedEdges.push(incomingEdgeId);
+        }
 
         frames.push({
           stepId: stepId++,
@@ -260,13 +266,9 @@ export class GraphAlgorithmSimulator {
           const neighborLabel = this.getNodeLabel(nodes, neighborId);
 
           if (!visited.has(neighborId)) {
-            stack.push(neighborId);
-            // Trace the edge used to discover neighborId
-            if (!visitedEdges.includes(edge.id)) {
-              visitedEdges.push(edge.id);
-            }
+            stack.push({ id: neighborId, edgeId: edge.id });
 
-            const curSLabels = stack.map(id => this.getNodeLabel(nodes, id));
+            const curSLabels = stack.map(item => this.getNodeLabel(nodes, item.id));
             frames.push({
               stepId: stepId++,
               activeLine: 9,

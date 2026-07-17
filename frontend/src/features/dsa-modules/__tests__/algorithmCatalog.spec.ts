@@ -2,8 +2,8 @@ import { describe, it, expect } from 'vitest';
 import { ALGORITHM_CATALOG } from '../services/algorithmCatalog';
 
 describe('algorithmCatalog', () => {
-  it('contains exactly 17 algorithms', () => {
-    expect(ALGORITHM_CATALOG.length).toBe(17);
+  it('contains exactly 22 algorithms', () => {
+    expect(ALGORITHM_CATALOG.length).toBe(22);
   });
 
   it('all algorithms have required fields', () => {
@@ -40,8 +40,8 @@ describe('algorithmCatalog', () => {
     expect(sq.length).toBe(3);
   });
 
-  it('has 4 tree algorithms', () => {
-    const tree = ALGORITHM_CATALOG.filter((a) => a.category === 'Tree');
-    expect(tree.length).toBe(4);
+  it('has 8 graph algorithms', () => {
+    const graph = ALGORITHM_CATALOG.filter((a) => a.category === 'Graph');
+    expect(graph.length).toBe(8);
   });
 });
