@@ -74,4 +74,3 @@ Component Vue 3 tích hợp các biến CSS HSL và bóng đổ Neon hổ phách
 </style>
 ```
  Giao diện mờ kính Glassmorphic sang trọng phối hợp bóng đổ phát sáng Neon hổ phách Amber nâng tầm trải nghiệm của học viên đạt chuẩn đại học đại học quốc tế.
-

@@ -1,4 +1,3 @@
-
 export const NODE_RADIUS  = 22;
 export const LEVEL_HEIGHT = 70;
 export const MARGIN_TOP   = 50;
@@ -102,4 +101,3 @@ export function drawNode(
   const displayText = value === 999 ? '∞' : String(value);
   ctx.fillText(displayText, x, y);
 }
-

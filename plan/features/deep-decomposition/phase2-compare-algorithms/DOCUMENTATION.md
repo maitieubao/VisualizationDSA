@@ -27,4 +27,3 @@ Hệ thống quyết định xây dựng kiến trúc **Bộ điều phối Phá
     *   **Nhất quán dữ liệu:** Cả hai Canvas đều nạp chung một mảng số ngẫu nhiên ban đầu, tăng tính thuyết phục của thực nghiệm khoa học.
 *   **Điểm cần lưu ý (Cons):**
     *   Yêu cầu hệ thống phải tính toán trước toàn bộ mảng Frames của cả hai giải thuật trước khi bắt đầu phát. Việc này đã được hệ thống Store Pinia xử lý mượt mà ở Client-side.
-    

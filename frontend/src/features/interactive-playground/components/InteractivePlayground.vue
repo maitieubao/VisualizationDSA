@@ -385,34 +385,5 @@ onUnmounted(() => {
 </script>
 
 <style scoped>
-.playground-root {
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  width: 100%;
-  height: 100%;
-  background-color: var(--color-bg-primary);
-  border-radius: var(--radius-xl);
-  overflow: hidden;
-}
-
-.weight-input {
-  width: 60px;
-  padding: 6px 10px;
-  border-radius: var(--radius-md);
-  border: 2px solid var(--color-accent-emerald);
-  background-color: var(--color-bg-secondary);
-  color: var(--color-accent-yellow);
-  font-size: var(--text-sm);
-  font-weight: var(--font-bold);
-  text-align: center;
-  outline: none;
-  font-family: var(--font-mono);
-  box-shadow: 0 0 12px rgba(16,185,129,0.3);
-  transition: var(--transition-fast);
-}
-
-.weight-input:focus {
-  border-color: var(--color-accent-cyan);
-}
+@import "./InteractivePlayground.css";
 </style>

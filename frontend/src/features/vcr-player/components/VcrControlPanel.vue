@@ -97,7 +97,7 @@ onBeforeUnmount(() => window.removeEventListener("keydown", handleGlobalKeydown)
 .progress-section { display: flex; flex-direction: column; gap: 8px; }
 .progress-header  { display: flex; align-items: center; justify-content: space-between; font-size: var(--text-xs); }
 .progress-label   { color: var(--color-text-muted); }
-.progress-counter { font-family: var(--font-mono); color: var(--color-accent-cyan); }
+.progress-counter { font-family: var(--font-mono); color: var(--color-accent-primary-text); }
 
 .vcr-scrubber {
   width: 100%;
@@ -106,7 +106,7 @@ onBeforeUnmount(() => window.removeEventListener("keydown", handleGlobalKeydown)
   appearance: none;
   cursor: pointer;
   background: var(--color-bg-hover);
-  accent-color: var(--color-accent-cyan);
+  accent-color: var(--color-accent-primary);
 }
 .vcr-scrubber:disabled { opacity: 0.4; }
 
@@ -138,8 +138,8 @@ onBeforeUnmount(() => window.removeEventListener("keydown", handleGlobalKeydown)
   transition: var(--transition-fast);
 }
 .ctrl-btn-play:disabled { opacity: 0.3; cursor: not-allowed; }
-.ctrl-btn-play--play  { background: var(--color-accent-cyan); }
-.ctrl-btn-play--play:hover  { background: var(--color-accent-primary); }
+.ctrl-btn-play--play  { background: var(--color-accent-primary); }
+.ctrl-btn-play--play:hover  { background: var(--color-accent-primary-light); }
 .ctrl-btn-play--pause { background: var(--color-accent-red); }
 .ctrl-btn-play--pause:hover { background: var(--color-accent-red-light); }
 
@@ -158,5 +158,5 @@ onBeforeUnmount(() => window.removeEventListener("keydown", handleGlobalKeydown)
   transition: var(--transition-fast);
 }
 .speed-btn:hover        { color: var(--color-text-secondary); }
-.speed-btn--active      { background: var(--color-accent-cyan-dim); color: var(--color-accent-cyan); }
+.speed-btn--active      { background: var(--color-accent-primary-dim); color: var(--color-accent-primary-text); }
 </style>

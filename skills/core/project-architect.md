@@ -72,4 +72,3 @@ export interface IAlgorithmVisualizerPlugin {
 }
 ```
  Lược đồ quy trình đồng bộ hóa VCR tối ưu cùng giao diện mở rộng linh hoạt IPlugin đảm bảo toàn hệ thống đạt hiệu suất cao nhất và sẵn sàng mở rộng vô hạn trong tương lai.
-

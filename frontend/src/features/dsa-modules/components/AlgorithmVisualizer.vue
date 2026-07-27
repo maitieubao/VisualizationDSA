@@ -89,4 +89,3 @@ const rendererProps = computed(() => {
   background-color: var(--canvas-bg);
 }
 </style>
-

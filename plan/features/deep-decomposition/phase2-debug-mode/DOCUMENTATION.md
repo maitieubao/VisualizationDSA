@@ -27,4 +27,3 @@ Hệ thống quyết định áp dụng giải pháp **Hàm tạo Generator (`fu
 *   **Điểm cần lưu ý (Cons):**
     *   Yêu cầu mã nguồn nhập vào Monaco Editor phải được phân tích cú pháp AST thành công. Nếu chứa lỗi biên dịch (Syntax Error), tiến trình tiêm generator yield sẽ dừng sớm và báo động đỏ rực Neon ở Console, giúp học sinh nhận diện sửa lỗi nhanh chóng.
     *   Các lệnh đệ quy lồng nhau sâu đòi hỏi quản lý ngăn xếp mảng cẩn thận.
-    

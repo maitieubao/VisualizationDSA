@@ -21,7 +21,7 @@
       Each visualizer child must use h-full to utilise this space fully.
       overflow-x-auto for wide arrays, overflow-y-hidden (visualizers self-contain vertically).
     -->
-    <div class="relative z-10 flex-1 min-h-0 flex flex-col px-4 pb-4 overflow-hidden">
+    <div class="relative z-10 flex-1 min-h-0 flex flex-col px-4 pb-20 overflow-hidden">
       <!-- Visualizer Canvas -->
       <div class="flex-1 min-h-[0] overflow-x-auto overflow-y-hidden">
         <!-- We use BubbleSortVisualizer as a Generic Bar Chart Visualizer for all JS-compiled array algorithms -->

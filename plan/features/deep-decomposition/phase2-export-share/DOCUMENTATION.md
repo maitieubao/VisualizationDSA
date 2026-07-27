@@ -27,5 +27,3 @@ Hệ thống quyết định sử dụng giải pháp **Vẽ trích xuất SVG s
     *   **Đồng bộ giao diện hoàn hảo:** Ảnh xuất ra giữ nguyên 100% font chữ JetBrains Mono và hiệu ứng kính mờ Neon sành điệu nhờ cơ chế nhúng stylesheet ngoại vi.
 *   **Điểm cần lưu ý (Cons):**
     *   Yêu cầu các tệp hình ảnh ngoại vi nhúng kèm (nếu có) phải có cấu hình CORS thích hợp để tránh lỗi làm bẩn Canvas (Tainted Canvas Security Exception). Tuy nhiên, sơ đồ VisualizationDSA vẽ 100% vector SVG nên hoàn toàn không gặp lỗi này.
-    
-    

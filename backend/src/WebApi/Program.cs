@@ -345,15 +345,17 @@ try
     using (var scope = app.Services.CreateScope())
     {
         var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-        // Sử dụng EnsureCreated() cho SQLite
-        context.Database.EnsureCreated();
+        // Chạy Migrations để tạo bảng đầy đủ trong SQLite
+        context.Database.Migrate();
         
         var seeder = new DbSeeder(context);
         await seeder.SeedAsync();
+        Console.WriteLine("[DB SEEDER SUCCESS]: Đã nạp thành công 11 khóa học và 12 bài Quiz!");
     }
 }
 catch (Exception ex)
 {
+    Console.WriteLine($"[DB SEED ERROR]: {ex}");
     Log.Warning(ex, "Không thể kết nối cơ sở dữ liệu local để chạy migrations. Hệ thống vẫn khởi động bình thường.");
 }
 

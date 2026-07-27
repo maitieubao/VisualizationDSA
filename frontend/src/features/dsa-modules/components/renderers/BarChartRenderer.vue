@@ -132,4 +132,3 @@ onBeforeUnmount(() => {
   background-color: var(--canvas-bg);
 }
 </style>
-

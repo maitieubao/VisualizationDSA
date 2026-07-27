@@ -1282,4 +1282,3 @@ TÃ¡ÂºÂ¥t cÃ¡ÂºÂ£ cÃƒÂ¡c mÃ¡Â»Â¥c tiÃƒÂªu Sprint 5 Ã�
 | **Pinia Reactivity Optimization** | Xác minh và đảm bảo dùng shallowRef cho danh sách frames lớn trong useAnimationStore và useVcrStore giúp loại bỏ reactive proxy đệ quy sâu nghẽn CPU. | ✅ CODE DONE | useAnimationStore.ts, useVcrStore.ts |
 | **Monaco AST Loop Protection** | Xác minh cơ chế tiêm guard block __loopCounter giới hạn 5000 lần lặp trong ASTInstrumentationEngine.ts để bảo vệ tab trình duyệt khỏi treo đơ. | ✅ CODE DONE | ASTInstrumentationEngine.ts |
 | **Web Worker Lifecycle Termination** | Xác minh Web Worker được chấm dứt ngay lập tức thông qua cancelExecution() trong onBeforeUnmount của CodeWorkspace.vue khi rời khỏi IDE. | ✅ CODE DONE | CodeWorkspace.vue, WorkerLifecycleCoordinator.ts |
-

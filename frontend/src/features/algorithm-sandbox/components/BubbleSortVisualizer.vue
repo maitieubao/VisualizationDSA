@@ -101,7 +101,7 @@ const containerStyle = computed(() => {
 });
 
 function getItemClass(idx: number) {
-  if (!props.frame) return 'border-cyan-500/40 bg-gradient-to-t from-cyan-950/50 to-cyan-500/10 text-cyan-300 shadow-[0_0_12px_rgba(6,182,212,0.1)] hover:border-cyan-400/80';
+  if (!props.frame) return 'border-indigo-500/40 bg-gradient-to-t from-indigo-950/50 to-indigo-500/10 text-indigo-300 shadow-[0_0_12px_rgba(99,102,241,0.1)] hover:border-indigo-400/80';
   const { comparingIndices, swappedIndices, sortedIndices } = props.frame;
 
   if (sortedIndices.includes(idx))
@@ -110,7 +110,7 @@ function getItemClass(idx: number) {
     return 'border-rose-400 bg-gradient-to-t from-rose-950/60 to-rose-500/30 text-rose-200 shadow-[0_0_20px_rgba(244,63,94,0.35)] scale-[1.04] animate-pulse';
   if (comparingIndices?.includes(idx))
     return 'border-amber-400 bg-gradient-to-t from-amber-950/60 to-amber-500/25 text-amber-200 shadow-[0_0_16px_rgba(245,158,11,0.25)] scale-[1.03]';
-  return 'border-cyan-500/40 bg-gradient-to-t from-cyan-950/50 to-cyan-500/10 text-cyan-300 shadow-[0_0_12px_rgba(6,182,212,0.1)] hover:border-cyan-400/80';
+  return 'border-indigo-500/40 bg-gradient-to-t from-indigo-950/50 to-indigo-500/10 text-indigo-300 shadow-[0_0_12px_rgba(99,102,241,0.1)] hover:border-indigo-400/80';
 }
 
 function getIndexClass(idx: number) {

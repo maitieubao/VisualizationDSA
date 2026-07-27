@@ -28,7 +28,7 @@
       <svg v-if="draggingEdge" class="absolute inset-0 pointer-events-none w-full h-full">
         <path
           :d="getBezierPath(draggingEdge.x1, draggingEdge.y1, draggingEdge.x2, draggingEdge.y2)"
-          stroke="var(--color-accent-cyan)"
+          stroke="var(--color-accent-primary-text)"
           stroke-width="3"
           stroke-dasharray="4"
           class="dragging-edge-path animate-[dash_1s_linear_infinite]"

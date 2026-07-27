@@ -26,4 +26,3 @@ Hệ thống quyết định xây dựng cơ chế **Nhấp chọn trực tiếp
     *   **Giảm thiểu gian lận:** Việc click trực tiếp yêu cầu học sinh thực sự hiểu sơ đồ đang chạy ở khung hình đó, tránh việc đánh bừa phương án A, B, C, D.
 *   **Điểm cần lưu ý (Cons):**
     *   Giảng viên biên soạn kịch bản câu hỏi `CANVAS_TARGET` cần khai báo chính xác ID đỉnh đáp án đúng khớp với cấu trúc thuật toán phát ra. Việc này đã được hệ thống API biên soạn giáo trình tự động hóa.
-    

@@ -28,8 +28,8 @@ namespace VisualizationDSA.Domain.Entities
             CourseId = courseId;
             Title = title;
             ContentMd = contentMd;
-            SandboxType = sandboxType;
-            SandboxConfig = sandboxConfig;
+            SandboxType = sandboxType ?? "dsa";
+            SandboxConfig = string.IsNullOrWhiteSpace(sandboxConfig) ? "{}" : sandboxConfig;
             QuizId = quizId;
             XPReward = xpReward;
             OrderIndex = orderIndex;

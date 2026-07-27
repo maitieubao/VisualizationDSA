@@ -23,7 +23,35 @@ export const useAnimationStore = defineStore('animation', () => {
   const isPlaying = ref<boolean>(false);
   const playbackSpeed = ref<number>(1.0);
   let timerId: number | null = null;
+  // Timeline support
+  const timeline = shallowRef<OOPAnimationTimeline | null>(null);
+  const currentTime = ref(0);
+  const speed = ref(1);
+
+  // Interaction lock for UI (e.g., during autoplay)
   const interactionLocked = ref<boolean>(false);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  function loadTimeline(tl: OOPAnimationTimeline) {
+    timeline.value = tl;
+    currentTime.value = 0;
+    // Reset existing frames if needed
+    frames.value = [];
+    currentIndex.value = 0;
+  }
+
   let playUntilTarget: number | null = null;
   let playUntilResolver: (() => void) | null = null;
 

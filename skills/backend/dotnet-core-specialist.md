@@ -70,4 +70,3 @@ builder.Services.AddTransient<IStateInspectorService, StateInspectorService>();
 var app = builder.Build();
 ```
  Cấu trúc Clean Architecture cùng cơ chế quản lý Dependency Injection chuẩn mực mang lại nền tảng vững chắc hàng đầu thế giới, đảm bảo Backend .NET luôn hoạt động trơn tru và cực kỳ dễ bảo trì.
-

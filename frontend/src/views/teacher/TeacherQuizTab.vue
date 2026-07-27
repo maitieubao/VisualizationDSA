@@ -1,0 +1,427 @@
+<template>
+  <section class="quiz-manage-section">
+    <div class="flex justify-between items-center mb-6 flex-wrap gap-3">
+      <h2 class="section-heading m-0">Quản lý ngân hàng câu hỏi trắc nghiệm</h2>
+      <div class="flex gap-2">
+        <button 
+          type="button" 
+          class="btn-toggle-form" 
+          :class="{ 'btn-toggle-form--active': activeFormType === 'manual' }"
+          @click="toggleForm('manual')"
+        >
+          <span v-if="activeFormType === 'manual'"><BaseIcon name="close" class="w-3.5 h-3.5 inline mr-1 align-text-bottom" /> Đóng Form</span>
+          <span v-else><BaseIcon name="plus" class="w-3.5 h-3.5 inline mr-1 align-text-bottom" /> Tạo trắc nghiệm thủ công</span>
+        </button>
+        <button 
+          type="button" 
+          class="btn-toggle-form btn-toggle-form--excel" 
+          :class="{ 'btn-toggle-form--active': activeFormType === 'excel' }"
+          @click="toggleForm('excel')"
+        >
+          <span v-if="activeFormType === 'excel'"><BaseIcon name="close" class="w-3.5 h-3.5 inline mr-1 align-text-bottom" /> Đóng Form</span>
+          <span v-else><BaseIcon name="export-share" class="w-3.5 h-3.5 inline mr-1 align-text-bottom" /> Nhập từ Excel</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Form Thêm / Chỉnh sửa Quiz thủ công -->
+    <form v-if="activeFormType === 'manual'" class="quiz-form mb-8 animate-fade-in" @submit.prevent="submitQuiz">
+      <h3 class="form-title-context">
+        <span v-if="isEditMode"><BaseIcon name="edit" class="w-4 h-4 text-accent inline mr-1 align-middle" /> Chỉnh sửa bài trắc nghiệm</span>
+        <span v-else><BaseIcon name="plus" class="w-4 h-4 text-accent inline mr-1 align-middle" /> Thêm câu hỏi trắc nghiệm mới</span>
+      </h3>
+      <div class="form-row">
+        <label class="form-label">Tiêu đề trắc nghiệm</label>
+        <input v-model="newQuiz.title" class="form-input" placeholder="VD: Cơ bản về danh sách liên kết" required />
+      </div>
+      <div class="form-row">
+        <label class="form-label">Chủ đề</label>
+        <select v-model="newQuiz.topic" class="form-select" required>
+          <option value="" disabled selected>Chọn chủ đề...</option>
+          <option value="sorting">Sắp xếp</option>
+          <option value="graph">Đồ thị</option>
+          <option value="oop">Hướng đối tượng</option>
+          <option value="solid">Nguyên lý SOLID</option>
+          <option value="di">DI/IoC (Dependency Injection)</option>
+          <option value="array">Mảng tĩnh & Mảng động</option>
+          <option value="linked-list">Danh sách liên kết</option>
+          <option value="design-patterns">Mẫu thiết kế</option>
+        </select>
+      </div>
+      <div class="form-row form-row--inline">
+        <div>
+          <label class="form-label">Độ khó</label>
+          <select v-model="newQuiz.difficulty" class="form-select">
+            <option value="easy">Dễ</option>
+            <option value="medium">Trung bình</option>
+            <option value="hard">Khó</option>
+          </select>
+        </div>
+        <div>
+          <label class="form-label">XP thưởng</label>
+          <input v-model.number="newQuiz.xpReward" type="number" class="form-input" min="10" max="500" />
+        </div>
+      </div>
+
+      <!-- Questions -->
+      <div class="questions-section">
+        <h3 class="questions-heading">
+          Câu hỏi ({{ newQuiz.questions.length }})
+          <button type="button" class="btn-add-q" @click="addQuestion">+ Thêm câu</button>
+        </h3>
+        <div v-for="(q, qi) in newQuiz.questions" :key="qi" class="question-block">
+          <div class="question-block__header">
+            <span class="question-block__num">Câu {{ qi + 1 }}</span>
+            <button v-if="newQuiz.questions.length > 1" type="button" class="btn-remove" @click="removeQuestion(qi)">×</button>
+          </div>
+          <input v-model="q.text" class="form-input" placeholder="Nội dung câu hỏi..." required />
+          <div class="options-grid">
+            <div v-for="(_, oi) in q.options" :key="oi" class="option-row">
+              <input type="radio" :name="'correct-' + qi" :value="oi" v-model="q.correctIndex" />
+              <input v-model="q.options[oi]" class="form-input form-input--sm" :placeholder="'Đáp án ' + String.fromCharCode(65 + oi)" required />
+            </div>
+          </div>
+          <input v-model="q.explanation" class="form-input form-input--sm" placeholder="Giải thích đáp án đúng..." />
+        </div>
+      </div>
+
+      <div class="form-actions flex justify-center gap-3">
+        <button type="submit" class="btn-submit" :disabled="submitting">
+          {{ submitting ? 'Đang gửi...' : isEditMode ? 'Cập nhật bài trắc nghiệm' : 'Thêm bài trắc nghiệm vào hệ thống' }}
+        </button>
+        <button type="button" class="btn-cancel" @click="cancelEdit">
+          {{ isEditMode ? 'Hủy' : 'Đóng' }}
+        </button>
+      </div>
+      <div class="text-center">
+        <p v-if="submitMessage" class="submit-message" :class="{ 'submit-message--error': submitError }">
+          {{ submitMessage }}
+        </p>
+      </div>
+    </form>
+
+    <!-- Import Excel Component -->
+    <div v-if="activeFormType === 'excel'" class="mb-8 animate-fade-in">
+      <ExcelQuizImporter @import-success="onImportSuccess" />
+    </div>
+
+    <!-- Danh sách Quiz hiện có -->
+    <div class="quizzes-list-container">
+      <h3 class="subsection-heading mb-4">Danh sách bài trắc nghiệm đang hoạt động</h3>
+      <div v-if="loadingQuizzes" class="loading-state">
+        <div class="spinner"></div>
+        <span>Đang tải danh sách bài trắc nghiệm...</span>
+      </div>
+      <div v-else-if="quizzesList.length === 0" class="empty-state">
+        Chưa có bài trắc nghiệm nào trong hệ thống. Hãy tạo mới!
+      </div>
+      <div v-else class="table-responsive">
+        <table class="quizzes-table">
+          <thead>
+            <tr>
+              <th>Tiêu đề</th>
+              <th>Chủ đề</th>
+              <th>Độ khó</th>
+              <th>XP Thưởng</th>
+              <th>Số câu hỏi</th>
+              <th class="text-center">Thao tác</th>
+            </tr>
+          </thead>
+          <tbody>
+            <template v-for="q in quizzesList" :key="q.id">
+              <tr @click="toggleQuizAccordion(String(q.id))" class="cursor-pointer hover:bg-white/5 transition-colors">
+                <td class="font-bold text-white">
+                  <span class="inline-block mr-1 transition-transform duration-200" :style="expandedQuizId === String(q.id) ? 'transform: rotate(90deg)' : ''">▶</span>
+                  {{ q.title }}
+                </td>
+                <td><span class="topic-badge" :class="'topic-' + q.topic">{{ formatTopic(q.topic) }}</span></td>
+                <td><span class="diff-badge" :class="'diff-' + q.difficulty">{{ formatDifficulty(q.difficulty) }}</span></td>
+                <td class="font-mono text-amber-400 font-bold"><BaseIcon name="diamond" class="w-4 h-4 text-amber-400 inline mr-1 align-text-bottom" />+{{ q.xpReward }} XP</td>
+                <td class="font-mono text-slate-300">{{ q.questionCount }} câu</td>
+                <td>
+                  <div class="flex justify-center gap-2" @click.stop>
+                    <button type="button" class="btn-action btn-action--edit" @click="editQuiz(q.id)" title="Chỉnh sửa">
+                      <BaseIcon name="edit" class="w-3.5 h-3.5 inline mr-1 align-text-bottom" /> Sửa
+                    </button>
+                    <button type="button" class="btn-action btn-action--delete" @click="deleteQuiz(q.id)" title="Xóa">
+                      <BaseIcon name="trash" class="w-3.5 h-3.5 inline mr-1 align-text-bottom" /> Xóa
+                    </button>
+                  </div>
+                </td>
+              </tr>
+              <!-- Accordion Row -->
+              <tr v-if="expandedQuizId === String(q.id)" class="accordion-row">
+                <td colspan="6" class="accordion-cell">
+                  <div v-if="loadingDetail[String(q.id)]" class="loading-detail py-4">
+                    <div class="spinner spinner--sm"></div>
+                    <span>Đang tải danh sách câu hỏi...</span>
+                  </div>
+                  <div v-else-if="quizDetails[String(q.id)]" class="quiz-detail-panel animate-fade-in">
+                    <div class="flex justify-between items-center mb-4">
+                      <h4 class="detail-title text-indigo-400 font-bold m-0"><BaseIcon name="quiz" class="w-4 h-4 text-indigo-400 inline mr-1 align-text-bottom" /> Chỉnh sửa câu hỏi con</h4>
+                      <button type="button" class="btn-add-inline" @click="addInlineQuestion(String(q.id))">
+                        <BaseIcon name="plus" class="w-3.5 h-3.5 inline mr-1 align-text-bottom" /> Thêm câu hỏi mới
+                      </button>
+                    </div>
+                    <div v-if="quizDetails[String(q.id)].questions.length === 0" class="empty-state py-4 text-center">
+                      Bài trắc nghiệm này chưa có câu hỏi nào. Hãy thêm câu hỏi mới!
+                    </div>
+                    <div v-for="(subQ, qi) in quizDetails[String(q.id)].questions" :key="qi" class="sub-question-card">
+                      <div class="flex justify-between items-center mb-3">
+                        <span class="sub-q-num text-amber-400 font-bold">Câu hỏi {{ Number(qi) + 1 }}</span>
+                        <button type="button" class="btn-remove-inline" @click="removeInlineQuestion(String(q.id), Number(qi))">
+                          <BaseIcon name="close" class="w-3 h-3 inline mr-1 align-text-bottom" /> Xóa câu này
+                        </button>
+                      </div>
+                      <div class="form-row">
+                        <label class="form-label">Nội dung câu hỏi</label>
+                        <input v-model="subQ.text" class="form-input" placeholder="Nhập nội dung câu hỏi..." />
+                      </div>
+                      <div class="options-grid">
+                        <div v-for="(_, oi) in subQ.options" :key="oi" class="option-row">
+                          <input type="radio" :name="'correct-inline-' + String(q.id) + '-' + qi" :value="oi" v-model="subQ.correctIndex" />
+                          <input v-model="subQ.options[oi]" class="form-input form-input--sm" :placeholder="'Đáp án ' + String.fromCharCode(65 + Number(oi))" />
+                        </div>
+                      </div>
+                      <div class="form-row">
+                        <label class="form-label">Giải thích đáp án đúng</label>
+                        <input v-model="subQ.explanation" class="form-input form-input--sm" placeholder="Giải thích vì sao đáp án này đúng..." />
+                      </div>
+                    </div>
+                    <div class="flex justify-end gap-2 mt-4">
+                      <button type="button" class="btn-save-inline" @click="saveInlineQuiz(String(q.id))" :disabled="savingDetail[String(q.id)]">
+                        <span v-if="savingDetail[String(q.id)]">Đang lưu...</span>
+                        <span v-else><BaseIcon name="save" class="w-3.5 h-3.5 inline mr-1 align-text-bottom" /> Lưu tất cả thay đổi</span>
+                      </button>
+                      <button type="button" class="btn-close-inline" @click="expandedQuizId = null">Đóng</button>
+                    </div>
+                    <p v-if="inlineError[String(q.id)]" class="text-rose-400 text-sm mt-2 text-right">
+                      {{ inlineError[String(q.id)] }}
+                    </p>
+                  </div>
+                </td>
+              </tr>
+            </template>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Quiz Performance Analytics Report -->
+      <div class="quizzes-report-container mt-10 p-6 rounded-2xl border border-white/10 bg-slate-900/40">
+        <h3 class="subsection-heading mb-2 flex items-center gap-2 text-white">
+          <BaseIcon name="chart-bar" class="w-5 h-5 text-indigo-400" />
+          Báo cáo hiệu suất bài tập trắc nghiệm
+        </h3>
+        <p class="text-xs text-slate-400 mb-6">Thống kê tổng hợp điểm số trung bình và tỷ lệ đậu theo từng chủ đề bài thi.</p>
+
+        <div v-if="loadingAnalytics" class="text-center py-6 text-slate-500">Đang tải dữ liệu báo cáo...</div>
+        <div v-else-if="!quizPerformanceStats.length" class="text-center py-6 text-slate-500">Chưa có lượt làm bài nào để thống kê hiệu suất.</div>
+        <div v-else class="table-responsive">
+          <table class="quizzes-table">
+            <thead>
+              <tr>
+                <th>Tên bài trắc nghiệm</th>
+                <th>Chủ đề</th>
+                <th class="text-center">Tổng lượt làm</th>
+                <th class="text-center">Lượt đậu</th>
+                <th class="text-center">Điểm TB (%)</th>
+                <th class="text-center">Tỷ lệ đậu (%)</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="stat in quizPerformanceStats" :key="stat.quizId">
+                <td class="font-bold text-white">{{ stat.title }}</td>
+                <td><span class="topic-badge" :class="'topic-' + stat.topic">{{ formatTopic(stat.topic) }}</span></td>
+                <td class="text-center font-mono font-bold text-slate-300">{{ stat.totalAttempts }} lượt</td>
+                <td class="text-center font-mono text-emerald-400">{{ stat.passedCount }} lượt</td>
+                <td class="text-center font-mono text-indigo-300 font-bold">{{ stat.avgScore }}%</td>
+                <td class="text-center">
+                  <span 
+                    class="px-2 py-0.5 rounded-lg text-xs font-bold font-mono"
+                    :class="stat.passRatePercent >= 70 ? 'bg-emerald-500/10 text-emerald-400' : stat.passRatePercent >= 40 ? 'bg-amber-500/10 text-amber-400' : 'bg-rose-500/10 text-rose-400'"
+                  >
+                    {{ stat.passRatePercent }}%
+                  </span>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </section>
+</template>
+
+<script setup lang="ts">
+import { ref, reactive } from 'vue';
+import { useTeacherApi } from './useTeacherApi';
+import ExcelQuizImporter from '../../features/quiz/components/ExcelQuizImporter.vue';
+
+const { BASE_URL, getAuthHeaders, formatTopic, formatDifficulty } = useTeacherApi();
+
+interface QuestionForm {
+  text: string;
+  options: string[];
+  correctIndex: number;
+  explanation: string;
+}
+
+const activeFormType = ref<'none' | 'manual' | 'excel'>('none');
+const isEditMode = ref(false);
+const editingQuizId = ref<string | null>(null);
+const expandedQuizId = ref<string | null>(null);
+const loadingDetail = ref<Record<string, boolean>>({});
+const savingDetail = ref<Record<string, boolean>>({});
+const quizDetails = ref<Record<string, any>>({});
+const inlineError = ref<Record<string, string>>({});
+const submitting = ref(false);
+const submitMessage = ref('');
+const submitError = ref(false);
+const quizzesList = ref<any[]>([]);
+const loadingQuizzes = ref(false);
+const loadingAnalytics = ref(false);
+const quizPerformanceStats = ref<any[]>([]);
+
+const newQuiz = reactive({
+  title: '',
+  topic: '',
+  difficulty: 'medium',
+  xpReward: 50,
+  questions: [createEmptyQuestion()] as QuestionForm[],
+});
+
+function createEmptyQuestion(): QuestionForm {
+  return { text: '', options: ['', '', '', ''], correctIndex: 0, explanation: '' };
+}
+
+function addQuestion(): void { newQuiz.questions.push(createEmptyQuestion()); }
+function removeQuestion(index: number): void { newQuiz.questions.splice(index, 1); }
+
+function toggleForm(type: 'manual' | 'excel'): void {
+  if (activeFormType.value === type) {
+    activeFormType.value = 'none';
+    if (isEditMode.value) cancelEdit();
+  } else {
+    activeFormType.value = type;
+    if (type !== 'manual' && isEditMode.value) cancelEdit();
+  }
+}
+
+function cancelEdit(): void {
+  isEditMode.value = false;
+  editingQuizId.value = null;
+  activeFormType.value = 'none';
+  Object.assign(newQuiz, { title: '', topic: '', difficulty: 'medium', xpReward: 50 });
+  newQuiz.questions = [createEmptyQuestion()];
+  submitMessage.value = '';
+}
+
+async function loadAnalytics(): Promise<void> {
+  loadingAnalytics.value = true;
+  try {
+    const res = await fetch(`${BASE_URL}/api/v1/concepts/quiz/analytics`, { headers: getAuthHeaders() });
+    if (!res.ok) return;
+    const data = await res.json();
+    quizPerformanceStats.value = data.perQuizStats || [];
+  } catch { /* analytics is optional */ }
+  finally { loadingAnalytics.value = false; }
+}
+
+async function loadQuizzes(): Promise<void> {
+  loadingQuizzes.value = true;
+  try {
+    const res = await fetch(`${BASE_URL}/api/v1/concepts/quiz/all`, { headers: getAuthHeaders() });
+    if (res.ok) quizzesList.value = await res.json();
+  } catch (err) { console.error('Lỗi khi tải danh sách quiz:', err); }
+  finally { loadingQuizzes.value = false; }
+}
+
+async function editQuiz(quizId: string): Promise<void> {
+  submitMessage.value = ''; submitError.value = false;
+  try {
+    const res = await fetch(`${BASE_URL}/api/v1/concepts/quiz/${quizId}`, { headers: getAuthHeaders() });
+    if (!res.ok) throw new Error('Không thể tải chi tiết trắc nghiệm');
+    const data = await res.json();
+    isEditMode.value = true; editingQuizId.value = quizId; activeFormType.value = 'manual';
+    Object.assign(newQuiz, { title: data.title, topic: data.topic, difficulty: data.difficulty, xpReward: data.xpReward });
+    newQuiz.questions = data.questions.map((q: any) => ({ text: q.text, options: [...q.options], correctIndex: q.correctIndex, explanation: q.explanation ?? '' }));
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  } catch (err: any) { alert(err.message || 'Lỗi khi tải thông tin bài trắc nghiệm'); }
+}
+
+async function deleteQuiz(quizId: string): Promise<void> {
+  if (!confirm('Bạn có chắc chắn muốn xóa bài trắc nghiệm này?')) return;
+  try {
+    const res = await fetch(`${BASE_URL}/api/v1/concepts/quiz/manage/${quizId}`, { method: 'DELETE', headers: getAuthHeaders() });
+    if (!res.ok) throw new Error('Xóa bài trắc nghiệm thất bại');
+    alert('Đã xóa bài trắc nghiệm thành công!');
+    await loadQuizzes(); await loadAnalytics();
+  } catch (err: any) { alert(err.message || 'Lỗi không xác định khi xóa'); }
+}
+
+async function submitQuiz(): Promise<void> {
+  submitting.value = true; submitMessage.value = ''; submitError.value = false;
+  const payload = {
+    id: isEditMode.value ? editingQuizId.value : '',
+    title: newQuiz.title, topic: newQuiz.topic, difficulty: newQuiz.difficulty, xpReward: newQuiz.xpReward,
+    questions: newQuiz.questions.map((q, i) => ({ id: isEditMode.value ? `q${i + 1}` : `custom-q${i + 1}`, text: q.text, options: q.options, correctIndex: q.correctIndex, explanation: q.explanation })),
+  };
+  try {
+    const url = isEditMode.value ? `${BASE_URL}/api/v1/concepts/quiz/manage/${editingQuizId.value}` : `${BASE_URL}/api/v1/concepts/quiz/manage`;
+    const res = await fetch(url, { method: isEditMode.value ? 'PUT' : 'POST', headers: getAuthHeaders(), body: JSON.stringify(payload) });
+    if (!res.ok) { const err = await res.json(); throw new Error(err.message ?? (isEditMode.value ? 'Cập nhật thất bại' : 'Thêm thất bại')); }
+    submitMessage.value = isEditMode.value ? 'Cập nhật thành công!' : 'Thêm thành công!';
+    cancelEdit(); await loadQuizzes(); await loadAnalytics();
+  } catch (err: unknown) { submitError.value = true; submitMessage.value = err instanceof Error ? err.message : 'Lỗi không xác định'; }
+  finally { submitting.value = false; }
+}
+
+async function toggleQuizAccordion(quizId: string): Promise<void> {
+  if (expandedQuizId.value === quizId) { expandedQuizId.value = null; return; }
+  expandedQuizId.value = quizId;
+  if (!quizDetails.value[quizId]) await fetchQuizDetail(quizId);
+}
+
+async function fetchQuizDetail(quizId: string): Promise<void> {
+  loadingDetail.value[quizId] = true; inlineError.value[quizId] = '';
+  try {
+    const res = await fetch(`${BASE_URL}/api/v1/concepts/quiz/${quizId}`, { headers: getAuthHeaders() });
+    if (!res.ok) throw new Error('Không thể tải chi tiết trắc nghiệm');
+    quizDetails.value[quizId] = await res.json();
+  } catch (err: any) { inlineError.value[quizId] = err.message || 'Lỗi khi tải chi tiết'; }
+  finally { loadingDetail.value[quizId] = false; }
+}
+
+function addInlineQuestion(quizId: string): void {
+  if (!quizDetails.value[quizId]) return;
+  quizDetails.value[quizId].questions.push({ text: '', options: ['', '', '', ''], correctIndex: 0, explanation: '' });
+}
+
+function removeInlineQuestion(quizId: string, index: number): void {
+  if (!quizDetails.value[quizId]) return;
+  quizDetails.value[quizId].questions.splice(index, 1);
+}
+
+async function saveInlineQuiz(quizId: string): Promise<void> {
+  savingDetail.value[quizId] = true; inlineError.value[quizId] = '';
+  try {
+    const payload = quizDetails.value[quizId];
+    const res = await fetch(`${BASE_URL}/api/v1/concepts/quiz/manage/${quizId}`, { method: 'PUT', headers: getAuthHeaders(), body: JSON.stringify(payload) });
+    if (!res.ok) { const err = await res.json(); throw new Error(err.message || 'Cập nhật thất bại'); }
+    alert('Đã cập nhật các câu hỏi con thành công!');
+    expandedQuizId.value = null; await loadQuizzes(); await loadAnalytics();
+  } catch (err: any) { inlineError.value[quizId] = err.message || 'Lỗi khi lưu thay đổi'; }
+  finally { savingDetail.value[quizId] = false; }
+}
+
+function onImportSuccess(): void {
+  alert('Nhập danh sách trắc nghiệm từ Excel thành công!');
+  activeFormType.value = 'none'; loadQuizzes(); loadAnalytics();
+}
+
+// Expose for parent to call on mount
+defineExpose({ loadQuizzes, loadAnalytics, quizzesList });
+
+loadQuizzes();
+loadAnalytics();
+</script>

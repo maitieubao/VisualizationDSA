@@ -115,4 +115,3 @@ export function handleMouseMove(
     edgeDrawState.value.snapTarget = snapTarget;
   }
 }
-

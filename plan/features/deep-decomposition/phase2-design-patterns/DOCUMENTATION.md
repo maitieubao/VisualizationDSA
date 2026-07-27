@@ -26,4 +26,3 @@ Hệ thống quyết định sử dụng **Đồ họa Vector Khai báo (SVG)** 
 *   **Điểm cần lưu ý (Cons):**
     *   Cần tính toán uốn lượn đường vẽ khéo léo để tránh các đường path chồng chéo lên các node thẻ lớp gây rối mắt. Hệ thống giải quyết bằng cách áp dụng thuật toán SVGPathCalculator tự động uốn góc cong lồi lõm cực kỳ khoa học.
     *   Không phù hợp vẽ hàng chục ngàn node phần tử (tuy nhiên sơ đồ lớp EdTech chỉ tối đa 15-20 node, hoàn toàn chạy cực mượt).
-    

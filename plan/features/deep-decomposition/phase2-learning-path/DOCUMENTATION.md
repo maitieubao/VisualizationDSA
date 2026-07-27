@@ -26,5 +26,3 @@ Hệ thống quyết định sử dụng **Bộ giải đồ thị có hướng 
     *   **Giảm tải backend tối đa:** Máy chủ backend chỉ đóng vai trò lưu trữ bản sao tiến trình (Snapshot), không cần gánh chịu CPU tính toán đồ thị DAG.
 *   **Điểm cần lưu ý (Cons):**
     *   Cần lập trình logic giải đồ thị DAG đồng bộ 100% giống hệt nhau ở cả Client (TypeScript) và Backend (C#) để máy chủ có thể chạy cơ chế đối chiếu kiểm duyệt khi chấm điểm cuối khóa, tránh gian lận thay đổi biến LocalStorage phía client.
-    
-    

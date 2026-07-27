@@ -57,4 +57,3 @@ describe('CompilerStepExecutor.generateStepToLineMapping Unit Tests', () => {
     });
   });
 });
-

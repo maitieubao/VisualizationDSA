@@ -1,0 +1,124 @@
+/* SystemDesignWorkspace scoped stylesheet using CSS Variables */
+
+.system-design-workspace {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 20px;
+  padding-bottom: 40px;
+  height: 100%;
+  color: var(--color-text-primary, #d9dde8);
+  overflow-y: auto;
+  background-color: var(--color-bg-primary, #1a1d2e);
+}
+
+.workspace-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid var(--color-border-subtle, rgba(255, 255, 255, 0.08));
+  padding-bottom: 12px;
+}
+
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.header-icon {
+  width: 28px;
+  height: 28px;
+  color: var(--color-accent-primary, #4255ff);
+}
+
+.header-title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--color-text-heading, #ffffff);
+  margin: 0;
+}
+
+.scenario-badge {
+  background: rgba(168, 85, 247, 0.15);
+  color: #c084fc;
+  border: 1px solid rgba(168, 85, 247, 0.3);
+  font-size: 0.725rem;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 6px;
+}
+
+.header-controls {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.scenario-select {
+  background: var(--color-bg-terminal, #0f1120);
+  border: 1px solid var(--color-border-subtle, rgba(255, 255, 255, 0.1));
+  color: var(--color-text-heading, #ffffff);
+  padding: 6px 12px;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  outline: none;
+}
+
+.workspace-grid {
+  display: grid;
+  grid-template-columns: 280px 1fr;
+  gap: 16px;
+  flex: 1;
+  min-height: 500px;
+}
+
+.controls-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  background: var(--color-bg-surface, #282e3e);
+  border: 1px solid var(--color-border-subtle, rgba(255, 255, 255, 0.08));
+  border-radius: 14px;
+  padding: 16px;
+  backdrop-filter: var(--glass-blur-light, blur(12px));
+}
+
+.panel-title {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--color-text-heading, #ffffff);
+  margin: 0;
+}
+
+.canvas-area {
+  position: relative;
+  background: var(--color-bg-terminal, #0f1120);
+  border: 1px solid var(--color-border-subtle, rgba(255, 255, 255, 0.08));
+  border-radius: 14px;
+  overflow: hidden;
+}
+
+.topology-canvas {
+  width: 100%;
+  height: 100%;
+  cursor: grab;
+}
+
+.topology-canvas:active {
+  cursor: grabbing;
+}
+
+.workspace-footer {
+  font-size: 0.8rem;
+  color: var(--color-text-muted, #6b7385);
+  text-align: center;
+  padding-top: 8px;
+  border-top: 1px solid var(--color-border-subtle, rgba(255, 255, 255, 0.04));
+}
+
+.footer-alert {
+  color: #f87171;
+  font-weight: 600;
+  margin-left: 8px;
+}

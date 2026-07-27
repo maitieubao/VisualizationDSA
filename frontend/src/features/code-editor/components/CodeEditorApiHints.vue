@@ -1,20 +1,20 @@
 <template>
-  <div class="api-hints-panel rounded-xl border border-border-subtle/60 p-3.5 flex flex-col gap-2.5">
-    <div class="text-[11px] font-bold uppercase tracking-widest text-text-muted">
+  <div class="api-hints-panel rounded-xl border border-white/10 p-2.5 flex flex-col gap-2 bg-slate-950/60 font-sans">
+    <div class="text-[10px] font-bold uppercase tracking-wider text-slate-400">
       Các hàm tương tác trực quan:
     </div>
-    <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs font-mono">
-      <div class="flex flex-col gap-0.5 hint-box p-2 rounded-lg border border-border-subtle/30">
-        <span class="text-accent-yellow font-bold">compare(i, j)</span>
-        <span class="text-text-secondary font-sans text-[11px]">So sánh & nhấp nháy 2 phần tử</span>
+    <div class="grid grid-cols-1 gap-1.5 text-xs">
+      <div class="flex items-center justify-between hint-box p-1.5 px-2 rounded-lg border border-white/5 bg-slate-900/80">
+        <span class="text-amber-400 font-mono font-bold text-[11px]">compare(i, j)</span>
+        <span class="text-slate-400 text-[10px]">So sánh 2 phần tử</span>
       </div>
-      <div class="flex flex-col gap-0.5 hint-box p-2 rounded-lg border border-border-subtle/30">
-        <span class="text-accent-red font-bold">swap(i, j)</span>
-        <span class="text-text-secondary font-sans text-[11px]">Hoán vị trí hai phần tử</span>
+      <div class="flex items-center justify-between hint-box p-1.5 px-2 rounded-lg border border-white/5 bg-slate-900/80">
+        <span class="text-rose-400 font-mono font-bold text-[11px]">swap(i, j)</span>
+        <span class="text-slate-400 text-[10px]">Hoán vị 2 phần tử</span>
       </div>
-      <div class="flex flex-col gap-0.5 hint-box p-2 rounded-lg border border-border-subtle/30">
-        <span class="text-accent-green font-bold">highlight(i)</span>
-        <span class="text-text-secondary font-sans text-[11px]">Đánh dấu đã xếp xong</span>
+      <div class="flex items-center justify-between hint-box p-1.5 px-2 rounded-lg border border-white/5 bg-slate-900/80">
+        <span class="text-emerald-400 font-mono font-bold text-[11px]">highlight(i)</span>
+        <span class="text-slate-400 text-[10px]">Đánh dấu đã xong</span>
       </div>
     </div>
   </div>
@@ -28,4 +28,3 @@
   background-color: var(--color-bg-surface);
 }
 </style>
-

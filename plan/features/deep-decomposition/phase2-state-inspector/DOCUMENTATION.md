@@ -26,5 +26,3 @@ Hệ thống quyết định tự phát triển giải pháp **Tính toán tọa
     *   **Phản hồi nhạy bén dưới 10ms:** Nhấp chọn frame cũ cuộn Monaco tức thì dưới **10ms**, tạo cảm giác tương tác cực nhạy.
 *   **Điểm cần lưu ý (Cons):**
     *   Phải quản lý dọn dẹp các event resize và animation loop cực kỳ sạch sẽ khi đóng workspace để tránh lỗi tràn RAM (Memory Leak).
-    
-    

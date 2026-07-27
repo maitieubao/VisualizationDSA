@@ -74,4 +74,3 @@ export function renderLoopPointers(
     pointerOffset += 24;
   });
 }
-

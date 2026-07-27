@@ -129,4 +129,3 @@ watch(() => vcrStore.currentLineNumber, async (newLineNum) => {
   background-color: rgba(16, 185, 129, 0.05);
 }
 </style>
-

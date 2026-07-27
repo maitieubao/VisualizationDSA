@@ -29,10 +29,7 @@ export const APP_TABS: readonly (TabGroup | TabItem)[] = [
   {
     groupName: 'Khái niệm',
     items: [
-      { id: 'oop',      path: '/oop',      name: 'OOP' },
-      { id: 'solid',    path: '/solid',    name: 'SOLID' },
-      { id: 'patterns', path: '/patterns', name: 'Design Patterns' },
-      { id: 'di',       path: '/di',       name: 'DI/IoC' },
+      { id: 'docs',      path: '/docs',      name: 'Tài liệu tham khảo' },
       { id: 'system',   path: '/system',   name: 'Thiết kế HT' }
     ]
   },

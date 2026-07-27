@@ -23,9 +23,9 @@ export function renderGraphPlayground(
   const borderDefault = rootStyle.getPropertyValue('--color-border-strong').trim() || '#334155';
   const primaryText = rootStyle.getPropertyValue('--color-text-primary').trim() || '#f2f2f2';
   const secondaryText = rootStyle.getPropertyValue('--color-text-secondary').trim() || '#8a8a8a';
-  const cyanAccent = rootStyle.getPropertyValue('--color-accent-cyan').trim() || '#06b6d4';
-  const activeBg = rootStyle.getPropertyValue('--color-accent-primary-dark').trim() || '#c96848';
-  const activeBorder = rootStyle.getPropertyValue('--color-accent-primary').trim() || '#e8825a';
+  const cyanAccent = rootStyle.getPropertyValue('--color-accent-primary-text').trim() || '#7b89f4';
+  const activeBg = rootStyle.getPropertyValue('--color-accent-primary-dark').trim() || '#2f42e8';
+  const activeBorder = rootStyle.getPropertyValue('--color-accent-primary').trim() || '#4255ff';
 
   edges.forEach((edge) => {
     const v1 = vertices.find((v) => v.id === edge.sourceId);
@@ -60,7 +60,7 @@ export function renderGraphPlayground(
     if (isSelected) {
       ctx.beginPath();
       ctx.arc(v.x, v.y, 25, 0, 2 * Math.PI);
-      ctx.strokeStyle = "rgba(232, 130, 90, 0.4)";
+      ctx.strokeStyle = "rgba(66, 85, 255, 0.4)";
       ctx.lineWidth = 2;
       ctx.stroke();
     }
@@ -85,4 +85,3 @@ export function renderGraphPlayground(
     ctx.fillText(v.id, v.x, v.y);
   });
 }
-

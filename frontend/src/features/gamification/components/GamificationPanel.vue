@@ -92,4 +92,3 @@ onMounted(() => {
   background-color: color-mix(in srgb, var(--vis-panel-bg) 70%, transparent);
 }
 </style>
-

@@ -46,4 +46,3 @@ namespace VisualizationDSA.Application.DTOs
         public required string Explanation { get; set; }
     }
 }
-

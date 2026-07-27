@@ -26,5 +26,3 @@ Hệ thống quyết định tự phát triển **Bộ máy phân tích tĩnh SO
     *   **Tiết kiệm 100% CPU máy chủ:** Loại bỏ gánh nặng chạy trình biên dịch API Backend.
 *   **Điểm cần lưu ý (Cons):**
     *   Yêu cầu đội ngũ phát triển phải lập trình bộ phát hạt Canvas 2D thật chu đáo, giải phóng mảng hạt RAM GC triệt để khi tháo dỡ workspace để tránh tràn RAM (Memory Leak).
-    
-    

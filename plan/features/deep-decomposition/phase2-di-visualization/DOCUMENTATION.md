@@ -28,4 +28,3 @@ Hệ thống quyết định xây dựng **Động cơ Giả lập IoC phản ch
     *   Cần đặc tả kịch bản metadata constructor bằng JSON tỉ mỉ (tuy nhiên hệ thống đã tích hợp Scenario preloader xử lý hoàn hảo điều này).
     *   Không chạy code C# thật (nhưng mô phỏng hoạt động khớp hoàn toàn 100% cơ chế Microsoft.Extensions.DependencyInjection của ASP.NET Core).
      baggy.
-    

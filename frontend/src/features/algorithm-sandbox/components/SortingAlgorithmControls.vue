@@ -1,11 +1,11 @@
 <template>
-  <!-- Inline algorithm selector — no longer absolute positioned -->
-  <div class="sorting-algo-controls algorithm-controls flex items-center gap-2 backdrop-blur py-1.5 px-2.5 rounded-xl shrink-0">
+  <!-- Inline algorithm selector — sleek rounded-md buttons -->
+  <div class="sorting-algo-controls algorithm-controls flex items-center gap-1.5 backdrop-blur-md py-1 px-2 rounded-md shrink-0">
     <div class="flex gap-1 flex-wrap">
       <button
         v-for="algo in ALGORITHMS"
         :key="algo.key"
-        class="px-2.5 py-1 rounded-lg text-[11px] font-bold border cursor-pointer transition-all duration-150"
+        class="px-2.5 py-1 rounded-md text-[11px] font-bold border cursor-pointer transition-all duration-150"
         :class="selectedAlgo === algo.key ? 'btn-active' : 'btn-inactive'"
         @click="$emit('select', algo.key)"
       >
@@ -44,10 +44,10 @@ defineEmits<{
 }
 
 .btn-active {
-  background-color: var(--color-accent-cyan-dim);
-  color: var(--color-accent-cyan);
-  border-color: color-mix(in srgb, var(--color-accent-cyan) 45%, transparent);
-  box-shadow: 0 0 8px var(--color-accent-cyan-glow);
+  background-color: var(--color-accent-primary-dim);
+  color: var(--color-accent-primary-text);
+  border-color: var(--color-border-accent);
+  box-shadow: 0 0 8px var(--color-accent-primary-glow);
 }
 
 .btn-inactive {

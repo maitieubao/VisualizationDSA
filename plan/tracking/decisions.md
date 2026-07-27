@@ -46,6 +46,16 @@ TÃ i liá»‡u nÃ y ghi láº¡i cÃ¡c quyáº¿t Ä‘á»‹nh kiáº¿n
 
 ---
 
+## ADR-05: Chuyển Đổi OOP/SOLID/DP/DI Thành Docs Reference Style
+
+- **Trạng thái:** ✅ IMPLEMENTED — `src/features/docs/`
+- **Ngữ cảnh:** Việc xây dựng hoạt ảnh tương tác cho các khái niệm trừu tượng (OOP, SOLID) đòi hỏi quá nhiều chi phí và code phức tạp, nhưng không thực sự mang lại hiệu quả trực quan tốt như DSA.
+- **Quyết định:** Tạm thời lưu trữ (archive) các module hoạt ảnh của OOP/SOLID/DP/DI. Thay thế bằng kiến trúc **Docs Reference Style** giống với Vue.js Docs, tập trung hoàn toàn vào lý thuyết cốt lõi, ví dụ code C# và so sánh Bad Code vs Good Code.
+- **Hệ quả:** Dễ dàng bảo trì, giảm thiểu code rườm rà. Tính năng hoạt ảnh chỉ nên tập trung dồn sức cho thuật toán DSA nơi hiệu quả trực quan cao nhất.
+- **File liên quan:** `src/features/docs/*`, `src/views/docs/DocsView.vue`
+
+---
+
 ## ADR chá» implement (tham kháº£o spec)
 
 CÃ¡c ADR sau Ä‘Ã¢y Ä‘Æ°á»£c ghi trong tÃ i liá»‡u Ä‘áº·c táº£ nhÆ°ng **chÆ°a cÃ³ code thá»±c táº¿**:
@@ -1135,3 +1145,22 @@ To protect the public visualizer endpoints and system statistics from brute-forc
 - (+) Mitigated Kestrel thread pool starvation under heavy loads by offloading CPU-intensive executions.
 - (+) Reduced database load for public statistics queries using efficient caching.
 - (+) Hardened api endpoints against denial of service and scraping with granular rate limits.
+
+---
+
+### ADR-52 | 2026-07-22 | Theory-First Guided Storyboard Mode for OOP Concepts Visualizer
+
+**Context:**
+Phản hồi từ người dùng chỉ ra rằng giao diện 3 cột đồng thời (Code C#, Sơ đồ UML, Bộ nhớ Stack/Heap) gây quá tải nhận thức (cognitive overload), khiến người học ngợp và khó liên kết dòng code với lý thuyết OOP cốt lõi.
+
+**Decision:**
+- Tái cấu trúc module `oop-visualization` hỗ trợ 2 Chế độ xem: `viewMode: 'guided'` (Mặc định cho người học) và `'full'` (Dành cho người dùng nâng cao).
+- Thiết kế **Guided Step Theory Banner (Thẻ Bài học Lý thuyết Từng bước)** hiển thị quy tắc lý thuyết C# cốt lõi (`theoryRule`), phần giải thích trực quan (`currentExplanation`) và bài học rút ra (`guidedTakeaway`) cho từng bước.
+- Trong Chế độ Hướng dẫn (`guided`), tự động chuyển layout sang 2 cột (Code + UML) và ẩn bớt panel Stack/Heap vào nút toggle `🔍 Xem Bộ nhớ RAM` để giảm bớt gánh nặng thị giác.
+- Bổ sung 11 unit tests trong `useOOPVisualizerStore.spec.ts` kiểm thử toàn bộ `viewMode` và theory getters.
+
+**Consequences:**
+- (+) Giảm tối đa quá tải nhận thức, giúp người học tiếp thu từng nguyên lý OOP (Encapsulation, Inheritance, Polymorphism...) một cách tự nhiên và mạch lạc.
+- (+) Linh hoạt cho cả 2 đối tượng: Người mới học (dùng Guided Mode) và người muốn soi sâu vào RAM (chuyển sang Full Workbench Mode).
+- (+) Đã được kiểm thử tự động 100% pass unit test.
+- (+) File liên quan: `useOOPVisualizerStore.ts`, `oopScenarios.ts`, `OOPConceptsVisualizerWorkspace.vue`, `useOOPVisualizerStore.spec.ts`.

@@ -87,4 +87,3 @@ export class ViewportCamera {
 }
 ```
  Việc đồng bộ bù mật độ điểm ảnh Retina và tích lũy ma trận camera zoom-pan mượt mà mang lại khả năng hiển thị hoạt họa sắc nét tinh xảo tuyệt đối trên mọi loại thiết bị.
-

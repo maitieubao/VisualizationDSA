@@ -75,4 +75,3 @@ Khi máy chủ C# ASP.NET Core ném lỗi (ví dụ: Dependency Loop hoặc lỗ
 }
 ```
  Giao thức JSON chuẩn hóa rõ ràng giúp Frontend xây dựng giao diện hiển thị thông báo sự cố, vi phạm nguyên lý hoặc sập nguồn một cách nhanh chóng và tin cậy bậc nhất.
-

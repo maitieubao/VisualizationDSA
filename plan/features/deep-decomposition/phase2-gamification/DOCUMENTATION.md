@@ -25,5 +25,3 @@ Hệ thống quyết định sử dụng kiến trúc **Xử lý Sự kiện B�
     *   **Giảm tải cơ sở dữ liệu chính:** Các phép ghi đè nặng nề được đẩy bất đồng bộ thông qua Event Queue, giúp SQL Database hoạt động mượt mà không lo nghẽn cổ chai.
 *   **Điểm cần lưu ý (Cons):**
     *   Yêu cầu hệ thống phải duy trì hạ tầng cụm Redis Cache ổn định (tuy nhiên Supabase và hệ sinh thái cloud Azure/AWS đã có sẵn các cụm Redis tối tân).
-    
-    

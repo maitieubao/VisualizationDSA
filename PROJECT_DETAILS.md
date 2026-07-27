@@ -677,5 +677,3 @@ Nhằm sẵn sàng mở quy mô khi hệ thống đạt lượng người dùng 
 6.  **Giao diện đáp ứng & Hỗ trợ tiếp cận (a11y)**: **[ĐÃ TRIỂN KHAI MOBILE LAYOUT TOGGLE]** Thiết lập tính năng chuyển đổi tab lý thuyết và trực quan trên di động, hỗ trợ đầy đủ phím tắt bàn phím và nhãn ARIA.
 7.  **Đa giao diện Sáng/Tối (Dark/Light mode)**: Tích hợp nút chuyển đổi chủ đề sử dụng CSS Custom Properties lưu trữ trạng thái tại client.
 8.  **Tích hợp MathJax & Mermaid**: **[ĐÃ TRIỂN KHAI]** Frontend tự động nhận dạng và biên dịch động các ký tự LaTeX toán học/Big-O và các sơ đồ cấu trúc dữ liệu Mermaid trực tiếp trong văn bản lý thuyết.
-
-

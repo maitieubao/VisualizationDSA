@@ -1,0 +1,278 @@
+/* --- VUE DOCS THEME STYLE --- */
+.vue-docs-theme {
+  font-family: Inter, Roboto, "Helvetica Neue", Arial, sans-serif;
+  color: #e2e8f0;
+  line-height: 1.7;
+  font-size: 16px;
+}
+
+/* Headings */
+.vue-docs-theme h1,
+.vue-docs-theme h2,
+.vue-docs-theme h3,
+.vue-docs-theme h4 {
+  color: #f8fafc;
+  font-weight: 600;
+  margin-top: 2.5rem;
+  margin-bottom: 1rem;
+  scroll-margin-top: 80px;
+}
+
+.vue-docs-theme h1 { font-size: 2.25rem; letter-spacing: -0.02em; }
+.vue-docs-theme h2 { font-size: 1.75rem; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 1.5rem; letter-spacing: -0.01em; color: #34d399; }
+.vue-docs-theme h3 { font-size: 1.35rem; color: #60a5fa; }
+.vue-docs-theme h4 { font-size: 1.15rem; color: #cbd5e1; }
+
+/* Links */
+.vue-docs-theme a {
+  color: #10b981;
+  text-decoration: none;
+  font-weight: 500;
+  transition: color 0.2s;
+}
+.vue-docs-theme a:hover {
+  color: #34d399;
+  text-decoration: underline;
+}
+
+/* Inline Code */
+.vue-docs-theme p code,
+.vue-docs-theme li code {
+  background-color: rgba(16, 185, 129, 0.15);
+  color: #34d399;
+  padding: 0.15rem 0.4rem;
+  border-radius: 4px;
+  font-family: 'JetBrains Mono', Consolas, Monaco, monospace;
+  font-size: 0.9em;
+  word-break: break-word;
+}
+
+/* Custom Alert Blocks (::: info, ::: tip, ::: warning, ::: danger) */
+.vue-docs-theme .custom-block {
+  padding: 1rem 1rem 0.1rem 1.5rem;
+  border-left-width: 4px;
+  border-radius: 8px;
+  margin: 1.5rem 0;
+  background-color: rgba(255, 255, 255, 0.03);
+}
+.vue-docs-theme .custom-block p {
+  margin-bottom: 0.9rem;
+}
+.vue-docs-theme .custom-block-title {
+  font-weight: 700;
+  font-size: 0.85rem;
+  margin-bottom: 0.5rem;
+  margin-top: 0;
+  letter-spacing: 0.05em;
+}
+
+/* Info */
+.vue-docs-theme .custom-block.info {
+  border-color: #3b82f6;
+  background-color: rgba(59, 130, 246, 0.1);
+}
+.vue-docs-theme .custom-block.info .custom-block-title { color: #60a5fa; }
+
+/* Tip (Emerald) */
+.vue-docs-theme .custom-block.tip {
+  border-color: #10b981;
+  background-color: rgba(16, 185, 129, 0.1);
+}
+.vue-docs-theme .custom-block.tip .custom-block-title { color: #34d399; }
+
+/* Warning */
+.vue-docs-theme .custom-block.warning {
+  border-color: #f59e0b;
+  background-color: rgba(245, 158, 11, 0.1);
+}
+.vue-docs-theme .custom-block.warning .custom-block-title { color: #fbbf24; }
+.vue-docs-theme .custom-block.warning p, 
+.vue-docs-theme .custom-block.warning a { color: #fcd34d; }
+
+/* Danger */
+.vue-docs-theme .custom-block.danger {
+  border-color: #ef4444;
+  background-color: rgba(239, 68, 68, 0.1);
+}
+.vue-docs-theme .custom-block.danger .custom-block-title { color: #f87171; }
+.vue-docs-theme .custom-block.danger p, 
+.vue-docs-theme .custom-block.danger a { color: #fca5a5; }
+
+/* Code Blocks (Shiki handles colors, we handle layout) */
+.vue-docs-theme div[class*="language-"] {
+  position: relative;
+  margin: 1.5rem 0;
+  background-color: #1e1e20; /* Darker bg for contrast */
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.vue-docs-theme div[class*="language-"] pre {
+  margin: 0;
+  padding: 1.25rem 1.5rem;
+  overflow-x: auto;
+  font-family: 'JetBrains Mono', Consolas, Monaco, monospace;
+  font-size: 0.9em;
+  line-height: 1.6;
+}
+
+/* Lists */
+.vue-docs-theme ul, .vue-docs-theme ol {
+  padding-left: 1.25rem;
+  margin-bottom: 1.25rem;
+}
+.vue-docs-theme ul { list-style-type: disc; }
+.vue-docs-theme ol { list-style-type: decimal; }
+.vue-docs-theme li { margin-bottom: 0.5rem; }
+
+/* Tables */
+.vue-docs-theme table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 1.5rem;
+  overflow-x: auto;
+  display: block;
+}
+.vue-docs-theme th, .vue-docs-theme td {
+  border: 1px solid rgba(255,255,255,0.1);
+  padding: 0.75rem 1rem;
+  text-align: left;
+}
+.vue-docs-theme th {
+  background-color: rgba(255,255,255,0.05);
+  font-weight: 600;
+}
+.vue-docs-theme tr:nth-child(2n) {
+  background-color: rgba(255,255,255,0.02);
+}
+
+/* Blockquotes */
+.vue-docs-theme blockquote {
+  margin: 1.5rem 0;
+  padding-left: 1rem;
+  border-left: 4px solid #10b981;
+  color: #94a3b8;
+  font-style: italic;
+}
+
+.vue-docs-theme img {
+  max-width: 100%;
+  border-radius: 8px;
+  margin: 1.5rem auto;
+  display: block;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.5);
+}
+
+/* ===== Mermaid Diagrams ===== */
+.vue-docs-theme .mermaid-diagram {
+  background: linear-gradient(145deg, rgba(6, 13, 24, 0.95), rgba(12, 25, 41, 0.85));
+  border: 1px solid rgba(37, 99, 235, 0.15);
+  border-radius: 20px;
+  padding: 32px 24px;
+  backdrop-filter: blur(16px);
+  box-shadow:
+    0 8px 32px rgba(0, 0, 0, 0.4),
+    0 0 0 1px rgba(37, 99, 235, 0.08) inset;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+  overflow-x: auto;
+}
+
+.vue-docs-theme .mermaid-diagram:hover {
+  border-color: rgba(37, 99, 235, 0.35);
+  box-shadow:
+    0 12px 48px rgba(37, 99, 235, 0.12),
+    0 0 0 1px rgba(37, 99, 235, 0.15) inset;
+}
+
+/* SVG responsive */
+.vue-docs-theme .mermaid-diagram svg {
+  max-width: 100%;
+  height: auto;
+  filter: drop-shadow(0 1px 4px rgba(37, 99, 235, 0.08));
+}
+
+/* Bo tròn tất cả rect (class diagram boxes, flowchart nodes) */
+.vue-docs-theme .mermaid-diagram rect {
+  rx: 12 !important;
+  ry: 12 !important;
+}
+
+/* Class diagram: title box tách biệt */
+.vue-docs-theme .mermaid-diagram .classGroup rect {
+  rx: 12 !important;
+  ry: 12 !important;
+  stroke-width: 1.5 !important;
+}
+
+/* Class diagram: divider lines mỏng hơn */
+.vue-docs-theme .mermaid-diagram .divider {
+  stroke: rgba(37, 99, 235, 0.2) !important;
+  stroke-width: 0.8 !important;
+}
+
+/* Class diagram: text styling */
+.vue-docs-theme .mermaid-diagram .classGroup text {
+  font-family: 'Inter', 'Segoe UI', system-ui, sans-serif !important;
+  font-size: 13px !important;
+  fill: #c8d6e5 !important;
+}
+
+/* Class title bold */
+.vue-docs-theme .mermaid-diagram .classGroup .classTitle {
+  font-weight: 600 !important;
+  font-size: 15px !important;
+  fill: #e8f0fe !important;
+}
+
+/* Flowchart node text */
+.vue-docs-theme .mermaid-diagram .node .label {
+  font-family: 'Inter', 'Segoe UI', system-ui, sans-serif !important;
+  font-size: 13px !important;
+}
+
+/* Edge (arrow) labels */
+.vue-docs-theme .mermaid-diagram .edgeLabel {
+  background-color: rgba(6, 13, 24, 0.92) !important;
+  padding: 3px 10px !important;
+  border-radius: 8px !important;
+  font-size: 11px !important;
+  font-family: 'Inter', 'Segoe UI', system-ui, sans-serif !important;
+  color: #8899aa !important;
+  border: 1px solid rgba(37, 99, 235, 0.12);
+}
+
+/* Edge label text */
+.vue-docs-theme .mermaid-diagram .edgeLabel span {
+  color: #8899aa !important;
+}
+
+/* Đường nối mềm mại */
+.vue-docs-theme .mermaid-diagram .edge-pattern-solid,
+.vue-docs-theme .mermaid-diagram .flowchart-link {
+  stroke-width: 1.5 !important;
+}
+
+/* Arrow markers */
+.vue-docs-theme .mermaid-diagram marker path {
+  fill: #4a90d9 !important;
+}
+
+/* Note boxes */
+.vue-docs-theme .mermaid-diagram .note {
+  rx: 12 !important;
+  ry: 12 !important;
+  stroke-width: 1 !important;
+}
+
+.vue-docs-theme .mermaid-diagram .noteText {
+  font-family: 'Inter', 'Segoe UI', system-ui, sans-serif !important;
+  font-size: 12px !important;
+  font-style: italic !important;
+}
+
+/* Mindmap nodes */
+.vue-docs-theme .mermaid-diagram .mindmap-node rect,
+.vue-docs-theme .mermaid-diagram .mindmap-node circle {
+  stroke-width: 1.5 !important;
+}

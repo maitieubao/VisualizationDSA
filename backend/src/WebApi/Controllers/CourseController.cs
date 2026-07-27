@@ -32,7 +32,7 @@ namespace VisualizationDSA.WebApi.Controllers
         [HttpGet("courses")]
         public async Task<IActionResult> GetCourses([FromQuery] string? category, [FromQuery] string? difficulty, [FromQuery] string? userId)
         {
-            var query = _dbContext.Courses.Where(c => c.IsPublished);
+            var query = _dbContext.Courses.AsQueryable();
 
             if (!string.IsNullOrWhiteSpace(category))
             {

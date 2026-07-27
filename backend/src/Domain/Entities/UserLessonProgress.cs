@@ -45,4 +45,3 @@ namespace VisualizationDSA.Domain.Entities
         }
     }
 }
-
