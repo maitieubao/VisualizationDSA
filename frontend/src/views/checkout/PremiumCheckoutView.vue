@@ -1,16 +1,16 @@
 <template>
   <div class="checkout-container flex items-center justify-center min-h-screen px-4 py-8">
     <div class="glass-panel main-card w-full max-w-4xl overflow-hidden grid grid-cols-1 md:grid-cols-12 gap-0 relative">
-      <!-- Decorative background glows -->
+      
       <div class="absolute -top-40 -left-40 w-80 h-80 bg-accent rounded-full blur-3xl opacity-20 pointer-events-none"></div>
       <div class="absolute -bottom-40 -right-40 w-80 h-80 bg-accent-red rounded-full blur-3xl opacity-20 pointer-events-none"></div>
 
-      <!-- Left Column: Marketing / Pricing -->
+      
       <PremiumMarketingCard />
 
-      <!-- Right Column: Interactive payment handler -->
+      
       <div class="col-span-12 md:col-span-7 p-8 flex flex-col justify-center min-h-[480px]">
-        <!-- Screen: Auth Required -->
+        
         <div v-if="!authStore.isAuthenticated" class="text-center py-12 flex flex-col items-center gap-6">
           <div class="w-16 h-16 rounded-full bg-accent/10 border border-accent/20 flex items-center justify-center text-accent text-2xl">
             👑
@@ -30,7 +30,7 @@
         </div>
 
         <template v-else>
-          <!-- Screen 1: Idle -->
+          
           <CheckoutIdleScreen
             v-if="paymentStore.checkoutState === 'idle'"
             :is-loading="paymentStore.isLoading"
@@ -38,7 +38,7 @@
             @start="initiatePayment"
           />
 
-          <!-- Screen 2: QR Payment -->
+          
           <QrPaymentPanel
             v-else-if="paymentStore.checkoutState === 'paying'"
             :order="paymentStore.currentOrder"
@@ -48,22 +48,22 @@
             @retry="initiatePayment"
           />
 
-          <!-- Screen 2b: Verifying -->
+          
           <div v-else-if="paymentStore.checkoutState === 'verifying'" class="text-center py-12">
             <div class="spinner-lg mx-auto mb-4"></div>
             <p class="text-sm text-[var(--text-secondary)]">Đang xác nhận thanh toán...</p>
           </div>
 
-          <!-- Screen 3: Success -->
+          
           <CheckoutSuccessScreen v-else-if="paymentStore.checkoutState === 'success'" @finish="finishCheckout" />
 
-          <!-- Screen 4: Error -->
+          
           <div v-else-if="paymentStore.checkoutState === 'error'" class="text-center py-12">
             <p class="text-accent-red mb-4">{{ paymentStore.paymentError }}</p>
             <button class="px-6 py-2 bg-accent rounded-lg" @click="paymentStore.resetCheckout()">Thử lại</button>
           </div>
 
-          <!-- Simulate Payment Button (dev mode only — ẩn trong production) -->
+          
           <div v-if="paymentStore.checkoutState === 'paying' && isDev" class="mt-4 text-center">
             <button
               class="px-4 py-2 text-xs bg-accent-green/20 border border-accent-green/40 rounded-lg hover:bg-accent-green/30 transition"
@@ -92,8 +92,8 @@ import { useConfetti } from '../../composables/useConfetti';
 
 const emit = defineEmits<{ openLogin: [] }>();
 
-/** Chỉ hiện UI dev-only khi chạy trong môi trường development (Vite dev server) */
-const isDev = import.meta.env.DEV;
+
+const isDev = import.meta.env.DEV && !import.meta.env.PROD;
 
 const router = useRouter();
 const paymentStore = usePaymentStore();

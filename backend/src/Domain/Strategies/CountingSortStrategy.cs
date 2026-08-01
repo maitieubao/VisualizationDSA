@@ -54,7 +54,7 @@ public class CountingSortStrategy : AlgorithmStrategyBase
 
         CaptureState(arr, 0, $"Khởi tạo Counting Sort. Phạm vi giá trị: [{minVal}..{maxVal}], K = {range}.");
 
-        // Phase 1: Count frequencies
+        
         for (int i = 0; i < n; i++)
         {
             cancellationToken.ThrowIfCancellationRequested();
@@ -67,7 +67,7 @@ public class CountingSortStrategy : AlgorithmStrategyBase
                 compares: new List<int> { i });
         }
 
-        // Phase 2: Prefix sums
+        
         CaptureState(arr, 5, "Bắt đầu tính tổng cộng dồn (Prefix Sum).");
 
         for (int i = 1; i < range; i++)
@@ -78,7 +78,7 @@ public class CountingSortStrategy : AlgorithmStrategyBase
 
         CaptureState(arr, 5, "Tổng cộng dồn hoàn tất.");
 
-        // Phase 3: Build output (right-to-left for stability)
+        
         int[] output = new int[n];
 
         CaptureState(arr, 7, "Bắt đầu dựng mảng kết quả. Duyệt từ phải sang trái (Stable Sort).");

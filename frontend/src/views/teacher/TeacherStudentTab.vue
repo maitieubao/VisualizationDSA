@@ -50,7 +50,7 @@
           </tbody>
         </table>
 
-        <!-- Pagination -->
+        
         <div class="flex justify-between items-center mt-6">
           <span class="text-xs text-slate-400">Hiển thị {{ studentsList.length }} học viên (Tổng số: {{ totalStudents }})</span>
           <div class="flex gap-2">
@@ -62,7 +62,7 @@
       </div>
     </div>
 
-    <!-- Student Progress Detail Modal -->
+    
     <div v-if="selectedStudentForProgress" class="fixed inset-0 bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4 z-50 animate-fade-in">
       <div class="bg-slate-900 border border-white/10 rounded-3xl p-6 max-w-4xl w-full max-h-[85vh] overflow-hidden flex flex-col shadow-2xl">
         <div class="flex justify-between items-start border-b border-white/10 pb-4 mb-4">
@@ -74,7 +74,7 @@
         </div>
 
         <div class="flex-1 overflow-y-auto grid grid-cols-1 md:grid-cols-2 gap-6 pr-2">
-          <!-- Left Column: Course Progress -->
+          
           <div class="flex flex-col gap-4">
             <h4 class="text-sm font-bold uppercase tracking-wider text-indigo-400 flex items-center gap-1.5 mb-2">
               <BaseIcon name="learning-path" class="w-4 h-4 text-indigo-400" /> Tiến độ khóa học
@@ -98,7 +98,7 @@
             </div>
           </div>
 
-          <!-- Right Column: Quiz Attempts History -->
+          
           <div class="flex flex-col gap-4">
             <h4 class="text-sm font-bold uppercase tracking-wider text-purple-400 flex items-center gap-1.5 mb-2">
               <BaseIcon name="quiz" class="w-4 h-4 text-purple-400" /> Lịch sử làm bài trắc nghiệm

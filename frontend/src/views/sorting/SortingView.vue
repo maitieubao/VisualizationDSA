@@ -1,16 +1,14 @@
 <template>
   <div class="sorting-view-root flex flex-col h-full w-full p-1.5 max-w-[1920px] mx-auto overflow-hidden relative font-sans">
-    <!-- Top Minimal Control Bar (VisuAlgo Ultra-Compact) -->
-    <div class="top-control-bar flex items-center justify-between px-3 py-1 bg-slate-900/95 border border-white/10 rounded-lg backdrop-blur-xl shrink-0 shadow-md z-20 mb-1">
-      <!-- Sub-Tabs (Sorting vs Searching) -->
+    <div class="top-control-bar flex items-center justify-between px-3 py-1 bg-bg-surface border border-border-default rounded-lg backdrop-blur-xl shrink-0 shadow-md z-20 mb-1">
       <div class="flex items-center gap-1.5">
         <button
           v-for="tab in tabs"
           :key="tab.id"
           class="sub-tab-pill flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-bold transition-all duration-200 cursor-pointer"
           :class="activeTab === tab.id
-            ? 'bg-indigo-600 text-white shadow-sm'
-            : 'text-slate-400 hover:text-slate-200 hover:bg-white/5'"
+            ? 'bg-accent text-white shadow-sm'
+            : 'text-text-secondary hover:text-text-primary hover:bg-bg-hover'"
           @click="activeTab = tab.id"
         >
           <BaseIcon :name="tab.icon" class="w-3.5 h-3.5" />
@@ -18,22 +16,21 @@
         </button>
       </div>
 
-      <!-- Right Header Status & Tour Guide Trigger -->
-      <div class="flex items-center gap-3 font-mono text-[10px] uppercase tracking-wider text-slate-400 select-none">
-        <span class="flex items-center gap-1.5 text-indigo-400 font-bold">
+      <div class="flex items-center gap-3 font-mono text-[10px] uppercase tracking-wider text-text-secondary select-none">
+        <span class="flex items-center gap-1.5 text-accent font-bold">
           <span class="w-2 h-2 rounded-full bg-indigo-500 animate-pulse"></span>
           VISUALGO-MODE 60FPS
         </span>
+        <span class="text-text-muted text-[9px]">Space: Play/Pause | ← →: Step</span>
         <button
-          class="w-5 h-5 flex items-center justify-center rounded text-slate-400 hover:text-indigo-300 hover:bg-white/10 transition-all cursor-pointer"
+          class="w-5 h-5 flex items-center justify-center rounded text-text-secondary hover:text-accent hover:bg-bg-hover transition-all cursor-pointer"
           title="Xem lại hướng dẫn"
           @click="tourStore.startPageTour('/sorting', true)"
         >?</button>
       </div>
     </div>
 
-    <!-- Central Full-Canvas Workspace Area (VisuAlgo 85%+ Screen Canvas) -->
-    <div class="flex-1 min-h-0 relative w-full h-full overflow-hidden rounded-lg border border-white/10 bg-slate-950">
+    <div class="flex-1 min-h-0 relative w-full h-full overflow-hidden rounded-lg border border-border-default bg-bg-primary">
       <KeepAlive>
         <component 
           :is="activeComponent" 
@@ -43,21 +40,13 @@
         />
       </KeepAlive>
 
-      <!-- VisuAlgo Floating Toolbar Strip (Only rendered on Sorting tab) -->
       <template v-if="activeTab === 'sorting'">
-        <div class="absolute bottom-3 left-0 right-0 z-30 px-4 flex items-center justify-between pointer-events-none gap-3">
-          <!-- Bottom-Left Floating Input Drawer -->
-          <div class="pointer-events-auto shrink-0">
-            <SortingDrawerInput />
-          </div>
-
-          <!-- Bottom-Center VCR Timeline Dock -->
-          <div class="pointer-events-auto flex-1 max-w-2xl min-w-0">
+        <div class="absolute bottom-3 left-0 right-0 z-30 px-4 flex items-center justify-center pointer-events-none gap-3">
+          <div class="pointer-events-auto w-full max-w-2xl">
             <VcrDockBar />
           </div>
 
-          <!-- Bottom-Right Floating Trace Drawer -->
-          <div class="pointer-events-auto shrink-0">
+          <div class="pointer-events-auto shrink-0 absolute right-4">
             <SortingDrawerTrace />
           </div>
         </div>
@@ -67,11 +56,11 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, defineComponent, h, onMounted } from 'vue';
+import { ref, computed, defineComponent, h, onMounted, onUnmounted } from 'vue';
 import { ArrayBarVisualizer } from '../../features/algorithm-sandbox';
-import SortingDrawerInput from '../../features/algorithm-sandbox/components/SortingDrawerInput.vue';
 import SortingDrawerTrace from '../../features/algorithm-sandbox/components/SortingDrawerTrace.vue';
 import { VcrDockBar } from '../../features/vcr-player';
+import { useVcrStore } from '../../features/vcr-player/store/useVcrStore';
 import { DSAPlayer } from '../../features/dsa-modules';
 import BaseIcon from '../../shared/components/BaseIcon.vue';
 import HelpButton from '../../features/guided-tour/components/HelpButton.vue';
@@ -79,9 +68,41 @@ import { useGuidedTourStore } from '../../features/guided-tour/store/useGuidedTo
 
 const activeTab = ref('sorting');
 const tourStore = useGuidedTourStore();
+const vcrStore = useVcrStore();
+
+function handleKeydown(e: KeyboardEvent) {
+  const tag = (e.target as HTMLElement)?.tagName;
+  if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return;
+
+  if (activeTab.value !== 'sorting') return;
+
+  switch (e.key.toLowerCase()) {
+    case ' ':
+      e.preventDefault();
+      vcrStore.togglePlay();
+      break;
+    case 'arrowright':
+      e.preventDefault();
+      vcrStore.stepNext();
+      break;
+    case 'arrowleft':
+      e.preventDefault();
+      vcrStore.stepPrev();
+      break;
+    case 'r':
+      e.preventDefault();
+      vcrStore.reset();
+      break;
+  }
+}
 
 onMounted(() => {
+  window.addEventListener('keydown', handleKeydown);
   tourStore.startPageTour('/sorting');
+});
+
+onUnmounted(() => {
+  window.removeEventListener('keydown', handleKeydown);
 });
 
 const tabs = [
@@ -89,7 +110,6 @@ const tabs = [
   { id: 'dsa', name: 'Searching & Linear DSA', icon: 'dsa' }
 ];
 
-// Minimal VisuAlgo full-canvas sandbox wrapper
 const SortingSandbox = defineComponent({
   name: 'SortingSandbox',
   setup() {

@@ -10,10 +10,10 @@ using VisualizationDSA.Domain.Strategies;
 
 namespace VisualizationDSA.WebApi.Controllers;
 
-/// <summary>
-/// API Controller cho mô-đun Design Patterns Visualizer.
-/// Cung cấp endpoint sinh chuỗi frame cho Strategy, Observer, Singleton patterns.
-/// </summary>
+
+
+
+
 [ApiVersion("1.0")]
 [ApiController]
 [Route("api/v{version:apiVersion}/concepts/design-patterns")]

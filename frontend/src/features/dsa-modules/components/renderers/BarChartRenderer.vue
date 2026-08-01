@@ -46,7 +46,7 @@ function renderCanvas(): void {
   const ctx = canvas.getContext('2d');
   if (!ctx) return;
 
-  // Retrieve theme colors dynamically
+  
   const style = getComputedStyle(document.documentElement);
   const colorBg = style.getPropertyValue('--canvas-bg').trim() || '#080808';
   const colorDefault = style.getPropertyValue('--color-accent-cyan').trim() || '#38BDF8';
@@ -80,7 +80,7 @@ function renderCanvas(): void {
   const n = frame.dataState.length;
   const maxVal = Math.max(...frame.dataState, 1);
   
-  // Dynamic gap based on element count to optimize spacing
+  
   const gapVal = Math.max(2, Math.min(6, 120 / n));
   const colW = (w - gapVal * (n - 1) - MARGIN * 2) / n;
   const drawableHeight = h - PADDING_TOP - MARGIN_BOTTOM;
@@ -93,10 +93,10 @@ function renderCanvas(): void {
 
     ctx.fillStyle = determineColor(i, frame, colors);
     ctx.beginPath();
-    ctx.roundRect(x, y, colW, barH, 4); // Smoother round corners
+    ctx.roundRect(x, y, colW, barH, 4); 
     ctx.fill();
 
-    // Draw value label above the bar
+    
     if (colW >= 12) {
       ctx.fillStyle = colorText;
       ctx.font = `bold ${Math.min(12, Math.max(8, colW * 0.5))}px monospace`;
@@ -104,7 +104,7 @@ function renderCanvas(): void {
       ctx.fillText(String(val), x + colW / 2, Math.max(y - 6, PADDING_TOP - 4));
     }
 
-    // Auto-hide STT labels under columns if element count N > 12
+    
     if (n <= 12 && colW >= 14) {
       ctx.fillStyle = colorMuted;
       ctx.font = `${Math.min(10, Math.max(8, colW * 0.4))}px monospace`;

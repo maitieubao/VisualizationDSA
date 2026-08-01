@@ -1,4 +1,4 @@
-// @vitest-environment jsdom
+
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { AutoHeightResizer } from '../engine/AutoHeightResizer';
 import type { EmbedCommunicationBridge } from '../engine/EmbedCommunicationBridge';
@@ -12,7 +12,7 @@ function createMockBridge(): EmbedCommunicationBridge {
   } as unknown as EmbedCommunicationBridge;
 }
 
-// Mock ResizeObserver for jsdom
+
 class MockResizeObserver {
   callback: ResizeObserverCallback;
   constructor(callback: ResizeObserverCallback) {

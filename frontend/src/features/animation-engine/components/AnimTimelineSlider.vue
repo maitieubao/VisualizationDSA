@@ -11,7 +11,7 @@
       @mousedown="$emit('scrubStart')" @input="$emit('scrubInput', $event)"
       @mouseup="$emit('scrubEnd')" @touchstart="$emit('scrubStart')" @touchend="$emit('scrubEnd')" />
 
-    <!-- Dynamic Tooltip -->
+    
     <div v-if="tooltipVisible && !disabled" :style="{ left: tooltipX + 'px' }" class="slider-dynamic-tooltip">
       <span class="tooltip-step-label">Bước {{ tooltipStep }}:</span>
       <p class="tooltip-explanation-text">{{ tooltipText }}</p>

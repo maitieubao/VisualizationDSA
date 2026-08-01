@@ -8,7 +8,7 @@
       </button>
     </div>
 
-    <!-- Form Create/Edit Course -->
+    
     <form v-if="activeCourseForm !== 'none'" class="quiz-form mb-8 animate-fade-in" @submit.prevent="submitCourse">
       <h3 class="form-title-context">
         <span v-if="activeCourseForm === 'edit'"><BaseIcon name="edit" class="w-4 h-4 text-accent inline mr-1 align-middle" /> Chỉnh sửa khóa học</span>
@@ -26,26 +26,35 @@
         <div>
           <label class="form-label">Danh mục</label>
           <select v-model="courseForm.category" class="form-select">
-            <option value="sorting">Sắp xếp (Sorting)</option>
-            <option value="graph">Đồ thị (Graph)</option>
-            <option value="oop">Hướng đối tượng (OOP)</option>
-            <option value="solid">Nguyên lý SOLID</option>
-            <option value="patterns">Mẫu thiết kế (Patterns)</option>
-            <option value="system">Thiết kế hệ thống (System)</option>
+            <option value="DataStructure">Cấu trúc dữ liệu</option>
+            <option value="Algorithm">Thuật toán</option>
+            <option value="Sorting">Sắp xếp (Sorting)</option>
+            <option value="Graph">Đồ thị (Graph)</option>
+            <option value="OOP">Hướng đối tượng (OOP)</option>
+            <option value="SOLID">Nguyên lý SOLID</option>
+            <option value="Patterns">Mẫu thiết kế (Patterns)</option>
+            <option value="SystemDesign">Thiết kế hệ thống</option>
+            <option value="Other">Khác</option>
           </select>
         </div>
         <div>
           <label class="form-label">Độ khó</label>
           <select v-model="courseForm.difficulty" class="form-select">
-            <option value="Easy">Dễ</option>
-            <option value="Medium">Trung bình</option>
-            <option value="Hard">Khó</option>
+            <option value="Beginner">Dễ</option>
+            <option value="Intermediate">Trung bình</option>
+            <option value="Advanced">Khó</option>
           </select>
         </div>
       </div>
       <div class="form-row">
-        <label class="form-label">Đường dẫn ảnh bìa (Cover Image URL)</label>
-        <input v-model="courseForm.coverImageUrl" class="form-input" placeholder="http://example.com/cover.jpg" />
+        <label class="form-label">Ảnh bìa khóa học</label>
+        <div class="flex items-center gap-4">
+          <input type="file" accept="image/*" @change="uploadCoverImage" class="file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-indigo-500/20 file:text-indigo-400 hover:file:bg-indigo-500/30 text-slate-300 text-sm" />
+          <span v-if="uploadingImage" class="text-xs text-indigo-400 animate-pulse">Đang tải...</span>
+        </div>
+        <div v-if="courseForm.coverImageUrl" class="mt-3">
+          <img :src="courseForm.coverImageUrl.startsWith('http') ? courseForm.coverImageUrl : `${BASE_URL}${courseForm.coverImageUrl}`" alt="Cover Preview" class="w-48 h-28 object-cover rounded-xl border border-white/10 shadow-lg" />
+        </div>
       </div>
       <div class="form-row flex items-center gap-6 mt-4">
         <label class="flex items-center gap-2 cursor-pointer text-slate-300 text-sm">
@@ -63,7 +72,7 @@
       </div>
     </form>
 
-    <!-- Form Create/Edit Lesson -->
+    
     <form v-if="activeLessonForm !== 'none'" class="quiz-form mb-8 animate-fade-in" @submit.prevent="submitLesson">
       <h3 class="form-title-context">
         <span v-if="activeLessonForm === 'edit'"><BaseIcon name="edit" class="w-4 h-4 text-accent inline mr-1 align-middle" /> Chỉnh sửa bài giảng</span>
@@ -116,7 +125,7 @@
       </div>
     </form>
 
-    <!-- Course List -->
+    
     <div class="quizzes-list-container">
       <h3 class="subsection-heading mb-4">Danh sách khóa học hiện có</h3>
       <div v-if="loadingCourses" class="loading-state">
@@ -163,7 +172,7 @@
                   </div>
                 </td>
               </tr>
-              <!-- Course Accordion for Lessons -->
+              
               <tr v-if="expandedCourseId === String(c.id)" class="accordion-row">
                 <td colspan="6" class="accordion-cell">
                   <div v-if="loadingCourseLessons[String(c.id)]" class="loading-detail py-4">
@@ -222,10 +231,11 @@ const expandedCourseId = ref<string | null>(null);
 const courseLessons = ref<Record<string, any[]>>({});
 const loadingCourseLessons = ref<Record<string, boolean>>({});
 const submitting = ref(false);
+const uploadingImage = ref(false);
 
 const activeCourseForm = ref<'none' | 'create' | 'edit'>('none');
 const editingCourseId = ref<string | null>(null);
-const courseForm = reactive({ title: '', description: '', category: 'sorting', difficulty: 'Medium', isPremium: false, coverImageUrl: '', isPublished: true });
+const courseForm = reactive({ title: '', description: '', category: 'sorting', difficulty: 'Beginner', isPremium: false, coverImageUrl: '', isPublished: true });
 
 const activeLessonForm = ref<'none' | 'create' | 'edit'>('none');
 const editingLessonId = ref<string | null>(null);
@@ -259,7 +269,7 @@ function toggleCourseForm() { if (activeCourseForm.value !== 'none') cancelCours
 
 function cancelCourseEdit() {
   activeCourseForm.value = 'none'; editingCourseId.value = null;
-  Object.assign(courseForm, { title: '', description: '', category: 'sorting', difficulty: 'Medium', isPremium: false, coverImageUrl: '', isPublished: true });
+  Object.assign(courseForm, { title: '', description: '', category: 'sorting', difficulty: 'Beginner', isPremium: false, coverImageUrl: '', isPublished: true });
 }
 
 async function submitCourse() {
@@ -267,16 +277,53 @@ async function submitCourse() {
   try {
     const url = editingCourseId.value ? `${BASE_URL}/api/v1/concepts/courses/${editingCourseId.value}` : `${BASE_URL}/api/v1/concepts/courses`;
     const res = await fetch(url, { method: editingCourseId.value ? 'PUT' : 'POST', headers: getAuthHeaders(), body: JSON.stringify(courseForm) });
-    if (res.ok) { alert(editingCourseId.value ? 'Cập nhật thành công!' : 'Tạo thành công!'); cancelCourseEdit(); await loadCourses(); }
+    if (res.ok) { 
+      const responseData = await res.json();
+      alert(editingCourseId.value ? 'Cập nhật thành công!' : 'Tạo thành công!'); 
+      const isCreate = !editingCourseId.value;
+      cancelCourseEdit(); 
+      await loadCourses(); 
+      
+      if (isCreate && responseData.course) {
+        addNewLessonToCourse(responseData.course);
+      }
+    }
     else { const err = await res.json(); alert(err.message || 'Lỗi khi lưu khóa học.'); }
   } catch { alert('Không thể kết nối máy chủ.'); }
   finally { submitting.value = false; }
 }
 
-function editCourse(c: any) {
+async function editCourse(c: any) {
   activeCourseForm.value = 'edit'; editingCourseId.value = c.id;
-  Object.assign(courseForm, { title: c.title, description: c.description, category: c.category, difficulty: c.difficulty ?? 'Medium', isPremium: c.isPremium, coverImageUrl: c.coverImageUrl, isPublished: c.isPublished });
+  Object.assign(courseForm, { title: c.title, description: c.description, category: c.category, difficulty: c.difficulty, isPremium: c.isPremium, coverImageUrl: c.coverImageUrl, isPublished: c.isPublished });
   window.scrollTo({ top: 300, behavior: 'smooth' });
+}
+
+async function uploadCoverImage(event: Event) {
+  const file = (event.target as HTMLInputElement).files?.[0];
+  if (!file) return;
+  uploadingImage.value = true;
+  try {
+    const formData = new FormData();
+    formData.append('file', file);
+    const res = await fetch(`${BASE_URL}/api/v1/upload/image`, {
+      method: 'POST',
+      headers: { ...getAuthHeaders() }, 
+      body: formData
+    });
+    
+    if (res.ok) {
+      const data = await res.json();
+      courseForm.coverImageUrl = data.url;
+    } else {
+      const err = await res.json();
+      alert(err.message || 'Lỗi tải ảnh.');
+    }
+  } catch (err) {
+    alert('Không thể kết nối máy chủ để tải ảnh.');
+  } finally {
+    uploadingImage.value = false;
+  }
 }
 
 async function deleteCourse(courseId: string) {

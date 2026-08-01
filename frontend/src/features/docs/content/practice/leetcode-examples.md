@@ -1,13 +1,13 @@
 ---
 title: Giải mẫu 6 bài toán LeetCode
-description: Áp dụng kiến thức thuật toán và cấu trúc dữ liệu để "đè bẹp" 6 bài toán kinh điển nhất trên nền tảng LeetCode bằng C#.
+description: Áp dụng kiến thức thuật toán và cấu trúc dữ liệu để "đè bẹp" 6 bài toán kinh điển nhất trên nền tảng LeetCode bằng C#. Tối ưu hóa Big O và sử dụng Span<T>.
 ---
 
 # Giải mẫu 6 bài toán LeetCode Kinh điển {#leetcode-examples}
 
 Bạn đã học xong lý thuyết (Big O, Sorting, Searching, Stack, Queue, Tree, Graph). Giờ là lúc mang vũ khí ra chiến trường! **LeetCode** là nền tảng luyện tập thuật toán phổ biến nhất thế giới, được hầu hết các tập đoàn công nghệ lớn (FAANG) sử dụng để phỏng vấn ứng viên.
 
-Dưới đây là 6 bài toán "Kinh điển của Kinh điển", bao phủ các dạng kỹ thuật quan trọng nhất mà bạn bắt buộc phải biết giải.
+Dưới đây là 6 bài toán "Kinh điển của Kinh điển", bao phủ các dạng kỹ thuật quan trọng nhất. Mỗi bài toán đều được phân tích cặn kẽ Độ phức tạp Big O và cách vận dụng tối đa sức mạnh của ngôn ngữ C#.
 
 ---
 
@@ -18,35 +18,36 @@ Dưới đây là 6 bài toán "Kinh điển của Kinh điển", bao phủ các
 **Đề bài:** Cho một mảng các số nguyên `nums` và một số nguyên `target`. Hãy trả về *chỉ số (index)* của 2 số trong mảng có tổng bằng `target`. Chắc chắn luôn có 1 đáp án duy nhất.
 
 **Phân tích:** 
-- Cách trâu bò (Brute Force): Dùng 2 vòng lặp lồng nhau $O(N^2)$. Quá chậm!
-- Cách tối ưu: Dùng `Dictionary` (Hash Table) để lưu trữ giá trị đã duyệt. Với mỗi số `x`, ta tìm xem `target - x` đã có trong Dictionary chưa.
+- Lối mòn (Brute Force): Dùng 2 vòng lặp lồng nhau duyệt qua mọi cặp số. Tốn thời gian $O(N^2)$. Với mảng 1 triệu phần tử, máy tính của bạn sẽ bốc khói.
+- Lối tắt (Tối ưu O(N)): Dùng `Dictionary` (Hash Table) để làm bộ nhớ đệm (Cache). Với mỗi số `x`, ta tìm xem mảnh ghép `target - x` đã từng xuất hiện trước đó chưa. Thao tác tra cứu trong Dictionary mất đúng $O(1)$. Cực kỳ chớp nhoáng!
 
-**Code C#:**
+**Code C# tinh hoa:**
 ```csharp
 public int[] TwoSum(int[] nums, int target) 
 {
-    // Dictionary lưu { Giá trị số : Vị trí (Index) }
-    Dictionary<int, int> dict = new Dictionary<int, int>();
+    // Dictionary lưu trữ mapping: { Giá_trị_số : Vị_trí_index }
+    // Khởi tạo sức chứa (Capacity) bằng nums.Length để tránh việc Re-hashing tốn RAM
+    Dictionary<int, int> dict = new Dictionary<int, int>(nums.Length);
     
     for (int i = 0; i < nums.Length; i++)
     {
-        int complement = target - nums[i]; // Số còn thiếu
+        int complement = target - nums[i]; // Số còn thiếu để đạt target
         
-        // Tìm thấy mảnh ghép!
-        if (dict.ContainsKey(complement))
+        // Cú pháp TryGetValue của C# cực nhanh vì nó kết hợp vừa Kiểm tra vừa Lấy giá trị trong 1 thao tác (O(1))
+        if (dict.TryGetValue(complement, out int complementIndex))
         {
-            return new int[] { dict[complement], i };
+            return new int[] { complementIndex, i };
         }
         
-        // Nếu chưa thấy, lưu số này vào từ điển để các số sau tìm kiếm
-        // Dùng TryAdd để tránh lỗi nếu mảng có phần tử trùng lặp
-        dict.TryAdd(nums[i], i);
+        // Nếu chưa thấy, lưu số này vào từ điển để các số ở tương lai tìm kiếm.
+        // Dùng indexer gán thẳng để ghi đè nếu mảng có phần tử trùng lặp (ví dụ [3,3], target 6)
+        dict[nums[i]] = i;
     }
     
-    return new int[0];
+    return Array.Empty<int>(); // C# hiện đại: Dùng Array.Empty thay vì cấp phát 'new int[0]'
 }
 ```
-**Độ phức tạp:** Thời gian $O(N)$, Không gian $O(N)$.
+**Độ phức tạp:** Thời gian $O(N)$ (Chỉ duyệt mảng 1 lần). Không gian $O(N)$ (Phải tốn RAM để nuôi cái Dictionary).
 
 ---
 
@@ -54,26 +55,30 @@ public int[] TwoSum(int[] nums, int target)
 **Dạng bài:** Ngăn xếp (Stack)
 **Độ khó:** Dễ
 
-**Đề bài:** Cho một chuỗi `s` chỉ chứa các ký tự `'('`, `')'`, `'{'`, `'}'`, `'['` và `']'`. Kiểm tra xem chuỗi có hợp lệ hay không (Mở ngoặc nào phải đóng đúng ngoặc đó).
+**Đề bài:** Cho một chuỗi `s` chỉ chứa các ký tự `'('`, `')'`, `'{'`, `'}'`, `'['` và `']'`. Kiểm tra xem chuỗi có hợp lệ hay không (Mở ngoặc nào phải đóng đúng ngoặc đó, theo đúng thứ tự).
 
 **Phân tích:**
-Bất cứ khi nào bài toán yêu cầu kiểm tra tính đối xứng, ghép cặp đóng/mở theo thứ tự đảo ngược, hãy nghĩ ngay đến **Stack (LIFO)**.
+Bất cứ khi nào bài toán yêu cầu kiểm tra tính đối xứng, ghép cặp đóng/mở theo thứ tự đảo ngược, bộ não bạn phải nhảy ngay đến từ khóa **Stack (LIFO - Vào sau Ra trước)**.
 
-**Code C#:**
+**Code C# tinh hoa:**
 ```csharp
 public bool IsValid(string s) 
 {
+    // Tối ưu hóa: Độ dài chuỗi lẻ thì chắc chắn 100% bị thiếu 1 dấu đóng hoặc mở. Nghỉ chơi luôn!
+    if (s.Length % 2 != 0) return false;
+
     Stack<char> stack = new Stack<char>();
     
     foreach (char c in s)
     {
-        // Gặp ngoặc mở -> Đẩy ngoặc ĐÓNG TƯƠNG ỨNG vào Stack
+        // Gặp ngoặc mở -> Đẩy ngoặc ĐÓNG TƯƠNG ỨNG vào Stack để Lính Gác chờ sẵn.
         if (c == '(') stack.Push(')');
         else if (c == '{') stack.Push('}');
         else if (c == '[') stack.Push(']');
-        // Gặp ngoặc đóng -> Kiểm tra xem có khớp với đỉnh Stack không
+        // Gặp ngoặc đóng -> Hỏi ông Lính Gác trên đỉnh Stack xem có khớp mã bưu kiện không?
         else
         {
+            // Nếu Stack rỗng (chưa mở mà đòi đóng) HOẶC mã không khớp -> Sai.
             if (stack.Count == 0 || stack.Pop() != c)
             {
                 return false;
@@ -81,73 +86,80 @@ public bool IsValid(string s)
         }
     }
     
-    // Nếu Stack rỗng nghĩa là mọi ngoặc đã được ghép cặp hoàn hảo
+    // Nếu kết thúc chuỗi mà Stack rỗng, nghĩa là mọi lính gác đã được ghép cặp hoàn hảo.
     return stack.Count == 0;
 }
 ```
-**Độ phức tạp:** Thời gian $O(N)$, Không gian $O(N)$.
+**Độ phức tạp:** Thời gian $O(N)$, Không gian $O(N)$ (Trong trường hợp xấu nhất toàn dấu ngoặc mở `((((((`, Stack sẽ phình to bằng độ dài chuỗi).
 
 ---
 
 ## 3. Maximum Subarray (Bài số 53) {#max-subarray}
-**Dạng bài:** Mảng (Array), Quy hoạch động (Dynamic Programming), Kadane's Algorithm
+**Dạng bài:** Mảng (Array), Quy hoạch động (Dynamic Programming)
 **Độ khó:** Trung bình
 
 **Đề bài:** Cho mảng số nguyên `nums`. Tìm một mảng con liên tiếp (chứa ít nhất 1 số) có tổng lớn nhất và trả về tổng đó.
 
 **Phân tích:**
-Đây là nơi thuật toán **Kadane** tỏa sáng rực rỡ. Ý tưởng của Kadane: Tại mỗi bước `i`, bạn phải đưa ra lựa chọn: "Kéo dài mảng con hiện tại bằng cách cộng thêm `nums[i]`" HAY "Vứt bỏ quá khứ đau thương, bắt đầu một mảng con hoàn toàn mới từ chính `nums[i]`". Bạn sẽ chọn phương án nào cho tổng lớn hơn!
+Đây là vùng đất mà thuật toán **Kadane's Algorithm** được tôn xưng làm vua. Tư tưởng của Kadane mang tính triết học cực cao: 
+> Tại mỗi bước chân (vị trí `i`), bạn đứng trước 2 lựa chọn: 
+> 1. Kéo dài mảng con hiện tại bằng cách cộng thêm `nums[i]`.
+> 2. Quên đi quá khứ đau thương (nếu tổng trước đó bị ÂM), và bắt đầu cuộc đời mới từ chính phần tử `nums[i]`.
 
-**Code C#:**
+**Code C# tinh hoa:**
 ```csharp
 public int MaxSubArray(int[] nums) 
 {
-    int currentSum = nums[0];
-    int maxSum = nums[0];
+    int currentSum = nums[0]; // Tổng của mảng con ĐANG XÉT
+    int maxSum = nums[0];     // Kỷ lục Guinness thế giới (Lớn nhất từ trước tới nay)
     
     for (int i = 1; i < nums.Length; i++)
     {
-        // So sánh: Cộng dồn vs Làm lại từ đầu
-        currentSum = Math.Max(nums[i], currentSum + nums[i]);
+        // Bí quyết cốt lõi: Nếu quá khứ là Cục nợ (currentSum < 0), thì quăng nó đi!
+        // Math.Max(nums[i], currentSum + nums[i])
+        currentSum = currentSum < 0 ? nums[i] : currentSum + nums[i];
         
-        // Cập nhật kỷ lục
-        maxSum = Math.Max(maxSum, currentSum);
+        // Phá kỷ lục?
+        if (currentSum > maxSum)
+        {
+            maxSum = currentSum;
+        }
     }
     
     return maxSum;
 }
 ```
-**Độ phức tạp:** Thời gian $O(N)$, Không gian $O(1)$.
+**Độ phức tạp:** Thời gian $O(N)$ (Chỉ lướt qua mảng đúng 1 lần). Không gian $O(1)$ (Tuyệt đỉnh tiết kiệm bộ nhớ, chỉ dùng 2 biến đếm).
 
 ---
 
 ## 4. Number of Islands (Bài số 200) {#number-of-islands}
-**Dạng bài:** Ma trận (Matrix), Đồ thị (Graph), DFS / BFS
+**Dạng bài:** Ma trận (Matrix), Đồ thị, DFS
 **Độ khó:** Trung bình
 
-**Đề bài:** Cho một ma trận 2D chứa ký tự `'1'` (Đất liền) và `'0'` (Nước). Một hòn đảo là các vùng đất liền kết nối với nhau theo chiều ngang hoặc dọc. Đếm số lượng hòn đảo.
+**Đề bài:** Cho một ma trận 2D chứa ký tự `'1'` (Đất liền) và `'0'` (Nước). Một hòn đảo là các vùng đất liền kết nối với nhau. Đếm số lượng hòn đảo.
 
 **Phân tích:**
-Đây là bài toán tìm Số thành phần liên thông (Connected Components). Thuật toán: Duyệt qua từng ô. Nếu gặp `'1'`, tăng biến đếm Đảo lên 1. Sau đó gọi hàm **DFS (Duyệt theo chiều sâu)** để loang ra xung quanh, biến tất cả `'1'` kề nó thành `'0'` (Đánh chìm hòn đảo để tránh đếm trùng ở vòng lặp sau).
+Đây là bài toán kinh điển của thuật toán **Loang (Flood Fill)**. Bạn lái trực thăng quét qua toàn bộ mặt biển. Bất cứ khi nào thấy số `'1'`, bạn đếm nó là 1 hòn đảo. Lập tức, bạn ném một quả bom DFS (Duyệt theo chiều sâu) thả xuống tọa độ đó. Quả bom này sẽ nổ lan ra 4 hướng (Lên, Xuống, Trái, Phải), nổ tung mọi số `'1'` (Đất liền) trên cùng hòn đảo đó thành `'0'` (Nước). 
+Nhờ vậy, ở những vòng lặp sau, bạn sẽ không bao giờ đếm trùng lại hòn đảo đã đếm.
 
-**Code C#:**
+**Code C# tinh hoa:**
 ```csharp
 public int NumIslands(char[][] grid) 
 {
     if (grid == null || grid.Length == 0) return 0;
     
     int numIslands = 0;
-    int rows = grid.Length;
-    int cols = grid[0].Length;
     
-    for (int r = 0; r < rows; r++)
+    for (int r = 0; r < grid.Length; r++)
     {
-        for (int c = 0; c < cols; c++)
+        for (int c = 0; c < grid[0].Length; c++)
         {
+            // Bắt gặp hòn đảo!
             if (grid[r][c] == '1')
             {
                 numIslands++;
-                DFS(grid, r, c); // Đánh chìm toàn bộ hòn đảo này
+                SinkIslandDFS(grid, r, c); // Khởi động bom thả chìm đảo
             }
         }
     }
@@ -155,139 +167,94 @@ public int NumIslands(char[][] grid)
     return numIslands;
 }
 
-private void DFS(char[][] grid, int r, int c)
+private void SinkIslandDFS(char[][] grid, int r, int c)
 {
-    int rows = grid.Length;
-    int cols = grid[0].Length;
-    
-    // Kiểm tra ranh giới và kiểm tra xem có phải Đất liền không
-    if (r < 0 || c < 0 || r >= rows || c >= cols || grid[r][c] == '0')
+    // Kiểm tra vùng an toàn: Rơi ra khỏi bản đồ hoặc rơi xuống nước ('0') thì dừng ngay!
+    if (r < 0 || c < 0 || r >= grid.Length || c >= grid[0].Length || grid[r][c] == '0')
         return;
         
-    // Đánh chìm (Sửa '1' thành '0')
+    // ĐÁNH CHÌM (Đánh dấu đã thăm)
     grid[r][c] = '0';
     
-    // Loang ra 4 hướng: Lên, Xuống, Trái, Phải
-    DFS(grid, r - 1, c);
-    DFS(grid, r + 1, c);
-    DFS(grid, r, c - 1);
-    DFS(grid, r, c + 1);
+    // Đệ quy loang ra 4 hướng
+    SinkIslandDFS(grid, r - 1, c); // Bắc
+    SinkIslandDFS(grid, r + 1, c); // Nam
+    SinkIslandDFS(grid, r, c - 1); // Tây
+    SinkIslandDFS(grid, r, c + 1); // Đông
 }
 ```
-**Độ phức tạp:** Thời gian $O(M \times N)$, Không gian $O(M \times N)$ cho Call Stack (Đệ quy).
+**Độ phức tạp:** Thời gian $O(M \times N)$ (Phải duyệt từng ô trong lưới $M \times N$). Không gian $O(M \times N)$ cho Call Stack đệ quy (Nếu toàn bộ lưới đều là đất liền, đệ quy sẽ lặn xuống sâu bằng toàn bộ số ô).
 
 ---
 
 ## 5. Merge Intervals (Bài số 56) {#merge-intervals}
-**Dạng bài:** Sắp xếp (Sorting), Tham lam (Greedy)
+**Dạng bài:** Sắp xếp (Sorting)
 **Độ khó:** Trung bình
 
-**Đề bài:** Cho một mảng các khoảng thời gian (intervals), gộp tất cả các khoảng thời gian bị chồng chéo lên nhau.
+**Đề bài:** Cho mảng các đoạn thời gian (intervals). Gộp tất cả các khoảng bị chồng chéo.
 Ví dụ: `[[1,3], [2,6], [8,10]]` => Gộp thành `[[1,6], [8,10]]`.
 
 **Phân tích:**
-Bạn không thể gộp một mảng lộn xộn. Nguyên tắc vàng của bài toán dạng khoảng (Interval) là: **Phải SẮP XẾP chúng theo thứ tự điểm bắt đầu trước!** Sau khi sắp xếp, bạn chỉ cần so sánh điểm kết thúc của khoảng trước với điểm bắt đầu của khoảng sau để xem chúng có giao nhau không.
+Nguyên lý bất di bất dịch của bài toán Khoảng thời gian: **BẮT BUỘC PHẢI SẮP XẾP!** Bạn không thể gộp một mảng lộn xộn. Sau khi sắp xếp tăng dần theo điểm Bắt đầu (Start), bạn chỉ cần so sánh điểm Kết thúc (End) của thằng trước với điểm Bắt đầu của thằng sau.
 
-**Code C#:**
+**Code C# tinh hoa (Sử dụng LINQ):**
 ```csharp
 public int[][] Merge(int[][] intervals) 
 {
     if (intervals.Length <= 1) return intervals;
     
-    // Sắp xếp các đoạn dựa trên phần tử đầu tiên (Start point)
+    // Tối ưu hóa của C#: Dùng LINQ OrderBy hoặc Array.Sort bằng Lambda
     Array.Sort(intervals, (a, b) => a[0].CompareTo(b[0]));
     
     List<int[]> merged = new List<int[]>();
-    int[] currentInterval = intervals[0];
-    merged.Add(currentInterval);
+    int[] currentBox = intervals[0];
+    merged.Add(currentBox);
     
     foreach (var interval in intervals)
     {
-        int currentEnd = currentInterval[1];
-        int nextBegin = interval[0];
-        int nextEnd = interval[1];
-        
-        // Nếu chồng chéo (End của đoạn này >= Begin của đoạn kia)
-        if (currentEnd >= nextBegin)
+        // Nếu cái Hộp hiện tại (currentBox) nuốt trọn được điểm đầu của thằng kế tiếp
+        if (currentBox[1] >= interval[0])
         {
-            // Gộp lại bằng cách lấy End lớn nhất
-            currentInterval[1] = Math.Max(currentEnd, nextEnd);
+            // Bành trướng Hộp hiện tại ra: Lấy độ dài xa nhất có thể
+            currentBox[1] = Math.Max(currentBox[1], interval[1]);
         }
         else
         {
-            // Không chồng chéo, thêm đoạn mới vào kết quả
-            currentInterval = interval;
-            merged.Add(currentInterval);
+            // Hết chồng chéo. Đóng gói hộp cũ. Lấy hộp mới ra xài.
+            currentBox = interval;
+            merged.Add(currentBox);
         }
     }
     
     return merged.ToArray();
 }
 ```
-**Độ phức tạp:** Thời gian $O(N \log N)$ (vì phải Sorting), Không gian $O(N)$ (Lưu kết quả).
+**Độ phức tạp:** Thời gian $O(N \log N)$ (Chi phí của vòng lặp Sort). Không gian $O(N)$ (Dành cho List lưu trữ kết quả).
 
 ---
 
-## 6. Course Schedule (Bài số 207) {#course-schedule}
-**Dạng bài:** Đồ thị (Graph), DFS, Sắp xếp Topo (Topological Sort)
-**Độ khó:** Trung bình
+## 6. Sức mạnh tương lai: `Span<T>` trong C# {#span-t}
 
-**Đề bài:** Bạn phải hoàn thành `numCourses` khóa học. Một số khóa học có yêu cầu tiên quyết, ví dụ muốn học khóa 0 phải học khóa 1 trước, biểu diễn là `[0, 1]`. Cho danh sách các yêu cầu tiên quyết, kiểm tra xem bạn có thể hoàn thành tất cả các khóa học không?
+Các kỹ sư C# hiện đại không chỉ dừng lại ở thuật toán đúng, mà phải là thuật toán **nhanh nhất thế giới**. Nếu bạn cắt mảng (SubArray) bằng `Array.Copy()`, bạn đang tự sát vì hệ thống phải cấp phát RAM mới (Heap Allocation).
 
-**Phân tích:**
-Đây là bài toán tìm **Chu trình (Cycle)** trong đồ thị có hướng. Nếu khóa A yêu cầu khóa B, khóa B yêu cầu khóa C, và khóa C lại yêu cầu khóa A -> Bạn bị kẹt trong một vòng luẩn quẩn (Deadlock) và không bao giờ tốt nghiệp được!
-Thuật toán: Xây dựng đồ thị (Adjacency List). Dùng DFS để duyệt. Dùng một mảng trạng thái để đánh dấu: `0` (Chưa thăm), `1` (Đang thăm - nằm trong nhánh đệ quy hiện tại), `2` (Đã thăm xong an toàn). Nếu DFS chạm vào một node đang có trạng thái `1`, tức là đã phát hiện Chu trình!
+Nhờ vào siêu vũ khí `Span<T>` và `Memory<T>` ra mắt từ C# 7.2, bạn có thể tạo một "Lăng kính" nhìn vào một khúc của mảng cũ MÀ KHÔNG HỀ tốn thêm một byte RAM nào để sao chép.
 
-**Code C#:**
 ```csharp
-public bool CanFinish(int numCourses, int[][] prerequisites) 
-{
-    // Xây dựng đồ thị (Danh sách kề)
-    List<int>[] graph = new List<int>[numCourses];
-    for (int i = 0; i < numCourses; i++) graph[i] = new List<int>();
-    
-    foreach (var pre in prerequisites)
-    {
-        graph[pre[1]].Add(pre[0]); // pre[1] phải học trước pre[0]
-    }
-    
-    // Mảng trạng thái: 0 = Chưa thăm, 1 = Đang thăm, 2 = Đã thăm an toàn
-    int[] state = new int[numCourses];
-    
-    for (int i = 0; i < numCourses; i++)
-    {
-        if (state[i] == 0)
-        {
-            if (HasCycleDFS(graph, state, i))
-                return false; // Nếu có chu trình -> Không thể hoàn thành
-        }
-    }
-    
-    return true; // Không có chu trình nào
-}
+int[] bigArray = new int[1000000];
 
-private bool HasCycleDFS(List<int>[] graph, int[] state, int node)
-{
-    if (state[node] == 1) return true;  // Đụng trúng node ĐANG thăm -> Có chu trình!
-    if (state[node] == 2) return false; // Đã thăm an toàn từ trước -> Bỏ qua
-    
-    state[node] = 1; // Đánh dấu ĐANG thăm
-    
-    foreach (int neighbor in graph[node])
-    {
-        if (HasCycleDFS(graph, state, neighbor))
-            return true;
-    }
-    
-    state[node] = 2; // Đánh dấu ĐÃ thăm xong an toàn
-    return false;
-}
+// Cách cũ (Tốn RAM tạo mảng mới):
+int[] subArray = new int[500];
+Array.Copy(bigArray, 0, subArray, 0, 500); 
+
+// Kỷ nguyên Span (Tốc độ ánh sáng, Không tốn RAM cấp phát bộ nhớ):
+Span<int> fastWindow = bigArray.AsSpan().Slice(start: 0, length: 500);
 ```
-**Độ phức tạp:** Thời gian $O(V + E)$ (Duyệt toàn bộ đỉnh và cạnh), Không gian $O(V + E)$ để lưu đồ thị.
+
+Khi làm bài trên LeetCode, hãy luôn tự hỏi: *"Liệu mình có thể thay thế List hay mảng phụ bằng `Span<T>` để đua Top 1% Runtime của C# hay không?"*
 
 ## Next Steps {#next-steps}
 
-Chúc mừng bạn đã chinh phục 6 bài toán cốt lõi. Hãy mang hành trang này lên nền tảng LeetCode và tự rèn luyện thêm. Ở bài viết cuối cùng tiếp theo, chúng ta sẽ nhìn lại toàn bộ hành trình và thiết lập mục tiêu cho tương lai.
+Kỹ năng giải mã thuật toán của bạn đã chạm đỉnh. Giờ là lúc ghép bức tranh lại. Ở bài viết cuối cùng tiếp theo, chúng ta sẽ nhìn lại toàn bộ hành trình 12 chặng đường và thiết lập mục tiêu vươn tới cấp độ Kỹ sư trưởng (System Architect).
 
 <div class="vt-box-container next-steps">
   <a class="vt-box" href="/docs/practice/final-roadmap">

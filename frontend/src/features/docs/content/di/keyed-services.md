@@ -1,23 +1,49 @@
 ---
-title: Keyed Services (.NET 8)
-description: Khám phá Keyed Services - tính năng đột phá của .NET 8 giúp giải quyết bài toán Inject nhiều cài đặt (implementations) của cùng một Interface cực kỳ tinh tế.
+title: Keyed Services trong .NET 8
+description: Cập nhật siêu tính năng mới nhất của .NET 8. Học cách tiêm nhiều Class có chung một Interface bằng những chiếc Chìa khóa (Keys) vô cùng thanh lịch.
 ---
 
 # Keyed Services (.NET 8) {#keyed-services}
 
-Trong bài [Factory Pattern với DI](/docs/di/advanced#factory-di), chúng ta đã thảo luận về một hạn chế cổ điển của DI Container mặc định trong .NET: Nó rất tệ trong việc phân biệt **nhiều cài đặt (implementations)** của **cùng một Interface**.
+:::info Mục tiêu bài học
+- Giải quyết bài toán kinh điển của DI: Làm sao để đăng ký nhiều Thực thi (Implementations) cho cùng MỘT Giao diện (Interface)?
+- Sử dụng cú pháp mới nhất của .NET 8: **Keyed Dependency Injection**.
+- Xóa bỏ hoàn toàn cách viết [Factory Pattern kết hợp Func](/docs/di/advanced) rườm rà.
+- Phân biệt sự khác nhau giữa `[FromKeyedServices]` và `[FromServices]`.
+:::
 
-Nếu bạn có `CreditCardPayment` và `MomoPayment` cùng kế thừa `IPaymentService`, và bạn tiêm (inject) `IPaymentService` vào Constructor, DI Container sẽ luôn lấy cái class được đăng ký **cuối cùng** đưa cho bạn. Để giải quyết, trước đây chúng ta phải viết một cái Factory lằng nhằng hoặc dùng thư viện bên thứ ba (như Autofac).
+## 1. Lời mở đầu: Sự bế tắc của Interface dùng chung {#introduction}
 
-Nhưng từ **.NET 8**, Microsoft đã chính thức tung ra một "vũ khí tối thượng": **Keyed Services**.
+Hãy quay lại một kịch bản cực kỳ quen thuộc: Bạn xây dựng một hệ thống thanh toán. Bạn thiết kế một bản hợp đồng `IPaymentService`. Phía dưới, bạn có 2 nhóm coder viết ra 2 tính năng: Thanh toán Thẻ tín dụng (`CreditCardPayment`) và Thanh toán Ví Momo (`MomoPayment`).
 
-## Keyed Services là gì? {#what-is-it}
+Theo tư duy DI cơ bản, bạn đăng ký chúng vào `Program.cs` như sau:
+```csharp
+builder.Services.AddTransient<IPaymentService, CreditCardPayment>();
+builder.Services.AddTransient<IPaymentService, MomoPayment>();
+```
 
-Keyed Services cho phép bạn gán một "chìa khóa" (Key - thường là một chuỗi string hoặc một Enum) cho mỗi Implementation khi bạn đăng ký chúng vào DI Container. Sau đó, khi cần sử dụng, bạn chỉ cần báo cho hệ thống biết bạn muốn chiếc chìa khóa nào.
+**Bi kịch xảy ra!** 
+Khi `CheckoutController` hé miệng xin Container tiêm cho nó cái `IPaymentService`:
+```csharp
+public CheckoutController(IPaymentService payment) 
+{ ... }
+```
+Container sẽ bối rối: *"Tôi đang cầm trên tay 2 cái IPaymentService lận! Cái CreditCard và cái Momo. Mày muốn tao tiêm cái nào cho mày???"*
+Theo luật ngầm định của ASP.NET Core trước đây, nó sẽ **tiêm cái được đăng ký sau cùng** (Tức là `MomoPayment`). 
+
+Vậy làm sao để cái Controller thứ nhất xin tiêm Momo, còn cái Controller thứ hai xin tiêm CreditCard?
+
+Trong bài [DI Nâng cao](/docs/di/advanced), chúng ta phải lách luật bằng cách viết một hàm `Func<string, IPaymentService>` lằng nhằng dài mười mấy dòng. Nhưng Microsoft đã lắng nghe tiếng khóc của Lập trình viên. Năm 2023, họ tung ra **.NET 8** với tính năng **Keyed Services**!
+
+---
+
+## 2. Giải pháp vĩ đại: Đánh chìa khóa cho dịch vụ {#keyed-solution}
+
+Ý tưởng của Keyed Services vô cùng đơn giản: Bạn dán một cái Nhãn (Key) lên từng dịch vụ lúc đăng ký. Khi xin tiêm, bạn chỉ cần đọc tên cái Nhãn đó ra.
 
 ```mermaid
 graph TD
-    subgraph DI Container
+    subgraph DIContainer [DI Container]
     A[IPaymentService] -->|Key: 'Credit'| B(CreditCardPayment)
     A -->|Key: 'Momo'| C(MomoPayment)
     end
@@ -26,75 +52,91 @@ graph TD
     E[CheckoutController] -->|Xin Key 'Momo'| C
 ```
 
-## Cách đăng ký (Registration) {#registration}
+### Bước 1: Đăng ký với Chìa khóa (Key)
 
-Thay vì dùng `AddScoped`, `AddTransient`, bạn thêm chữ `Keyed` vào giữa: `AddKeyedScoped`, `AddKeyedTransient`.
+Trong `Program.cs`, thay vì dùng hàm `AddTransient<T, U>()`, bạn đổi sang `AddKeyedTransient<T, U>(key)`.
 
 ```csharp
-var builder = WebApplication.CreateBuilder(args);
+// Đăng ký dịch vụ kèm theo chìa khóa định danh
+builder.Services.AddKeyedTransient<IPaymentService, CreditCardPayment>("CreditKey");
+builder.Services.AddKeyedTransient<IPaymentService, MomoPayment>("MomoKey");
 
-// Đăng ký IPaymentService với key "Credit"
-builder.Services.AddKeyedScoped<IPaymentService, CreditCardPayment>("Credit");
-
-// Đăng ký IPaymentService với key "Momo"
-builder.Services.AddKeyedScoped<IPaymentService, MomoPayment>("Momo");
+// Hỗ trợ cả 3 vòng đời: AddKeyedTransient, AddKeyedScoped, AddKeyedSingleton
 ```
 
-## Cách sử dụng (Injection) {#injection}
+### Bước 2: Xin tiêm bằng Thuộc tính (Attribute)
 
-Để lấy Service ra, bạn sử dụng Attribute `[FromKeyedServices(key)]` ngay trong Constructor của class cần dùng.
+Bây giờ, tại các Controller hoặc Service cần sử dụng, bạn dùng thuộc tính `[FromKeyedServices]` đính kèm ngay trước tham số trong Constructor.
 
 ```csharp
-public class CheckoutController : ControllerBase
+public class CheckoutController
 {
     private readonly IPaymentService _creditPayment;
     private readonly IPaymentService _momoPayment;
 
-    // Chỉ định rõ Key cho từng Interface!
+    // Chỉ định đích danh chìa khóa muốn mượn
     public CheckoutController(
-        [FromKeyedServices("Credit")] IPaymentService creditPayment,
-        [FromKeyedServices("Momo")] IPaymentService momoPayment)
+        [FromKeyedServices("CreditKey")] IPaymentService creditPayment,
+        [FromKeyedServices("MomoKey")] IPaymentService momoPayment)
     {
         _creditPayment = creditPayment;
         _momoPayment = momoPayment;
     }
 
-    [HttpPost("pay-credit")]
-    public IActionResult PayCredit()
+    public void PayByCreditCard()
     {
-        _creditPayment.Process();
-        return Ok();
+        _creditPayment.Pay(); // Chắc chắn 100% chạy code của CreditCardPayment
     }
 }
 ```
 
-### Lấy động tại Runtime (Runtime Resolution)
+Mọi dòng code `Func` rườm rà hay `switch-case` đã bị xóa sổ hoàn toàn! Code của bạn trở nên tinh khiết (Clean) và cực kỳ dễ đọc.
 
-Nếu Key được người dùng gửi lên từ giao diện (ví dụ người dùng chọn nút Momo trên Web), bạn không thể nhét cứng chữ "Momo" vào constructor bằng Attribute. Khi đó, bạn sẽ Inject một `IServiceProvider` (hoặc dùng `FromServices` trong tham số hàm) và lấy động:
+---
+
+## 3. Ứng dụng thực chiến: Hệ thống Multi-Tenant (Đa khách thuê) {#multi-tenant}
+
+**Keyed Services** không chỉ để giải quyết bài toán thanh toán. Nơi nó thực sự tỏa sáng là trong các ứng dụng SaaS (Software as a Service - Đa khách thuê).
+
+Giả sử bạn bán phần mềm quản lý cho 2 siêu thị: Vinmart và Coopmart. 
+- Vinmart yêu cầu lưu dữ liệu vào cơ sở dữ liệu `VinmartDB`.
+- Coopmart yêu cầu lưu vào cơ sở dữ liệu `CoopDB`.
+
+Họ cùng dùng chung một bộ Source code, cùng chung một Interface là `IDbContext`.
+
+**Cách .NET 8 xử lý cực ngọt ngào:**
 
 ```csharp
-[HttpPost("pay-dynamic")]
-// "type" có thể là "Credit" hoặc "Momo" do Frontend gửi lên
-public IActionResult PayDynamic(string type, [FromServices] IServiceProvider serviceProvider)
+// 1. Đăng ký DB cho từng khách hàng
+builder.Services.AddKeyedScoped<IDatabase, SqlDatabase>("Tenant_Vinmart");
+builder.Services.AddKeyedScoped<IDatabase, MongoDatabase>("Tenant_Coopmart");
+
+// 2. Controller xử lý động bằng IServiceProvider
+public class TenantController
 {
-    // Sử dụng GetRequiredKeyedService thay vì GetRequiredService
-    var paymentService = serviceProvider.GetRequiredKeyedService<IPaymentService>(type);
-    
-    paymentService.Process();
-    return Ok();
+    private readonly IServiceProvider _serviceProvider;
+
+    public TenantController(IServiceProvider serviceProvider)
+    {
+        _serviceProvider = serviceProvider;
+    }
+
+    public void ProcessData(string tenantName) // Ví dụ: tenantName = "Tenant_Vinmart"
+    {
+        // 3. Tự động moi đúng kết nối DB của ông khách đó ra!
+        // Tính năng mới của .NET 8: GetKeyedService
+        var db = _serviceProvider.GetKeyedService<IDatabase>(tenantName);
+        
+        db.Save();
+    }
 }
 ```
+*(Lưu ý: Bạn thấy ở đây tôi dùng `IServiceProvider` giống với Anti-Pattern [Service Locator](/docs/di/advanced)? Đúng, đôi khi để xử lý dữ liệu Động (Dynamic Runtime) như Tenant, việc dùng Locator là sự thỏa hiệp chấp nhận được trong vùng biên của hệ thống).*
 
-:::tip Cạm bẫy Service Locator
-Mặc dù ở ví dụ trên, chúng ta tiêm `IServiceProvider` để lấy ra service động (điều mà bài trước vừa chê bai là Anti-pattern), nhưng trong trường hợp lấy theo Key từ Request của người dùng, đây là một trong những ngoại lệ được chấp nhận. Tuy nhiên, cách sạch sẽ nhất vẫn là tạo một **Factory** và để Factory đó gọi `GetRequiredKeyedService`.
+:::tip Tóm tắt nhanh (Key Takeaways)
+- **Keyed Services** là tính năng "bắt buộc phải biết" nếu bạn đang làm việc với C# 12 và .NET 8 trở lên.
+- Nó thay thế hoàn toàn cho các thư viện DI bên thứ ba (như Autofac hay Ninject) vốn dĩ đã có tính năng này từ lâu.
+- Dùng từ khóa **`AddKeyedScoped`** (hoặc Transient/Singleton) để đăng ký dịch vụ kèm theo Key (String hoặc Enum đều được).
+- Dùng attribute **`[FromKeyedServices("MyKey")]`** để yêu cầu Container bơm chính xác đối tượng mong muốn.
+- Cuối cùng, nếu không rành .NET 8, bạn vẫn hoàn toàn có thể giải quyết bài toán đa thực thi (Multiple implementations) bằng Mẫu thiết kế [Strategy Pattern](/docs/patterns/strategy) hoặc [Factory Delegate](/docs/di/advanced).
 :::
-
-## Keyed Any (Bắt mọi Key) {#any-key}
-
-Đôi khi bạn muốn inject một service "mặc định" cho bất kỳ Key nào không được đăng ký. .NET 8 cung cấp tính năng `KeyedService.AnyKey`. Tuy nhiên, tính năng này thường dùng ở mức độ thư viện nền tảng (Framework level) chứ ít khi dùng ở logic ứng dụng thông thường.
-
-## Tóm lược {#summary}
-
-Sự ra đời của **Keyed Services** trong .NET 8 đã đánh dấu sự kết thúc của việc phải viết hàng đống Factory thủ công chỉ để switch (chuyển đổi) giữa các Implementation. Nó làm cho code DI của C# trở nên gọn gàng, thanh lịch và mạnh mẽ không kém cạnh gì các DI Framework đình đám nhất.
-
-Và đến đây, hành trình khám phá thế giới Lập trình Hướng đối tượng, SOLID, Design Patterns và Kiến trúc Dependency Injection của bạn đã chính thức **Viên mãn**. Chúc mừng bạn đã lên một tầm cao mới trong sự nghiệp Kỹ sư phần mềm!

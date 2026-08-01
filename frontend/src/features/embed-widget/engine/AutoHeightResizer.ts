@@ -1,10 +1,10 @@
-/**
- * AutoHeightResizer — ResizeObserver Dynamic Height Manager
- *
- * Monitors the iframe content height using ResizeObserver and
- * broadcasts HEIGHT_CHANGED messages to the host page with
- * debouncing and min/max clamping to prevent layout issues.
- */
+
+
+
+
+
+
+
 
 import type { EmbedCommunicationBridge } from './EmbedCommunicationBridge';
 import {
@@ -38,16 +38,16 @@ export class AutoHeightResizer {
     this.debounceMs = debounceMs;
   }
 
-  /**
-   * Clamps a height value within the configured min/max bounds.
-   */
+  
+
+
   public clampHeight(height: number): number {
     return Math.min(this.maxHeight, Math.max(this.minHeight, height));
   }
 
-  /**
-   * Starts observing the container for size changes.
-   */
+  
+
+
   public start(): void {
     if (this.resizeObserver) return;
 
@@ -77,9 +77,9 @@ export class AutoHeightResizer {
     this.resizeObserver.observe(this.container);
   }
 
-  /**
-   * Disconnects the observer and clears timers to prevent memory leaks.
-   */
+  
+
+
   public destroy(): void {
     if (this.debounceTimer !== null) {
       clearTimeout(this.debounceTimer);
@@ -92,9 +92,9 @@ export class AutoHeightResizer {
     this.lastReportedHeight = 0;
   }
 
-  /**
-   * Returns the last height value that was reported to the host.
-   */
+  
+
+
   public getLastReportedHeight(): number {
     return this.lastReportedHeight;
   }

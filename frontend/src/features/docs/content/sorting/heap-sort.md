@@ -5,6 +5,13 @@ description: Đi sâu vào một trong những thuật toán sắc sảo nhất,
 
 # Sắp xếp Đống (Heap Sort) {#heap-sort}
 
+:::info Mục tiêu bài học
+- Hiểu được cấu trúc dữ liệu **Max Heap** và cách biểu diễn nó hoàn hảo bằng Mảng 1 chiều.
+- Hiểu được thuật toán **Heapify** để duy trì tính chất Đống.
+- Nắm vững cách xây dựng (Build) và trích xuất (Extract) phần tử để tạo thành mảng đã sắp xếp.
+- Nhận biết được điểm mạnh và điểm yếu thực tế của Heap Sort so với Quick Sort/Merge Sort.
+:::
+
 Nếu Quick Sort bị chê vì trường hợp tồi tệ nhất là O(N²), còn Merge Sort thì bị phiền lòng vì "ăn dặm" thêm bộ nhớ O(N), thì **Heap Sort** xuất hiện như một "hiệp sĩ" dung hòa được cả hai điểm yếu này!
 
 Heap Sort **luôn luôn** chạy trong O(N log N) và nó sắp xếp **tại chỗ (In-place)**, nghĩa là độ phức tạp không gian chỉ là O(1) – không hề tốn kém thêm dung lượng RAM. Bí quyết của nó nằm ở việc tận dụng cấu trúc dữ liệu **Max Heap** (Đống cực đại).
@@ -110,6 +117,13 @@ private void Heapify(int[] array, int n, int i)
 :::tip Quick Sort vs Heap Sort
 Nếu Heap Sort luôn đảm bảo O(N log N), tại sao thế giới lại cuồng Quick Sort?
 Câu trả lời nằm ở **Bộ nhớ đệm CPU (CPU Cache)**. Heap Sort thao tác nhảy cóc liên tục (từ chỉ số `i` sang `2*i+1`), khiến tỉ lệ trượt cache (Cache miss) rất cao. Trong khi đó, Quick Sort và Merge Sort lại duyệt mảng một cách tuần tự liền kề, rất thân thiện với kiến trúc vi xử lý hiện đại.
+:::
+
+:::tip Tóm tắt nhanh (Key Takeaways)
+- **Độ phức tạp:** Thời gian luôn là **O(N log N)**, không gian là **O(1)** (Sắp xếp tại chỗ).
+- **Giai đoạn 1:** Xây dựng **Max Heap** để đưa phần tử lớn nhất lên đỉnh (index 0).
+- **Giai đoạn 2:** Đổi chỗ phần tử đỉnh với phần tử cuối, cắt bỏ phần tử cuối, rồi gọi **Heapify** phục hồi lại đỉnh.
+- Mặc dù lý thuyết cực kỳ hoàn hảo, Heap Sort thực tế chạy chậm hơn Quick Sort do thao tác nhảy cóc bộ nhớ (không tận dụng tốt CPU Cache).
 :::
 
 ## Next Steps {#next-steps}

@@ -10,10 +10,10 @@ using VisualizationDSA.Application.Services;
 
 namespace VisualizationDSA.WebApi.Controllers
 {
-    /// <summary>
-    /// Leaderboard Controller — Bảng xếp hạng người dùng theo XP.
-    /// Route: api/v{version:apiVersion}/leaderboard
-    /// </summary>
+    
+    
+    
+    
     [ApiVersion("1.0")]
     [ApiController]
     [Route("api/v{version:apiVersion}/[controller]")]
@@ -27,10 +27,10 @@ namespace VisualizationDSA.WebApi.Controllers
             _leaderboard = leaderboard;
         }
 
-        /// <summary>
-        /// Lấy top 20 người dùng theo XP — public (không cần đăng nhập).
-        /// GET /api/v1/leaderboard/top?limit=20
-        /// </summary>
+        
+        
+        
+        
         [HttpGet("top")]
         public async Task<ActionResult<IEnumerable<LeaderboardEntryDto>>> GetTop(
             [FromQuery] int limit = 20)
@@ -39,10 +39,10 @@ namespace VisualizationDSA.WebApi.Controllers
             return Ok(entries);
         }
 
-        /// <summary>
-        /// Xếp hạng của user hiện tại — yêu cầu đăng nhập.
-        /// GET /api/v1/leaderboard/me/rank
-        /// </summary>
+        
+        
+        
+        
         [HttpGet("me/rank")]
         [Authorize]
         public async Task<ActionResult<UserRankDto>> GetMyRank()

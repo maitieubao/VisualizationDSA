@@ -5,7 +5,7 @@ namespace VisualizationDSA.Domain.Entities
     public class AuditLog
     {
         public Guid Id { get; private set; }
-        public string Action { get; private set; } = string.Empty; // e.g. ResetPassword, ChangeRole, BanUser, DeleteUser
+        public string Action { get; private set; } = string.Empty; 
         public Guid ActorId { get; private set; }
         public string ActorName { get; private set; } = string.Empty;
         public Guid? TargetId { get; private set; }

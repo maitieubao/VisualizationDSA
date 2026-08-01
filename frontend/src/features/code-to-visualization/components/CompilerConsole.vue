@@ -1,6 +1,6 @@
 <template>
   <div class="flex flex-col h-full" style="background: rgba(15, 23, 42, 0.85);">
-    <!-- Header -->
+    
     <div class="flex items-center justify-between px-4 py-2 border-b"
       style="border-color: rgba(255, 255, 255, 0.05); background: rgba(30, 41, 59, 0.4);"
     >
@@ -26,18 +26,18 @@
       </button>
     </div>
 
-    <!-- Console Log Lines -->
+    
     <div ref="scrollContainerRef" class="flex-1 overflow-y-auto px-4 py-3 space-y-1.5"
       style="font-family: 'JetBrains Mono', monospace; font-size: 13px;"
     >
-      <!-- Empty state -->
+      
       <div v-if="logs.length === 0" class="flex items-center justify-center h-full">
         <p class="text-xs text-text-disabled text-center">
           Nhấn <span class="text-accent font-semibold">RUN</span> để bắt đầu biên dịch mã nguồn.
         </p>
       </div>
 
-      <!-- Log entries -->
+      
       <div
         v-for="(log, idx) in logs"
         :key="idx"

@@ -1,8 +1,8 @@
 <template>
   <div>
-    <!-- Giant Console Search Bar -->
+    
     <div class="dash-terminal-block rounded-xl overflow-hidden shadow-2xl">
-      <!-- Title Bar with window controls -->
+      
       <div class="dash-terminal-header flex items-center justify-between px-4 py-2">
         <div class="flex gap-1.5">
           <span class="w-2.5 h-2.5 rounded-full" style="background:var(--color-dot-close)"></span>
@@ -13,7 +13,7 @@
         <div class="w-10"></div>
       </div>
       
-      <!-- Command Input bar -->
+      
       <div class="p-4 flex items-center gap-2 text-xs font-mono dash-text-secondary relative">
         <span class="dash-text-accent font-bold shrink-0">$ find</span>
         <div class="relative w-full flex items-center">
@@ -31,7 +31,7 @@
       </div>
     </div>
 
-    <!-- Terminal Category Navigation -->
+    
     <div class="flex items-center gap-3 text-xs font-mono px-1 mt-4">
       <span class="dash-text-green font-bold shrink-0">$ ls difficulty/</span>
       <div class="flex gap-2 flex-wrap">

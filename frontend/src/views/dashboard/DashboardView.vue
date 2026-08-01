@@ -1,6 +1,6 @@
 <template>
   <div class="dashboard">
-    <!-- Greeting Banner -->
+    
     <div class="greeting-banner">
       <h1 class="greeting-banner__title">
         Chào mừng <span class="greeting-banner__name">{{ authStore.userName }}</span> quay trở lại!
@@ -12,13 +12,13 @@
       </p>
     </div>
 
-    <!-- Dashboard Grid -->
+    
     <div class="dashboard__grid">
 
 
-      <!-- ══════════════════════════════════════════
-           QUICK START GUIDE (new)
-      ══════════════════════════════════════════ -->
+      
+
+
       <div class="dash-card quickstart-card">
         <h3 class="dash-card__title">
           <BaseIcon name="playground" class="w-4 h-4 text-accent inline-block mr-1 align-text-bottom" />
@@ -65,7 +65,7 @@
         </button>
       </div>
 
-      <!-- XP Progress Wheel -->
+      
       <div class="dash-card xp-card">
         <h3 class="dash-card__title">Tiến trình XP</h3>
         <div class="xp-wheel">
@@ -95,10 +95,10 @@
         <p class="xp-card__hint">{{ xpToNext }} XP để lên level tiếp theo</p>
       </div>
 
-      <!-- Skill Radar Chart -->
+      
       <SkillRadarChart />
 
-      <!-- Top Badges -->
+      
       <div class="dash-card badges-card">
         <h3 class="dash-card__title">Huy hiệu đã mở</h3>
         <div class="badges-grid">
@@ -112,7 +112,7 @@
         </div>
       </div>
 
-      <!-- Quick Links -->
+      
       <div class="dash-card quicklinks-card">
         <h3 class="dash-card__title">Truy cập nhanh</h3>
         <div class="quicklinks">
@@ -145,9 +145,9 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { useRouter } from 'vue-router';
-import { useAuthStore } from '../features/auth/store/useAuthStore';
-import { useGuidedTourStore } from '../features/guided-tour/store/useGuidedTourStore';
-import SkillRadarChart from '../features/user-progress/components/SkillRadarChart.vue';
+import { useAuthStore } from '../../features/auth/store/useAuthStore';
+import { useGuidedTourStore } from '../../features/guided-tour/store/useGuidedTourStore';
+import SkillRadarChart from '../../features/user-progress/components/SkillRadarChart.vue';
 
 const authStore = useAuthStore();
 const tourStore = useGuidedTourStore();
@@ -272,7 +272,7 @@ async function startSortingTour() {
   color: #818cf8;
 }
 
-/* ── Grid ───────────────────────────────── */
+
 .dashboard__grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
@@ -294,9 +294,9 @@ async function startSortingTour() {
   font-weight: 500;
 }
 
-/* ══════════════════════════════════════════
-   QUICK START CARD (NEW)
-   ══════════════════════════════════════════ */
+
+
+
 .quickstart-card {
   grid-column: 1 / -1;
 }
@@ -392,7 +392,7 @@ async function startSortingTour() {
   box-shadow: 0 0 12px rgba(99, 102, 241, 0.15);
 }
 
-/* ── XP Wheel ──────────────────────────── */
+
 .xp-card {
   display: flex;
   flex-direction: column;
@@ -441,7 +441,7 @@ async function startSortingTour() {
   margin-top: 0.75rem;
 }
 
-/* ── Badges ────────────────────────────── */
+
 .badges-grid {
   display: flex;
   flex-wrap: wrap;
@@ -475,7 +475,7 @@ async function startSortingTour() {
   font-style: italic;
 }
 
-/* ── Quick Links ───────────────────────── */
+
 .quicklinks {
   display: flex;
   flex-direction: column;
@@ -508,7 +508,7 @@ async function startSortingTour() {
   color: var(--color-accent-primary);
 }
 
-/* ── Responsive ─────────────────────── */
+
 @media (max-width: 768px) {
   .dashboard { padding: 1rem; }
   .dashboard__grid { gap: 1rem; grid-template-columns: 1fr; }

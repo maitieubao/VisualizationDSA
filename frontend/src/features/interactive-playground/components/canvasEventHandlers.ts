@@ -2,7 +2,7 @@ import { GraphGeometryEngine, type Point } from '../engine/GraphGeometryEngine';
 import type { NodeDTO, EdgeDTO } from '../store/usePlaygroundStore';
 import type { Ref } from 'vue';
 
-/** Shape of the mutable drag state ref used by the playground canvas */
+
 interface DragState {
   nodeId: string | null;
   offsetX: number;
@@ -10,7 +10,7 @@ interface DragState {
   isDragging: boolean;
 }
 
-/** Shape of the mutable edge-draw state ref used during ADD_EDGE mode */
+
 interface EdgeDrawState {
   fromNodeId: string | null;
   mouseX: number;
@@ -18,7 +18,7 @@ interface EdgeDrawState {
   snapTarget: NodeDTO | null;
 }
 
-/** Minimal store surface used by canvas event handlers */
+
 interface PlaygroundStoreSurface {
   isAlgorithmMode: boolean;
   setSourceNodeId(id: string): void;

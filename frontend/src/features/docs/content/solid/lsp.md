@@ -1,146 +1,268 @@
 ---
-title: Liskov Substitution Principle (LSP)
-description: Khám phá chữ L trong SOLID - Nguyên lý thay thế Liskov. Đảm bảo rằng việc kế thừa của bạn không phá vỡ logic chương trình khi đối xử lớp con như lớp cha.
+title: Nguyên lý Thay thế Liskov (LSP)
+description: Khám phá nguyên lý toán học nghiêm ngặt nhất của SOLID. Thấu hiểu tại sao trong thế giới OOP, Hình Vuông KHÔNG BAO GIỜ được phép Kế thừa từ Hình Chữ Nhật.
 ---
 
-# Liskov Substitution Principle (LSP) {#lsp}
+# Nguyên lý Thay thế Liskov (Liskov Substitution Principle) {#lsp}
 
-Liskov Substitution Principle (Nguyên lý thay thế Liskov) là chữ **L** trong SOLID, được đặt theo tên của nhà khoa học máy tính Barbara Liskov. Nguyên lý này phát biểu rằng:
-
-> *"If S is a subtype of T, then objects of type T may be replaced with objects of type S without altering any of the desirable properties of the program."*
-> (Nếu S là lớp con của T, thì các đối tượng kiểu T có thể được thay thế bằng các đối tượng kiểu S mà không làm thay đổi tính đúng đắn của chương trình.)
-
-Nói một cách dân dã: **Lớp con phải có thể đứng vào chỗ của Lớp cha và hoạt động bình thường, mà người gọi không cần biết (hoặc không cần quan tâm) đó là cha hay con.**
-
-Nếu bạn truyền một đối tượng Lớp con vào hàm đang mong đợi Lớp cha, và chương trình bị Crash hoặc trả ra kết quả sai lệch hoàn toàn, bạn đã vi phạm LSP!
-
-```mermaid
-graph TD
-    A[Hàm: MakeDucksSwim] -->|Mong đợi| B(Lớp cha: Duck)
-    B -->|Thay thế hợp lệ| C(RealDuck)
-    B -.->|Ném lỗi Crash!| D(RubberDuck)
-    
-    classDef bad fill:#f9d0c4,stroke:#e06666,stroke-width:2px,color:#000;
-    class D bad;
-```
-
-## Ví dụ vi phạm LSP (Vịt Cao Su) {#bad-code}
-
-Hãy xem một ví dụ kinh điển về việc "Cố đấm ăn xôi" khi dùng tính Kế thừa (Inheritance).
-
-Giả sử bạn thiết kế lớp `Duck` (Con Vịt) có khả năng kêu "Quạc quạc" và biết bơi.
-
-```csharp
-public class Duck
-{
-    public virtual void Quack() => Console.WriteLine("Quạc quạc!");
-    public virtual void Swim() => Console.WriteLine("Vịt đang bơi...");
-}
-```
-
-Hệ thống hoạt động tốt. Hôm sau, sếp yêu cầu bạn lập trình thêm một con Vịt Cao Su (`RubberDuck`) để bán đồ chơi. Vì Vịt Cao Su cũng là một loại Vịt, bạn quyết định cho nó kế thừa từ `Duck` để tái sử dụng code. Tuy nhiên, Vịt cao su kêu "Chíp chíp" chứ không kêu "Quạc quạc", và nó không biết tự bơi (Nó nổi).
-
-```csharp
-public class RubberDuck : Duck
-{
-    public override void Quack() => Console.WriteLine("Chíp chíp!");
-    
-    // Vịt cao su không biết tự bơi, nên bạn quyết định ném lỗi!
-    public override void Swim() 
-    {
-        throw new NotSupportedException("Vịt cao su không biết bơi!");
-    }
-}
-```
-
-Đến đây, bạn đã chính thức **vi phạm nguyên lý Liskov!** Tại sao?
-Hãy nhìn vào đoạn code sử dụng các con vịt:
-
-```csharp
-public void MakeDucksSwim(List<Duck> ducks)
-{
-    foreach (var duck in ducks)
-    {
-        // Chương trình sẽ CRASH ngay lập tức khi vòng lặp chạm tới con Vịt Cao Su!
-        duck.Swim(); 
-    }
-}
-```
-Hàm `MakeDucksSwim` mong đợi một danh sách những con vịt `Duck` (Lớp cha). Theo nguyên lý LSP, nó phải có quyền giả định rằng mọi con vịt đều có thể gọi hàm `Swim()` một cách an toàn. Nhưng `RubberDuck` (Lớp con) lại tự ý phá vỡ khế ước này bằng cách ném ra lỗi `NotSupportedException`. Lớp con đã không thể thay thế được lớp cha!
-
-## Cách khắc phục tuân thủ LSP (Good Code) {#good-code}
-
-Lỗi vi phạm LSP thường bắt nguồn từ việc **Kế thừa sai bản chất**. Vịt cao su không phải là Vịt thật, nó chỉ giống Vịt thôi. 
-
-Để khắc phục, ta nên tách các hành vi (Behavior) ra thành các **Interface** riêng biệt, thay vì dồn tất cả vào một Lớp cha ép các Lớp con phải kế thừa.
-
-```csharp
-// Tách hành vi ra
-public interface IQuackable
-{
-    void Quack();
-}
-
-public interface ISwimmable
-{
-    void Swim();
-}
-
-// Vịt thật: Biết cả kêu và bơi
-public class RealDuck : IQuackable, ISwimmable
-{
-    public void Quack() => Console.WriteLine("Quạc quạc!");
-    public void Swim() => Console.WriteLine("Vịt đang bơi...");
-}
-
-// Vịt đồ chơi: Chỉ biết kêu, KHÔNG triển khai ISwimmable
-public class RubberDuck : IQuackable
-{
-    public void Quack() => Console.WriteLine("Chíp chíp!");
-}
-```
-
-Bây giờ, nếu một hàm bắt buộc các con vật phải bơi, hàm đó sẽ nhận tham số là `ISwimmable`.
-
-```csharp
-public void MakeDucksSwim(List<ISwimmable> ducks)
-{
-    foreach (var duck in ducks)
-    {
-        duck.Swim(); // An toàn tuyệt đối 100%
-    }
-}
-```
-Bạn sẽ không bao giờ có thể truyền nhầm `RubberDuck` vào hàm này được nữa, vì trình biên dịch C# sẽ báo lỗi ngay từ lúc gõ code!
-
-## Thiết kế theo Khế ước (Design by Contract) {#design-by-contract}
-
-Để hiểu sâu hơn về LSP ở góc độ học thuật, Bertrand Meyer đã định nghĩa nguyên lý này thông qua **Khế ước (Contract)**. Khi lớp con kế thừa lớp cha, nó phải tuân thủ 3 điều kiện khắt khe:
-
-1. **Preconditions (Điều kiện tiên quyết) không được thắt chặt hơn:** 
-   Nếu lớp cha yêu cầu tham số đầu vào `(int age)` chỉ cần `age > 0`, thì lớp con không được phép ném lỗi khi `age < 18`. Lớp con bắt buộc phải chấp nhận tất cả những gì lớp cha chấp nhận.
-2. **Postconditions (Điều kiện hậu quả) không được nới lỏng hơn:**
-   Nếu lớp cha cam kết trả về một số dương `> 0`, lớp con không được phép trả về `0` hoặc `-1`. Nó phải tuân thủ cam kết kết quả đầu ra của cha.
-3. **Invariants (Bất biến) phải được giữ nguyên:**
-   Nếu lớp cha có một thuộc tính luôn đúng (ví dụ: `Balance >= 0` trong tài khoản ngân hàng), lớp con không được phép thực hiện bất cứ hành động nào làm cho `Balance` bị âm.
-
-LSP không chỉ là việc gọi hàm không bị lỗi, mà còn là việc **Logic nghiệp vụ** phải được giữ nguyên vẹn!
-
-:::tip LSP và Hình vuông/Hình chữ nhật
-Một ví dụ vi phạm LSP cực kỳ nổi tiếng khác trong giới học thuật là việc cho lớp `Square` (Hình vuông) kế thừa lớp `Rectangle` (Hình chữ nhật).
-Trong toán học, hình vuông là một hình chữ nhật đặc biệt. Nhưng trong lập trình, nếu `Rectangle` có `SetWidth()` và `SetHeight()` độc lập, thì `Square` không thể kế thừa chúng (vì đổi Width của hình vuông thì Height cũng phải đổi theo, phá vỡ logic tính diện tích của Rectangle).
-**Bài học:** Thế giới thực (Toán học) không phải lúc nào cũng map 1:1 sang thiết kế Hướng đối tượng!
+:::info Mục tiêu bài học
+- Phá vỡ định kiến "Đời thực thế nào thì Code thế đó". Hiểu được tại sao Toán học đúng nhưng OOP lại sai.
+- Nhận diện Anti-pattern kinh điển: Quăng lỗi `NotImplementedException` một cách vô tội vạ.
+- Bóc trần "Cú lừa lịch sử": Bài toán Kế thừa Hình Vuông và Hình Chữ Nhật.
+- Nắm vững giải pháp: Cấu trúc lại cây phả hệ (Inheritance Tree) bằng Interface và Abstract Class chuẩn mực.
 :::
 
-## Next Steps {#next-steps}
+## 1. Lời mở đầu: Bản hợp đồng của sự Tin tưởng {#introduction}
 
-Việc ép một lớp con phải thừa kế những phương thức mà nó không bao giờ xài tới (như hàm `Swim()` của Vịt cao su) không chỉ vi phạm LSP mà còn vi phạm một nguyên lý khác của SOLID.
+Chữ **"L"** trong SOLID đại diện cho **Liskov Substitution Principle (LSP)**. Nó được vinh danh theo tên của Giáo sư Barbara Liskov, người đã giới thiệu khái niệm này vào năm 1987. Lời phát biểu gốc toán học của bà khá phức tạp, nhưng Uncle Bob đã dịch nó sang ngôn ngữ lập trình như sau:
 
-Nguyên lý tiếp theo sẽ dạy bạn nghệ thuật "chia nhỏ" các Interface khổng lồ để không làm nghẹn các Lớp triển khai nó. Chào mừng đến với chữ I: **Interface Segregation Principle (ISP)**.
+> *"Nếu Class B kế thừa từ Class A, thì bạn phải có khả năng sử dụng B để thay thế hoàn toàn cho A ở MỌI NƠI trong chương trình, mà không làm hỏng tính đúng đắn của phần mềm."*
 
-<div class="vt-box-container next-steps">
-  <a class="vt-box" href="/docs/solid/isp">
-    <p class="next-steps-link">Interface Segregation (ISP)</p>
-    <p class="next-steps-caption">Nguyên lý Phân tách Giao diện: Đừng ép khách hàng ăn món họ không gọi.</p>
-  </a>
-</div>
+**Nói cách khác:**
+Lớp con (Child Class) phải tuân thủ nghiêm ngặt những lời hứa (Hành vi) mà Lớp cha (Parent Class) đã cam kết với thế giới bên ngoài. Lớp con không được phép làm thay đổi ngữ nghĩa, không được phép bóp méo logic, và đặc biệt KHÔNG ĐƯỢC PHÉP từ chối thực hiện một hành động mà Lớp cha nói là làm được.
+
+---
+
+## 2. Giải phẫu Anti-pattern 1: Chim Đà Điểu (The Ostrich Problem) {#anti-pattern-ostrich}
+
+Chúng ta hãy xem xét một ví dụ rất bản năng mà ai mới học OOP cũng hay mắc phải.
+
+Theo sinh học, **Đà Điểu (Ostrich)** chắc chắn là một loài **Chim (Bird)**. Nên ta cho `Ostrich` kế thừa `Bird`. Nghe rất hợp lý đúng không?
+
+```csharp
+// MÃ XẤU - VI PHẠM LSP
+public class Bird
+{
+    public virtual void Fly()
+    {
+        Console.WriteLine("Tôi đang bay lượn trên bầu trời!");
+    }
+}
+
+public class Ostrich : Bird
+{
+    // Đà điểu thì không biết bay. Vậy ta đành phải quăng lỗi!
+    public override void Fly()
+    {
+        throw new NotImplementedException("Đà điểu không biết bay đâu pa!");
+    }
+}
+```
+
+Hãy nhìn vào đoạn code sử dụng (Client Code) dưới đây:
+
+```csharp
+public void MakeAllBirdsFly(List<Bird> flock)
+{
+    foreach (var bird in flock)
+    {
+        // Lập trình viên gọi hàm này tin tưởng tuyệt đối rằng: 
+        // "Vì mảng này chứa toàn Bird, mà Bird thì có hàm Fly(), nên chắc chắn gọi sẽ thành công".
+        bird.Fly(); 
+    }
+}
+
+// Khi chương trình chạy:
+var birds = new List<Bird> { new Bird(), new Ostrich() };
+MakeAllBirdsFly(birds); // BÙM! Ứng dụng CRASH (Sập) ngay lập tức khi vòng lặp chạy tới con Đà điểu.
+```
+
+**Tại sao nó Vi phạm LSP?**
+Bởi vì `Ostrich` (Lớp con) ĐÃ KHÔNG THỂ THAY THẾ an toàn cho `Bird` (Lớp cha). Lớp cha hứa với thiên hạ là nó biết bay, nhưng Lớp con lại lật lọng và quăng lỗi (Exception). Nó phá vỡ hoàn toàn niềm tin của hàm `MakeAllBirdsFly`.
+
+### Cách chữa trị (Refactoring)
+Chúng ta phải thiết kế lại cây phả hệ. Việc "Biết bay" không phải là đặc tính của MỌI loài chim.
+
+```mermaid
+classDiagram
+    class Bird {
+        +Eat()
+    }
+    class IFlyingBird {
+        <<interface>>
+        +Fly()
+    }
+    class Sparrow {
+        +Eat()
+        +Fly()
+    }
+    class Ostrich {
+        +Eat()
+    }
+    
+    Bird <|-- Sparrow
+    IFlyingBird <|.. Sparrow
+    Bird <|-- Ostrich
+```
+
+```csharp
+// MÃ ĐẸP - CHUẨN LSP
+public class Bird {
+    public void Eat() { Console.WriteLine("Đang ăn..."); }
+}
+
+public interface IFlyingBird {
+    void Fly();
+}
+
+public class Sparrow : Bird, IFlyingBird {
+    public void Fly() { Console.WriteLine("Chim sẻ đang bay..."); }
+}
+
+public class Ostrich : Bird {
+    // Không cài đặt IFlyingBird. Không ai ép nó phải Fly() nữa.
+}
+```
+Bây giờ, hàm của bạn sẽ yêu cầu nhận vào một `List<IFlyingBird>`. Không ai có thể nhét một con Đà điểu vào cái List đó được nữa. Trình biên dịch (Compiler) sẽ chặn lại ngay từ lúc gõ code. Ứng dụng an toàn tuyệt đối!
+
+---
+
+## 3. Cú lừa Lịch sử: Hình Vuông và Hình Chữ Nhật {#square-rectangle}
+
+Đây là bài toán phỏng vấn kinh điển nhất để kiểm tra kiến thức về LSP.
+
+**Trong Toán học:** "Hình Vuông là một trường hợp đặc biệt của Hình Chữ Nhật (khi Chiều dài = Chiều rộng)".
+Vậy nên, ta cho `Square` kế thừa từ `Rectangle`. (Có vẻ cực kỳ hợp lý!).
+
+```csharp
+// MÃ XẤU - VI PHẠM LSP NGẦM
+public class Rectangle
+{
+    public virtual int Width { get; set; }
+    public virtual int Height { get; set; }
+
+    public int GetArea() => Width * Height;
+}
+
+public class Square : Rectangle
+{
+    // Hình vuông bắt buộc cạnh phải bằng nhau. 
+    // Nên nếu ai đó cố tình set Width, ta phải ngầm ép Height giống hệt Width.
+    public override int Width
+    {
+        get => base.Width;
+        set { base.Width = value; base.Height = value; }
+    }
+
+    public override int Height
+    {
+        get => base.Height;
+        set { base.Width = value; base.Height = value; }
+    }
+}
+```
+
+Thoạt nhìn, Class `Square` viết rất thông minh để bảo vệ tính toàn vẹn của Hình Vuông. 
+Nhưng hãy xem chuyện gì xảy ra khi một lập trình viên (người không biết gì về Class Square) sử dụng Lớp cha `Rectangle` của bạn:
+
+```csharp
+public void TestArea(Rectangle rect)
+{
+    rect.Width = 5;
+    rect.Height = 10;
+    
+    // Lập trình viên kỳ vọng: Diện tích hình chữ nhật là 5 * 10 = 50.
+    int expectedArea = 50; 
+    
+    // Khẳng định (Assert) kiểm tra tính đúng đắn
+    if (rect.GetArea() != expectedArea) 
+    {
+        throw new Exception($"CÓ LỖI XẢY RA! Diện tích tính ra là {rect.GetArea()} thay vì 50");
+    }
+}
+
+// Bắt đầu gọi hàm:
+Rectangle normalRect = new Rectangle();
+TestArea(normalRect); // Chạy bình thường (5 * 10 = 50)
+
+Rectangle squareRect = new Square(); // Đa hình (Polymorphism)
+TestArea(squareRect); // BÙM! CRASH CHƯƠNG TRÌNH!
+```
+
+**Tại sao lại Crash?**
+Hãy dò lại từng dòng của hàm `TestArea` khi truyền `Square` vào:
+1. `rect.Width = 5;` $\rightarrow$ Class `Square` âm thầm gán cả `Width = 5` và `Height = 5`.
+2. `rect.Height = 10;` $\rightarrow$ Class `Square` lại âm thầm gán cả `Width = 10` và `Height = 10`.
+3. Khi gọi `rect.GetArea()`, kết quả trả về là `10 * 10 = 100` (Chứ không phải 50).
+4. Chương trình văng lỗi.
+
+**Bài học cốt lõi:** Lớp `Square` đã phá vỡ hành vi kỳ vọng của Lớp `Rectangle`. Đối với một Hình Chữ Nhật chuẩn mực, việc thay đổi Chiều Rộng KHÔNG BAO GIỜ được phép làm thay đổi Chiều Cao. Nhưng Hình Vuông đã lén lút phá vỡ quy tắc này. Do đó, **Trong OOP, Hình Vuông KHÔNG PHẢI LÀ Hình Chữ Nhật!**
+
+### Cách chữa trị bài toán Hình học
+
+Hình Vuông và Hình Chữ Nhật không nên kế thừa lẫn nhau. Chúng chỉ nên là những người anh em họ cùng kế thừa một Hợp đồng (Interface) chung.
+
+```mermaid
+classDiagram
+    class IShape {
+        <<interface>>
+        +GetArea(): int
+    }
+    class Rectangle {
+        +Width: int
+        +Height: int
+        +GetArea(): int
+    }
+    class Square {
+        +SideLength: int
+        +GetArea(): int
+    }
+    
+    IShape <|.. Rectangle
+    IShape <|.. Square
+```
+
+```csharp
+// MÃ ĐẸP - CHUẨN LSP
+public interface IShape
+{
+    int GetArea();
+}
+
+public class Rectangle : IShape
+{
+    public int Width { get; set; }
+    public int Height { get; set; }
+    public int GetArea() => Width * Height;
+}
+
+public class Square : IShape
+{
+    public int SideLength { get; set; } // Khái niệm Cạnh thay cho Dài/Rộng
+    public int GetArea() => SideLength * SideLength;
+}
+```
+
+Bây giờ, nếu ai đó cần tính diện tích của một mảng các hình, họ sẽ gọi `List<IShape>`. Họ chỉ quan tâm tới kết quả của hàm `GetArea()`. Sẽ không còn hàm nào bị nhầm lẫn giữa việc gán Width/Height nữa.
+
+---
+
+## 4. Kiểm tra mã nguồn của bạn có vi phạm LSP không? {#check-lsp}
+
+Bạn không cần phải có bằng Tiến sĩ mới biết code của mình có vi phạm LSP hay không. Hãy quét qua source code của bạn, nếu bạn thấy 2 dấu hiệu (Code Smells) sau, 99% bạn đã vi phạm LSP:
+
+1. **Dấu hiệu 1: Quăng lỗi từ chối hỗ trợ**
+   Nếu Lớp con Override một hàm của Lớp cha và bên trong chỉ có mỗi dòng:
+   `throw new NotImplementedException();` hoặc `throw new NotSupportedException();`
+   $\rightarrow$ Lớp con đang kêu gào: *"Tôi không làm được cái mà bố tôi hứa!"*.
+
+2. **Dấu hiệu 2: Dùng lệnh ép kiểu `is` hoặc `as` liên tục**
+   Nếu bạn viết một hàm nhận vào Lớp cha, nhưng bên trong lại phải check xem nó có đích thị là Lớp con cụ thể nào không để né lỗi.
+   ```csharp
+   public void Process(Animal animal)
+   {
+       // Đáng lẽ chỉ cần animal.Speak() là đủ.
+       // Nhưng vì thiết kế sai, phải rẽ nhánh để né lỗi:
+       if (animal is Fish) {
+           // Bỏ qua, vì cá không biết sủa
+       } else {
+           animal.Speak();
+       }
+   }
+   ```
+
+:::tip Tóm tắt nhanh (Key Takeaways)
+- Liskov Substitution Principle (LSP) yêu cầu Lớp con phải bảo toàn 100% ngữ nghĩa và hành vi đã được định nghĩa ở Lớp cha.
+- Đừng để ngôn ngữ tự nhiên (hoặc Toán học) đánh lừa bạn trong OOP. Một "Đà điểu" là "Chim" trong sinh học, nhưng không nên kế thừa trong Code nếu "Chim" mặc định phải biết Bay.
+- Đừng bao giờ tạo ra một cây phả hệ (Inheritance Tree) quá sâu. Hãy ưu tiên dùng Interface (Trừu tượng hóa Hành vi) thay vì Kế thừa Class (Trừu tượng hóa Trạng thái).
+:::

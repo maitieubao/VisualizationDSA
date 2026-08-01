@@ -24,7 +24,7 @@ export class MonacoGutterClickInterceptor {
     if (!this.editorInstance) return;
 
     this.mouseDownListener = this.editorInstance.onMouseDown((e: MonacoMouseEvent) => {
-      // e.target.type: 3 = Gutter (Lề trái số dòng), 4 = Gutter Margin
+      
       if (e.target.type === 3 || e.target.type === 4) {
         const lineNumber = e.target.position?.lineNumber;
         if (lineNumber !== undefined) {

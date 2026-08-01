@@ -1,7 +1,7 @@
-/**
- * Kịch bản mã nguồn đa ngôn ngữ cho thuật toán Bubble Sort.
- * Ánh xạ logicalId chéo ngôn ngữ: FUNC_DECL, OUTER_LOOP, INNER_LOOP, COMPARE_STEP, SWAP_STEP.
- */
+
+
+
+
 
 import type { PseudocodeScript } from '../types/pseudocode.types';
 

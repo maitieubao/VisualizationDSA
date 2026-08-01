@@ -15,7 +15,7 @@ export interface UMLDiagramData {
 export interface DocsSection {
   id: string;
   title: string;
-  content: string; // Markdown supported
+  content: string; 
   codeSample?: string;
   codeLanguage?: string;
   keywordTags?: string[];

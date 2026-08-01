@@ -54,16 +54,22 @@ export function useGraphPlayground(
   }
 
   function resizeCanvas() {
-    if (canvas.value && container.value) {
-      canvas.value.width = container.value.clientWidth;
-      canvas.value.height = container.value.clientHeight;
-    }
+    if (!canvas.value || !container.value) return;
+    const dpr = window.devicePixelRatio || 1;
+    const rect = container.value.getBoundingClientRect();
+    canvas.value.width = rect.width * dpr;
+    canvas.value.height = rect.height * dpr;
+    canvas.value.style.width = `${rect.width}px`;
+    canvas.value.style.height = `${rect.height}px`;
   }
 
   function onCanvasDoubleClick(e: MouseEvent) {
     if (canvas.value && playgroundEngine) {
       const rect = canvas.value.getBoundingClientRect();
-      playgroundEngine.handleDoubleClick(e.clientX - rect.left, e.clientY - rect.top);
+      playgroundEngine.handleDoubleClick(
+        e.clientX - rect.left,
+        e.clientY - rect.top
+      );
       syncPlaygroundToText();
     }
   }
@@ -74,13 +80,20 @@ export function useGraphPlayground(
   function draw() {
     const ctx = canvas.value?.getContext("2d");
     if (ctx && canvas.value) {
-      renderGraphPlayground(ctx, canvas.value.width, canvas.value.height, vertices.value, edges.value, selectedVertexId.value);
+      const dpr = window.devicePixelRatio || 1;
+      ctx.save();
+      ctx.scale(dpr, dpr);
+      const w = canvas.value.width / dpr;
+      const h = canvas.value.height / dpr;
+      renderGraphPlayground(ctx, w, h, vertices.value, edges.value, selectedVertexId.value);
+      ctx.restore();
     }
     animFrameId = requestAnimationFrame(draw);
   }
 
   onMounted(() => {
     playgroundEngine = new InteractivePlaygroundEngine((v) => (vertices.value = v));
+    resizeCanvas();
     syncTextToPlayground();
     draw();
   });

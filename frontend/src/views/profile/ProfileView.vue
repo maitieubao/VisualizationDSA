@@ -1,7 +1,7 @@
 <template>
   <div class="settings-modal-overlay" @click.self="closeModal">
     <div class="settings-modal-dialog">
-      <!-- Modal Header Bar -->
+      
       <div class="settings-modal-header">
         <div class="header-title-box">
           <BaseIcon name="admin" class="w-4 h-4 text-indigo-400 mr-2" />
@@ -19,9 +19,9 @@
         </div>
       </div>
 
-      <!-- Modal Body (2-Column Postman Settings Window) -->
+      
       <div class="settings-modal-body">
-        <!-- Left Sidebar Navigation -->
+        
         <aside class="modal-sidebar">
           <div class="sidebar-user-card">
             <div class="user-avatar" :class="{ 'user-avatar--pro': authStore.isPremium }">
@@ -69,7 +69,7 @@
           </nav>
         </aside>
 
-        <!-- Right Main Panel View (Scrollable Content) -->
+        
         <main class="modal-content-panel">
           <ProfileGeneralTab v-if="activeTab === 'general'" />
           <ProfileProgressTab v-else-if="activeTab === 'progress'" />

@@ -12,10 +12,10 @@ namespace VisualizationDSA.WebApi.Filters
     {
         private static readonly byte[] SecretKey = Encoding.UTF8.GetBytes("VisualizationDSA-Stateless-Dev-Secret-Key-2024-Phase6-256bit!");
 
-        /// <summary>
-        /// Validates authorization header token.
-        /// Returns UnauthorizedObjectResult if validation fails, otherwise returns null.
-        /// </summary>
+        
+        
+        
+        
         public static IActionResult? RequireToken(HttpRequest request)
         {
             var header = request.Headers["Authorization"].FirstOrDefault();
@@ -33,7 +33,7 @@ namespace VisualizationDSA.WebApi.Filters
                 var jwtPayload = parts[1];
                 var jwtSignature = parts[2];
 
-                // Verify Signature using Dev Secret Key
+                
                 var expectedSignature = Convert.ToBase64String(
                     HMACSHA256.HashData(SecretKey, Encoding.UTF8.GetBytes($"{jwtHeader}.{jwtPayload}"))
                 );
@@ -41,7 +41,7 @@ namespace VisualizationDSA.WebApi.Filters
                 if (jwtSignature != expectedSignature)
                     return new UnauthorizedObjectResult(new { error = "UNAUTHORIZED", message = "Chữ ký xác thực không hợp lệ." });
 
-                // Verify Expiration
+                
                 var padding = (4 - jwtPayload.Length % 4) % 4;
                 var paddedPayload = jwtPayload + new string('=', padding);
                 paddedPayload = paddedPayload.Replace('-', '+').Replace('_', '/');

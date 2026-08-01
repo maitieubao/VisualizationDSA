@@ -3,9 +3,9 @@ using System.Collections.Generic;
 
 namespace VisualizationDSA.Domain.Engine
 {
-    /// <summary>
-    /// Stateless Payment DTOs — dùng cho StatelessPaymentStrategy (in-memory, không cần PostgreSQL).
-    /// </summary>
+    
+    
+    
 
     public class StatelessOrderDto
     {

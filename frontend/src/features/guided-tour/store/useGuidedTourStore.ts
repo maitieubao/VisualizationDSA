@@ -17,7 +17,7 @@ export interface TourStep {
   actionScript?: TourAction[];
 }
 
-// Helpers for switching tabs in Sorting and Graph views
+
 const switchToTab1 = () => {
   if (typeof document === 'undefined') return;
   const tabBtn = document.querySelector('[data-tour-id="algo-tab-switch"] button:nth-child(1)') as HTMLElement;
@@ -30,7 +30,7 @@ const switchToTab2 = () => {
   if (tabBtn) tabBtn.click();
 };
 
-// Switch inner tab to Code Sandbox inside the Detail Panel
+
 const switchToTabCode = () => {
   if (typeof document === 'undefined') return;
   const tabBtn = document.querySelectorAll('.sorting-detail-panel button')[1] as HTMLElement;
@@ -44,11 +44,11 @@ const switchToSortingAndControls = () => {
   if (tabBtn) tabBtn.click();
 };
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Page-specific tour definitions
-// key = route path, value = tour steps
-// localStorage key: `page_tour_<routeKey>_seen`
-// ─────────────────────────────────────────────────────────────────────────────
+
+
+
+
+
 const PAGE_TOURS: Record<string, TourStep[]> = {
   '/sorting': [
     {
@@ -965,11 +965,11 @@ export const useGuidedTourStore = defineStore('guidedTour', () => {
   const currentStepIndex = ref(0);
   const activePageKey = ref<string | null>(null);
 
-  // Simulation status states
+  
   const virtualCursor = ref<{ x: number; y: number; visible: boolean; clicking: boolean } | null>(null);
   const isExecutingScript = ref(false);
 
-  // ── Global Tour Steps (welcome flow) ─────────────────────────────────────
+  
   const steps = ref<TourStep[]>([
     {
       title: 'Chào mừng đến với VisualizationDSA! 👋',
@@ -1002,7 +1002,7 @@ export const useGuidedTourStore = defineStore('guidedTour', () => {
     },
   ]);
 
-  // Computed: steps hiện tại (global hoặc page-specific)
+  
   const currentSteps = ref<TourStep[]>(steps.value);
 
   function initTour() {
@@ -1024,11 +1024,11 @@ export const useGuidedTourStore = defineStore('guidedTour', () => {
     }
   }
 
-  /**
-   * Kích hoạt page-specific tour.
-   * @param routePath - ví dụ '/sorting', '/compare'
-   * @param force     - true → luôn hiện dù đã xem rồi (dùng cho nút ❓)
-   */
+  
+
+
+
+
   function startPageTour(routePath: string, force = false): void {
     const storageKey = `page_tour_${routePath.replace('/', '')}_seen`;
     if (!force && localStorage.getItem(storageKey)) return;

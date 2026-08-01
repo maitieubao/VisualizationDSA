@@ -12,10 +12,10 @@ using VisualizationDSA.WebApi.Filters;
 
 namespace VisualizationDSA.WebApi.Controllers
 {
-    /// <summary>
-    /// Quiz API — serves quiz bank from in-memory + PostgreSQL persistence.
-    /// Route: /api/v1/concepts/quiz
-    /// </summary>
+    
+    
+    
+    
     [ApiVersion("1.0")]
     [ApiController]
     [Route("api/v{version:apiVersion}/concepts/quiz")]
@@ -30,10 +30,10 @@ namespace VisualizationDSA.WebApi.Controllers
             _dbContext = dbContext;
         }
 
-        /// <summary>
-        /// Lấy danh sách tất cả quiz trong ngân hàng câu hỏi.
-        /// GET /api/v1/concepts/quiz/all
-        /// </summary>
+        
+        
+        
+        
         [HttpGet("all")]
         public IActionResult GetAll()
         {
@@ -45,20 +45,20 @@ namespace VisualizationDSA.WebApi.Controllers
             return Ok(quizzes);
         }
 
-        /// <summary>
-        /// Lấy danh sách các chủ đề quiz.
-        /// GET /api/v1/concepts/quiz/topics
-        /// </summary>
+        
+        
+        
+        
         [HttpGet("topics")]
         public IActionResult GetTopics()
         {
             return Ok(_quizBank.GetTopics());
         }
 
-        /// <summary>
-        /// Lấy chi tiết một quiz theo ID (bao gồm câu hỏi + đáp án).
-        /// GET /api/v1/concepts/quiz/{quizId}
-        /// </summary>
+        
+        
+        
+        
         [HttpGet("{quizId}")]
         public IActionResult GetById(string quizId)
         {
@@ -68,10 +68,10 @@ namespace VisualizationDSA.WebApi.Controllers
             return Ok(quiz);
         }
 
-        /// <summary>
-        /// Lấy quiz theo chủ đề.
-        /// GET /api/v1/concepts/quiz/topic/{topic}
-        /// </summary>
+        
+        
+        
+        
         [HttpGet("topic/{topic}")]
         public IActionResult GetByTopic(string topic)
         {
@@ -79,19 +79,19 @@ namespace VisualizationDSA.WebApi.Controllers
             return Ok(quizzes);
         }
 
-        /// <summary>
-        /// Submit câu trả lời và nhận kết quả chấm điểm. Persist kết quả vào DB.
-        /// POST /api/v1/concepts/quiz/submit
-        /// </summary>
+        
+        
+        
+        
         [HttpPost("submit")]
-        [RequireJwtRole]  // ✅ PB-705: Yêu cầu token hợp lệ (bất kỳ role)
+        [RequireJwtRole]  
         public async Task<IActionResult> SubmitAttempt([FromBody] StatelessQuizAttemptRequest request)
         {
             try
             {
                 var result = _quizBank.EvaluateAttempt(request);
 
-                // ✅ Persist quiz attempt vào DB — không dùng RAM-only nữa
+                
                 var quiz = await _dbContext.Quizzes
                     .FirstOrDefaultAsync(q => q.Title == request.QuizId || q.Id.ToString() == request.QuizId);
                 if (quiz != null)
@@ -103,7 +103,7 @@ namespace VisualizationDSA.WebApi.Controllers
 
                     if (user != null)
                     {
-                        // Tạo và lưu QuizAttempt
+                        
                         var attempt = new QuizAttempt(
                             user.Id,
                             quiz.Id,
@@ -113,11 +113,11 @@ namespace VisualizationDSA.WebApi.Controllers
                         );
                         _dbContext.QuizAttempts.Add(attempt);
 
-                        // Award XP if passed with upgrade criteria:
-                        // - First time passing: award full XP.
-                        // - Subsequent passes: award XP only if the score is higher than all previous passes
-                        //   and improvements is >= 20% or reaches 100% score for the first time.
-                        // - Capped at 2 XP awards total per quiz.
+                        
+                        
+                        
+                        
+                        
                         int xpEarned = 0;
                         if (result.Passed)
                         {
@@ -126,13 +126,13 @@ namespace VisualizationDSA.WebApi.Controllers
                                 .ToListAsync();
 
                             var chronologicalPasses = previousAttempts
-                                .Where(a => a.Passed && a.Id != attempt.Id) // exclude current attempt
+                                .Where(a => a.Passed && a.Id != attempt.Id) 
                                 .OrderBy(a => a.AttemptedAt)
                                 .ToList();
 
                             if (chronologicalPasses.Count == 0)
                             {
-                                // First time passing
+                                
                                 xpEarned = quiz.XPReward;
                             }
                             else
@@ -168,7 +168,7 @@ namespace VisualizationDSA.WebApi.Controllers
                             }
                         }
 
-                        // Override the result XpAwarded
+                        
                         result.XpAwarded = xpEarned;
 
                         if (xpEarned > 0)
@@ -193,13 +193,13 @@ namespace VisualizationDSA.WebApi.Controllers
             }
         }
 
-        /// <summary>
-        /// Teacher/Admin: thêm quiz mới vào ngân hàng câu hỏi.
-        /// Yêu cầu JWT role Teacher hoặc Admin.
-        /// POST /api/v1/concepts/quiz/manage
-        /// </summary>
+        
+        
+        
+        
+        
         [HttpPost("manage")]
-        [RequireJwtRole("Teacher,Admin")]  // ✅ PB-705: Centralized guard
+        [RequireJwtRole("Teacher,Admin")]  
         public async Task<IActionResult> ManageQuiz([FromBody] StatelessQuizDto quiz)
         {
 
@@ -218,7 +218,7 @@ namespace VisualizationDSA.WebApi.Controllers
             if (quiz.Questions.Count > 100)
                 return BadRequest(new { error = "INVALID_QUIZ", message = "Số lượng câu hỏi trong một bài quiz tối đa là 100." });
 
-            // Validate each question
+            
             for (int i = 0; i < quiz.Questions.Count; i++)
             {
                 var q = quiz.Questions[i];
@@ -232,7 +232,7 @@ namespace VisualizationDSA.WebApi.Controllers
                     return BadRequest(new { error = "INVALID_QUIZ", message = $"Đáp án đúng của câu hỏi thứ {i + 1} không hợp lệ." });
             }
 
-            // Chuẩn hóa văn bản chống trùng
+            
             quiz.Title = NormalizeText(quiz.Title);
             foreach (var q in quiz.Questions)
             {
@@ -244,10 +244,10 @@ namespace VisualizationDSA.WebApi.Controllers
                 q.Explanation = NormalizeText(q.Explanation);
             }
 
-            // Add to in-memory bank for immediate availability
+            
             var created = _quizBank.AddQuiz(quiz);
 
-            // Persist to PostgreSQL
+            
             var difficultyInt = quiz.Difficulty switch
             {
                 "easy" => 1, "medium" => 3, "hard" => 5, _ => 3
@@ -263,13 +263,13 @@ namespace VisualizationDSA.WebApi.Controllers
             return Ok(new { message = "Quiz đã được thêm thành công.", quiz = created });
         }
 
-        /// <summary>
-        /// Teacher/Admin: cập nhật quiz hiện có.
-        /// Yêu cầu JWT role Teacher hoặc Admin.
-        /// PUT /api/v1/concepts/quiz/manage/{quizId}
-        /// </summary>
+        
+        
+        
+        
+        
         [HttpPut("manage/{quizId}")]
-        [RequireJwtRole("Teacher,Admin")]  // ✅ PB-705: Centralized guard
+        [RequireJwtRole("Teacher,Admin")]  
         public async Task<IActionResult> UpdateQuiz(string quizId, [FromBody] StatelessQuizDto quiz)
         {
 
@@ -288,7 +288,7 @@ namespace VisualizationDSA.WebApi.Controllers
             if (quiz.Questions.Count > 100)
                 return BadRequest(new { error = "INVALID_QUIZ", message = "Số lượng câu hỏi trong một bài quiz tối đa là 100." });
 
-            // Validate each question
+            
             for (int i = 0; i < quiz.Questions.Count; i++)
             {
                 var q = quiz.Questions[i];
@@ -302,7 +302,7 @@ namespace VisualizationDSA.WebApi.Controllers
                     return BadRequest(new { error = "INVALID_QUIZ", message = $"Đáp án đúng của câu hỏi thứ {i + 1} không hợp lệ." });
             }
 
-            // Chuẩn hóa văn bản chống trùng
+            
             quiz.Title = NormalizeText(quiz.Title);
             foreach (var q in quiz.Questions)
             {
@@ -314,12 +314,12 @@ namespace VisualizationDSA.WebApi.Controllers
                 q.Explanation = NormalizeText(q.Explanation);
             }
 
-            // Update in-memory bank
+            
             var updated = _quizBank.UpdateQuiz(quizId, quiz);
             if (updated == null)
                 return NotFound(new { error = "QUIZ_NOT_FOUND", message = $"Không tìm thấy quiz với ID {quizId} để cập nhật." });
 
-            // Update database
+            
             var dbQuiz = await _dbContext.Quizzes
                 .Include(q => q.Questions)
                 .FirstOrDefaultAsync(q => q.Title == quizId || q.Id.ToString() == quizId);
@@ -331,7 +331,7 @@ namespace VisualizationDSA.WebApi.Controllers
                 };
                 dbQuiz.Update(quiz.Title, quiz.Topic, quiz.Topic, difficultyInt, quiz.XpReward);
                 
-                // Clear old questions and add new ones
+                
                 dbQuiz.ClearQuestions();
                 foreach (var q in quiz.Questions)
                 {
@@ -344,20 +344,20 @@ namespace VisualizationDSA.WebApi.Controllers
             return Ok(new { message = "Quiz đã được cập nhật thành công.", quiz = updated });
         }
 
-        /// <summary>
-        /// Teacher/Admin: xóa quiz.
-        /// Yêu cầu JWT role Teacher hoặc Admin.
-        /// DELETE /api/v1/concepts/quiz/manage/{quizId}
-        /// </summary>
+        
+        
+        
+        
+        
         [HttpDelete("manage/{quizId}")]
-        [RequireJwtRole("Teacher,Admin")]  // ✅ PB-705: Centralized guard
+        [RequireJwtRole("Teacher,Admin")]  
         public async Task<IActionResult> DeleteQuiz(string quizId)
         {
 
-            // Delete in-memory
+            
             var deletedInMemory = _quizBank.DeleteQuiz(quizId);
 
-            // Delete from database
+            
             var dbQuiz = await _dbContext.Quizzes
                 .FirstOrDefaultAsync(q => q.Title == quizId || q.Id.ToString() == quizId);
             if (dbQuiz != null)
@@ -372,22 +372,22 @@ namespace VisualizationDSA.WebApi.Controllers
             return Ok(new { message = "Quiz đã được xóa thành công." });
         }
 
-        /// <summary>
-        /// Teacher analytics: thống kê tổng quan hoạt động quiz từ DB (PostgreSQL).
-        /// ✅ PB-306: Chuyển hoàn toàn từ in-memory sang DB aggregate queries.
-        /// GET /api/v1/concepts/quiz/analytics
-        /// </summary>
+        
+        
+        
+        
+        
         [HttpGet("analytics")]
-        [RequireJwtRole("Teacher,Admin")]  // ✅ PB-705: Centralized guard
+        [RequireJwtRole("Teacher,Admin")]  
         public async Task<IActionResult> GetAnalytics()
         {
-            // ── Tất cả dữ liệu analytics giờ đều lấy từ PostgreSQL ──
+            
 
-            // 1. Tổng quiz và câu hỏi trong DB
+            
             var totalQuizzes         = await _dbContext.Quizzes.CountAsync();
             var totalQuestionsInBank = await _dbContext.QuizQuestions.CountAsync();
 
-            // 2. Phân bổ theo chủ đề (GROUP BY topic)
+            
             var topicBreakdown = await _dbContext.Quizzes
                 .GroupBy(q => q.Topic)
                 .Select(g => new
@@ -398,7 +398,7 @@ namespace VisualizationDSA.WebApi.Controllers
                 .OrderByDescending(t => t.quizCount)
                 .ToListAsync();
 
-            // 3. Tổng quan quiz attempts từ DB
+            
             var totalAttempts = await _dbContext.QuizAttempts.CountAsync();
             var totalPassed   = await _dbContext.QuizAttempts.CountAsync(a => a.Passed);
             var passRate      = totalAttempts > 0
@@ -408,7 +408,7 @@ namespace VisualizationDSA.WebApi.Controllers
                 ? Math.Round(await _dbContext.QuizAttempts.AverageAsync(a => (double)a.Score / a.MaxScore * 100), 1)
                 : 0.0;
 
-            // 4. Thống kê chi tiết per quiz (JOIN QuizAttempts)
+            
             var perQuizStats = await _dbContext.Quizzes
                 .Select(q => new
                 {
@@ -430,7 +430,7 @@ namespace VisualizationDSA.WebApi.Controllers
                 .OrderByDescending(q => q.totalAttempts)
                 .ToListAsync();
 
-            // 5. User stats
+            
             var totalUsers   = await _dbContext.Users.CountAsync();
             var premiumUsers = await _dbContext.Users.CountAsync(u => u.IsPremium);
 
@@ -450,12 +450,12 @@ namespace VisualizationDSA.WebApi.Controllers
         }
 
 
-        /// <summary>
-        /// Lấy lịch sử làm bài quiz của học viên.
-        /// GET /api/v1/concepts/quiz/history
-        /// </summary>
+        
+        
+        
+        
         [HttpGet("history")]
-        [RequireJwtRole]  // ✅ PB-705: Yêu cầu token hợp lệ
+        [RequireJwtRole]  
         public async Task<IActionResult> GetHistory([FromQuery] string? userId)
         {
             var currentUserId = JwtHelper.ExtractSubFromToken(Request);

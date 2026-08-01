@@ -8,10 +8,10 @@ using VisualizationDSA.Infrastructure.Data;
 
 namespace VisualizationDSA.Infrastructure.Services
 {
-    /// <summary>
-    /// ✅ B2 FIX: Dùng ApplicationDbContext trực tiếp với GROUP BY / COUNT aggregate queries
-    /// thay vì GetAllAsync() load toàn bộ bảng vào memory (N+1 problem).
-    /// </summary>
+    
+    
+    
+    
     public class AnalyticsService : IAnalyticsService
     {
         private readonly ApplicationDbContext _db;
@@ -25,7 +25,7 @@ namespace VisualizationDSA.Infrastructure.Services
         {
             var today = DateTime.UtcNow.Date;
 
-            // Aggregate queries — không load entity vào memory
+            
             var totalUsers    = await _db.Users.CountAsync();
             var activeToday   = await _db.Users.CountAsync(
                 u => u.LastActivityDate.HasValue && u.LastActivityDate.Value.Date == today);
@@ -48,7 +48,7 @@ namespace VisualizationDSA.Infrastructure.Services
 
         public async Task<UserAnalyticsDto> GetUserAnalyticsAsync(Guid userId)
         {
-            // Load user với navigation properties cần thiết — chỉ đúng user đó
+            
             var user = await _db.Users
                 .AsNoTracking()
                 .Include(u => u.QuizAttempts)
@@ -82,7 +82,7 @@ namespace VisualizationDSA.Infrastructure.Services
         {
             limit = Math.Clamp(limit, 1, 50);
 
-            // GROUP BY trực tiếp ở DB — không load toàn bộ bảng vào memory
+            
             var result = await _db.LearningProgresses
                 .GroupBy(lp => lp.ModuleId)
                 .Select(g => new ModulePopularityDto

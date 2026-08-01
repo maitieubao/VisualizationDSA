@@ -21,6 +21,23 @@ export interface TreeNodeDTO {
   rightNodeId: number | null;
 }
 
+export interface GraphNodeDTO {
+  id: number;
+  value: number;
+  x: number;
+  y: number;
+  label?: string;
+}
+
+export interface GraphEdgeDTO {
+  from: number;
+  to: number;
+  weight?: number;
+  directed?: boolean;
+  highlighted?: boolean;
+  inMST?: boolean;
+}
+
 export interface HighlightIndices {
   compare: number[];
   swap: number[];
@@ -42,6 +59,19 @@ export interface FrameDTO {
   dataState: number[];
   highlights: HighlightIndices;
   treeNodes?: TreeNodeDTO[] | null;
+  graphNodes?: GraphNodeDTO[] | null;
+  graphEdges?: GraphEdgeDTO[] | null;
+  distances?: Record<number, number> | null;
+  predecessors?: Record<number, number> | null;
+  queueState?: number[] | null;
+  visitedSet?: number[] | null;
+  currentPath?: number[] | null;
+  openSet?: number[] | null;
+  closedSet?: number[] | null;
+  balanceFactors?: Record<number, number> | null;
+  rotationInfo?: string;
+  heapArray?: number[] | null;
+  heapSize?: number | null;
 }
 
 export interface AlgorithmResult {

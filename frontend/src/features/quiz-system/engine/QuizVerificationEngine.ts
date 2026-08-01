@@ -1,13 +1,13 @@
 import type { QuizQuestion, CanvasNodeDTO, VerificationResult } from '../types/quiz.types';
 
-/**
- * QuizVerificationEngine — Client-side grading engine.
- * Handles Multiple Choice, True/False, and Canvas-targeted question verification.
- */
+
+
+
+
 export class QuizVerificationEngine {
-  /**
-   * Verify a Multiple Choice or True/False answer by selected option index.
-   */
+  
+
+
   static verifyOptionAnswer(
     selectedIndex: number,
     question: QuizQuestion,
@@ -16,10 +16,10 @@ export class QuizVerificationEngine {
     return { isCorrect, explanation: question.explanation };
   }
 
-  /**
-   * Verify a Canvas click target answer using Euclidean distance hit detection.
-   * Returns the matched node ID if a node was clicked.
-   */
+  
+
+
+
   static verifyCanvasClickAnswer(
     clickX: number,
     clickY: number,

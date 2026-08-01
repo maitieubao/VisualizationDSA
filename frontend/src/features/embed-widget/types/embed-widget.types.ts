@@ -1,7 +1,7 @@
-/**
- * Type definitions for the Interactive Embed Widget (Phase 2).
- * Defines postMessage protocol schema, embed configuration, and theme types.
- */
+
+
+
+
 
 export type EmbedTheme = 'dark' | 'light' | 'glass';
 

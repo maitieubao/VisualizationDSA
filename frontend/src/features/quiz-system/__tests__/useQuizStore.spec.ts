@@ -1,4 +1,4 @@
-// @vitest-environment jsdom
+
 import { describe, it, expect, beforeEach } from 'vitest';
 import { setActivePinia, createPinia } from 'pinia';
 import { useQuizStore } from '../store/useQuizStore';

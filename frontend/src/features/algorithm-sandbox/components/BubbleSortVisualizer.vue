@@ -1,9 +1,4 @@
 <template>
-  <!--
-    h-full w-full → fills the visualizer zone completely.
-    items-end → bars grow from the bottom of the zone.
-    Bar heights are % of zone height so they always use all available space.
-  -->
   <div
     class="h-full w-full flex items-end justify-center px-4 pb-6"
     :style="containerStyle"
@@ -20,10 +15,8 @@
         class="flex flex-col items-center justify-end shrink-0 transition-all duration-300 h-full"
         :style="{ width: barWidth }"
       >
-        <!-- Bar — height as % of container so it fills available space -->
         <div
-          class="w-full flex items-center justify-center rounded-xl border font-bold
-                 select-none transition-all duration-300 shadow-[0_4px_12px_rgba(0,0,0,0.2)]"
+          class="w-full flex items-center justify-center rounded-xl border font-bold select-none transition-all duration-300"
           :class="getItemClass(idx)"
           :style="{
             height:   barHeightPct(item.value) + '%',
@@ -33,7 +26,6 @@
         >
           {{ item.value }}
         </div>
-        <!-- Index label below bar -->
         <div
           v-if="itemCount <= 12"
           class="mt-1 font-mono font-bold shrink-0"
@@ -57,7 +49,6 @@ const props = defineProps<{
 
 const itemCount = computed(() => props.frame?.arrayStateWithIds?.length ?? 6);
 
-// Dynamic bar width — shrinks as more items appear
 const barWidth = computed(() => {
   const n = itemCount.value;
   if (n <= 8)  return '88px';
@@ -82,17 +73,11 @@ const maxVal = computed(() => {
   return Math.max(...props.frame.arrayState, 1);
 });
 
-/**
- * Bar height as % of the zone container height.
- * Min 8% so even the smallest bar is visible.
- * Max 88% so the tallest bar doesn't touch the top (leaves room for value text).
- */
 function barHeightPct(value: number): number {
   const ratio = value / maxVal.value;
   return Math.round(8 + ratio * 80);
 }
 
-// Min width for horizontal scroll
 const containerStyle = computed(() => {
   const barW = parseInt(barWidth.value);
   const gapW = parseInt(itemGap.value);
@@ -101,24 +86,24 @@ const containerStyle = computed(() => {
 });
 
 function getItemClass(idx: number) {
-  if (!props.frame) return 'border-indigo-500/40 bg-gradient-to-t from-indigo-950/50 to-indigo-500/10 text-indigo-300 shadow-[0_0_12px_rgba(99,102,241,0.1)] hover:border-indigo-400/80';
+  if (!props.frame) return 'vis-bar-default';
   const { comparingIndices, swappedIndices, sortedIndices } = props.frame;
 
   if (sortedIndices.includes(idx))
-    return 'border-emerald-400 bg-gradient-to-t from-emerald-950/50 to-emerald-500/20 text-emerald-300 shadow-[0_0_16px_rgba(16,185,129,0.2)]';
+    return 'vis-bar-sorted';
   if (swappedIndices?.includes(idx))
-    return 'border-rose-400 bg-gradient-to-t from-rose-950/60 to-rose-500/30 text-rose-200 shadow-[0_0_20px_rgba(244,63,94,0.35)] scale-[1.04] animate-pulse';
+    return 'vis-bar-swapped';
   if (comparingIndices?.includes(idx))
-    return 'border-amber-400 bg-gradient-to-t from-amber-950/60 to-amber-500/25 text-amber-200 shadow-[0_0_16px_rgba(245,158,11,0.25)] scale-[1.03]';
-  return 'border-indigo-500/40 bg-gradient-to-t from-indigo-950/50 to-indigo-500/10 text-indigo-300 shadow-[0_0_12px_rgba(99,102,241,0.1)] hover:border-indigo-400/80';
+    return 'vis-bar-comparing';
+  return 'vis-bar-default';
 }
 
 function getIndexClass(idx: number) {
-  if (!props.frame) return 'text-slate-500';
+  if (!props.frame) return 'vis-index-default';
   const { comparingIndices, swappedIndices, sortedIndices } = props.frame;
-  if (sortedIndices.includes(idx))     return 'text-emerald-400';
-  if (swappedIndices?.includes(idx))   return 'text-rose-400 font-bold';
-  if (comparingIndices?.includes(idx)) return 'text-amber-400 font-bold';
+  if (sortedIndices.includes(idx))     return 'vis-index-sorted';
+  if (swappedIndices?.includes(idx))   return 'vis-index-swapped';
+  if (comparingIndices?.includes(idx)) return 'vis-index-comparing';
   return 'vis-index-default';
 }
 </script>
@@ -127,9 +112,43 @@ function getIndexClass(idx: number) {
 .sort-list-move {
   transition: transform 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
 }
+</style>
 
-/* Default index label color — thay text-slate-500 */
-.vis-index-default {
-  color: var(--color-text-muted);
+<style>
+
+.vis-bar-default {
+  border-color: var(--vis-color-default);
+  background: linear-gradient(to top, color-mix(in srgb, var(--vis-color-default) 15%, transparent), color-mix(in srgb, var(--vis-color-default) 5%, transparent));
+  color: var(--color-text-secondary);
+  box-shadow: 0 4px 12px color-mix(in srgb, var(--vis-color-default) 10%, transparent);
+}
+.vis-bar-sorted {
+  border-color: var(--vis-color-sorted);
+  background: linear-gradient(to top, color-mix(in srgb, var(--vis-color-sorted) 20%, transparent), color-mix(in srgb, var(--vis-color-sorted) 5%, transparent));
+  color: var(--vis-color-sorted);
+  box-shadow: 0 4px 16px color-mix(in srgb, var(--vis-color-sorted) 20%, transparent);
+}
+.vis-bar-swapped {
+  border-color: var(--vis-color-swap);
+  background: linear-gradient(to top, color-mix(in srgb, var(--vis-color-swap) 25%, transparent), color-mix(in srgb, var(--vis-color-swap) 8%, transparent));
+  color: var(--vis-color-swap);
+  box-shadow: 0 4px 20px color-mix(in srgb, var(--vis-color-swap) 30%, transparent);
+  animation: bar-pulse 0.6s ease-in-out;
+}
+.vis-bar-comparing {
+  border-color: var(--vis-color-compare);
+  background: linear-gradient(to top, color-mix(in srgb, var(--vis-color-compare) 20%, transparent), color-mix(in srgb, var(--vis-color-compare) 5%, transparent));
+  color: var(--vis-color-compare);
+  box-shadow: 0 4px 16px color-mix(in srgb, var(--vis-color-compare) 20%, transparent);
+}
+
+.vis-index-default { color: var(--color-text-muted); }
+.vis-index-sorted   { color: var(--vis-color-sorted); }
+.vis-index-swapped  { color: var(--vis-color-swap); }
+.vis-index-comparing { color: var(--vis-color-compare); }
+
+@keyframes bar-pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.04); }
 }
 </style>

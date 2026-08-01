@@ -1,7 +1,7 @@
-/**
- * usePaymentStore.ts — Pinia store quản lý luồng thanh toán Premium.
- * Tích hợp cả StatelessPaymentApi (demo không cần PostgreSQL / SePay) và Stateful Payment (SePay + PostgreSQL).
- */
+
+
+
+
 
 import { defineStore } from 'pinia';
 import { ref, computed } from 'vue';
@@ -17,20 +17,20 @@ import type {
 export const usePaymentStore = defineStore('payment', () => {
   const authStore = useAuthStore();
 
-  // ── State ──────────────────────────────────────────────────────────────────
-  const currentOrder   = ref<any | null>(null); // polymorphic: StatelessOrderDto | OrderDto
+  
+  const currentOrder   = ref<any | null>(null); 
   const paymentConfig  = ref<StatelessPaymentConfig | null>(null);
   const premiumStatus  = ref<StatelessPremiumStatus | null>(null);
   const isLoading      = ref(false);
   const paymentError   = ref<string | null>(null);
   const checkoutState  = ref<'idle' | 'paying' | 'verifying' | 'success' | 'error'>('idle');
 
-  // Polling timer reference
+  
   let pollingInterval: ReturnType<typeof setInterval> | null = null;
   let pollingStartTime = 0;
-  const POLLING_TIMEOUT = 5 * 60 * 1000; // 5 minutes in milliseconds
+  const POLLING_TIMEOUT = 5 * 60 * 1000; 
 
-  // ── Getters ────────────────────────────────────────────────────────────────
+  
   const isPremium = computed(() => {
     if (premiumStatus.value?.isPremium) return true;
     return authStore.currentUser?.isPremium ?? false;
@@ -38,12 +38,12 @@ export const usePaymentStore = defineStore('payment', () => {
 
   const premiumPrice = computed(() => paymentConfig.value?.premiumPrice ?? 199_000);
 
-  // ── Actions ────────────────────────────────────────────────────────────────
+  
 
   async function loadConfig(): Promise<void> {
     try {
       paymentConfig.value = await statelessPaymentApi.getConfig();
-    } catch { /* silent — config is optional */ }
+    } catch {  }
   }
 
   async function loadPremiumStatus(): Promise<void> {
@@ -51,7 +51,7 @@ export const usePaymentStore = defineStore('payment', () => {
     if (!userId) return;
     try {
       premiumStatus.value = await statelessPaymentApi.getPremiumStatus(String(userId));
-    } catch { /* silent */ }
+    } catch {  }
   }
 
   async function startCheckout(paymentMethod = 'vietqr'): Promise<void> {
@@ -64,7 +64,7 @@ export const usePaymentStore = defineStore('payment', () => {
     paymentError.value = null;
 
     if (authStore.isStatelessMode) {
-      // Stateless mode
+      
       const userId = authStore.statelessUser?.id;
       if (!userId) {
         paymentError.value = 'Không tìm thấy thông tin người dùng.';
@@ -83,7 +83,7 @@ export const usePaymentStore = defineStore('payment', () => {
         isLoading.value = false;
       }
     } else {
-      // Stateful mode (Real PostgreSQL + SePay)
+      
       const token = authStore.accessToken;
       if (!token) {
         paymentError.value = 'Phiên làm việc không hợp lệ.';
@@ -96,7 +96,7 @@ export const usePaymentStore = defineStore('payment', () => {
         currentOrder.value = order;
         checkoutState.value = 'paying';
         
-        // Bắt đầu tự động Polling kiểm tra trạng thái
+        
         startPolling();
       } catch (err: unknown) {
         paymentError.value = err instanceof Error ? err.message : 'Không thể tạo hóa đơn từ máy chủ.';
@@ -143,7 +143,7 @@ export const usePaymentStore = defineStore('payment', () => {
         isLoading.value = false;
       }
     } else {
-      // Stateful verify (đọc trạng thái hiện tại qua API)
+      
       const token = authStore.accessToken;
       if (!token) {
         paymentError.value = 'Phiên làm việc không hợp lệ.';
@@ -171,12 +171,12 @@ export const usePaymentStore = defineStore('payment', () => {
     }
   }
 
-  // Bắt đầu Polling tự động kiểm tra trạng thái mỗi 5 giây với timeout 5 phút
+  
   function startPolling() {
     stopPolling();
     pollingStartTime = Date.now();
     pollingInterval = setInterval(async () => {
-      // 1. Kiểm tra timeout
+      
       if (Date.now() - pollingStartTime > POLLING_TIMEOUT) {
         stopPolling();
         checkoutState.value = 'error';
@@ -184,7 +184,7 @@ export const usePaymentStore = defineStore('payment', () => {
         return;
       }
 
-      // 2. Kiểm tra điều kiện ngắt polling sớm
+      
       if (checkoutState.value !== 'paying' || !currentOrder.value) {
         stopPolling();
         return;
@@ -203,7 +203,7 @@ export const usePaymentStore = defineStore('payment', () => {
           }
         }
       } catch {
-        // bỏ qua lỗi polling tạm thời để tiếp tục lần sau
+        
       }
     }, 5000);
   }
@@ -238,12 +238,12 @@ export const usePaymentStore = defineStore('payment', () => {
         isLoading.value = false;
       }
     } else {
-      // Stateful Webhook simulation
+      
       try {
         stopPolling();
         await paymentApi.simulateWebhook(currentOrder.value.paymentCode, currentOrder.value.amount);
         
-        // Gọi verify để đồng bộ trạng thái mới
+        
         await verifyPayment();
       } catch (err: unknown) {
         paymentError.value = err instanceof Error ? err.message : 'Mô phỏng thanh toán SePay thất bại.';

@@ -24,7 +24,7 @@
       </div>
     </div>
 
-    <!-- Form Thêm / Chỉnh sửa Quiz thủ công -->
+    
     <form v-if="activeFormType === 'manual'" class="quiz-form mb-8 animate-fade-in" @submit.prevent="submitQuiz">
       <h3 class="form-title-context">
         <span v-if="isEditMode"><BaseIcon name="edit" class="w-4 h-4 text-accent inline mr-1 align-middle" /> Chỉnh sửa bài trắc nghiệm</span>
@@ -63,7 +63,7 @@
         </div>
       </div>
 
-      <!-- Questions -->
+      
       <div class="questions-section">
         <h3 class="questions-heading">
           Câu hỏi ({{ newQuiz.questions.length }})
@@ -100,12 +100,12 @@
       </div>
     </form>
 
-    <!-- Import Excel Component -->
+    
     <div v-if="activeFormType === 'excel'" class="mb-8 animate-fade-in">
       <ExcelQuizImporter @import-success="onImportSuccess" />
     </div>
 
-    <!-- Danh sách Quiz hiện có -->
+    
     <div class="quizzes-list-container">
       <h3 class="subsection-heading mb-4">Danh sách bài trắc nghiệm đang hoạt động</h3>
       <div v-if="loadingQuizzes" class="loading-state">
@@ -149,7 +149,7 @@
                   </div>
                 </td>
               </tr>
-              <!-- Accordion Row -->
+              
               <tr v-if="expandedQuizId === String(q.id)" class="accordion-row">
                 <td colspan="6" class="accordion-cell">
                   <div v-if="loadingDetail[String(q.id)]" class="loading-detail py-4">
@@ -206,7 +206,7 @@
         </table>
       </div>
 
-      <!-- Quiz Performance Analytics Report -->
+      
       <div class="quizzes-report-container mt-10 p-6 rounded-2xl border border-white/10 bg-slate-900/40">
         <h3 class="subsection-heading mb-2 flex items-center gap-2 text-white">
           <BaseIcon name="chart-bar" class="w-5 h-5 text-indigo-400" />
@@ -323,7 +323,7 @@ async function loadAnalytics(): Promise<void> {
     if (!res.ok) return;
     const data = await res.json();
     quizPerformanceStats.value = data.perQuizStats || [];
-  } catch { /* analytics is optional */ }
+  } catch {  }
   finally { loadingAnalytics.value = false; }
 }
 
@@ -419,7 +419,7 @@ function onImportSuccess(): void {
   activeFormType.value = 'none'; loadQuizzes(); loadAnalytics();
 }
 
-// Expose for parent to call on mount
+
 defineExpose({ loadQuizzes, loadAnalytics, quizzesList });
 
 loadQuizzes();

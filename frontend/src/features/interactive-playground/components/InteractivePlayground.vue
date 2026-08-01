@@ -1,8 +1,8 @@
 <template>
   <div class="playground-root">
-    <!-- Top Header Bar (Mode Bar & Stats) -->
+    
     <div class="playground-header-bar flex flex-col lg:flex-row justify-between items-center gap-3 p-3 bg-bg-secondary/45 border-b border-white/5 backdrop-blur-md z-[1001]">
-      <!-- Left: Edit / Run mode toggler pill -->
+      
       <div class="flex bg-white/5 p-1 rounded-xl border border-white/5">
         <button
           @click="store.setAlgorithmMode(false)"
@@ -26,7 +26,7 @@
         </button>
       </div>
 
-      <!-- Center: Mode & Stats (Edit) OR Algorithm Selector (Run) -->
+      
       <div v-if="!store.isAlgorithmMode" class="flex flex-wrap items-center justify-center gap-2">
         <div class="flex bg-white/5 p-1 rounded-xl border border-white/5">
           <button
@@ -47,7 +47,7 @@
       </div>
 
       <div v-else class="flex flex-wrap items-center justify-center gap-3">
-        <!-- Algorithm dropdown -->
+        
         <div class="flex items-center gap-2">
           <span class="text-xs text-text-secondary font-semibold">Giải thuật:</span>
           <select
@@ -62,7 +62,7 @@
           </select>
         </div>
 
-        <!-- Source node dropdown -->
+        
         <div class="flex items-center gap-2">
           <span class="text-xs text-text-secondary font-semibold">Đỉnh bắt đầu:</span>
           <select
@@ -79,7 +79,7 @@
         </div>
       </div>
 
-      <!-- Right: Action buttons -->
+      
       <div v-if="!store.isAlgorithmMode" class="flex items-center gap-1.5">
         <button
           @click="store.togglePhysics()"
@@ -141,9 +141,9 @@
       </div>
     </div>
 
-    <!-- Center Canvas Area -->
+    
     <div class="relative flex-1 min-h-[200px] overflow-hidden" ref="canvasAreaRef" data-tour-id="graph-canvas">
-      <!-- Onboarding guide overlay -->
+      
       <div v-if="store.nodes.length === 0 && !store.isAlgorithmMode && !store.isGuideDismissed" class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none z-10 p-6 text-center">
         <div class="max-w-md bg-bg-secondary/90 backdrop-blur-lg border border-white/20 p-6 rounded-2xl shadow-2xl transition-all select-none pointer-events-auto">
           <div class="w-12 h-12 rounded-full bg-accent-emerald/10 flex items-center justify-center mx-auto mb-4 border border-accent-emerald/20 text-accent-emerald animate-bounce">
@@ -173,7 +173,7 @@
 
       <PlaygroundCanvas @weight-input="onWeightInput" />
 
-      <!-- Floating Pseudocode & Explanation Card -->
+      
       <div v-if="store.isAlgorithmMode && animStore.currentFrame" class="absolute top-4 right-4 w-[360px] z-[1002] bg-bg-secondary/85 backdrop-blur-md border border-white/10 rounded-xl shadow-2xl p-4 flex flex-col gap-3 transition-all duration-300">
         <div class="text-xs font-bold text-accent-cyan uppercase tracking-wider flex justify-between items-center">
           <span>Giải thuật: {{ store.selectedAlgorithm }}</span>
@@ -194,7 +194,7 @@
         </div>
       </div>
 
-      <!-- Weight popover input -->
+      
       <div v-if="weightPopover.visible" class="absolute z-[1010] -translate-x-1/2 -translate-y-full animate-fade-in" :style="{ left: weightPopover.x + 'px', top: weightPopover.y + 'px' }">
         <input
           ref="weightInputRef"
@@ -210,7 +210,7 @@
       </div>
     </div>
 
-    <!-- Bottom VCR Animation Controls overlay -->
+    
     <div v-if="store.isAlgorithmMode" class="w-full bg-bg-secondary/85 backdrop-blur-md border-t border-white/5 p-3.5 z-[1003] shadow-2xl">
       <AnimationVcrControls
         :isPlaying="animStore.isPlaying"
@@ -312,14 +312,14 @@ const importGraph = (file: File) => {
   reader.readAsText(file);
 };
 
-// Simulation Execution
+
 const runSimulation = () => {
   if (store.nodes.length === 0) {
     animStore.stop();
     return;
   }
 
-  // Auto select source node if invalid or not set
+  
   if (!store.sourceNodeId || !store.nodes.some(n => n.id === store.sourceNodeId)) {
     const nodeA = store.nodes.find(n => n.label === 'A');
     store.sourceNodeId = nodeA ? nodeA.id : store.nodes[0].id;
@@ -339,7 +339,7 @@ const runSimulation = () => {
   });
 };
 
-// Watch for store changes to run simulator reactively
+
 watch(
   [
     () => store.isAlgorithmMode,

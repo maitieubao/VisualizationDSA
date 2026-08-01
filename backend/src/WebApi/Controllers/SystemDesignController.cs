@@ -10,11 +10,11 @@ using VisualizationDSA.Domain.Strategies;
 
 namespace VisualizationDSA.WebApi.Controllers;
 
-/// <summary>
-/// API Controller cho mô-đun System Design Visualizer.
-/// Cung cấp endpoint sinh topology, chuỗi frame mô phỏng kiến trúc phân tán:
-/// Round-Robin LB, Server Failover, DB Replication Lag.
-/// </summary>
+
+
+
+
+
 [ApiVersion("1.0")]
 [ApiController]
 [Route("api/v{version:apiVersion}/concepts/system-design")]
@@ -30,10 +30,10 @@ public class SystemDesignController : ControllerBase
         _cache = cache;
     }
 
-    /// <summary>
-    /// Lấy danh sách kịch bản System Design được hỗ trợ.
-    /// GET /api/v1/concepts/system-design/scenarios
-    /// </summary>
+    
+    
+    
+    
     [HttpGet("scenarios")]
     public ActionResult<object> GetScenarios()
     {
@@ -46,21 +46,21 @@ public class SystemDesignController : ControllerBase
         });
     }
 
-    /// <summary>
-    /// Lấy topology khởi tạo mặc định (dựng cảnh ban đầu cho frontend).
-    /// GET /api/v1/concepts/system-design/topology
-    /// </summary>
+    
+    
+    
+    
     [HttpGet("topology")]
     public ActionResult<SystemDesignFrameDto> GetInitialTopology()
     {
         return Ok(_strategy.GenerateInitialTopology());
     }
 
-    /// <summary>
-    /// Thực thi kịch bản System Design và trả về chuỗi frames mô phỏng.
-    /// POST /api/v1/concepts/system-design/execute
-    /// Body: { "scenarioId": "round-robin-lb", "replicationLagMs": 1000 }
-    /// </summary>
+    
+    
+    
+    
+    
     [HttpPost("execute")]
     public ActionResult<List<SystemDesignFrameDto>> Execute([FromBody] SystemDesignRequestDto request)
     {
@@ -114,10 +114,10 @@ public class SystemDesignController : ControllerBase
         }
     }
 
-    /// <summary>
-    /// Lấy frames cho kịch bản cụ thể (GET shorthand).
-    /// GET /api/v1/concepts/system-design/scenarios/{scenarioId}/frames
-    /// </summary>
+    
+    
+    
+    
     [HttpGet("scenarios/{scenarioId}/frames")]
     public ActionResult<List<SystemDesignFrameDto>> GetScenarioFrames(string scenarioId)
     {

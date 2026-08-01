@@ -1,4 +1,4 @@
-// @vitest-environment jsdom
+
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { setActivePinia, createPinia } from 'pinia';
 
@@ -59,7 +59,7 @@ describe('useGuidedTourStore', () => {
   it('should complete tour when calling nextStep on the last step', () => {
     const store = useGuidedTourStore();
     store.startTour();
-    // Go to last step
+    
     store.currentStepIndex = store.steps.length - 1;
     
     const setItemSpy = vi.spyOn(localStorage, 'setItem');
@@ -72,11 +72,11 @@ describe('useGuidedTourStore', () => {
   it('should go to previous step and prevent going below 0', () => {
     const store = useGuidedTourStore();
     store.startTour();
-    store.nextStep(); // index 1
-    store.prevStep(); // index 0
+    store.nextStep(); 
+    store.prevStep(); 
     expect(store.currentStepIndex).toBe(0);
 
-    store.prevStep(); // clamp to 0
+    store.prevStep(); 
     expect(store.currentStepIndex).toBe(0);
   });
 
@@ -121,7 +121,7 @@ describe('useGuidedTourStore', () => {
       expect(getItemSpy).toHaveBeenCalledWith('page_tour_sorting_seen');
       expect(store.isActive).toBe(true);
       expect(store.activePageKey).toBe('/sorting');
-      expect(store.currentSteps.length).toBe(12); // 12 steps defined for /sorting
+      expect(store.currentSteps.length).toBe(12); 
     });
 
     it('should not start page tour if already seen and not forced', () => {
@@ -201,7 +201,7 @@ describe('useGuidedTourStore', () => {
       document.body.appendChild(dummyBtn);
 
       store.startPageTour('/sorting', true);
-      // inject an action script step dynamically for testing
+      
       store.currentSteps[0].actionScript = [
         { type: 'click', targetSelector: '#dummy-btn' }
       ];

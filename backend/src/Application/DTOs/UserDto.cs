@@ -9,6 +9,7 @@ namespace VisualizationDSA.Application.DTOs
         public Guid             Id           { get; set; }
         public string           Email        { get; set; } = string.Empty;
         public string           Username     { get; set; } = string.Empty;
+        public string           Role         { get; set; } = "Student";
         public int              TotalXP      { get; set; }
         public int              CurrentLevel { get; set; }
         public int              StreakDays   { get; set; }
@@ -54,23 +55,23 @@ namespace VisualizationDSA.Application.DTOs
         public string Password { get; set; } = string.Empty;
     }
 
-    /// <summary>
-    /// Cập nhật AuthResponse để hỗ trợ Access Token ngắn hạn + Refresh Token dài hạn.
-    /// </summary>
+    
+    
+    
     public class AuthResponse
     {
-        /// <summary>JWT Access Token — hết hạn sau 15 phút</summary>
+        
         public string  AccessToken  { get; set; } = string.Empty;
 
-        /// <summary>Refresh Token — hết hạn sau 30 ngày, dùng để lấy Access Token mới</summary>
+        
         public string  RefreshToken { get; set; } = string.Empty;
 
-        /// <summary>Thời gian sống của Access Token (giây)</summary>
+        
         public int     ExpiresIn    { get; set; }
 
         public UserDto User         { get; set; } = null!;
 
-        // Backward compat — sẽ loại bỏ sau migration Frontend hoàn tất
+        
         [Obsolete("Sử dụng AccessToken thay thế. Sẽ bị loại bỏ trong v2.")]
         public string Token => AccessToken;
     }

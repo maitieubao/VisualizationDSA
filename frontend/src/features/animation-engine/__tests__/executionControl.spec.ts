@@ -1,4 +1,4 @@
-// @vitest-environment jsdom
+
 import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest';
 import { setActivePinia, createPinia } from 'pinia';
 import { useAnimationStore } from '../store/useAnimationStore';
@@ -291,7 +291,7 @@ describe('Execution Control — Keyboard Hotkeys', () => {
     Object.defineProperty(event, 'preventDefault', { value: vi.fn() });
     handler(event);
 
-    // After replay: goToFrame(0) resets, play() calls tick() which immediately advances to 1
+    
     expect(store.isPlaying).toBe(true);
     expect(store.currentIndex).toBeLessThanOrEqual(1);
   });

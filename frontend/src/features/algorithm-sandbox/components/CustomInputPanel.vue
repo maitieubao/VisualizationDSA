@@ -1,6 +1,6 @@
 <template>
   <div class="custom-input-panel backdrop-blur-md rounded-2xl p-4 shadow-xl flex flex-col gap-3.5 border border-white/5 bg-bg-secondary/65 max-h-full overflow-hidden">
-    <!-- Header: Graph Summary & Title -->
+    
     <div class="flex items-center justify-between border-b border-white/5 pb-2.5 select-none">
       <div class="flex items-center gap-2">
         <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="text-accent-cyan">
@@ -12,7 +12,7 @@
       <span class="w-1.5 h-1.5 rounded-full bg-accent-cyan animate-pulse"></span>
     </div>
 
-    <!-- Tabs Switcher: Build / Import -->
+    
     <div class="tabs-control flex bg-white/5 p-1 rounded-xl border border-white/5">
       <button
         @click="activeTab = 'build'"
@@ -34,7 +34,7 @@
       </button>
     </div>
 
-    <!-- Unified Validation & Summary Row -->
+    
     <div class="status-summary-bar px-3 py-1.5 rounded-lg border text-xs font-semibold select-none flex items-center gap-1.5"
       :class="[
         graphError && activeTab === 'import'
@@ -53,10 +53,10 @@
       </span>
     </div>
 
-    <!-- Content Tabs Area -->
-    <!-- Tab 1: Structured Build -->
+    
+    
     <div v-if="activeTab === 'build'" class="flex flex-col gap-3 min-h-0 flex-1 overflow-y-auto">
-      <!-- Quick Node Creator -->
+      
       <button
         @click="onAddNode"
         class="add-node-btn w-full py-2 rounded-xl border border-dashed border-accent-cyan/30 text-accent-cyan hover:bg-accent-cyan/10 hover:border-accent-cyan/50 text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer"
@@ -68,11 +68,11 @@
         + Thêm Đỉnh Mới
       </button>
 
-      <!-- Edge Builder Form -->
+      
       <EdgeBuilderForm />
     </div>
 
-    <!-- Tab 2: Code/String Import -->
+    
     <div v-else class="flex flex-col gap-2">
       <textarea
         v-model="graphInputText"
@@ -81,7 +81,7 @@
         class="import-textarea w-full border rounded-xl p-2.5 text-xs font-mono text-text-primary outline-none transition-all resize-none bg-black/20 border-white/5 focus:border-accent-cyan"
       ></textarea>
       
-      <!-- scroll-x container for parsed edges preview -->
+      
       <div class="flex flex-col gap-1 mt-1">
         <label class="text-[9px] text-text-muted font-bold uppercase select-none">Liên kết nhận diện (scroll ngang)</label>
         <div class="scroll-x-container flex flex-row overflow-x-auto gap-1.5 py-1">
@@ -103,7 +103,7 @@
       </div>
     </div>
 
-    <!-- Bottom Section: Graph Generator & Clear -->
+    
     <div class="border-t border-white/5 pt-3 flex flex-col gap-2 bg-white/[0.01] pb-1 shrink-0">
       <div class="text-[10px] font-bold text-text-secondary uppercase tracking-wider select-none">
         Trình sinh đồ thị (Generator)
@@ -176,7 +176,7 @@ const {
 } = useInputValidation();
 
 onMounted(() => {
-  // Sync initial state from store to text representation
+  
   const initialSerialized = serializePlayground(store.nodes, store.edges);
   if (initialSerialized) {
     graphInputText.value = initialSerialized;
@@ -184,7 +184,7 @@ onMounted(() => {
   validateGraph();
 });
 
-// Helper: Find edge by endpoints labels
+
 function findEdgeIdByLabels(sourceLabel: string, targetLabel: string): string | null {
   const sourceNode = store.nodes.find(n => n.label === sourceLabel);
   const targetNode = store.nodes.find(n => n.label === targetLabel);
@@ -210,7 +210,7 @@ function onSelectImportedEdge(sourceLabel: string, targetLabel: string) {
   }
 }
 
-// 1. Tab Import - Watch graphInputText (user edits string representation) -> Sync to store
+
 watch(graphInputText, (newText) => {
   validateGraph();
   if (graphError.value) return;
@@ -226,17 +226,17 @@ watch(graphInputText, (newText) => {
         const ne = parsedNew.edges[i];
         return ne && e.sourceId === ne.sourceId && e.targetId === ne.targetId && e.weight === ne.weight;
       });
-    if (isSame) return; // Skip updating to preserve node position/coordinates
+    if (isSame) return; 
   } catch {
-    // Overwrite on error
+    
   }
 
-  // Reload nodes and edges to store
+  
   store.clearAll();
   const len = parsedGraphNodes.value.length;
   if (len === 0) return;
 
-  // Arrange new nodes in circular layout
+  
   const createdNodes: NodeDTO[] = parsedGraphNodes.value.map((node, idx) => {
     const angle = (idx * 2 * Math.PI) / len;
     const x = 380 + 140 * Math.cos(angle);
@@ -251,7 +251,7 @@ watch(graphInputText, (newText) => {
   });
   store.nodes.push(...createdNodes);
 
-  // Re-create edges mapped to new node IDs
+  
   const createdEdges: EdgeDTO[] = parsedGraphEdges.value.map((edge, idx) => {
     const fromNode = createdNodes.find(n => n.label === edge.sourceId);
     const toNode = createdNodes.find(n => n.label === edge.targetId);
@@ -265,7 +265,7 @@ watch(graphInputText, (newText) => {
   store.edges.push(...createdEdges);
 });
 
-// 2. Watch store (user builds graph or draws on canvas) -> Sync to graphInputText
+
 watch([() => store.nodes, () => store.edges], () => {
   const serialized = serializePlayground(store.nodes, store.edges);
   try {
@@ -298,24 +298,24 @@ function serializePlayground(nodes: NodeDTO[], edges: EdgeDTO[]): string {
     .join(', ');
 }
 
-// Add Node Action from Panel
+
 function onAddNode() {
   const cx = 200 + Math.random() * 300;
   const cy = 150 + Math.random() * 200;
   store.addNode(cx, cy);
 }
 
-// Generate Custom Graph Action (Connected & Circle positioned)
+
 function generateCustomGraph() {
   store.clearAll();
   const count = Math.min(20, Math.max(1, genNodeCount.value));
   
-  // Base rendering box is approximately 700x400
+  
   const cx = 350;
   const cy = 230;
   const radius = 120;
   
-  // Create nodes in a circle
+  
   const createdNodes: NodeDTO[] = [];
   for (let i = 0; i < count; i++) {
     const angle = (i * 2 * Math.PI) / count;
@@ -327,7 +327,7 @@ function generateCustomGraph() {
   
   if (createdNodes.length === 0) return;
 
-  // Guarantee fully connected graph (connect consecutively in a cycle)
+  
   for (let i = 0; i < createdNodes.length - 1; i++) {
     const edge = store.addEdge(createdNodes[i].id, createdNodes[i+1].id);
     if (edge) {
@@ -343,11 +343,11 @@ function generateCustomGraph() {
     }
   }
 
-  // Add extra random edges based on density
+  
   const edgeProbability = genDensity.value === 'low' ? 0.1 : genDensity.value === 'medium' ? 0.3 : 0.55;
   for (let i = 0; i < createdNodes.length; i++) {
     for (let j = i + 2; j < createdNodes.length; j++) {
-      // Avoid self-loops and duplicate consecutive edges (already connected in circle)
+      
       if (i === 0 && j === createdNodes.length - 1) continue;
       if (Math.random() < edgeProbability) {
         const edge = store.addEdge(createdNodes[i].id, createdNodes[j].id);

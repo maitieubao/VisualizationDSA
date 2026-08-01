@@ -1,6 +1,6 @@
 <template>
   <div class="graph-view-root flex flex-col h-full w-full gap-4 p-4 overflow-hidden">
-    <!-- Header Sub-Tabs Switcher (Glassmorphic) -->
+    
     <div class="tabs-header-bar flex items-center justify-between px-4 py-2 border rounded-xl relative z-50" data-tour-id="algo-tab-switch"
       style="background: rgba(15, 23, 42, 0.45); backdrop-filter: blur(12px); border-color: rgba(255, 255, 255, 0.05);"
     >
@@ -24,9 +24,9 @@
       </div>
     </div>
 
-    <!-- Active Panel Area -->
+    
     <div class="flex-1 min-h-0 relative">
-      <!-- Tab 1: Graph Sandbox (Canvas + Collapsible CustomInputPanel) -->
+      
       <div v-show="activeTab === 'graph'" class="absolute inset-0 w-full h-full relative">
         <InteractivePlayground class="w-full h-full" />
         
@@ -35,7 +35,7 @@
           class="absolute right-4 top-[72px] bottom-4 z-[1005] flex flex-col transition-all duration-300 ease-in-out pointer-events-none"
           :style="{ width: isPanelCollapsed ? '0px' : '360px' }"
         >
-          <!-- Toggle Collapsible Trigger Tab -->
+          
           <button
             @click="isPanelCollapsed = !isPanelCollapsed"
             class="absolute left-[-20px] top-1/2 -translate-y-1/2 z-[1006] w-5 h-12 bg-bg-secondary/95 hover:bg-bg-hover border border-white/10 border-r-0 rounded-l-xl flex items-center justify-center cursor-pointer text-text-muted hover:text-text-primary transition-all shadow-2xl select-none pointer-events-auto"
@@ -56,33 +56,33 @@
             </svg>
           </button>
   
-          <!-- Input Panel Wrap -->
+          
           <div class="w-full h-full overflow-y-auto pointer-events-auto" v-show="!isPanelCollapsed">
             <CustomInputPanel class="w-full h-fit shadow-2xl" />
           </div>
         </div>
       </div>
 
-      <!-- Tab 2: Graph & Tree DSA (Visual player catalog) -->
+      
       <div v-show="activeTab === 'dsa'" class="absolute inset-0 w-full h-full" data-tour-id="algo-theory-pane">
         <DSAPlayer class="w-full h-full" v-bind="activeProps" />
       </div>
     </div>
 
-    <!-- Nút Trợ giúp Guided Tour -->
+    
     <HelpButton tour-key="/graph" />
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted } from 'vue';
-import { CustomInputPanel } from '../features/algorithm-sandbox';
-import { InteractivePlayground } from '../features/interactive-playground';
-import { DSAPlayer } from '../features/dsa-modules';
-import BaseIcon from '../shared/components/BaseIcon.vue';
-import HelpButton from '../features/guided-tour/components/HelpButton.vue';
-import { useGuidedTourStore } from '../features/guided-tour/store/useGuidedTourStore';
-import { usePlaygroundStore } from '../features/interactive-playground/store/usePlaygroundStore';
+import { CustomInputPanel } from '../../features/algorithm-sandbox';
+import { InteractivePlayground } from '../../features/interactive-playground';
+import { DSAPlayer } from '../../features/dsa-modules';
+import BaseIcon from '../../shared/components/BaseIcon.vue';
+import HelpButton from '../../features/guided-tour/components/HelpButton.vue';
+import { useGuidedTourStore } from '../../features/guided-tour/store/useGuidedTourStore';
+import { usePlaygroundStore } from '../../features/interactive-playground/store/usePlaygroundStore';
 
 const activeTab = ref('graph');
 const isPanelCollapsed = ref(false);
@@ -101,8 +101,8 @@ const activeProps = computed(() => {
   return {};
 });
 
-// Keypress hotkey 'p' to toggle collapsible sidebar
-// (Note: keydown is registered in onMounted block below)
+
+
 function handleKeydown(e: KeyboardEvent) {
   const tag = (e.target as HTMLElement)?.tagName;
   if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return;

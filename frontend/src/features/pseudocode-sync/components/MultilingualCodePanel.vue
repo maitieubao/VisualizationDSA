@@ -1,6 +1,6 @@
 <template>
   <div class="code-panel">
-    <!-- Language Selector Tabs -->
+    
     <div class="lang-tabs" v-if="availableLanguages.length > 0">
       <button 
         v-for="lang in availableLanguages" 
@@ -12,7 +12,7 @@
         {{ languageLabels[lang] }}
       </button>
     </div>
-    <!-- Code Lines Viewport -->
+    
     <div class="code-viewport" ref="viewport" @keydown="onKeyDown" tabindex="0">
       <div 
         v-for="line in activeCodeLines" 

@@ -7,7 +7,7 @@
       </p>
     </div>
 
-    <!-- Download Template & Import Controls -->
+    
     <div class="controls-row">
       <button class="btn-secondary" @click="downloadTemplate">
         📥 Tải File Mẫu Excel
@@ -24,7 +24,7 @@
       </label>
     </div>
 
-    <!-- Preview Area -->
+    
     <div v-if="parsedQuizzes.length > 0" class="preview-section">
       <h4 class="preview-heading">👀 Xem trước dữ liệu (Tìm thấy {{ parsedQuizzes.length }} bài trắc nghiệm)</h4>
       
@@ -57,14 +57,14 @@
             </span>
           </div>
 
-          <!-- Errors list -->
+          
           <ul v-if="quiz.validationErrors.length > 0" class="errors-list">
             <li v-for="(err, ei) in quiz.validationErrors" :key="ei">
               ⚠️ {{ err }}
             </li>
           </ul>
 
-          <!-- Questions list nested preview -->
+          
           <div class="preview-questions">
             <div 
               v-for="(q, qidx) in quiz.questions" 
@@ -151,9 +151,9 @@ function getTopicLabel(topic: string): string {
   return map[topic.toLowerCase()] || topic;
 }
 
-/**
- * Tạo & tải xuống file Excel mẫu
- */
+
+
+
 function downloadTemplate(): void {
   const headers = [
     'Tiêu đề trắc nghiệm',
@@ -218,20 +218,20 @@ function downloadTemplate(): void {
   XLSX.writeFile(wb, 'vdsa_quiz_template.xlsx');
 }
 
-/**
- * Xử lý file upload Excel
- */
+
+
+
 async function handleFileUpload(event: Event): Promise<void> {
   const target = event.target as HTMLInputElement;
   if (!target.files || target.files.length === 0) return;
 
   const file = target.files[0];
   
-  // 1. Giới hạn kích thước file tải lên (Tối đa 5MB)
+  
   const maxSizeBytes = 5 * 1024 * 1024;
   if (file.size > maxSizeBytes) {
     alert("Kích thước file vượt quá giới hạn cho phép (Tối đa 5MB).");
-    target.value = ''; // Reset file input
+    target.value = ''; 
     return;
   }
 
@@ -245,10 +245,10 @@ async function handleFileUpload(event: Event): Promise<void> {
       const worksheet = workbook.Sheets[sheetName];
       const rows = XLSX.utils.sheet_to_json<ExcelRowInput>(worksheet);
 
-      // 2. Giới hạn số lượng câu hỏi/dòng tối đa (Tối đa 2000 dòng)
+      
       if (rows.length > 2000) {
         alert("File Excel chứa quá nhiều câu hỏi (Giới hạn tối đa là 2000 dòng).");
-        target.value = ''; // Reset file input
+        target.value = ''; 
         parsedQuizzes.value = [];
         return;
       }
@@ -256,7 +256,7 @@ async function handleFileUpload(event: Event): Promise<void> {
       parsedQuizzes.value = parseExcelRows(rows);
     } catch (err) {
       alert("Đã xảy ra lỗi khi đọc file Excel. Vui lòng kiểm tra lại định dạng file.");
-      target.value = ''; // Reset file input
+      target.value = ''; 
       parsedQuizzes.value = [];
     }
   };
@@ -265,9 +265,9 @@ async function handleFileUpload(event: Event): Promise<void> {
 }
 
 
-/**
- * Submit tất cả các Quiz hợp lệ lên Backend
- */
+
+
+
 async function submitAllQuizzes(): Promise<void> {
   if (hasInvalidQuizzes.value || parsedQuizzes.value.length === 0) return;
 

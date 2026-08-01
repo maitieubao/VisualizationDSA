@@ -1,163 +1,200 @@
-﻿---
-title: Dependency Inversion Principle (DIP)
-description: Khám phá chữ D cuối cùng trong SOLID - Nguyên lý Đảo ngược Phụ thuộc. Cách để giải phóng các Class cấp cao khỏi sự trói buộc của các Class cấp thấp.
+---
+title: Nguyên lý Đảo ngược Phụ thuộc (DIP)
+description: Khám phá trái tim của mọi Framework hiện đại (ASP.NET Core, Spring Boot, NestJS). Thấu hiểu sự giải phóng mã nguồn tối thượng thông qua Dependency Injection.
 ---
 
-# Dependency Inversion Principle (DIP) {#dip}
+# Nguyên lý Đảo ngược Phụ thuộc (Dependency Inversion Principle) {#dip}
 
-Chúng ta đã đến với chữ cái cuối cùng và cũng là nguyên lý có tầm ảnh hưởng sâu rộng nhất đến kiến trúc phần mềm hiện đại: **D - Dependency Inversion Principle** (Nguyên lý Đảo ngược Phụ thuộc).
-
-Nguyên lý này được chia làm hai mệnh đề sắc bén:
-> 1. *"High-level modules should not depend on low-level modules. Both should depend on abstractions."* (Các module cấp cao không nên phụ thuộc vào các module cấp thấp. Cả hai nên phụ thuộc vào sự trừu tượng - Interface/Abstract Class).
-> 2. *"Abstractions should not depend on details. Details should depend on abstractions."* (Sự trừu tượng không nên phụ thuộc vào chi tiết. Các chi tiết nên phụ thuộc vào sự trừu tượng).
-
-## Tại sao phải "Đảo ngược"? {#why-dip}
-
-Trong lập trình kiểu cũ (Truyền thống), một Class chứa logic nghiệp vụ quan trọng (Cấp cao) thường sẽ tự tay khởi tạo (`new`) và gọi trực tiếp các Class phụ trợ như Ghi file, Kết nối Database (Cấp thấp). 
-
-Mô hình truyền thống:
-`Module Cấp cao` $\rightarrow$ phụ thuộc vào $\rightarrow$ `Module Cấp thấp`
-
-**Hậu quả:** Khi Module Cấp thấp thay đổi (ví dụ: Đổi từ lưu SQL Server sang MongoDB), Module Cấp cao cũng bị hỏng theo và phải sửa code. Chúng bị "cột chặt" vào nhau (Tightly Coupled).
-
-DIP đảo ngược luồng phụ thuộc đó. Nó nhét một cái Interface vào giữa:
-`Module Cấp cao` $\rightarrow$ phụ thuộc vào $\rightarrow$ `Interface` $\leftarrow$ phụ thuộc vào $\leftarrow$ `Module Cấp thấp`
-
-Lúc này, Module Cấp cao là người đặt ra "Luật chơi" (Interface), còn Module Cấp thấp chỉ là kẻ phải tuân theo luật đó. Cấp cao không còn thèm bận tâm Cấp thấp là ai nữa!
-
-```mermaid
-graph TD
-    subgraph Coupled
-    A[Module Cấp Cao] -->|Phụ thuộc Cứng| B[Module Cấp Thấp]
-    end
-    
-    subgraph DIP
-    C[Module Cấp Cao] -->|Sử dụng| D((Interface))
-    E[Module Cấp Thấp] -.->|Triển khai| D
-    end
-    
-    classDef interfaceNode fill:#d9ead3,stroke:#6aa84f,stroke-width:2px,color:#000;
-    class D interfaceNode;
-```
-
-## Ví dụ vi phạm DIP (Bóng Đèn và Công Tắc) {#bad-code}
-
-Hãy xem xét một ví dụ thực tế. Bạn có một cái Công tắc (`Switch`) và một Bóng đèn (`LightBulb`). 
-
-```csharp
-// Module Cấp thấp (Chi tiết thiết bị)
-public class LightBulb 
-{
-    public void TurnOn() => Console.WriteLine("Bóng đèn Sáng!");
-    public void TurnOff() => Console.WriteLine("Bóng đèn Tắt!");
-}
-
-// Module Cấp cao (Logic điều khiển)
-public class Switch 
-{
-    private LightBulb _bulb; // Cấp cao phụ thuộc CỨNG vào Cấp thấp!
-
-    public Switch()
-    {
-        // Tự tay khởi tạo (Cực kỳ nguy hiểm)
-        _bulb = new LightBulb(); 
-    }
-
-    public void Toggle(bool on) 
-    {
-        if (on) _bulb.TurnOn();
-        else _bulb.TurnOff();
-    }
-}
-```
-
-Đoạn code trên **vi phạm DIP**. Tại sao?
-Chiếc công tắc (`Switch`) đang bị hàn chết cứng vào chiếc Bóng đèn (`LightBulb`). Điều gì sẽ xảy ra nếu ngày mai bạn muốn dùng cái công tắc này để bật Quạt trần (`Fan`) hoặc Điều hòa (`AC`)? Bạn sẽ phải đập nát code của `Switch` để sửa `LightBulb` thành `Fan`. Một cái công tắc tốt ngoài đời thực có thể nối vào bất cứ thiết bị điện nào, chứ không phải chỉ một cái bóng đèn!
-
-## Cách khắc phục tuân thủ DIP (Good Code) {#good-code}
-
-Chúng ta sẽ nhét một Abstraction (Interface) vào giữa có tên là `ISwitchable` (Thiết bị có thể Bật/Tắt).
-
-**Bước 1: Tạo Interface (Sự trừu tượng)**
-```csharp
-public interface ISwitchable 
-{
-    void TurnOn();
-    void TurnOff();
-}
-```
-
-**Bước 2: Các Module Cấp thấp phụ thuộc vào Interface**
-```csharp
-// Bóng đèn tuân theo luật ISwitchable
-public class LightBulb : ISwitchable 
-{
-    public void TurnOn() => Console.WriteLine("Bóng đèn Sáng!");
-    public void TurnOff() => Console.WriteLine("Bóng đèn Tắt!");
-}
-
-// Quạt trần cũng tuân theo luật ISwitchable
-public class Fan : ISwitchable 
-{
-    public void TurnOn() => Console.WriteLine("Quạt trần Quay!");
-    public void TurnOff() => Console.WriteLine("Quạt trần Dừng!");
-}
-```
-
-**Bước 3: Module Cấp cao cũng phụ thuộc vào Interface, KHÔNG `new` đối tượng**
-```csharp
-public class Switch 
-{
-    // Chỉ nói chuyện qua Interface! Không quan tâm ruột nó là Bóng Đèn hay Quạt.
-    private readonly ISwitchable _device; 
-
-    // Constructor Injection: Ai đó bên ngoài sẽ nhét thiết bị vào đây!
-    public Switch(ISwitchable device)
-    {
-        _device = device; 
-    }
-
-    public void Toggle(bool on) 
-    {
-        if (on) _device.TurnOn();
-        else _device.TurnOff();
-    }
-}
-```
-
-**Bước 4: Nối dây ở ngoài cùng (Composition Root)**
-```csharp
-// Bây giờ công tắc có thể bật bất cứ thứ gì!
-ISwitchable myBulb = new LightBulb();
-Switch switch1 = new Switch(myBulb);
-switch1.Toggle(true); // Bóng đèn Sáng!
-
-ISwitchable myFan = new Fan();
-Switch switch2 = new Switch(myFan);
-switch2.Toggle(true); // Quạt trần Quay!
-```
-
-:::tip Mối liên hệ giữa DIP và DI (Dependency Injection)
-- **DIP (Dependency Inversion Principle)** là một **Nguyên lý** (Theory) nói rằng "Hãy đảo ngược luồng phụ thuộc đi".
-- **DI (Dependency Injection)** là **Hành động/Kỹ thuật** (Practice) để hiện thực hóa nguyên lý đó. Việc ta truyền đối tượng `ISwitchable device` qua ngoặc tròn `Switch(ISwitchable device)` chính là kỹ thuật "Tiêm sự phụ thuộc" (DI).
-Dự án VisualizationDSA của chúng ta sống sót được nhờ áp dụng DI triệt để cho mọi Backend Services!
+:::info Mục tiêu bài học
+- Thấu hiểu chữ "D" cuối cùng - Nguyên lý định hình toàn bộ tư duy Kiến trúc Phần mềm (Software Architecture).
+- Nhận diện sự phụ thuộc Tightly Coupled (Gắn chặt) khi sử dụng từ khóa `new`.
+- Nắm vững 2 quy tắc cốt lõi: Module cấp cao và Cấp thấp đều phải phụ thuộc vào Trừu tượng (Abstractions).
+- Dẫn dắt vào thế giới của **Dependency Injection (DI)** và **Inversion of Control (IoC)**.
 :::
 
-## Next Steps {#next-steps}
+## 1. Lời mở đầu: Dây điện và Ổ cắm {#introduction}
 
-Tuyệt vời! Bạn đã hoàn tất hành trình khai phá 5 nguyên lý **SOLID**:
-- **S**RP: Mỗi class chỉ làm 1 việc.
-- **O**CP: Đóng code cũ, Mở rộng qua interface mới.
-- **L**SP: Con thay thế cha không được lỗi.
-- **I**SP: Interface chẻ nhỏ, đừng làm cái đa năng.
-- **D**IP: Dùng Interface để các class không bị dính chặt vào nhau.
+Chữ **"D"** trong SOLID đại diện cho **Dependency Inversion Principle (DIP)**. Đây là nguyên lý khó hiểu nhất, nhưng khi đã giác ngộ, nó sẽ thay đổi hoàn toàn cách bạn viết Code mãi mãi.
+Uncle Bob định nghĩa DIP qua 2 phát biểu:
 
-Kiến thức này đủ để bạn kiến trúc mọi hệ thống phần mềm lớn. Và để chứng minh sức mạnh của những nguyên lý này, chúng ta sẽ bắt đầu tìm hiểu về **Mẫu Thiết kế (Design Patterns)** - những "bài văn mẫu" cực hay mà các kỹ sư thế hệ trước đã dùng SOLID để sáng tạo ra.
+> 1. Các module cấp cao (High-level) KHÔNG ĐƯỢC phụ thuộc vào các module cấp thấp (Low-level). Cả hai nên phụ thuộc vào sự Trừu tượng (Abstractions/Interfaces).
+> 2. Sự Trừu tượng (Abstractions) không nên phụ thuộc vào Chi tiết (Details). Mà Chi tiết phải phụ thuộc vào Trừu tượng.
 
-<div class="vt-box-container next-steps">
-  <a class="vt-box" href="/docs/patterns/singleton">
-    <p class="next-steps-link">Bắt đầu Chương Design Patterns: Singleton</p>
-    <p class="next-steps-caption">Mẫu thiết kế tạo ra một và chỉ một thực thể duy nhất trên toàn cầu.</p>
-  </a>
-</div>
+Nghe như đọc thần chú phải không? Hãy xem ví dụ đời thực!
 
+**Ví dụ thực tế (Real-world analogy):**
+Hãy tưởng tượng cái Đèn Bàn (Module cấp cao) và Nguồn Điện 220V trong tường (Module cấp thấp).
+- **Mã nguồn Xấu (Tightly Coupled):** Người thợ điện hàn chết dây điện của cái đèn vào mạch điện trong tường. Lúc này cái Đèn **phụ thuộc chặt chẽ** vào Mạch điện đó. Bạn muốn mang đèn sang phòng khác? Bạn phải đập tường cắt dây điện.
+- **Mã nguồn Tốt (DIP):** Người thợ điện lắp một cái **Ổ Cắm (Interface)** lên tường. Cái đèn được gắn một cái **Phích Cắm (Implementation)**. 
+Cái Đèn lúc này KHÔNG CÒN phụ thuộc vào Mạch điện trong tường nữa, nó chỉ phụ thuộc vào cái Ổ Cắm. Và Mạch điện cũng chỉ phụ thuộc vào cái Ổ cắm. **Sự phụ thuộc đã bị đảo ngược!** Giờ đây bạn có thể cắm đèn vào tường, cắm vào Ắc quy xe máy, hay Máy phát điện, miễn là chỗ đó có Ổ Cắm tương thích.
+
+---
+
+## 2. Giải phẫu Anti-pattern: Từ khóa "new" là Keo dán {#anti-pattern}
+
+Hãy xây dựng một Cửa hàng (Store) cần thanh toán tiền (Payment). Cửa hàng là Module cấp cao (Business Logic), còn Cổng thanh toán Stripe là Module cấp thấp (Cơ sở hạ tầng mạng).
+
+```csharp
+// MÃ XẤU - VI PHẠM DIP
+public class StripeGateway
+{
+    public void ProcessPayment(decimal amount) 
+    {
+        Console.WriteLine($"Thanh toán {amount}$ qua Stripe.");
+    }
+}
+
+public class Store
+{
+    private StripeGateway _stripe; // Cửa hàng bị hàn chết với Stripe
+
+    public Store()
+    {
+        // TỘI ÁC BẮT ĐẦU TỪ TỪ KHÓA 'new'
+        _stripe = new StripeGateway(); 
+    }
+
+    public void Checkout(decimal amount)
+    {
+        _stripe.ProcessPayment(amount);
+    }
+}
+```
+
+**Tại sao đây là Thảm họa?**
+Ngày mai, Stripe tăng phí giao dịch. Sếp yêu cầu chuyển sang dùng **PayPal**.
+Bạn tạo class `PayPalGateway`. Nhưng cái `Store` của bạn đã bị **Hàn chết (Tightly Coupled)** với `StripeGateway` thông qua từ khóa `new`. Bạn bắt buộc phải mở file `Store.cs` ra, xóa mọi chữ Stripe, và sửa lại thành PayPal. (Điều này cũng đồng thời vi phạm luôn nguyên lý [Mở-Đóng OCP](/docs/solid/ocp)).
+
+Nghiêm trọng hơn, nếu bạn muốn Unit Test lớp `Store` xem hàm `Checkout` có tính đúng tổng tiền hay không, mỗi lần chạy Test nó sẽ chọc thẳng ra mạng Internet gọi API của Stripe, làm thẻ tín dụng của bạn bị trừ tiền thật!
+
+---
+
+## 3. Phẫu thuật Đảo ngược Phụ thuộc (Inversion) {#refactoring}
+
+Để giải cứu `Store`, ta nhét vào giữa nó và `Stripe` một cái "Ổ Cắm" (Interface).
+
+```mermaid
+classDiagram
+    class IPaymentGateway {
+        <<interface>>
+        +ProcessPayment(amount)
+    }
+    class Store {
+        -IPaymentGateway _payment
+        +Checkout(amount)
+    }
+    class StripeGateway {
+        +ProcessPayment(amount)
+    }
+    class PayPalGateway {
+        +ProcessPayment(amount)
+    }
+    
+    Store o-- IPaymentGateway : Phụ thuộc (Chỉ cắm điện)
+    IPaymentGateway <|.. StripeGateway : Cài đặt (Khớp ổ cắm)
+    IPaymentGateway <|.. PayPalGateway : Cài đặt (Khớp ổ cắm)
+```
+
+Bạn có thấy mũi tên đã bị ĐẢO NGƯỢC không? 
+- Trước đây: `Store` $\rightarrow$ `Stripe`
+- Bây giờ: `Store` $\rightarrow$ `Interface` $\leftarrow$ `Stripe`
+
+Cả Cấp cao (Store) và Cấp thấp (Stripe) đều đang nhìn về một hướng là `Interface`.
+
+---
+
+## 4. Mã nguồn chuẩn mực DIP (Dependency Injection) {#clean-code}
+
+**Bước 1: Chế tạo Ổ cắm (Interface)**
+```csharp
+public interface IPaymentGateway
+{
+    void ProcessPayment(decimal amount);
+}
+```
+
+**Bước 2: Cài đặt các Cổng thanh toán thực tế (Low-level modules)**
+```csharp
+public class StripeGateway : IPaymentGateway
+{
+    public void ProcessPayment(decimal amount) 
+        => Console.WriteLine($"Đã trừ {amount}$ trên Stripe.");
+}
+
+public class PayPalGateway : IPaymentGateway
+{
+    public void ProcessPayment(decimal amount) 
+        => Console.WriteLine($"Đã trừ {amount}$ trên PayPal.");
+}
+
+// Giả lập ổ cắm để chạy Unit Test (Mocking)
+public class MockPaymentGateway : IPaymentGateway
+{
+    public void ProcessPayment(decimal amount) 
+        => Console.WriteLine($"TEST PASS: Đã nhận được lệnh trừ {amount}$ nhưng KHÔNG trừ tiền thật.");
+}
+```
+
+**Bước 3: Giải thoát Module cấp cao (High-level module)**
+Class `Store` giờ đây không bao giờ sử dụng từ khóa `new` để tạo thiết bị nữa. Nó yêu cầu ai đó khởi tạo thiết bị rồi **"Tiêm" (Inject)** qua cho nó.
+
+```csharp
+// MÃ ĐẸP - CHUẨN DIP VÀ SẴN SÀNG CHO DI
+public class Store
+{
+    // Chỉ biết đến Ổ Cắm, không quan tâm thiết bị thật là gì
+    private readonly IPaymentGateway _paymentGateway;
+
+    // Yêu cầu truyền thiết bị vào qua Constructor (Constructor Injection)
+    public Store(IPaymentGateway paymentGateway)
+    {
+        _paymentGateway = paymentGateway;
+    }
+
+    public void Checkout(decimal amount)
+    {
+        _paymentGateway.ProcessPayment(amount);
+    }
+}
+```
+
+### Kỳ tích khi sử dụng:
+Khi chương trình khởi chạy, ta đóng vai trò là "Người điều phối" (IoC Container) cắm phích vào ổ điện:
+
+```csharp
+// 1. Chạy thật (Production)
+IPaymentGateway stripe = new StripeGateway();
+Store myStore = new Store(stripe); 
+myStore.Checkout(100);
+
+// 2. Chuyển sang PayPal không cần sửa code Store
+IPaymentGateway paypal = new PayPalGateway();
+Store myStore2 = new Store(paypal);
+
+// 3. Chạy Unit Test an toàn không mất tiền
+IPaymentGateway mock = new MockPaymentGateway();
+Store testStore = new Store(mock);
+```
+
+---
+
+## 5. Tầm nhìn kiến trúc hệ thống (The Big Picture) {#big-picture}
+
+DIP chính là lý do ra đời của khái niệm **Inversion of Control (IoC) Containers** có mặt trong ASP.NET Core (`IServiceCollection`), Java Spring, hay NestJS.
+
+Trong các Framework hiện đại, bạn không cần phải tự tay gõ `new StripeGateway()` rồi nhét vào `Store` thủ công nữa. Hệ thống sẽ tự động đăng ký và tự động tiêm (Inject) toàn bộ các Interface này cho bạn trong lúc khởi động ứng dụng (Startup).
+
+```csharp
+// Trong ASP.NET Core Program.cs
+builder.Services.AddScoped<IPaymentGateway, StripeGateway>(); // Đăng ký
+builder.Services.AddScoped<Store>();
+
+// Khi Controller gọi Store, Framework tự động "new" StripeGateway và tiêm vào Store!
+```
+
+:::tip Tóm tắt nhanh (Key Takeaways)
+- DIP (Dependency Inversion) cấm tuyệt đối việc Lớp cấp cao (Business) khởi tạo (Dùng từ khóa `new`) các Lớp cấp thấp (Database, API, Mail).
+- Cả hai phải giao tiếp qua Hợp đồng (Interface). Điều này đảo ngược chiều phụ thuộc truyền thống.
+- DIP là tiền đề để thực hiện **Dependency Injection (DI)**, giúp hệ thống lỏng lẻo (Loosely Coupled) và dễ dàng Unit Test nhờ khả năng dùng Mock Objects.
+- Hoàn tất 5 chữ cái SOLID: SRP giúp Class chuyên biệt, OCP giúp dễ mở rộng, LSP đảm bảo an toàn kế thừa, ISP cắt nhỏ giao diện, và DIP kết nối tất cả chúng lại bằng tiêm sự phụ thuộc!
+:::

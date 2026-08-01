@@ -11,10 +11,10 @@ namespace VisualizationDSA.Domain.Entities
         public string LinkUrl { get; private set; } = string.Empty;
         public DateTime CreatedAt { get; private set; }
 
-        // Navigation property
+        
         public User? User { get; private set; }
 
-        // EF Constructor
+        
         private Notification() { }
 
         public Notification(Guid userId, string content, string linkUrl)

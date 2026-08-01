@@ -30,10 +30,35 @@ Duyệt qua mảng gốc, số nào xuất hiện thì tăng giá trị ở inde
 Duyệt mảng gốc từ phải sang trái (để duy trì Tính Ổn định - Stability). Đặt phần tử vào mảng kết quả dựa trên vị trí tích lũy trong mảng đếm, sau đó giảm giá trị tích lũy đi 1.
 
 ```mermaid
-graph TD
-    A["Mảng Gốc: [4, 2, 2, 8, 3, 3, 1]"] --> B["Đếm (Frequencies): count = [0, 1, 2, 2, 1, 0, 0, 0, 1]"]
-    B --> C["Cộng dồn (Prefix Sum): count = [0, 1, 3, 5, 6, 6, 6, 6, 7]"]
-    C --> D["Trải mảng ngược lại (Output): [1, 2, 2, 3, 3, 4, 8]"]
+flowchart TD
+    subgraph "1. Mảng Gốc (Input)"
+        direction LR
+        I0[4] --- I1[2] --- I2[2] --- I3[8] --- I4[3] --- I5[3] --- I6[1]
+    end
+    
+    subgraph "2. Đếm Tần Suất (Count Array)"
+        direction LR
+        C0["0: 0"] --- C1["1: 1"] --- C2["2: 2"] --- C3["3: 2"] --- C4["4: 1"] --- C5["5..7: 0"] --- C8["8: 1"]
+    end
+    
+    subgraph "3. Cộng Dồn (Prefix Sum)"
+        direction LR
+        P0["0: 0"] --- P1["1: 1"] --- P2["2: 3"] --- P3["3: 5"] --- P4["4: 6"] --- P5["5..7: 6"] --- P8["8: 7"]
+    end
+    
+    subgraph "4. Trải Ngược Lại (Output)"
+        direction LR
+        O0[1] --- O1[2] --- O2[2] --- O3[3] --- O4[3] --- O5[4] --- O6[8]
+    end
+    
+    "1. Mảng Gốc (Input)" --> "2. Đếm Tần Suất (Count Array)"
+    "2. Đếm Tần Suất (Count Array)" --> "3. Cộng Dồn (Prefix Sum)"
+    "3. Cộng Dồn (Prefix Sum)" --> "4. Trải Ngược Lại (Output)"
+    
+    style I0 fill:#3b82f6,color:#fff
+    style C4 fill:#10b981,color:#fff
+    style P4 fill:#f59e0b,color:#fff
+    style O5 fill:#3b82f6,color:#fff
 ```
 
 

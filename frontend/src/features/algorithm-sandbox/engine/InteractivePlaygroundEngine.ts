@@ -13,9 +13,9 @@ export class InteractivePlaygroundEngine {
     this.onStateChange = onStateChange;
   }
 
-  /**
-   * Tạo Vertex đồ thị mới khi nhấp đúp chuột lên tọa độ Canvas
-   */
+  
+
+
   public handleDoubleClick(x: number, y: number): void {
     const nextId = String.fromCharCode(65 + this.vertices.length);
 

@@ -1,7 +1,7 @@
-/**
- * lecture.types.ts — Type-safe interfaces cho phân hệ E-Lecture Mode.
- * Khớp 1:1 với JSON Schema kịch bản bài giảng điện tử và Backend C# DTOs.
- */
+
+
+
+
 
 export type SlideCommand = 'RESET_CANVAS' | 'PLAY_UNTIL' | 'PAUSE';
 

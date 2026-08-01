@@ -5,7 +5,7 @@ namespace VisualizationDSA.Domain.Engine
     public class BinaryTreeNode
     {
         public int Value { get; set; }
-        public int Id { get; set; } // Unique identifier cho UI
+        public int Id { get; set; } 
         public BinaryTreeNode? Left { get; set; }
         public BinaryTreeNode? Right { get; set; }
         public int Depth { get; set; }

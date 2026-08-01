@@ -5,14 +5,14 @@
       class="guided-tour-overlay-root fixed inset-0 z-[9999] font-sans select-none"
       :class="{ 'flex items-center justify-center': !spotlightStyle }"
     >
-      <!-- Backdrop -->
+      
       <div
         class="absolute inset-0 transition-all duration-300"
         :class="spotlightStyle ? 'bg-transparent' : 'bg-slate-950/70 backdrop-blur-[2px]'"
         @click="handleBackdropClick"
       />
 
-      <!-- Spotlight Highlighter (if element exists) -->
+      
       <div
         v-if="spotlightStyle"
         class="spotlight-highlight absolute border-2 border-accent-cyan/80 rounded-xl transition-all duration-300 pointer-events-none"
@@ -23,7 +23,7 @@
         </span>
       </div>
 
-      <!-- Virtual Pointer for Auto-Play Simulation -->
+      
       <VirtualPointer
         v-if="tourStore.virtualCursor"
         :x="tourStore.virtualCursor.x"
@@ -32,27 +32,27 @@
         :clicking="tourStore.virtualCursor.clicking"
       />
 
-      <!-- Tour Dialog Card (Glassmorphic) with Mascot side-by-side -->
+      
       <Transition name="scale" mode="out-in">
         <div
           :key="tourStore.currentStepIndex"
           class="dialog-card p-6 rounded-2xl border border-white/10 shadow-2xl flex flex-col gap-4 text-left transition-all duration-300"
           :style="[cardStyle, defaultCardStyle]"
         >
-          <!-- Mascot and content wrapper -->
+          
           <div class="flex gap-4 items-start">
-            <!-- Virtual Mascot side column -->
+            
             <VirtualMascot :state="currentStep.avatarState || 'EXPLAINING'" class="mt-1 flex-shrink-0" />
 
-            <!-- Main Content Area -->
+            
             <div class="flex-1 flex flex-col gap-2 min-w-0">
-              <!-- Top indicators -->
+              
               <div class="flex items-center justify-between">
                 <span class="text-[10px] font-mono font-bold tracking-widest text-accent-cyan uppercase">
                   Trợ lý ảo • {{ tourStore.currentStepIndex + 1 }} / {{ tourStore.currentSteps.length }}
                 </span>
                 
-                <!-- Talking Voice Waves (Equalizer) -->
+                
                 <div v-if="isTyping" class="voice-wave flex items-end gap-0.5 h-3 ml-2">
                   <span class="w-0.5 bg-accent-cyan animate-bar1"></span>
                   <span class="w-0.5 bg-accent-cyan animate-bar2"></span>
@@ -70,7 +70,7 @@
                 </div>
               </div>
 
-              <!-- Main Info -->
+              
               <div class="flex flex-col gap-1.5 mt-1">
                 <h3 class="text-base font-bold text-text-primary tracking-tight">
                   {{ currentStep.title }}
@@ -82,7 +82,7 @@
             </div>
           </div>
 
-          <!-- Actions -->
+          
           <div class="flex items-center justify-between mt-1 pt-4 border-t border-white/5">
             <button
               class="px-3 py-1.5 rounded-lg text-xs font-bold text-text-muted hover:text-text-primary hover:bg-white/5 transition-all cursor-pointer"
@@ -91,7 +91,7 @@
               Bỏ qua
             </button>
 
-            <!-- Simulation auto-play button -->
+            
             <button
               v-if="currentStep.actionScript && currentStep.actionScript.length > 0"
               class="px-3 py-1.5 rounded-lg text-xs font-bold bg-amber-500/20 text-amber-400 border border-amber-500/30 hover:bg-amber-500/35 transition-all cursor-pointer flex items-center gap-1 shadow-lg shadow-amber-500/10"
@@ -165,7 +165,7 @@ const startTypewriter = (text: string) => {
 };
 
 function handleBackdropClick() {
-  // Silent prevent closing on backdrop unless skip is intended
+  
 }
 
 function updateSpotlight(skipScroll = false) {
@@ -195,7 +195,7 @@ function updateSpotlight(skipScroll = false) {
     height: `${rect.height + pad * 2}px`,
   };
 
-  // Calculate position card floating beside highlight element
+  
   const viewportWidth = window.innerWidth;
   const viewportHeight = window.innerHeight;
   const cardWidth = Math.min(450, viewportWidth - 32);
@@ -266,7 +266,7 @@ function updateSpotlight(skipScroll = false) {
   }
 }
 
-// Watch active state and current step to calculate spotlight position and typewriter effect
+
 watch(
   () => [tourStore.isActive, tourStore.currentStepIndex],
   () => {
@@ -305,7 +305,7 @@ onBeforeUnmount(() => {
   z-index: 9998;
 }
 
-/* Voice Equalizer animation bars */
+
 @keyframes soundWave {
   0%, 100% { height: 4px; }
   50% { height: 12px; }
@@ -315,7 +315,7 @@ onBeforeUnmount(() => {
 .animate-bar3 { animation: soundWave 0.8s infinite ease-in-out; }
 .animate-bar4 { animation: soundWave 0.5s infinite ease-in-out; }
 
-/* Vue Transition Animations */
+
 .fade-enter-active,
 .fade-leave-active {
   transition: opacity 0.3s ease;

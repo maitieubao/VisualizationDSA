@@ -1,11 +1,11 @@
-/**
- * statelessAuthApi.ts — HTTP client cho Stateless Auth endpoints.
- * Giao tiếp với: /api/v1/concepts/auth/* (in-memory, không cần PostgreSQL)
- */
+
+
+
+
 
 const BASE_URL = import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:5055';
 
-// ── Types ─────────────────────────────────────────────────────────────────────
+
 
 export interface StatelessUserDto {
   id:           string;
@@ -52,7 +52,7 @@ export interface StatelessUserProgress {
   isPremium:            boolean;
 }
 
-// ── Helper ────────────────────────────────────────────────────────────────────
+
 
 async function handleResponse<T>(response: Response): Promise<T> {
   if (!response.ok) {
@@ -64,7 +64,7 @@ async function handleResponse<T>(response: Response): Promise<T> {
 
 const JSON_HEADERS: HeadersInit = { 'Content-Type': 'application/json' };
 
-// ── API ───────────────────────────────────────────────────────────────────────
+
 
 export const statelessAuthApi = {
   async register(email: string, username: string, password: string): Promise<StatelessAuthResponse> {
@@ -99,7 +99,7 @@ export const statelessAuthApi = {
       method: 'POST',
       headers: JSON_HEADERS,
       body: JSON.stringify({ refreshToken }),
-    }).catch(() => { /* logout luôn success ở client */ });
+    }).catch(() => {  });
   },
 
   async getMe(userId?: string): Promise<StatelessUserDto> {

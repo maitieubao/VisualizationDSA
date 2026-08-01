@@ -27,6 +27,42 @@ Thay vì chia mảng dựa trên chỉ số (index), Bucket Sort **chia mảng d
 - Sắp xếp độc lập bên trong từng xô.
 - Nối các xô lại với nhau từ 0 đến 9, ta có mảng hoàn chỉnh!
 
+```mermaid
+flowchart TD
+    subgraph "1 & 2. Ném vào Xô (Scatter)"
+        B0["Xô 0\n[ ]"]
+        B1["Xô 1\n[0.17, 0.12]"]
+        B2["Xô 2\n[0.26, 0.21, 0.23]"]
+        B3["Xô 3\n[0.39]"]
+        B7["Xô 7\n[0.78, 0.72]"]
+        B9["Xô 9\n[0.94]"]
+    end
+    
+    subgraph "3. Sắp xếp trong Xô (Sort)"
+        S1["[0.12, 0.17]"]
+        S2["[0.21, 0.23, 0.26]"]
+        S7["[0.72, 0.78]"]
+    end
+    
+    subgraph "4. Gộp lại (Gather)"
+        O["[0.12, 0.17, 0.21, 0.23, 0.26, 0.39, 0.72, 0.78, 0.94]"]
+    end
+    
+    B1 --> S1
+    B2 --> S2
+    B7 --> S7
+    
+    S1 --> O
+    S2 --> O
+    B3 --> O
+    S7 --> O
+    B9 --> O
+    
+    style B2 fill:#3b82f6,color:#fff
+    style S2 fill:#10b981,color:#fff
+    style O fill:#f59e0b,color:#fff
+```
+
 ## Độ phức tạp Thuật toán {#complexity}
 
 | Đặc tính | Phân tích Big O |

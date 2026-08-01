@@ -9,10 +9,10 @@ namespace VisualizationDSA.WebApi.Controllers;
 [Route("api/v{version:apiVersion}/[controller]")]
 public class LecturesController : ControllerBase
 {
-    /// <summary>
-    /// Lấy danh sách tất cả bài giảng điện tử.
-    /// GET /api/v1/lectures
-    /// </summary>
+    
+    
+    
+    
     [HttpGet]
     public ActionResult<IEnumerable<object>> GetAll()
     {
@@ -27,10 +27,10 @@ public class LecturesController : ControllerBase
         return Ok(summary);
     }
 
-    /// <summary>
-    /// Lấy kịch bản bài giảng điện tử theo algorithmId.
-    /// GET /api/v1/lectures/{algorithmId}
-    /// </summary>
+    
+    
+    
+    
     [HttpGet("{algorithmId}")]
     [ResponseCache(Duration = 604800, Location = ResponseCacheLocation.Any)]
     public ActionResult<Lecture> GetByAlgorithmId(string algorithmId)

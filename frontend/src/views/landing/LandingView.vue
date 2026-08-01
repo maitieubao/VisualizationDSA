@@ -1,6 +1,6 @@
 <template>
   <div class="landing">
-    <!-- Hero Section -->
+    
     <section class="hero">
       <div class="hero__glow"></div>
       <div class="hero__content">
@@ -30,7 +30,7 @@
       </div>
     </section>
 
-    <!-- Feature Grid -->
+    
     <section class="features">
       <h2 class="features__heading">Modules học tập</h2>
       <div class="features__grid">
@@ -42,7 +42,7 @@
       </div>
     </section>
 
-    <!-- Stats bar -->
+    
     <section class="stats-bar">
       <div class="stat-item" v-for="stat in stats" :key="stat.label">
         <span class="stat-item__value">{{ stat.value }}</span>

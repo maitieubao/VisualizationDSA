@@ -1,7 +1,7 @@
-/**
- * sorting.types.ts — Type definitions cho Sorting Algorithms.
- * [TYPES] — Dùng bởi tất cả frame generators và visualizers.
- */
+
+
+
+
 
 export type BarStatus = "IDLE" | "COMPARING" | "PIVOT" | "SWAPPED" | "SORTED";
 
@@ -29,31 +29,33 @@ export interface SortFrame {
   sortedIndices: number[];
   description: string;
   algorithm: SortAlgorithm;
+  /** Trace Table: giá trị các biến điều khiển tại bước này (i, j, low, high, pivot, swaps...) */
+  variables?: Record<string, string | number>;
   
-  // Merge sort properties
+  
   subArrays?: SubArray[];
   
-  // Quick sort partitions
+  
   partitions?: Partition[];
 
-  // Heap sort properties
+  
   heapSize?: number;
 
-  // Radix sort properties
-  radixBuckets?: number[][]; // 10 buckets, each holds numbers
-  /** Same buckets but with stable IDs for :key binding in transition-group */
+  
+  radixBuckets?: number[][]; 
+  
   radixBucketsWithIds?: Array<Array<{ id: number; value: number }>>;
-  activeDigitPlace?: number; // 1, 10, 100, etc.
+  activeDigitPlace?: number; 
   radixStep?: "distribute" | "collect";
 
-  // Counting sort properties
+  
   countArray?: number[];
   countingStep?: "count" | "accumulate" | "output";
   inputArray?: number[];
   outputArray?: Array<number | null>;
   outputArrayWithIds?: Array<{ id: number; value: number } | null>;
 
-  // Bucket sort properties
+  
   bucketSortBuckets?: number[][];
   bucketSortBucketsWithIds?: Array<Array<{ id: number; value: number }>>;
   bucketStep?: "distribute" | "sort" | "collect";

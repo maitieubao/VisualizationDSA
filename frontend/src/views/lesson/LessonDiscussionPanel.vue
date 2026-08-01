@@ -16,7 +16,7 @@
       </button>
     </div>
 
-    <!-- Search Bar -->
+    
     <div class="mb-4 flex-shrink-0">
       <div class="relative">
         <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
@@ -40,12 +40,12 @@
       </div>
     </div>
 
-    <!-- Error Message -->
+    
     <div v-if="error" class="p-3 bg-rose-500/10 border border-rose-500/20 text-rose-400 text-xs rounded-xl mb-4 flex-shrink-0">
       {{ error }}
     </div>
 
-    <!-- Comments List Area -->
+    
     <div class="flex-1 overflow-y-auto pr-2 scrollbar-thin space-y-4 mb-4">
       <div v-if="loading && comments.length === 0" class="h-32 flex items-center justify-center text-xs text-slate-500">
         <div class="inline-block w-4 h-4 border-2 border-indigo-500/20 border-t-indigo-400 rounded-full animate-spin mr-2"></div>
@@ -58,20 +58,20 @@
         <span class="text-[10px] text-slate-600 mt-0.5">Đặt câu hỏi đầu tiên của bạn ở dưới!</span>
       </div>
 
-      <!-- Root Comment Rendering -->
+      
       <div v-else v-for="comment in rootComments" :key="comment.id" class="space-y-3">
-        <!-- Main Comment Card -->
+        
         <div class="p-4 bg-white/[0.02] border border-white/5 rounded-2xl hover:border-white/10 transition-all">
           <div class="flex items-start justify-between gap-3">
             <div class="flex items-center gap-2">
-              <!-- Avatar placeholder based on first char of username -->
+              
               <div class="w-7 h-7 rounded-full bg-indigo-500/20 text-indigo-400 flex items-center justify-center font-bold text-xs capitalize">
                 {{ comment.username.charAt(0) }}
               </div>
               <div>
                 <div class="flex items-center gap-1.5">
                   <span class="text-xs font-bold text-white">{{ comment.username }}</span>
-                  <!-- Role badge -->
+                  
                   <span 
                     v-if="comment.role === 'Admin'" 
                     class="px-1.5 py-0.2 text-[8px] font-extrabold uppercase rounded bg-rose-500/20 text-rose-400 border border-rose-500/10 animate-pulse"
@@ -107,7 +107,7 @@
           </div>
         </div>
 
-        <!-- Nested Replies -->
+        
         <div class="pl-8 space-y-2 border-l border-indigo-500/10">
           <div v-for="reply in getReplies(comment.id)" :key="reply.id" class="p-3 bg-white/[0.01] border border-white/5 rounded-xl">
             <div class="flex items-start gap-2">
@@ -136,7 +136,7 @@
             </div>
           </div>
 
-          <!-- Inline Reply Form -->
+          
           <div v-if="replyingToId === comment.id" class="p-3 bg-indigo-500/5 border border-indigo-500/15 rounded-xl space-y-2">
             <textarea 
               v-model="replyText" 
@@ -163,7 +163,7 @@
       </div>
     </div>
 
-    <!-- Post New Discussion Form -->
+    
     <div class="border-t border-white/10 pt-4 flex-shrink-0 space-y-2">
       <textarea 
         v-model="newCommentText" 

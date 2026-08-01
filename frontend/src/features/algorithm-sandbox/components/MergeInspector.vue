@@ -1,33 +1,33 @@
 <template>
   <div class="merge-panel border rounded-2xl p-4 backdrop-blur-md flex flex-col gap-3 h-full">
     <div class="flex items-center justify-between border-b border-white/5 pb-2 shrink-0">
-      <h3 class="text-xs font-bold uppercase tracking-wider text-cyan-400 font-mono flex items-center gap-1.5">
+      <h3 class="text-xs font-bold tracking-normal text-cyan-400 flex items-center gap-1.5">
         <svg class="animate-pulse" xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
           <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
         </svg>
         Bộ Giám Sát Trộn (Merge Inspector)
       </h3>
       <span 
-        class="text-[9px] font-mono font-bold px-2 py-0.5 rounded-full uppercase"
+        class="text-[9px] font-bold px-2 py-0.5 rounded-full"
         :class="activeSub ? 'bg-cyan-500/10 text-cyan-400 border border-cyan-500/20 animate-pulse' : 'bg-slate-500/10 text-slate-400 border border-white/5'"
       >
         {{ activeSub ? `Trộn [${activeSub.start}..${activeSub.end}]` : 'Nhàn rỗi' }}
       </span>
     </div>
 
-    <!-- Active Step Details -->
+    
     <div v-if="activeSub && frame" class="flex-1 flex flex-col gap-4 justify-between">
       <div class="flex flex-col gap-3 shrink-0">
-        <!-- Sub-arrays grid (Left L vs Right R) -->
+        
         <div class="grid grid-cols-2 gap-4">
-          <!-- Left Subarray -->
+          
           <div class="flex flex-col gap-1.5 p-2 rounded-xl border border-cyan-500/15 bg-cyan-950/5">
-            <span class="text-[9px] text-cyan-400 font-bold uppercase tracking-wider font-mono">Mảng trái L [{{ activeSub.start }}..{{ midIndex }}]</span>
+            <span class="text-[9px] text-cyan-400 font-bold tracking-normal">Mảng trái L [{{ activeSub.start }}..{{ midIndex }}]</span>
             <div class="flex flex-wrap gap-1">
               <span
                 v-for="idx in leftLength"
                 :key="idx"
-                class="text-xs font-bold px-2 py-1 rounded border flex items-center justify-center font-mono transition-all duration-300"
+                class="text-xs font-bold px-2 py-1 rounded border flex items-center justify-center transition-all duration-300"
                 :class="getLeftElementClass(activeSub.start + idx - 1)"
               >
                 {{ frame.arrayState[activeSub.start + idx - 1] }}
@@ -36,14 +36,14 @@
             </div>
           </div>
 
-          <!-- Right Subarray -->
+          
           <div class="flex flex-col gap-1.5 p-2 rounded-xl border border-purple-500/15 bg-purple-950/5">
-            <span class="text-[9px] text-purple-400 font-bold uppercase tracking-wider font-mono">Mảng phải R [{{ midIndex + 1 }}..{{ activeSub.end }}]</span>
+            <span class="text-[9px] text-purple-400 font-bold tracking-normal">Mảng phải R [{{ midIndex + 1 }}..{{ activeSub.end }}]</span>
             <div class="flex flex-wrap gap-1">
               <span
                 v-for="idx in rightLength"
                 :key="idx"
-                class="text-xs font-bold px-2 py-1 rounded border flex items-center justify-center font-mono transition-all duration-300"
+                class="text-xs font-bold px-2 py-1 rounded border flex items-center justify-center transition-all duration-300"
                 :class="getRightElementClass(midIndex + idx)"
               >
                 {{ frame.arrayState[midIndex + idx] }}
@@ -54,10 +54,10 @@
         </div>
       </div>
 
-      <!-- Logic So Sánh và Chỉ Mục Trộn -->
-      <div class="flex-1 flex flex-col justify-between p-3 rounded-xl merge-inner-block font-mono min-h-0 text-xs">
+      
+      <div class="flex-1 flex flex-col justify-between p-3 rounded-xl merge-inner-block min-h-0 text-xs">
         <div class="flex flex-col gap-2">
-          <!-- Pointer Indexes -->
+          
           <div class="grid grid-cols-3 gap-2 text-center text-[10px] pb-2 border-b border-white/5">
             <div>
               <span class="text-slate-400 block">Pointer i (L)</span>
@@ -73,7 +73,7 @@
             </div>
           </div>
 
-          <!-- Comparison Display -->
+          
           <div class="flex justify-between items-center text-xs pt-1.5">
             <span class="text-slate-400">So sánh hiện tại:</span>
             <span v-if="leftPointerIdx !== null && rightPointerIdx !== null" class="font-bold text-white">
@@ -82,7 +82,7 @@
             <span v-else class="text-slate-500 font-semibold">—</span>
           </div>
 
-          <!-- Dynamic compare status badge -->
+          
           <div class="flex items-center gap-2 mt-1">
             <span class="text-xs text-slate-400 shrink-0">Kết quả:</span>
             <span 
@@ -102,7 +102,7 @@
         </div>
 
         <div class="text-[11px] text-slate-300 mt-3 border-t border-white/5 pt-2 flex flex-col gap-1">
-          <span class="font-semibold text-accent uppercase tracking-wider text-[9px]">Hành động giải thuật:</span>
+          <span class="font-semibold text-accent text-[9px]">Hành động giải thuật:</span>
           <p class="leading-relaxed text-slate-200">
             {{ getMergeActionDescription() }}
           </p>
@@ -110,10 +110,10 @@
       </div>
     </div>
 
-    <!-- Idle state: Merge Sort Cheatsheet & Color Legend -->
-    <div v-else class="flex-1 flex flex-col justify-between p-3 rounded-xl merge-inner-block font-mono min-h-0 text-left text-xs gap-3">
+    
+    <div v-else class="flex-1 flex flex-col justify-between p-3 rounded-xl merge-inner-block min-h-0 text-left text-xs gap-3">
       <div class="flex flex-col gap-2">
-        <h4 class="text-accent font-bold uppercase tracking-wider text-[10px] border-b border-white/5 pb-1 flex items-center gap-1">
+        <h4 class="text-accent font-bold tracking-normal text-[10px] border-b border-white/5 pb-1 flex items-center gap-1">
           <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
             <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
             <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
@@ -124,45 +124,45 @@
           Sử dụng kỹ thuật <strong>Chia để trị (Divide and Conquer)</strong>. Chia mảng thành 2 nửa đệ quy cho đến khi kích thước phân đoạn bằng 1, sau đó <strong>trộn (merge)</strong> các phân đoạn đã sắp xếp để tạo thành mảng hoàn chỉnh.
         </p>
         
-        <div class="grid grid-cols-2 gap-1.5 mt-1 text-[10px]">
-          <div class="p-1.5 rounded merge-cell">
-            <span class="text-slate-400 block text-[9px] uppercase font-bold">Thời gian (Tất cả TH)</span>
-            <span class="text-emerald-400 font-bold font-mono">O(N log N)</span>
-          </div>
-          <div class="p-1.5 rounded merge-cell">
-            <span class="text-slate-400 block text-[9px] uppercase font-bold">Bộ nhớ bổ sung</span>
-            <span class="text-amber-400 font-bold font-mono">O(N)</span>
-          </div>
+          <div class="grid grid-cols-2 gap-1.5 mt-1 text-[10px]">
+            <div class="p-1.5 rounded merge-cell">
+              <span class="text-slate-400 block text-[9px] font-bold">Thời gian (tất cả TH)</span>
+              <span class="text-emerald-400 font-bold">O(N log N)</span>
+            </div>
+            <div class="p-1.5 rounded merge-cell">
+              <span class="text-slate-400 block text-[9px] font-bold">Bộ nhớ bổ sung</span>
+              <span class="text-amber-400 font-bold">O(N)</span>
+            </div>
         </div>
       </div>
 
-      <!-- Color Legend Map inside Inspector Card -->
+      
       <div class="border-t border-white/5 pt-2 flex flex-col gap-2 shrink-0">
-        <h4 class="text-emerald-400 font-bold uppercase tracking-wider text-[10px] flex items-center gap-1">
-          <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-            <circle cx="12" cy="12" r="10"/>
-            <line x1="12" y1="16" x2="12" y2="12"/>
-            <line x1="12" y1="8" x2="12.01" y2="8"/>
-          </svg>
-          Chú Thích Màu Sắc Trực Quan (Legend)
-        </h4>
-        <div class="grid grid-cols-2 gap-x-2 gap-y-1 text-[10px]">
-          <div class="flex items-center gap-1.5">
-            <span class="w-2.5 h-2.5 rounded border border-amber-500 bg-amber-500/20 shadow-[0_0_8px_rgba(245,158,11,0.3)] animate-pulse"></span>
-            <span class="text-slate-300">🔵 So sánh L và R</span>
-          </div>
-          <div class="flex items-center gap-1.5">
-            <span class="w-2.5 h-2.5 rounded border border-rose-500 bg-rose-500/20 shadow-[0_0_8px_rgba(244,63,94,0.3)]"></span>
-            <span class="text-slate-300">🔴 Ghi đè / Gộp gốc</span>
-          </div>
-          <div class="flex items-center gap-1.5">
-            <span class="w-2.5 h-2.5 rounded border border-emerald-500 bg-emerald-500/20 shadow-[0_0_8px_rgba(16,185,129,0.3)]"></span>
-            <span class="text-slate-300">🟢 Đã sắp xếp</span>
-          </div>
-          <div class="flex items-center gap-1.5">
-            <span class="w-2.5 h-2.5 rounded border border-cyan-500 bg-cyan-500/20 shadow-[0_0_8px_rgba(6,182,212,0.3)]"></span>
-            <span class="text-slate-300">🔵 Phân đoạn đệ quy</span>
-          </div>
+        <h4 class="text-emerald-400 font-bold tracking-normal text-[10px] flex items-center gap-1">
+            <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"/>
+              <line x1="12" y1="16" x2="12" y2="12"/>
+              <line x1="12" y1="8" x2="12.01" y2="8"/>
+            </svg>
+            Chú thích màu sắc trực quan
+          </h4>
+          <div class="grid grid-cols-2 gap-x-2 gap-y-1 text-[10px]">
+            <div class="flex items-center gap-1.5">
+              <span class="w-2.5 h-2.5 rounded border border-amber-500 bg-amber-500/20 shadow-[0_0_8px_rgba(245,158,11,0.3)] animate-pulse"></span>
+              <span class="text-slate-300">So sánh L và R</span>
+            </div>
+            <div class="flex items-center gap-1.5">
+              <span class="w-2.5 h-2.5 rounded border border-rose-500 bg-rose-500/20 shadow-[0_0_8px_rgba(244,63,94,0.3)]"></span>
+              <span class="text-slate-300">Ghi đè / Gộp gốc</span>
+            </div>
+            <div class="flex items-center gap-1.5">
+              <span class="w-2.5 h-2.5 rounded border border-emerald-500 bg-emerald-500/20 shadow-[0_0_8px_rgba(16,185,129,0.3)]"></span>
+              <span class="text-slate-300">Đã sắp xếp</span>
+            </div>
+            <div class="flex items-center gap-1.5">
+              <span class="w-2.5 h-2.5 rounded border border-cyan-500 bg-cyan-500/20 shadow-[0_0_8px_rgba(6,182,212,0.3)]"></span>
+              <span class="text-slate-300">Phân đoạn đệ quy</span>
+            </div>
         </div>
       </div>
     </div>
@@ -197,7 +197,7 @@ const rightLength = computed(() => {
   return activeSub.value.end - midIndex.value;
 });
 
-// Pointers computing logic
+
 const leftPointerIdx = computed(() => {
   if (!props.frame?.comparingIndices || !activeSub.value) return null;
   const mid = midIndex.value;
@@ -286,19 +286,19 @@ function getMergeActionDescription() {
 </script>
 
 <style scoped>
-/* Root panel */
+
 .merge-panel {
   background-color: color-mix(in srgb, var(--vis-panel-bg) 40%, transparent);
   border-color: var(--vis-panel-border);
 }
 
-/* Inner logic block */
+
 .merge-inner-block {
   background-color: color-mix(in srgb, var(--vis-panel-bg-deep) 30%, transparent);
   border: 1px solid var(--vis-panel-border);
 }
 
-/* Sub-cell cards */
+
 .merge-cell {
   background-color: color-mix(in srgb, var(--color-bg-primary) 60%, transparent);
   border: 1px solid var(--color-border-subtle);

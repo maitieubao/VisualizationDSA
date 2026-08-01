@@ -2,11 +2,11 @@ using VisualizationDSA.Domain.Engine;
 
 namespace VisualizationDSA.Domain.Strategies;
 
-/// <summary>
-/// Strategy sinh chuỗi frame cho mô-đun SOLID Principles Visualizer.
-/// Hỗ trợ 3 kịch bản chính: SRP (God Class → Split), OCP (Extension vs Modification),
-/// LSP (Substitution Violation).
-/// </summary>
+
+
+
+
+
 public class SOLIDPrinciplesStrategy : IConceptStrategy
 {
     public string ConceptId => "solid-principles";
@@ -29,7 +29,7 @@ public class SOLIDPrinciplesStrategy : IConceptStrategy
     {
         var frames = new List<SOLIDFrameDto>();
 
-        // Frame 1: God Class — UserManager có nhiều trách nhiệm
+        
         frames.Add(new SOLIDFrameDto
         {
             StepIndex = 0,
@@ -61,7 +61,7 @@ public class SOLIDPrinciplesStrategy : IConceptStrategy
             Metrics = new SOLIDMetricsDto { Lcom4Score = 3.0, ResponsibilityCount = 3, CouplingLevel = "HIGH" }
         });
 
-        // Frame 2: Phân tích nhóm trách nhiệm
+        
         frames.Add(new SOLIDFrameDto
         {
             StepIndex = 1,
@@ -93,7 +93,7 @@ public class SOLIDPrinciplesStrategy : IConceptStrategy
             Metrics = new SOLIDMetricsDto { Lcom4Score = 3.0, ResponsibilityCount = 3, CouplingLevel = "HIGH" }
         });
 
-        // Frame 3: Tách thành 3 lớp đơn trách nhiệm
+        
         frames.Add(new SOLIDFrameDto
         {
             StepIndex = 2,
@@ -147,7 +147,7 @@ public class SOLIDPrinciplesStrategy : IConceptStrategy
             Metrics = new SOLIDMetricsDto { Lcom4Score = 1.0, ResponsibilityCount = 1, CouplingLevel = "LOW" }
         });
 
-        // Frame 4: Kết luận
+        
         frames.Add(new SOLIDFrameDto
         {
             StepIndex = 3,
@@ -171,7 +171,7 @@ public class SOLIDPrinciplesStrategy : IConceptStrategy
     {
         var frames = new List<SOLIDFrameDto>();
 
-        // Frame 1: Vi phạm OCP — sửa đổi trực tiếp lớp khi thêm loại mới
+        
         frames.Add(new SOLIDFrameDto
         {
             StepIndex = 0,
@@ -221,7 +221,7 @@ public class SOLIDPrinciplesStrategy : IConceptStrategy
             ViolationDetail = "Thêm Triangle → phải sửa calculateArea(). Vi phạm 'Closed for modification'."
         });
 
-        // Frame 2: Giới thiệu Interface IShape
+        
         frames.Add(new SOLIDFrameDto
         {
             StepIndex = 1,
@@ -238,7 +238,7 @@ public class SOLIDPrinciplesStrategy : IConceptStrategy
             Metrics = new SOLIDMetricsDto { Lcom4Score = 1.0, ResponsibilityCount = 1, CouplingLevel = "LOW" }
         });
 
-        // Frame 3: Mở rộng bằng cách thêm class mới (không sửa code cũ)
+        
         frames.Add(new SOLIDFrameDto
         {
             StepIndex = 2,
@@ -256,7 +256,7 @@ public class SOLIDPrinciplesStrategy : IConceptStrategy
             Metrics = new SOLIDMetricsDto { Lcom4Score = 1.0, ResponsibilityCount = 1, CouplingLevel = "LOW" }
         });
 
-        // Frame 4: Kết luận
+        
         frames.Add(new SOLIDFrameDto
         {
             StepIndex = 3,
@@ -279,7 +279,7 @@ public class SOLIDPrinciplesStrategy : IConceptStrategy
     {
         var frames = new List<SOLIDFrameDto>();
 
-        // Frame 1: Giới thiệu kế thừa Bird → FlyingBird
+        
         frames.Add(new SOLIDFrameDto
         {
             StepIndex = 0,
@@ -295,7 +295,7 @@ public class SOLIDPrinciplesStrategy : IConceptStrategy
             Metrics = new SOLIDMetricsDto { Lcom4Score = 1.0, ResponsibilityCount = 1, CouplingLevel = "LOW" }
         });
 
-        // Frame 2: Thêm Penguin — vi phạm LSP
+        
         frames.Add(new SOLIDFrameDto
         {
             StepIndex = 1,
@@ -313,7 +313,7 @@ public class SOLIDPrinciplesStrategy : IConceptStrategy
             ViolationDetail = "Penguin.fly() throws NotSupportedException. Client code expecting Bird.fly() to work will crash."
         });
 
-        // Frame 3: Sửa bằng cách tách interface
+        
         frames.Add(new SOLIDFrameDto
         {
             StepIndex = 2,
@@ -331,7 +331,7 @@ public class SOLIDPrinciplesStrategy : IConceptStrategy
             Metrics = new SOLIDMetricsDto { Lcom4Score = 1.0, ResponsibilityCount = 1, CouplingLevel = "LOW" }
         });
 
-        // Frame 4: Kết luận
+        
         frames.Add(new SOLIDFrameDto
         {
             StepIndex = 3,

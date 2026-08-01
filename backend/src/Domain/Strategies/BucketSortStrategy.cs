@@ -50,7 +50,7 @@ public class BucketSortStrategy : AlgorithmStrategyBase
 
         CaptureState(arr, 0, "Khởi tạo Bucket Sort. Chia phạm vi giá trị thành 4 xô: [0-25), [25-50), [50-75), [75-100].");
 
-        // Phase 1: Distribute
+        
         for (int i = 0; i < arr.Length; i++)
         {
             cancellationToken.ThrowIfCancellationRequested();
@@ -63,7 +63,7 @@ public class BucketSortStrategy : AlgorithmStrategyBase
                 compares: new List<int> { i });
         }
 
-        // Phase 2: Sort each bucket with insertion sort
+        
         for (int b = 0; b < BucketCount; b++)
         {
             cancellationToken.ThrowIfCancellationRequested();
@@ -92,7 +92,7 @@ public class BucketSortStrategy : AlgorithmStrategyBase
                 $"Bucket {b} đã sắp xếp: [{string.Join(", ", bucket)}].");
         }
 
-        // Phase 3: Collect
+        
         int idx = 0;
         for (int b = 0; b < BucketCount; b++)
         {

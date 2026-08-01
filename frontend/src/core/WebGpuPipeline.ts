@@ -1,16 +1,16 @@
-/**
- * WebGpuPipeline — Lõi đường ống WebGPU tái sử dụng cho trực quan hóa thuật toán.
- *
- * Cung cấp:
- *  - Kiểm tra khả dụng adapter/device
- *  - Khởi tạo canvas context
- *  - Mẫu compute shader WGSL để xử lý mảng node đồ thị trên GPU
- */
 
-// ── WGSL Compute Shader Template ─────────────────────────────────────────────
-// Tính toán lực đẩy Coulomb giữa các node đồ thị song song trên GPU.
-// Mỗi thread xử lý 1 node: đọc vị trí (x, y) → tính lực → ghi vận tốc (vx, vy).
-export const GRAPH_FORCE_COMPUTE_WGSL = /* wgsl */ `
+
+
+
+
+
+
+
+
+
+
+
+export const GRAPH_FORCE_COMPUTE_WGSL =  `
 struct Node {
   x:  f32,
   y:  f32,
@@ -53,7 +53,7 @@ fn main(@builtin(global_invocation_id) gid: vec3u) {
 }
 `;
 
-// ── WebGPU Availability Check ────────────────────────────────────────────────
+
 
 export interface WebGpuCapabilities {
   supported: boolean;
@@ -63,10 +63,10 @@ export interface WebGpuCapabilities {
   error: string | null;
 }
 
-/**
- * Kiểm tra khả dụng WebGPU và trả về adapter + device nếu có.
- * An toàn cho SSR / môi trường không có navigator.gpu.
- */
+
+
+
+
 export async function probeWebGpu(): Promise<WebGpuCapabilities> {
   const unsupported: WebGpuCapabilities = {
     supported: false,
@@ -97,7 +97,7 @@ export async function probeWebGpu(): Promise<WebGpuCapabilities> {
         const adapterInfo = await (adapter as any).requestAdapterInfo();
         adapterName = adapterInfo.device || adapterInfo.vendor || 'GPU';
       } catch {
-        // Fallback to default
+        
       }
     }
 
@@ -114,17 +114,17 @@ export async function probeWebGpu(): Promise<WebGpuCapabilities> {
   }
 }
 
-// ── Canvas Context Initializer ───────────────────────────────────────────────
+
 
 export interface WebGpuCanvasContext {
   context: GPUCanvasContext;
   format: GPUTextureFormat;
 }
 
-/**
- * Khởi tạo WebGPU rendering context cho một HTMLCanvasElement.
- * Throws nếu canvas không hỗ trợ webgpu context.
- */
+
+
+
+
 export function initCanvasContext(
   canvas: HTMLCanvasElement,
   device: GPUDevice,
@@ -140,12 +140,12 @@ export function initCanvasContext(
   return { context, format };
 }
 
-// ── Compute Pipeline Factory ─────────────────────────────────────────────────
 
-/**
- * Tạo compute pipeline từ WGSL shader code.
- * Dùng để chạy force-directed layout hoặc bất kỳ kernel GPU nào.
- */
+
+
+
+
+
 export function createComputePipeline(
   device: GPUDevice,
   wgslCode: string,

@@ -1,6 +1,6 @@
 <template>
   <section class="tab-section fade-in">
-    <!-- Stats Cards Grid -->
+    
     <div class="stats-grid">
       <div class="stat-card">
         <span class="stat-card__val">{{ dashboardData.users.total }}</span>
@@ -28,7 +28,7 @@
       </div>
     </div>
 
-    <!-- Charts Grid -->
+    
     <div class="dashboard-charts grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
       <div class="card card--chart">
         <h3 class="card-heading">

@@ -1,4 +1,4 @@
-/* Postman Settings Overlay Modal Container */
+
 .settings-modal-overlay {
   position: fixed;
   inset: 0;
@@ -18,7 +18,7 @@
   to { opacity: 1; }
 }
 
-/* Modal Dialog Box (Bounded Width & Height) */
+
 .settings-modal-dialog {
   width: 100%;
   max-width: 900px;
@@ -39,7 +39,7 @@
   to { transform: scale(1); opacity: 1; }
 }
 
-/* Modal Header Bar */
+
 .settings-modal-header {
   height: 48px;
   background-color: var(--color-bg-secondary, #121316);
@@ -108,7 +108,7 @@
   color: var(--color-text-heading, #fff);
 }
 
-/* Modal Body Layout (Sidebar + Content Panel) */
+
 .settings-modal-body {
   flex: 1;
   min-height: 0;
@@ -122,7 +122,7 @@
   }
 }
 
-/* Left Sidebar */
+
 .modal-sidebar {
   background-color: var(--color-bg-secondary, #121316);
   border-right: 1px solid var(--color-border-subtle, #27272a);
@@ -185,7 +185,7 @@
   text-overflow: ellipsis;
 }
 
-/* Sidebar Nav Groups */
+
 .sidebar-nav {
   display: flex;
   flex-direction: column;
@@ -263,7 +263,7 @@
   border-radius: 8px;
 }
 
-/* Right Main Panel (Scrollable Content View) */
+
 .modal-content-panel {
   background-color: var(--color-bg-primary, #0f1013);
   padding: 1.5rem 1.75rem;
@@ -302,7 +302,7 @@
   margin: 0;
 }
 
-/* Setting Item Row */
+
 .pm-form {
   display: flex;
   flex-direction: column;
@@ -409,7 +409,7 @@
   cursor: not-allowed;
 }
 
-/* General Summary Card */
+
 .summary-hero-card {
   display: flex;
   align-items: center;
@@ -494,7 +494,7 @@
 .stat-pill--xp { color: #c084fc; background: rgba(168, 85, 247, 0.15); }
 .stat-pill--fire { color: #fb923c; background: rgba(249, 115, 22, 0.15); }
 
-/* Progress & Badges Tab */
+
 .xp-overview-card {
   background-color: var(--color-bg-surface, #18181b);
   border: 1px solid var(--color-border-subtle, #27272a);
@@ -635,7 +635,7 @@
   color: var(--color-text-muted, #71717a);
 }
 
-/* Empty & Loading States */
+
 .empty-state-box {
   display: flex;
   flex-direction: column;
@@ -671,7 +671,7 @@
   border-radius: 6px;
 }
 
-/* Data Table */
+
 .pm-table-container {
   background-color: var(--color-bg-surface, #18181b);
   border: 1px solid var(--color-border-subtle, #27272a);
@@ -732,7 +732,7 @@
 .status-pill--pass { background: rgba(16, 185, 129, 0.15); color: #34d399; }
 .status-pill--fail { background: rgba(239, 68, 68, 0.15); color: #f87171; }
 
-/* Segmented Control & Toggle Switches */
+
 .segmented-control {
   display: inline-flex;
   background-color: var(--color-bg-secondary, #121316);
@@ -788,7 +788,7 @@
   transform: translateX(18px);
 }
 
-/* About Spec Grid */
+
 .about-spec-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));

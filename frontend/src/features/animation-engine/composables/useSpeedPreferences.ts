@@ -27,12 +27,12 @@ export function useSpeedPreferences() {
       let existing: Record<string, unknown> = {};
       const raw = localStorage.getItem(DSA_PREFERENCES_KEY);
       if (raw) {
-        try { existing = JSON.parse(raw); } catch { /* ignore */ }
+        try { existing = JSON.parse(raw); } catch {  }
       }
       existing.defaultSpeed = speed;
       localStorage.setItem(DSA_PREFERENCES_KEY, JSON.stringify(existing));
     } catch {
-      // localStorage not available
+      
     }
   }
 

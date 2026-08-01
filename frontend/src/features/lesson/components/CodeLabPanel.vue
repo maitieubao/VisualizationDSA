@@ -1,8 +1,8 @@
 <template>
   <div class="lesson-step-codelab flex flex-col lg:flex-row h-full w-full bg-slate-950 overflow-hidden text-slate-200 font-sans">
-    <!-- Left Column: Problem Description, Testcases -->
+    
     <div class="w-full lg:w-1/2 h-full flex flex-col border-r border-white/10 bg-slate-900/60 overflow-hidden">
-      <!-- Tabs -->
+      
       <div class="flex border-b border-white/10 bg-slate-950/60 px-4 shrink-0">
         <button
           v-for="tab in problemTabs"
@@ -15,7 +15,7 @@
         </button>
       </div>
 
-      <!-- Tab 1: Đề Bài (Problem Specification) -->
+      
       <div v-show="activeTab === 'problem'" class="flex-1 overflow-y-auto p-5 space-y-4">
         <div class="flex items-center justify-between border-b border-white/10 pb-3">
           <div>
@@ -42,7 +42,7 @@
         </div>
       </div>
 
-      <!-- Tab 2: Testcases -->
+      
       <div v-show="activeTab === 'testcases'" class="flex-1 overflow-y-auto p-5 space-y-3">
         <div class="flex items-center justify-between">
           <div class="flex items-center gap-2 group relative">
@@ -63,7 +63,7 @@
           </span>
         </div>
 
-        <!-- Skeleton loading when running -->
+        
         <div v-if="isRunning && testResults.length === 0" class="space-y-3">
           <div v-for="i in task?.testCases?.length || 2" :key="i" class="h-20 rounded-xl bg-slate-800/50 animate-pulse border border-white/5"></div>
         </div>
@@ -86,7 +86,7 @@
         </div>
       </div>
       
-      <!-- Tab 3: Solution (Gợi ý) -->
+      
       <div v-show="activeTab === 'solution'" class="flex-1 overflow-y-auto p-5 space-y-3">
         <h3 class="text-xs font-bold uppercase text-slate-400">Giải pháp tham khảo</h3>
         <div class="p-4 rounded-xl bg-slate-950 border border-white/10 space-y-2">
@@ -106,9 +106,9 @@
       </div>
     </div>
 
-    <!-- Right Column: Code Editor & Execution Actions -->
+    
     <div class="w-full lg:w-1/2 h-full flex flex-col bg-slate-950">
-      <!-- Editor Header -->
+      
       <div class="px-4 py-2.5 border-b border-white/10 bg-slate-900/80 flex items-center justify-between shrink-0">
         <div class="flex items-center gap-2">
           <span class="text-xs font-bold text-slate-300 font-mono">Solution.js</span>
@@ -119,9 +119,9 @@
         </button>
       </div>
 
-      <!-- Code Textarea / Monaco Container -->
+      
       <div class="flex-1 min-h-0 relative p-3">
-        <!-- Temporary fallback to textarea, or use Monaco if it was imported -->
+        
         <textarea
           v-model="userCode"
           class="w-full h-full bg-slate-950 text-indigo-200 font-mono text-xs p-4 rounded-xl border border-white/10 focus:outline-none focus:border-indigo-500/50 resize-none leading-relaxed"
@@ -129,7 +129,7 @@
         ></textarea>
       </div>
 
-      <!-- Footer Actions (Run Testcases & Submit Solution) -->
+      
       <div class="p-4 border-t border-white/10 bg-slate-900/90 flex items-center justify-between shrink-0">
         <div class="flex items-center gap-2">
           <button
@@ -211,12 +211,12 @@ async function runTestcases(isSubmit: boolean = false): Promise<void> {
   
   isRunning.value = true;
   activeTab.value = 'testcases';
-  testResults.value = []; // Clear old results to show loading skeleton
+  testResults.value = []; 
   
   const results = [];
   
-  // Wrapper để gọi hàm mà người dùng đã định nghĩa (quickSort, solution, v.v.)
-  // Và đảm bảo mảng arr được mutate để worker có thể chụp lại frame cuối.
+  
+  
   const wrappedCode = `
     ${userCode.value}
     
@@ -237,7 +237,7 @@ async function runTestcases(isSubmit: boolean = false): Promise<void> {
   `;
 
   for (const tc of props.task.testCases) {
-    // Nếu đang chạy thử (không phải submit) thì bỏ qua testcase ẩn
+    
     if (!isSubmit && tc.isHidden) {
       results.push({ passed: false, actualOutput: 'Bỏ qua (Chưa submit)' });
       continue;
@@ -245,12 +245,12 @@ async function runTestcases(isSubmit: boolean = false): Promise<void> {
 
     try {
       const inputArr = JSON.parse(tc.input);
-      // Chuẩn hóa output: loại bỏ toàn bộ khoảng trắng dư thừa
+      
       const expectedStr = tc.expectedOutput.replace(/\s+/g, '');
       
       const frames = await executeInSandbox(wrappedCode, inputArr, 2000);
       
-      // Khung hình cuối cùng sẽ chứa trạng thái mảng sau khi hàm kết thúc
+      
       const finalState = frames[frames.length - 1]?.arrayState || inputArr;
       const actualStr = JSON.stringify(finalState).replace(/\s+/g, '');
       
@@ -269,7 +269,7 @@ async function runTestcases(isSubmit: boolean = false): Promise<void> {
 
 async function submitSolution(): Promise<void> {
   isSubmitting.value = true;
-  await runTestcases(true); // Run all testcases including hidden ones
+  await runTestcases(true); 
   isSubmitting.value = false;
   
   const allPassed = testResults.value.every(r => r.passed);

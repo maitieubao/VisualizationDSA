@@ -20,7 +20,7 @@
         }"
       >
         <div class="preview-inner" :class="themeClass">
-          <!-- Simulated widget header -->
+          
           <div class="sim-header">
             <div class="sim-logo">
               <span class="sim-logo-icon">V</span>
@@ -29,7 +29,7 @@
             <span class="sim-algo-label">{{ algorithmLabel }}</span>
           </div>
 
-          <!-- Simulated canvas area -->
+          
           <div class="sim-canvas">
             <div class="sim-bars">
               <div
@@ -41,7 +41,7 @@
             </div>
           </div>
 
-          <!-- VCR Controls -->
+          
           <div v-if="store.showVcrControls" class="sim-vcr">
             <div class="sim-vcr-btn">⏮</div>
             <div class="sim-vcr-btn sim-vcr-play">▶</div>
@@ -49,7 +49,7 @@
             <div class="sim-vcr-slider" />
           </div>
 
-          <!-- Watch Variables -->
+          
           <div v-if="store.showWatchVariables" class="sim-watch">
             <span class="sim-watch-badge">i = 3</span>
             <span class="sim-watch-badge">j = 5</span>

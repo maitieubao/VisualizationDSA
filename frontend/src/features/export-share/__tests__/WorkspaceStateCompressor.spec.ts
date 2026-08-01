@@ -1,4 +1,4 @@
-// @vitest-environment jsdom
+
 import { describe, it, expect, vi } from 'vitest';
 import { WorkspaceStateCompressor } from '../engine/WorkspaceStateCompressor';
 import type { WorkspaceState } from '../types/export-share.types';

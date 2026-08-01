@@ -1,6 +1,6 @@
 <template>
   <div class="flex flex-col sm:flex-row items-start sm:items-center gap-4 flex-wrap bg-slate-900/40 p-4 rounded-xl border border-white/5">
-    <!-- Search -->
+    
     <div class="relative flex-1 min-w-[200px] w-full sm:w-auto">
       <input
         :value="searchQuery"
@@ -14,7 +14,7 @@
       </svg>
     </div>
 
-    <!-- Category Filter -->
+    
     <div class="flex items-center gap-1.5 flex-wrap">
       <span class="text-[10px] text-slate-500 font-bold uppercase tracking-wider mr-2">Danh mục</span>
       <button
@@ -30,7 +30,7 @@
       </button>
     </div>
 
-    <!-- Difficulty Filter -->
+    
     <div class="flex items-center gap-1.5 flex-wrap">
       <span class="text-[10px] text-slate-500 font-bold uppercase tracking-wider mr-2">Độ khó</span>
       <button

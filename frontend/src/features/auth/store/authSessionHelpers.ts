@@ -2,12 +2,12 @@ import type { Ref } from 'vue';
 import * as authApi from '../services/authApi';
 
 const REFRESH_TOKEN_KEY  = 'vdsa_refresh_token';
-const ACCESS_EXPIRES_KEY = 'vdsa_access_expires'; // epoch ms
+const ACCESS_EXPIRES_KEY = 'vdsa_access_expires'; 
 
-/**
- * Lưu session mới (access token, refresh token, user) vào store và localStorage.
- * Trả về refreshTimer ID.
- */
+
+
+
+
 export function setSession(
   response: authApi.AuthResponse,
   accessToken: Ref<string | null>,
@@ -22,7 +22,7 @@ export function setSession(
   scheduleRefresh(expiresIn);
 }
 
-/** Xóa toàn bộ session: memory + localStorage + timer. */
+
 export function clearSession(
   accessToken: Ref<string | null>,
   currentUser: Ref<authApi.AuthUserDto | null>,
@@ -35,7 +35,7 @@ export function clearSession(
   if (refreshTimer.value) { clearTimeout(refreshTimer.value); refreshTimer.value = null; }
 }
 
-/** Lấy refresh token đã lưu trong localStorage. */
+
 export function getSavedRefreshToken(): string | null {
   return localStorage.getItem(REFRESH_TOKEN_KEY);
 }

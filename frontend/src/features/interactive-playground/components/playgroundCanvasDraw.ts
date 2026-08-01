@@ -1,7 +1,7 @@
 import { GraphGeometryEngine } from '../engine/GraphGeometryEngine';
 import type { NodeDTO, EdgeDTO } from '../store/usePlaygroundStore';
 
-/** Subset of graph algorithm frame data used by the canvas renderer */
+
 interface GraphAnimationFrame {
   visitedEdges?: string[];
   activeNodes?: string[];
@@ -46,12 +46,12 @@ export function drawPlayground(
       fromNode, toNode, fromNode.radius, toNode.radius
     );
 
-    // Draw hover glow behind the edge
+    
     if (isHovered) {
       ctx.beginPath();
       ctx.moveTo(arrow.start.x, arrow.start.y);
       ctx.lineTo(arrow.end.x, arrow.end.y);
-      ctx.strokeStyle = 'rgba(245, 158, 11, 0.4)'; // Amber glow
+      ctx.strokeStyle = 'rgba(245, 158, 11, 0.4)'; 
       ctx.lineWidth = 8;
       ctx.stroke();
     }
@@ -61,10 +61,10 @@ export function drawPlayground(
     ctx.lineTo(arrow.end.x, arrow.end.y);
 
     let edgeColor = '#475569';
-    if (isActiveEdge) edgeColor = '#F59E0B'; // Amber
-    else if (isVisitedEdge) edgeColor = '#10B981'; // Emerald
-    else if (isSelected) edgeColor = '#0EA5E9'; // Cyan
-    else if (isHovered) edgeColor = '#F59E0B'; // Amber line highlight
+    if (isActiveEdge) edgeColor = '#F59E0B'; 
+    else if (isVisitedEdge) edgeColor = '#10B981'; 
+    else if (isSelected) edgeColor = '#0EA5E9'; 
+    else if (isHovered) edgeColor = '#F59E0B'; 
 
     ctx.strokeStyle = edgeColor;
     ctx.lineWidth = (isSelected || isActiveEdge || isVisitedEdge || isHovered) ? 3 : 2;
@@ -130,7 +130,7 @@ export function drawPlayground(
       ctx.stroke();
     }
 
-    // Draw hover glow behind the node
+    
     if (isHovered) {
       ctx.beginPath();
       ctx.arc(node.x, node.y, node.radius + 6, 0, Math.PI * 2);
@@ -145,16 +145,16 @@ export function drawPlayground(
     let nodeStroke = '#64748B';
 
     if (isActiveNode) {
-      nodeFill = '#F59E0B'; // Amber
+      nodeFill = '#F59E0B'; 
       nodeStroke = '#FBBF24';
     } else if (isVisitedNode) {
-      nodeFill = '#10B981'; // Emerald
+      nodeFill = '#10B981'; 
       nodeStroke = '#34D399';
     } else if (isSelected) {
-      nodeFill = '#0EA5E9'; // Cyan
+      nodeFill = '#0EA5E9'; 
       nodeStroke = '#38BDF8';
     } else if (isHovered) {
-      nodeStroke = '#FBBF24'; // Amber border on hover
+      nodeStroke = '#FBBF24'; 
     }
 
     ctx.fillStyle = nodeFill;
@@ -171,7 +171,7 @@ export function drawPlayground(
     ctx.textBaseline = 'middle';
     ctx.fillText(node.label, node.x, node.y);
 
-    // Draw Dijkstra distances if applicable
+    
     if (selectedAlgorithm === 'DIJKSTRA' && activeFrame && activeFrame.distances) {
       const dVal = activeFrame.distances[node.id];
       const dText = dVal === Infinity || dVal === undefined ? 'd=∞' : `d=${dVal}`;

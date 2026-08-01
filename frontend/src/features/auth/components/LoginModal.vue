@@ -3,18 +3,18 @@
     <Transition name="modal-fade">
       <div v-if="visible" class="modal-backdrop" @click.self="$emit('close')">
         <div class="modal-card">
-          <!-- Header -->
+          
           <div class="modal-header">
             <h2 class="modal-title">{{ isRegisterMode ? 'Đăng ký tài khoản' : 'Đăng nhập' }}</h2>
             <button class="modal-close" @click="$emit('close')" aria-label="Đóng">&times;</button>
           </div>
 
-          <!-- Error -->
+          
           <div v-if="authStore.authError" class="modal-error">
             {{ authStore.authError }}
           </div>
 
-          <!-- Form -->
+          
           <form @submit.prevent="handleSubmit" class="modal-form">
             <div class="form-group">
               <label class="form-label" for="auth-email">Email</label>
@@ -40,14 +40,14 @@
             </button>
           </form>
 
-          <!-- Toggle mode -->
+          
           <div class="modal-footer">
             <button class="toggle-link" @click="toggleMode">
               {{ isRegisterMode ? 'Đã có tài khoản? Đăng nhập' : 'Chưa có tài khoản? Đăng ký' }}
             </button>
           </div>
 
-          <!-- Demo credentials -->
+          
           <div class="demo-info">
             <span class="demo-label">Demo:</span>
             <code class="demo-code">demo@visualizationdsa.dev</code> / <code class="demo-code">Demo@2024</code>
@@ -86,7 +86,7 @@ async function handleSubmit(): Promise<void> {
     }
     emit('close');
   } catch {
-    // Error is already set in authStore.authError
+    
   }
 }
 </script>

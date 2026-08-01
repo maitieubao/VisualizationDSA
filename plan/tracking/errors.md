@@ -617,3 +617,60 @@ edirect: '/'.
 ### Bug: Listbox (Dropdown ch?n gi?i thu?t) b? m?, khÛ nh?n trÍn n?n tr?ng
 - **NguyÍn nh‚n:** C·c th? \<option>\ bÍn trong dropdown ang s? d?ng c·c bi?n m‡u CSS custom (\g-bg-secondary\, \	ext-text-primary\). Tr?nh duy?t Windows th˝?ng khÙng render chu?n c·c bi?n m‡u n‡y bÍn trong component dropdown g?c (native UI), d?n ?n vi?c n?n b? tr?ng to·t v‡ ch? b? m? nh?t (low contrast).
 - **C·ch kh?c ph?c:** Ch?nh s?a file \InteractivePlayground.vue\ v‡ \CustomInputPanel.vue\, g? b? class m‡u custom v‡ thay th? b?ng h? m‡u t?nh chu?n c?a Tailwind (vÌ d?: \g-slate-900 text-slate-100\) ? Èp bu?c tr?nh duy?t render m‡u t?i (dark theme) cho to‡n b? c·c m?c ch?n bÍn trong Listbox.
+
+### Sua Loi 177: Vite Import-Analysis Failed Resolve `./components/PseudocodeViewer.vue` Trong `code-editor` Barrel (ERR_VITE_RESOLVE_MISSING_COMPONENT)
+*   **M√¥ t·∫£:** Khi load trang ch√≠nh, Vite b√°o l·ªói `[plugin:vite:import-analysis] Failed to resolve import "./components/PseudocodeViewer.vue" from "src/features/code-editor/index.ts". Does the file exist?` tr√™n overlay ƒë·ªè che khu·∫•t to√†n b·ªô UI.
+*   **M√£ L·ªói:** `ERR_VITE_RESOLVE_MISSING_COMPONENT`
+*   **Nguy√™n nh√¢n g·ªëc:** Barrel `src/features/code-editor/index.ts` re-export `PseudocodeViewer` t·ª´ `./components/PseudocodeViewer.vue` ‚Äî file n√†y **kh√¥ng t·ªìn t·∫°i** trong module `code-editor`. Canonical component th·ª±c s·ª± n·∫±m ·ªü `src/features/dsa-modules/components/PseudocodeViewer.vue` v√† ƒë∆∞·ª£c `DSAPlayer.vue` import tr·ª±c ti·∫øp. Vi·ªác barrel re-export m·ªôt component kh√¥ng thu·ªôc module l√† cross-module leak sai ki·∫øn tr√∫c, v√† l√† dead code v√¨ kh√¥ng c√≥ consumer n√†o import `PseudocodeViewer` t·ª´ barrel `code-editor`.
+*   **C√°ch kh·∫Øc ph·ª•c:** X√≥a d√≤ng `export { default as PseudocodeViewer } from './components/PseudocodeViewer.vue';` kh·ªèi `code-editor/index.ts`, thay b·∫±ng comment NOTE h∆∞·ªõng d·∫´n import tr·ª±c ti·∫øp t·ª´ module s·ªü h·ªØu (`dsa-modules`) n·∫øu c·∫ßn d√πng. ƒê·ªìng th·ªùi gi·ªØ nguy√™n export `PseudocodePanel` v√¨ n√≥ ƒëang l√† API c√¥ng khai h·ª£p l·ªá c·ªßa module.
+
+### Sua Loi 178: Hang Loat Vite Import-Analysis Failed Resolve Tren Toan Frontend (ERR_FRONTEND_BROKEN_IMPORTS_SWEEP)
+*   **M√¥ t·∫£:** Sau khi fix rieng code-editor/index.ts (Sua Loi 177), chay static check toan frontend phat hien them 30 broken relative import gay do cac file dich da bi xoa/di chuyen nhung code chua cap nhat. Tat ca deu khong the resolve khi Vite import-analysis quet module graph.
+*   **Ma Loi:** ERR_FRONTEND_BROKEN_IMPORTS_SWEEP
+*   **Nguyen nhan goc:** Qua trinh refactor truoc day da xoa/di chuyen 4 view file (OOPVisualizationView, SOLIDVisualizationView, PatternsView, DIView) sang he thong Docs, dong thoi xoa 4 modal file (TestCaseModal, TemplateModal, HintModal, CustomMarkdownEditor o vi tri cu) ma khong cap nhat cac diem import tuong ung trong isualizerMap.ts, LessonStepViz.vue, CodelabBuilderTab.vue, ItemFormModal.vue. Ngoai ra 3 view file (DashboardView.vue, GraphView.vue, Legend.vue) co relative path depth sai (off-by-one) do sau khi file duoc di chuyen vao subdirectory.
+*   **Cach khac phuc:** Phan loai 30 loi thanh 3 nhom va xu ly:
+    - **Nhom 1 (5 import, 2 file) ‚Äî Sai do sau duong dan:** Sua ../features/... thanh ../../features/... trong DashboardView.vue:148-150 va GraphView.vue:79-85. Sua ../../store/... thanh ../store/... trong dsa-modules/components/Legend.vue:26.
+    - **Nhom 2 (1 import) ‚Äî Sai alias duong dan:** Sua ./CustomMarkdownEditor.vue thanh @/components/editor/CustomMarkdownEditor.vue trong ItemFormModal.vue:210 (canonical path da duoc 4 file khac su dung).
+    - **Nhom 3 (7 file moi) ‚Äî File bi xoa/di chuyen:** Tao 4 view stub (iews/oop/OOPVisualizationView.vue, iews/solid/SOLIDVisualizationView.vue, iews/patterns/PatternsView.vue, iews/di/DIView.vue) voi Props 	itle/message/targetRoute va redirect link sang /docs/... (route moi da ton tai). Tao 3 modal stub (iews/teacher/TestCaseModal.vue, TemplateModal.vue, HintModal.vue) voi Props/Emits interface khop parent (show, editingXxx, parentCodelab, emit update:show + save). Tat ca stub giu contract: emit tra du lieu hien tai de parent khong bi gay flow, UI hien thi "üöß dang tai cau truc" voi link mo tai lieu moi.
+*   **Verify:** rontend/scripts/find-missing-imports.cjs (custom static checker quet relative imports) bao OK: No missing relative imports found. (truoc do: 30 loi). 
+px vue-tsc --noEmit exit code 0 (toan bo type check pass).
+
+### Sua Loi 179: Frontend Features Audit Phat Hien Technical Debt An (Classroom Menu, Legacy Route, Empty CRUD) (ERR_FRONTEND_AUDIT_FIXES)
+*   **M√¥ t·∫£:** Audit 3 khu v·ª±c (classroom, teacher, courses) ph√°t hi·ªán 3 ƒëi·ªÉm t·ªìn ƒë·ªçng ·∫£nh h∆∞·ªüng user: (1) route /classrooms/:id kh√¥ng c√≥ menu link, (2) TeacherAnalyticsTab d√πng route legacy kh√¥ng kh·ªõp convention /api/v1/, (3) 7 h√†m CRUD trong CodelabBuilderTab ch·ªâ c√≥ // Implementation r·ªóng.
+*   **Ma Loi:** ERR_FRONTEND_AUDIT_FIXES
+*   **Nguyen nhan goc:**
+    - **(1)** Route /classrooms/:id ƒë∆∞·ª£c define t·ª´ tr∆∞·ªõc nh∆∞ng thi·∫øu view list /classrooms + menu entry ‚Üí student ch·ªâ truy c·∫≠p ƒë∆∞·ª£c qua deep link.
+    - **(2)** ClassroomController c≈© (pi/[controller]) cung c·∫•p teacher-specific endpoints (/mine, /{id}/statistics, /{id}/export-excel) m√† 3 controller m·ªõi /api/v1/classrooms/* ch·ªâ cover curriculum + progress + student analytics. Migration ho√†n to√†n sang v1 ch∆∞a kh·∫£ thi.
+    - **(3)** CodelabController (/api/v1/codelabs) hi·ªán l√† skeleton ‚Äî t·∫•t c·∫£ endpoint ch·ªâ return Ok(new { message = "..." }) kh√¥ng th·ª±c s·ª± persist. Frontend ƒë·ªÉ h√†m r·ªóng t·ªët h∆°n l√† wire-up l√™n stub (s·∫Ω t·∫°o 'fake success' 200 OK nh∆∞ng data m·∫•t khi reload).
+*   **Cach khac phuc:**
+    - **(1)** T·∫°o iews/classroom/MyClassroomsView.vue (g·ªçi /api/Classroom/mine, k√®m join modal). Th√™m route /classrooms + menu entry trong ppTabs.ts.
+    - **(2)** Gi·ªØ legacy URL trong TeacherAnalyticsTab.vue, th√™m block NOTE comment ·ªü ƒë·∫ßu <script setup> gi·∫£i th√≠ch l√Ω do + h∆∞·ªõng d·∫´n migrate khi backend s·∫µn s√†ng.
+    - **(3)** Thay 8 h√†m CRUD r·ªóng/sai b·∫±ng helper crudNotImplemented(action, endpoint) ‚Äî show alert 'ƒëang ph√°t tri·ªÉn' + console.warn + block comment TODO v·ªõi fetch boilerplate s·∫µn ƒë·ªÉ uncomment khi backend ready.
+*   **Verify:** ind-missing-imports.cjs ‚úì clean, ind-duplicate-decls.cjs ‚úì clean, ue-tsc --noEmit exit 0.
+
+### S?a L?i 180: N˙t "MÙ ph?ng thanh to·n" CÚn Hi?n Th? Trong Production (ERR_SIMULATE_PAYMENT_PROD_LEAK)
+* **MÙ t?:** N˙t "?? MÙ ph?ng: X·c nh?n d„ thanh to·n" trong PremiumCheckoutView.vue cÛ th? v?n hi?n th? trong production build do ki?m tra isDev chua d? robust.
+* **M„ L?i:** ERR_SIMULATE_PAYMENT_PROD_LEAK
+* **NguyÍn nh‚n g?c:** Vite thay th? import.meta.env.DEV th‡nh false trong production, nhung d? d?m b?o tÌnh v?ng ch?c, c?n ki?m tra c? import.meta.env.PROD.
+* **C·ch kh?c ph?c:** C?p nh?t isDev = import.meta.env.DEV && !import.meta.env.PROD trong PremiumCheckoutView.vue.
+* **Verify:** Build production ? n˙t khÙng xu?t hi?n trong DOM.
+
+### S?a L?i 181: Difficulty Mismatch Trong TeacherCourseTab (ERR_COURSE_DIFFICULTY_MISMATCH)
+* **MÙ t?:** TeacherCourseTab.vue d˘ng Easy/Medium/Hard trong dropdown, trong khi backend enum CourseDifficulty v‡ view kh·c d˘ng Beginner/Intermediate/Advanced.
+* **M„ L?i:** ERR_COURSE_DIFFICULTY_MISMATCH
+* **NguyÍn nh‚n g?c:** TeacherCourseTab vi?t d?c l?p, dropdown difficulty khÙng d?ng b? backend enum.
+* **C·ch kh?c ph?c:** C?p nh?t 3 d?a di?m: dropdown options, courseForm default, cancelCourseEdit reset ó d?ng b? Beginner/Intermediate/Advanced.
+* **Verify:** Vue-tsc --noEmit exit 0, backend build 0 errors.
+
+### S?a L?i 182: D?n d?p Dead Code & Chuy?n d?i System Design Visualization Sang T‡i Li?u (ERR_DEAD_CODE_CLEANUP)
+* **MÙ t?:** D?n d?p to‡n b? dead code (views, features) khÙng cÚn s? d?ng v‡ chuy?n d?i tÌnh nang tr?c quan hÛa thi?t k? h? th?ng th‡nh t‡i li?u l˝ thuy?t.
+* **M„ L?i:** ERR_DEAD_CODE_CLEANUP
+* **NguyÍn nh‚n g?c:** Nhi?u views v‡ features d„ b? comment out trong routes nhung v?n t?n t?i trong codebase, g‚y r?i v‡ tang kÌch thu?c bundle.
+* **C·ch kh?c ph?c:**
+    - **XÛa 15 dead views:** AnimationView, CompareView, ConcurrencyView, DebugView, DSAModulesView, LeaderboardView, LearningPathView, MultiViewView, PlaygroundView, StateInspectorView, TimelinePlaybackView, di/, oop/, patterns/, solid/
+    - **XÛa dead feature:** smart-quiz (khÙng du?c import ? d‚u)
+    - **Luu ˝:** animation-engine du?c gi? l?i vÏ dang du?c s? d?ng b?i nhi?u features ho?t d?ng (custom-input, code-to-visualization, dsa-modules, e-lecture, interactive-playground, lesson, quiz-system, pseudocode-sync)
+    - **Chuy?n d?i System Design Visualization sang t‡i li?u:** T?o 5 file markdown trong docs/content/system-design/ (system-design-intro, load-balancer, server-health, packet-routing, replication-lag, failure-handling). ThÍm v‡o docsNavigation.ts. XÛa system-design-viz feature, SystemDesignVizView.vue, route /system, appTabs entry.
+    - **C?p nh?t visualizerMap.ts:** Chuy?n hu?ng OOP/SOLID/Patterns/DI/SystemDesign t?i DocsView.vue
+    - **C?p nh?t LessonStepViz.vue:** Chuy?n hu?ng OOP/SOLID t?i DocsView.vue
+* **Verify:** vue-tsc --noEmit exit 0, frontend tests 688/688 PASS, find-missing-imports.cjs OK, dotnet build 0 errors.

@@ -87,7 +87,7 @@ export const useGamificationStore = defineStore('gamification-engine', () => {
     finally { isSyncing.value = false; }
   }
 
-  // ── Stateless Backend Integration ──────────────────────────────
+  
   const backendProfile = ref<StatelessUserProfile | null>(null);
   const backendBadges = ref<StatelessBadge[]>([]);
   const backendLeaderboard = ref<StatelessLeaderboardEntry[]>([]);
@@ -167,7 +167,7 @@ export const useGamificationStore = defineStore('gamification-engine', () => {
     allBadges, lockedBadges, nextBadgeXPThreshold, xpProgressPercent, streakStatus, isOnlineMode,
     earnXPLocal, checkAndUnlockBadges, triggerConfettiRain, useStreakFreeze, setLeaderboardData, setStreakForTesting,
     earnXPWithSync, syncProgressFromServer, checkBadgesFromServer, fetchLeaderboardFromServer,
-    // Stateless backend
+    
     backendProfile, backendBadges, backendLeaderboard, isBackendLoading, backendError,
     backendLevelName, backendXpProgress,
     loadBackendProfile, awardXpViaBackend, loadBackendBadges, loadBackendLeaderboard,

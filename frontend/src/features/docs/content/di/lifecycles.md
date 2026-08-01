@@ -1,96 +1,157 @@
 ---
-title: Vòng đời DI (Lifecycles)
-description: Khám phá bí quyết quản lý bộ nhớ của DI Container thông qua 3 vòng đời kinh điển Singleton, Scoped, và Transient. Khi nào dùng cái nào?
+title: Vòng đời Dependency Injection (Lifecycles)
+description: Khám phá bí ẩn sinh tử của các Đối tượng trong ASP.NET Core. Phân định rạch ròi 3 cảnh giới: Transient, Scoped, Singleton và cách né tránh án tử hình mang tên Captive Dependency.
 ---
 
-# Vòng đời DI (Lifecycles) {#lifecycles}
+# Vòng đời Dependency Injection (DI Lifecycles) {#di-lifecycles}
 
-Khi bạn giao phó quyền khởi tạo đối tượng (gọi hàm `new`) cho một **DI Container**, bạn phải chỉ định rõ cho Framework biết: *"Đối tượng này sau khi được tạo ra sẽ sống được bao lâu?"*
-
-Nếu đối tượng nào cũng sống vĩnh viễn (như Singleton), RAM của bạn sẽ nhanh chóng bị quá tải. Nếu đối tượng nào cũng tạo mới liên tục, CPU sẽ chạy kiệt sức vì chi phí dọn rác (Garbage Collector).
-
-Để giải bài toán này, .NET Core thiết kế 3 cấp độ vòng đời kinh điển: **Transient**, **Scoped**, và **Singleton**.
-
-```mermaid
-graph TD
-    A[Client Request] --> B{DI Container}
-    
-    B -->|Xin Transient| C[Tạo MỚI #1]
-    B -->|Xin Transient| D[Tạo MỚI #2]
-    
-    B -->|Xin Scoped| E[Tạo Instance #3 cho Request hiện tại]
-    B -->|Xin lại Scoped| E
-    
-    B -->|Xin Singleton| F[Tạo DUY NHẤT #4]
-    B -->|Xin lại Singleton| F
-    
-    style C fill:#d9ead3,stroke:#6aa84f
-    style D fill:#d9ead3,stroke:#6aa84f
-    style E fill:#cfe2f3,stroke:#3d85c6
-    style F fill:#fff2cc,stroke:#d6b656
-```
-
-## 1. Transient (Thoáng qua) {#transient}
-
-**Quy tắc:** Tạo MỚI mỗi khi được yêu cầu.
-
-Bất cứ khi nào có một Class yêu cầu đối tượng này thông qua Constructor, DI Container sẽ ngay lập tức gọi lệnh `new` để tạo ra một phiên bản hoàn toàn mới cứng. Kể cả khi 2 Class cùng xin trong 1 HTTP Request, hệ thống cũng tạo ra 2 bản sao độc lập.
-
-- **Đăng ký:** `services.AddTransient<IService, MyService>();`
-- **Hình ảnh thực tế:** Giống như tờ khăn giấy dùng 1 lần ở quán ăn. Ai cần cũng được phát 1 tờ mới tinh, xài xong vứt (bị GC thu hồi ngay).
-- **Khi nào nên dùng?**
-  - Dành cho các Class chứa logic tính toán nhẹ nhàng, không lưu trạng thái (Stateless).
-  - Dành cho các Service chạy đa luồng cực nhanh mà không muốn bị đụng độ biến.
-
-## 2. Scoped (Phạm vi) {#scoped}
-
-**Quy tắc:** Tạo MỘT LẦN duy nhất trong MỖI PHẠM VI (Một Request).
-
-Khái niệm "Phạm vi" (Scope) trong lập trình Web thường ám chỉ 1 HTTP Request. Khi người dùng A gửi yêu cầu lên Web API, hệ thống mở một Scope. Nếu trong quá trình xử lý yêu cầu đó, có 5 Class cùng xin đối tượng này, DI Container chỉ tạo `new` đúng 1 lần ở Class đầu tiên, 4 Class sau sẽ xài ké. Khi Request kết thúc trả về cho Client, Scope bị hủy, đối tượng cũng chết theo. Nếu người dùng B gửi request khác, một đối tượng mới lại được sinh ra.
-
-- **Đăng ký:** `services.AddScoped<IService, MyService>();`
-- **Hình ảnh thực tế:** Giống như một bàn tiệc (Request). Bàn số 1 gọi một chai nước mắm (Scoped Service). Tất cả mọi người ở Bàn 1 xài chung chai nước mắm đó. Bàn số 2 sẽ có chai nước mắm khác. Không ai xài chung của ai.
-- **Khi nào nên dùng?**
-  - CỰC KỲ QUAN TRỌNG cho **Database Context (EF Core)**. Mọi thao tác lưu/xóa/sửa trong 1 request cần dùng chung 1 kết nối DB để đảm bảo tính toàn vẹn Giao dịch (Transaction).
-  - Các Service liên quan đến xác thực người dùng (User Session / Claims) trong cùng 1 request.
-
-## 3. Singleton (Duy nhất) {#singleton}
-
-**Quy tắc:** Tạo MỘT LẦN DUY NHẤT trong suốt vòng đời của Ứng dụng.
-
-Ngay khi đối tượng được yêu cầu lần đầu tiên, DI Container sẽ khởi tạo nó và giữ nó sống mãi trong RAM. Tất cả mọi Request từ tất cả người dùng, mọi Class đều được phát cho ĐÚNG CÙNG MỘT đối tượng đó.
-
-- **Đăng ký:** `services.AddSingleton<IService, MyService>();`
-- **Hình ảnh thực tế:** Giống như ông Chủ quán. Cả ngàn khách hàng đến quán đều chỉ giao tiếp với đúng 1 ông chủ đó.
-- **Khi nào nên dùng?**
-  - Cấu hình ứng dụng (App Configs), File ghi log (Logger).
-  - Các Dịch vụ lưu Cache (MemoryCache) dùng chung cho mọi người.
-  - Các kết nối tốn rất nhiều tài nguyên để mở (như Connection Pool của Redis, RabbitMQ).
-
-## Bảng so sánh nhanh (Cheat Sheet) {#cheat-sheet}
-
-| Vòng đời | Tần suất tạo mới | Khả năng chia sẻ | Rủi ro Đa luồng (Multi-threading) |
-| :--- | :--- | :--- | :--- |
-| **Transient** | Gọi là tạo mới ngay | Không chia sẻ | Thấp nhất (Ai xài nấy chịu) |
-| **Scoped** | 1 lần / 1 Request | Chia sẻ trong cùng 1 Request | Trung bình |
-| **Singleton** | 1 lần duy nhất từ lúc chạy App | Chia sẻ cho TOÀN BỘ ứng dụng | RẤT CAO! (Bắt buộc phải dùng Lock, hoặc Class không được lưu biến thay đổi) |
-
-:::warning Lỗi kinh điển: Captive Dependency
-Đây là lỗi 99% các Lập trình viên .NET mới vào nghề đều dính.
-**Luật thép:** Một Service có vòng đời DÀI HƠN không bao giờ được phép Consume (Nuốt) một Service có vòng đời NGẮN HƠN.
-
-**Ví dụ:** Nếu bạn lấy một `Singleton` (Sống vĩnh viễn) mà Inject một thằng `Scoped` (DB Context) vào hàm khởi tạo của nó. Thằng Singleton sẽ "giam cầm" (Captive) thằng Scoped đó mãi mãi! Kết quả? Kết nối Database không bao giờ bị đóng lại, ứng dụng của bạn sẽ chết ngắc vì rò rỉ bộ nhớ (Memory Leak) và cạn kiệt Connection Pool.
+:::info Mục tiêu bài học
+- Thấu hiểu 3 vòng đời cấu thành nên toàn bộ hệ thống ASP.NET Core (và các Framework web hiện đại): **Transient**, **Scoped**, **Singleton**.
+- Dùng tư duy "Cuộc đời con người" (Analogies) để cắt nghĩa triệt để sự khác nhau giữa chúng.
+- Vẽ sơ đồ Mermaid mô phỏng luồng chảy của HTTP Request xuyên qua các Vòng đời.
+- Bóc trần thảm họa **Captive Dependency (Bắt cóc phụ thuộc)**: Lý do phổ biến nhất khiến máy chủ web bị rò rỉ RAM (Memory Leak) và Crash.
 :::
 
-## Next Steps {#next-steps}
+## 1. Lời mở đầu: Thế lực thứ 3 kiểm soát sự sống {#introduction}
 
-Quản lý tốt Vòng đời là bạn đã nắm được 80% sức mạnh của DI. Thế nhưng, đời không như là mơ. Sẽ có những lúc bạn gặp phải tình trạng "Gà và Trứng": Class A yêu cầu Class B, Class B lại yêu cầu Class A. Hoặc bạn muốn tự quyết định sẽ Inject lớp nào tùy thuộc vào biến môi trường chạy lúc đó.
+Trong bài viết [Nguyên lý DIP (Dependency Inversion)](/docs/solid/dip), chúng ta đã biết rằng các Class tuyệt đối không được dùng từ khóa `new` để tạo ra đối tượng. Vậy thì ai tạo?
+Câu trả lời là: **DI Container** (Được gọi thân thương là Bộ điều phối / IoC Container).
 
-Làm thế nào để xử lý các ca khó đẻ này? Hãy bước sang bài viết cuối cùng của toàn bộ giáo trình: **Các mẫu nâng cao (Advanced DI)**.
+Khi ứng dụng Web (Ví dụ ASP.NET Core) vừa khởi động, bạn (Kiến trúc sư) sẽ nộp cho DI Container một bản danh sách đăng ký:
+*"Này Container, nếu có một Controller nào đó đòi xin cái Interface `IDatabase`, thì mầy hãy đẻ ra cho nó cái Class `SqlDatabase` nhé."*
 
-<div class="vt-box-container next-steps">
-  <a class="vt-box" href="/docs/di/advanced">
-    <p class="next-steps-link">Mẫu Nâng cao DI (Advanced DI)</p>
-    <p class="next-steps-caption">Giải quyết Circular Dependency, Factory DI, và Scrutor Scanning.</p>
-  </a>
-</div>
+Nhưng DI Container sẽ hỏi ngược lại bạn một câu chí mạng: 
+> *"Ok, tôi sẽ đẻ ra con `SqlDatabase` đó. Nhưng **VÒNG ĐỜI** của nó sẽ như thế nào? Đẻ ra xong rồi giết ngay, hay giữ lại cho người khác xài chung?"*
+
+Bạn bắt buộc phải chỉ định vòng đời (Lifecycle) thông qua 3 cấu hình: `AddTransient`, `AddScoped`, hoặc `AddSingleton`. Chọn sai 1 cái, ứng dụng của bạn sẽ nổ tung khi có hàng ngàn User truy cập cùng lúc.
+
+---
+
+## 2. Giải mã 3 Cảnh giới Vòng đời (Lifecycles) {#lifecycles}
+
+Hãy tưởng tượng bạn đang vào một Quán Cà Phê (Máy chủ Web). Bạn là một HTTP Request (Request 1). Bạn order một ly Trà Sữa (Đối tượng A).
+
+### 2.1. Transient (Kẻ qua đường)
+
+**Khái niệm:** Dùng một lần rồi vứt (Tạo mới liên tục).
+- Cứ mỗi lần bất kỳ Class nào xin Đối tượng, DI Container sẽ gọi `new` để tạo ra một bản sao mới cáu cạnh.
+- Xin 10 lần $\rightarrow$ Đẻ ra 10 Object khác nhau. Xài xong thì thùng rác thu dọn (Garbage Collector).
+
+**Analogy Quán Cà phê:** Cái Ống Hút. Bất cứ khách nào gọi nước, nhân viên đều bóc một cái Ống Hút mới tinh đưa cho khách. Khách khác tới, đưa ống hút mới. Hút xong quăng sọt rác, tuyệt đối không ai xài lại ống hút của ai.
+
+**Cấu hình ASP.NET Core:**
+```csharp
+builder.Services.AddTransient<ITaxCalculator, TaxCalculator>();
+// Ứng dụng: Chuyên dùng cho các Class chứa logic toán học nhẹ nhàng, 
+// không lưu trữ State (không có biến private chứa dữ liệu).
+```
+
+### 2.2. Scoped (Người đồng hành)
+
+**Khái niệm:** Sống chết cùng một Request. Chia sẻ trong nội bộ Request đó.
+- Khi User A bấm Gửi Request (Click Submit). HTTP Request 1 bắt đầu. 
+- Trong suốt quá trình xử lý Request 1 này, dù Controller xin 1 lần, hay Repository xin 10 lần, DI Container chỉ đẻ ra **ĐÚNG 1** Object và cho tất cả xài chung. 
+- Khi Request 1 kết thúc (Trả về Response cho User A), Object đó sẽ bị phá hủy. 
+- Nhưng, nếu User B bắn Request 2 tới, User B sẽ có một Object mới tinh của riêng họ. Tình anh em (Scope) chỉ nằm trong nội bộ một Request.
+
+**Analogy Quán Cà phê:** Cái Bàn. Bạn và đám bạn đi chung (1 Request) sẽ ngồi chung 1 cái Bàn. Mấy bạn làm gì trên cái Bàn đó (chia sẻ đồ ăn) thì tùy. Khách bàn khác (Request 2) không được phép qua ngồi chung hay ăn chung đồ trên Bàn của bạn. Khi các bạn đứng dậy đi về, nhân viên dọn dẹp sạch Bàn (Hủy Object).
+
+**Cấu hình ASP.NET Core:**
+```csharp
+builder.Services.AddScoped<IUserRepository, UserRepository>();
+// Ứng dụng quan trọng nhất: DbContext (Kết nối Database) của Entity Framework!
+// Việc xài chung DbContext trong 1 Request giúp bạn chạy nhiều hàm Save(), Delete(), 
+// nhưng cuối cùng chỉ tạo đúng 1 Transaction Database. Cực kỳ an toàn!
+```
+
+### 2.3. Singleton (Bậc đế vương)
+
+**Khái niệm:** Trường sinh bất tử. (Đã phân tích kỹ trong bài [Singleton Pattern](/docs/patterns/singleton)).
+- DI Container đẻ nó ra đúng 1 lần đầu tiên và GIỮ MÃI MÃI TRONG RAM.
+- User A xin, User B xin, Request 1 hay Request 1 triệu... tất cả đều lấy chung ĐÚNG 1 Object đó ra xài. Chỉ khi nào tắt Server (Tắt Terminal), Object đó mới chết.
+
+**Analogy Quán Cà phê:** Cái Máy Pha Cà Phê. Cả quán bự chỉ có 1 cái máy pha. Tất cả mọi nhân viên đều phải xài chung cái máy đó để pha cho mọi khách hàng.
+
+**Cấu hình ASP.NET Core:**
+```csharp
+builder.Services.AddSingleton<ICacheManager, RedisCacheManager>();
+// Ứng dụng: Cache, Biến cấu hình (Configuration), File Logger. 
+// Khởi tạo rất nặng và tốn thời gian nên chỉ tạo 1 lần.
+```
+
+---
+
+## 3. Hoạt ảnh Request Flow (Mermaid Trace) {#visualizer}
+
+Cùng nhìn dòng chảy của 3 loại Vòng đời này khi có 2 User (HTTP Request 1 và 2) cùng gửi tới Server.
+
+```mermaid
+sequenceDiagram
+    participant U1 as User 1 (Req 1)
+    participant U2 as User 2 (Req 2)
+    participant DI as DI Container
+    participant T as Transient (Ống Hút)
+    participant S as Scoped (Cái Bàn)
+    participant Single as Singleton (Máy Pha CF)
+    
+    Note over DI: Khởi động Server!
+    DI->>Single: Tạo 1 lần duy nhất (Instance #1)
+    
+    U1->>DI: Controller cần 3 món
+    DI->>T: Tạo mới (Inst #1)
+    DI->>S: Tạo mới (Inst #1)
+    DI-->>U1: Trả về (T#1, S#1, Single#1)
+    
+    U1->>DI: Repo cần 3 món (Vẫn nằm trong Req 1)
+    DI->>T: Tạo MỚI TOANH (Inst #2)
+    DI-->>U1: Trả về (T#2, Vẫn S#1 cũ, Vẫn Single#1 cũ)
+    
+    Note over U1: Kết thúc Req 1. Xóa T#1, T#2, S#1. (Single#1 CÒN SỐNG)
+    
+    U2->>DI: User 2 gửi Request 2. Controller cần 3 món
+    DI->>T: Tạo MỚI TOANH (Inst #3)
+    DI->>S: Tạo MỚI TOANH cho Req 2 (Inst #2)
+    DI-->>U2: Trả về (T#3, S#2, Vẫn Single#1 cũ)
+```
+
+---
+
+## 4. Sát thủ kiến trúc: Captive Dependency (Bắt cóc phụ thuộc) {#captive-dependency}
+
+Đây là lỗi kinh điển nhất mà ngay cả Lập trình viên đi làm nhiều năm vẫn gặp phải, gây ra hiện tượng sập máy chủ vô cớ.
+
+**Quy tắc sinh tồn của DI:**
+> *"Một Class có Vòng đời DÀI (Ví dụ Singleton) KHÔNG BAO GIỜ được phép Inject một Class có Vòng đời NGẮN (Ví dụ Scoped/Transient) vào bụng nó!"*
+
+**Kịch bản Bắt Cóc:**
+Bạn đăng ký `EmailService` là **Singleton** (Tồn tại vĩnh viễn).
+Nhưng trong hàm tạo (Constructor) của EmailService, bạn lại xin (Inject) thằng `DbContext` (Kết nối Database) vốn là hàng **Scoped** (Sống ngắn).
+
+Chuyện gì xảy ra khi Request 1 chạy?
+1. DI Container cấp phát `DbContext` (Inst #1) cho `EmailService`.
+2. `EmailService` cất `DbContext` (Inst #1) vào bụng nó (Thành biến toàn cục).
+3. Request 1 kết thúc. Lẽ ra thằng `DbContext` (Inst #1) phải chết (Hủy kết nối DB). Nhưng không, nó đang bị `EmailService` "bắt cóc" giữ chặt lại trong bụng. Rò rỉ (Leak) kết nối thứ nhất!
+4. Request 2, 3, 4 chạy tới. DI Container không cấp `DbContext` mới cho Email, vì Email là Singleton nó chỉ Inject hàm tạo đúng 1 lần đầu. 
+5. Hậu quả: Toàn bộ ngàn Request tiếp theo sẽ Đâm Dầu vào xài chung ĐÚNG 1 CÁI `DbContext` (Inst #1) bị kẹt đó. `DbContext` của Entity Framework **KHÔNG PHẢI LÀ THREAD-SAFE (Không hỗ trợ Đa luồng)**. Hàng ngàn Request chọc vào chung 1 cái DbContext cùng lúc sẽ gây ra lỗi `InvalidOperationException: A second operation was started on this context instance before a previous operation completed`.
+
+**Máy chủ sụp đổ!**
+
+### Sơ đồ Quy tắc bắt cóc (Cheat sheet)
+
+Ai được phép tiêm ai? (Ai bọc được ai?)
+
+| Lớp ngoài (Người bọc) | Tiêm Singleton vào | Tiêm Scoped vào | Tiêm Transient vào |
+| :--- | :---: | :---: | :---: |
+| **Singleton** | ✅ Tốt | ❌ CHẾT NGƯỜI (Captive) | ⚠️ Nguy hiểm (Biến Transient thành Singleton) |
+| **Scoped** | ✅ Tốt | ✅ Tốt | ✅ Tốt |
+| **Transient** | ✅ Tốt | ✅ Tốt | ✅ Tốt |
+
+*(Rất may mắn, kể từ ASP.NET Core 2.0 trở đi, Microsoft đã bổ sung tính năng Tự Động Quét Lỗi Captive Dependency trong quá trình khởi động `Development`. Trình biên dịch sẽ lập tức báo lỗi Đỏ rực ngăn không cho Server chạy nếu bạn lỡ tay tiêm lộn xộn!)*
+
+:::tip Tóm tắt nhanh (Key Takeaways)
+- Vòng đời DI kiểm soát sự phát nổ của RAM trong máy chủ Web.
+- **Transient:** Dễ dãi nhất, xin là cho mới. Rất an toàn, nhưng xin nhiều quá tốn bộ nhớ dọn rác (GC).
+- **Scoped:** Người hùng của Web. Bảo toàn 1 trạng thái nhất quán trong suốt vòng đời của 1 HTTP Request. Bắt buộc dùng cho `DbContext`.
+- **Singleton:** Lãnh chúa độc tôn. Dùng cho Bộ Đệm (Cache), Cấu hình (Config). Phải tự viết Code chống Đa luồng (Thread-safe) cực cẩn thận.
+- TUYỆT ĐỐI không Inject Scoped vào Singleton. Nếu không, máy chủ của bạn sẽ sập trong ngày đầu tiên lên Production.
+:::

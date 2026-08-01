@@ -1,6 +1,6 @@
-/**
- * scriptLoader — Nạp kịch bản mã nguồn đa ngôn ngữ theo algorithmId.
- */
+
+
+
 
 import type { PseudocodeScript } from '../types/pseudocode.types';
 import { bubbleSortScript } from './bubble-sort.pseudocode';

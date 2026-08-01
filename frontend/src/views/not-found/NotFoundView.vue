@@ -1,15 +1,15 @@
 <template>
   <div class="not-found-container">
-    <!-- Animated background particles -->
+    
     <div class="particles" aria-hidden="true">
       <span v-for="i in 12" :key="i" class="particle" :style="particleStyle(i)" />
     </div>
 
     <div class="not-found-card glass">
-      <!-- Glitch 404 number -->
+      
       <div class="error-code" data-text="404" aria-hidden="true">404</div>
 
-      <!-- Icon -->
+      
       <div class="error-icon">
         <svg width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
           <circle cx="32" cy="32" r="30" stroke="var(--color-accent-cyan)" stroke-width="2" stroke-dasharray="6 3" class="rotating-ring" />
@@ -23,7 +23,7 @@
         Trang có thể đã bị xóa hoặc địa chỉ URL không chính xác.
       </p>
 
-      <!-- Action buttons -->
+      
       <div class="error-actions">
         <button id="btn-go-home" class="btn-primary" @click="goHome">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
@@ -39,7 +39,7 @@
         </button>
       </div>
 
-      <!-- Quick nav -->
+      
       <div class="quick-nav">
         <p class="quick-nav-label">Truy cập nhanh:</p>
         <div class="quick-nav-links">

@@ -1,6 +1,6 @@
 <template>
   <div class="lesson-step-viz flex flex-col h-full w-full bg-slate-950 relative overflow-hidden">
-    <!-- Floating Next Step Trigger (No heavy top navigation bar) -->
+    
     <button
       @click="$emit('completeStep')"
       class="absolute top-3 right-4 z-30 px-3.5 py-1.5 bg-indigo-600/90 hover:bg-indigo-500 text-white rounded-xl text-xs font-bold transition-all shadow-lg backdrop-blur-md cursor-pointer border border-indigo-400/30 flex items-center gap-1.5"
@@ -9,7 +9,7 @@
       <span>→</span>
     </button>
 
-    <!-- Canvas / Interactive Animation Container -->
+    
     <div class="flex-1 min-h-0 relative w-full h-full">
       <component :is="resolvedVizComponent" v-if="resolvedVizComponent" />
       <div v-else class="flex flex-col items-center justify-center h-full text-slate-400 p-8 text-center">
@@ -43,10 +43,8 @@ const resolvedVizComponent = computed(() => {
     return defineAsyncComponent(() => import('../../sorting/SortingView.vue'));
   } else if (key === 'graph') {
     return defineAsyncComponent(() => import('../../graph/GraphView.vue'));
-  } else if (key === 'oop') {
-    return defineAsyncComponent(() => import('../../oop/OOPVisualizationView.vue'));
-  } else if (key === 'solid') {
-    return defineAsyncComponent(() => import('../../solid/SOLIDVisualizationView.vue'));
+  } else if (key === 'oop' || key === 'solid') {
+    return defineAsyncComponent(() => import('../../docs/DocsView.vue'));
   }
   return defineAsyncComponent(() => import('../../sorting/SortingView.vue'));
 });

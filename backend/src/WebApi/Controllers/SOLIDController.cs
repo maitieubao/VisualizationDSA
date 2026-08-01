@@ -10,10 +10,10 @@ using VisualizationDSA.Domain.Strategies;
 
 namespace VisualizationDSA.WebApi.Controllers;
 
-/// <summary>
-/// API Controller cho mô-đun SOLID Principles Visualizer.
-/// Cung cấp endpoint sinh chuỗi frame cho SRP, OCP, LSP.
-/// </summary>
+
+
+
+
 [ApiVersion("1.0")]
 [ApiController]
 [Route("api/v{version:apiVersion}/concepts/solid")]

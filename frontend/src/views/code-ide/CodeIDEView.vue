@@ -1,6 +1,6 @@
 <template>
   <div class="code-debugger-view-root flex flex-col h-full w-full gap-4 p-4 max-w-[1600px] mx-auto overflow-hidden">
-    <!-- Header Bar (Glassmorphic) -->
+    
     <div class="tabs-header-bar flex items-center justify-between px-4 py-3 border rounded-xl"
       style="background: rgba(15, 23, 42, 0.45); backdrop-filter: blur(12px); border-color: rgba(255, 255, 255, 0.05);"
     >
@@ -14,12 +14,12 @@
       </div>
     </div>
 
-    <!-- Active Component Area -->
+    
     <div class="flex-1 min-h-0 relative">
       <CodeWorkspace class="absolute inset-0 w-full h-full" />
     </div>
 
-    <!-- Nút Trợ giúp Guided Tour -->
+    
     <HelpButton />
   </div>
 </template>

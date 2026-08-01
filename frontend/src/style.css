@@ -1,36 +1,36 @@
-/* =============================================================================
- * VISUALIZATIONDSA — GLOBAL STYLESHEET
- * =============================================================================
- * File này chứa:
- *   1. Import Design Token System (theme.css) — nguồn sự thật màu sắc/font
- *   2. Import JetBrains Mono font
- *   3. Reset & base styles (body, #app)
- *   4. Scrollbar customization
- *   5. Shared utility classes (.glass-panel, .terminal-card, v.v.)
- *   6. Monaco Editor overrides
- *
- * QUY TẮC: File này KHÔNG chứa bất kỳ giá trị màu hardcoded nào.
- *           Mọi màu đều phải đến từ biến --color-* trong theme.css.
- * ============================================================================= */
 
-/* 1. Design Token System — PHẢI import đầu tiên */
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 @import "./styles/theme.css";
 
-/* 2. JetBrains Mono font (code/mono blocks) */
+
 @import url("https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,300;0,400;0,700;1,300&display=swap");
 
-/* 2b. Premium design tokens (glassmorphism, glow, spring physics) */
+
 @import "./styles/design-tokens.css";
 
-/* 2c. Cinematic motion & glassmorphism utilities */
+
 @import "./styles/cinematic.css";
 
-/* 3. Tailwind CSS */
+
 @import "tailwindcss";
 
-/* =============================================================================
- * BASE RESET
- * ============================================================================= */
+
+
+
 *,
 *::before,
 *::after {
@@ -57,9 +57,9 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* =============================================================================
- * APP ROOT
- * ============================================================================= */
+
+
+
 #app {
   width: 100% !important;
   max-width: 100% !important;
@@ -71,9 +71,9 @@ body {
   flex-direction: column;
 }
 
-/* =============================================================================
- * SCROLLBAR — Webkit + Firefox
- * ============================================================================= */
+
+
+
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;
@@ -92,17 +92,17 @@ body {
   background: var(--scrollbar-thumb-hover);
 }
 
-/* Firefox */
+
 * {
   scrollbar-width: thin;
   scrollbar-color: var(--scrollbar-thumb) var(--scrollbar-track);
 }
 
-/* =============================================================================
- * SHARED UTILITY CLASSES
- * ============================================================================= */
 
-/* Glass Panel — dùng cho cards, modals, panels */
+
+
+
+
 .glass-panel {
   background: var(--glass-bg);
   -webkit-backdrop-filter: blur(var(--glass-blur));
@@ -118,7 +118,7 @@ body {
   box-shadow: var(--glass-shadow), 0 0 0 1px var(--color-border-accent);
 }
 
-/* Terminal Card — phong cách code block với traffic light dots */
+
 .terminal-card {
   background: var(--card-bg);
   border: 1px solid var(--card-border);
@@ -139,7 +139,7 @@ body {
   color: var(--color-text-muted);
 }
 
-/* Traffic light dots — Terminal window decoration */
+
 .terminal-dots {
   display: flex;
   align-items: center;
@@ -157,12 +157,12 @@ body {
 .terminal-dot--min    { background: var(--color-dot-min); }
 .terminal-dot--max    { background: var(--color-dot-max); }
 
-/* Display font helper — JetBrains Mono cho headings */
+
 .font-display { font-family: var(--font-display); }
 .font-mono    { font-family: var(--font-mono); }
 .font-sans    { font-family: var(--font-sans); }
 
-/* Terminal caret / prompt prefix */
+
 .terminal-prompt::before {
   content: '> ';
   color: var(--color-accent-primary);
@@ -176,7 +176,7 @@ body {
   font-family: var(--font-display);
 }
 
-/* Accent text helpers */
+
 .text-accent   { color: var(--color-accent-primary); }
 .text-success  { color: var(--color-accent-green); }
 .text-info     { color: var(--color-accent-blue); }
@@ -187,7 +187,7 @@ body {
 .text-muted    { color: var(--color-text-muted); }
 .text-secondary { color: var(--color-text-secondary); }
 
-/* Dot-grid background pattern (giống ảnh tham khảo) */
+
 .dot-grid-bg {
   background-image: radial-gradient(
     circle,
@@ -197,47 +197,47 @@ body {
   background-size: 24px 24px;
 }
 
-/* =============================================================================
- * QUIZLET COLOR REMAPPING — Global override cho hardcoded Slate colors cu
- * Cac component cu dung hardcode #94a3b8, #64748b, #f1f5f9 tren nen den.
- * Tren nen navy Quizlet, chung can duoc remap sang tong mau phu hop.
- * =============================================================================
- * Cach hoat dong: Dinh nghia lai CSS custom props de bat tat ca var() su dung
- * dung bien ten, va bo sung global class uu tien cao (specificity trick).
- * ============================================================================= */
+
+
+
+
+
+
+
+
 :root {
-  /* Remap Slate 400 (#94a3b8) -> Quizlet secondary text */
+  
   --slate-400: #939bb4;
-  /* Remap Slate 500 (#64748b) -> Quizlet muted text */
+  
   --slate-500: #6b7385;
-  /* Remap Slate 200 (#e2e8f0) -> Quizlet off-white */
+  
   --slate-200: #d9dde8;
-  /* Remap Slate 50 (#f8fafc) / 100 (#f1f5f9) -> heading white */
+  
   --slate-50:  #ffffff;
   --slate-100: #d9dde8;
 }
 
-/* Body text default — apply Quizlet off-white tone globally */
+
 body, #app {
   color: var(--color-text-primary);
   -webkit-font-smoothing: antialiased;
 }
 
-/* Heading text -- dung var(--color-text-heading) neu co */
+
 h1, h2, h3, h4, h5, h6 {
   color: var(--color-text-heading, #ffffff);
 }
 
-/* Accent text helpers (updated) */
+
 .text-accent   { color: var(--color-accent-primary-text, #7b89f4); }
 .text-heading  { color: var(--color-text-heading, #ffffff); }
 
-/* =============================================================================
- * MONACO EDITOR OVERRIDES
- * Giữ nguyên các style Monaco editor — không đổi
- * ============================================================================= */
 
-/* Monaco active line — gold glow highlight */
+
+
+
+
+
 .monaco-pseudocode-active-line-glow {
   background: var(--color-accent-yellow-dim, rgba(212, 168, 50, 0.08)) !important;
   border-left: 4px solid var(--color-accent-yellow, #d4a832) !important;
@@ -251,57 +251,57 @@ h1, h2, h3, h4, h5, h6 {
   box-shadow: 0 0 10px var(--color-accent-yellow, #d4a832);
 }
 
-/* =============================================================================
- * RESPONSIVE MOBILE LAYOUT
- * ============================================================================= */
 
-/* ── Tablet (≤ 768px) ─────────────────────────────────── */
+
+
+
+
 @media (max-width: 768px) {
   html { font-size: 14px; }
 
-  /* Dashboard grid → single column */
+  
   .dash-grid { grid-template-columns: 1fr !important; }
 
-  /* Stats bar compact */
+  
   .stats-bar { gap: 1.5rem; padding: 1.5rem 1rem; }
   .stat-item__value { font-size: 1.4rem; }
 
-  /* Teacher panel analytics → stack */
+  
   .analytics-grid { grid-template-columns: 1fr !important; }
 
-  /* Workspace panels → stack vertically */
+  
   .workspace-split,
   .workspace-layout { flex-direction: column !important; }
 
-  /* Graph sidebar → collapsible */
+  
   .graph-sidebar { max-height: 40vh; overflow-y: auto; }
 }
 
-/* ── Phone (≤ 480px) ──────────────────────────────────── */
+
 @media (max-width: 480px) {
   html { font-size: 13px; }
 
-  /* Hero section compact */
+  
   .hero { min-height: 50vh; padding: 2rem 1rem; }
   .hero__title { font-size: 2rem; }
   .hero__tagline { font-size: 1rem; }
   .hero__actions { flex-direction: column; align-items: stretch; }
   .hero__cta { text-align: center; }
 
-  /* Feature cards → 1 column */
+  
   .features { padding: 2rem 1rem; }
   .features__grid { grid-template-columns: 1fr; }
 
-  /* Quick links compact */
+  
   .quicklinks { grid-template-columns: 1fr 1fr !important; }
 
-  /* Toast → full width */
+  
   .toast-container { left: 0.5rem; right: 0.5rem; width: auto; }
 }
 
-/* =============================================================================
- * EMBED PLAYER STYLES (is-embed mode)
- * ============================================================================= */
+
+
+
 .is-embed .app-header,
 .is-embed .app-sidebar,
 .is-embed .algo-header,

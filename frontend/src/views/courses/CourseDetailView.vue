@@ -16,15 +16,15 @@
     </div>
 
     <div v-else-if="course" class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-      <!-- Left side: Course info and Lessons list -->
+      
       <div class="lg:col-span-2 flex flex-col gap-6">
         <section class="p-8 rounded-3xl border border-white/10 bg-slate-900/60 backdrop-blur-md">
           <div class="flex items-center gap-3">
             <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-indigo-500/10 text-indigo-300 border border-indigo-500/20">
-              {{ course.category }}
+              {{ getCategoryLabel(course.category) }}
             </span>
             <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-slate-800 text-slate-400 border border-white/5">
-              {{ course.difficulty }}
+              {{ getDifficultyLabel(course.difficulty) }}
             </span>
           </div>
 
@@ -32,7 +32,7 @@
           <p class="text-slate-300 mt-4 leading-relaxed whitespace-pre-line">{{ course.description }}</p>
         </section>
 
-        <!-- Lessons list -->
+        
         <section class="p-8 rounded-3xl border border-white/10 bg-slate-900/60 backdrop-blur-md">
           <h2 class="text-2xl font-bold text-white mb-6">Nội dung bài học</h2>
 
@@ -46,7 +46,7 @@
                 : 'border-white/5 bg-white/5 hover:border-white/20'"
             >
               <div class="flex items-center gap-4">
-                <!-- Status icon -->
+                
                 <div class="flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm">
                   <span v-if="lesson.status === 'Completed'" class="text-emerald-400 text-lg">✓</span>
                   <span v-else class="text-slate-400">{{ idx + 1 }}</span>
@@ -66,7 +66,7 @@
                 </div>
               </div>
 
-              <!-- Action button -->
+              
               <button
                 @click="startLesson(lesson)"
                 class="px-4 py-2 rounded-xl text-sm font-semibold transition-all duration-200"
@@ -81,9 +81,9 @@
         </section>
       </div>
 
-      <!-- Right side: Sidebar and Premium purchase -->
+      
       <div class="lg:col-span-1 flex flex-col gap-6">
-        <!-- Premium Gate Card -->
+        
         <div
           v-if="course.isPremium && !authStore.currentUser?.isPremium"
           class="p-6 rounded-3xl border border-amber-500/30 bg-gradient-to-br from-amber-500/10 via-yellow-500/5 to-transparent backdrop-blur"
@@ -101,7 +101,7 @@
           </router-link>
         </div>
 
-        <!-- Course Meta Info -->
+        
         <div class="p-6 rounded-3xl border border-white/10 bg-slate-900/60 backdrop-blur-md flex flex-col gap-4">
           <div class="flex items-center gap-3">
             <img
@@ -170,6 +170,22 @@ const course = ref<CourseDetailDto | null>(null);
 const totalXp = computed(() => {
   return course.value?.lessons.reduce((acc, l) => acc + l.xpReward, 0) ?? 0;
 });
+
+const categoryMap: Record<string, string> = {
+  DataStructure: 'Cấu trúc dữ liệu',
+  Algorithm: 'Giải thuật',
+  OOP: 'Hướng đối tượng (OOP)',
+  SystemDesign: 'Thiết kế hệ thống'
+};
+
+const difficultyMap: Record<string, string> = {
+  Beginner: 'Cơ bản',
+  Intermediate: 'Trung cấp',
+  Advanced: 'Nâng cao'
+};
+
+function getCategoryLabel(val: string) { return categoryMap[val] || val; }
+function getDifficultyLabel(val: string) { return difficultyMap[val] || val; }
 
 async function loadCourseDetail() {
   loading.value = true;

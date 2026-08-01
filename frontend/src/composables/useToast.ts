@@ -1,7 +1,7 @@
-/**
- * useToast.ts — Global Toast Notification System (Pinia-powered).
- * Hiển thị toast thông báo lỗi / thành công / cảnh báo bằng Tiếng Việt.
- */
+
+
+
+
 
 import { defineStore } from 'pinia';
 import { ref, computed } from 'vue';
@@ -59,9 +59,9 @@ export const useToastStore = defineStore('toast', () => {
     toasts.value = [];
   }
 
-  /**
-   * Xử lý lỗi API tự động — parse structured JSON từ ErrorHandlingMiddleware.
-   */
+  
+
+
   function handleApiError(err: unknown, fallbackMessage = 'Đã xảy ra lỗi không xác định.'): void {
     if (err instanceof Error) {
       error(err.message);

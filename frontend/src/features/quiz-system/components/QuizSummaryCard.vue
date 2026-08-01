@@ -2,7 +2,7 @@
   <Transition name="summary-fade">
     <div v-if="visible" class="summary-overlay">
       <div class="summary-card">
-        <!-- Header -->
+        
         <div class="summary-header">
           <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
             fill="none" stroke="currentColor" stroke-width="2" class="svg-icon-green">

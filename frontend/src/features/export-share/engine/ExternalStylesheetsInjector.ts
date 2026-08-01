@@ -1,15 +1,15 @@
-/**
- * ExternalStylesheetsInjector — Trích xuất CSS ngoại vi nhúng kèm SVG
- *
- * Quét toàn bộ document.styleSheets của trang web chủ, gộp thành chuỗi CSS
- * và tiêm vào thẻ <style> của SVG mục tiêu, bảo toàn phong cách Glassmorphism,
- * viền Neon và font JetBrains Mono khi xuất ảnh.
- */
+
+
+
+
+
+
+
 
 export class ExternalStylesheetsInjector {
-  /**
-   * Quét toàn bộ document.styleSheets đang có của trang web, gộp thành chuỗi CSS
-   */
+  
+
+
   public static extractActiveCSSRules(): string {
     let cssTextCombined = '';
 
@@ -29,9 +29,9 @@ export class ExternalStylesheetsInjector {
     return cssTextCombined;
   }
 
-  /**
-   * Tiêm chuỗi CSS vào thẻ <style> của SVG mục tiêu
-   */
+  
+
+
   public static injectCSSIntoSVG(svgElement: SVGElement): void {
     const cssContent = this.extractActiveCSSRules();
 

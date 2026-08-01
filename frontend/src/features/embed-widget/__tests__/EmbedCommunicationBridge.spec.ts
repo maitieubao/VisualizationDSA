@@ -1,4 +1,4 @@
-// @vitest-environment jsdom
+
 import { describe, it, expect, vi, afterEach } from 'vitest';
 import { EmbedCommunicationBridge } from '../engine/EmbedCommunicationBridge';
 import type { EmbedMessage } from '../types/embed-widget.types';

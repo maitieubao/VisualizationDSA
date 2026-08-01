@@ -1,4 +1,4 @@
-// @vitest-environment jsdom
+
 import { describe, it, expect, vi } from 'vitest';
 import { ExternalStylesheetsInjector } from '../engine/ExternalStylesheetsInjector';
 
@@ -11,7 +11,7 @@ describe('ExternalStylesheetsInjector', () => {
 
     it('should return empty string when no stylesheets exist', () => {
       const result = ExternalStylesheetsInjector.extractActiveCSSRules();
-      // jsdom may have no stylesheets loaded
+      
       expect(typeof result).toBe('string');
     });
 
@@ -46,7 +46,7 @@ describe('ExternalStylesheetsInjector', () => {
     it('should gracefully handle CORS-restricted stylesheets', () => {
       const consoleSpy = vi.spyOn(console, 'debug').mockImplementation(() => {});
 
-      // This should not throw even if CORS sheets exist
+      
       expect(() => ExternalStylesheetsInjector.extractActiveCSSRules()).not.toThrow();
 
       consoleSpy.mockRestore();
@@ -107,7 +107,7 @@ describe('ExternalStylesheetsInjector', () => {
 
       ExternalStylesheetsInjector.injectCSSIntoSVG(svg);
 
-      // style + circle + text = 3 children
+      
       expect(svg.childNodes.length).toBe(3);
     });
 

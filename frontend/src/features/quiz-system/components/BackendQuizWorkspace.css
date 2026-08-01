@@ -1,4 +1,4 @@
-/* BackendQuizWorkspace scoped stylesheet using CSS Variables */
+
 
 .selected-option {
   background-color: color-mix(in srgb, var(--color-accent-primary, #4255ff) 20%, transparent) !important;

@@ -1,6 +1,6 @@
 <template>
   <div class="lesson-step-viz flex flex-col h-full w-full bg-slate-950 relative overflow-hidden">
-    <!-- Floating Next Step Trigger (No heavy top navigation bar) -->
+    
     <button
       v-if="hasWatched"
       @click="$emit('completeStep')"
@@ -20,14 +20,14 @@
       <span>Đang xem ({{ Math.floor(animStore.progressPercent) }}%)...</span>
     </div>
 
-    <!-- Canvas / Interactive Animation Container -->
+    
     <div class="flex-1 min-h-0 relative w-full h-full">
       <template v-if="visualizerComponent">
         <component 
           :is="visualizerComponent" 
         />
         
-        <!-- Nút khởi chạy E-Lecture -->
+        
         <button
           @click="startLecture"
           :disabled="isLoadingLecture"
@@ -44,7 +44,7 @@
           <span>{{ isLoadingLecture ? 'Đang tải kịch bản...' : 'Khởi chạy E-Lecture' }}</span>
         </button>
 
-        <!-- Lecture Overlay (Sẽ tự hiển thị khi lectureStore.isActive === true) -->
+        
         <LectureOverlay />
       </template>
       <div v-else class="flex flex-col items-center justify-center h-full text-slate-400 p-8 text-center">

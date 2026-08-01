@@ -6,7 +6,7 @@ namespace VisualizationDSA.Domain.Entities
     {
         public Guid UserId { get; private set; }
         public Guid LessonId { get; private set; }
-        public string Status { get; private set; } = "NotStarted"; // NotStarted, InProgress, Completed
+        public string Status { get; private set; } = "NotStarted"; 
         public DateTime? CompletedAt { get; private set; }
         public int XPRewarded { get; private set; }
         public int LastActiveFrameIndex { get; private set; }

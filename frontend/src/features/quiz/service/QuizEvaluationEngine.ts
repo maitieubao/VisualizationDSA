@@ -1,6 +1,6 @@
 export interface SlideEvent {
   slideId: string;
-  triggerFrameIndex: number; // Chỉ số bước hoạt ảnh DSA tương thích
+  triggerFrameIndex: number; 
   highlightSourceLine: number;
 }
 
@@ -14,9 +14,9 @@ export class LecturePlaybackCoordinator {
     this.onTriggerCallback = onTrigger;
   }
 
-  /**
-   * Chuyển slide lý thuyết tiếp theo (Next Slide)
-   */
+  
+
+
   public nextSlide(): void {
     if (this.currentSlideIndex < this.slideEvents.length - 1) {
       this.currentSlideIndex++;
@@ -24,9 +24,9 @@ export class LecturePlaybackCoordinator {
     }
   }
 
-  /**
-   * Lùi lại slide lý thuyết phía trước (Prev Slide)
-   */
+  
+
+
   public prevSlide(): void {
     if (this.currentSlideIndex > 0) {
       this.currentSlideIndex--;
@@ -46,9 +46,9 @@ export interface QuizQuestion {
 }
 
 export class QuizEvaluationEngine {
-  /**
-   * Chấm điểm đáp án trắc nghiệm tính toán tỉ lệ vượt qua 80%
-   */
+  
+
+
   public static calculateQuizScore(
     answers: Record<string, string>,
     questions: QuizQuestion[]
@@ -63,14 +63,14 @@ export class QuizEvaluationEngine {
       }
     });
 
-    const passed = maxPossible > 0 ? (score >= maxPossible * 0.8) : true; // Ngưỡng đạt 80% điểm số
+    const passed = maxPossible > 0 ? (score >= maxPossible * 0.8) : true; 
     return { totalScore: score, passed };
   }
 
-  /**
-   * Kiểm soát tĩnh mã nguồn tùy biến của học viên (Static compliance check)
-   * Kiểm duyệt từ khóa bắt buộc dưới RAM dưới 2ms
-   */
+  
+
+
+
   public static verifyCodeCompliance(
     studentCode: string,
     mandatoryKeywords: string[]

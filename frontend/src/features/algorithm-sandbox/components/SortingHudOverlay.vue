@@ -1,6 +1,6 @@
 <template>
   <div class="flex flex-col justify-center pointer-events-none flex-1 min-w-0 font-sans">
-    <span class="step-desc text-xs font-semibold leading-normal drop-shadow-[0_1px_4px_rgba(0,0,0,0.8)] line-clamp-1">
+    <span class="step-desc text-xs font-semibold leading-normal line-clamp-1">
       {{ stepDescription }}
     </span>
   </div>

@@ -1164,3 +1164,38 @@ Phản hồi từ người dùng chỉ ra rằng giao diện 3 cột đồng th�
 - (+) Linh hoạt cho cả 2 đối tượng: Người mới học (dùng Guided Mode) và người muốn soi sâu vào RAM (chuyển sang Full Workbench Mode).
 - (+) Đã được kiểm thử tự động 100% pass unit test.
 - (+) File liên quan: `useOOPVisualizerStore.ts`, `oopScenarios.ts`, `OOPConceptsVisualizerWorkspace.vue`, `useOOPVisualizerStore.spec.ts`.
+
+## ADR: Cấu trúc Classroom Giai đoạn 1
+- **Quyết định**: Thêm lớp Classroom và ClassroomEnrollment vào Database. Sử dụng mô hình tạo InviteCode ngẫu nhiên 6 ký tự để tham gia lớp.
+
+## ADR: Cấu trúc Classroom Giai đoạn 2 (Xưởng Tạo Bài Giảng)
+- **Quyết định**: Để hỗ trợ bài giảng tạo độc lập (gán vào lớp mà không qua Khóa học), trường CourseId trong bảng Lesson đã được chuyển thành nullable (Guid?). Trạng thái phát hành được quản lý bởi enum LessonPublishStatus (Draft, PrivateToClassroom, PendingReview, Published).
+
+## ADR: Cấu trúc Classroom Giai đoạn 3 (Thống kê & Excel)
+- **Quyết định**: Sử dụng thư viện ClosedXML thay vì EPPlus cho việc xuất Excel vì nó không yêu cầu Commercial License, thích hợp cho việc phân phối.
+- **Quyết định**: QuizId trong ClassroomQuiz được định nghĩa là string thay vì Guid làm foreign key tĩnh, để có thể ánh xạ linh hoạt với kiến trúc QuizBankStrategy hiện hành vốn sử dụng Identifier kiểu chuỗi cho các bộ câu hỏi sinh động (dynamic string ID).
+
+## ADR: Cấu trúc Classroom Giai đoạn 4 (Notification Service)
+- **Quyết định**: Để tuân thủ SRP (Single Responsibility Principle), logic gửi thông báo đã được tách khỏi các Service nghiệp vụ (như LessonAuthoringService, ClassroomService) và đặt vào một INotificationService chuyên biệt. Service này tương tác trực tiếp với DbSet Notifications.
+
+
+### ADR-10: Algorithm-Sandbox Visualizer Dispatcher
+- **Date:** 2026-07-30
+- **Status:** Accepted
+- **Context:** ArrayBarVisualizer only rendered BubbleSortVisualizer for all 7 algorithms, leaving 6 specialized visualizers unused.
+- **Decision:** Created SortingVisualizerDispatcher.vue that routes to the correct visualizer based on SortFrame.algorithm field. Removed Canvas-based dead code (AlgorithmCanvas et al. kept for reference).
+- **Consequences:** Each algorithm now renders its own visualizer. Future algorithms only need to add a new visualizer + update the dispatcher.
+
+### ADR-11: Stable ID Strategy
+- **Date:** 2026-07-30
+- **Status:** Accepted
+- **Context:** sortingIdEnricher used Math.random() as fallback ID, breaking Vue transition-group key tracking.
+- **Decision:** Use global monotonic counter instead of Math.random() for unmatched elements.
+- **Consequences:** Stable IDs across frames ensure smooth transition-group animations. Counter is reset on page reload.
+
+### ADR-12: Unified Element Limit
+- **Date:** 2026-07-30
+- **Status:** Accepted
+- **Context:** Inconsistent limits: CustomInputParser (20), useSortingAnimation (15), useInputValidation (15).
+- **Decision:** Unified all limits to 15 max elements.
+- **Consequences:** Consistent behavior across all input paths.

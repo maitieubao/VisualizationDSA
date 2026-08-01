@@ -1,12 +1,12 @@
 <template>
   <div class="edge-builder-form grid grid-cols-12 gap-3 min-h-0">
-    <!-- Left column: Edge Creator Form Section -->
+    
     <div class="col-span-5 form-container p-3 rounded-xl border border-white/5 bg-black/10 flex flex-col gap-2">
       <div class="text-[10px] font-bold text-text-secondary uppercase tracking-wider select-none">
         Thêm cạnh
       </div>
       
-      <!-- Source Node -->
+      
       <div class="flex flex-col gap-1">
         <label class="text-[9px] text-text-muted font-bold uppercase">Nguồn</label>
         <select
@@ -20,7 +20,7 @@
         </select>
       </div>
 
-      <!-- Target Node -->
+      
       <div class="flex flex-col gap-1">
         <label class="text-[9px] text-text-muted font-bold uppercase">Đích</label>
         <select
@@ -34,7 +34,7 @@
         </select>
       </div>
 
-      <!-- Weight -->
+      
       <div class="flex flex-col gap-1">
         <label class="text-[9px] text-text-muted font-bold uppercase">Trọng số</label>
         <input
@@ -46,7 +46,7 @@
         />
       </div>
 
-      <!-- Add Button -->
+      
       <button
         @click="onAddEdge"
         :disabled="!canAdd"
@@ -59,13 +59,13 @@
         Nối cạnh
       </button>
 
-      <!-- Inline Error Message -->
+      
       <div v-if="errorMsg" class="text-[9px] text-accent-red font-medium leading-normal mt-1">
         {{ errorMsg }}
       </div>
     </div>
 
-    <!-- Right column: Edges List Section -->
+    
     <div class="col-span-7 edges-list-container flex flex-col gap-2 min-h-0">
       <div class="text-[10px] font-bold text-text-secondary uppercase tracking-wider flex justify-between items-center select-none">
         <span>Liên kết ({{ edges.length }})</span>
@@ -160,7 +160,7 @@ function onAddEdge() {
     return;
   }
 
-  // Check duplicate edge (both directions)
+  
   const exists = edges.value.some(
     e => (e.from === sourceId.value && e.to === targetId.value) ||
          (e.from === targetId.value && e.to === sourceId.value)
@@ -173,7 +173,7 @@ function onAddEdge() {
   const edge = store.addEdge(sourceId.value, targetId.value);
   if (edge) {
     store.updateEdgeWeight(edge.id, weight.value);
-    // Reset form
+    
     sourceId.value = '';
     targetId.value = '';
     weight.value = 1;

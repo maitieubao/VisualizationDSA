@@ -1,6 +1,6 @@
-/**
- * useNotificationStore.ts — Pinia store quản lý thông báo người dùng.
- */
+
+
+
 
 import { defineStore } from 'pinia';
 import { ref, computed } from 'vue';
@@ -15,15 +15,15 @@ import {
 export const useNotificationStore = defineStore('notification', () => {
   const authStore = useAuthStore();
 
-  // ── State ──
+  
   const notifications = ref<NotificationDto[]>([]);
   const isLoading = ref(false);
 
-  // ── Getters ──
+  
   const unreadCount = computed(() => notifications.value.filter(n => !n.isRead).length);
   const hasUnread = computed(() => unreadCount.value > 0);
 
-  // ── Actions ──
+  
 
   async function loadNotifications(): Promise<void> {
     if (!authStore.isAuthenticated) return;
@@ -34,7 +34,7 @@ export const useNotificationStore = defineStore('notification', () => {
     try {
       notifications.value = await getNotifications(token);
     } catch {
-      // silent — notification loading failure is non-critical
+      
     } finally {
       isLoading.value = false;
     }
@@ -50,7 +50,7 @@ export const useNotificationStore = defineStore('notification', () => {
       if (notification) {
         notification.isRead = true;
       }
-    } catch { /* silent */ }
+    } catch {  }
   }
 
   async function readAll(): Promise<void> {
@@ -60,7 +60,7 @@ export const useNotificationStore = defineStore('notification', () => {
     try {
       await markAllAsRead(token);
       notifications.value.forEach(n => { n.isRead = true; });
-    } catch { /* silent */ }
+    } catch {  }
   }
 
   return {

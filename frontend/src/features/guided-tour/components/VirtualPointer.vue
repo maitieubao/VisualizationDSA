@@ -8,18 +8,18 @@
         left: `${x}px`,
       }"
     >
-      <!-- Glowing cursor ring -->
+      
       <div
         class="relative w-8 h-8 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-accent-cyan/80 flex items-center justify-center transition-all duration-300"
         :class="clicking ? 'scale-75 bg-accent-cyan/35' : 'scale-100 bg-accent-cyan/10'"
       >
-        <!-- Center core dot -->
+        
         <div class="w-2.5 h-2.5 rounded-full bg-accent-cyan shadow-[0_0_8px_rgba(6,182,212,0.8)]" />
 
-        <!-- Pulse Ring -->
+        
         <div class="absolute inset-0 rounded-full border border-accent-cyan/40 animate-ping opacity-60" />
 
-        <!-- Mouse Arrow Indicator overlay -->
+        
         <svg
           viewBox="0 0 24 24"
           class="absolute top-2 left-2 w-4 h-4 text-accent-cyan drop-shadow-[0_2px_4px_rgba(0,0,0,0.5)]"
@@ -32,7 +32,7 @@
           />
         </svg>
 
-        <!-- Click Ripple Ring -->
+        
         <span
           v-if="clicking"
           class="click-ripple absolute w-16 h-16 rounded-full border-2 border-accent-cyan/90"
@@ -53,11 +53,11 @@ defineProps<{
 
 <style scoped>
 .virtual-pointer {
-  /* Using smooth transition for x/y coordinate movement */
+  
   will-change: top, left;
 }
 
-/* Custom bezier for smooth snapping movement */
+
 .ease-out-quint {
   transition-timing-function: cubic-bezier(0.23, 1, 0.32, 1);
 }

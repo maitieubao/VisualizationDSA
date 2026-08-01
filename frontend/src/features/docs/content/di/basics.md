@@ -1,136 +1,182 @@
 ---
-title: Cơ bản về Dependency Injection (DI) & IoC
-description: Bắt đầu tìm hiểu Dependency Injection và Inversion of Control. Kỹ thuật giúp các kỹ sư C# dẹp bỏ từ khóa "new" và xây dựng các hệ thống khổng lồ.
+title: Cơ bản về DI & IoC
+description: Bài học vỡ lòng quan trọng nhất của mọi Kỹ sư Web. Khám phá cách giao phó quyền lực khởi tạo đối tượng cho Người Nội Trợ mang tên IoC Container.
 ---
 
-# Cơ bản về DI & IoC {#di-basics}
+# Cơ bản về Dependency Injection (DI) & Inversion of Control (IoC) {#di-basics}
 
-Nếu bạn đã đọc xong phần [Nguyên lý DIP (Dependency Inversion Principle)](/docs/solid/dip) trong chuỗi bài SOLID, bạn đã hiểu tại sao chúng ta không nên để các Class tự khởi tạo (gọi `new`) các thành phần phụ thuộc của chúng.
+:::info Mục tiêu bài học
+- Xóa mù mờ ranh giới giữa 2 thuật ngữ thường bị nhầm lẫn: **IoC (Tư tưởng)** và **DI (Cách làm)**.
+- Hiểu được thảm họa Tightly Coupled khi các Lớp tự ý "Đi chợ" mua các phụ thuộc bằng từ khóa `new`.
+- Từng bước mô phỏng và xây dựng một **IoC Container (Người Nội Trợ)** bằng C# nguyên thủy.
+- Đạt cảnh giới Tối thượng: Thay vì tự tay cấp phát tài nguyên, hãy để Hệ thống làm điều đó giùm bạn (Don't call us, we'll call you).
+:::
 
-Thay vì một Class tự đi tìm và tạo ra đồ nghề cho mình, nó chỉ cần "há miệng chờ sung": khai báo những thứ nó cần ở hàm khởi tạo (Constructor), và sẽ có một thế lực bí ẩn bên ngoài tự động "nhét" (Inject) đồ nghề vào cho nó. 
+## 1. Lời mở đầu: Nguyên lý Hollywood {#introduction}
 
-Kỹ thuật đó gọi là **Dependency Injection (DI)** - Tiêm chích sự phụ thuộc.
+Trong toàn bộ lịch sử OOP, mọi vấn đề bảo trì thảm họa đều bắt nguồn từ một chỗ: **Sự gắn kết chặt chẽ (Tightly Coupled)**. Khi Class A gọi hàm `new ClassB()`, chúng bị dính với nhau bằng keo 502, không thể tách rời để test, không thể nâng cấp riêng biệt. (Xem lại bài [Nguyên lý SOLID - DIP](/docs/solid/dip) và [Factory Pattern](/docs/patterns/factory)).
 
-## Inversion of Control (IoC) là gì? {#what-is-ioc}
+Để giải quyết vấn đề này, các Kiến trúc sư phần mềm sáng chế ra Nguyên lý **Inversion of Control (IoC - Đảo ngược Điều khiển)**, còn được gọi vui là **Nguyên lý Hollywood**: 
+> *"Đừng gọi cho chúng tôi, chúng tôi sẽ gọi cho bạn!" (Don't call us, we'll call you).*
 
-**IoC (Đảo ngược quyền điều khiển)** là một khái niệm trừu tượng. Trong lập trình truyền thống, luồng chạy của chương trình (Control Flow) do Code của bạn điều khiển. Bạn gọi hàm A, hàm A gọi hàm B.
+**Ví dụ thực tế (Real-world analogy): Đứa trẻ và Bữa ăn**
+- **Kiểu cũ (Không IoC):** Thằng bé (Class `Child`) đói bụng. Nó tự phi ra chợ, tự mua gạo (`new Rice()`), mua thịt (`new Meat()`), rồi tự nấu ăn. Đứa bé này đang kiểm soát (Control) toàn bộ vòng đời của đĩa cơm. Quá mệt mỏi!
+- **Kiểu mới (Có IoC):** Thằng bé đói bụng. Nó chỉ ngồi há miệng chờ. Bà Mẹ (IoC Container) đã nấu xong tất cả mọi thứ, và khi nào đến giờ ăn, Bà Mẹ sẽ **TIÊM (Inject)** đồ ăn vào miệng nó. Quyền kiểm soát đồ ăn đã bị ĐẢO NGƯỢC (Đẩy từ tay đứa bé sang tay Bà Mẹ).
 
-Với IoC, bạn "giao nộp" quyền điều khiển đó cho một **Framework (hoặc Container)**. Framework sẽ tự động biết khi nào cần tạo ra đối tượng nào, tiêm nó vào đâu, và bao giờ thì tiêu hủy nó.
+**Dependency Injection (DI - Tiêm sự phụ thuộc)** chính là hành động Bà Mẹ đút cơm cho thằng bé. DI là công cụ thực tế (Thực hành), còn IoC là Triết lý thiết kế (Lý thuyết).
 
-**Dependency Injection (DI)** chính là cách phổ biến nhất để hiện thực hóa khái niệm IoC!
+---
 
-## Hình ảnh thực tế (Pha cà phê) {#real-world}
+## 2. Giải phẫu Anti-pattern: Đứa bé đi chợ {#anti-pattern}
 
-Tưởng tượng bạn là một chiếc Máy pha cà phê (`CoffeeMachine`). Để pha cà phê, bạn cần Nước (`Water`) và Hạt cà phê (`Beans`).
-
-**Lập trình không có DI (Tự cung tự cấp):**
-Chiếc máy tự chạy ra siêu thị mua hạt, tự chạy ra vòi hứng nước. 
-Nếu siêu thị đổi loại hạt cà phê, hoặc vòi nước bị hỏng, chiếc Máy pha cà phê cũng hỏng theo! Nó phải gánh vác quá nhiều trách nhiệm (Vi phạm SRP).
-
-**Lập trình có DI (Phục vụ tận răng):**
-Chiếc máy pha cà phê có một cái phễu (Constructor). Buổi sáng, người Chủ quán (DI Container) sẽ tự động đổ Nước và Hạt cà phê vào phễu cho nó. Chiếc máy chả cần quan tâm Nước lấy từ đâu, nó chỉ việc bấm nút Pha là xong!
-
-## Cài đặt DI Cơ bản trong C# (Code Example) {#code-example}
-
-Đây là cách chúng ta áp dụng Constructor Injection (Tiêm qua hàm khởi tạo) - phương pháp DI phổ biến và an toàn nhất hiện nay.
+Đây là cách code quen thuộc của các Newbie khi xây dựng một `UserController`. Để xử lý logic Đăng ký tài khoản, Controller này tự ý gọi `new` để tạo kết nối Database và gửi Email.
 
 ```csharp
-// 1. Định nghĩa "Đồ nghề" qua Interface
-public interface ICoffeeBeans { string GetFlavor(); }
-public interface IWaterSupply { void Pour(); }
-
-// 2. Chi tiết của Đồ nghề
-public class ArabicaBeans : ICoffeeBeans 
-{ 
-    public string GetFlavor() => "Cà phê Arabica thơm nhẹ"; 
-}
-public class TapWater : IWaterSupply 
-{ 
-    public void Pour() => Console.WriteLine("Đang đổ nước máy..."); 
-}
-
-// 3. Class Cấp cao (Máy pha cà phê)
-public class CoffeeMachine
+// MÃ XẤU - ĐỨA BÉ TỰ ĐI CHỢ
+public class UserController
 {
-    private readonly ICoffeeBeans _beans;
-    private readonly IWaterSupply _water;
+    private SqlDatabase _db;
+    private SmtpEmailService _email;
 
-    // CONSTRUCTOR INJECTION
-    // Tôi cần Hạt và Nước! Ai gọi tôi thì làm ơn truyền vào dùm!
-    public CoffeeMachine(ICoffeeBeans beans, IWaterSupply water)
+    public UserController()
     {
-        _beans = beans;
-        _water = water;
+        // 1. Controller tự khởi tạo sự phụ thuộc
+        _db = new SqlDatabase("Server=myServerAddress;Database=myDataBase;");
+        _email = new SmtpEmailService("smtp.gmail.com", 587);
     }
 
-    public void Brew()
+    public void RegisterUser(string email)
     {
-        _water.Pour();
-        Console.WriteLine($"Đang pha... {_beans.GetFlavor()}");
+        _db.Save(email);
+        _email.SendWelcome(email);
     }
 }
 ```
 
 ```mermaid
 classDiagram
-    class ICoffeeBeans {
-        <<interface>>
-        +GetFlavor() string
+    class UserController {
+        +RegisterUser()
     }
-    class IWaterSupply {
-        <<interface>>
-        +Pour()
+    class SqlDatabase {
+        +Save()
     }
-    class ArabicaBeans {
-        +GetFlavor()
-    }
-    class TapWater {
-        +Pour()
-    }
-    class CoffeeMachine {
-        -ICoffeeBeans _beans
-        -IWaterSupply _water
-        +CoffeeMachine(ICoffeeBeans, IWaterSupply)
-        +Brew()
+    class SmtpEmailService {
+        +SendWelcome()
     }
     
-    ICoffeeBeans <|.. ArabicaBeans
-    IWaterSupply <|.. TapWater
-    CoffeeMachine o-- ICoffeeBeans : Inject qua Constructor
-    CoffeeMachine o-- IWaterSupply : Inject qua Constructor
+    UserController ..> SqlDatabase : Tự new (Tightly Coupled)
+    UserController ..> SmtpEmailService : Tự new (Tightly Coupled)
 ```
 
-**Thế lực bí ẩn (DI Container) ở bên ngoài sẽ làm gì?**
-Trong các ứng dụng .NET (ASP.NET Core), bạn không cần tự tay viết code khởi tạo này. Bạn chỉ cần cấu hình (Config) 1 lần duy nhất ở file `Program.cs`.
+**Tại sao đây là Thảm họa?**
+1. **Chết Unit Test:** Bạn muốn test hàm `RegisterUser` xem nó chạy đúng luồng không. Nhưng mỗi lần test, nó lại chọc thẳng vào CSDL thật (`SqlDatabase`) và spam rác vào Email thật! Bạn không có cách nào chặn nó lại vì biến đã bị `new` chết cứng trong bụng Controller.
+2. **Kéo lê Sự phụ thuộc (Dependency Hell):** Nếu `SmtpEmailService` cần thay đổi hàm tạo, thêm tham số `Password`, bạn phải đè ngửa file `UserController` ra sửa lại. Nếu có 100 Controller đang xài Email, bạn phải đi sửa 100 file!
+
+---
+
+## 3. Phẫu thuật DI: Xây dựng Người Nội Trợ (IoC Container) {#refactoring}
+
+Quy trình giải thoát diễn ra trong 3 bước kinh điển.
+
+### Bước 1: Trừu tượng hóa (Tạo Hợp Đồng Interface)
+Tách rời khái niệm Gửi Email và Lưu DB ra thành Interface. Lớp `UserController` giờ đây chỉ quan tâm tới Hợp đồng, không quan tâm tới Con người cụ thể nữa.
 
 ```csharp
-// Đăng ký với hệ thống (DI Container)
-var services = new ServiceCollection();
-services.AddTransient<ICoffeeBeans, ArabicaBeans>();
-services.AddTransient<IWaterSupply, TapWater>();
-services.AddTransient<CoffeeMachine>();
+public interface IDatabase { void Save(string data); }
+public interface IEmailService { void SendWelcome(string to); }
 
-var provider = services.BuildServiceProvider();
-
-// Yêu cầu Framework lấy ra một cái Máy pha cà phê
-var machine = provider.GetService<CoffeeMachine>();
-machine.Brew(); 
-// Framework sẽ tự động new Arabica, new TapWater, rồi nhét vào new CoffeeMachine!
+public class SqlDatabase : IDatabase { public void Save(string data) => Console.WriteLine("Lưu SQL."); }
+public class SmtpEmailService : IEmailService { public void SendWelcome(string to) => Console.WriteLine("Gửi SMTP."); }
 ```
 
-:::info Tại sao gọi _biến bằng tiền tố gạch dưới?
-Bạn sẽ thấy biến private `_beans` và `_water` có dấu gạch dưới `_`. Đây là Coding Convention (Quy ước gõ code) chuẩn mực của hệ sinh thái C#. Nó giúp lập trình viên phân biệt ngay lập tức đâu là biến nội bộ của Class (Field), đâu là tham số truyền vào (Parameter) mà không cần phải dùng từ khóa `this.beans = beans` lằng nhằng.
+### Bước 2: Hé miệng chờ cơm (Constructor Injection)
+`UserController` xóa vĩnh viễn mọi từ khóa `new`. Nó yêu cầu ai đó khởi tạo xong đồ nghề thì nhét vào Constructor cho nó xài.
+
+```csharp
+// MÃ ĐẸP - SẴN SÀNG CHO TIÊM PHỤ THUỘC (DI)
+public class UserController
+{
+    private readonly IDatabase _db;
+    private readonly IEmailService _email;
+
+    // HÉ MIỆNG CHỜ BÀ MẸ BỚI CƠM (Constructor Injection)
+    public UserController(IDatabase db, IEmailService email)
+    {
+        _db = db;
+        _email = email;
+    }
+
+    public void RegisterUser(string email)
+    {
+        _db.Save(email);
+        _email.SendWelcome(email);
+    }
+}
+```
+
+### Bước 3: Cỗ máy vĩ đại (IoC Container)
+Bây giờ ai sẽ là người tạo ra `SqlDatabase` và `SmtpEmailService` rồi tiêm vào Controller? Trong ứng dụng Desktop ngày xưa, Lập trình viên phải tự viết mã lắp ráp (Poor Man's DI) ở hàm `Main()`.
+
+Nhưng ở các Framework hiện đại (ASP.NET Core), chúng ta được cấp phát một Cỗ Máy Thần Kỳ gọi là **IoC Container**. Bạn chỉ cần truyền cho nó 1 bản Danh Sách Đăng Ký (Service Collection).
+
+```csharp
+// ĐÂY CHÍNH LÀ ĐOẠN CODE KINH ĐIỂN BẠN THẤY TRONG PROGRAM.CS CỦA .NET CORE
+public void ConfigureServices(IServiceCollection services)
+{
+    // 1. Dạy Container: "Hễ ai hỏi xin IDatabase, mày đẻ ra SqlDatabase cho tao!"
+    services.AddTransient<IDatabase, SqlDatabase>();
+
+    // 2. Dạy Container: "Hễ ai hỏi xin IEmail, đẻ ra SmtpEmailService!"
+    services.AddTransient<IEmailService, SmtpEmailService>();
+
+    // 3. Đăng ký Controller
+    services.AddTransient<UserController>();
+}
+```
+
+**Sự Ma Thuật Xảy Ra:**
+Khi một người dùng Gửi Request lên Web, Framework sẽ tự động làm những bước cực kỳ đáng sợ sau lưng bạn:
+1. Thấy Request đòi gọi `UserController`.
+2. Container quét hàm tạo của `UserController` và giật mình: *"Á à, thằng này đòi 2 món là IDatabase và IEmailService"*.
+3. Container lục sổ đăng ký (ConfigureServices), thấy khớp. Nó tự động lôi `SqlDatabase` ra `new`.
+4. Nó tự động lôi `SmtpEmailService` ra `new`.
+5. Cuối cùng, nó chích (Inject) 2 cái đối tượng vừa tạo vào bụng của `UserController`, và trả Controller về cho hệ thống chạy bình thường.
+
+Bạn không hề gõ một chữ `new` nào! Đó chính là quyền năng của **Inversion of Control**.
+
+---
+
+## 4. Tác dụng phụ 100 điểm: Unit Test thần thánh {#unit-test-bonus}
+
+Quay lại bài toán Test, giờ đây biến `UserController` thành cực kỳ trong sạch. Để test hàm Đăng ký, bạn không cần gọi Database thật. Bạn chỉ cần tự tạo một Class Giả (Mock Object) và TIÊM nó vào Controller.
+
+```csharp
+// TẠO ĐỒ GIẢ (Mock)
+public class FakeDatabase : IDatabase { 
+    public void Save(string data) => Console.WriteLine("ĐÃ CHẶN! Không đụng tới SQL thật."); 
+}
+public class FakeEmail : IEmailService { 
+    public void SendWelcome(string to) => Console.WriteLine("ĐÃ CHẶN! Không gửi spam mail."); 
+}
+
+// Bắt đầu chạy Test: Tiêm đồ giả vào bụng Controller
+var fakeDb = new FakeDatabase();
+var fakeEmail = new FakeEmail();
+
+var controller = new UserController(fakeDb, fakeEmail);
+controller.RegisterUser("test@mail.com");
+
+// Kết quả Console in ra:
+// ĐÃ CHẶN! Không đụng tới SQL thật.
+// ĐÃ CHẶN! Không gửi spam mail.
+// BẠN ĐÃ TEST THÀNH CÔNG LOGIC CONTROLLER MÀ KHÔNG GÂY HẬU QUẢ VẬT LÝ NÀO!
+```
+
+:::tip Tóm tắt nhanh (Key Takeaways)
+- **IoC (Inversion of Control)** là Nguyên lý thiết kế: Tước đoạt quyền tự khởi tạo Object của một Class, giao cho hệ thống làm việc đó giùm.
+- **DI (Dependency Injection)** là Công cụ thực hành nguyên lý IoC. Bằng cách chích (Inject) các biến phụ thuộc vào qua Constructor.
+- Tác dụng cốt lõi 1: Xóa sổ từ khóa `new`, đập tan sự gắn kết Tightly Coupled. Thêm bớt dịch vụ chỉ cần sửa ở 1 nơi duy nhất (`ConfigureServices`).
+- Tác dụng cốt lõi 2: Mở đường cho Unit Test bằng kỹ thuật Mocks/Stubs.
+- Để sử dụng DI thành thạo, bạn bắt buộc phải hiểu rành rẽ về các Vòng đời (Lifecycles) của Container. Xem lại bài [DI Lifecycles](/docs/di/lifecycles) để tránh lỗi bắt cóc phụ thuộc (Captive Dependency).
 :::
-
-## Next Steps {#next-steps}
-
-Việc đăng ký dịch vụ vào DI Container (như `services.AddTransient`) trông thật kỳ diệu. Nhưng có bao giờ bạn tự hỏi, nếu 10 cái máy pha cà phê cùng hoạt động, Framework sẽ tạo ra **1 cái vòi nước dùng chung** cho cả 10 máy, hay tạo ra **10 cái vòi nước độc lập**?
-
-Câu trả lời nằm ở khái niệm **Lifecycles (Vòng đời)**. Hãy cùng tìm hiểu 3 loại vòng đời quan trọng nhất của DI: **Transient, Scoped, và Singleton**.
-
-<div class="vt-box-container next-steps">
-  <a class="vt-box" href="/docs/di/lifecycles">
-    <p class="next-steps-link">Vòng đời DI (Lifecycles)</p>
-    <p class="next-steps-caption">Phân biệt Transient, Scoped, Singleton và cách quản lý bộ nhớ triệt để.</p>
-  </a>
-</div>

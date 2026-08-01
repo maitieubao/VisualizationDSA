@@ -1,153 +1,206 @@
-﻿---
-title: Nguyên lý Đơn trách nhiệm (SRP)
-description: Khám phá Single Responsibility Principle - nguyên lý nền tảng nhất để viết mã nguồn dễ đọc, dễ bảo trì và dễ test trong C#.
+---
+title: Nguyên lý Đơn Trách Nhiệm (SRP)
+description: Khám phá nguyên lý cốt lõi đầu tiên của bộ SOLID. Hiểu lý do tại sao các "Lớp Thượng Đế" (God Classes) lại là mầm mống hủy diệt dự án phần mềm của bạn.
 ---
 
-# Nguyên lý Đơn trách nhiệm (SRP) {#srp}
+# Nguyên lý Đơn Trách Nhiệm (Single Responsibility Principle) {#srp}
 
-**Single Responsibility Principle (SRP)** là chữ cái **S** trong cụm từ viết tắt **S.O.L.I.D** do Robert C. Martin (Uncle Bob) giới thiệu. 
+:::info Mục tiêu bài học
+- Định nghĩa lại chữ "Trách nhiệm" (Responsibility) dưới góc nhìn chuẩn mực của thiết kế hệ thống.
+- Nhận diện **"Lớp Thượng Đế" (God Class) / Anti-pattern** - Căn bệnh ung thư lây lan sự phụ thuộc (Coupling) khắp mã nguồn.
+- Mổ xẻ dự án thực tế: Phân rã luồng Thanh toán Đơn hàng (E-commerce Order Processing) thành các Component độc lập.
+- Nắm được cách thiết kế Dependency Injection cơ bản ngay từ bước phân rã lớp.
+:::
 
-Nguyên lý này phát biểu rằng:
-> *"Một class (lớp) chỉ nên có **duy nhất một lý do để thay đổi**."*
-> (A class should have one, and only one, reason to change.)
+## 1. Lời mở đầu: Thế nào là "Một Trách nhiệm"? {#introduction}
 
-## Diễn giải thực tế {#explanation}
+Chữ **"S"** trong **SOLID** đại diện cho **Single Responsibility Principle (SRP)**. Nguyên lý này được phát biểu bởi Robert C. Martin (Uncle Bob) như sau:
 
-Hãy hiểu đơn giản: Mỗi class chỉ nên chịu trách nhiệm cho **một công việc duy nhất**. 
+> *"Một Lớp (Class) chỉ nên có duy nhất **MỘT LÝ DO ĐỂ THAY ĐỔI** (A class should have one, and only one, reason to change)."*
 
-Nếu một class đảm nhiệm quá nhiều chức năng (Ví dụ: Vừa tính toán logic nghiệp vụ, vừa kết nối database, vừa in dữ liệu ra file PDF), thì nó được gọi là một **"God Class" (Lớp Chúa tể)**. Khi đó, nếu yêu cầu định dạng PDF thay đổi, hoặc database đổi từ SQL Server sang MongoDB, bạn đều phải vào sửa cùng một class. Sự phụ thuộc chéo này khiến code của bạn cực kỳ mỏng manh (fragile) và dễ sinh lỗi (bugs).
+Khoan đã, "Lý do để thay đổi" nghĩa là gì?
+Hãy tưởng tượng bạn đang viết một hệ thống Thương mại điện tử (E-commerce). Bạn tạo ra một lớp tên là `OrderProcessor`. Lớp này nhận vào thông tin đơn hàng, tính toán thuế (Tax), kết nối tới CSDL (Database) để lưu trữ, và cuối cùng gửi một Email xác nhận cho khách.
+
+Một ngày nọ, sếp yêu cầu bạn:
+1. *"Pháp luật vừa thay đổi, từ nay Thuế VAT phải tính thêm 2%."* -> Bạn mở file `OrderProcessor` ra sửa logic tính Thuế.
+2. *"Công ty vừa chuyển từ SQL Server sang MongoDB."* -> Bạn lại mở file `OrderProcessor` ra sửa câu lệnh Query.
+3. *"Marketing muốn đổi template Email sang giao diện HTML mới."* -> Lại tiếp tục mở file `OrderProcessor` ra để sửa chữ.
+
+**Hậu quả:** File `OrderProcessor` của bạn có tới **3 lý do để thay đổi**. Nó đã ôm đồm quá nhiều trách nhiệm, biến thành một **"Lớp Thượng Đế" (God Class)**. Mỗi lần bạn đụng tay vào file này để sửa Database, bạn hoàn toàn có nguy cơ đánh sập nhầm chức năng Gửi Email! (Bởi vì chúng nằm chung một chỗ và có thể đang dùng chung biến toàn cục).
+
+---
+
+## 2. Giải phẫu Anti-pattern: God Class (Mã nguồn xấu) {#anti-pattern}
+
+Đây là một ví dụ C# điển hình của những Lập trình viên mới vào nghề. Mọi thứ hoạt động bình thường, nhưng kiến trúc thì bốc mùi (Code Smell).
+
+```csharp
+// MÃ XẤU - VI PHẠM SRP NGHIÊM TRỌNG
+public class OrderProcessor
+{
+    public void ProcessOrder(Order order)
+    {
+        // TRÁCH NHIỆM 1: Xử lý Business Logic
+        if (order.Items.Count == 0)
+        {
+            throw new Exception("Đơn hàng rỗng!");
+        }
+
+        // TRÁCH NHIỆM 2: Tính toán Thuế (Tax Calculation)
+        decimal taxRate = 0.08m; // Thuế mặc định
+        if (order.Country == "VN") 
+        {
+            taxRate = 0.1m; // 10% VAT
+        }
+        order.TotalAmount = order.SubTotal + (order.SubTotal * taxRate);
+
+        // TRÁCH NHIỆM 3: Giao tiếp Database (Data Access Layer)
+        using (var connection = new SqlConnection("Server=myServerAddress;Database=myDataBase;"))
+        {
+            connection.Open();
+            var command = new SqlCommand("INSERT INTO Orders...", connection);
+            command.ExecuteNonQuery();
+        }
+
+        // TRÁCH NHIỆM 4: Giao tiếp mạng (Notification)
+        var smtpClient = new SmtpClient("smtp.gmail.com");
+        var mail = new MailMessage("no-reply@shop.com", order.CustomerEmail)
+        {
+            Subject = "Xác nhận đơn hàng",
+            Body = $"Cảm ơn bạn đã mua hàng. Tổng tiền: {order.TotalAmount}"
+        };
+        smtpClient.Send(mail);
+    }
+}
+```
+
+### Tại sao đoạn code trên lại là "Thảm họa"?
+1. **Khó bảo trì:** File dài hàng ngàn dòng, logic đan xen chằng chịt.
+2. **Không thể Test tự động (Unit Test):** Muốn Test thử hàm tính tiền xem đúng chưa, bạn bị ép buộc phải có kết nối Internet (để gửi Email) và có CSDL SQL (để insert). Nếu rớt mạng, bài Test tính tiền lập tức Báo lỗi FAILED!
+3. **Khó tái sử dụng:** Ở một nơi khác trong hệ thống cũng cần gửi Email cho khách (Ví dụ: Chúc mừng sinh nhật). Bạn không thể gọi hàm `ProcessOrder` ra dùng được vì nó đính kèm cả việc trừ tiền và lưu Database! Bạn đành phải Copy-Paste đoạn code gửi Email ra chỗ mới -> Vi phạm nguyên tắc **DRY (Don't Repeat Yourself)**.
+
+---
+
+## 3. Quá trình Phẫu thuật Phân rã (Refactoring) {#refactoring}
+
+Để chữa căn bệnh này, ta sẽ cầm dao mổ, cắt lớp `OrderProcessor` thành 4 Component nhỏ, mỗi Component quản lý một nghiệp vụ (Domain) duy nhất.
 
 ```mermaid
-graph TD
-    subgraph GodClass
-    A[Class Invoice]
-    end
-    A -->|1. Logic Tính Thuế| B[Nghiệp vụ]
-    A -->|2. Logic Lưu DB| C[Cơ sở dữ liệu]
-    A -->|3. Logic Giao diện| D[In PDF]
+classDiagram
+    class OrderProcessor {
+        +ProcessOrder(Order)
+    }
+    class TaxCalculator {
+        +CalculateTax(Order)
+    }
+    class OrderRepository {
+        +Save(Order)
+    }
+    class EmailService {
+        +SendConfirmation(Order)
+    }
     
-    classDef bad fill:#f9d0c4,stroke:#e06666,stroke-width:2px,color:#000;
-    class A bad;
+    OrderProcessor ..> TaxCalculator : Sử dụng
+    OrderProcessor ..> OrderRepository : Sử dụng
+    OrderProcessor ..> EmailService : Sử dụng
 ```
 
-## Ví dụ vi phạm SRP (Bad Practice) {#bad-practice}
+Nhìn vào sơ đồ trên, `OrderProcessor` giờ đây không còn tự tay làm mọi việc nữa. Nhiệm vụ của nó bây giờ chỉ là **Người điều phối (Orchestrator)** – gọi các phòng ban khác (Lớp khác) vào làm việc.
 
-Dưới đây là một class `Invoice` ôm đồm quá nhiều việc:
+---
+
+## 4. Mã nguồn chuẩn mực SRP (C#) {#clean-code}
+
+Hãy xem cách chúng ta chia nhỏ file khổng lồ ban đầu thành các file Class gọn gàng, sắc nét.
+
+**File 1: Chuyên gia tính thuế (Chỉ đổi khi Thuế thay đổi)**
+```csharp
+public class TaxCalculator
+{
+    public void ApplyTax(Order order)
+    {
+        decimal taxRate = order.Country == "VN" ? 0.1m : 0.08m;
+        order.TotalAmount = order.SubTotal + (order.SubTotal * taxRate);
+    }
+}
+```
+
+**File 2: Chuyên gia Database (Chỉ đổi khi DB thay đổi)**
+```csharp
+public class OrderRepository
+{
+    public void SaveToDatabase(Order order)
+    {
+        using (var connection = new SqlConnection("Server=myServerAddress;..."))
+        {
+            connection.Open();
+            // Logic Insert SQL...
+            Console.WriteLine("Đã lưu đơn hàng vào DB.");
+        }
+    }
+}
+```
+
+**File 3: Chuyên gia Mạng/Thông báo (Chỉ đổi khi SMTP/Giao diện thay đổi)**
+```csharp
+public class EmailService
+{
+    public void SendConfirmation(Order order)
+    {
+        // Logic SMTP SmtpClient...
+        Console.WriteLine($"Đã gửi Email tới {order.CustomerEmail}");
+    }
+}
+```
+
+**Cuối cùng: Trả lại sự trong sạch cho Người điều phối**
+Tại lớp `OrderProcessor`, chúng ta không tự `new EmailService()` ở bên trong hàm nữa (Bởi vì `new` là keo dán dính chặt - Tightly Coupled). Thay vào đó, ta yêu cầu ai đó khởi tạo sẵn các chuyên gia này rồi **"Tiêm" (Inject)** chúng vào qua Hàm tạo (Constructor). Kỹ thuật này gọi là **Dependency Injection (DI)**.
 
 ```csharp
-public class Invoice
+// MÃ ĐẸP - CHUẨN SRP & DI CƠ BẢN
+public class OrderProcessor
 {
-    public decimal Amount { get; set; }
-    public string CustomerName { get; set; }
+    private readonly TaxCalculator _taxCalculator;
+    private readonly OrderRepository _repository;
+    private readonly EmailService _emailService;
 
-    public Invoice(decimal amount, string customerName)
+    // Yêu cầu tiêm (Inject) các phòng ban vào khi tạo Lớp này
+    public OrderProcessor(
+        TaxCalculator taxCalculator, 
+        OrderRepository repository, 
+        EmailService emailService)
     {
-        Amount = amount;
-        CustomerName = customerName;
+        _taxCalculator = taxCalculator;
+        _repository = repository;
+        _emailService = emailService;
     }
 
-    // 1. Trách nhiệm: Tính toán nghiệp vụ
-    public decimal CalculateTax()
+    public void ProcessOrder(Order order)
     {
-        return Amount * 0.1m;
-    }
+        // Điều kiện kinh doanh cốt lõi (Core Business)
+        if (order.Items.Count == 0) throw new Exception("Đơn hàng rỗng!");
 
-    // 2. Trách nhiệm: Lưu trữ dữ liệu (Database)
-    public void SaveToDatabase()
-    {
-        Console.WriteLine($"Đang kết nối SQL Server và lưu hóa đơn của {CustomerName}...");
-    }
-
-    // 3. Trách nhiệm: Định dạng báo cáo (UI/Export)
-    public void PrintInvoice()
-    {
-        Console.WriteLine($"--- HÓA ĐƠN ---");
-        Console.WriteLine($"Khách hàng: {CustomerName}");
-        Console.WriteLine($"Tổng tiền: {Amount + CalculateTax()}");
+        // Giao việc cho các chuyên gia (Delegation)
+        _taxCalculator.ApplyTax(order);
+        _repository.SaveToDatabase(order);
+        _emailService.SendConfirmation(order);
     }
 }
 ```
 
-:::warning Vấn đề ở đây là gì?
-Lớp `Invoice` trên có tới **3 lý do để thay đổi**:
-1. Thuế suất thay đổi (Logic nghiệp vụ).
-2. Sếp yêu cầu lưu vào File thay vì SQL (Logic lưu trữ).
-3. Đội Marketing muốn đổi màu sắc và thiết kế của hóa đơn in ra (Logic hiển thị).
+---
+
+## 5. Khi nào thì nên dừng chia nhỏ? (Edge Cases) {#edge-cases}
+
+Dù SRP rất tuyệt vời, nhưng nếu lạm dụng (Over-engineering), bạn sẽ tạo ra hàng trăm file Class tí hon chỉ có 1 dòng code. Điều này khiến việc theo dõi luồng chạy của chương trình trở thành cơn ác mộng (Spaghetti of files).
+
+**Tiêu chí quyết định:**
+Sự kết dính (Cohesion) là thước đo. Nếu 2 chức năng luôn LUÔN thay đổi CÙNG LÚC với nhau, chúng nên nằm trong CÙNG MỘT CLASS.
+Ví dụ: `CalculateTax()` và `CalculateDiscount()` đều là nghiệp vụ tính giá tiền (Pricing). Bạn hoàn toàn có thể gom chúng vào một class `PricingService` thay vì phải chẻ nhỏ ra thành `TaxService` và `DiscountService`.
+
+:::tip Tóm tắt nhanh (Key Takeaways)
+- Một Class chỉ nên có **Một Lý do duy nhất để bị sửa đổi**.
+- Dấu hiệu vi phạm (Code Smell): Class quá dài (vượt quá 500 dòng), chứa nhiều thư viện ngoại lai (`using System.Data.SqlClient`, `using System.Net.Mail` đứng cạnh nhau).
+- Việc chia nhỏ giúp Code có khả năng Unit Test tuyệt vời (Bạn có thể Mock/Giả lập cái EmailService để test riêng phần Tính thuế).
+- Hãy bắt đầu phân tách thành 3 Lớp tiêu chuẩn: **Logic Toán học (Business)**, **Lưu trữ (Data/Repository)**, và **Giao tiếp ngoại vi (Email/API/Logger)**.
 :::
-
-## Refactor tuân thủ SRP (Good Practice) {#good-practice}
-
-Để tuân thủ SRP, chúng ta sẽ tách 3 trách nhiệm đó ra thành 3 class độc lập. Class `Invoice` giờ đây chỉ làm đúng 1 việc: chứa dữ liệu và tính toán logic thuộc về hóa đơn.
-
-```csharp
-// 1. Chỉ chứa dữ liệu và logic cốt lõi của Hóa đơn
-public class Invoice
-{
-    public decimal Amount { get; set; }
-    public string CustomerName { get; set; }
-
-    public Invoice(decimal amount, string customerName)
-    {
-        Amount = amount;
-        CustomerName = customerName;
-    }
-
-    public decimal CalculateTax()
-    {
-        return Amount * 0.1m;
-    }
-}
-
-// 2. Chỉ chịu trách nhiệm lưu trữ (Repository)
-public class InvoiceRepository
-{
-    public void Save(Invoice invoice)
-    {
-        // Code kết nối DB và lưu trữ...
-        Console.WriteLine($"Đã lưu hóa đơn của {invoice.CustomerName} vào DB.");
-    }
-}
-
-// 3. Chỉ chịu trách nhiệm in ấn/hiển thị (Printer)
-public class InvoicePrinter
-{
-    public void Print(Invoice invoice)
-    {
-        // Code xuất ra máy in, PDF, hoặc HTML...
-        Console.WriteLine($"--- HÓA ĐƠN ---");
-        Console.WriteLine($"Khách: {invoice.CustomerName}");
-        Console.WriteLine($"Thuế: {invoice.CalculateTax()}");
-    }
-}
-```
-
-**Cách kiểm tra nhanh SRP:**
-Hãy thử miêu tả class của bạn bằng lời nói. Nếu trong câu miêu tả có chứa chữ **"VÀ"** (ví dụ: "Lớp này dùng để quản lý User **VÀ** gửi email"), thì 99% class của bạn đang vi phạm SRP.
-
-## Ưu điểm của SRP {#benefits}
-
-- **Dễ đọc, dễ hiểu:** Mỗi class rất ngắn gọn và tập trung vào một việc.
-- **Dễ bảo trì:** Lỗi ở chức năng gửi email thì vào tìm class `EmailSender`, lỗi ở DB thì tìm class `Repository`. Không phải mò mẫm trong 1 class hàng ngàn dòng code.
-- **Dễ Unit Test:** Test một chức năng duy nhất luôn dễ dàng hơn test một cục code rối rắm trộn lẫn nhiều thứ.
-
-:::tip Mẹo phỏng vấn
-Khi được yêu cầu review một đoạn code trong buổi phỏng vấn, dấu hiệu đầu tiên để bạn chỉ trích đoạn code đó là độ dài của Class. Nếu một Class dài hơn 500 dòng, hãy mạnh dạn tuyên bố: *"Class này có vẻ đang vi phạm nguyên lý Single Responsibility. Tôi đề xuất chúng ta nên tách nó ra..."*
-:::
-
-<details class="vt-quiz">
-<summary>📝 Kiểm tra nhanh: `UserController` có được phép kết nối Database không?</summary>
-
-**Đáp án:** KHÔNG! Trách nhiệm của `Controller` chỉ là nhận Request từ HTTP và trả về Response. Việc kết nối Database là trách nhiệm của `Repository` hoặc `DbContext`. Nếu nhét chung vào Controller, bạn đang vi phạm SRP trầm trọng!
-</details>
-
-## Next Steps {#next-steps}
-
-Sau khi đã chia nhỏ các class thành từng chức năng riêng biệt, làm sao để thêm tính năng mới vào ứng dụng mà không cần phải "mổ xẻ" các class cũ ra sửa? Hãy tìm hiểu nguyên lý thứ 2: **Open-Closed Principle (OCP)**.
-
-<div class="vt-box-container next-steps">
-  <a class="vt-box" href="/docs/solid/ocp">
-    <p class="next-steps-link">Open-Closed Principle</p>
-    <p class="next-steps-caption">Mở để mở rộng, Đóng để sửa đổi.</p>
-  </a>
-</div>
-

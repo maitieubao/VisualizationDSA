@@ -1,6 +1,6 @@
 <template>
   <div class="flex flex-col gap-6">
-    <!-- Multiple choice block -->
+    
     <div class="flex flex-col gap-4">
       <h4 class="section-title">
         <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="icon-blue">
@@ -26,7 +26,7 @@
     </div>
     <div class="divider" />
     
-    <!-- Interactive Code Compliance Block -->
+    
     <div class="flex flex-col gap-3">
       <div class="flex justify-between items-center">
         <h4 class="section-title">
@@ -51,7 +51,7 @@
       </div>
     </div>
 
-    <!-- Submit Result Section -->
+    
     <div class="mt-2 flex flex-col gap-4">
       <button @click="$emit('submit')" class="submit-btn">
         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="w-4 h-4"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14M22 4L12 14.01l-3-3" /></svg>

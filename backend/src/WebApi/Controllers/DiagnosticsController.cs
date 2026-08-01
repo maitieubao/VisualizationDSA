@@ -4,19 +4,19 @@ using System;
 
 namespace VisualizationDSA.WebApi.Controllers
 {
-    /// <summary>
-    /// Diagnostics Controller — endpoints phục vụ kiểm thử lỗi & health check.
-    /// Route: api/v{version:apiVersion}/diagnostics
-    /// </summary>
+    
+    
+    
+    
     [ApiVersion("1.0")]
     [ApiController]
     [Route("api/v{version:apiVersion}/diagnostics")]
     public class DiagnosticsController : ControllerBase
     {
-        /// <summary>
-        /// Health check endpoint.
-        /// GET /api/v1/diagnostics/health
-        /// </summary>
+        
+        
+        
+        
         [HttpGet("health")]
         public ActionResult<object> Health()
         {
@@ -29,10 +29,10 @@ namespace VisualizationDSA.WebApi.Controllers
             });
         }
 
-        /// <summary>
-        /// Mô phỏng lỗi cho mục đích kiểm thử middleware xử lý lỗi.
-        /// GET /api/v1/diagnostics/simulate-error?type=500|400|404|401|409|501
-        /// </summary>
+        
+        
+        
+        
         [HttpGet("simulate-error")]
         public IActionResult SimulateError([FromQuery] int type = 500)
         {

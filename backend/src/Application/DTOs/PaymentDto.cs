@@ -5,7 +5,7 @@ namespace VisualizationDSA.Application.DTOs
 {
     public class CreateOrderRequest
     {
-        // Yêu cầu đơn giản, Backend sẽ tự lấy Price từ cấu hình
+        
     }
 
     public class OrderDto
@@ -18,7 +18,7 @@ namespace VisualizationDSA.Application.DTOs
         public DateTime CreatedAt { get; set; }
         public DateTime? CompletedAt { get; set; }
 
-        // Thông tin chuyển khoản để hiển thị trên client
+        
         public string BankId { get; set; } = string.Empty;
         public string BankAccount { get; set; } = string.Empty;
         public string AccountName { get; set; } = string.Empty;
@@ -43,13 +43,13 @@ namespace VisualizationDSA.Application.DTOs
         public string? SubAccount { get; set; }
 
         [JsonPropertyName("code")]
-        public string? Code { get; set; } // Mã thanh toán SePay tự khớp
+        public string? Code { get; set; } 
 
         [JsonPropertyName("content")]
-        public string Content { get; set; } = string.Empty; // Nội dung chuyển khoản thô
+        public string Content { get; set; } = string.Empty; 
 
         [JsonPropertyName("transferType")]
-        public string TransferType { get; set; } = "in"; // in (tiền vào), out (tiền ra)
+        public string TransferType { get; set; } = "in"; 
 
         [JsonPropertyName("transferAmount")]
         public decimal TransferAmount { get; set; }
@@ -58,7 +58,7 @@ namespace VisualizationDSA.Application.DTOs
         public decimal Accumulated { get; set; }
 
         [JsonPropertyName("referenceCode")]
-        public string ReferenceCode { get; set; } = string.Empty; // Mã giao dịch của Ngân hàng
+        public string ReferenceCode { get; set; } = string.Empty; 
         
         [JsonPropertyName("description")]
         public string Description { get; set; } = string.Empty;

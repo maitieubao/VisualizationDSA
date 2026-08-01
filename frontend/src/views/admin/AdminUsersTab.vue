@@ -66,7 +66,7 @@
     </div>
   </section>
 
-  <!-- User Detail Modal -->
+  
   <Teleport to="body">
     <Transition name="modal-fade">
       <div v-if="showUserModal" class="user-modal-backdrop" @click.self="showUserModal = false">
@@ -98,7 +98,7 @@
     </Transition>
   </Teleport>
 
-  <!-- Create User Modal -->
+  
   <Teleport to="body">
     <Transition name="modal-fade">
       <div v-if="showCreateUserModal" class="user-modal-backdrop" @click.self="closeCreateUserModal">
@@ -120,7 +120,7 @@
     </Transition>
   </Teleport>
 
-  <!-- Reset Password Modal -->
+  
   <Teleport to="body">
     <Transition name="modal-fade">
       <div v-if="showResetPasswordModal" class="user-modal-backdrop" @click.self="closeResetPasswordModal">

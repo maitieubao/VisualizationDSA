@@ -13,11 +13,11 @@ using VisualizationDSA.Infrastructure.Data;
 
 namespace VisualizationDSA.WebApi.Controllers
 {
-    /// <summary>
-    /// Gamification API — XP, badges, leaderboard.
-    /// Kết hợp in-memory cache (GamificationStrategy) + PostgreSQL persistence (ApplicationDbContext).
-    /// Route: /api/v1/concepts/gamification
-    /// </summary>
+    
+    
+    
+    
+    
     [ApiVersion("1.0")]
     [ApiController]
     [Route("api/v{version:apiVersion}/concepts/gamification")]
@@ -57,21 +57,21 @@ namespace VisualizationDSA.WebApi.Controllers
             return "Novice";
         }
 
-        /// <summary>
-        /// Lấy thông tin profile người dùng demo (XP, level, badges, activity).
-        /// GET /api/v1/concepts/gamification/profile
-        /// </summary>
+        
+        
+        
+        
         [HttpGet("profile")]
         public IActionResult GetProfile()
         {
             return Ok(_gamification.GetUserProfile());
         }
 
-        /// <summary>
-        /// Cộng XP cho người dùng — in-memory + PostgreSQL persistence.
-        /// POST /api/v1/concepts/gamification/award-xp
-        /// Body: { "amount": 50, "reason": "Hoàn thành quiz" }
-        /// </summary>
+        
+        
+        
+        
+        
         [HttpPost("award-xp")]
         public async Task<IActionResult> AwardXp([FromBody] AwardXpRequest request)
         {
@@ -80,7 +80,7 @@ namespace VisualizationDSA.WebApi.Controllers
 
             var profile = _gamification.AwardXp(request.Amount, request.Reason);
 
-            // Persist XP to PostgreSQL — update demo user
+            
             var dbUser = await _dbContext.Users
                 .FirstOrDefaultAsync(u => u.Email == "demo@visualizationdsa.dev");
             if (dbUser != null)
@@ -93,20 +93,20 @@ namespace VisualizationDSA.WebApi.Controllers
             return Ok(profile);
         }
 
-        /// <summary>
-        /// Lấy danh sách tất cả badges (gồm trạng thái đã đạt hay chưa).
-        /// GET /api/v1/concepts/gamification/badges
-        /// </summary>
+        
+        
+        
+        
         [HttpGet("badges")]
         public IActionResult GetBadges()
         {
             return Ok(_gamification.GetAllBadges());
         }
 
-        /// <summary>
-        /// Lấy bảng xếp hạng từ PostgreSQL (live database records) có đệm kết quả.
-        /// GET /api/v1/concepts/gamification/leaderboard?limit=10
-        /// </summary>
+        
+        
+        
+        
         [HttpGet("leaderboard")]
         public async Task<IActionResult> GetLeaderboard([FromQuery] int limit = 10)
         {
@@ -130,7 +130,7 @@ namespace VisualizationDSA.WebApi.Controllers
 
                 if (dbUsers.Count == 0)
                 {
-                    // Fallback to in-memory mock if DB is empty
+                    
                     return Ok(_gamification.GetLeaderboard(limit));
                 }
 
@@ -155,10 +155,10 @@ namespace VisualizationDSA.WebApi.Controllers
             return Ok(leaderboard);
         }
 
-        /// <summary>
-        /// Lấy cấu hình gamification (level thresholds, badge definitions, XP events).
-        /// GET /api/v1/concepts/gamification/config
-        /// </summary>
+        
+        
+        
+        
         [HttpGet("config")]
         [ResponseCache(Duration = 86400)]
         public IActionResult GetConfig()

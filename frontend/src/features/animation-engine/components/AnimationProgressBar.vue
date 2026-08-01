@@ -1,5 +1,5 @@
 <template>
-  <!-- Progress bar: nền track + thanh filled dùng CSS variables -->
+  
   <div class="progress-track">
     <div
       class="progress-fill"

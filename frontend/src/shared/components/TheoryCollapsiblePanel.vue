@@ -7,7 +7,7 @@
       'is-expanded-width': isExpandedWidth
     }"
   >
-    <!-- Toggle tab button (shows when collapsed) -->
+    
     <button
       v-if="!isOpen"
       class="theory-toggle-tab"
@@ -18,9 +18,9 @@
       <span class="tab-text">Lý thuyết & Tài liệu</span>
     </button>
 
-    <!-- Main Drawer Content -->
+    
     <div class="theory-drawer-content" v-if="isOpen">
-      <!-- Header -->
+      
       <div class="drawer-header">
         <div class="flex items-center justify-between w-full">
           <h3 class="drawer-title flex items-center gap-2">
@@ -28,7 +28,7 @@
             <span>{{ document?.title || 'Tài liệu Lý thuyết' }}</span>
           </h3>
           <div class="flex items-center gap-3">
-            <!-- Expand/Collapse width toggle button -->
+            
             <button
               class="expand-toggle-btn"
               @click="toggleExpandWidth"
@@ -42,7 +42,7 @@
               </svg>
             </button>
 
-            <!-- Close panel button -->
+            
             <button class="close-btn" @click="closePanel" title="Thu gọn (Đóng)">
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
                 <line x1="18" y1="6" x2="6" y2="18"></line>
@@ -53,9 +53,9 @@
         </div>
       </div>
 
-      <!-- Main Body Container -->
+      
       <div class="drawer-body" ref="bodyRef">
-        <!-- 1. Simplified Core Concept Summary view -->
+        
         <TheorySummaryView
           v-if="!showFullDocs && document"
           :document="document"
@@ -63,7 +63,7 @@
           @readMore="showFullDocs = true"
         />
 
-        <!-- 2. Accordion Document Sections list -->
+        
         <div v-else-if="showFullDocs && document" class="accordion-container">
           <TheoryAccordionItem
             v-for="(sec, idx) in document.sections"
@@ -79,7 +79,7 @@
             @nextPillar="triggerNextPillar"
           />
 
-          <!-- Bottom Back To Summary toggle -->
+          
           <button class="back-to-summary-footer-btn mt-4" @click="showFullDocs = false">
             ◀ Quay lại Tóm tắt Khái niệm
           </button>
@@ -117,14 +117,14 @@ const flashedSectionId = ref<string | null>(null);
 
 function toggleSection(id: string) {
   if (expandedSectionId.value === id) {
-    expandedSectionId.value = null; // collapse
+    expandedSectionId.value = null; 
   } else {
-    expandedSectionId.value = id; // expand
+    expandedSectionId.value = id; 
     emit('sectionActivated', id);
   }
 }
 
-// Next pillar names map
+
 const PILLAR_NAMES: Record<string, string> = {
   encapsulation: 'Tính Kế Thừa',
   inheritance: 'Tính Đa Hình',
@@ -150,7 +150,7 @@ function triggerNextPillar() {
   window.dispatchEvent(event);
 }
 
-// Toggle panel state
+
 function toggleOpen() {
   emit('update:isOpen', !props.isOpen);
   triggerResizeAfterAnimation();
@@ -188,7 +188,7 @@ onUnmounted(() => {
   window.removeEventListener('resize', checkWidth);
 });
 
-// Switch documents: reset view to summary
+
 watch(() => props.document, (newDoc) => {
   showFullDocs.value = false;
   if (newDoc?.sections.length) {
@@ -198,7 +198,7 @@ watch(() => props.document, (newDoc) => {
   }
 });
 
-// Auto-expand showFullDocs when active section is synced from scenario player steps
+
 watch(() => props.activeSectionId, (newId) => {
   if (newId) {
     const isIntro = ['encap-concept', 'inherit-concept', 'poly-concept', 'abstract-concept', 'interface-concept'].includes(newId);

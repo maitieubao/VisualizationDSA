@@ -1,102 +1,176 @@
 ---
-title: Duyệt theo chiều rộng (BFS)
-description: Khám phá thuật toán Breadth-First Search (BFS) - kỹ thuật quét ngang dữ liệu theo từng tầng, từng lớp, chuyên trị bài toán tìm đường đi ngắn nhất.
+title: Duyệt đồ thị theo chiều rộng (BFS)
+description: Khám phá thuật toán loang màu như vết dầu trên mặt nước. Nắm vững bí kíp sử dụng Hàng đợi (Queue) để tìm đường đi ngắn nhất vô địch trên đồ thị.
 ---
 
-# Duyệt theo chiều rộng (BFS) {#bfs}
+# Duyệt theo chiều rộng (BFS - Breadth-First Search) {#bfs}
 
-Như đã đề cập ở bài trước, Đệ quy (Recursion) mang bản chất của Stack (vào sâu và lùi lại), nên nó luôn cắm đầu đi sâu xuống nhánh cây tạo ra kiểu quét **Theo chiều sâu (DFS)**. 
+:::info Mục tiêu bài học
+- Xây dựng tư duy **Duyệt theo Tầng (Level-order)**, lan tỏa như một giọt nước rơi xuống mặt hồ.
+- Thấu hiểu tại sao thuật toán này BẮT BUỘC phải sử dụng **Hàng đợi (Queue)** để quản lý đỉnh chờ.
+- Theo dõi Call Stack và mảng `Visited` qua bảng Trace chi tiết.
+- Nhận diện "Vương quốc" của BFS: Bài toán **Đường đi ngắn nhất (Shortest Path)** trên ma trận vô hướng/không trọng số.
+:::
 
-Nhưng nếu bài toán yêu cầu: *"Hãy tìm bạn bè của tôi (Lớp thứ 1), sau đó tìm bạn của bạn tôi (Lớp thứ 2)"* trên mạng xã hội Facebook? Việc đi đâm xuyên một mạch từ một người bạn xuống thẳng một người lạ hoắc ở Châu Phi (theo kiểu DFS) là vô nghĩa.
+## 1. Lời mở đầu: Vết dầu loang trên mặt nước {#introduction}
 
-Chúng ta cần một thuật toán mở rộng vùng tìm kiếm dần dần, quét sạch tầng hiện tại rồi mới xuống tầng tiếp theo. Đó là **Breadth-First Search (Duyệt theo chiều rộng)**. 
+Hãy tưởng tượng bạn làm rơi một giọt dầu xuống mặt hồ tĩnh lặng. Vết dầu sẽ lan ra xung quanh theo từng vòng tròn đồng tâm. Vòng tròn gần nhất sẽ bị loang trước, rồi mới lan đến vòng tròn thứ hai, thứ ba... Đó chính là tinh thần cốt lõi của **Duyệt theo chiều rộng (BFS)**.
 
-Trái tim của BFS không phải là Đệ quy (Stack), mà là **Hàng đợi (Queue)**!
+**Triết lý cốt lõi:**
+Từ một Đỉnh gốc, bạn phải tham quan **tất cả những người hàng xóm kề sát vách** (Tầng 1) trước khi bước sang hàng xóm của hàng xóm (Tầng 2).
 
-## Nguyên lý hoạt động {#how-it-works}
+**BFS dùng để làm gì?**
+- Phân tích mạng xã hội (Tìm bạn chung vòng 1, vòng 2).
+- Thuật toán tìm đường GPS (Shortest Path) trên bản đồ thành phố.
+- Tính năng đổ màu (Paint Bucket) trong Photoshop, tự động lan màu ra các Pixel xung quanh cho đến khi chạm viền đen.
 
-Luật chơi của BFS cực kỳ đơn giản: **Dùng một Queue để chứa những đỉnh/node sắp được thăm.**
+---
 
-1. Bắt đầu ở Root. Bỏ Root vào Queue.
-2. Lặp lại quá trình sau cho đến khi Queue RỖNG:
-   - **Rút (Dequeue)** Node đang đứng ở đầu Hàng đợi ra. (Thăm Node này).
-   - Hỏi xem Node này có Node con/hàng xóm nào không?
-   - Nếu có, đẩy (Enqueue) TẤT CẢ con/hàng xóm của nó vào cuối Hàng đợi, bắt chúng xếp hàng chờ đến lượt.
-3. Kết thúc!
+## 2. Hàng Đợi (Queue): Người nhạc trưởng của BFS {#queue-coordinator}
 
-Nhờ nguyên lý công bằng (FIFO) của Queue, những Node ở Tầng 1 được bỏ vào Queue trước, nên chúng sẽ được Rút ra thăm trước. Những Node ở Tầng 2 do được nạp vào sau, phải xếp hàng đợi Tầng 1 quét xong mới đến lượt!
+Tại sao BFS không thể dùng Đệ quy (Stack) như DFS? 
+Bởi vì Đệ quy có tính chất "đâm lao thì phải theo lao" – đi xuyên thẳng xuống tận cùng rồi mới quay lại. Trong khi đó, BFS đòi hỏi sự **Công Bằng**: Ai ở gần (Được phát hiện trước) thì phải được duyệt trước!
 
-## Ứng dụng thực tế: Tại sao lại là BFS? {#use-cases}
+Cấu trúc **First-In, First-Out (FIFO)** của [Hàng đợi (Queue)](/docs/stack-queue/queue) là mảnh ghép hoàn hảo.
 
-Đặc sản lớn nhất của BFS là: **Nó luôn tìm ra đường đi NGẮN NHẤT trên đồ thị không có trọng số (Unweighted Graph).**
+### Mô phỏng chi tiết bằng Mermaid (Trace)
 
-Giả sử bạn chơi game giải đố mê cung. BFS giống như việc bạn đổ một xô nước vào điểm bắt đầu. Nước sẽ loang ra xung quanh (tỏa ra mọi hướng cùng lúc). Giọt nước nào chạm đích đầu tiên, đó CỨNG ĐẢM là con đường ngắn nhất!
+Giả sử ta có một đồ thị mạng xã hội nhỏ. Cần duyệt từ đỉnh **A**.
 
-**Các bài toán kinh điển:**
-- Tìm đường đi ngắn nhất từ A đến B trên lưới 2D (Bài toán ma trận).
-- Tính số bước tối thiểu để biến đổi chuỗi (Word Ladder).
-- Crawl (Cào) dữ liệu Web: Quét các link ở trang chủ (Tầng 1), rồi quét các trang con (Tầng 2).
+```mermaid
+graph TD
+    A((A)) --- B((B))
+    A --- C((C))
+    B --- D((D))
+    B --- E((E))
+    C --- F((F))
+    
+    style A fill:#ef4444,color:#fff
+```
 
-## Độ phức tạp Thuật toán {#complexity}
+**Khởi tạo:** Tạo một `Queue`. Bỏ **A** vào. Đánh dấu **A** đã thăm (`Visited`).
 
-| Đặc tính | Cây (Tree) | Đồ thị (Graph) |
-| :--- | :--- | :--- |
-| **Thời gian** | **O(N)** - N là tổng số Node. | **O(V + E)** - Phải duyệt qua số Đỉnh (V) và số Cạnh (E). |
-| **Không gian (Space)** | **O(W)** - W là chiều rộng tối đa của cây (Số lượng phần tử nhiều nhất trên một tầng). | **O(V)** - Queue có thể chứa tối đa V đỉnh cùng lúc. |
+**Bước 1:** `Dequeue` lấy **A** ra duyệt.
+A có 2 hàng xóm là **B** và **C**. Cả 2 chưa được thăm.
+Đưa B và C vào Queue.
+`Queue hiện tại: [B, C]`
 
-## Cài đặt BFS cho Cây (Code Example) {#code-example}
+**Bước 2:** `Dequeue` lấy **B** ra duyệt. (Bởi vì B đứng trước C).
+B có 2 hàng xóm là **D** và **E**. Đưa vào Queue.
+`Queue hiện tại: [C, D, E]`
 
-Dưới đây là cách cài đặt vòng lặp `while` kinh điển của BFS (còn gọi là Level-Order Traversal):
+**Bước 3:** `Dequeue` lấy **C** ra duyệt. (Sự công bằng: Dù D và E vừa vào, nhưng C đã đứng đợi từ lâu, phải duyệt C trước Tầng 2).
+C có hàng xóm là **F**. Đưa vào Queue.
+`Queue hiện tại: [D, E, F]`
+
+Cứ thế tiếp tục lấy D, E, F ra duyệt. Kết quả thứ tự thăm là: **A $\rightarrow$ B $\rightarrow$ C $\rightarrow$ D $\rightarrow$ E $\rightarrow$ F**. Rõ ràng nó đã quét xong toàn bộ Tầng 1 (B, C) rồi mới đến Tầng 2 (D, E, F).
+
+---
+
+## 3. Mã nguồn C# Căn bản {#code-example}
+
+Bạn có thể biểu diễn đồ thị bằng `Dictionary<int, List<int>>` (Danh sách kề).
 
 ```csharp
-using System.Collections.Generic;
-
-public void BreadthFirstSearch(TreeNode root)
+public void BFS_Graph(Dictionary<int, List<int>> graph, int startNode)
 {
-    if (root == null) return;
-
-    // Trái tim của BFS: Queue
-    Queue<TreeNode> queue = new Queue<TreeNode>();
+    // Hàng đợi quản lý các đỉnh đang chờ được duyệt
+    Queue<int> queue = new Queue<int>();
     
-    // Bỏ gốc vào hàng đợi
-    queue.Enqueue(root);
+    // HashSet kiểm tra Nhanh O(1) xem một đỉnh đã được thăm chưa
+    HashSet<int> visited = new HashSet<int>();
 
+    // Bước 1: Khởi tạo với đỉnh xuất phát
+    queue.Enqueue(startNode);
+    visited.Add(startNode);
+
+    // Bước 2: Vòng lặp vắt kiệt Hàng đợi
     while (queue.Count > 0)
     {
-        // 1. Rút người đầu tiên ra khỏi hàng đợi
-        TreeNode current = queue.Dequeue();
-        
-        // 2. "Thăm" người đó (Ví dụ: In ra)
-        Console.Write(current.Value + " ");
+        // Rút người ở Đầu hàng đợi ra
+        int current = queue.Dequeue();
+        Console.Write(current + " -> "); // Duyệt (In ra màn hình)
 
-        // 3. Cho các con của người đó xếp hàng
-        if (current.Left != null)
+        // Nếu đỉnh này không có hàng xóm, bỏ qua (Tránh lỗi NullReference)
+        if (!graph.ContainsKey(current)) continue;
+
+        // Quét tất cả hàng xóm của nó
+        foreach (int neighbor in graph[current])
         {
-            queue.Enqueue(current.Left);
-        }
-        
-        if (current.Right != null)
-        {
-            queue.Enqueue(current.Right);
+            // Nếu hàng xóm CHƯA TỪNG được thăm
+            if (!visited.Contains(neighbor))
+            {
+                visited.Add(neighbor); // Đánh dấu đã thăm NGAY LẬP TỨC
+                queue.Enqueue(neighbor); // Xếp hàng xóm vào Cuối hàng đợi
+            }
         }
     }
 }
 ```
 
-:::warning Lưu ý khi áp dụng BFS cho Đồ thị (Graph)
-Cây (Tree) luôn đi từ trên xuống dưới, không có đường quay ngược lại. Nhưng Đồ thị (Graph) thì có vòng lặp (Cycle)! Nếu A nối B, B nối A. Nếu bạn dùng code ở trên, A sẽ cho B vào hàng đợi, B lại cho A vào, tạo thành vòng lặp vô hạn.
-**Với Đồ thị:** Bạn BẮT BUỘC phải cấp thêm một mảng `bool[] visited` hoặc `HashSet` để đánh dấu những Đỉnh đã từng vào Queue, tránh việc 1 đỉnh xếp hàng 2 lần.
+> **Lỗi kinh điển:** Một số lập trình viên lấy đỉnh ra khỏi Queue rồi mới đánh dấu `visited.Add(current)`. Điều này vô cùng nguy hiểm vì có thể dẫn tới việc cùng một Đỉnh bị nhét vào Queue 2 lần (Từ 2 hàng xóm khác nhau). **Luôn đánh dấu Visited ngay lập tức trước khi Enqueue!**
+
+---
+
+## 4. Ứng dụng Siêu việt: Tìm đường đi ngắn nhất (Shortest Path) {#shortest-path}
+
+Đặc sản của BFS là: **Con đường đầu tiên mà BFS chạm đến một đỉnh, CHẮC CHẮN LÀ CON ĐƯỜNG NGẮN NHẤT** (Tính theo số bước đi/cạnh).
+
+**Bài toán: Giải cứu Công chúa trong Mê Cung (Ma trận 2D)**
+Bản đồ là ma trận `N x M`. Số `0` là đường đi, `1` là tường. `S` là điểm bắt đầu, `E` là lối ra. Tìm số bước ít nhất.
+
+Thay vì Queue chỉ lưu tọa độ `(row, col)`, ta lưu thêm thông tin Tầng (Số bước).
+
+```csharp
+public int ShortestPathInMaze(int[][] grid, int[] start, int[] end) 
+{
+    int rows = grid.Length;
+    int cols = grid[0].Length;
+    
+    // Queue lưu trữ một mảng 3 giá trị: [row, col, distance]
+    Queue<int[]> queue = new Queue<int[]>();
+    bool[,] visited = new bool[rows, cols];
+
+    queue.Enqueue(new int[] { start[0], start[1], 0 });
+    visited[start[0], start[1]] = true;
+
+    // 4 Hướng di chuyển: Lên, Xuống, Trái, Phải
+    int[][] directions = { 
+        new int[]{ -1, 0 }, new int[]{ 1, 0 }, 
+        new int[]{ 0, -1 }, new int[]{ 0, 1 } 
+    };
+
+    while (queue.Count > 0) 
+    {
+        int[] current = queue.Dequeue();
+        int r = current[0];
+        int c = current[1];
+        int dist = current[2];
+
+        // Nếu chạm đích E, ta trả về số bước ngay lập tức!
+        if (r == end[0] && c == end[1]) return dist;
+
+        foreach (var dir in directions) 
+        {
+            int nextRow = r + dir[0];
+            int nextCol = c + dir[1];
+
+            // Kiểm tra ranh giới bản đồ và tường
+            if (nextRow >= 0 && nextRow < rows && nextCol >= 0 && nextCol < cols 
+                && grid[nextRow][nextCol] == 0 
+                && !visited[nextRow, nextCol]) 
+            {
+                visited[nextRow, nextCol] = true;
+                queue.Enqueue(new int[] { nextRow, nextCol, dist + 1 });
+            }
+        }
+    }
+    return -1; // Vô phương cứu chữa (Bị tường bao quanh)
+}
+```
+
+:::tip Tóm tắt nhanh (Key Takeaways)
+- Tôn chỉ của BFS là **Vết dầu loang**, dùng Hàng Đợi (Queue) để bắt buộc ưu tiên duyệt các Tầng gần trước.
+- Không bao giờ quên mảng `Visited` (hoặc HashSet), nếu không sẽ bị kẹt trong Vòng lặp Vô hạn (Infinite Loop) ở các Đồ thị có chu trình.
+- Khi cần tìm Đường đi CÓ ÍT BƯỚC NHẤT (Shortest Path in Unweighted Graph), BFS là giải pháp O(V + E) độc tôn. Đừng dùng DFS vì nó có thể đi vòng vèo mù quáng!
 :::
-
-## Next Steps {#next-steps}
-
-Đến đây, bạn đã thấy sự kỳ diệu của việc thay thế "LIFO (Đệ quy/Stack)" bằng "FIFO (Queue)" để thay đổi hoàn toàn cục diện tìm kiếm.
-
-Vậy rốt cuộc **DFS (Duyệt theo chiều sâu)** trông như thế nào nếu ta không dùng Đệ quy mà viết bằng vòng lặp? Ưu nhược điểm của nó so với BFS là gì? Hãy sang bài tiếp theo: **Duyệt theo chiều sâu (DFS)** để làm rõ.
-
-<div class="vt-box-container next-steps">
-  <a class="vt-box" href="/docs/tree-graph/dfs">
-    <p class="next-steps-link">Duyệt theo chiều sâu (DFS)</p>
-    <p class="next-steps-caption">Sức mạnh của thuật toán cắm đầu đi sâu tìm lối thoát.</p>
-  </a>
-</div>

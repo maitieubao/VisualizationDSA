@@ -1,66 +1,64 @@
 <template>
-  <!-- h-full w-full → fills visualizer zone completely -->
   <div class="h-full w-full flex flex-col gap-4 items-center px-4 pb-4 overflow-y-auto" :style="containerStyle">
-    <!-- Phase Banner -->
+    
     <div class="phase-banner">
       <div class="flex items-center gap-2">
-        <span class="state-label">Trạng Thái:</span>
+        <span class="state-label">Trạng thái:</span>
         <span class="state-desc">{{ frame?.description || 'Khởi tạo' }}</span>
       </div>
-      <!-- Phase Badge -->
-      <span 
+      <span
         class="phase-badge"
         :class="isMergePhase ? 'merge' : 'split'"
       >
-        {{ isMergePhase ? 'Merge Phase ⬆' : 'Split Phase ⬇' }}
+        {{ isMergePhase ? 'Gộp' : 'Chia' }}
       </span>
     </div>
 
-    <!-- Tree View (shrink-0 to prevent vertical overlap) -->
-    <div class="tree-view-container">
+    
+    <div
+      class="tree-view-container"
+      :style="{ height: treeContainerHeight + 'px' }"
+    >
       <div
-        v-for="level in levels"
-        :key="level"
-        class="tree-level-row"
+        class="tree-scroll-area"
+        :style="{ transform: `translateY(${-visibleLevelOffset * TREE_ROW_HEIGHT}px)` }"
       >
-        <!-- Level Badge on the left -->
-        <div class="level-info">
-          <span class="level-title">Tầng {{ level }}</span>
-          <span class="level-subtitle">
-            {{ level === 0 ? 'Mảng Gốc' : level === Math.max(...levels) ? 'Mảng Đơn' : 'Chia Đoạn' }}
-          </span>
-        </div>
+        <div
+          v-for="level in allLevels"
+          :key="level"
+          class="tree-level-row"
+        >
+          <div class="level-info">
+            <span class="level-title">Tầng {{ level }}</span>
+            <span class="level-subtitle">{{ getLevelLabel(level) }}</span>
+          </div>
 
-        <!-- Subarrays container (relative parent for absolute children) -->
-        <div class="relative flex-1 h-full min-h-0">
-          <div
-            v-for="(sub, sIdx) in getSubArraysForLevel(level)"
-            :key="sIdx"
-            :style="getSubarrayStyle(sub)"
-            class="subarray-block"
-            :class="getSubarrayClass(sub)"
-          >
-            <transition-group name="sort-list" tag="div" class="flex justify-center gap-1.5 w-full">
-              <div
-                v-for="idx in (sub.end - sub.start + 1)"
-                :key="sub.start + idx - 1"
-                class="subarray-item"
-                :class="getItemClass(sub.start + idx - 1, sub)"
-                :style="{ width: itemSize, height: itemHeight, fontSize: fontSize }"
-              >
-                <!-- Show comparing pointers inside nodes -->
-                <span v-if="sub.isActive && isComparing(sub.start + idx - 1)" class="compare-arrow">
-                  ▼
-                </span>
-                {{ getItemAt(sub.start + idx - 1)?.value }}
-              </div>
-            </transition-group>
+          <div class="relative flex-1 h-full">
+            <div
+              v-for="(sub, sIdx) in getSubArraysForLevel(level)"
+              :key="sIdx"
+              :style="getSubarrayStyle(sub)"
+              class="subarray-block"
+              :class="getSubarrayClass(sub)"
+            >
+              <transition-group name="sort-list" tag="div" class="flex justify-center gap-1 w-full">
+                <div
+                  v-for="idx in (sub.end - sub.start + 1)"
+                  :key="sub.start + idx - 1"
+                  class="subarray-item"
+                  :class="getItemClass(sub.start + idx - 1, sub)"
+                  :style="{ width: itemSize, height: itemHeight, fontSize: fontSize }"
+                >
+                  {{ getItemAt(sub.start + idx - 1)?.value }}
+                </div>
+              </transition-group>
+            </div>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- Merge Inspector (shrink-0) -->
+    
     <div class="inspector-section">
       <MergeInspector :frame="frame" />
     </div>
@@ -71,6 +69,8 @@
 import { computed } from 'vue';
 import type { SortFrame, SubArray } from '../types/sorting.types';
 import MergeInspector from './MergeInspector.vue';
+
+const TREE_ROW_HEIGHT = 104;
 
 const props = defineProps<{
   frame: SortFrame | null;
@@ -94,10 +94,14 @@ const containerStyle = computed(() => {
   return { minWidth: `${minW}px` };
 });
 
-const levels = computed(() => {
+const allLevels = computed(() => {
   if (!props.frame?.subArrays) return [0];
   const lvls = props.frame.subArrays.map(s => s.level);
   return [...new Set(lvls)].sort((a, b) => a - b);
+});
+
+const treeContainerHeight = computed(() => {
+  return Math.min(allLevels.value.length, 3) * TREE_ROW_HEIGHT;
 });
 
 const isMergePhase = computed(() => {
@@ -106,28 +110,37 @@ const isMergePhase = computed(() => {
   return desc.includes('ghi đè') || desc.includes('so sánh') || desc.includes('sao chép') || desc.includes('hoàn thành');
 });
 
+const activeSubarray = computed(() => {
+  return props.frame?.subArrays?.find(s => s.isActive) || null;
+});
+
+const visibleLevelOffset = computed(() => {
+  const active = activeSubarray.value;
+  if (!active || allLevels.value.length <= 3) return 0;
+  return Math.max(0, active.level - 1);
+});
+
+function getLevelLabel(level: number): string {
+  const maxLvl = Math.max(...allLevels.value);
+  if (allLevels.value.length <= 1) return '';
+  if (level === 0) return 'Mảng gốc';
+  if (level === maxLvl) return 'Mảng đơn';
+  return 'Chia đoạn';
+}
+
 function getSubArraysForLevel(level: number) {
   if (!props.frame?.subArrays) return [];
   return props.frame.subArrays.filter(s => s.level === level).sort((a, b) => a.start - b.start);
 }
 
 function getSubarrayStyle(sub: SubArray) {
-  const start = sub.start;
-  const end = sub.end;
-  const left = (start / n.value) * 100;
-  const width = ((end - start + 1) / n.value) * 100;
-  
   return {
-    left: `${left}%`,
-    width: `${width}%`,
+    left: `${(sub.start / n.value) * 100}%`,
+    width: `${((sub.end - sub.start + 1) / n.value) * 100}%`,
     position: 'absolute' as const,
-    padding: '0 4px' // acts as gap between siblings
+    padding: '0 4px'
   };
 }
-
-const activeSubarray = computed(() => {
-  return props.frame?.subArrays?.find(s => s.isActive) || null;
-});
 
 function isChildOfActive(sub: SubArray): boolean {
   const active = activeSubarray.value;
@@ -136,43 +149,24 @@ function isChildOfActive(sub: SubArray): boolean {
 }
 
 function getSubarrayClass(sub: SubArray) {
-  if (sub.isActive) {
-    return 'active';
-  }
-  if (isChildOfActive(sub)) {
-    return 'child-active';
-  }
+  if (sub.isActive) return 'active';
+  if (isChildOfActive(sub)) return 'child-active';
   return 'inactive';
-}
-
-function isComparing(idx: number): boolean {
-  return props.frame?.comparingIndices?.includes(idx) ?? false;
 }
 
 function getItemClass(idx: number, sub: SubArray) {
   if (!props.frame) return 'default-item';
   const { comparingIndices, swappedIndices, sortedIndices } = props.frame;
 
-  const isActive = sub.isActive;
-  const isChild = isChildOfActive(sub);
-
-  if (isActive) {
-    if (sortedIndices.includes(idx)) {
-      return 'sorted-item';
-    }
-    if (swappedIndices?.includes(idx)) {
-      return 'swap-item animate-pop-flash';
-    }
-    if (comparingIndices?.includes(idx)) {
-      return 'compare-item';
-    }
+  if (sub.isActive) {
+    if (sortedIndices.includes(idx)) return 'sorted-item';
+    if (swappedIndices?.includes(idx)) return 'swap-item animate-pop-flash';
+    if (comparingIndices?.includes(idx)) return 'compare-item';
     return 'default-item';
   }
 
-  if (isChild) {
-    if (comparingIndices?.includes(idx)) {
-      return 'compare-item child-compare';
-    }
+  if (isChildOfActive(sub)) {
+    if (comparingIndices?.includes(idx)) return 'compare-item child-compare';
     return 'child-item';
   }
 

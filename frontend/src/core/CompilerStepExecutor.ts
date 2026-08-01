@@ -17,16 +17,16 @@ export interface StepToLineMapping {
   codeSnippet: string;
 }
 
-/** Narrows a heterogeneous VCR frame to a compiler PlaybackFrame (carries canvasStateSnapshot). */
+
 export function isPlaybackFrame(frame: unknown): frame is PlaybackFrame {
   return typeof frame === 'object' && frame !== null && 'canvasStateSnapshot' in frame;
 }
 
 export class CompilerStepExecutor {
-  /**
-   * Biên dịch mã nguồn giải thuật sinh Playback Frames.
-   * Kết hợp thực thi Sandbox JS động (với line-tracking và proxy) và cơ chế fallback Regex tĩnh.
-   */
+  
+
+
+
   public static compileAlgorithm(sourceCode: string, initialArray: number[] = [45, 12, 85, 32, 9, 60]): PlaybackFrame[] {
     try {
       return CompilerStepExecutor.compileJavaScript(sourceCode, initialArray);
@@ -40,9 +40,9 @@ export class CompilerStepExecutor {
     }
   }
 
-  /**
-   * Thực thi mã nguồn JavaScript động trong một Sandbox an toàn.
-   */
+  
+
+
   private static compileJavaScript(sourceCode: string, initialArray: number[]): PlaybackFrame[] {
     const frames: PlaybackFrame[] = [];
     let currentLine = 0;
@@ -50,16 +50,16 @@ export class CompilerStepExecutor {
     let inSwap = false;
     const highlighted: number[] = [];
 
-    // Sao chép sâu mảng ban đầu
+    
     const mockArray = [...initialArray];
 
-    // Trạng thái chia sẻ
+    
     const state = {
       array: mockArray,
       vars: {} as Record<string, number>
     };
 
-    // Callback ghi nhận từng dòng lệnh thực thi
+    
     const trackLine = (lineNum: number, variables: Record<string, any>) => {
       stepCount++;
       if (stepCount > 10000) {
@@ -67,7 +67,7 @@ export class CompilerStepExecutor {
       }
       currentLine = lineNum;
 
-      // Ghi nhận snapshot các biến chạy
+      
       const loopVars: Record<string, number> = {};
       for (const [name, val] of Object.entries(variables)) {
         if (typeof val === 'number') {
@@ -76,7 +76,7 @@ export class CompilerStepExecutor {
       }
       state.vars = loopVars;
 
-      // Thêm frame mặc định cho bước này
+      
       frames.push({
         stepIndex: frames.length,
         lineNumber: lineNum,
@@ -89,7 +89,7 @@ export class CompilerStepExecutor {
       });
     };
 
-    // Phân hệ ghi nhận so sánh phần tử
+    
     const compare = (a: number, b: number) => {
       if (typeof a !== 'number' || typeof b !== 'number') return;
       
@@ -114,7 +114,7 @@ export class CompilerStepExecutor {
       }
     };
 
-    // Phân hệ ghi nhận hoán vị phần tử
+    
     const swap = (a: number, b: number) => {
       if (typeof a !== 'number' || typeof b !== 'number') return;
       if (a < 0 || a >= state.array.length || b < 0 || b >= state.array.length) return;
@@ -147,7 +147,7 @@ export class CompilerStepExecutor {
       }
     };
 
-    // Phân hệ ghi nhận tô sáng/hoàn thành phần tử
+    
     const highlight = (a: number) => {
       if (typeof a !== 'number') return;
       if (a < 0 || a >= state.array.length) return;
@@ -176,37 +176,37 @@ export class CompilerStepExecutor {
       }
     };
 
-    // 1. Chuẩn hóa mã nguồn: Hỗ trợ cú pháp swap(arr[i], arr[j]) thành swap(i, j)
+    
     let processedCode = sourceCode
       .replace(/compare\s*\(\s*(?:arr|array)\[([^\]]+)\]\s*,\s*(?:arr|array)\[([^\]]+)\]\s*\)/gi, 'compare($1, $2)')
       .replace(/swap\s*\(\s*(?:arr|array)\[([^\]]+)\]\s*,\s*(?:arr|array)\[([^\]]+)\]\s*\)/gi, 'swap($1, $2)')
       .replace(/highlight\s*\(\s*(?:arr|array)\[([^\]]+)\]\s*\)/gi, 'highlight($1)');
 
-    // 2. Tự động thu thập tất cả các biến khai báo trong code
+    
     const varRegex = /\b(?:let|var|const)\s+([a-zA-Z_]\w*)\b/g;
-    const declaredVars = new Set<string>(['i', 'j', 'k', 'temp']); // Biến mặc định
+    const declaredVars = new Set<string>(['i', 'j', 'k', 'temp']); 
     let match;
     while ((match = varRegex.exec(processedCode)) !== null) {
       declaredVars.add(match[1]);
     }
     
-    // Loại trừ các tên hàm hoặc biến bảo lưu hệ thống
+    
     declaredVars.delete('array');
     declaredVars.delete('arr');
     declaredVars.delete('compare');
     declaredVars.delete('swap');
     declaredVars.delete('highlight');
 
-    // Khai báo biến trước ở đầu hàm tránh Temporal Dead Zone (TDZ)
+    
     const varDeclarations = Array.from(declaredVars).map(v => `let ${v} = undefined;`).join('\n');
 
-    // Thay thế các từ khóa let/var/const của biến đó thành phép gán thuần túy
+    
     declaredVars.forEach(v => {
       const declRegex = new RegExp(`\\b(?:let|const|var)\\s+${v}\\b`, 'g');
       processedCode = processedCode.replace(declRegex, v);
     });
 
-    // 3. Phân tích từng dòng và chèn mã theo dõi trackLine
+    
     const lines = processedCode.split('\n');
     const instrumentedLines: string[] = [];
 
@@ -215,7 +215,7 @@ export class CompilerStepExecutor {
       const lineNum = index + 1;
 
       const isCommentOrEmpty = !trimmed || trimmed.startsWith('//');
-      // Bỏ qua các dòng đóng ngoặc nhọn đơn thuần hoặc cấu trúc điều khiển rẽ nhánh
+      
       const isBlockControl = trimmed.startsWith('}') || trimmed.startsWith('else');
 
       if (isCommentOrEmpty || isBlockControl) {
@@ -226,7 +226,7 @@ export class CompilerStepExecutor {
       }
     });
 
-    // 4. Wrap mảng Proxy để bắt các thao tác gán trực tiếp arr[i] = val
+    
     const arrayProxy = new Proxy(state.array, {
       get(target, prop) {
         if (prop === 'length') return target.length;
@@ -267,7 +267,7 @@ export class CompilerStepExecutor {
       }
     });
 
-    // 5. Khởi tạo và chạy hàm Sandbox
+    
     const sandbox = new Function(
       'array',
       'arr',
@@ -286,9 +286,9 @@ export class CompilerStepExecutor {
     return frames;
   }
 
-  /**
-   * Bộ biên dịch Regex tĩnh kế thừa nguyên bản cho các dòng mã giả thuần túy.
-   */
+  
+
+
   private static compilePseudocodeRegex(sourceCode: string, initialArray: number[]): PlaybackFrame[] {
     const lines = sourceCode.split('\n');
     const frames: PlaybackFrame[] = [];
@@ -300,7 +300,7 @@ export class CompilerStepExecutor {
       const lineNum = index + 1;
 
       if (!trimmed || trimmed.startsWith('//')) {
-        return; // Bỏ qua bình luận
+        return; 
       }
 
       const swapRegex = /swap\s*\(?\s*arr\[(\d+)\]\s*,\s*arr\[(\d+)\]\s*\)?/i;
@@ -408,9 +408,9 @@ export class CompilerStepExecutor {
     return frames;
   }
 
-  /**
-   * Tạo bản đồ ánh xạ từ bước giải thuật sang dòng code.
-   */
+  
+
+
   public static generateStepToLineMapping(sourceCode: string, frames: PlaybackFrame[]): StepToLineMapping[] {
     const lines = sourceCode.split('\n');
     return frames.map(frame => {

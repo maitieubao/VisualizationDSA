@@ -1,4 +1,4 @@
-// @vitest-environment jsdom
+
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { QuizStatsManager } from '../engine/QuizStatsManager';
 

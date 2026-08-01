@@ -9,7 +9,7 @@ interface AuditLog {
   message: string;
 }
 
-// Shared singleton state for audit logs used across all admin tabs
+
 const auditLogs = ref<AuditLog[]>([
   { time: '15:20:04', type: 'INFO', message: 'Hệ thống Admin khởi động hoàn tất.' },
   { time: '15:20:08', type: 'INFO', message: 'Đã kết nối cơ sở dữ liệu PostgreSQL.' },

@@ -5,6 +5,12 @@ description: Khám phá hai cấu trúc dữ liệu dạng cây nâng cao Trie (
 
 # Cấu trúc Cây nâng cao: Trie & Segment Tree {#advanced-trees}
 
+:::info Mục tiêu bài học
+- Khám phá **Trie (Prefix Tree)**, cách nó lưu trữ chuỗi dưới dạng đường đi của các ký tự để tìm kiếm siêu tốc O(L).
+- Tìm hiểu **Segment Tree**, cấu trúc dữ liệu sinh ra để giải quyết bài toán truy vấn khoảng (Range Query) kết hợp cập nhật liên tục (Point Update) trong O(log N).
+- Nắm được cách triển khai và ứng dụng thực tế của cả hai cấu trúc trên.
+:::
+
 Trong các bài trước, chúng ta đã làm quen với [Cây nhị phân tìm kiếm (BST)](/docs/tree-graph/bst) dùng để tra cứu dữ liệu. Tuy nhiên, trong thực tế, các Kỹ sư phần mềm thường phải đối mặt với những bài toán vô cùng đặc thù mà BST không thể giải quyết tối ưu. 
 
 Đó là lúc chúng ta cần triệu hồi hai "vũ khí hạng nặng": **Trie** (Cây tiền tố) và **Segment Tree** (Cây phân đoạn).
@@ -244,6 +250,11 @@ public class SegmentTree
 
 :::tip Ứng dụng của Segment Tree
 Segment Tree rất thường xuyên xuất hiện trong các kỳ thi Lập trình thi đấu (Competitive Programming) hoặc Phỏng vấn Thuật toán vòng khó. Nó được dùng cho các bài báo cáo thống kê trực tuyến (Real-time Analytics) nơi dữ liệu (chứng khoán, lượng truy cập) liên tục được cập nhật và liên tục bị truy vấn lấy tổng/max/min trong một khoảng thời gian (Range).
+:::
+
+:::tip Tóm tắt nhanh (Key Takeaways)
+- **Trie:** Cây tiền tố chuyên trị các bài toán về chuỗi (tìm kiếm, gợi ý từ khóa). Thời gian **O(L)** (với L là độ dài chuỗi), siêu nhanh nhưng bù lại khá tốn dung lượng lưu trữ (pointer tới 26 chữ cái).
+- **Segment Tree:** Cây phân đoạn chuyên giải quyết Range Query (tính tổng, tìm Max/Min trong khoảng [L, R]) kết hợp Point Update liên tục. Thời gian truy vấn và cập nhật đều là **O(log N)** thay vì O(N) như cách quét mảng thông thường.
 :::
 
 ## Next Steps {#next-steps}

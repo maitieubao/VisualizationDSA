@@ -8,7 +8,7 @@
       'flash-active': flashedSectionId === sec.id
     }"
   >
-    <!-- Accordion Header Title Bar -->
+    
     <div
       class="accordion-header"
       :class="{ 'accordion-header-active': expandedSectionId === sec.id || activeSectionId === sec.id }"
@@ -35,13 +35,13 @@
       </span>
     </div>
 
-    <!-- Accordion Content Box (Collapsed/Expanded) -->
+    
     <div class="accordion-content-wrapper" v-show="expandedSectionId === sec.id">
       <div class="accordion-content">
         
         <div class="section-markdown-body" v-html="renderMarkdown(sec.content)"></div>
 
-        <!-- C# Sample Code (Collapsed to 5 lines max) -->
+        
         <div class="section-code-sample" v-if="sec.codeSample">
           <div class="code-sample-title flex items-center justify-between mb-2">
             <span class="text-[9.5px] text-text-muted font-bold">Mã C# minh họa:</span>
@@ -61,7 +61,7 @@
           </button>
         </div>
 
-        <!-- Pillar Navigation Completion check at the last section -->
+        
         <div v-if="isLast" class="pillar-completion-footer mt-4">
           <div class="completion-banner">
             <span class="check-icon-wrapper">

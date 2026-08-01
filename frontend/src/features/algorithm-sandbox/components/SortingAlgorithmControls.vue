@@ -1,5 +1,5 @@
 <template>
-  <!-- Inline algorithm selector — sleek rounded-md buttons -->
+  
   <div class="sorting-algo-controls algorithm-controls flex items-center gap-1.5 backdrop-blur-md py-1 px-2 rounded-md shrink-0">
     <div class="flex gap-1 flex-wrap">
       <button

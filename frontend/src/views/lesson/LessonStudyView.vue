@@ -1,8 +1,8 @@
 <template>
   <div class="lesson-study-view flex flex-col min-h-[calc(100vh-64px)] w-full overflow-auto bg-slate-950 font-sans">
-    <!-- Top Stepper Header Bar (The 4-Step Pedagogical Flow) -->
+    
     <header class="px-6 py-3 border-b border-white/10 bg-slate-900/90 backdrop-blur-md flex items-center justify-between shrink-0 shadow-lg z-20">
-      <!-- Back Link & Lesson Title -->
+      
       <div class="flex items-center gap-3">
         <router-link :to="courseId ? `/courses/${courseId}` : '/courses'" class="text-xs font-semibold text-slate-400 hover:text-white transition-colors flex items-center gap-1">
           <span>←</span> Quay lại
@@ -13,7 +13,7 @@
         </h2>
       </div>
 
-      <!-- Stepper Pills (Step 1 -> Step 2 -> Step 3 -> Step 4) -->
+      
       <div class="flex items-center gap-2">
         <button
           v-for="step in steps"
@@ -31,7 +31,7 @@
         </button>
       </div>
 
-      <!-- XP & Completion Status -->
+      
       <div class="flex items-center gap-2 font-mono text-xs">
         <span class="px-2.5 py-1 rounded-lg bg-amber-950/50 text-amber-400 border border-amber-500/30 font-bold flex items-center gap-1.5">
           <svg class="w-3.5 h-3.5 text-amber-400" fill="currentColor" viewBox="0 0 24 24">
@@ -42,9 +42,9 @@
       </div>
     </header>
 
-    <!-- Main Step Content Viewport -->
+    
     <main class="flex-1 min-h-0 relative w-full h-full overflow-hidden">
-      <!-- Step 1: Theory -->
+      
       <LessonStepTheory
         v-if="activeStep === 1"
         :title="lesson?.title || 'Lý Thuyết Thuật Toán'"
@@ -52,7 +52,7 @@
         @completeStep="activeStep = 2"
       />
 
-      <!-- Step 2: Visualization -->
+      
       <LessonStepViz
         v-else-if="activeStep === 2"
         :vizTitle="lesson?.title"
@@ -60,13 +60,13 @@
         @completeStep="activeStep = 3"
       />
 
-      <!-- Step 3: Quiz -->
+      
       <LessonStepQuiz
         v-else-if="activeStep === 3"
         @completeStep="activeStep = 4"
       />
 
-      <!-- Step 4: Code Lab -->
+      
       <LessonStepCodeLab
         v-else-if="activeStep === 4"
         :problemTitle="`Thực hành: ${lesson?.title || 'Lập trình thuật toán'}`"
@@ -74,7 +74,7 @@
       />
     </main>
 
-    <!-- Completion Modal -->
+    
     <LessonCompletionModal
       :show="showCompletionModal"
       :xpReward="lesson?.xpReward ?? 50"

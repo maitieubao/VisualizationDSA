@@ -1,12 +1,12 @@
 <template>
   <div class="sorting-drawer-input relative font-sans">
-    <!-- Toggle Button (Clean Floating Button with SVG Icon) -->
+    
     <button
       @click="isOpen = !isOpen"
       class="drawer-toggle-btn flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-bold transition-all duration-200 shadow-xl cursor-pointer"
-      :class="isOpen ? 'bg-indigo-600 text-white border border-indigo-400/50' : 'bg-slate-900/90 hover:bg-slate-800 text-slate-300 border border-white/10 hover:border-white/20 backdrop-blur-md'"
+      :class="isOpen ? 'bg-accent text-white border border-accent/50' : 'bg-bg-surface hover:bg-bg-hover text-text-secondary border border-border-default hover:border-border-strong backdrop-blur-md'"
     >
-      <svg class="w-4 h-4 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+      <svg class="w-4 h-4 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
         <path stroke-linecap="round" stroke-linejoin="round" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" />
       </svg>
       <span>{{ isOpen ? 'Đóng Tùy Chọn Mảng' : 'Tùy Chọn Mảng' }}</span>
@@ -15,56 +15,56 @@
       </svg>
     </button>
 
-    <!-- Collapsible VisuAlgo-Style Array Generator Modal/Drawer -->
+    
     <transition name="drawer-slide">
-      <div v-if="isOpen" class="drawer-card absolute bottom-12 left-0 z-40 p-4 rounded-lg bg-slate-900/95 border border-white/15 shadow-2xl backdrop-blur-xl w-96 sm:w-[420px] flex flex-col gap-3.5">
-        <!-- Drawer Header -->
-        <div class="flex items-center justify-between border-b border-white/10 pb-2.5">
-          <span class="text-xs font-extrabold text-white uppercase tracking-wider flex items-center gap-2">
-            <svg class="w-4 h-4 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+      <div v-if="isOpen" class="drawer-card absolute bottom-12 left-0 z-40 p-4 rounded-lg bg-bg-surface border border-border-default shadow-2xl backdrop-blur-xl w-96 sm:w-[420px] flex flex-col gap-3.5">
+        
+        <div class="flex items-center justify-between border-b border-border-subtle pb-2.5">
+          <span class="text-xs font-extrabold text-text-primary uppercase tracking-wider flex items-center gap-2">
+            <svg class="w-4 h-4 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
               <path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
             </svg>
             Tạo & Khởi Tạo Mảng (Create Array)
           </span>
-          <button @click="isOpen = false" class="text-slate-400 hover:text-white text-xs cursor-pointer p-1">✕</button>
+          <button @click="isOpen = false" class="text-text-muted hover:text-text-primary text-xs cursor-pointer p-1">✕</button>
         </div>
 
-        <!-- Presets Row (VisuAlgo Style: Random, Sorted, Reverse, Nearly Sorted) -->
+        
         <div class="space-y-1.5">
-          <span class="text-[11px] font-semibold text-slate-400 uppercase tracking-wide">Mẫu dữ liệu có sẵn:</span>
+          <span class="text-[11px] font-semibold text-text-secondary uppercase tracking-wide">Mẫu dữ liệu có sẵn:</span>
           <div class="grid grid-cols-2 sm:grid-cols-4 gap-1.5">
             <button
               @click="generateRandom"
-              class="px-2.5 py-1.5 rounded-lg bg-slate-800 hover:bg-indigo-600 hover:text-white text-slate-300 text-xs font-semibold border border-white/5 transition-colors cursor-pointer text-center"
+              class="px-2.5 py-1.5 rounded-lg bg-bg-active hover:bg-accent hover:text-white text-text-secondary text-xs font-semibold border border-border-subtle transition-colors cursor-pointer text-center"
             >
               Ngẫu nhiên
             </button>
             <button
               @click="generateSorted"
-              class="px-2.5 py-1.5 rounded-lg bg-slate-800 hover:bg-indigo-600 hover:text-white text-slate-300 text-xs font-semibold border border-white/5 transition-colors cursor-pointer text-center"
+              class="px-2.5 py-1.5 rounded-lg bg-bg-active hover:bg-accent hover:text-white text-text-secondary text-xs font-semibold border border-border-subtle transition-colors cursor-pointer text-center"
             >
               Đã sắp xếp
             </button>
             <button
               @click="generateReversed"
-              class="px-2.5 py-1.5 rounded-lg bg-slate-800 hover:bg-indigo-600 hover:text-white text-slate-300 text-xs font-semibold border border-white/5 transition-colors cursor-pointer text-center"
+              class="px-2.5 py-1.5 rounded-lg bg-bg-active hover:bg-accent hover:text-white text-text-secondary text-xs font-semibold border border-border-subtle transition-colors cursor-pointer text-center"
             >
               Sắp xếp ngược
             </button>
             <button
               @click="generateNearlySorted"
-              class="px-2.5 py-1.5 rounded-lg bg-slate-800 hover:bg-indigo-600 hover:text-white text-slate-300 text-xs font-semibold border border-white/5 transition-colors cursor-pointer text-center"
+              class="px-2.5 py-1.5 rounded-lg bg-bg-active hover:bg-accent hover:text-white text-text-secondary text-xs font-semibold border border-border-subtle transition-colors cursor-pointer text-center"
             >
               Gần sắp xếp
             </button>
           </div>
         </div>
 
-        <!-- Array Size Slider -->
+        
         <div class="space-y-1.5">
           <div class="flex items-center justify-between text-xs">
             <span class="font-semibold text-slate-400 uppercase tracking-wide">Số lượng phần tử (N):</span>
-            <span class="font-mono font-bold text-indigo-400">{{ arraySize }}</span>
+            <span class="font-mono font-bold text-accent">{{ arraySize }}</span>
           </div>
           <input
             type="range"
@@ -72,13 +72,13 @@
             max="15"
             v-model.number="arraySize"
             @input="generateRandom"
-            class="w-full h-1.5 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-indigo-500"
+            class="w-full h-1.5 bg-bg-active rounded-lg appearance-none cursor-pointer accent-accent"
           />
         </div>
 
-        <!-- Custom Input Input Box -->
+        
         <div class="space-y-1.5">
-          <span class="text-[11px] font-semibold text-slate-400 uppercase tracking-wide">Tự nhập chuỗi phần tử:</span>
+          <span class="text-[11px] font-semibold text-text-secondary uppercase tracking-wide">Tự nhập chuỗi phần tử:</span>
           <VcrArrayInput
             :raw-input-array="vcrStore.rawInputArray"
             :compilation-error="compilationError"

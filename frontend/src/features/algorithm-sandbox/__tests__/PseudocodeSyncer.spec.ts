@@ -18,13 +18,13 @@ describe('Sprint 3 Pseudocode Synchronization Unit Tests', () => {
   it('Should correctly find matching line number for current playback step index', () => {
     const line = syncer.getLineForStep(1);
 
-    expect(line).toBe(8); // Bước 1 ứng với dòng 8 hoán vị
+    expect(line).toBe(8); 
   });
 
   it('Should successfully seek to first algorithm step when clicking line number', () => {
     const step = syncer.getFirstStepForLine(12);
 
-    expect(step).toBe(2); // Dòng 12 ứng với bước kết thúc 2
+    expect(step).toBe(2); 
   });
 
   it('Should return null for non-existent step indices or line bounds', () => {

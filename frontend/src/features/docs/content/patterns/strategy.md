@@ -1,161 +1,210 @@
 ---
 title: Strategy Pattern
-description: Tìm hiểu mẫu thiết kế Chiến lược - Vũ khí tối thượng đánh bay những câu lệnh if-else cồng kềnh, bằng cách đóng gói thuật toán vào các Class có thể thay thế nóng.
+description: Tuyệt chiêu thay đổi não bộ của phần mềm ngay trong lúc đang chạy (Runtime). Khám phá hình thái hoàn mỹ nhất của nguyên lý Open-Closed (OCP).
 ---
 
-# Strategy Pattern {#strategy}
+# Strategy Pattern (Mẫu Chiến Lược) {#strategy}
 
-Strategy Pattern (Mẫu thiết kế Chiến lược) có lẽ là mẫu thiết kế được sử dụng nhiều nhất, hữu ích nhất và trực quan nhất trong nhóm **Behavioral Patterns** (Mẫu Hành vi). 
+:::info Mục tiêu bài học
+- Thấu hiểu mối liên hệ huyết thống giữa **Strategy Pattern** và nguyên lý **Open-Closed (OCP)**.
+- Phá vỡ tư duy lập trình cấu trúc (if/else lồng nhau) để chuyển sang tư duy Hướng Hành Vi (Behavioral).
+- Mổ xẻ bài toán: Hệ thống tính cước Taxi (Grab/Uber) biến đổi linh hoạt theo Thời tiết và Lưu lượng giao thông.
+- Kỹ năng thượng thừa: Thay thế ruột (Thuật toán) của đối tượng ngay trong lúc hệ thống đang chạy (Runtime) mà không cần khởi động lại.
+- Phân biệt sự khác nhau giữa Strategy, State và Factory Pattern.
+:::
 
-Nếu bạn thấy mã nguồn của mình bắt đầu xuất hiện những khối lệnh `if - else if - else` khổng lồ kéo dài hàng chục dòng để kiểm tra xem "Nên áp dụng thuật toán/logic nào cho dữ liệu này?", thì đã đến lúc bạn phải gọi Strategy ra ứng cứu.
+## 1. Lời mở đầu: Cỗ máy thay đổi não bộ {#introduction}
 
-Nguyên lý của Strategy cực kỳ đơn giản: **Đóng gói mỗi một Thuật toán (hoặc logic xử lý) vào một Class riêng biệt (gọi là một Chiến lược). Các Class này phải triển khai chung một Interface. Nhờ đó, bạn có thể dễ dàng hoán đổi các thuật toán này vào thời điểm chạy (Runtime) mà không ảnh hưởng đến Class chính đang sử dụng chúng.**
+Nằm trong nhóm **Behavioral Patterns (Mẫu Hành Vi)** của GoF, Strategy Pattern được mệnh danh là hình thái thực tiễn và phổ biến nhất của nguyên lý [Open-Closed (OCP)](/docs/solid/ocp). 
 
-## Hình ảnh thực tế {#real-world}
+> *"Hãy định nghĩa một tập hợp các thuật toán (chiến lược), đóng gói từng cái một vào các Class riêng biệt, và làm cho chúng có thể thay thế lẫn nhau. Strategy cho phép thuật toán biến đổi một cách độc lập với Client (Người sử dụng nó)."*
 
-Tưởng tượng bạn đang thiết kế một Ứng dụng Bản đồ (như Google Maps). Người dùng nhập điểm A và điểm B để tìm đường.
-- Nếu người dùng đi xe máy $\rightarrow$ Tính đường theo Lộ trình Xe máy.
-- Nếu người dùng đi ô tô $\rightarrow$ Tránh đường cấm ô tô, đường hẹp.
-- Nếu người dùng đi bộ $\rightarrow$ Cho phép đi vào ngõ ngách, đường ngược chiều.
+**Ví dụ thực tế (Real-world analogy):**
+Bạn đang chơi một tựa game nhập vai (RPG). Nhân vật của bạn có một nút "Tấn công" (Attack). 
+- Khi bạn cầm **Kiếm**, bấm Attack $\rightarrow$ Chém cận chiến.
+- Bấm phím số 2, nhân vật đổi sang **Cung tên**. Bấm Attack $\rightarrow$ Bắn xa.
+- Bấm phím số 3, đổi sang **Gậy phép**. Bấm Attack $\rightarrow$ Phóng quả cầu lửa.
 
-Thuật toán tìm đường của 3 phương tiện trên hoàn toàn khác nhau. Nếu nhét tất cả vào một Class `Navigator`, Class này sẽ phình to ra hàng nghìn dòng code và trở thành một bãi rác không thể bảo trì.
+Bạn không hề đẻ ra 3 Class nhân vật khác nhau (Kiếm Sĩ, Cung Thủ, Pháp Sư). Vẫn chỉ là ĐÚNG MỘT nhân vật đó, nhưng "Hành vi Tấn công" (Thuật toán) đã bị tráo đổi linh hoạt ngay trong lúc game đang chạy (Runtime). Đó chính là Strategy!
 
-Strategy Pattern sẽ tách 3 thuật toán tìm đường đó ra thành 3 Class riêng biệt: `MotorbikeStrategy`, `CarStrategy`, `WalkingStrategy`. Cái điện thoại (Navigator) chỉ làm nhiệm vụ duy nhất: Gắn Chiến lược người dùng chọn vào và bấm nút "Run"!
+---
+
+## 2. Giải phẫu Anti-pattern: Đầm lầy if/else {#anti-pattern}
+
+Hãy tưởng tượng bạn code ứng dụng tính tiền cước cho Grab/Uber. Ban đầu mọi thứ rất đơn giản: Số Kilomet x Đơn giá.
+Nhưng sau đó, bộ phận Business liên tục thêm các luật mới: Trờ mưa thu thêm tiền, Giờ cao điểm nhân đôi tiền, Ngày lễ giảm giá...
+
+```csharp
+// MÃ XẤU - NỖI KINH HOÀNG KHI MAINTAIN
+public class TaxiFareCalculator
+{
+    public decimal CalculateFare(decimal distanceKm, string condition)
+    {
+        decimal baseFare = distanceKm * 10000; // 10k / 1km
+
+        // Cơn ác mộng bắt đầu
+        if (condition == "Normal")
+        {
+            return baseFare;
+        }
+        else if (condition == "Raining")
+        {
+            return baseFare + 20000; // Phụ thu mưa 20k
+        }
+        else if (condition == "RushHour")
+        {
+            return baseFare * 1.5m; // Giờ cao điểm x 1.5
+        }
+        else if (condition == "Weekend")
+        {
+            return baseFare * 0.9m; // Cuối tuần giảm 10%
+        }
+        
+        throw new Exception("Điều kiện không hợp lệ!");
+    }
+}
+```
+
+**Tại sao nó Vi phạm Nguyên lý Thiết kế?**
+- **Vi phạm OCP:** Mỗi lần có chiến dịch giá mới, bạn BẮT BUỘC phải mở hàm `CalculateFare` ra và nhét thêm lệnh `if`. 
+- **Chết đuối trong tham số:** Nếu giá cước Ngày Lễ cần thêm tham số `int numberOfDays`, bạn sẽ phải nhét nó vào hàm `CalculateFare`, khiến những cái `if` khác như "Raining" bị thừa thãi tham số đó. Hàm sẽ phình to thành một con Quái vật (God Function).
+
+---
+
+## 3. Cấu trúc chuẩn GoF: Tách rời Chiến lược {#gof-structure}
+
+Để áp dụng Strategy Pattern, ta chia hệ thống làm 3 thành phần:
+1. **Tiêu chuẩn (IStrategy):** Bản hợp đồng quy định mọi chiến lược tính tiền đều phải tuân theo một khuôn mẫu (Trả về số tiền).
+2. **Các Chiến Lược (Concrete Strategies):** Tách từng khối `if` ra thành một Class Độc lập (Kiếm, Cung, Gậy phép).
+3. **Người sử dụng (Context):** Class Taxi. Nó chứa một cái "Khe cắm" (Biến Interface). Nó không tự tính tiền, mà ủy quyền (Delegate) cho Chiến lược đang cắm trong khe đó.
 
 ```mermaid
 classDiagram
-    class ShoppingCart {
-        -IPaymentStrategy _paymentStrategy
-        +SetPaymentStrategy(IPaymentStrategy)
-        +Checkout()
-    }
-    class IPaymentStrategy {
+    class IFareStrategy {
         <<interface>>
-        +Pay(amount)
-    }
-    class CreditCardStrategy {
-        +Pay(amount)
-    }
-    class PayPalStrategy {
-        +Pay(amount)
+        +Calculate(distance: decimal): decimal
     }
     
-    ShoppingCart o-- IPaymentStrategy : Chứa (Has-a)
-    IPaymentStrategy <|.. CreditCardStrategy
-    IPaymentStrategy <|.. PayPalStrategy
-```
-
-## Cài đặt bằng C# (Code Example) {#code-example}
-
-Hãy lấy một ví dụ kinh điển trong lập trình Web: **Hệ thống thanh toán (Payment System)**.
-
-**Bước 1: Định nghĩa Interface Chiến lược chung**
-
-```csharp
-// Mọi chiến lược thanh toán đều phải có hàm Pay
-public interface IPaymentStrategy
-{
-    void Pay(double amount);
-}
-```
-
-**Bước 2: Xây dựng các Chiến lược cụ thể (Concrete Strategies)**
-
-```csharp
-// Thanh toán bằng Thẻ tín dụng
-public class CreditCardStrategy : IPaymentStrategy
-{
-    private string _cardNumber;
-    public CreditCardStrategy(string cardNumber) { _cardNumber = cardNumber; }
-
-    public void Pay(double amount)
-    {
-        Console.WriteLine($"Đã thanh toán {amount}$ bằng Thẻ tín dụng xxxx-{_cardNumber.Substring(12)}");
+    class NormalFare {
+        +Calculate(distance): decimal
     }
-}
-
-// Thanh toán bằng PayPal
-public class PayPalStrategy : IPaymentStrategy
-{
-    private string _email;
-    public PayPalStrategy(string email) { _email = email; }
-
-    public void Pay(double amount)
-    {
-        Console.WriteLine($"Đã thanh toán {amount}$ thông qua tài khoản PayPal: {_email}");
+    class RainingFare {
+        +Calculate(distance): decimal
     }
-}
-```
-
-**Bước 3: Class Context (Người sử dụng Chiến lược)**
-
-Lớp Giỏ hàng (`ShoppingCart`) không hề biết đến Thẻ tín dụng hay PayPal. Nó chỉ chứa một biến kiểu `IPaymentStrategy` và gọi hàm `Pay()` một cách mù quáng. (Đỉnh cao của Kế thừa và Đa hình).
-
-```csharp
-using System.Collections.Generic;
-
-public class ShoppingCart
-{
-    private List<double> _items = new List<double>();
+    class RushHourFare {
+        +Calculate(distance): decimal
+    }
     
-    // Biến lưu giữ Chiến lược hiện tại
-    private IPaymentStrategy _paymentStrategy;
+    class TaxiRide {
+        -IFareStrategy _strategy
+        +SetStrategy(IFareStrategy)
+        +Checkout(distance)
+    }
+    
+    IFareStrategy <|.. NormalFare
+    IFareStrategy <|.. RainingFare
+    IFareStrategy <|.. RushHourFare
+    TaxiRide o-- IFareStrategy : Ủy quyền (Delegate)
+```
 
-    public void AddItem(double price) => _items.Add(price);
+---
 
-    // Cho phép "thay đạn" (đổi chiến lược) linh hoạt
-    public void SetPaymentStrategy(IPaymentStrategy strategy)
+## 4. Phẫu thuật Mã nguồn C# (Chuẩn Strategy) {#clean-code}
+
+**Bước 1: Chế tạo Bản Hợp Đồng (Interface)**
+```csharp
+public interface IFareStrategy
+{
+    decimal Calculate(decimal distanceKm);
+}
+```
+
+**Bước 2: Cô lập từng thuật toán vào từng File riêng**
+Nhờ việc cô lập, nếu hàm tính giá Mưa bị lỗi, thì giá Normal và giá Giờ cao điểm vẫn hoạt động bình thường, không hề bị ảnh hưởng!
+
+```csharp
+public class NormalFare : IFareStrategy
+{
+    public decimal Calculate(decimal distanceKm) => distanceKm * 10000;
+}
+
+public class RainingFare : IFareStrategy
+{
+    public decimal Calculate(decimal distanceKm) => (distanceKm * 10000) + 20000; // Phụ thu
+}
+
+public class RushHourFare : IFareStrategy
+{
+    public decimal Calculate(decimal distanceKm) => (distanceKm * 10000) * 1.5m; // X 1.5
+}
+```
+
+**Bước 3: Lắp ráp Cỗ Máy Thay Đổi Não Bộ (Context)**
+```csharp
+public class TaxiRide
+{
+    private IFareStrategy _currentStrategy;
+
+    // Yêu cầu truyền Chiến lược mặc định khi khởi tạo
+    public TaxiRide(IFareStrategy initialStrategy)
     {
-        _paymentStrategy = strategy;
+        _currentStrategy = initialStrategy;
     }
 
-    public void Checkout()
+    // ĐÂY CHÍNH LÀ QUYỀN NĂNG CỦA STRATEGY!
+    // Tráo đổi thuật toán NGAY TRONG LÚC ĐANG CHẠY (Runtime)
+    public void ChangeStrategy(IFareStrategy newStrategy)
     {
-        double total = 0;
-        foreach (var item in _items) total += item;
+        Console.WriteLine("\n[HỆ THỐNG] Đang chuyển đổi biểu giá...");
+        _currentStrategy = newStrategy;
+    }
 
-        // Nếu chưa chọn phương thức thanh toán
-        if (_paymentStrategy == null)
-            throw new Exception("Vui lòng chọn phương thức thanh toán!");
-
-        // Gọi chiến lược thực thi
-        _paymentStrategy.Pay(total);
+    public void Checkout(decimal distanceKm)
+    {
+        // Nhắm mắt ủy quyền, không cần biết đang dùng giá gì
+        decimal total = _currentStrategy.Calculate(distanceKm);
+        Console.WriteLine($"-> Quãng đường {distanceKm}km. Tổng tiền: {total} VNĐ");
     }
 }
 ```
 
-**Bước 4: Sử dụng linh hoạt ở phía Client**
+### Chạy thử nghiệm (Client Code)
+
+Hãy xem cách hệ thống "Biến hình" linh hoạt như thế nào khi trời đột ngột đổ mưa:
 
 ```csharp
-ShoppingCart cart = new ShoppingCart();
-cart.AddItem(15.5);
-cart.AddItem(30.0);
+// 1. Khách lên xe lúc trời nắng đẹp
+var ride = new TaxiRide(new NormalFare());
+ride.Checkout(10); // Kết quả: 100,000 VNĐ
 
-// Khách chọn trả bằng Thẻ
-cart.SetPaymentStrategy(new CreditCardStrategy("1234567890123456"));
-cart.Checkout(); // Output: Đã thanh toán 45.5$ bằng Thẻ...
+// 2. Bất chợt trời đổ mưa to! Tổng đài ra lệnh đổi giá NGAY LẬP TỨC
+ride.ChangeStrategy(new RainingFare());
+ride.Checkout(10); // Kết quả: 120,000 VNĐ (Tự động cộng thêm 20k phụ thu)
 
-// Khách đổi ý, chuyển sang xài PayPal
-cart.SetPaymentStrategy(new PayPalStrategy("teo@email.com"));
-cart.Checkout(); // Output: Đã thanh toán 45.5$ thông qua PayPal...
+// 3. Tới ngã tư kẹt xe sấp mặt (Giờ cao điểm)
+ride.ChangeStrategy(new RushHourFare());
+ride.Checkout(10); // Kết quả: 150,000 VNĐ (Tự động nhân hệ số 1.5)
 ```
 
-:::tip OCP + Strategy = Sức mạnh tuyệt đối
-Hãy nhìn lại lớp `ShoppingCart`. Nếu ngày mai công ty bổ sung thanh toán bằng Ví MoMo, bạn có phải sửa code của `ShoppingCart` không? **Hoàn toàn không!**
-Bạn chỉ việc tạo lớp `MoMoStrategy`, truyền nó vào hàm `SetPaymentStrategy`. Đây chính là minh chứng sống động nhất cho nguyên lý **Mở-Đóng (Open-Closed Principle - OCP)**. Design Patterns thực chất chính là những công cụ để hiện thực hóa các nguyên lý SOLID.
+Bạn thấy đấy, không có một dòng `if/else` nào, không cần phải Khởi động lại (Restart) ứng dụng, chiếc Taxi (Context) tự động thay đổi bản chất của nó bằng cách nhổ bỏ "Não bộ" (Strategy) cũ và cắm cái "Não bộ" mới vào. Thật kỳ diệu!
+
+---
+
+## 5. Góc Phân Biệt (Interview Questions) {#differences}
+
+Trong các buổi phỏng vấn Senior, bạn sẽ hay bị hỏi 2 câu này:
+
+**1. Strategy khác gì State Pattern?**
+- **Strategy:** Client (Người dùng) LÀ NGƯỜI QUYẾT ĐỊNH khi nào đổi thuật toán. (Ví dụ: Tổng đài lệnh cho xe Taxi đổi qua giá Mưa).
+- **State:** Tự bản thân Đối tượng BÊN TRONG sẽ đổi trạng thái dựa vào điều kiện. (Ví dụ: Xe Taxi tự đổi trạng thái từ "Đang bảo trì" sang "Sẵn sàng" khi sửa xong). Các State tự biết về sự tồn tại của nhau, còn các Strategy hoàn toàn độc lập và không biết nhau.
+
+**2. Strategy khác gì Factory Pattern?**
+- **Factory:** Là mẫu **Khởi tạo (Creational)**. Nhiệm vụ của nó là DÙNG TỪ KHÓA `new` đẻ ra một Đối tượng cụ thể rồi ném cho bạn xài. Xong việc là nó nghỉ.
+- **Strategy:** Là mẫu **Hành vi (Behavioral)**. Trọng tâm của nó là cách Đối tượng CƯ XỬ như thế nào thông qua việc ủy quyền hàm xử lý.
+
+:::tip Tóm tắt nhanh (Key Takeaways)
+- Strategy Pattern sinh ra để đập tan các khối `if/else` khổng lồ chuyên dùng để chọn Thuật toán.
+- Nó bóc tách từng thuật toán ra các Class riêng biệt và giao tiếp qua Interface chung.
+- Điểm đắt giá nhất của Strategy là khả năng dùng Setter (Hàm `ChangeStrategy`) để tráo đổi hành vi của đối tượng lúc Runtime mà không làm hỏng tính toàn vẹn của ứng dụng.
+- Trong C# hiện đại, người ta hay rút gọn Strategy Pattern bằng cách truyền trực tiếp các biểu thức Lambda (Delegates `Func<T>`) thay vì đẻ ra hàng đống Class, giúp mã nguồn cô đọng và linh hoạt hơn rất nhiều.
 :::
-
-## Next Steps {#next-steps}
-
-Chúc mừng bạn đã hoàn thành chương về **Design Patterns**! Những mẫu thiết kế này (Singleton, Factory, Observer, Strategy) là bộ xương sống của nền công nghiệp phần mềm.
-
-Đến đây, bạn có thắc mắc: Các Class Cấp thấp (`Strategies`) được lắp ráp vào các Class Cấp cao (`ShoppingCart`) bằng cách nào trong một dự án siêu lớn với hàng vạn Class? Không lẽ ta cứ phải tự tay gõ lệnh `new` để lắp ráp chúng lại?
-
-Chào mừng bạn đến với chương cuối cùng, chương quan trọng nhất đưa bạn từ một Coder bình thường lên tầm Kiến trúc sư (Architect): **Dependency Injection & IoC**.
-
-<div class="vt-box-container next-steps">
-  <a class="vt-box" href="/docs/di/basics">
-    <p class="next-steps-link">Bắt đầu Chương DI: Cơ bản về Dependency Injection</p>
-    <p class="next-steps-caption">Nghệ thuật tiêm chích các thành phần phụ thuộc tự động.</p>
-  </a>
-</div>

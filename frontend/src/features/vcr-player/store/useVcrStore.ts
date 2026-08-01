@@ -3,42 +3,42 @@ import { ref, computed, watch, shallowRef } from 'vue';
 import { CompilerStepExecutor, type PlaybackFrame } from '../../../core/CompilerStepExecutor';
 import { DEFAULT_BUBBLE_SORT_CODE } from './vcrDefaults';
 
-/** Minimal base type for any frame stored in the VCR playback buffer. */
+
 export interface VcrBaseFrame {
   stepIndex: number;
   lineNumber?: number;
   description?: string;
 }
 
-/**
- * VCR Player Store
- * Quản lý toàn bộ trạng thái phát lại (playback) thuật toán:
- * - Source code (mã JavaScript người dùng nhập)
- * - Mảng đầu vào (input array)
- * - Các playback frames (snapshot các bước)
- * - Trạng thái play/pause, tốc độ, vị trí hiện tại
- */
+
+
+
+
+
+
+
+
 export const useVcrStore = defineStore('vcr-player', () => {
-  // ─── SOURCE CODE ────────────────────────────────────────────────────────────
+  
   const sourceCode = ref<string>(DEFAULT_BUBBLE_SORT_CODE);
-  // Alias backward-compat: CodeEditor.vue sử dụng `playbackStore.code`
+  
   const code = sourceCode;
 
-  // ─── INPUT ARRAY ────────────────────────────────────────────────────────────
+  
   const rawInputArray = ref<string>('45, 12, 85, 32, 9, 60');
   const inputArray = computed<number[]>(() =>
     rawInputArray.value.split(',').map(num => parseInt(num.trim(), 10)).filter(num => !isNaN(num))
   );
 
-  // ─── PLAYBACK STATE ──────────────────────────────────────────────────────────
+  
   const playbackFrames     = shallowRef<VcrBaseFrame[]>([]);
   const currentFrameIndex  = ref<number>(0);
   const isPlaying          = ref<boolean>(false);
-  const playbackSpeed      = ref<number>(1); // 0.5x | 1x | 2x | 4x
+  const playbackSpeed      = ref<number>(1); 
   const isLooping          = ref<boolean>(false);
   const compilationError   = ref<string | null>(null);
 
-  // ─── DERIVED STATE ───────────────────────────────────────────────────────────
+  
   const currentFrame = computed<VcrBaseFrame | null>(() => {
     if (playbackFrames.value.length === 0) return null;
     const idx = currentFrameIndex.value;
@@ -51,10 +51,10 @@ export const useVcrStore = defineStore('vcr-player', () => {
   const isAtStart          = computed(() => currentFrameIndex.value === 0);
   const isAtEnd            = computed(() => currentFrameIndex.value >= totalFrames.value - 1);
 
-  // ─── ACTIONS ─────────────────────────────────────────────────────────────────
+  
   const customCompileFn = ref<(() => void) | null>(null);
 
-  /** Biên dịch mã nguồn + mảng đầu vào → sinh ra danh sách PlaybackFrames */
+  
   const compileAndLoad = () => {
     compilationError.value = null;
     try {
@@ -97,14 +97,14 @@ export const useVcrStore = defineStore('vcr-player', () => {
   const reset        = () => { currentFrameIndex.value = 0; isPlaying.value = false; };
   const jumpToFrame  = (index: number) => { if (index >= 0 && index < playbackFrames.value.length) currentFrameIndex.value = index; };
 
-  // ─── AUTO PLAYBACK TIMER ─────────────────────────────────────────────────────
+  
   let timerId: ReturnType<typeof setInterval> | null = null;
   const stopTimer  = () => { if (timerId !== null) { clearInterval(timerId); timerId = null; } };
   const startTimer = () => { stopTimer(); timerId = setInterval(stepNext, 1000 / playbackSpeed.value); };
 
   watch([isPlaying, playbackSpeed], ([newPlaying]) => { newPlaying ? startTimer() : stopTimer(); });
 
-  // ─── PUBLIC API ──────────────────────────────────────────────────────────────
+  
   return {
     sourceCode, code, rawInputArray, inputArray, playbackFrames, currentFrameIndex,
     isPlaying, playbackSpeed, isLooping, compilationError,

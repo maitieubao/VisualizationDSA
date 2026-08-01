@@ -9,9 +9,9 @@ export class CoreAnimationEngine {
   private renderCallbacks: Array<(deltaTime: number) => void> = [];
   private lastTimestamp = 0;
 
-  /**
-   * Đăng ký callback vẽ hoạt ảnh từ các phân hệ
-   */
+  
+
+
   public registerRender(callback: (deltaTime: number) => void): void {
     this.renderCallbacks.push(callback);
     if (!this.isRunning) {
@@ -19,9 +19,9 @@ export class CoreAnimationEngine {
     }
   }
 
-  /**
-   * Hủy đăng ký một callback vẽ
-   */
+  
+
+
   public unregisterRender(callback: (deltaTime: number) => void): void {
     this.renderCallbacks = this.renderCallbacks.filter(cb => cb !== callback);
     if (this.renderCallbacks.length === 0 && this.isRunning) {
@@ -49,7 +49,7 @@ export class CoreAnimationEngine {
     const deltaTime = timestamp - this.lastTimestamp;
     this.lastTimestamp = timestamp;
 
-    // Giới hạn độ dài deltaTime tránh spike nhảy ảnh khi người dùng ẩn tab trình duyệt
+    
     const clampedDelta = Math.min(deltaTime, 32); 
 
     this.renderCallbacks.forEach(cb => {
@@ -63,11 +63,11 @@ export class CoreAnimationEngine {
     this.animationFrameId = requestAnimationFrame(this.loop);
   };
 
-  /**
-   * Toán học Lerp nội suy Tuyến tính (Linear Interpolation)
-   */
+  
+
+
   public static lerp(start: number, end: number, t: number): number {
-    // Kẹp t trong khoảng [0, 1] để đảm bảo nội suy chính xác
+    
     const clampedT = Math.max(0, Math.min(1, t));
     return start + (end - start) * clampedT;
   }
@@ -79,9 +79,9 @@ export class CoreAnimationEngine {
     };
   }
 
-  /**
-   * Giải phóng tài nguyên tháo dỡ tránh rò rỉ RAM GC
-   */
+  
+
+
   public destroy(): void {
     this.stopLoop();
     this.renderCallbacks = [];

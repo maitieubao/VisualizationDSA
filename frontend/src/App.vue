@@ -1,23 +1,23 @@
 <template>
-  <!--
-    App Shell — VisualizationDSA
-    Phong cách: Terminal / Code Editor aesthetic
-    Font: JetBrains Mono (logo/code), Inter (nav/UI)
-    Theme: data-theme attribute được set trên <html> trong index.html
-  -->
+  
+
+
+
+
+
   <div class="app-shell" :class="{ 'is-embed': isMinimalMode }">
-    <!-- ══════════════ HEADER ══════════════ -->
+    
     <AppHeader
       v-if="!isMinimalMode"
       @logout="handleLogout"
       @openLogin="handleOpenLogin"
     />
 
-    <!-- ══════════════ BODY ══════════════ -->
-    <div class="app-body">
-      <!-- LEFT SIDEBAR (REMOVED) -->
+    
+    <div class="app-body" style="position: relative; z-index: 1;">
+      
 
-      <!-- MAIN CONTENT AREA -->
+      
       <main class="app-main" :class="{ 'app-main--full': isLandingPage }">
         <RouterView v-slot="{ Component }">
           <Transition name="page-fade">
@@ -34,7 +34,7 @@
     </div>
   </div>
 
-  <!-- Impersonation Banner (Phase C) -->
+  
   <div v-if="authStore.isImpersonating" class="impersonate-banner">
     <div class="impersonate-banner__pulse"></div>
     <div class="impersonate-banner__text">
@@ -46,7 +46,7 @@
     </button>
   </div>
 
-  <!-- Sync Error Banner -->
+  
   <div v-if="progressStore.isSyncError" class="sync-error-banner">
     <div class="sync-error-banner__pulse"></div>
     <div class="sync-error-banner__text">
@@ -58,13 +58,13 @@
     </button>
   </div>
 
-  <!-- Login Modal -->
+  
   <LoginModal :visible="showLoginModal" @close="showLoginModal = false" />
 
-  <!-- Global Toast Notifications -->
+  
   <ToastContainer />
 
-  <!-- Interactive Guided Tour Overlay -->
+  
   <GuidedTourOverlay />
 
 </template>
@@ -79,10 +79,12 @@ import AppHeader from './components/AppHeader.vue';
 import LoginModal from './features/auth/components/LoginModal.vue';
 import ToastContainer from './components/ToastContainer.vue';
 import GuidedTourOverlay from './features/guided-tour/components/GuidedTourOverlay.vue';
+import { useThemeStore } from './shared/store/useThemeStore';
 
 const authStore      = useAuthStore();
 const tourStore      = useGuidedTourStore();
 const progressStore  = useUserProgressStore();
+const themeStore     = useThemeStore();
 const route          = useRoute();
 const router         = useRouter();
 const showLoginModal = ref(false);
@@ -120,6 +122,7 @@ function handleStopImpersonating(): void {
 }
 
 onMounted(() => {
+  themeStore.initTheme();
   authStore.statelessInit();
   tourStore.initTour();
 });

@@ -11,10 +11,10 @@ using Microsoft.Extensions.Caching.Memory;
 
 namespace VisualizationDSA.WebApi.Controllers
 {
-    /// <summary>
-    /// Analytics Controller — thống kê hệ thống và cá nhân.
-    /// Route: api/v{version:apiVersion}/analytics
-    /// </summary>
+    
+    
+    
+    
     [ApiVersion("1.0")]
     [ApiController]
     [Route("api/v{version:apiVersion}/[controller]")]
@@ -30,11 +30,11 @@ namespace VisualizationDSA.WebApi.Controllers
             _cache = cache;
         }
 
-        /// <summary>
-        /// Tổng quan hệ thống — public (không cần đăng nhập).
-        /// Thông tin: total users, active today, total XP, average level.
-        /// GET /api/v1/analytics/overview
-        /// </summary>
+        
+        
+        
+        
+        
         [HttpGet("overview")]
         public async Task<ActionResult<SystemOverviewDto>> GetOverview()
         {
@@ -49,10 +49,10 @@ namespace VisualizationDSA.WebApi.Controllers
             return Ok(overview);
         }
 
-        /// <summary>
-        /// Thống kê cá nhân user đang đăng nhập.
-        /// GET /api/v1/analytics/me
-        /// </summary>
+        
+        
+        
+        
         [HttpGet("me")]
         [Authorize]
         public async Task<ActionResult<UserAnalyticsDto>> GetMyAnalytics()
@@ -67,10 +67,10 @@ namespace VisualizationDSA.WebApi.Controllers
             return Ok(analytics);
         }
 
-        /// <summary>
-        /// Top các module được hoàn thành nhiều nhất — public.
-        /// GET /api/v1/analytics/modules/popular?limit=10
-        /// </summary>
+        
+        
+        
+        
         [HttpGet("modules/popular")]
         public async Task<ActionResult<IEnumerable<ModulePopularityDto>>> GetPopularModules(
             [FromQuery] int limit = 10)
@@ -86,6 +86,14 @@ namespace VisualizationDSA.WebApi.Controllers
                 _cache.Set(cacheKey, popularity, cacheEntryOptions);
             }
             return Ok(popularity);
+        }
+
+        [HttpGet("quizzes")]
+        [Authorize(Roles = "Teacher,Admin")]
+        public async Task<IActionResult> GetQuizAnalytics([FromServices] MediatR.IMediator mediator)
+        {
+            var result = await mediator.Send(new VisualizationDSA.Application.Features.Analytics.Queries.GetQuizAnalytics.GetQuizAnalyticsQuery());
+            return Ok(result);
         }
     }
 }

@@ -17,11 +17,11 @@ const containerRef = ref<HTMLDivElement | null>(null);
 const canvasRef = ref<HTMLCanvasElement | null>(null);
 let resizeObserver: ResizeObserver | null = null;
 
-// Lerp Animation engine states
+
 const animatedState = shallowRef<AnimatedState | null>(null);
 let animationFrameId: number | null = null;
 let animStartTime = 0;
-const ANIM_DURATION = 420; // Cinematic 420ms pacing with ease-out-quart physics
+const ANIM_DURATION = 420; 
 
 let startState: AnimatedState | null = null;
 let targetState: AnimatedState | null = null;
@@ -70,11 +70,11 @@ function renderCanvas(): void {
   const frame = props.frame;
   if (!frame || frame.dataState.length === 0) return;
 
-  // Pass animatedState into drawBoxArray to render smooth interpolations
+  
   drawBoxArray(ctx, w, h, frame, colors, animatedState.value ?? undefined);
 }
 
-// Quartic easing out for cinematic fluid physics
+
 function easeOutQuart(x: number): number {
   return 1 - Math.pow(1 - x, 4);
 }
@@ -86,7 +86,7 @@ function animateFrame(now: number): void {
   const progress = Math.min(1, elapsed / ANIM_DURATION);
   const t = easeOutQuart(progress);
 
-  // Interpolate search state fields smoothly
+  
   animatedState.value = {
     low: startState.low + (targetState.low - startState.low) * t,
     lowOpacity: startState.lowOpacity + (targetState.lowOpacity - startState.lowOpacity) * t,
@@ -107,7 +107,7 @@ function animateFrame(now: number): void {
   }
 }
 
-// Watch active frame and kick off smooth Lerp transition
+
 watch(() => props.frame, (newFrame) => {
   if (animationFrameId !== null) {
     cancelAnimationFrame(animationFrameId);
@@ -122,7 +122,7 @@ watch(() => props.frame, (newFrame) => {
 
   const n = newFrame.dataState.length;
   
-  // Define targets
+  
   const tLow = newFrame.highlights.low ?? (animatedState.value?.low ?? 0);
   const tLowOp = newFrame.highlights.low != null ? 1.0 : 0.0;
   
@@ -147,11 +147,11 @@ watch(() => props.frame, (newFrame) => {
   };
 
   if (!animatedState.value || animatedState.value.opacities.length !== n) {
-    // First time or structural array size change: set target state instantly without transition
+    
     animatedState.value = nextTargetState;
     renderCanvas();
   } else {
-    // Subsequent playback steps: kick off requestAnimationFrame Lerp loop
+    
     startState = { ...animatedState.value };
     targetState = nextTargetState;
     animStartTime = performance.now();

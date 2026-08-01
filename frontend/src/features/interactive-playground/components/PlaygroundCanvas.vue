@@ -10,7 +10,7 @@
       @mouseleave="onMouseUp"
       style="display: block; width: 100%; height: 100%; background: var(--canvas-bg); border-radius: 8px; cursor: crosshair;"
     />
-    <!-- Floating Mode Helper Tooltip -->
+    
     <div v-show="store.nodes.length > 0 || store.isAlgorithmMode || store.isGuideDismissed" class="absolute bottom-4 left-1/2 -translate-x-1/2 px-4 py-2.5 rounded-xl text-[11px] font-medium text-text-secondary bg-bg-secondary/80 backdrop-blur-md border border-white/5 pointer-events-none transition-all shadow-2xl select-none text-center max-w-[90%] md:min-w-[340px] z-[1000]">
       <span class="w-2 h-2 rounded-full inline-block mr-2 animate-pulse" :class="store.isAlgorithmMode ? 'bg-accent-cyan' : 'bg-accent-emerald'"></span>
       <span>{{ modeTooltip }}</span>

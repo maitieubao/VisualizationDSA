@@ -1,4 +1,4 @@
-/* AdminPanelView scoped stylesheet using centralized CSS Variables */
+
 
 .admin-panel {
   padding: 2rem;
@@ -8,7 +8,7 @@
   color: var(--color-text-primary, #d9dde8);
 }
 
-/* Header */
+
 .panel-header {
   margin-bottom: 2rem;
   display: flex;
@@ -75,7 +75,7 @@
   border-color: rgba(239, 68, 68, 0.25);
 }
 
-/* Content */
+
 .panel-content {
   position: relative;
 }
@@ -89,7 +89,7 @@
   to { opacity: 1; transform: translateY(0); }
 }
 
-/* Stats grid */
+
 .stats-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
@@ -138,7 +138,7 @@
   margin-top: 0.5rem;
 }
 
-/* Dashboard Tables */
+
 .dashboard-tables {
   display: grid;
   grid-template-columns: 1.2fr 0.8fr;
@@ -199,7 +199,7 @@
   color: #c084fc;
 }
 
-/* Console logs */
+
 .console-box {
   background: var(--color-bg-terminal, #0f1120);
   border: 1px solid rgba(255, 255, 255, 0.08);
@@ -236,7 +236,7 @@
   color: var(--color-text-primary, #d9dde8);
 }
 
-/* Users Tab & General Table */
+
 .card-header-row {
   display: flex;
   justify-content: space-between;
@@ -358,7 +358,7 @@
 .role-badge--teacher { background: rgba(168, 85, 247, 0.15); color: #c084fc; }
 .role-badge--student { background: rgba(59, 130, 246, 0.15); color: #60a5fa; }
 
-/* Quizzes table specific */
+
 .td-title {
   font-weight: 600;
   color: var(--color-text-heading, #ffffff);
@@ -396,7 +396,7 @@
   background: rgba(239, 68, 68, 0.1);
 }
 
-/* Pagination Row */
+
 .pagination-row {
   display: flex;
   justify-content: center;
@@ -425,7 +425,7 @@
   color: var(--color-text-secondary, #939bb4);
 }
 
-/* System tab */
+
 .system-layout {
   display: grid;
   grid-template-columns: 1.2fr 0.8fr;
@@ -522,7 +522,7 @@
   accent-color: #ef4444;
 }
 
-/* Responsive */
+
 @media (max-width: 1024px) {
   .dashboard-tables, .system-layout {
     grid-template-columns: 1fr;
@@ -536,7 +536,7 @@
   .search-input { width: 100%; }
 }
 
-/* User Detail Modal */
+
 .user-modal-backdrop {
   position: fixed;
   inset: 0;

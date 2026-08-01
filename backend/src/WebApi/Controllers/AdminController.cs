@@ -11,15 +11,15 @@ using VisualizationDSA.WebApi.Filters;
 
 namespace VisualizationDSA.WebApi.Controllers
 {
-    /// <summary>
-    /// Admin API — quản lý user, quiz, analytics toàn hệ thống.
-    /// Yêu cầu role Admin trong JWT token.
-    /// Route: /api/v1/concepts/admin
-    /// </summary>
+    
+    
+    
+    
+    
     [ApiVersion("1.0")]
     [ApiController]
     [Route("api/v{version:apiVersion}/concepts/admin")]
-    [RequireJwtRole("Admin")]  // ✅ PB-705: Centralized JWT guard — tất cả endpoints yêu cầu Admin role
+    [RequireJwtRole("Admin")]  
     public class AdminController : ControllerBase
     {
         private readonly ApplicationDbContext _dbContext;
@@ -38,12 +38,12 @@ namespace VisualizationDSA.WebApi.Controllers
 
 
 
-        // ── Dashboard Analytics ──────────────────────────────────────────────
+        
 
-        /// <summary>
-        /// Thống kê tổng quan hệ thống từ DB thực.
-        /// GET /api/v1/concepts/admin/dashboard
-        /// </summary>
+        
+        
+        
+        
         [HttpGet("dashboard")]
         public async Task<IActionResult> GetDashboard()
         {
@@ -58,14 +58,14 @@ namespace VisualizationDSA.WebApi.Controllers
                 var totalOrders  = await _dbContext.Orders.CountAsync();
                 var paidOrders   = await _dbContext.Orders.CountAsync(o => o.Status == "Completed" || o.Status == "paid");
 
-                // Top 5 active users by XP
+                
                 var topUsers = await _dbContext.Users
                     .OrderByDescending(u => u.TotalXP)
                     .Take(5)
                     .Select(u => new { u.Email, u.Username, u.TotalXP, u.CurrentLevel, u.Role })
                     .ToListAsync();
 
-                // Lịch sử đăng ký trong 7 ngày gần nhất
+                
                 var sevenDaysAgo = DateTime.UtcNow.Date.AddDays(-6);
                 var registrationList = await _dbContext.Users
                     .Where(u => u.CreatedAt >= sevenDaysAgo)
@@ -82,17 +82,17 @@ namespace VisualizationDSA.WebApi.Controllers
                     })
                     .ToList();
 
-                // Top 3 khóa học phổ biến nhất
+                
                 var popularCourses = await _dbContext.UserLessonProgresses
-                    .Include(p => p.Lesson)
-                    .ThenInclude(l => l.Course)
-                    .Where(p => p.Lesson != null && p.Lesson.Course != null)
-                    .GroupBy(p => p.Lesson.CourseId)
+                    .Join(_dbContext.ModuleItems, p => p.LessonId, m => m.LessonId, (p, m) => new { Progress = p, ModuleItem = m })
+                    .Join(_dbContext.CourseModules, pm => pm.ModuleItem.ModuleId, cm => cm.Id, (pm, cm) => new { pm.Progress, cm.Course })
+                    .Where(x => x.Course != null)
+                    .GroupBy(x => x.Course!.Id)
                     .Select(g => new
                     {
                         courseId = g.Key,
-                        title = g.First().Lesson.Course.Title,
-                        enrollmentsCount = g.Select(p => p.UserId).Distinct().Count()
+                        title = g.First().Course!.Title,
+                        enrollmentsCount = g.Select(x => x.Progress.UserId).Distinct().Count()
                     })
                     .OrderByDescending(c => c.enrollmentsCount)
                     .Take(3)
@@ -152,14 +152,14 @@ namespace VisualizationDSA.WebApi.Controllers
             }
         }
 
-        // ── User Management ──────────────────────────────────────────────────
+        
 
-        /// <summary>
-        /// Danh sách tất cả người dùng (phân trang).
-        /// GET /api/v1/concepts/admin/users?page=1&amp;pageSize=20&amp;search=
-        /// </summary>
+        
+        
+        
+        
         [HttpGet("users")]
-        [RequireJwtRole("Teacher,Admin")]  // ✅ PB-705: Teacher cũng được xem danh sách user
+        [RequireJwtRole("Teacher,Admin")]  
         public async Task<IActionResult> GetUsers([FromQuery] int page = 1, [FromQuery] int pageSize = 20, [FromQuery] string? search = null)
         {
 
@@ -231,10 +231,10 @@ namespace VisualizationDSA.WebApi.Controllers
             }
         }
 
-        /// <summary>
-        /// Đổi role của user.
-        /// PUT /api/v1/concepts/admin/users/{id}/role
-        /// </summary>
+        
+        
+        
+        
         [HttpPut("users/{id}/role")]
         public async Task<IActionResult> UpdateUserRole(string id, [FromBody] UpdateRoleRequest request)
         {
@@ -250,10 +250,10 @@ namespace VisualizationDSA.WebApi.Controllers
             user.SetRole(request.Role);
             await _dbContext.SaveChangesAsync();
             
-            // Đồng bộ sang in-memory cache
+            
             _authStrategy.UpdateUserRole(id, request.Role);
 
-            // Log Audit
+            
             if (Guid.TryParse(id, out var targetGuid))
             {
                 await LogAdminAction("UpdateUserRole", targetGuid, $"Đổi vai trò của {user.Username} từ {oldRole} sang {request.Role}.");
@@ -262,10 +262,10 @@ namespace VisualizationDSA.WebApi.Controllers
             return Ok(new { message = $"Đã đổi role của {user.Email} thành {request.Role}.", userId = id, newRole = request.Role });
         }
 
-        /// <summary>
-        /// Bật/tắt trạng thái Premium của user.
-        /// PUT /api/v1/concepts/admin/users/{id}/premium
-        /// </summary>
+        
+        
+        
+        
         [HttpPut("users/{id}/premium")]
         public async Task<IActionResult> TogglePremium(string id, [FromBody] TogglePremiumRequest request)
         {
@@ -278,10 +278,10 @@ namespace VisualizationDSA.WebApi.Controllers
             user.SetPremiumStatus(request.IsPremium);
             await _dbContext.SaveChangesAsync();
 
-            // Đồng bộ sang in-memory cache
+            
             _authStrategy.SetUserPremium(id, request.IsPremium);
 
-            // Log Audit
+            
             if (Guid.TryParse(id, out var targetGuid))
             {
                 await LogAdminAction("TogglePremium", targetGuid, $"Thay đổi trạng thái Premium của {user.Username} từ {oldStatus} sang {request.IsPremium}.");
@@ -290,10 +290,10 @@ namespace VisualizationDSA.WebApi.Controllers
             return Ok(new { message = $"Đã {(request.IsPremium ? "bật" : "tắt")} Premium cho {user.Email}.", userId = id, isPremium = request.IsPremium });
         }
 
-        /// <summary>
-        /// Tạo người dùng mới.
-        /// POST /api/v1/concepts/admin/users
-        /// </summary>
+        
+        
+        
+        
         [HttpPost("users")]
         public async Task<IActionResult> CreateUser([FromBody] CreateUserRequest request)
         {
@@ -302,7 +302,7 @@ namespace VisualizationDSA.WebApi.Controllers
                 return BadRequest(new { error = "INVALID_INPUT", message = "Email, username và mật khẩu không được để trống." });
             }
 
-            // Check if user already exists in DB
+            
             var existingUser = await _dbContext.Users.AnyAsync(u => u.Email.ToLower() == request.Email.ToLower() || u.Username.ToLower() == request.Username.ToLower());
             if (existingUser)
             {
@@ -318,7 +318,7 @@ namespace VisualizationDSA.WebApi.Controllers
             _dbContext.Users.Add(newUser);
             await _dbContext.SaveChangesAsync();
 
-            // Sync to stateless in-memory cache
+            
             _authStrategy.AddUser(
                 newUser.Id.ToString(),
                 newUser.Email,
@@ -328,7 +328,7 @@ namespace VisualizationDSA.WebApi.Controllers
                 newUser.IsPremium
             );
 
-            // Log Audit
+            
             await LogAdminAction("CreateUser", newUser.Id, $"Tạo người dùng mới: {newUser.Username} ({newUser.Email}), vai trò: {newUser.Role}, Premium: {newUser.IsPremium}.");
 
             return Ok(new
@@ -349,10 +349,10 @@ namespace VisualizationDSA.WebApi.Controllers
             });
         }
 
-        /// <summary>
-        /// Xóa người dùng.
-        /// DELETE /api/v1/concepts/admin/users/{id}
-        /// </summary>
+        
+        
+        
+        
         [HttpDelete("users/{id}")]
         public async Task<IActionResult> DeleteUser(string id)
         {
@@ -365,10 +365,10 @@ namespace VisualizationDSA.WebApi.Controllers
             _dbContext.Users.Remove(user);
             await _dbContext.SaveChangesAsync();
 
-            // Sync to stateless in-memory cache
+            
             _authStrategy.RemoveUser(id);
 
-            // Log Audit
+            
             if (Guid.TryParse(id, out var targetGuid))
             {
                 await LogAdminAction("DeleteUser", targetGuid, $"Xóa người dùng {user.Username} ({user.Email}) khỏi hệ thống.");
@@ -377,10 +377,10 @@ namespace VisualizationDSA.WebApi.Controllers
             return Ok(new { message = $"Đã xóa người dùng {user.Username} ({user.Email}) thành công." });
         }
 
-        /// <summary>
-        /// Đặt lại mật khẩu cho người dùng.
-        /// PUT /api/v1/concepts/admin/users/{id}/reset-password
-        /// </summary>
+        
+        
+        
+        
         [HttpPut("users/{id}/reset-password")]
         public async Task<IActionResult> ResetPassword(string id, [FromBody] ResetPasswordRequest request)
         {
@@ -399,10 +399,10 @@ namespace VisualizationDSA.WebApi.Controllers
             user.ChangePassword(newHash);
             await _dbContext.SaveChangesAsync();
 
-            // Sync to stateless in-memory cache
+            
             _authStrategy.UpdateUserPassword(id, newHash);
 
-            // Log Audit
+            
             if (Guid.TryParse(id, out var targetGuid))
             {
                 await LogAdminAction("ResetPassword", targetGuid, $"Đặt lại mật khẩu của người dùng {user.Username}.");
@@ -411,14 +411,14 @@ namespace VisualizationDSA.WebApi.Controllers
             return Ok(new { message = $"Đã đặt lại mật khẩu cho người dùng {user.Username} thành công." });
         }
 
-        // ── Quiz Management ──────────────────────────────────────────────────
+        
 
-        /// <summary>
-        /// Danh sách quiz với số liệu thực từ DB.
-        /// GET /api/v1/concepts/admin/quizzes
-        /// </summary>
+        
+        
+        
+        
         [HttpGet("quizzes")]
-        [RequireJwtRole("Teacher,Admin")]  // ✅ PB-705: Teacher cũng được xem quiz list
+        [RequireJwtRole("Teacher,Admin")]  
         public async Task<IActionResult> GetQuizzes()
         {
 
@@ -463,12 +463,12 @@ namespace VisualizationDSA.WebApi.Controllers
             }
         }
 
-        /// <summary>
-        /// Xóa quiz theo ID.
-        /// DELETE /api/v1/concepts/admin/quizzes/{id}
-        /// </summary>
+        
+        
+        
+        
         [HttpDelete("quizzes/{id}")]
-        [RequireJwtRole("Teacher,Admin")]  // ✅ PB-705
+        [RequireJwtRole("Teacher,Admin")]  
         public async Task<IActionResult> DeleteQuiz(string id)
         {
 
@@ -482,12 +482,12 @@ namespace VisualizationDSA.WebApi.Controllers
             return Ok(new { message = $"Đã xóa quiz \"{quiz.Title}\"." });
         }
 
-        /// <summary>
-        /// Analytics quiz từ DB: top quizzes, pass rate.
-        /// GET /api/v1/concepts/admin/analytics/quiz
-        /// </summary>
+        
+        
+        
+        
         [HttpGet("analytics/quiz")]
-        [RequireJwtRole("Teacher,Admin")]  // ✅ PB-705
+        [RequireJwtRole("Teacher,Admin")]  
         public async Task<IActionResult> GetQuizAnalytics()
         {
 
@@ -516,10 +516,10 @@ namespace VisualizationDSA.WebApi.Controllers
             });
         }
 
-        /// <summary>
-        /// Khóa hoặc Mở khóa tài khoản người dùng.
-        /// PUT /api/v1/concepts/admin/users/{id}/ban
-        /// </summary>
+        
+        
+        
+        
         [HttpPut("users/{id}/ban")]
         public async Task<IActionResult> BanUser(string id, [FromBody] BanUserRequest request)
         {
@@ -535,10 +535,10 @@ namespace VisualizationDSA.WebApi.Controllers
             return Ok(new { message = $"Đã {action} tài khoản {user.Email}.", userId = id, isActive = request.IsActive });
         }
 
-        /// <summary>
-        /// Đóng vai (Impersonate) một user bất kỳ.
-        /// POST /api/v1/concepts/admin/users/{id}/impersonate
-        /// </summary>
+        
+        
+        
+        
         [HttpPost("users/{id}/impersonate")]
         public async Task<IActionResult> ImpersonateUser(string id)
         {
@@ -549,11 +549,11 @@ namespace VisualizationDSA.WebApi.Controllers
             int level;
             bool isPremium;
 
-            // Tìm trong DB
+            
             var dbUser = await _dbContext.Users.FirstOrDefaultAsync(u => u.Id.ToString() == id);
             if (dbUser != null)
             {
-                // Đồng bộ sang in-memory
+                
                 _authStrategy.EnsureUserInMemory(
                     dbUser.Id.ToString(),
                     dbUser.Email,
@@ -573,7 +573,7 @@ namespace VisualizationDSA.WebApi.Controllers
             }
             else
             {
-                // Tìm trong in-memory
+                
                 try
                 {
                     var memoryProfile = _authStrategy.GetProfile(id);
@@ -589,12 +589,12 @@ namespace VisualizationDSA.WebApi.Controllers
                 }
             }
 
-            // Sinh Impersonated Token
+            
             var impersonatedToken = GenerateImpersonatedJwt(id, email, username, role, level, adminId);
             var impersonatedRefreshToken = Guid.NewGuid().ToString("N") + Guid.NewGuid().ToString("N");
             _authStrategy.ForceAddRefreshToken(impersonatedRefreshToken, id);
 
-            // Log Audit
+            
             if (Guid.TryParse(id, out var targetGuid))
             {
                 await LogAdminAction("ImpersonateUser", targetGuid, $"Đóng vai (Impersonate) tài khoản học viên {username} ({email}).");
@@ -604,7 +604,7 @@ namespace VisualizationDSA.WebApi.Controllers
             {
                 accessToken = impersonatedToken,
                 refreshToken = impersonatedRefreshToken,
-                expiresIn = 900, // 15 minutes
+                expiresIn = 900, 
                 user = new
                 {
                     id,
@@ -633,10 +633,10 @@ namespace VisualizationDSA.WebApi.Controllers
             return $"{header}.{payload}.{signature}";
         }
 
-        /// <summary>
-        /// Lấy danh sách nhật ký quản trị (Audit Logs).
-        /// GET /api/v1/concepts/admin/audit-logs
-        /// </summary>
+        
+        
+        
+        
         [HttpGet("audit-logs")]
         public async Task<IActionResult> GetAuditLogs([FromQuery] int page = 1, [FromQuery] int pageSize = 50)
         {
@@ -672,7 +672,7 @@ namespace VisualizationDSA.WebApi.Controllers
         }
     }
 
-    // ── DTOs ─────────────────────────────────────────────────────────────────
+    
 
     public record UpdateRoleRequest(string Role);
     public record TogglePremiumRequest(bool IsPremium);

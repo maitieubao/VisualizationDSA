@@ -6,14 +6,14 @@ import type {
   PlaybackState,
 } from '../types/animation.types';
 
-/**
- * useAnimationStore — Pinia Store quản lý trạng thái hoạt họa giải thuật.
- * Thiết kế theo Composition API (Setup Store) với shallowRef tối ưu RAM.
- */
+
+
+
+
 export const useAnimationStore = defineStore('animation', () => {
-  // ==========================================
-  // 1. STATE
-  // ==========================================
+  
+  
+  
 
   const frames = shallowRef<FrameDTO[]>([]);
   const pseudoCode = ref<string[]>([]);
@@ -23,12 +23,12 @@ export const useAnimationStore = defineStore('animation', () => {
   const isPlaying = ref<boolean>(false);
   const playbackSpeed = ref<number>(1.0);
   let timerId: number | null = null;
-  // Timeline support
+  
   const timeline = shallowRef<OOPAnimationTimeline | null>(null);
   const currentTime = ref(0);
   const speed = ref(1);
 
-  // Interaction lock for UI (e.g., during autoplay)
+  
   const interactionLocked = ref<boolean>(false);
 
 
@@ -47,7 +47,7 @@ export const useAnimationStore = defineStore('animation', () => {
   function loadTimeline(tl: OOPAnimationTimeline) {
     timeline.value = tl;
     currentTime.value = 0;
-    // Reset existing frames if needed
+    
     frames.value = [];
     currentIndex.value = 0;
   }
@@ -55,9 +55,9 @@ export const useAnimationStore = defineStore('animation', () => {
   let playUntilTarget: number | null = null;
   let playUntilResolver: (() => void) | null = null;
 
-  // ==========================================
-  // 2. GETTERS (Computed)
-  // ==========================================
+  
+  
+  
 
   const currentFrame = computed<FrameDTO | null>(() => {
     if (frames.value.length === 0) return null;
@@ -85,9 +85,9 @@ export const useAnimationStore = defineStore('animation', () => {
     return currentIndex.value === 0 ? 'LOADED' : 'PAUSED';
   });
 
-  // ==========================================
-  // 3. ACTIONS
-  // ==========================================
+  
+  
+  
 
   function loadResult(result: AlgorithmResult): void {
     stop();

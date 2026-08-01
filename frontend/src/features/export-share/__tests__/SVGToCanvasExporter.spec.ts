@@ -1,4 +1,4 @@
-// @vitest-environment jsdom
+
 import { describe, it, expect } from 'vitest';
 import { SVGToCanvasExporter } from '../engine/SVGToCanvasExporter';
 import {
@@ -147,7 +147,7 @@ describe('SVGToCanvasExporter', () => {
     it('should reject when Image loading fails', async () => {
       const svg = createMockSVGElement();
 
-      // Mock Image to trigger onerror
+      
       const origImage = globalThis.Image;
       globalThis.Image = class MockImage {
         onload: (() => void) | null = null;

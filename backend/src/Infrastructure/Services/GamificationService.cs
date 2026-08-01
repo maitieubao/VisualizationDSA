@@ -23,7 +23,7 @@ namespace VisualizationDSA.Infrastructure.Services
             if (user == null) throw new KeyNotFoundException($"User {userId} not found");
 
             user.AwardXP(amount);
-            user.RecordActivity();  // ✅ FIX 3.4: cập nhật streak khi có hoạt động
+            user.RecordActivity();  
             await _unitOfWork.CommitAsync();
         }
 
@@ -32,11 +32,11 @@ namespace VisualizationDSA.Infrastructure.Services
             var user = await _unitOfWork.Users.GetByIdWithDetailsAsync(userId);
             if (user == null) throw new KeyNotFoundException($"User {userId} not found");
 
-            // Tránh thêm module đã tồn tại (idempotent)
+            
             if (!user.LearningProgresses.Any(lp => lp.ModuleId == moduleId))
             {
                 user.CompleteModule(moduleId);
-                user.RecordActivity();  // ✅ FIX 3.4: cập nhật streak
+                user.RecordActivity();  
             }
             await _unitOfWork.CommitAsync();
         }
@@ -51,13 +51,13 @@ namespace VisualizationDSA.Infrastructure.Services
 
             foreach (var badge in allBadges)
             {
-                // Bỏ qua nếu user đã có badge này
+                
                 if (user.UserBadges.Any(ub => ub.BadgeId == badge.Id))
                     continue;
 
                 if (ShouldAwardBadge(user, badge))
                 {
-                    // ✅ FIX 2.3: Chỉ thêm UserBadge mới — KHÔNG re-add User đã tồn tại
+                    
                     var userBadge = new UserBadge(userId, badge.Id);
                     user.UserBadges.Add(userBadge);
                     newBadges.Add(badge);
@@ -81,11 +81,11 @@ namespace VisualizationDSA.Infrastructure.Services
 
         public UserProgressStats CalculateUserProgressStats(UserProgressDomainModel progressModel)
         {
-            // ✅ A2 FIX: Dùng lookup table đồng bộ với XPEngine.ts
+            
             var currentLevelXp = XpThresholdForLevel(progressModel.CurrentLevel);
             var nextLevelXp    = XpThresholdForLevel(progressModel.CurrentLevel + 1);
 
-            // Xử lý edge case level 8 (Legend) — không có next level
+            
             if (nextLevelXp == int.MaxValue)
             {
                 return new UserProgressStats
@@ -118,7 +118,7 @@ namespace VisualizationDSA.Infrastructure.Services
 
         private bool ShouldAwardBadge(User user, Badge badge)
         {
-            // Simple criteria checking based on badge name
+            
             return badge.Name switch
             {
                 "First Steps" => user.QuizAttempts.Count >= 1,
@@ -133,11 +133,11 @@ namespace VisualizationDSA.Infrastructure.Services
             };
         }
 
-        /// <summary>
-        /// ✅ A2 FIX: Đồng bộ với XPEngine.ts LEVELS lookup table.
-        /// Trả về tổng XP cần để BẮT ĐẦU level đó.
-        /// Level 1=0, 2=100, 3=300, 4=600, 5=1000, 6=1500, 7=2200, 8=3000, 9+=Infinity
-        /// </summary>
+        
+        
+        
+        
+        
         private static int XpThresholdForLevel(int level)
         {
             return level switch
@@ -150,7 +150,7 @@ namespace VisualizationDSA.Infrastructure.Services
                 6 => 1500,
                 7 => 2200,
                 8 => 3000,
-                _ => int.MaxValue   // level 9+ không tồn tại → Grandmaster giữ nguyên
+                _ => int.MaxValue   
             };
         }
     }

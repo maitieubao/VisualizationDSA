@@ -1,4 +1,4 @@
-/* DashboardView scoped stylesheet using CSS Variables */
+
 
 .dashboard {
   padding: 2rem;
@@ -42,7 +42,7 @@
   margin-top: 0.5rem;
 }
 
-/* Grid Layout */
+
 .dashboard__grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
@@ -67,7 +67,7 @@
   align-items: center;
 }
 
-/* Quick Start Steps */
+
 .quickstart-intro {
   font-size: 0.85rem;
   color: var(--color-text-muted, #6b7385);
@@ -159,7 +159,7 @@
   box-shadow: 0 0 12px rgba(66, 85, 255, 0.15);
 }
 
-/* XP Wheel */
+
 .xp-card {
   display: flex;
   flex-direction: column;
@@ -208,7 +208,7 @@
   margin-top: 0.75rem;
 }
 
-/* Badges */
+
 .badges-grid {
   display: flex;
   flex-wrap: wrap;
@@ -242,7 +242,7 @@
   font-style: italic;
 }
 
-/* Quick Links */
+
 .quicklinks {
   display: flex;
   flex-direction: column;
@@ -275,7 +275,7 @@
   color: var(--color-accent-primary, #4255ff);
 }
 
-/* Responsive */
+
 @media (max-width: 768px) {
   .dashboard { padding: 1rem; }
   .dashboard__grid { gap: 1rem; grid-template-columns: 1fr; }

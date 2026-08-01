@@ -87,7 +87,7 @@ export const useQuizStore = defineStore('quizSystem', () => {
     await submitQuizAttempt({ quizId, score: sessionCorrect.value, maxScore: sessionTotal.value, passed }, authStore.getAccessToken());
   }
 
-  // ── Standalone Backend Quiz Mode ──────────────────────────────
+  
   const quizCatalog = ref<StatelessQuizSummary[]>([]);
   const activeBackendQuiz = ref<StatelessQuizDetail | null>(null);
   const backendQuizIndex = ref(0);
@@ -184,7 +184,7 @@ export const useQuizStore = defineStore('quizSystem', () => {
     loadCheckpoints, checkFrameForQuiz, triggerCheckpointQuestion,
     submitOptionAnswer, handleCanvasClickAnswer, dismissQuestionAndContinue,
     resetQuizStore, syncSessionToServer,
-    // Backend quiz mode
+    
     quizCatalog, activeBackendQuiz, backendQuizIndex, backendAnswers, backendResult,
     isBackendQuizLoading, backendQuizError, isBackendQuizMode,
     currentBackendQuestion, backendQuizProgress,

@@ -14,11 +14,11 @@ describe('Sprint 2: Sorting Algorithm Frame Generators', () => {
       const frames = generateBubbleSortFrames(testArray);
       expect(frames.length).toBeGreaterThan(0);
       
-      // Khởi tạo
+      
       expect(frames[0].arrayState).toEqual(testArray);
       expect(frames[0].algorithm).toBe('bubble');
       
-      // Hoàn thành
+      
       const finalFrame = frames[frames.length - 1];
       expect(finalFrame.arrayState).toEqual([2, 3, 4, 5, 8]);
       expect(finalFrame.sortedIndices.length).toBe(testArray.length);
@@ -30,7 +30,7 @@ describe('Sprint 2: Sorting Algorithm Frame Generators', () => {
       const frames = generateQuickSortFrames(testArray);
       expect(frames.length).toBeGreaterThan(0);
       
-      // Check pivot highlighting in partition
+      
       const partitionFrames = frames.filter(f => f.pivotIndex !== null);
       expect(partitionFrames.length).toBeGreaterThan(0);
       
@@ -74,9 +74,9 @@ describe('Sprint 2: Sorting Algorithm Frame Generators', () => {
       for (const frame of frames) {
         expect(frame.arrayStateWithIds).toBeDefined();
         expect(frame.arrayStateWithIds!.length).toBe(radixArr.length);
-        // Values must match arrayState
+        
         expect(frame.arrayStateWithIds!.map(e => e.value)).toEqual(frame.arrayState);
-        // IDs must be unique within each frame
+        
         const ids = frame.arrayStateWithIds!.map(e => e.id);
         expect(new Set(ids).size).toBe(ids.length);
       }
@@ -96,11 +96,11 @@ describe('Sprint 2: Sorting Algorithm Frame Generators', () => {
     });
 
     it('should preserve FIFO order — earlier-distributed elements appear first in collect', () => {
-      // Use duplicate-digit values to test stability
+      
       const arr = [21, 31, 41];
       const frames = generateRadixSortFrames(arr);
       const final = frames[frames.length - 1];
-      // All end with digit 1 in units place → must appear in original encounter order
+      
       expect(final.arrayState).toEqual([21, 31, 41]);
     });
   });
@@ -120,7 +120,7 @@ describe('Sprint 2: Sorting Algorithm Frame Generators', () => {
       for (const frame of frames) {
         expect(frame.arrayStateWithIds).toBeDefined();
         expect(frame.arrayStateWithIds!.length).toBe(bucketArr.length);
-        // IDs must be unique within each frame
+        
         const ids = frame.arrayStateWithIds!.map(e => e.id);
         expect(new Set(ids).size).toBe(ids.length);
       }
@@ -128,15 +128,15 @@ describe('Sprint 2: Sorting Algorithm Frame Generators', () => {
 
     it('should assign correct buckets matching value ranges', () => {
       const frames = generateBucketSortFrames([10, 30, 60, 90]);
-      // Frame after distribute should have distributed correctly
+      
       const distributeFinishedFrame = frames.find(f => f.description.includes('Phân phối thành công phần tử A[3]'));
       expect(distributeFinishedFrame).toBeDefined();
       
       const buckets = distributeFinishedFrame!.bucketSortBuckets!;
-      expect(buckets[0]).toContain(10); // [0-25)
-      expect(buckets[1]).toContain(30); // [25-50)
-      expect(buckets[2]).toContain(60); // [50-75)
-      expect(buckets[3]).toContain(90); // [75-100]
+      expect(buckets[0]).toContain(10); 
+      expect(buckets[1]).toContain(30); 
+      expect(buckets[2]).toContain(60); 
+      expect(buckets[3]).toContain(90); 
     });
   });
 });

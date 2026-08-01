@@ -39,15 +39,15 @@ describe('MonacoLineSyncerCoordinator Unit Tests', () => {
 
     const coordinator = new MonacoLineSyncerCoordinator(mockEditor, mockVcrStore);
     
-    // Simulate gutter click
+    
     clickCallback({
       target: {
-        type: 3, // Gutter
+        type: 3, 
         position: { lineNumber: 10 }
       }
     });
 
-    expect(mockVcrStore.jumpToFrame).toHaveBeenCalledWith(1); // line 10 corresponds to stepIndex 1
+    expect(mockVcrStore.jumpToFrame).toHaveBeenCalledWith(1); 
 
     coordinator.destroy();
   });

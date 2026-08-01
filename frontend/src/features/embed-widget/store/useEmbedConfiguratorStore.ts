@@ -1,9 +1,9 @@
-/**
- * useEmbedConfiguratorStore — Pinia Setup Store
- *
- * Manages embed widget configuration state: theme, dimensions,
- * algorithm selection, VCR/watch toggles, and live iframe code generation.
- */
+
+
+
+
+
+
 
 import { defineStore } from 'pinia';
 import { ref, computed } from 'vue';
@@ -11,9 +11,9 @@ import type { EmbedTheme } from '../types/embed-widget.types';
 import { EMBED_BASE_URL } from '../types/embed-widget.types';
 
 export const useEmbedConfiguratorStore = defineStore('embedConfigurator', () => {
-  // ==========================================
-  // STATE
-  // ==========================================
+  
+  
+  
   const selectedTheme = ref<EmbedTheme>('glass');
   const showVcrControls = ref(true);
   const showWatchVariables = ref(true);
@@ -24,9 +24,9 @@ export const useEmbedConfiguratorStore = defineStore('embedConfigurator', () => 
   const selectedAlgorithm = ref('quicksort-recursion');
   const isCopied = ref(false);
 
-  // ==========================================
-  // GETTERS
-  // ==========================================
+  
+  
+  
 
   const generatedIframeCode = computed(() => {
     const params = new URLSearchParams({
@@ -61,9 +61,9 @@ export const useEmbedConfiguratorStore = defineStore('embedConfigurator', () => 
     return `${EMBED_BASE_URL}?${params.toString()}`;
   });
 
-  // ==========================================
-  // ACTIONS
-  // ==========================================
+  
+  
+  
 
   async function copyEmbedCodeToClipboard(): Promise<boolean> {
     try {

@@ -14,6 +14,8 @@ export const docsNavigation: NavItem[] = [
     id: 'sorting-group',
     title: 'NHÓM SẮP XẾP',
     children: [
+      { id: 'sort-selection', title: 'Sắp xếp Chọn (Selection Sort)', path: '/docs/sorting/selection-sort' },
+      { id: 'sort-insertion', title: 'Sắp xếp Chèn (Insertion Sort)', path: '/docs/sorting/insertion-sort' },
       { id: 'sort-bubble', title: 'Sắp xếp Nổi bọt (Bubble Sort)', path: '/docs/sorting/bubble-sort' },
       { id: 'sort-quick', title: 'Sắp xếp Nhanh (Quick Sort)', path: '/docs/sorting/quick-sort' },
       { id: 'sort-merge', title: 'Sắp xếp Trộn (Merge Sort)', path: '/docs/sorting/merge-sort' },
@@ -30,6 +32,7 @@ export const docsNavigation: NavItem[] = [
     children: [
       { id: 'search-linear', title: 'Tìm kiếm Tuần tự (Linear Search)', path: '/docs/searching/linear-search' },
       { id: 'search-binary', title: 'Tìm kiếm Nhị phân (Binary Search)', path: '/docs/searching/binary-search' },
+      { id: 'search-two-pointers', title: 'Kỹ thuật Hai con trỏ (Two Pointers)', path: '/docs/searching/two-pointers' },
       { id: 'search-sliding-window', title: 'Kỹ thuật Cửa sổ trượt (Sliding Window)', path: '/docs/searching/sliding-window' },
       { id: 'search-summary', title: 'Tổng hợp ứng dụng Tìm kiếm', path: '/docs/searching/searching-summary' }
     ]
@@ -46,13 +49,31 @@ export const docsNavigation: NavItem[] = [
     ]
   },
   {
+    id: 'linked-list-group',
+    title: 'NHÓM DANH SÁCH LIÊN KẾT',
+    children: [
+      { id: 'll-basics', title: 'Khái niệm & Phân loại', path: '/docs/linked-list/linked-list-basics' },
+      { id: 'll-operations', title: 'Thao tác cơ bản', path: '/docs/linked-list/linked-list-operations' }
+    ]
+  },
+  {
+    id: 'hash-table-group',
+    title: 'NHÓM BẢNG BĂM',
+    children: [
+      { id: 'ht-theory', title: 'Lý thuyết Bảng Băm', path: '/docs/hash-table/hash-table-theory' },
+      { id: 'ht-csharp', title: 'Dictionary & HashSet trong C#', path: '/docs/hash-table/csharp-hash-collections' }
+    ]
+  },
+  {
     id: 'tree-graph-group',
     title: 'NHÓM CÂY & ĐỒ THỊ',
     children: [
       { id: 'tg-bst', title: 'Cây Nhị phân Tìm kiếm (BST)', path: '/docs/tree-graph/bst' },
+      { id: 'tg-avl', title: 'Cây AVL tự cân bằng', path: '/docs/tree-graph/avl-tree' },
       { id: 'tg-traversal', title: 'Duyệt cây (Pre/In/Post-order)', path: '/docs/tree-graph/tree-traversal' },
       { id: 'tg-bfs', title: 'Duyệt theo chiều rộng (BFS)', path: '/docs/tree-graph/bfs' },
       { id: 'tg-dfs', title: 'Duyệt theo chiều sâu (DFS)', path: '/docs/tree-graph/dfs' },
+      { id: 'tg-cycle', title: 'Phát hiện chu trình (Cycle Detection)', path: '/docs/tree-graph/cycle-detection' },
       { id: 'tg-dijkstra', title: 'Thuật toán Dijkstra', path: '/docs/tree-graph/dijkstra' },
       { id: 'tg-advanced', title: 'Cấu trúc Cây nâng cao', path: '/docs/tree-graph/advanced-trees' },
       { id: 'tg-summary', title: 'Tổng hợp ứng dụng Cây & Đồ thị', path: '/docs/tree-graph/tree-graph-summary' }
@@ -60,7 +81,7 @@ export const docsNavigation: NavItem[] = [
   },
   {
     id: 'oop-group',
-    title: 'Lập trình Hướng đối tượng (OOP)',
+    title: 'LẬP TRÌNH HƯỚNG ĐỐI TƯỢNG (OOP)',
     children: [
       { id: 'oop-encapsulation', title: 'Tính Đóng gói', path: '/docs/oop/encapsulation' },
       { id: 'oop-inheritance', title: 'Tính Kế thừa', path: '/docs/oop/inheritance' },
@@ -71,7 +92,7 @@ export const docsNavigation: NavItem[] = [
   },
   {
     id: 'solid-group',
-    title: 'Nguyên lý SOLID',
+    title: 'NGUYÊN LÝ SOLID',
     children: [
       { id: 'solid-srp', title: 'Single Responsibility', path: '/docs/solid/srp' },
       { id: 'solid-ocp', title: 'Open-Closed', path: '/docs/solid/ocp' },
@@ -82,7 +103,7 @@ export const docsNavigation: NavItem[] = [
   },
   {
     id: 'patterns-group',
-    title: 'Mẫu thiết kế (Design Patterns)',
+    title: 'MẪU THIẾT KẾ (DESIGN PATTERNS)',
     children: [
       { id: 'dp-singleton', title: 'Singleton Pattern', path: '/docs/patterns/singleton' },
       { id: 'dp-factory', title: 'Factory Method', path: '/docs/patterns/factory' },
@@ -93,12 +114,24 @@ export const docsNavigation: NavItem[] = [
   },
   {
     id: 'di-group',
-    title: 'Dependency Injection (DI)',
+    title: 'DEPENDENCY INJECTION (DI)',
     children: [
       { id: 'di-basics', title: 'Cơ bản về DI & IoC', path: '/docs/di/basics' },
       { id: 'di-lifecycles', title: 'Vòng đời (Lifecycles)', path: '/docs/di/lifecycles' },
       { id: 'di-advanced', title: 'Các mẫu nâng cao', path: '/docs/di/advanced' },
       { id: 'di-keyed', title: 'Keyed Services (.NET 8)', path: '/docs/di/keyed-services' }
+    ]
+  },
+  {
+    id: 'system-design-group',
+    title: 'THIẾT KẾ HỆ THỐNG',
+    children: [
+      { id: 'sd-intro', title: 'Giới thiệu Thiết kế Hệ thống', path: '/docs/system-design/system-design-intro' },
+      { id: 'sd-lb', title: 'Load Balancer & Round-Robin', path: '/docs/system-design/load-balancer' },
+      { id: 'sd-health', title: 'Server Health & Failover', path: '/docs/system-design/server-health' },
+      { id: 'sd-packet', title: 'Network Packet Routing', path: '/docs/system-design/packet-routing' },
+      { id: 'sd-replication', title: 'Database Replication & Lag', path: '/docs/system-design/replication-lag' },
+      { id: 'sd-failure', title: 'Failure Handling & Smoke', path: '/docs/system-design/failure-handling' }
     ]
   },
   {
@@ -111,14 +144,14 @@ export const docsNavigation: NavItem[] = [
   }
 ];
 
-// Helper để tìm next/prev navigation
+
 export function getNextPrevDocs(currentPath: string): { 
   prev: { path: string; title: string } | null;
   next: { path: string; title: string } | null;
 } {
   const flatNav: { path: string; title: string }[] = [];
   
-  // Hàm đệ quy làm phẳng cây menu
+  
   const flatten = (items: NavItem[]) => {
     items.forEach(item => {
       if (item.path) {

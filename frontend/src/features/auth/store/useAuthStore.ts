@@ -1,12 +1,12 @@
-/**
- * useAuthStore.ts — Pinia Store quản lý trạng thái đăng nhập.
- *
- * Chiến lược Token:
- * - Access Token (15 phút): lưu trong memory (ref) — không localStorage để tránh XSS
- * - Refresh Token (30 ngày): lưu localStorage — dùng để tái tạo access token
- *
- * Tự động refresh: 2 phút trước khi Access Token hết hạn.
- */
+
+
+
+
+
+
+
+
+
 
 import { defineStore } from 'pinia';
 import { ref, computed } from 'vue';
@@ -16,15 +16,15 @@ import { statelessAuthApi } from '../services/statelessAuthApi';
 import type { StatelessUserDto, StatelessAuthResponse } from '../services/statelessAuthApi';
 
 export const useAuthStore = defineStore('auth', () => {
-  // ── State ──────────────────────────────────────────────────────────────────
-  const accessToken  = ref<string | null>(null);      // Memory only (XSS-safe)
+  
+  const accessToken  = ref<string | null>(null);      
   const currentUser  = ref<authApi.AuthUserDto | null>(null);
   const isLoading    = ref<boolean>(false);
   const authError    = ref<string | null>(null);
 
   const refreshTimer = { value: null as ReturnType<typeof setTimeout> | null };
 
-  // ── Getters ───────────────────────────────────────────────────────────────
+  
   const isAuthenticated = computed(() => accessToken.value !== null && currentUser.value !== null);
   const userName        = computed(() => currentUser.value?.username ?? 'Khách');
   const userLevel       = computed(() => currentUser.value?.currentLevel ?? 1);
@@ -34,7 +34,7 @@ export const useAuthStore = defineStore('auth', () => {
   const isTeacher       = computed(() => userRole.value === 'Teacher');
   const isAdmin         = computed(() => userRole.value === 'Admin');
 
-  // ── Private helpers ────────────────────────────────────────────────────────
+  
   function _scheduleRefresh(expiresInSeconds: number): void {
     if (refreshTimer.value) clearTimeout(refreshTimer.value);
     const delay = Math.max(0, (expiresInSeconds - 120) * 1000);
@@ -46,9 +46,9 @@ export const useAuthStore = defineStore('auth', () => {
     }, delay);
   }
 
-  // ── Actions ───────────────────────────────────────────────────────────────
+  
 
-  /** Khởi động store — tự động đăng nhập lại nếu còn refresh token */
+  
   async function init(): Promise<void> {
     const savedUserId = localStorage.getItem('vdsa_stateless_user_id');
     if (savedUserId) {
@@ -82,7 +82,7 @@ export const useAuthStore = defineStore('auth', () => {
     clearSession(accessToken, currentUser, refreshTimer);
   }
 
-  /** Lấy access token hiện tại — gọi trước mỗi API call cần auth */
+  
   function getAccessToken(): string | null { return accessToken.value; }
 
   let refreshPromise: Promise<string | null> | null = null;
@@ -113,7 +113,7 @@ export const useAuthStore = defineStore('auth', () => {
           return response.accessToken;
         }
       } catch (err) {
-        // Clear session if refresh failed
+        
         if (savedUserId || isStatelessMode.value) {
           localStorage.removeItem('vdsa_refresh_token');
           localStorage.removeItem('vdsa_access_expires');
@@ -134,7 +134,7 @@ export const useAuthStore = defineStore('auth', () => {
     return refreshPromise;
   }
 
-  // ── Stateless Backend Integration ──────────────────────────────
+  
   const statelessUser = ref<StatelessUserDto | null>(null);
   const isStatelessMode = ref(false);
 
@@ -205,7 +205,7 @@ export const useAuthStore = defineStore('auth', () => {
       const response = await statelessAuthApi.refresh(savedRefresh, savedUserId);
       _applyStatelessAuth(response);
     } catch {
-      // Refresh failed — clear session
+      
       localStorage.removeItem('vdsa_refresh_token');
       localStorage.removeItem('vdsa_access_expires');
       localStorage.removeItem('vdsa_stateless_user_id');
@@ -225,7 +225,7 @@ export const useAuthStore = defineStore('auth', () => {
         currentUser.value.bio = statelessUser.value.bio;
         currentUser.value.university = statelessUser.value.university;
       }
-    } catch { /* silent — profile load is optional */ }
+    } catch {  }
   }
 
   async function updateProfile(username: string, nickname?: string, bio?: string, university?: string): Promise<void> {
@@ -285,7 +285,7 @@ export const useAuthStore = defineStore('auth', () => {
   }
 
   function impersonate(response: StatelessAuthResponse): void {
-    // 1. Lưu lại session của Admin hiện tại
+    
     const currentAccessToken = accessToken.value;
     const currentRefreshToken = localStorage.getItem('vdsa_refresh_token');
     const currentUserId = localStorage.getItem('vdsa_stateless_user_id');
@@ -296,7 +296,7 @@ export const useAuthStore = defineStore('auth', () => {
     if (currentUserId) localStorage.setItem('vdsa_admin_user_id', currentUserId);
     if (currentUserData) localStorage.setItem('vdsa_admin_user_data', currentUserData);
 
-    // 2. Áp dụng session của user được đóng vai
+    
     _applyStatelessAuth(response);
     impersonateTrigger.value++;
   }
@@ -311,7 +311,7 @@ export const useAuthStore = defineStore('auth', () => {
       return;
     }
 
-    // Khôi phục session của Admin
+    
     accessToken.value = adminAccessToken;
     localStorage.setItem('vdsa_refresh_token', adminRefreshToken);
     localStorage.setItem('vdsa_stateless_user_id', adminUserId);
@@ -321,10 +321,10 @@ export const useAuthStore = defineStore('auth', () => {
       currentUser.value = adminUser;
       statelessUser.value = adminUser;
     } catch {
-      // Fallback
+      
     }
 
-    // Xóa các key lưu trữ tạm thời
+    
     localStorage.removeItem('vdsa_admin_access_token');
     localStorage.removeItem('vdsa_admin_refresh_token');
     localStorage.removeItem('vdsa_admin_user_id');
@@ -338,10 +338,10 @@ export const useAuthStore = defineStore('auth', () => {
     accessToken, currentUser, isLoading, authError,
     isAuthenticated, userName, userLevel, userXP, isPremium, userRole, isTeacher, isAdmin,
     init, register, logIn, logOut, getAccessToken, refreshAccessToken,
-    // Stateless backend
+    
     statelessUser, isStatelessMode,
     statelessLogin, statelessRegister, statelessLogout, statelessInit, loadStatelessProfile, updateProfile, changePassword,
-    // Impersonation
+    
     isImpersonating, impersonate, startImpersonating, stopImpersonating
   };
 });

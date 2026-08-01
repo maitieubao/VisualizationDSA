@@ -1,149 +1,177 @@
 ---
 title: Tính Kế thừa (Inheritance)
-description: Tìm hiểu cách tạo ra các lớp mới tái sử dụng, mở rộng hoặc sửa đổi hành vi của các lớp hiện có trong C#.
+description: Khám phá thanh gươm hai lưỡi sắc bén nhất của OOP. Nắm vững bí mật khởi tạo bộ nhớ, quyền truy cập protected, và né tránh thảm họa "Lớp cơ sở mỏng manh".
 ---
 
 # Tính Kế thừa (Inheritance) {#inheritance}
 
-Tính Kế thừa (Inheritance) cho phép chúng ta định nghĩa một lớp mới dựa trên một lớp đã tồn tại. Đây là một cơ chế mạnh mẽ để tái sử dụng mã nguồn và thiết lập mối quan hệ phân cấp **"is-a" (là một)** giữa các đối tượng.
+:::info Mục tiêu bài học
+- Xóa mù cơ chế vận hành của **Kế thừa (Inheritance)**: Định lý "IS-A" (Là một).
+- Mổ xẻ bí mật khởi tạo trong bộ nhớ: Tại sao Lớp con ra đời lại phải nhờ đến Lớp cha (Từ khóa `base`)?
+- Phân định ranh giới lãnh thổ bằng Access Modifiers: Sự khác biệt chí mạng giữa `private`, `protected`, và `internal`.
+- Nhận diện Anti-pattern: Hội chứng **Lớp Cơ Sở Mỏng Manh (Fragile Base Class)**.
+- Thấu hiểu câu thần chú của Kiến trúc sư: *"Prefer Composition over Inheritance"* (Ưu tiên Lớp bọc thay vì Kế thừa).
+:::
 
-Lớp mà có các thành viên được kế thừa được gọi là **Lớp cơ sở (Base class / Parent class)**, và lớp kế thừa các thành viên đó được gọi là **Lớp dẫn xuất (Derived class / Child class)**.
+## 1. Lời mở đầu: Sức mạnh của Phả hệ {#introduction}
 
-## Tại sao chúng ta cần Kế thừa? {#why-inheritance}
+Trong thế giới OOP, khi bạn thấy hai Class có những hành vi và dữ liệu giống hệt nhau, bản năng của một lập trình viên sẽ hét lên: *"Đừng Lặp Lại Code (DRY - Don't Repeat Yourself)!"*. Đó là lúc Kế thừa ra đời.
 
-**Lợi ích chính:**
-- **Tái sử dụng code (Code Reusability):** Bạn không cần phải viết lại các trường dữ liệu và phương thức đã có ở lớp cha.
-- **Tính hệ thống:** Tổ chức các lớp theo một cấu trúc phân cấp logic từ tổng quát đến chi tiết.
-- **Tiền đề cho Đa hình (Polymorphism):** Kế thừa là điều kiện bắt buộc để thực hiện tính đa hình (chúng ta sẽ tìm hiểu ở bài sau).
+> *"Kế thừa cho phép một Lớp mới (Derived Class / Child Class) thừa hưởng toàn bộ dữ liệu và hành vi của một Lớp có sẵn (Base Class / Parent Class), đồng thời cho phép Lớp mới có quyền mở rộng hoặc thay đổi hành vi đó."*
 
-Ví dụ: Bạn có một hệ thống quản lý xe cộ. Tất cả các xe đều có thuộc tính `Speed` (Tốc độ) và phương thức `StartEngine()` (Khởi động). Thay vì viết lại những thứ này ở các lớp `Car` (Ô tô), `Motorcycle` (Xe máy), và `Truck` (Xe tải), bạn có thể tạo một lớp chung là `Vehicle` để các lớp kia kế thừa.
+**Định lý cốt lõi: Mối quan hệ "IS-A" (Là một)**
+Để áp dụng Kế thừa, Lớp con bắt buộc phải thỏa mãn câu nói: **"Lớp Con LÀ MỘT Lớp Cha"**.
+- Chó (Dog) **LÀ MỘT** Động vật (Animal). $\rightarrow$ Kế thừa đúng.
+- Ô tô (Car) **LÀ MỘT** Phương tiện (Vehicle). $\rightarrow$ Kế thừa đúng.
+- Hình Vuông **LÀ MỘT** Hình Chữ Nhật? $\rightarrow$ Toán học bảo đúng, nhưng OOP bảo sai (Hãy xem lại [Nguyên lý LSP](/docs/solid/lsp) để biết tại sao).
+
+---
+
+## 2. Giải phẫu Cơ chế Kế thừa trong C# {#csharp-inheritance}
+
+C# (cũng như Java) sử dụng cú pháp dấu hai chấm (`:`) để kế thừa. **Lưu ý:** Một Lớp con chỉ có thể kế thừa từ ĐÚNG MỘT Lớp cha (Đơn kế thừa - Single Inheritance), tuyệt đối không được kế thừa từ nhiều Class để tránh hiện tượng [Diamond Problem](https://en.wikipedia.org/wiki/Multiple_inheritance#The_diamond_problem).
 
 ```mermaid
 classDiagram
-    class Vehicle {
-        +String Brand
-        +int Speed
-        +StartEngine()
+    class Character {
+        +Name: string
+        +Health: int
+        +TakeDamage(amount)
     }
-    class Car {
-        +int NumberOfDoors
-        +Honk()
+    class Warrior {
+        +Rage: int
+        +Whirlwind()
     }
-    class Motorcycle {
-        +bool HasSidecar
-        +Wheelie()
+    class Mage {
+        +Mana: int
+        +CastFireball()
     }
-    class Truck {
-        +int PayloadCapacity
-        +LoadCargo()
-    }
-    Vehicle <|-- Car : Kế thừa (is-a)
-    Vehicle <|-- Motorcycle : Kế thừa (is-a)
-    Vehicle <|-- Truck : Kế thừa (is-a)
-```
-
-## Cú pháp Kế thừa trong C# {#syntax}
-
-Trong C#, chúng ta sử dụng dấu hai chấm `:` để thể hiện sự kế thừa.
-
-```csharp
-// 1. Lớp cơ sở (Base class)
-public class Vehicle
-{
-    public string Brand { get; set; }
     
-    public void StartEngine()
-    {
-        Console.WriteLine("Động cơ đã khởi động. Vroom vroom!");
-    }
-}
+    Character <|-- Warrior
+    Character <|-- Mage
+```
 
-// 2. Lớp dẫn xuất (Derived class)
-// Car "kế thừa từ" Vehicle
-public class Car : Vehicle 
+### 2.1. Mã nguồn cơ bản
+```csharp
+// LỚP CHA (BASE CLASS)
+public class Character
 {
-    public int NumberOfDoors { get; set; }
+    public string Name { get; set; }
+    public int Health { get; set; }
 
-    public void Honk()
+    public void TakeDamage(int amount)
     {
-        Console.WriteLine("Beep! Beep!");
+        Health -= amount;
+        Console.WriteLine($"{Name} bị mất {amount} máu! Còn {Health} HP.");
+    }
+}
+
+// LỚP CON (DERIVED CLASS)
+// Warrior sẽ TỰ ĐỘNG CÓ toàn bộ 2 biến (Name, Health) và hàm TakeDamage của Character
+public class Warrior : Character
+{
+    public int Rage { get; set; } // Tính năng mở rộng riêng của con
+
+    public void Whirlwind()
+    {
+        Console.WriteLine($"{Name} xoay kiếm gây sát thương diện rộng!");
     }
 }
 ```
 
-Bây giờ, đối tượng của lớp `Car` không chỉ có thuộc tính `NumberOfDoors` mà còn tự động có thuộc tính `Brand` và phương thức `StartEngine` từ `Vehicle`.
+### 2.2. Bí mật của Từ khóa `base` (Chuỗi khởi tạo Constructor)
+
+Khi bạn gõ lệnh `new Warrior()`, CPU sẽ cấp phát bộ nhớ. Nhưng khoan đã! Thằng `Warrior` chứa cái ruột của thằng `Character`. Vậy ai sẽ khởi tạo cái ruột đó?
+
+**Quy tắc bất di bất dịch của OOP:** *"Lớp Cha phải ra đời trước Lớp Con"*.
+Khi hàm tạo (Constructor) của Lớp Con được gọi, việc đầu tiên nó làm là ngầm chạy lên gọi hàm tạo của Lớp Cha (thông qua từ khóa `base`) để nhét đồ đạc của Cha vào bộ nhớ, rồi nó mới bắt đầu xây phần mở rộng của Lớp Con.
 
 ```csharp
-Car myCar = new Car();
-
-// Kế thừa từ Vehicle
-myCar.Brand = "Toyota";
-myCar.StartEngine();
-
-// Sở hữu riêng của Car
-myCar.NumberOfDoors = 4;
-myCar.Honk();
-```
-
-## Constructor trong Kế thừa {#constructors-in-inheritance}
-
-Một quy tắc quan trọng cần nhớ: **Constructors (hàm khởi tạo) không được kế thừa**. Tuy nhiên, khi bạn khởi tạo một đối tượng của lớp con, constructor của lớp cha sẽ luôn được gọi **trước tiên**.
-
-Nếu lớp cha có constructor nhận tham số, bạn phải gọi nó từ lớp con bằng từ khóa `base`:
-
-```csharp
-public class Animal
+public class Character
 {
     public string Name { get; set; }
 
-    // Constructor của lớp cha yêu cầu truyền Name
-    public Animal(string name)
+    // Nếu Lớp cha yêu cầu truyền Tên lúc sinh ra
+    public Character(string name)
     {
         Name = name;
-        Console.WriteLine("Animal Constructor called");
+        Console.WriteLine("1. Lớp Cha (Character) ra đời!");
     }
 }
 
-public class Dog : Animal
+public class Warrior : Character
 {
-    public string Breed { get; set; }
+    public int Rage { get; set; }
 
-    // Dùng : base() để truyền dữ liệu lên lớp cha
-    public Dog(string name, string breed) : base(name)
+    // Lớp con BẮT BUỘC phải thỏa mãn yêu cầu của Lớp cha
+    // Nó nhận tên từ người dùng, rồi "chuyền bóng" (gọi : base) ném cái tên đó lên cho Lớp cha xử lý!
+    public Warrior(string name, int startingRage) : base(name)
     {
-        Breed = breed;
-        Console.WriteLine("Dog Constructor called");
+        Rage = startingRage;
+        Console.WriteLine("2. Lớp Con (Warrior) ra đời!");
     }
 }
+
+// Chạy thử:
+var garen = new Warrior("Garen", 100);
+// Output trên Console sẽ in ra lần lượt:
+// 1. Lớp Cha (Character) ra đời!
+// 2. Lớp Con (Warrior) ra đời!
 ```
 
-:::warning Lưu ý về Đa Kế Thừa (Multiple Inheritance)
-Khác với C++, C# **KHÔNG** hỗ trợ đa kế thừa đối với Class. Một lớp con chỉ có thể kế thừa từ **duy nhất một** lớp cha trực tiếp. Để giải quyết vấn đề cần đa kế thừa, C# sử dụng `Interfaces` (chúng ta sẽ thảo luận ở phần sau).
-:::
+---
 
-## Từ khóa `sealed` (Niêm phong lớp) {#sealed-classes}
+## 3. Ranh giới Lãnh thổ (Access Modifiers) {#access-modifiers}
 
-Đôi khi, bạn xây dựng một lớp hoàn chỉnh và không muốn bất kỳ ai khác kế thừa (và có thể phá vỡ logic) của lớp đó. Bạn có thể sử dụng từ khóa `sealed`.
+Kế thừa sinh ra một cấp độ bảo mật mới. Hồi học tính [Đóng Gói (Encapsulation)](/docs/oop/encapsulation), bạn chỉ biết `private` (giấu kín) và `public` (mở toang). Giờ đây, khi có "Con cái" trong nhà, bạn cần một loại chìa khóa riêng chỉ cấp cho người trong gia tộc.
+
+1. `private`: Tuyệt đối bí mật. Lớp con KẾ THỪA nó, nhưng KHÔNG ĐƯỢC PHÉP CHẠM VÀO NÓ. (Giống như Bố bạn có một sổ tiết kiệm mang tên Bố. Bạn biết nó tồn tại trong nhà, nhưng bạn không lấy tiền ra được).
+2. **`protected`**: (Dành riêng cho Kế thừa). Thế giới bên ngoài nhìn vào thấy nó là `private`. Nhưng Lớp Con nhìn vào lại thấy nó là `public`! (Bố giao chìa khóa két sắt riêng cho bạn).
+3. `internal`: Giới hạn nội bộ trong cùng một Project (Assembly/DLL). File nằm ở Project khác không xài được.
 
 ```csharp
-public sealed class SecuritySystem
+public class BankSystem
 {
-    // Không một lớp nào có thể kế thừa từ SecuritySystem
+    private string _adminPassword = "123"; // Con không được chạm
+    
+    // Con có quyền lấy Key này để kết nối hệ thống. Người ngoài không thấy.
+    protected string DatabaseKey = "DB_SECRET"; 
 }
 
-// LỖI BIÊN DỊCH: 'AdvancedSecurity' cannot derive from sealed type 'SecuritySystem'
-// public class AdvancedSecurity : SecuritySystem { }
+public class LocalBank : BankSystem
+{
+    public void Connect()
+    {
+        // Console.WriteLine(_adminPassword); // LỖI COMPILER ĐỎ CHÓT!
+        Console.WriteLine(DatabaseKey);       // HỢP LỆ! Nhờ từ khóa protected.
+    }
+}
 ```
 
-Việc niêm phong class cũng giúp trình biên dịch của C# thực hiện một số tối ưu hóa hiệu suất vi mô (micro-optimizations).
+---
 
-## Next Steps {#next-steps}
+## 4. Thanh gươm hai lưỡi: Hội chứng Lớp Cơ Sở Mỏng Manh {#fragile-base-class}
 
-Sau khi đã tạo được hệ thống phân cấp các lớp, sức mạnh thực sự của OOP nằm ở việc có thể tương tác với các đối tượng thuộc các lớp con khác nhau thông qua một giao diện chung. Đó chính là **Tính Đa hình**.
+Người mới học OOP rất thích Kế thừa. Họ tạo ra những cây phả hệ sâu 5-7 tầng: `Animal` $\rightarrow$ `Mammal` $\rightarrow$ `Dog` $\rightarrow$ `Husky` $\rightarrow$ `AlaskaHusky`.
 
-<div class="vt-box-container next-steps">
-  <a class="vt-box" href="/docs/oop/polymorphism">
-    <p class="next-steps-link">Đa hình (Polymorphism)</p>
-    <p class="next-steps-caption">Cách các đối tượng con cư xử khác nhau dưới cùng một tên gọi hàm.</p>
-  </a>
-</div>
+Đây là một Anti-pattern chết người mang tên **Fragile Base Class Problem (Lớp cơ sở mỏng manh)**.
+
+Bởi vì Kế thừa tạo ra sự kết dính chặt chẽ nhất (Tightly Coupled) trong toàn bộ kiến trúc phần mềm. 
+Giả sử bạn có 100 Class đang kế thừa từ `Animal`. Ngày mai, Sếp yêu cầu bạn vào Class `Animal` sửa lại hàm `Eat()` để thêm tham số `FoodType`. 
+**BÙM!** Ngay lập tức, 100 File chứa 100 Lớp con của bạn đồng loạt báo lỗi Compiler đỏ rực màn hình vì không tương thích hàm. Bạn vừa phá hủy toàn bộ dự án chỉ bằng một dòng code ở Lớp cha.
+
+### Câu Thần Chú: "Prefer Composition over Inheritance"
+
+Đây là nguyên lý tối thượng trong [Design Patterns](/docs/patterns/singleton). 
+> *"Hãy ưu tiên dùng Thành phần Bọc (Composition / Có-Một) thay vì Kế thừa (Inheritance / Là-Một)."*
+
+Thay vì cho `Car` kế thừa `Engine` (Xe hơi **LÀ MỘT** Động cơ $\rightarrow$ Vô lý). 
+Hãy cho `Car` CHỨA MỘT biến `Engine` bên trong bụng nó (Composition). Khi đó, bạn có thể dễ dàng rút cái Động cơ cũ ra, thay Động cơ mới vào (Kỹ thuật [Strategy Pattern](/docs/patterns/strategy) hoặc [Dependency Injection](/docs/di/basics)). Đừng lạm dụng Kế thừa nếu mối quan hệ không thực sự là "IS-A"!
+
+:::tip Tóm tắt nhanh (Key Takeaways)
+- Kế thừa (Inheritance) dùng để tái sử dụng mã nguồn và thể hiện quan hệ cha-con (IS-A).
+- Lớp con thừa hưởng Data và Hành vi của Lớp cha, nhưng Lớp cha luôn phải được khởi tạo trước bằng cách gọi `base(...)` constructor.
+- Để Lớp con được dùng biến của Lớp cha mà không sợ thiên hạ nhìn thấy, hãy dùng Access Modifier là **`protected`**.
+- Hạn chế tối đa việc tạo cây phả hệ Kế thừa quá sâu (Quá 3 tầng). Sự thay đổi ở Lớp gốc sẽ tạo ra phản ứng dây chuyền làm sập toàn bộ các Lớp lá. 
+- Ưu tiên sử dụng **Interface** và **Composition (Biến bọc)** thay cho Kế thừa Class thuần túy.
+:::

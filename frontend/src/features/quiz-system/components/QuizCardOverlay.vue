@@ -8,7 +8,7 @@
           'status-incorrect': quizStore.isSubmitted && !quizStore.isCorrect,
         }"
       >
-        <!-- Header -->
+        
         <div class="quiz-header">
           <div class="quiz-badge">
             <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
@@ -19,10 +19,10 @@
           <div class="question-type-badge">{{ questionTypeLabel }}</div>
         </div>
 
-        <!-- Prompt -->
+        
         <p class="quiz-prompt">{{ quizStore.activeQuestion?.prompt }}</p>
 
-        <!-- Canvas Hint -->
+        
         <div v-if="quizStore.activeQuestion?.type === 'CANVAS_TARGET' && !quizStore.isSubmitted" class="canvas-hint">
           <svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <circle cx="12" cy="12" r="10" /><circle cx="12" cy="12" r="6" /><circle cx="12" cy="12" r="2" />
@@ -39,7 +39,7 @@
           @select="selectOption"
         />
 
-        <!-- Feedback -->
+        
         <Transition name="feedback-fade">
           <div v-if="quizStore.isSubmitted" class="feedback-panel">
             <div class="feedback-title" :class="quizStore.isCorrect ? 'correct' : 'incorrect'">
@@ -51,7 +51,7 @@
           </div>
         </Transition>
 
-        <!-- Continue Button -->
+        
         <div v-if="quizStore.isSubmitted" class="flex justify-end">
           <button class="continue-btn" @click="quizStore.dismissQuestionAndContinue()">
             <svg class="w-3.5 h-3.5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m9 18 6-6-6-6" /></svg>

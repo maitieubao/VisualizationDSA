@@ -16,9 +16,9 @@ export const DEFAULT_SOURCE_CODE = `function bubbleSort(arr) {
 
 export const DEFAULT_INPUT_ARRAY = [5, 3, 8, 1, 9, 2, 7, 4, 6];
 
-/**
- * Chuyển đổi LiveFrameDTO[] sang FrameDTO[] tương thích useAnimationStore.
- */
+
+
+
 export function convertToAnimationFrames(liveFrames: LiveFrameDTO[]): FrameDTO[] {
   return liveFrames.map((lf, index) => {
     const highlights = {

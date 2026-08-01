@@ -15,7 +15,8 @@ export const APP_TABS: readonly (TabGroup | TabItem)[] = [
   {
     groupName: 'Học tập',
     items: [
-      { id: 'learning-path', path: '/courses', name: 'Khóa học' }
+      { id: 'learning-path', path: '/courses',    name: 'Khóa học' },
+      { id: 'classrooms',    path: '/classrooms', name: 'Lớp học của tôi', requiresAuth: true }
     ]
   },
   {
@@ -29,8 +30,7 @@ export const APP_TABS: readonly (TabGroup | TabItem)[] = [
   {
     groupName: 'Khái niệm',
     items: [
-      { id: 'docs',      path: '/docs',      name: 'Tài liệu tham khảo' },
-      { id: 'system',   path: '/system',   name: 'Thiết kế HT' }
+      { id: 'docs',      path: '/docs',      name: 'Tài liệu tham khảo' }
     ]
   },
   {

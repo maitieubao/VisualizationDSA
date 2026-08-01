@@ -10,7 +10,7 @@
       </button>
     </div>
 
-    <!-- Canvas Container -->
+    
     <div class="playground-canvas-wrapper relative w-full h-[250px] rounded-xl border overflow-hidden" ref="canvasContainer">
       <div class="canvas-grid absolute inset-0 opacity-10 pointer-events-none"></div>
 
@@ -37,7 +37,7 @@
       </svg>
     </div>
 
-    <!-- HUD Details -->
+    
     <GraphPlaygroundHud
       :verticesCount="vertices.length"
       :edgesCount="edges.length"

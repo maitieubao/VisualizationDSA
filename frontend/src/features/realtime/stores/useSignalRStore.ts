@@ -21,7 +21,7 @@ import type {
 const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5055'
 
 export const useSignalRStore = defineStore('signalr', () => {
-  // Connection state
+  
   const leaderboardConnection = ref<HubConnection | null>(null)
   const notificationConnection = ref<HubConnection | null>(null)
   const quizRoomConnection = ref<HubConnection | null>(null)
@@ -30,15 +30,15 @@ export const useSignalRStore = defineStore('signalr', () => {
   const notificationState = ref<SignalRConnectionState>('disconnected')
   const quizRoomState = ref<SignalRConnectionState>('disconnected')
 
-  // Leaderboard data
+  
   const leaderboardUpdates = ref<LeaderboardUpdate[]>([])
 
-  // Notification data
+  
   const badgeNotifications = ref<BadgeNotification[]>([])
   const levelUpNotifications = ref<LevelUpNotification[]>([])
   const unreadNotificationCount = ref(0)
 
-  // Quiz Room data
+  
   const currentRoom = ref<QuizRoomDto | null>(null)
   const currentQuestion = ref<QuizQuestionBroadcast | null>(null)
   const answerResults = ref<QuizAnswerResult[]>([])
@@ -46,12 +46,12 @@ export const useSignalRStore = defineStore('signalr', () => {
   const activeRooms = ref<QuizRoomDto[]>([])
   const errorMessage = ref<string | null>(null)
 
-  // Computed
+  
   const isLeaderboardConnected = computed(() => leaderboardState.value === 'connected')
   const isNotificationConnected = computed(() => notificationState.value === 'connected')
   const isQuizRoomConnected = computed(() => quizRoomState.value === 'connected')
 
-  // Leaderboard Hub
+  
   async function connectLeaderboard(): Promise<void> {
     if (leaderboardConnection.value?.state === HubConnectionState.Connected) return
 
@@ -90,7 +90,7 @@ export const useSignalRStore = defineStore('signalr', () => {
     }
   }
 
-  // Notification Hub
+  
   async function connectNotifications(token: string): Promise<void> {
     if (notificationConnection.value?.state === HubConnectionState.Connected) return
 
@@ -136,7 +136,7 @@ export const useSignalRStore = defineStore('signalr', () => {
     unreadNotificationCount.value = 0
   }
 
-  // Quiz Room Hub
+  
   async function connectQuizRoom(token: string): Promise<void> {
     if (quizRoomConnection.value?.state === HubConnectionState.Connected) return
 
@@ -260,7 +260,7 @@ export const useSignalRStore = defineStore('signalr', () => {
     await quizRoomConnection.value.invoke('GetActiveRooms')
   }
 
-  // Disconnect all
+  
   async function disconnectAll(): Promise<void> {
     await Promise.all([
       disconnectLeaderboard(),
@@ -270,7 +270,7 @@ export const useSignalRStore = defineStore('signalr', () => {
   }
 
   return {
-    // State
+    
     leaderboardState,
     notificationState,
     quizRoomState,
@@ -285,21 +285,21 @@ export const useSignalRStore = defineStore('signalr', () => {
     activeRooms,
     errorMessage,
 
-    // Computed
+    
     isLeaderboardConnected,
     isNotificationConnected,
     isQuizRoomConnected,
 
-    // Leaderboard
+    
     connectLeaderboard,
     disconnectLeaderboard,
 
-    // Notifications
+    
     connectNotifications,
     disconnectNotifications,
     markNotificationsRead,
 
-    // Quiz Room
+    
     connectQuizRoom,
     disconnectQuizRoom,
     createRoom,
@@ -310,7 +310,7 @@ export const useSignalRStore = defineStore('signalr', () => {
     nextQuestion,
     fetchActiveRooms,
 
-    // Global
+    
     disconnectAll
   }
 })

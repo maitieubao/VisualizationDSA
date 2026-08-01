@@ -6,7 +6,7 @@
       <span class="panel-title__badge">Giảng viên</span>
     </h1>
 
-    <!-- Analytics Grid -->
+    
     <section class="analytics-section">
       <h2 class="section-heading">Thống kê lớp học</h2>
       <div class="analytics-grid">
@@ -17,12 +17,12 @@
       </div>
     </section>
 
-    <!-- Navigation Tabs -->
-    <div class="panel-tabs flex border-b border-white/10 gap-6 mb-8 mt-2">
+    
+    <div class="panel-tabs flex border-b border-white/10 gap-6 mb-8 mt-2 flex-wrap">
       <button 
         v-for="tab in tabs" :key="tab.id"
         type="button" 
-        class="pb-3 text-lg font-bold transition-all relative cursor-pointer"
+        class="pb-3 text-lg font-bold transition-all relative cursor-pointer whitespace-nowrap"
         :class="activeTab === tab.id ? 'text-indigo-400 border-b-2 border-indigo-500' : 'text-slate-400 hover:text-slate-200'"
         @click="activeTab = tab.id"
       >
@@ -30,29 +30,45 @@
       </button>
     </div>
 
-    <!-- Tab Content -->
+    
     <TeacherQuizTab v-if="activeTab === 'quizzes'" ref="quizTabRef" />
     <TeacherCourseTab v-else-if="activeTab === 'courses'" ref="courseTabRef" :quizzes-list="quizTabQuizzesList" />
+    <TeacherClassroomCurriculumTab v-else-if="activeTab === 'curriculum'" :classroom-id="selectedClassroomId" ref="curriculumTabRef" />
+    <TheoryArticleLibraryTab v-else-if="activeTab === 'theory'" ref="theoryTabRef" />
+    <QuizBuilderTab v-else-if="activeTab === 'quiz-builder'" ref="quizBuilderTabRef" />
+    <CodelabBuilderTab v-else-if="activeTab === 'codelab-builder'" ref="codelabBuilderTabRef" />
     <TeacherStudentTab v-else-if="activeTab === 'students'" />
-    <TeacherAnalyticsTab v-else-if="activeTab === 'analytics'" :courses-list="courseTabCoursesList" />
+    <TeacherAnalyticsTab v-else-if="activeTab === 'analytics'" />
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue';
+import { ref, computed, onMounted, watch } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
 import { useTeacherApi } from './useTeacherApi';
 import TeacherQuizTab from './TeacherQuizTab.vue';
 import TeacherCourseTab from './TeacherCourseTab.vue';
+import TeacherClassroomCurriculumTab from './TeacherClassroomCurriculumTab.vue';
 import TeacherStudentTab from './TeacherStudentTab.vue';
 import TeacherAnalyticsTab from './TeacherAnalyticsTab.vue';
+import TheoryArticleLibraryTab from './TheoryArticleLibraryTab.vue';
+import QuizBuilderTab from './QuizBuilderTab.vue';
+import CodelabBuilderTab from './CodelabBuilderTab.vue';
 
+const route = useRoute();
+const router = useRouter();
 const { BASE_URL, getAuthHeaders } = useTeacherApi();
 
-const activeTab = ref<'quizzes' | 'courses' | 'students' | 'analytics'>('quizzes');
+const activeTab = ref<'quizzes' | 'courses' | 'curriculum' | 'theory' | 'quiz-builder' | 'codelab-builder' | 'students' | 'analytics'>('courses');
+const selectedClassroomId = ref<string | null>(null);
 
 const tabs = [
   { id: 'quizzes' as const, label: 'Quản lý Trắc nghiệm' },
   { id: 'courses' as const, label: 'Quản lý Khóa học & Bài giảng' },
+  { id: 'curriculum' as const, label: 'Chương trình học (Curriculum)' },
+  { id: 'theory' as const, label: 'Thư viện Lý thuyết' },
+  { id: 'quiz-builder' as const, label: 'Công cụ Tạo Quiz' },
+  { id: 'codelab-builder' as const, label: 'Công cụ Tạo Codelab' },
   { id: 'students' as const, label: 'Quản lý Học viên' },
   { id: 'analytics' as const, label: 'Báo cáo & Phân tích' },
 ];
@@ -68,13 +84,22 @@ const analyticsCards = ref<AnalyticsMetric[]>([
 
 const quizTabRef = ref<InstanceType<typeof TeacherQuizTab> | null>(null);
 const courseTabRef = ref<InstanceType<typeof TeacherCourseTab> | null>(null);
+const curriculumTabRef = ref<InstanceType<typeof TeacherClassroomCurriculumTab> | null>(null);
+const theoryTabRef = ref<InstanceType<typeof TheoryArticleLibraryTab> | null>(null);
+const quizBuilderTabRef = ref<InstanceType<typeof QuizBuilderTab> | null>(null);
+const codelabBuilderTabRef = ref<InstanceType<typeof CodelabBuilderTab> | null>(null);
 
 const quizTabQuizzesList = computed(() => quizTabRef.value?.quizzesList ?? []);
-const courseTabCoursesList = computed(() => courseTabRef.value?.coursesList ?? []);
 
 onMounted(async () => {
+  
+  if (route.query.classroomId) {
+    selectedClassroomId.value = route.query.classroomId as string;
+    activeTab.value = 'curriculum';
+  }
+
   try {
-    const res = await fetch(`${BASE_URL}/api/v1/concepts/quiz/analytics`, { headers: getAuthHeaders() });
+    const res = await fetch(`${BASE_URL}/api/v1/analytics/quizzes`, { headers: getAuthHeaders() });
     if (res.ok) {
       const data = await res.json();
       analyticsCards.value = [
@@ -84,7 +109,23 @@ onMounted(async () => {
         { label: 'Thành viên Premium', value: data.premiumUsers },
       ];
     }
-  } catch { /* analytics is optional */ }
+  } catch {  }
+});
+
+watch(() => route.query.classroomId, (newId) => {
+  if (newId) {
+    selectedClassroomId.value = newId as string;
+    activeTab.value = 'curriculum';
+  }
+});
+
+
+defineExpose({
+  setClassroom: (classroomId: string) => {
+    selectedClassroomId.value = classroomId;
+    activeTab.value = 'curriculum';
+    router.push({ query: { classroomId } });
+  }
 });
 </script>
 

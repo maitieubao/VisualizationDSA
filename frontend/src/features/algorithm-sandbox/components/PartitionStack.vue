@@ -15,7 +15,7 @@
       </span>
     </div>
 
-    <!-- Scrollable container that stretches dynamically via flex-1 -->
+    
     <div class="stack-list">
       <div
         v-for="(part, pIdx) in frame?.partitions || []"
@@ -31,7 +31,7 @@
           <span class="part-title">
             Phân đoạn [{{ part.low }}..{{ part.high }}]
           </span>
-          <!-- inline array preview -->
+          
           <div class="flex flex-wrap gap-1 mt-1">
             <span 
               v-for="(val, vIdx) in frame?.arrayState.slice(part.low, part.high + 1)"
@@ -49,7 +49,7 @@
           </div>
         </div>
 
-        <!-- Status Badge -->
+        
         <span 
           class="status-badge"
           :class="{

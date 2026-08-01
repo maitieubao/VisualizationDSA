@@ -19,7 +19,7 @@
           :class="getArrayItemClass(idx)"
           :style="{ width: itemSize, height: itemHeight, fontSize: fontSize }"
         >
-          <!-- Highlight bar at top of the cell -->
+          
           <div 
             class="highlight-top-bar absolute top-0 left-0 right-0 h-1 rounded-t-md" 
             :class="isNodeInHeap(idx) ? 'bar-in-heap' : 'bar-sorted'"
@@ -75,7 +75,7 @@ const {
   color: var(--color-text-muted);
 }
 
-/* top status highlights */
+
 .bar-in-heap {
   background-color: var(--color-accent-cyan-dim);
 }
@@ -84,7 +84,7 @@ const {
   background-color: var(--color-accent-green-dim);
 }
 
-/* node classes from getArrayItemClass */
+
 .item-active {
   border-color: color-mix(in srgb, var(--color-accent-cyan) 35%, transparent);
   color: var(--color-accent-cyan);
@@ -111,7 +111,7 @@ const {
   color: var(--color-accent-green) !important;
 }
 
-/* Transition animations */
+
 .sort-list-move         { transition: transform .4s cubic-bezier(.25,.8,.25,1); }
 .sort-list-enter-from   { opacity: 0; transform: translateY(-8px) scale(.92); }
 .sort-list-leave-to     { opacity: 0; transform: translateY(8px) scale(.92); }

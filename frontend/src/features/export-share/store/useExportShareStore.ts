@@ -1,9 +1,9 @@
-/**
- * useExportShareStore — Pinia Setup Store
- *
- * Điều phối trạng thái hộp thoại xuất ảnh, quản lý tiến độ tải xuống
- * Emerald, nén băm trạng thái workspace và sinh QR Code.
- */
+
+
+
+
+
+
 
 import { defineStore } from 'pinia';
 import { ref, computed } from 'vue';
@@ -16,9 +16,9 @@ import { WorkspaceStateCompressor } from '../engine/WorkspaceStateCompressor';
 import { SVGToCanvasExporter } from '../engine/SVGToCanvasExporter';
 
 export const useExportShareStore = defineStore('exportShare', () => {
-  // ==========================================
-  // STATE
-  // ==========================================
+  
+  
+  
   const isSharingModalOpen = ref(false);
   const isExporting = ref(false);
   const exportProgress = ref(0);
@@ -28,16 +28,16 @@ export const useExportShareStore = defineStore('exportShare', () => {
   const isGeneratingLink = ref(false);
   const overflowError = ref('');
 
-  // ==========================================
-  // GETTERS
-  // ==========================================
+  
+  
+  
   const hasShareLink = computed(() => generatedShareLink.value.length > 0);
 
   const qrCodeValue = computed(() => generatedShareLink.value || '');
 
-  // ==========================================
-  // ACTIONS
-  // ==========================================
+  
+  
+  
 
   function openModal() {
     isSharingModalOpen.value = true;
@@ -56,9 +56,9 @@ export const useExportShareStore = defineStore('exportShare', () => {
     selectedFormat.value = format;
   }
 
-  /**
-   * Trích xuất tải ảnh PNG 3x chất lượng in ấn sắc mịn Retina
-   */
+  
+
+
   async function downloadPNG3x(svgElement: SVGElement) {
     isExporting.value = true;
     exportProgress.value = 10;
@@ -94,9 +94,9 @@ export const useExportShareStore = defineStore('exportShare', () => {
     }
   }
 
-  /**
-   * Tải xuống SVG Vector thuần khiết
-   */
+  
+
+
   function downloadSVG(svgElement: SVGElement) {
     const svgString = SVGToCanvasExporter.exportToSVGString(svgElement);
 
@@ -113,9 +113,9 @@ export const useExportShareStore = defineStore('exportShare', () => {
     URL.revokeObjectURL(url);
   }
 
-  /**
-   * Đóng gói nén trạng thái phòng lab và sinh link chia sẻ rút gọn
-   */
+  
+
+
   async function generateShareLink(currentState: WorkspaceState) {
     isGeneratingLink.value = true;
     overflowError.value = '';
@@ -133,7 +133,7 @@ export const useExportShareStore = defineStore('exportShare', () => {
         return;
       }
 
-      // Client-side URL generation (no backend dependency)
+      
       const host = SHARE_BASE_URL;
       generatedShareLink.value = `${host}/s/?state=${compressedPayload}`;
     } catch (err) {
@@ -143,9 +143,9 @@ export const useExportShareStore = defineStore('exportShare', () => {
     }
   }
 
-  /**
-   * Sao chép nhanh liên kết vào Clipboard
-   */
+  
+
+
   async function copyShareLinkToClipboard(): Promise<boolean> {
     try {
       await navigator.clipboard.writeText(generatedShareLink.value);
@@ -172,7 +172,7 @@ export const useExportShareStore = defineStore('exportShare', () => {
   }
 
   return {
-    // State
+    
     isSharingModalOpen,
     isExporting,
     exportProgress,
@@ -181,10 +181,10 @@ export const useExportShareStore = defineStore('exportShare', () => {
     isLinkCopied,
     isGeneratingLink,
     overflowError,
-    // Getters
+    
     hasShareLink,
     qrCodeValue,
-    // Actions
+    
     openModal,
     closeModal,
     setFormat,

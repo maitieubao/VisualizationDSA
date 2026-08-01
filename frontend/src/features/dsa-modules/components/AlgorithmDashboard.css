@@ -1,4 +1,4 @@
-/* 1. Linear Search animation */
+
 @keyframes linearScan {
   0%, 100% { 
     background: rgba(6, 182, 212, 0.03); 
@@ -20,7 +20,7 @@
 .group:hover .linear-box-3 { animation: linearScan 2s infinite 1.2s; }
 .group:hover .linear-box-4 { animation: linearScan 2s infinite 1.6s; }
 
-/* 2. Binary Search animation */
+
 @keyframes binaryScanRight {
   0%, 30% { 
     opacity: 1; 
@@ -43,14 +43,14 @@
 }
 .group:hover .binary-box-right { animation: binaryScanRight 3.2s infinite; }
 
-/* 3. Sliding Window animation */
+
 @keyframes slideOverlay {
   0%, 100% { left: 8px; width: 28px; }
   50% { left: 52px; width: 28px; }
 }
 .group:hover .sliding-window-overlay { animation: slideOverlay 2.8s infinite ease-in-out; }
 
-/* 4. Stack animations */
+
 @keyframes stackItem0 {
   0% { transform: translateY(-40px); opacity: 0; }
   15%, 80% { transform: translateY(0); opacity: 1; }
@@ -70,7 +70,7 @@
 .group:hover .stack-push-pop-1 { animation: stackItem1 3s infinite ease-in; }
 .group:hover .stack-push-pop-2 { animation: stackItem2 3s infinite ease-in; }
 
-/* 5. Queue flow animation */
+
 @keyframes queueItem0 {
   0% { transform: translateX(50px); opacity: 0; }
   15% { transform: translateX(24px); opacity: 1; }
@@ -93,7 +93,7 @@
 .group:hover .queue-flow-1 { animation: queueItem1 2.5s infinite linear; }
 .group:hover .queue-flow-2 { animation: queueItem2 2.5s infinite linear; }
 
-/* 6. Monotonic Stack animation */
+
 @keyframes mono0 {
   0% { transform: translateY(-40px); opacity: 0; }
   10%, 80% { transform: translateY(0); opacity: 1; }
@@ -113,7 +113,7 @@
 .group:hover .mono-box-1 { animation: mono1 3.2s infinite ease-in; }
 .group:hover .mono-box-2 { animation: mono2 3.2s infinite ease-in; }
 
-/* 7. BST tree searching animation */
+
 @keyframes bstPulseRoot {
   0%, 100% { border-color: rgba(6, 182, 212, 0.15); background: transparent; }
   10%, 25% { border-color: #22d3ee; background: rgba(34, 211, 238, 0.2); box-shadow: 0 0 4px #22d3ee; }
@@ -130,7 +130,7 @@
 .group:hover .bst-left { animation: bstPulseLeft 2.5s infinite; }
 .group:hover .bst-right { animation: bstPulseRight 2.5s infinite; }
 
-/* 8. BFS tree nodes level order animation */
+
 @keyframes bfsPulseRoot {
   0%, 100% { border-color: rgba(6, 182, 212, 0.15); background: transparent; }
   10%, 30% { border-color: #22d3ee; background: rgba(34, 211, 238, 0.2); box-shadow: 0 0 4px #22d3ee; }
@@ -142,7 +142,7 @@
 .group:hover .bfs-root { animation: bfsPulseRoot 2.4s infinite; }
 .group:hover .bfs-child { animation: bfsPulseChild 2.4s infinite; }
 
-/* 9. DFS tree deep first animation */
+
 @keyframes dfsPulseRoot {
   0%, 100% { border-color: rgba(6, 182, 212, 0.15); background: transparent; }
   5%, 20% { border-color: #22d3ee; background: rgba(34, 211, 238, 0.2); box-shadow: 0 0 4px #22d3ee; }
@@ -159,7 +159,7 @@
 .group:hover .dfs-left { animation: dfsPulseLeft 2.8s infinite; }
 .group:hover .dfs-right { animation: dfsPulseRight 2.8s infinite; }
 
-/* 10. Dijkstra shortest path traversal pulse */
+
 @keyframes dijPulseNodeStart {
   0%, 100% { border-color: rgba(6, 182, 212, 0.15); background: transparent; }
   5%, 20% { border-color: #22d3ee; background: rgba(34, 211, 238, 0.2); box-shadow: 0 0 4.5px #22d3ee; }

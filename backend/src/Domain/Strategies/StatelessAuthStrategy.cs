@@ -8,16 +8,16 @@ using VisualizationDSA.Domain.Engine;
 
 namespace VisualizationDSA.Domain.Strategies
 {
-    /// <summary>
-    /// Stateless (in-memory) Authentication Strategy — không cần PostgreSQL.
-    /// Quản lý user registration, login, profile, và mock JWT token generation.
-    /// Singleton — dữ liệu tồn tại trong bộ nhớ suốt vòng đời ứng dụng.
-    /// </summary>
+    
+    
+    
+    
+    
     public class StatelessAuthStrategy
     {
         private readonly ConcurrentDictionary<string, InMemoryUser> _usersByEmail = new();
         private readonly ConcurrentDictionary<string, InMemoryUser> _usersById = new();
-        private readonly ConcurrentDictionary<string, string> _refreshTokens = new(); // token → userId
+        private readonly ConcurrentDictionary<string, string> _refreshTokens = new(); 
         private static readonly TimeSpan AccessTokenLifetime = TimeSpan.FromMinutes(15);
 
         public static Func<string, string, bool> VerifyPasswordDelegate { get; set; } = (password, hash) => 
@@ -225,7 +225,7 @@ namespace VisualizationDSA.Domain.Strategies
             return _usersById.Values.Select(MapToUserDto).ToList();
         }
 
-        // ── Helpers ──────────────────────────────────────────────────────
+        
 
         private StatelessAuthResponse GenerateAuthResponse(InMemoryUser user)
         {
@@ -389,7 +389,7 @@ namespace VisualizationDSA.Domain.Strategies
             Icon = b.Icon, Color = b.Color, EarnedAt = b.EarnedAt
         };
 
-        // ── Inner Types ──────────────────────────────────────────────────
+        
 
         private class InMemoryUser
         {

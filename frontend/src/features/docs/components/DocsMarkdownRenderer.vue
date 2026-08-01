@@ -18,7 +18,7 @@
 
       <div class="vue-docs-theme" v-html="htmlContent" ref="markdownContainer"></div>
       
-      <!-- Prev/Next Navigation -->
+      
       <div class="docs-footer mt-16 pt-8 border-t border-border-color flex justify-between">
         <router-link v-if="prevDoc" :to="prevDoc.path" class="nav-link prev group flex flex-col items-start">
           <span class="text-xs text-text-muted mb-1 flex items-center group-hover:text-accent-primary transition-colors">
@@ -65,36 +65,57 @@ const markdownContainer = ref<HTMLElement | null>(null);
 
 let highlighter: any = null;
 
-const parseFrontmatter = (raw: string) => {
-  const fmRegex = /^---\n([\s\S]*?)\n---\n/;
-  const match = raw.match(fmRegex);
+const preprocessMarkdown = (raw: string) => {
+  let content = raw;
+  
+  
+  const fmRegex = /^---\r?\n([\s\S]*?)\r?\n---\r?\n/;
+  const match = content.match(fmRegex);
   
   if (match) {
     const yaml = match[1];
-    const titleMatch = yaml.match(/title:\s*"?([^"\n]+)"?/);
-    const descMatch = yaml.match(/description:\s*"?([^"\n]+)"?/);
+    const titleMatch = yaml.match(/title:\s*"?([^"\n\r]+)"?/);
+    const descMatch = yaml.match(/description:\s*"?([^"\n\r]+)"?/);
     
     title.value = titleMatch ? titleMatch[1].trim() : 'Tài liệu';
     description.value = descMatch ? descMatch[1].trim() : '';
     
-    return raw.replace(fmRegex, ''); // Trả về content đã bỏ frontmatter
+    content = content.replace(fmRegex, ''); 
+  } else {
+    title.value = 'Tài liệu';
+    description.value = '';
   }
+
   
-  title.value = 'Tài liệu';
-  description.value = '';
-  return raw;
+  content = content.replace(/^:::(\w+)(.*?)\r?\n([\s\S]*?)\r?\n:::/gm, (fullMatch, type, titleRaw, innerContent) => {
+    let ghType = 'NOTE';
+    const t = type.toLowerCase();
+    if (t === 'warning') ghType = 'WARNING';
+    else if (t === 'danger' || t === 'error') ghType = 'CAUTION';
+    else if (t === 'tip' || t === 'success') ghType = 'TIP';
+    else if (t === 'important') ghType = 'IMPORTANT';
+    
+    const blockquoted = innerContent.split(/\r?\n/).map((line: string) => `> ${line}`).join('\n');
+    const titleStr = titleRaw.trim();
+    if (titleStr) {
+      return `> [!${ghType}] ${titleStr}\n${blockquoted}`;
+    }
+    return `> [!${ghType}]\n${blockquoted}`;
+  });
+
+  return content;
 };
 
 const extractHeadings = (html: string) => {
   const headings: { id: string; title: string; level: number }[] = [];
   
-  // Parse H2 and H3 for Table of Contents
-  const regex = /<h([23])[^>]*id="([^"]+)"[^>]*>(.*?)<\/h\1>/g;
+  
+  const regex = /<h([23])[^>]*id="([^"]+)"[^>]*data-title="([^"]+)"/g;
   let match;
   
   while ((match = regex.exec(html)) !== null) {
-    // Remove potential inner HTML tags from title
-    const cleanTitle = match[3].replace(/<[^>]*>?/gm, '').trim();
+    const rawTitle = decodeURIComponent(match[3]).trim();
+    const cleanTitle = rawTitle.replace(/<[^>]*>?/gm, '');
     headings.push({
       level: parseInt(match[1]),
       id: match[2],
@@ -110,22 +131,22 @@ const renderMarkdown = async () => {
   try {
     if (!highlighter) {
       highlighter = await createHighlighter({
-        themes: ['vitesse-dark'],
-        langs: ['csharp', 'json', 'typescript', 'bash', 'javascript', 'html', 'css']
+        themes: ['one-dark-pro'],
+        langs: ['csharp', 'json', 'typescript', 'bash', 'javascript', 'html', 'css', 'vue']
       });
     }
 
-    const contentWithoutFm = parseFrontmatter(props.rawMarkdown);
+    const contentWithoutFm = preprocessMarkdown(props.rawMarkdown);
     
     const renderer = new marked.Renderer();
     const originalParagraph = renderer.paragraph.bind(renderer);
     
-    // Custom Heading with Anchor
+    
     renderer.heading = function(token: any) {
       let text = token.text;
       const level = token.depth;
       
-      // Bỏ qua thẻ H1 vì template đã render title từ frontmatter
+      
       if (level === 1) return '';
       
       let id = '';
@@ -144,19 +165,19 @@ const renderMarkdown = async () => {
           .replace(/^-+|-+$/g, '');
       }
         
-      return `<h${level} id="${id}" class="group relative">
-        <a href="#${id}" class="header-anchor float-left -ml-8 pr-3 opacity-0 group-hover:opacity-100 transition-opacity text-accent-primary select-none font-normal">#</a>
+      return `<h${level} id="${id}" class="group relative" data-title="${encodeURIComponent(text)}">
+        <a href="#${id}" class="absolute -left-6 opacity-0 group-hover:opacity-100 transition-opacity text-accent-primary no-underline hidden md:block">#</a>
         ${text}
       </h${level}>\n`;
     };
 
-    // Code Highlighting
+    
     renderer.code = function(token: any) {
       const code = token.text;
       const validLang = token.lang || 'text';
       
       if (validLang === 'mermaid') {
-        // Encode mermaid code vào data attribute để tránh bị trình duyệt parse ký tự < thành HTML tag
+        
         const encoded = encodeURIComponent(code);
         return `<div class="mermaid-diagram flex justify-center my-6" data-mermaid-code="${encoded}"><div style="color:#888;font-size:14px;">⏳ Đang vẽ biểu đồ...</div></div>`;
       }
@@ -164,12 +185,17 @@ const renderMarkdown = async () => {
       try {
         const highlighted = highlighter.codeToHtml(code, {
           lang: validLang,
-          theme: 'vitesse-dark'
+          theme: 'one-dark-pro'
         });
         
+        const svgIcon = `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>`;
+        
         return `<div class="language-${validLang} relative group">
-          <span class="lang text-xs text-gray-500 absolute top-2 right-4 uppercase font-mono z-10">${validLang}</span>
-          <button class="copy-code-btn absolute top-2 right-12 z-10 opacity-0 group-hover:opacity-100 transition-opacity text-gray-400 hover:text-white" onclick="navigator.clipboard.writeText(decodeURIComponent('${encodeURIComponent(code)}'))">Copy</button>
+          <div class="absolute top-3 right-3 z-10 flex items-center">
+            <button class="copy-code-btn opacity-0 group-hover:opacity-100 transition-all flex items-center justify-center w-8 h-8 rounded-md bg-transparent hover:bg-white/10 text-gray-400 hover:text-white" onclick="navigator.clipboard.writeText(decodeURIComponent('${encodeURIComponent(code)}'))" title="Copy code">
+              ${svgIcon}
+            </button>
+          </div>
           ${highlighted}
         </div>`;
       } catch (e) {
@@ -177,7 +203,7 @@ const renderMarkdown = async () => {
       }
     };
 
-    // Alert blocks
+    
     renderer.blockquote = function(token: any) {
       const text = token.text;
       const typeMatch = text.match(/^\[!(NOTE|TIP|IMPORTANT|WARNING|CAUTION)\]/i);
@@ -197,21 +223,31 @@ const renderMarkdown = async () => {
         'caution': 'Chú ý'
       };
       
+      const svgMap: Record<string, string> = {
+        'note': '<svg class="mr-2" width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8Zm8-6.5a6.5 6.5 0 1 0 0 13 6.5 6.5 0 0 0 0-13ZM6.5 7.75A.75.75 0 0 1 7.25 7h1a.75.75 0 0 1 .75.75v2.75h.25a.75.75 0 0 1 0 1.5h-2a.75.75 0 0 1 0-1.5h.25v-2h-.25a.75.75 0 0 1-.75-.75ZM8 6a1 1 0 1 1 0-2 1 1 0 0 1 0 2Z"/></svg>',
+        'info': '<svg class="mr-2" width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8Zm8-6.5a6.5 6.5 0 1 0 0 13 6.5 6.5 0 0 0 0-13ZM6.5 7.75A.75.75 0 0 1 7.25 7h1a.75.75 0 0 1 .75.75v2.75h.25a.75.75 0 0 1 0 1.5h-2a.75.75 0 0 1 0-1.5h.25v-2h-.25a.75.75 0 0 1-.75-.75ZM8 6a1 1 0 1 1 0-2 1 1 0 0 1 0 2Z"/></svg>',
+        'tip': '<svg class="mr-2" width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M8 1.5c-2.363 0-4 1.69-4 3.75 0 .984.424 1.625.984 2.304l.214.253c.223.264.47.556.673.848.284.411.537.896.621 1.49a.75.75 0 0 1-1.484.211c-.04-.282-.163-.547-.37-.847a8.456 8.456 0 0 0-.542-.68c-.084-.1-.173-.205-.268-.32C3.201 7.75 2.5 6.766 2.5 5.25 2.5 2.31 4.863 0 8 0s5.5 2.31 5.5 5.25c0 1.516-.701 2.5-1.328 3.259-.095.115-.184.22-.268.319-.207.245-.383.453-.541.681-.208.3-.33.565-.37.847a.751.751 0 0 1-1.485-.212c.084-.593.337-1.078.621-1.489.203-.292.45-.584.673-.848.075-.088.147-.173.213-.253.561-.679.985-1.32.985-2.304 0-2.06-1.637-3.75-4-3.75ZM5.75 12h4.5a.75.75 0 0 1 0 1.5h-4.5a.75.75 0 0 1 0-1.5ZM6 15.25a.75.75 0 0 1 .75-.75h2.5a.75.75 0 0 1 0 1.5h-2.5a.75.75 0 0 1-.75-.75Z"/></svg>',
+        'important': '<svg class="mr-2" width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M0 1.75C0 .784.784 0 1.75 0h12.5C15.216 0 16 .784 16 1.75v9.5A1.75 1.75 0 0 1 14.25 13H8.06l-2.573 2.573A1.458 1.458 0 0 1 3 14.543V13H1.75A1.75 1.75 0 0 1 0 11.25Zm1.75-.25a.25.25 0 0 0-.25.25v9.5c0 .138.112.25.25.25h2a.75.75 0 0 1 .75.75v2.19l2.72-2.72a.749.749 0 0 1 .53-.22h6.5a.25.25 0 0 0 .25-.25v-9.5a.25.25 0 0 0-.25-.25Zm7 2.25v2.5a.75.75 0 0 1-1.5 0v-2.5a.75.75 0 0 1 1.5 0ZM9 9a1 1 0 1 1-2 0 1 1 0 0 1 2 0Z"/></svg>',
+        'warning': '<svg class="mr-2" width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M6.457 1.047c.659-1.234 2.427-1.234 3.086 0l6.082 11.378A1.75 1.75 0 0 1 14.082 15H1.918a1.75 1.75 0 0 1-1.543-2.575Zm1.763.707a.25.25 0 0 0-.44 0L1.698 13.132a.25.25 0 0 0 .22.368h12.164a.25.25 0 0 0 .22-.368Zm.53 3.996v2.5a.75.75 0 0 1-1.5 0v-2.5a.75.75 0 0 1 1.5 0ZM9 11a1 1 0 1 1-2 0 1 1 0 0 1 2 0Z"/></svg>',
+        'caution': '<svg class="mr-2" width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M4.47.22A.749.749 0 0 1 5 0h6c.199 0 .389.079.53.22l4.25 4.25c.141.14.22.331.22.53v6a.749.749 0 0 1-.22.53l-4.25 4.25A.749.749 0 0 1 11 16H5a.749.749 0 0 1-.53-.22L.22 11.53A.749.749 0 0 1 0 11V5c0-.199.079-.389.22-.53Zm.84 1.28L1.5 5.31v5.38l3.81 3.81h5.38l3.81-3.81V5.31L10.69 1.5ZM8 4a.75.75 0 0 1 .75.75v3.5a.75.75 0 0 1-1.5 0v-3.5A.75.75 0 0 1 8 4Zm0 8a1 1 0 1 1 0-2 1 1 0 0 1 0 2Z"/></svg>'
+      };
+      
       const titleMatch = text.match(/^\[!.*?\] (.*?)\n/);
       const title = titleMatch ? titleMatch[1] : titleMap[type];
-      const displayTitle = title?.trim() || titleMap[type];
+      const displayTitle = title?.trim() || titleMap[type] || 'Lưu ý';
+      const icon = svgMap[type] || svgMap['note'];
       const innerHtml = marked.parse(content);
       
-      return `<div class="custom-block ${type}">\n<p class="custom-block-title">${displayTitle}</p>\n${innerHtml}\n</div>`;
+      return `<div class="custom-block ${type}">\n<p class="custom-block-title">${icon}<span>${displayTitle}</span></p>\n${innerHtml}\n</div>`;
     };
 
     marked.use({ renderer, gfm: true, breaks: true });
 
     const parsedHtml = marked.parse(contentWithoutFm);
     htmlContent.value = typeof parsedHtml === 'string' ? parsedHtml : await parsedHtml;
-    loading.value = false; // PHẢI đặt trước nextTick để markdownContainer xuất hiện trong DOM
+    loading.value = false; 
     
-    await nextTick(); // Đợi DOM cập nhật xong (markdownContainer giờ đã tồn tại)
+    await nextTick(); 
     
     extractHeadings(htmlContent.value);
     
@@ -220,47 +256,11 @@ const renderMarkdown = async () => {
     if (diagrams.length === 0) return;
     
     try {
-      const { default: mermaid } = await import(/* @vite-ignore */ '/node_modules/mermaid/dist/mermaid.esm.min.mjs');
+      const { default: mermaid } = await import( '/node_modules/mermaid/dist/mermaid.esm.min.mjs');
       mermaid.initialize({
         startOnLoad: false,
-        theme: 'base',
-        themeVariables: {
-          // Nền tối sâu
-          darkMode: true,
-          background: 'transparent',
-          primaryColor: '#0c1929',
-          primaryTextColor: '#c8d6e5',
-          primaryBorderColor: '#2563eb',
-          
-          // Node phụ
-          secondaryColor: '#0a1628',
-          secondaryTextColor: '#a0b4c8',
-          secondaryBorderColor: '#3b82f6',
-          tertiaryColor: '#081422',
-          tertiaryTextColor: '#8899aa',
-          tertiaryBorderColor: '#6366f1',
-
-          // Đường nối & nhãn
-          lineColor: '#4a90d9',
-          textColor: '#c8d6e5',
-
-          // Class Diagram
-          classText: '#c8d6e5',
-          
-          // Flowchart
-          nodeBorder: '#2563eb',
-          clusterBkg: '#060d18',
-          clusterBorder: '#1e3a5f',
-          
-          // Font
-          fontFamily: '"Inter", "Segoe UI", system-ui, sans-serif',
-          fontSize: '13px',
-          
-          // Note
-          noteBkgColor: '#0d1b2a',
-          noteTextColor: '#8899aa',
-          noteBorderColor: '#1e3a5f',
-        },
+        theme: 'default',
+        fontFamily: '"Inter", "Segoe UI", system-ui, sans-serif'
       });
       
       for (let i = 0; i < diagrams.length; i++) {

@@ -2,7 +2,7 @@
   <div
     class="course-card group relative bg-slate-900/60 border border-white/10 rounded-2xl overflow-hidden transition-all duration-300 hover:translate-y-[-4px] hover:shadow-2xl hover:border-indigo-500/30 flex flex-col"
   >
-    <!-- Cover Image -->
+    
     <div class="relative h-36 overflow-hidden bg-slate-800 shrink-0">
       <img
         v-if="course.coverImage"
@@ -31,7 +31,7 @@
       </div>
     </div>
 
-    <!-- Content -->
+    
     <div class="p-4 flex flex-col flex-1">
       <div class="flex items-start justify-between mb-2">
         <h3 class="text-base font-bold text-white line-clamp-1 mr-2">{{ course.title }}</h3>
@@ -54,7 +54,7 @@
         </div>
 
         <div class="flex items-center gap-3">
-          <!-- Progress -->
+          
           <div v-if="authStore.isAuthenticated" class="flex items-center gap-2">
             <div class="w-16 h-1.5 bg-slate-800 rounded-full overflow-hidden">
               <div

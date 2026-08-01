@@ -29,7 +29,7 @@ export class MonacoLineSyncerCoordinator {
   private setupSyncing(): void {
     if (!this.editorInstance || !this.vcrStore) return;
 
-    // 1. Setup Click-to-Snap (Reverse Sync)
+    
     this.clickInterceptor = new MonacoGutterClickInterceptor(
       this.editorInstance,
       (lineNum) => {
@@ -42,7 +42,7 @@ export class MonacoLineSyncerCoordinator {
       }
     );
 
-    // 2. Setup Active Line Highlighting (Forward Sync)
+    
     this.stopWatch = watch(
       () => this.vcrStore!.currentLineNumber,
       (newLineNum) => {

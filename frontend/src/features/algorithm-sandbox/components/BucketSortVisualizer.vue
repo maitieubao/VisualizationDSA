@@ -1,10 +1,10 @@
 <template>
   <div ref="containerRef" class="visualizer-container w-full h-full flex flex-col gap-4 p-4 relative backdrop-blur-md overflow-hidden font-sans">
     
-    <!-- SVG Connection Lines Layer Overlay with Traveling Particles -->
+    
     <svg class="absolute inset-0 pointer-events-none w-full h-full z-10">
       <defs>
-        <!-- Cyan glow filter for premium visual storytelling -->
+        
         <filter id="cyan-glow" x="-20%" y="-20%" width="140%" height="140%">
           <feGaussianBlur stdDeviation="4" result="blur" />
           <feMerge>
@@ -14,7 +14,7 @@
         </filter>
       </defs>
 
-      <!-- SVG Path connecting active source to target -->
+      
       <g v-if="connectionCoords">
         <path
           id="bucket-active-path"
@@ -27,16 +27,16 @@
           opacity="0.65"
           filter="url(#cyan-glow)"
         />
-        <!-- Traveling circular neon particle representing element scatter/gather flow -->
+        
         <circle r="4.5" fill="var(--color-accent-cyan)" filter="url(#cyan-glow)" opacity="0.95">
           <animateMotion dur="0.7s" repeatCount="indefinite" :path="connPath" />
         </circle>
-        <!-- Snap dot at target coordinate -->
+        
         <circle :cx="connectionCoords.x2" :cy="connectionCoords.y2" r="4.5" fill="var(--color-accent-cyan)" filter="url(#cyan-glow)" />
       </g>
     </svg>
 
-    <!-- PHASE STEPPER BAR (TOP) -->
+    
     <div class="stepper-bar flex items-center justify-center px-4 py-2 rounded-xl gap-2 shrink-0 z-20">
       <div class="flex items-center gap-1.5 flex-1 justify-center flex-wrap">
         <div 
@@ -55,7 +55,7 @@
       </div>
     </div>
 
-    <!-- DYNAMIC STORY EXPLANATION PANEL -->
+    
     <div class="explanation-panel px-4 py-2.5 rounded-xl shrink-0 flex items-center gap-2.5 z-20 shadow-md">
       <div class="info-icon-wrapper w-6 h-6 rounded-lg flex items-center justify-center shrink-0">
         <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
@@ -67,21 +67,21 @@
       </p>
     </div>
 
-    <!-- THREE-TIER VISUAL PIPELINE LAYOUT -->
+    
     <div class="flex-1 flex flex-col justify-between gap-4 z-20 min-h-0">
       
-      <!-- TIER 1: INPUT ARRAY -->
+      
       <div 
         class="tier-container flex-1 min-h-[110px] flex flex-col gap-1 px-4 py-2 rounded-xl transition-all duration-300 relative justify-end"
         :class="frame?.bucketStep !== 'distribute' ? 'tier-inactive' : ''"
       >
-        <!-- Section label -->
+        
         <div class="absolute top-2 left-3 flex items-center gap-1.5 select-none">
           <span class="pulse-dot w-1.5 h-1.5 rounded-full animate-pulse"></span>
           <span class="tier-label text-[9px] font-bold font-mono tracking-wider uppercase">Tier 1: Mảng đầu vào (Input Array)</span>
         </div>
         
-        <!-- Element Bars -->
+        
         <div class="flex items-end justify-center gap-2 pb-1 relative mt-6">
           <div
             v-for="(item, idx) in props.frame?.arrayStateWithIds || []"
@@ -95,7 +95,7 @@
               height: `${Math.max(item.value * 0.75, 18)}px`,
             }"
           >
-            <!-- Active target bounce helper -->
+            
             <div v-if="isInputBarActive(idx)" class="active-bounce-helper absolute -top-10 flex flex-col items-center animate-bounce">
               <span class="text-[8px] font-bold uppercase tracking-widest px-1 rounded">Xét</span>
               <svg class="w-2.5 h-2.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
@@ -113,15 +113,15 @@
         </div>
       </div>
 
-      <!-- TIER 2: BUCKETS GRID -->
+      
       <div class="tier-container flex-1 min-h-[140px] flex flex-col gap-2 p-3 rounded-xl transition-all duration-300 relative justify-center">
-        <!-- Section label -->
+        
         <div class="absolute top-2 left-3 flex items-center gap-1.5 select-none">
           <span class="pulse-dot w-1.5 h-1.5 rounded-full animate-pulse"></span>
           <span class="tier-label text-[9px] font-bold font-mono tracking-wider uppercase">Tier 2: Các khay chứa dữ liệu (Buckets Grid)</span>
         </div>
 
-        <!-- 4 Buckets Grid columns -->
+        
         <div class="grid grid-cols-4 gap-3 mt-4">
           <div
             v-for="(bucket, bIdx) in props.frame?.bucketSortBucketsWithIds || [[], [], [], []]"
@@ -132,13 +132,13 @@
               isBucketBoxActive(bIdx) ? 'active-bucket-box' : 'inactive-bucket-box'
             ]"
           >
-            <!-- Bucket details header -->
+            
             <div class="bucket-box-header flex items-center justify-between pb-1.5">
               <div class="flex flex-col">
                 <span class="text-[9px] font-bold bucket-title">Khay {{ bIdx }}</span>
                 <span class="text-[8px] font-mono bucket-range-label leading-none">Range: {{ getBucketRangeLabel(bIdx) }}</span>
               </div>
-              <!-- Status Badge -->
+              
               <span 
                 class="text-[7.5px] font-bold font-mono px-1 py-0.5 rounded uppercase select-none tracking-widest border leading-none scale-[0.88] origin-right transition-all duration-300"
                 :class="getBucketStatusClass(bIdx)"
@@ -147,7 +147,7 @@
               </span>
             </div>
 
-            <!-- Dynamic element cells with sort highlights -->
+            
             <div class="flex gap-1.5 flex-wrap items-center content-center flex-1 min-h-[36px] justify-center relative">
               <transition-group name="bucket-list">
                 <div
@@ -161,7 +161,7 @@
                   {{ elem.value }}
                 </div>
               </transition-group>
-              <!-- Empty state placeholder -->
+              
               <div v-if="bucket.length === 0" class="bucket-empty-placeholder text-[8px] font-mono italic select-none">
                 Trống
               </div>
@@ -170,18 +170,18 @@
         </div>
       </div>
 
-      <!-- TIER 3: OUTPUT ARRAY -->
+      
       <div 
         class="tier-container flex-1 min-h-[90px] flex flex-col gap-1 px-4 py-2 rounded-xl transition-all duration-300 relative justify-end"
         :class="frame?.bucketStep !== 'collect' ? 'tier-inactive' : ''"
       >
-        <!-- Section label -->
+        
         <div class="absolute top-2 left-3 flex items-center gap-1.5 select-none">
           <span class="pulse-dot w-1.5 h-1.5 rounded-full animate-pulse"></span>
           <span class="tier-label text-[9px] font-bold font-mono tracking-wider uppercase">Tier 3: Mảng kết quả (Output Array)</span>
         </div>
 
-        <!-- Output slots filled sequentially -->
+        
         <div class="flex items-center justify-center gap-2 pb-1 relative mt-6">
           <div
             v-for="(item, idx) in props.frame?.bucketSortOutputWithIds || []"
@@ -193,7 +193,7 @@
               item ? 'filled-output-slot' : 'empty-output-slot border-dashed'
             ]"
           >
-            <!-- Active target pointer -->
+            
             <div v-if="isOutputSlotActive(idx)" class="active-bounce-helper absolute -bottom-8 flex flex-col items-center animate-bounce">
               <svg class="w-2.5 h-2.5 rotate-180" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
@@ -224,7 +224,7 @@ const props = defineProps<{
 const containerRef = ref<HTMLElement | null>(null);
 const connectionCoords = ref<{ x1: number; y1: number; x2: number; y2: number } | null>(null);
 
-// Calculate dynamic coordinate mapping for SVG overlay connectors
+
 const updateCoords = () => {
   const f = props.frame;
   if (!f || !containerRef.value) {
@@ -276,7 +276,7 @@ const updateCoords = () => {
   });
 };
 
-// Listen to frame shifts and sizing triggers
+
 watch(
   () => [props.frame, props.frame?.bucketStep, props.frame?.bucketSortActiveIdx, props.frame?.comparingIndices],
   () => {
@@ -294,14 +294,14 @@ onUnmounted(() => {
   window.removeEventListener("resize", updateCoords);
 });
 
-// Smooth cubic bezier path generator
+
 const connPath = computed(() => {
   if (!connectionCoords.value) return "";
   const { x1, y1, x2, y2 } = connectionCoords.value;
   return `M ${x1} ${y1} C ${x1} ${(y1 + y2) / 2}, ${x2} ${(y1 + y2) / 2}, ${x2} ${y2}`;
 });
 
-// Dynamic stepper active styles
+
 function getPhaseStepClass(phase: string): string {
   const currentStep = props.frame?.bucketStep;
   if (!currentStep) return "phase-inactive";
@@ -329,28 +329,28 @@ function getPhaseStepClass(phase: string): string {
   return "phase-inactive";
 }
 
-// Check active bar index in Input Array
+
 function isInputBarActive(idx: number): boolean {
   return props.frame?.bucketStep === "distribute" && props.frame?.comparingIndices?.includes(idx) === true;
 }
 
-// Check active bucket index
+
 function isBucketBoxActive(bIdx: number): boolean {
   return props.frame?.bucketSortActiveIdx === bIdx;
 }
 
-// Check if comparing inside bucket
+
 function isBucketElemComparing(bIdx: number, vIdx: number): boolean {
   const f = props.frame;
   return f?.bucketStep === "sort" && f?.bucketSortActiveIdx === bIdx && f?.bucketSortComparingBucketIndices?.includes(vIdx) === true;
 }
 
-// Check active output slot index
+
 function isOutputSlotActive(idx: number): boolean {
   return props.frame?.bucketStep === "collect" && props.frame?.comparingIndices?.includes(idx) === true;
 }
 
-// Exact range labels for the 4 buckets
+
 function getBucketRangeLabel(bIdx: number): string {
   if (bIdx === 0) return "[0 - 25)";
   if (bIdx === 1) return "[25 - 50)";
@@ -358,7 +358,7 @@ function getBucketRangeLabel(bIdx: number): string {
   return "[75 - 100]";
 }
 
-// Get the visual label for bucket statuses
+
 function getBucketStatusText(bIdx: number): string {
   const f = props.frame;
   if (!f) return "⏸ Chờ";
@@ -380,7 +380,7 @@ function getBucketStatusText(bIdx: number): string {
   return "⏸ Chờ";
 }
 
-// Styles corresponding to bucket statuses
+
 function getBucketStatusClass(bIdx: number): string {
   const f = props.frame;
   if (!f) return "bucket-status-idle";

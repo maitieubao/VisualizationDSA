@@ -9,14 +9,14 @@ export const useCourseStore = defineStore('course', () => {
   const authStore = useAuthStore();
   const lessonStore = useLessonStore();
 
-  // State
+  
   const courses = ref<Course[]>([]);
   const isLoading = ref<boolean>(false);
   const selectedCategory = ref<string>('All');
   const selectedDifficulty = ref<string>('All');
   const searchQuery = ref<string>('');
 
-  // Computed
+  
   const filteredCourses = computed(() => {
     let result = courses.value;
     if (selectedCategory.value !== 'All') {
@@ -46,11 +46,11 @@ export const useCourseStore = defineStore('course', () => {
     return ['All', ...Array.from(diffs)];
   });
 
-  // ─── Actions ──────────────────────────────────────────────────────────
+  
 
   function loadCourses() {
     isLoading.value = true;
-    // Giả lập loading từ API
+    
     setTimeout(() => {
       courses.value = COURSES.filter(c => c.isPublished);
       isLoading.value = false;
@@ -74,13 +74,13 @@ export const useCourseStore = defineStore('course', () => {
       };
     }
 
-    // Lấy tiến độ từ lessonStore (localStorage)
+    
     let completedCount = 0;
     const completedLessonIds: string[] = [];
     let xpEarned = 0;
 
     for (const lesson of course.lessons) {
-      // Kiểm tra từng lesson đã hoàn thành chưa
+      
       const key = `lesson_progress_${lesson.id}`;
       const saved = localStorage.getItem(key);
       if (saved) {
@@ -91,7 +91,7 @@ export const useCourseStore = defineStore('course', () => {
             completedLessonIds.push(lesson.id);
             xpEarned += data.xpAwarded;
           }
-        } catch (e) { /* ignore */ }
+        } catch (e) {  }
       }
     }
 

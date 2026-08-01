@@ -1,7 +1,7 @@
-/**
- * animation.types.ts — Type-safe interfaces khớp với Backend C# DTOs.
- * Đảm bảo đồng bộ tuyệt đối giữa JSON payload API và Frontend TypeScript.
- */
+
+
+
+
 
 export interface HighlightIndices {
   compare: number[];
@@ -18,7 +18,7 @@ export interface FrameDTO {
   activeLogicalLineId?: string;
   variables?: Record<string, string | number>;
 
-  // Optional Graph Animation properties
+  
   visitedNodes?: string[];
   activeNodes?: string[];
   visitedEdges?: string[];

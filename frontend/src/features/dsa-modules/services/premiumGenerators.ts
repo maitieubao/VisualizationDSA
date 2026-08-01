@@ -20,7 +20,7 @@ function serializeTree(node: BSTNode | null): { treeNodes: TreeNodeDTO[]; values
     if (!n) return;
     treeNodes.push({
       id: n.id,
-      value: n.currentDistance, // Render the current distance on the tree node!
+      value: n.currentDistance, 
       leftNodeId: n.left?.id ?? null,
       rightNodeId: n.right?.id ?? null,
     });
@@ -45,7 +45,7 @@ function insertBST(node: BSTNode | null, value: number, idCounter: { val: number
   return node;
 }
 
-// 1. BFS Generator
+
 export function generateBFS(inputData: number[]): AlgorithmResult {
   const frames: FrameDTO[] = [];
   let stepId = 0;
@@ -56,7 +56,7 @@ export function generateBFS(inputData: number[]): AlgorithmResult {
     root = insertBST(root, val, idCounter);
   }
 
-  // Set visual values to original tree values for pure BFS traversal simulation
+  
   function resetDistancesToOriginal(n: BSTNode | null): void {
     if (!n) return;
     n.currentDistance = n.originalValue;
@@ -159,7 +159,7 @@ export function generateBFS(inputData: number[]): AlgorithmResult {
   return { algorithmId: 'bfs', pseudoCode, frames };
 }
 
-// 2. DFS Generator
+
 export function generateDFS(inputData: number[]): AlgorithmResult {
   const frames: FrameDTO[] = [];
   let stepId = 0;
@@ -266,7 +266,7 @@ export function generateDFS(inputData: number[]): AlgorithmResult {
   return { algorithmId: 'dfs', pseudoCode, frames };
 }
 
-// 3. Dijkstra Generator
+
 export function generateDijkstra(inputData: number[]): AlgorithmResult {
   const frames: FrameDTO[] = [];
   let stepId = 0;
@@ -329,7 +329,7 @@ export function generateDijkstra(inputData: number[]): AlgorithmResult {
   const visitedDistances: number[] = [];
 
   while (unvisited.size > 0) {
-    // Pick min distance node
+    
     let curr: BSTNode | null = null;
     let minD = 9999;
     for (const n of unvisited) {
@@ -424,7 +424,7 @@ export function generateDijkstra(inputData: number[]): AlgorithmResult {
   return { algorithmId: 'dijkstra', pseudoCode, frames };
 }
 
-// 4. Sliding Window Generator
+
 export function generateSlidingWindow(inputData: number[]): AlgorithmResult {
   const frames: FrameDTO[] = [];
   let stepId = 0;
@@ -534,14 +534,14 @@ export function generateSlidingWindow(inputData: number[]): AlgorithmResult {
   return { algorithmId: 'sliding-window', pseudoCode, frames };
 }
 
-// 5. Monotonic Stack Generator
+
 export function generateMonotonicStack(inputData: number[]): AlgorithmResult {
   const frames: FrameDTO[] = [];
   let stepId = 0;
   const arr = [...inputData];
   const n = arr.length;
   const res = Array(n).fill(-1);
-  const stack: number[] = []; // Stores indices
+  const stack: number[] = []; 
 
   const pseudoCode = [
     'nextGreaterElement(A):',

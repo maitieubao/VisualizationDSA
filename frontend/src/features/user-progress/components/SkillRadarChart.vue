@@ -23,7 +23,7 @@ import {
 } from 'chart.js';
 import { useAuthStore } from '../../auth/store/useAuthStore';
 
-// Register Chart.js components
+
 ChartJS.register(RadialLinearScale, PointElement, LineElement, Filler, Tooltip, Legend);
 
 const authStore = useAuthStore();
@@ -33,19 +33,19 @@ onMounted(() => {
   isMounted.value = true;
 });
 
-// Calculate pseudo-distribution based on user level to make it look dynamic but stable per user
+
 const distribution = computed(() => {
   const level = authStore.userLevel || 1;
   const base = Math.min(100, 30 + level * 5);
-  // Pseudo-random offset based on username length to give unique shape per user
+  
   const hash = (authStore.userName || 'Guest').length;
   
   return [
-    Math.min(100, base + (hash % 5) * 5),           // Sắp xếp
-    Math.min(100, base - 10 + (hash % 3) * 5),      // Đồ thị
-    Math.min(100, base - 5 + (hash % 4) * 5),       // OOP
-    Math.min(100, base + 10 - (hash % 2) * 5),      // SOLID
-    Math.min(100, base - 15 + (hash % 6) * 5)       // Design Patterns
+    Math.min(100, base + (hash % 5) * 5),           
+    Math.min(100, base - 10 + (hash % 3) * 5),      
+    Math.min(100, base - 5 + (hash % 4) * 5),       
+    Math.min(100, base + 10 - (hash % 2) * 5),      
+    Math.min(100, base - 15 + (hash % 6) * 5)       
   ];
 });
 
@@ -54,9 +54,9 @@ const chartData = computed(() => ({
   datasets: [
     {
       label: 'Độ thông thạo',
-      backgroundColor: 'rgba(99, 102, 241, 0.25)', // Tailwind Indigo 500 equivalent
+      backgroundColor: 'rgba(99, 102, 241, 0.25)', 
       borderColor: '#6366f1',
-      pointBackgroundColor: '#a855f7',             // Purple 500
+      pointBackgroundColor: '#a855f7',             
       pointBorderColor: '#fff',
       pointHoverBackgroundColor: '#fff',
       pointHoverBorderColor: '#a855f7',
@@ -82,7 +82,7 @@ const chartOptions = {
         circular: true
       },
       pointLabels: {
-        color: '#94a3b8', // Slate 400
+        color: '#94a3b8', 
         font: { 
           family: "'Inter', sans-serif", 
           size: 11,
@@ -90,7 +90,7 @@ const chartOptions = {
         }
       },
       ticks: {
-        display: false, // Hide the scale numbers
+        display: false, 
         min: 0,
         max: 100,
         stepSize: 20
@@ -102,7 +102,7 @@ const chartOptions = {
       display: false 
     },
     tooltip: {
-      backgroundColor: 'rgba(15, 23, 42, 0.9)', // Slate 900
+      backgroundColor: 'rgba(15, 23, 42, 0.9)', 
       titleFont: { family: "'Inter', sans-serif", size: 13 },
       bodyFont: { family: "'Inter', sans-serif", size: 12 },
       padding: 10,

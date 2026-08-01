@@ -12,11 +12,11 @@ using VisualizationDSA.Infrastructure.Data;
 
 namespace VisualizationDSA.WebApi.Controllers
 {
-    /// <summary>
-    /// Auth Controller — xử lý đăng ký, đăng nhập, profile.
-    /// Kết hợp in-memory cache (StatelessAuthStrategy) + PostgreSQL persistence (ApplicationDbContext).
-    /// Route: api/v{version:apiVersion}/concepts/auth
-    /// </summary>
+    
+    
+    
+    
+    
     [ApiVersion("1.0")]
     [ApiController]
     [Route("api/v{version:apiVersion}/concepts/auth")]
@@ -58,16 +58,16 @@ namespace VisualizationDSA.WebApi.Controllers
             return Convert.ToHexString(bytes).ToLowerInvariant();
         }
 
-        /// <summary>
-        /// Đăng ký tài khoản mới — lưu vào cả in-memory cache và PostgreSQL.
-        /// POST /api/v1/concepts/auth/register
-        /// </summary>
+        
+        
+        
+        
         [HttpPost("register")]
         public async Task<ActionResult<StatelessAuthResponse>> Register([FromBody] StatelessRegisterRequest request)
         {
             try
             {
-                // ✅ FIX: Bọc DB call trong try-catch để fallback sang in-memory khi DB không khả dụng
+                
                 string dbUserId = Guid.NewGuid().ToString();
                 try
                 {
@@ -101,10 +101,10 @@ namespace VisualizationDSA.WebApi.Controllers
             }
         }
 
-        /// <summary>
-        /// Đăng nhập — xác thực in-memory + cập nhật LastLoginAt trong PostgreSQL.
-        /// POST /api/v1/concepts/auth/login
-        /// </summary>
+        
+        
+        
+        
         [HttpPost("login")]
         public async Task<ActionResult<StatelessAuthResponse>> Login([FromBody] StatelessLoginRequest request)
         {
@@ -113,12 +113,12 @@ namespace VisualizationDSA.WebApi.Controllers
                 User dbUser = null;
                 try
                 {
-                    // Sync from PostgreSQL — update LastLoginAt + override role/premium from DB
+                    
                     dbUser = await _dbContext.Users
                         .FirstOrDefaultAsync(u => u.Email == request.Email);
                     if (dbUser != null)
                     {
-                        // ✅ Task 4.2: Kiểm tra tài khoản có bị khóa không
+                        
                         if (!dbUser.IsActive)
                             return StatusCode(403, new { error = "ACCOUNT_BANNED", message = "Tài khoản của bạn đã bị khóa. Vui lòng liên hệ quản trị viên." });
 
@@ -147,7 +147,7 @@ namespace VisualizationDSA.WebApi.Controllers
 
                 if (dbUser != null)
                 {
-                    // Override in-memory fields with DB truth
+                    
                     response.User.Role = dbUser.Role;
                     response.User.IsPremium = dbUser.IsPremium;
                     response.User.TotalXP = dbUser.TotalXP;
@@ -162,16 +162,16 @@ namespace VisualizationDSA.WebApi.Controllers
             }
         }
 
-        /// <summary>
-        /// Lấy Access Token mới từ Refresh Token.
-        /// POST /api/v1/concepts/auth/refresh
-        /// </summary>
+        
+        
+        
+        
         [HttpPost("refresh")]
         public async Task<ActionResult<StatelessAuthResponse>> Refresh([FromBody] StatelessRefreshRequest request)
         {
             try
             {
-                // If the user's refresh token isn't in memory (e.g. server restart), but they provided their UserId, re-hydrate from DB
+                
                 if (!string.IsNullOrEmpty(request.UserId))
                 {
                     if (Guid.TryParse(request.UserId, out var dbUserId))
@@ -215,10 +215,10 @@ namespace VisualizationDSA.WebApi.Controllers
             }
         }
 
-        /// <summary>
-        /// Đăng xuất — thu hồi Refresh Token khỏi bộ nhớ.
-        /// POST /api/v1/concepts/auth/logout
-        /// </summary>
+        
+        
+        
+        
         [HttpPost("logout")]
         public IActionResult Logout([FromBody] StatelessRefreshRequest request)
         {
@@ -226,10 +226,10 @@ namespace VisualizationDSA.WebApi.Controllers
             return NoContent();
         }
 
-        /// <summary>
-        /// Lấy thông tin profile từ userId.
-        /// GET /api/v1/concepts/auth/me?userId=...
-        /// </summary>
+        
+        
+        
+        
         [HttpGet("me")]
         public async Task<ActionResult<StatelessUserDto>> GetMe([FromQuery] string? userId)
         {
@@ -263,10 +263,10 @@ namespace VisualizationDSA.WebApi.Controllers
             }
         }
 
-        /// <summary>
-        /// Lấy tiến trình học tập của user.
-        /// GET /api/v1/concepts/auth/progress?userId=...
-        /// </summary>
+        
+        
+        
+        
         [HttpGet("progress")]
         public async Task<ActionResult<StatelessUserProgressDto>> GetProgress([FromQuery] string? userId)
         {
@@ -300,10 +300,10 @@ namespace VisualizationDSA.WebApi.Controllers
             }
         }
 
-        /// <summary>
-        /// Cập nhật profile (username).
-        /// PUT /api/v1/concepts/auth/profile
-        /// </summary>
+        
+        
+        
+        
         [HttpPut("profile")]
         public async Task<ActionResult<StatelessUserDto>> UpdateProfile([FromBody] StatelessUpdateProfileRequest request)
         {
@@ -341,10 +341,10 @@ namespace VisualizationDSA.WebApi.Controllers
             }
         }
 
-        /// <summary>
-        /// Đổi mật khẩu của user — in-memory + PostgreSQL persistence.
-        /// PUT /api/v1/concepts/auth/change-password
-        /// </summary>
+        
+        
+        
+        
         [HttpPut("change-password")]
         public async Task<IActionResult> ChangePassword([FromBody] StatelessChangePasswordRequest request)
         {
@@ -416,10 +416,10 @@ namespace VisualizationDSA.WebApi.Controllers
             return Ok(new { message = "Đổi mật khẩu thành công!" });
         }
 
-        /// <summary>
-        /// Cộng XP cho user — in-memory + PostgreSQL persistence.
-        /// POST /api/v1/concepts/auth/award-xp
-        /// </summary>
+        
+        
+        
+        
         [HttpPost("award-xp")]
         public async Task<ActionResult<StatelessUserDto>> AwardXP([FromBody] StatelessXpAwardRequest request)
         {
@@ -446,7 +446,7 @@ namespace VisualizationDSA.WebApi.Controllers
                 }
                 var user = _authStrategy.AwardXP(id, request.Amount, request.Reason);
 
-                // Persist XP to PostgreSQL — find by email (in-memory ID is string, DB ID is Guid)
+                
                 var dbUserXp = await _dbContext.Users
                     .FirstOrDefaultAsync(u => u.Email == user.Email);
                 if (dbUserXp != null)
@@ -468,10 +468,10 @@ namespace VisualizationDSA.WebApi.Controllers
             }
         }
 
-        /// <summary>
-        /// Demo credentials info.
-        /// GET /api/v1/concepts/auth/demo-credentials
-        /// </summary>
+        
+        
+        
+        
         [HttpGet("demo-credentials")]
         public ActionResult<object> GetDemoCredentials()
         {

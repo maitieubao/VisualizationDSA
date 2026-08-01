@@ -36,7 +36,7 @@ namespace VisualizationDSA.Infrastructure.Services
                     _logger.LogError(ex, "Error occurred executing Refresh Token Cleanup.");
                 }
 
-                // Run every 24 hours
+                
                 await Task.Delay(TimeSpan.FromHours(24), stoppingToken);
             }
         }
@@ -48,7 +48,7 @@ namespace VisualizationDSA.Infrastructure.Services
 
             var thresholdDate = DateTime.UtcNow.AddDays(-7);
 
-            // Clean tokens that are expired or have been revoked for more than 7 days
+            
             var tokensToDelete = await dbContext.RefreshTokens
                 .Where(rt => rt.ExpiresAt < DateTime.UtcNow || (rt.IsRevoked && rt.ExpiresAt < thresholdDate))
                 .ToListAsync(stoppingToken);

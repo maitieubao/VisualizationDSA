@@ -6,7 +6,7 @@ namespace VisualizationDSA.Domain.Entities
     {
         public Guid Id { get; private set; }
         public Guid UserId { get; private set; }
-        public string ModuleId { get; private set; } // e.g., "bubble-sort", "oop-encapsulation"
+        public string ModuleId { get; private set; } 
         public DateTime CompletedAt { get; private set; }
         public int TimeSpentMinutes { get; private set; }
         

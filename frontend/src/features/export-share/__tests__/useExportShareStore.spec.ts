@@ -1,4 +1,4 @@
-// @vitest-environment jsdom
+
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { setActivePinia, createPinia } from 'pinia';
 import { useExportShareStore } from '../store/useExportShareStore';
@@ -200,7 +200,7 @@ describe('useExportShareStore', () => {
       const store = useExportShareStore();
       store.generatedShareLink = 'https://example.com/s/test';
 
-      // Mock clipboard API
+      
       Object.defineProperty(navigator, 'clipboard', {
         value: {
           writeText: vi.fn().mockResolvedValue(undefined),

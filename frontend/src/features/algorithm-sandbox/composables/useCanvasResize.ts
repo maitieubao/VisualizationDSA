@@ -1,9 +1,9 @@
 import type { Ref } from 'vue';
 
-/**
- * useCanvasResize — xử lý resize canvas khi container thay đổi kích thước.
- * Tự động xử lý devicePixelRatio (DPR) để hỗ trợ màn hình Retina.
- */
+
+
+
+
 export function useCanvasResize(
   canvasRef: Ref<HTMLCanvasElement | null>,
   containerRef: Ref<HTMLDivElement | null>,

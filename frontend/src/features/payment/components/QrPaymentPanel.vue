@@ -1,10 +1,10 @@
 <template>
   <div class="grid grid-cols-1 sm:grid-cols-12 gap-6 items-center">
-    <!-- QR Code Left -->
+    
     <div class="sm:col-span-5 flex flex-col items-center">
       <div class="qr-wrapper p-2 bg-white rounded-lg shadow-lg relative border border-border-strong">
         <img :src="order?.qrUrl" alt="VietQR Pay Code" class="w-40 h-40 object-contain" />
-        <!-- Status Overlay if timeout -->
+        
         <div v-if="isExpired" class="absolute inset-0 bg-bg-primary/90 rounded-lg flex flex-col items-center justify-center p-2 text-center">
           <BaseIcon name="clock" class="w-6 h-6 text-accent-red mb-2" />
           <span class="text-xs font-semibold text-accent-red">Mã hết hạn</span>
@@ -20,7 +20,7 @@
       </div>
     </div>
 
-    <!-- Instructions Right -->
+    
     <div class="sm:col-span-7 space-y-4">
       <div class="text-xs font-semibold uppercase tracking-wider text-accent">Hướng dẫn chuyển khoản</div>
       
@@ -79,7 +79,7 @@ const props = defineProps<{
   order: OrderInfo | null;
   formattedTime: string;
   isExpired: boolean;
-  isWarningTime: boolean; // vd: timerSeconds < 60
+  isWarningTime: boolean; 
 }>();
 
 defineEmits<{

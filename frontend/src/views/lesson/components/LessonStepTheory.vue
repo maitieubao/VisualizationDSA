@@ -1,6 +1,6 @@
 <template>
   <div class="lesson-step-theory flex flex-col h-full overflow-y-auto p-6 text-slate-200 font-sans leading-relaxed">
-    <!-- Header -->
+    
     <div class="border-b border-white/10 pb-4 mb-6">
       <div class="flex items-center gap-2 text-xs font-semibold text-indigo-400 uppercase tracking-wider mb-1">
         <svg class="w-4 h-4 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
@@ -13,12 +13,12 @@
       <h1 class="text-2xl font-black text-white tracking-tight">{{ title }}</h1>
     </div>
 
-    <!-- Content Body -->
+    
     <div class="prose prose-invert prose-indigo max-w-none text-sm space-y-4">
       <div v-html="formattedContent"></div>
     </div>
 
-    <!-- Mark Complete / Next Step Trigger -->
+    
     <div class="mt-8 pt-6 border-t border-white/10 flex items-center justify-between">
       <span class="text-xs text-slate-400">Đọc hết bài học để mở khóa phần Trực quan hóa.</span>
       <button
@@ -46,7 +46,7 @@ defineEmits<{
 
 const formattedContent = computed(() => {
   if (!props.content) return '<p class="text-slate-500 italic">Không có nội dung lý thuyết.</p>';
-  // Simple markdown formatting fallback
+  
   return props.content
     .replace(/^### (.*$)/gim, '<h3 class="text-base font-bold text-indigo-300 mt-4 mb-2">$1</h3>')
     .replace(/^## (.*$)/gim, '<h2 class="text-lg font-bold text-white mt-6 mb-3">$1</h2>')

@@ -10,7 +10,7 @@
         : 'border-white/5 bg-slate-900/40 hover:bg-slate-800/60 hover:border-white/10'
     ]"
   >
-    <!-- Số thứ tự + Icon -->
+    
     <div class="flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold"
       :class="[
         status === 'completed'
@@ -25,7 +25,7 @@
       <span v-else>{{ order }}</span>
     </div>
 
-    <!-- Nội dung -->
+    
     <div class="flex-1 min-w-0">
       <div class="flex items-center gap-2.5">
         <h4 class="text-sm font-medium text-white truncate">{{ title }}</h4>
@@ -43,7 +43,7 @@
       </div>
     </div>
 
-    <!-- Arrow -->
+    
     <div class="flex-shrink-0 text-slate-600 group-hover:text-slate-300 transition-colors">
       <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
         <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />

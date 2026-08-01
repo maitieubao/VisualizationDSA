@@ -1,20 +1,20 @@
-/**
- * WorkerLifecycleCoordinator — Điều phối vòng đời Web Worker Sandbox.
- *
- * Quản lý: Blob URL lifecycle, Timeout Guard 1.5s,
- * terminate Worker cũ trước khi tạo Worker mới,
- * giải phóng bộ nhớ Blob URL sau khi Worker kết thúc.
- */
+
+
+
+
+
+
+
 
 import type { LiveFrameDTO, WorkerPayload, WorkerResponse } from '../types/compiler.types';
 
 const DEFAULT_TIMEOUT_MS = 1500;
 const MAX_FRAMES = 2000;
 
-/**
- * Mã nguồn chạy bên trong Web Worker.
- * Định nghĩa traceCompare, traceAssign, và thực thi code đã tiêm.
- */
+
+
+
+
 function buildWorkerScript(): string {
   return `
     self.onmessage = function(e) {
@@ -80,9 +80,9 @@ let activeWorker: Worker | null = null;
 let activeTimeoutId: ReturnType<typeof setTimeout> | null = null;
 let activeObjectUrl: string | null = null;
 
-/**
- * Chấm dứt triệt để Worker đang chạy nền và dọn dẹp tài nguyên.
- */
+
+
+
 export function terminateActiveSession(): void {
   if (activeWorker) {
     activeWorker.terminate();
@@ -98,10 +98,10 @@ export function terminateActiveSession(): void {
   }
 }
 
-/**
- * Khởi chạy Web Worker Sandbox an toàn với Timeout Guard.
- * Tự động terminate Worker cũ trước khi tạo Worker mới.
- */
+
+
+
+
 export function executeInSandbox(
   instrumentedCode: string,
   initialArray: number[],

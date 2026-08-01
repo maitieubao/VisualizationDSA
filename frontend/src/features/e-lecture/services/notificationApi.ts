@@ -1,7 +1,7 @@
-/**
- * notificationApi.ts — HTTP client kết nối API thông báo.
- * Tương ứng backend: api/v1/concepts/notifications
- */
+
+
+
+
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:5055';
 
@@ -28,7 +28,7 @@ function getAuthHeaders(accessToken: string): Record<string, string> {
   };
 }
 
-/** Lấy tất cả thông báo của người dùng hiện tại */
+
 export async function getNotifications(accessToken: string): Promise<NotificationDto[]> {
   const res = await fetch(`${API_BASE}/api/v1/concepts/notifications`, {
     method: 'GET',
@@ -37,7 +37,7 @@ export async function getNotifications(accessToken: string): Promise<Notificatio
   return handleResponse<NotificationDto[]>(res);
 }
 
-/** Đánh dấu một thông báo là đã đọc */
+
 export async function markAsRead(id: string, accessToken: string): Promise<void> {
   const res = await fetch(`${API_BASE}/api/v1/concepts/notifications/${id}/read`, {
     method: 'PUT',
@@ -46,7 +46,7 @@ export async function markAsRead(id: string, accessToken: string): Promise<void>
   await handleResponse(res);
 }
 
-/** Đánh dấu tất cả thông báo là đã đọc */
+
 export async function markAllAsRead(accessToken: string): Promise<void> {
   const res = await fetch(`${API_BASE}/api/v1/concepts/notifications/read-all`, {
     method: 'PUT',

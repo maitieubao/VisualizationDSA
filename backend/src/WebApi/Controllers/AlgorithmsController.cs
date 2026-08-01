@@ -21,10 +21,10 @@ public class AlgorithmsController : ControllerBase
         _strategies = strategies;
     }
 
-    /// <summary>
-    /// Lấy danh sách tất cả thuật toán có trong thư viện.
-    /// GET /api/v1/algorithms
-    /// </summary>
+    
+    
+    
+    
     [HttpGet]
     public ActionResult<IEnumerable<object>> GetAll()
     {
@@ -41,10 +41,10 @@ public class AlgorithmsController : ControllerBase
         return Ok(list);
     }
 
-    /// <summary>
-    /// Lấy siêu dữ liệu lý thuyết của thuật toán.
-    /// GET /api/v1/algorithms/{algorithmId}/metadata
-    /// </summary>
+    
+    
+    
+    
     [HttpGet("{algorithmId}/metadata")]
     public ActionResult<AlgorithmMetadata> GetMetadata(string algorithmId)
     {
@@ -65,10 +65,10 @@ public class AlgorithmsController : ControllerBase
         return Ok(strategy.GetMetadata());
     }
 
-    /// <summary>
-    /// Thực thi thuật toán và trả về danh sách frames hoạt họa.
-    /// POST /api/v1/algorithms/execute
-    /// </summary>
+    
+    
+    
+    
     [HttpPost("execute")]
     public async Task<ActionResult<AlgorithmResult>> Execute([FromBody] AlgorithmRequestDto request)
     {
@@ -83,7 +83,7 @@ public class AlgorithmsController : ControllerBase
             });
         }
 
-        // ✅ Validate input size limit to prevent resource exhaustion / spam
+        
         if (!ConstraintResolver.ValidateSize(request.AlgorithmId, request.InputData.Length, out int allowedLimit))
         {
             return UnprocessableEntity(new
@@ -146,10 +146,10 @@ public class AlgorithmsController : ControllerBase
         }
     }
 
-    /// <summary>
-    /// Thực thi thuật toán từ chuỗi thô nhập bởi người dùng.
-    /// POST /api/v1/algorithms/custom-execute
-    /// </summary>
+    
+    
+    
+    
     [HttpPost("custom-execute")]
     public async Task<ActionResult<AlgorithmResult>> CustomExecute(
         [FromBody] CustomInputRequestDto request,
@@ -252,11 +252,11 @@ public class AlgorithmsController : ControllerBase
         };
     }
 
-    /// <summary>
-    /// So sánh nhiều thuật toán cùng một input — trả về frames + server-side timing.
-    /// POST /api/v1/algorithms/compare
-    /// ✅ B1: Batch execute thay vì N requests riêng lẻ từ frontend.
-    /// </summary>
+    
+    
+    
+    
+    
     [HttpPost("compare")]
     public async Task<ActionResult<IEnumerable<CompareResultDto>>> Compare([FromBody] CompareRequestDto request)
     {
@@ -269,7 +269,7 @@ public class AlgorithmsController : ControllerBase
         if (request.AlgorithmIds.Length > 4)
             return BadRequest(new { errorType = "TOO_MANY_ALGORITHMS", message = "Tối đa 4 thuật toán mỗi lần so sánh." });
 
-        // ✅ Validate input size limit for each compared algorithm to prevent resource exhaustion / spam
+        
         foreach (var algorithmId in request.AlgorithmIds)
         {
             if (!ConstraintResolver.ValidateSize(algorithmId, request.InputData.Length, out int allowedLimit))
@@ -354,10 +354,10 @@ public class AlgorithmsController : ControllerBase
     }
 }
 
-/// <summary>Request DTO cho /compare endpoint.</summary>
+
 public record CompareRequestDto(string[] AlgorithmIds, int[] InputData);
 
-/// <summary>Result DTO cho từng thuật toán trong /compare response.</summary>
+
 public class CompareResultDto
 {
     public string  AlgorithmId     { get; set; } = string.Empty;

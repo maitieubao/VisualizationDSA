@@ -4,10 +4,10 @@
 
 namespace Infrastructure.Migrations
 {
-    /// <inheritdoc />
+    
     public partial class AddUserRole : Migration
     {
-        /// <inheritdoc />
+        
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.AddColumn<string>(
@@ -19,7 +19,7 @@ namespace Infrastructure.Migrations
                 defaultValue: "Student");
         }
 
-        /// <inheritdoc />
+        
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropColumn(

@@ -9,7 +9,7 @@ describe('Sprint 5 Custom Input & Playground Unit Tests', () => {
 
     expect(arr).toEqual([5, 8, 12, 20]);
 
-    // Nhập chữ cái -> Bắt buộc ném ra ngoại lệ báo lỗi
+    
     expect(() => {
       CustomInputParser.parseNumberArray('5, abc, 12');
     }).toThrowError("Giá trị 'abc' không phải là số hợp lệ!");
@@ -23,7 +23,7 @@ describe('Sprint 5 Custom Input & Playground Unit Tests', () => {
     expect(graph.nodes.map(n => n.id)).toContain('A');
     expect(graph.edges[0]).toEqual({ sourceId: 'A', targetId: 'B', weight: 10 });
 
-    // Sai định dạng -> Ném lỗi cảnh báo
+    
     expect(() => {
       CustomInputParser.parseAdjacencyList('A-B=10');
     }).toThrow();
@@ -33,12 +33,12 @@ describe('Sprint 5 Custom Input & Playground Unit Tests', () => {
     const mockCallback = vi.fn();
     const engine = new InteractivePlaygroundEngine(mockCallback);
 
-    // Click nút thứ nhất tại (100, 100) -> Thêm thành công nút 'A'
+    
     engine.handleDoubleClick(100, 100);
     expect(mockCallback).toHaveBeenCalledTimes(1);
 
-    // Click nút thứ hai đè sát (110, 110) -> Bị chặn va chạm overlap -> Không thêm nút 'B'
+    
     engine.handleDoubleClick(110, 110);
-    expect(mockCallback).toHaveBeenCalledTimes(1); // Số lần gọi không tăng
+    expect(mockCallback).toHaveBeenCalledTimes(1); 
   });
 });

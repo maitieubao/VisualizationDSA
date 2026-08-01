@@ -1,9 +1,9 @@
 namespace VisualizationDSA.Domain.Engine;
 
-/// <summary>
-/// Frame DTO cho mô-đun DI/IoC Container Visualizer.
-/// Mỗi frame thể hiện một bước trong quá trình register → resolve → lifetime management.
-/// </summary>
+
+
+
+
 public class DIContainerFrameDto
 {
     public int StepIndex { get; set; }
@@ -21,7 +21,7 @@ public class DIServiceRegistrationDto
 {
     public string InterfaceName { get; set; } = string.Empty;
     public string ImplementationName { get; set; } = string.Empty;
-    public string Lifetime { get; set; } = string.Empty; // "SINGLETON" | "TRANSIENT" | "SCOPED"
+    public string Lifetime { get; set; } = string.Empty; 
     public List<string> Dependencies { get; set; } = new();
     public bool IsRegistered { get; set; }
 }

@@ -1,4 +1,4 @@
-/* ==================== PANEL SIDEBAR CONTAINER ==================== */
+
 .theory-panel {
   position: fixed;
   right: 0;
@@ -29,7 +29,7 @@
   max-width: 800px !important;
 }
 
-/* Wide Desktop Push configuration */
+
 @media (min-width: 1700px) {
   .theory-panel.is-desktop-push.open {
     position: relative;
@@ -45,7 +45,7 @@
   }
 }
 
-/* ==================== TOGGLE TAB BUTTON ==================== */
+
 .theory-toggle-tab {
   position: absolute;
   left: -40px;
@@ -86,7 +86,7 @@
   white-space: nowrap;
 }
 
-/* ==================== DRAWER BODY & CONTENT ==================== */
+
 .theory-drawer-content {
   display: flex;
   flex-direction: column;
@@ -130,7 +130,7 @@
   color: var(--color-accent-red-light);
 }
 
-/* ==================== DRAWER SCROLLABLE BODY ==================== */
+
 .drawer-body {
   flex: 1;
   overflow-y: auto;

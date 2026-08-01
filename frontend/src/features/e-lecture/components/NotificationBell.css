@@ -56,7 +56,7 @@
   pointer-events: none;
 }
 
-/* ── Dropdown ── */
+
 .notification-dropdown {
   position: absolute;
   top: calc(100% + 8px);
@@ -174,7 +174,7 @@
   margin: 0;
 }
 
-/* ── Dropdown transition ── */
+
 .dropdown-fade-enter-active {
   transition: opacity 0.2s ease, transform 0.2s ease;
 }

@@ -3,12 +3,12 @@ using VisualizationDSA.Domain.Engine;
 
 namespace VisualizationDSA.Domain.Strategies;
 
-/// <summary>
-/// Strategy sinh chuỗi frame trực quan hóa các khái niệm OOP:
-/// Đóng gói (Encapsulation), Kế thừa (Inheritance), Đa hình (Polymorphism),
-/// Trừu tượng (Abstraction). Mỗi kịch bản sinh ra một chuỗi OOPFrameDto
-/// tương ứng với các bước trong frontend ScenarioStep.
-/// </summary>
+
+
+
+
+
+
 public class OOPConceptsStrategy : IConceptStrategy
 {
     public string ConceptId => "oop-concepts";
@@ -23,7 +23,7 @@ public class OOPConceptsStrategy : IConceptStrategy
         "abstraction"
     };
 
-    // ── Định nghĩa các lớp OOP dùng chung cho mọi kịch bản ──
+    
 
     private static readonly ClassDefinitionDto ShapeClass = new()
     {
@@ -64,9 +64,9 @@ public class OOPConceptsStrategy : IConceptStrategy
         }
     };
 
-    /// <summary>
-    /// Sinh chuỗi frame hoạt ảnh cho kịch bản OOP được chỉ định.
-    /// </summary>
+    
+    
+    
     public List<OOPFrameDto> ExecuteScenario(string scenarioId, CancellationToken cancellationToken = default)
     {
         return scenarioId.ToLowerInvariant() switch
@@ -79,16 +79,16 @@ public class OOPConceptsStrategy : IConceptStrategy
         };
     }
 
-    // ══════════════════════════════════════════════
-    // Encapsulation: Đóng gói — Bảo vệ trường private
-    // ══════════════════════════════════════════════
+    
+    
+    
 
     private List<OOPFrameDto> GenerateEncapsulationFrames(CancellationToken ct)
     {
         var frames = new List<OOPFrameDto>();
         int step = 0;
 
-        // Bước 1: Khởi tạo Circle
+        
         ct.ThrowIfCancellationRequested();
         frames.Add(new OOPFrameDto
         {
@@ -104,7 +104,7 @@ public class OOPConceptsStrategy : IConceptStrategy
             ActionPayload = new Dictionary<string, object> { { "className", "Circle" } }
         });
 
-        // Bước 2: Vi phạm đóng gói — truy cập private trực tiếp
+        
         ct.ThrowIfCancellationRequested();
         frames.Add(new OOPFrameDto
         {
@@ -127,7 +127,7 @@ public class OOPConceptsStrategy : IConceptStrategy
             ActionPayload = new Dictionary<string, object> { { "className", "Circle" }, { "memberName", "radius" } }
         });
 
-        // Bước 3: Gọi setter an toàn — seeking VTable
+        
         ct.ThrowIfCancellationRequested();
         frames.Add(new OOPFrameDto
         {
@@ -150,7 +150,7 @@ public class OOPConceptsStrategy : IConceptStrategy
             ActionPayload = new Dictionary<string, object> { { "methodName", "setRadius" }, { "state", "seeking" } }
         });
 
-        // Bước 4: Setter thực thi — cập nhật giá trị
+        
         ct.ThrowIfCancellationRequested();
         frames.Add(new OOPFrameDto
         {
@@ -177,16 +177,16 @@ public class OOPConceptsStrategy : IConceptStrategy
         return frames;
     }
 
-    // ══════════════════════════════════════════════
-    // Inheritance: Kế thừa — Sao chép phương thức từ cha
-    // ══════════════════════════════════════════════
+    
+    
+    
 
     private List<OOPFrameDto> GenerateInheritanceFrames(CancellationToken ct)
     {
         var frames = new List<OOPFrameDto>();
         int step = 0;
 
-        // Bước 1: Clone members từ Shape sang Circle
+        
         ct.ThrowIfCancellationRequested();
         frames.Add(new OOPFrameDto
         {
@@ -199,7 +199,7 @@ public class OOPConceptsStrategy : IConceptStrategy
             ActionPayload = new Dictionary<string, object> { { "className", "Circle" } }
         });
 
-        // Bước 2: Khởi tạo Circle trên Heap
+        
         ct.ThrowIfCancellationRequested();
         frames.Add(new OOPFrameDto
         {
@@ -217,7 +217,7 @@ public class OOPConceptsStrategy : IConceptStrategy
             ActionPayload = new Dictionary<string, object> { { "className", "Circle" } }
         });
 
-        // Bước 3: Gọi draw() — dispatch qua VTable
+        
         ct.ThrowIfCancellationRequested();
         frames.Add(new OOPFrameDto
         {
@@ -242,7 +242,7 @@ public class OOPConceptsStrategy : IConceptStrategy
             ActionPayload = new Dictionary<string, object> { { "methodName", "draw" }, { "state", "seeking" } }
         });
 
-        // Bước 4: Dispatch hoàn tất — resolved tới Shape.draw()
+        
         ct.ThrowIfCancellationRequested();
         frames.Add(new OOPFrameDto
         {
@@ -271,9 +271,9 @@ public class OOPConceptsStrategy : IConceptStrategy
         return frames;
     }
 
-    // ══════════════════════════════════════════════
-    // Polymorphism: Đa hình — Override & Dynamic Dispatch
-    // ══════════════════════════════════════════════
+    
+    
+    
 
     private List<OOPFrameDto> GeneratePolymorphismFrames(CancellationToken ct)
     {
@@ -281,7 +281,7 @@ public class OOPConceptsStrategy : IConceptStrategy
         int step = 0;
         var allClasses = new List<ClassDefinitionDto> { ShapeClass, CircleClass, RectangleClass };
 
-        // Bước 1: Khởi tạo Circle (đã override draw)
+        
         ct.ThrowIfCancellationRequested();
         frames.Add(new OOPFrameDto
         {
@@ -299,7 +299,7 @@ public class OOPConceptsStrategy : IConceptStrategy
             ActionPayload = new Dictionary<string, object> { { "className", "Circle" } }
         });
 
-        // Bước 2: Khởi tạo Rectangle
+        
         ct.ThrowIfCancellationRequested();
         frames.Add(new OOPFrameDto
         {
@@ -320,7 +320,7 @@ public class OOPConceptsStrategy : IConceptStrategy
             ActionPayload = new Dictionary<string, object> { { "className", "Rectangle" } }
         });
 
-        // Bước 3: Gọi shape.draw() trên Circle — Dynamic Dispatch
+        
         ct.ThrowIfCancellationRequested();
         frames.Add(new OOPFrameDto
         {
@@ -349,7 +349,7 @@ public class OOPConceptsStrategy : IConceptStrategy
             ActionPayload = new Dictionary<string, object> { { "methodName", "draw" }, { "state", "resolved" }, { "targetClass", "Circle" } }
         });
 
-        // Bước 4: Gọi shape.draw() trên Rectangle — Dynamic Dispatch
+        
         ct.ThrowIfCancellationRequested();
         frames.Add(new OOPFrameDto
         {
@@ -381,16 +381,16 @@ public class OOPConceptsStrategy : IConceptStrategy
         return frames;
     }
 
-    // ══════════════════════════════════════════════
-    // Abstraction: Trừu tượng — Không thể khởi tạo lớp abstract
-    // ══════════════════════════════════════════════
+    
+    
+    
 
     private List<OOPFrameDto> GenerateAbstractionFrames(CancellationToken ct)
     {
         var frames = new List<OOPFrameDto>();
         int step = 0;
 
-        // Bước 1: Cố khởi tạo Shape trực tiếp — lỗi abstract
+        
         ct.ThrowIfCancellationRequested();
         frames.Add(new OOPFrameDto
         {
@@ -403,7 +403,7 @@ public class OOPConceptsStrategy : IConceptStrategy
             ActionPayload = new Dictionary<string, object> { { "className", "Shape" } }
         });
 
-        // Bước 2: Khởi tạo Circle (concrete) thành công
+        
         ct.ThrowIfCancellationRequested();
         frames.Add(new OOPFrameDto
         {
@@ -421,7 +421,7 @@ public class OOPConceptsStrategy : IConceptStrategy
             ActionPayload = new Dictionary<string, object> { { "className", "Circle" } }
         });
 
-        // Bước 3: Gọi draw() trên Circle — triển khai abstract method
+        
         ct.ThrowIfCancellationRequested();
         frames.Add(new OOPFrameDto
         {
@@ -450,7 +450,7 @@ public class OOPConceptsStrategy : IConceptStrategy
         return frames;
     }
 
-    // ── Helper ──
+    
 
     private static HeapObjectDto CreateHeapObject(
         string address,

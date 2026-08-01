@@ -1,11 +1,7 @@
 import { ref } from 'vue';
 import type { Ref } from 'vue';
-import type { Camera } from './useCamera';
+import type { Camera } from '../types/canvas.types';
 
-/**
- * useMousePan — xử lý toàn bộ sự kiện chuột để pan camera.
- * Tách ra từ AlgorithmCanvas.vue để đảm bảo SRP.
- */
 export function useMousePan(camera: Ref<Camera>) {
   const isPanning = ref(false);
   const panStart = ref({ x: 0, y: 0 });

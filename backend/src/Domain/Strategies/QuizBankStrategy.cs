@@ -2,10 +2,10 @@ using VisualizationDSA.Domain.Engine;
 
 namespace VisualizationDSA.Domain.Strategies
 {
-    /// <summary>
-    /// Stateless quiz bank — serves pre-built quizzes for DSA, OOP, SOLID, Design Patterns.
-    /// No database required. Vietnamese explanations.
-    /// </summary>
+    
+    
+    
+    
     public class QuizBankStrategy
     {
         private readonly List<StatelessQuizDto> _quizzes;
@@ -94,7 +94,7 @@ namespace VisualizationDSA.Domain.Strategies
         {
             return new List<StatelessQuizDto>
             {
-                // ── DSA: Sorting ────────────────────────────────────
+                
                 new StatelessQuizDto
                 {
                     Id = "sorting-fundamentals",
@@ -112,7 +112,7 @@ namespace VisualizationDSA.Domain.Strategies
                     }
                 },
 
-                // ── DSA: Graph ──────────────────────────────────────
+                
                 new StatelessQuizDto
                 {
                     Id = "graph-traversal",
@@ -129,7 +129,7 @@ namespace VisualizationDSA.Domain.Strategies
                     }
                 },
 
-                // ── OOP Concepts ────────────────────────────────────
+                
                 new StatelessQuizDto
                 {
                     Id = "oop-pillars",
@@ -146,7 +146,7 @@ namespace VisualizationDSA.Domain.Strategies
                     }
                 },
 
-                // ── SOLID Principles ────────────────────────────────
+                
                 new StatelessQuizDto
                 {
                     Id = "solid-principles",
@@ -164,7 +164,7 @@ namespace VisualizationDSA.Domain.Strategies
                     }
                 },
 
-                // ── Design Patterns ─────────────────────────────────
+                
                 new StatelessQuizDto
                 {
                     Id = "design-patterns",
@@ -181,7 +181,7 @@ namespace VisualizationDSA.Domain.Strategies
                     }
                 },
 
-                // ── DI / IoC Container ──────────────────────────────
+                
                 new StatelessQuizDto
                 {
                     Id = "di-container",

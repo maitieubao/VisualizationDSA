@@ -9,11 +9,11 @@ using VisualizationDSA.Application.Services;
 
 namespace VisualizationDSA.WebApi.Filters
 {
-    /// <summary>
-    /// Action filter ghi (append) mỗi tương tác API vào Event Sourcing Ledger một cách
-    /// reactively sau khi action thực thi. Audit không bao giờ làm hỏng request gốc:
-    /// mọi lỗi ghi log đều được nuốt và chỉ log cảnh báo.
-    /// </summary>
+    
+    
+    
+    
+    
     public sealed class AuditEventActionFilter : IAsyncActionFilter
     {
         private readonly IAuditEventService _audit;
@@ -27,10 +27,10 @@ namespace VisualizationDSA.WebApi.Filters
 
         public async Task OnActionExecutionAsync(ActionExecutingContext context, ActionExecutionDelegate next)
         {
-            // Chụp lại payload route/query TRƯỚC khi action chạy.
+            
             var payload = BuildPayload(context);
 
-            // Thực thi action (và các filter phía sau) — reactive: ghi audit SAU khi hoàn tất.
+            
             var executed = await next();
 
             try
@@ -55,7 +55,7 @@ namespace VisualizationDSA.WebApi.Filters
             }
             catch (Exception ex)
             {
-                // Audit là best-effort — không bao giờ ném lỗi ra request gốc.
+                
                 _logger.LogWarning(ex, "Không thể ghi audit event frame cho {Path}", context.HttpContext.Request.Path);
             }
         }

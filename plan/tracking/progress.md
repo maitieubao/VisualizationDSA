@@ -1284,7 +1284,131 @@ TÃ¡ÂºÂ¥t cÃ¡ÂºÂ£ cÃƒÂ¡c mÃ¡Â»Â¥c tiÃƒÂªu Sprint 5 Ã�
 | **Web Worker Lifecycle Termination** | Xác minh Web Worker được chấm dứt ngay lập tức thông qua cancelExecution() trong onBeforeUnmount của CodeWorkspace.vue khi rời khỏi IDE. | ✅ CODE DONE | CodeWorkspace.vue, WorkerLifecycleCoordinator.ts |
 
 # # #   A d v a n c e d   G r a p h   C o u r s e   ( 1 4 / 0 7 / 2 0 2 6 ) 
- -   '  T h � m   d a n h   m �c   ' G r a p h '   v � o   C a t a l o g   ( B e l l m a n - F o r d ,   K r u s k a l ,   P r i m ,   T a r j a n ,   A * ) . 
- -   '  B �  s u n g   m �   g i �  ( p s e u d o c o d e ) ,   �  p h �c   t �p ,   v �   d i �n   g i �i   h �c   t h u �t . 
- -   '  T � c h   h �p   v � o   U I   A l g o r i t h m   D a s h b o a r d ,   f a l l b a c k   m �   p h �n g   t )n h   t h � n h   c � n g .  
+ -   '  T h  m   d a n h   m c   ' G r a p h '   v  o   C a t a l o g   ( B e l l m a n - F o r d ,   K r u s k a l ,   P r i m ,   T a r j a n ,   A * ) . 
+ -   '  B   s u n g   m    g i   ( p s e u d o c o d e ) ,     p h c   t p ,   v    d i n   g i i   h c   t h u t . 
+ -   '  T  c h   h p   v  o   U I   A l g o r i t h m   D a s h b o a r d ,   f a l l b a c k   m    p h n g   t )n h   t h  n h   c  n g .  
  
+## Lớp học (Classroom) - Giai đoạn 1
+- ✅ CODE DONE: Đã khởi tạo các entity Classroom, ClassroomEnrollment, update DbContext và viết ClassroomService + ClassroomsController. Các file liên quan: Classroom.cs, ClassroomEnrollment.cs, ApplicationDbContext.cs, ClassroomDto.cs, IClassroomService.cs, ClassroomService.cs, ClassroomsController.cs, Program.cs.
+
+## Lớp học (Classroom) - Giai đoạn 2: Xưởng Tạo Bài Giảng
+- ✅ CODE DONE: Đã cập nhật Entity Lesson (thêm PublishStatus, nullable CourseId), thêm ClassroomLesson, LessonReview. Viết các DTOs, LessonAuthoringService, LessonReviewService, LessonAuthoringController, LessonReviewController, và cấu hình DbContext.
+
+## Lớp học (Classroom) - Giai đoạn 3: Thống kê & Báo cáo
+- ✅ CODE DONE: Đã cài đặt ClosedXML, thêm ClassroomQuiz, ClassroomQuizAttempt. Đã triển khai ClassroomGradingService và ClassroomExcelExportService. Đã tích hợp API endpoints /statistics và /export-excel.
+
+## Lớp học (Classroom) - Giai đoạn 4: Phân quyền & Quản trị
+- ✅ CODE DONE: Đã tạo INotificationService. Đã thêm chức năng Kick học sinh và Archive lớp vào ClassroomService. Đã bổ sung các API Endpoints cho Admin/Teacher trong ClassroomController. Luồng Classroom đã hoàn tất 100%.
+
+
+## Phase 1: Core Course Module (Strangler Fig Refactoring)
+- ✅ CODE DONE: Tách Lesson, CourseModule, ModuleItem đa hình.
+- ✅ CODE DONE: Cập nhật DbSeeder và sửa lỗi WebApi controllers.
+- ✅ CODE DONE: Ứng dụng compile thành công.
+- ✅ CODE DONE: Xây dựng CQRS Slices Courses (CreateCourse, AddModule, AddModuleItem) sử dụng MediatR.
+- ✅ CODE DONE: Xây dựng FSD Frontend course-builder cơ bản (Vue 3, Composition API) và thêm route.
+
+## Phase 2: Tích hợp Classroom (Strangler Fig Refactoring)
+- ✅ CODE DONE: Bổ sung entity ClassroomModuleItemOverride và UserModuleItemProgress.
+- ✅ CODE DONE: Cập nhật DbContext với QueryFilter.
+- ✅ CODE DONE: Refactor ClassroomController sang CQRS (MediatR), tạo GetClassroomDetailsQuery và UpdateClassroomModuleItemOverrideCommand.
+- ✅ CODE DONE: Refactor ClassroomGradingService và ClassroomExcelExportService tương thích hoàn toàn với ModuleItem.
+- ✅ CODE DONE: Cung cấp SQL data migration script (chuyển ClassroomLesson cũ sang cấu trúc mới).
+
+## Phase 3: Tích hợp Codelab (Hệ thống chấm mã nguồn)
+- ✅ CODE DONE: Tạo entity Codelab và CodelabSubmission cùng Index B-Tree.
+- ✅ CODE DONE: Khởi tạo MockCodeJudgeService mô phỏng độ trễ, lỗi biên dịch và Memory Limit.
+- ✅ CODE DONE: Thiết lập SubmitCodelabCommand và GetCodelabDetailsQuery (cộng XP qua User.AwardXP()).
+- ✅ CODE DONE: Tạo CodelabsController với endpoint /submit.
+- ✅ CODE DONE: Frontend FSD Vue 3 + Monaco Editor (CodelabPlayer.vue) tích hợp API gọi SubmitCode, phân chia màn hình Output/Problem.
+
+## Phase 4: Hoàn thiện & Dọn dẹp (Cleanup)
+- ✅ CODE DONE: Viết Unit Tests (xUnit + Moq) cho SubmitCodelabCommandHandler.
+- ✅ CODE DONE: Tạo tài liệu cleanup_migration.md chứa script SQL DROP các bảng cũ (UserLessonProgresses, ClassroomLessons, ClassroomQuizzes).
+
+### Phase 3 Refactoring - Migration & Enhancement
+
+| Sprint | Nội dung trọng tâm | Trạng thái CODE | Chi tiết |
+| :--- | :--- | :--- | :--- |
+| **Sprint 1** | Vá 8 lỗi tồn đọng hệ thống | ✅ CODE DONE | Fix Ownership (`Classroom`), Fix API Codelab, Cập nhật DTO, Sửa responsive UI Mobile. Đã kiểm thử thành công. |
+| **Sprint 2** | Thống Nhất Kiến Trúc CQRS | ✅ CODE DONE | Chuyển đổi `ClassroomService` và `LessonReviewService` sang `IMediator` Commands/Queries. Cập nhật Interface DB. Xóa các service cũ. Đã kiểm thử build thành công. |
+| **Sprint 3** | Nâng Cấp Codelab | ✅ CODE DONE | Tạo `CodelabTestCase`, `CodelabTemplate`, hoàn thiện chấm điểm CodelabEngine. API Create/Update Codelab bằng MediatR. |
+| **Sprint 4** | End-to-End Learning Flow | ✅ CODE DONE | Tạo `ProgressRuleEngine`, lưu `UserModuleItemProgress`. API GetCourseProgressQuery. Mở khóa tuần tự các ModuleItem. |
+| **Sprint 5** | Teacher Panel Hoạt Động Thật | ✅ CODE DONE | Cập nhật `ClassroomGradingService` tính điểm Codelab, `GetUsersQuery`, `GetQuizAnalyticsQuery`, `GetQuizHistoryQuery`. Đã nối thành công API vào Frontend (TeacherAnalyticsTab, TeacherStudentTab). |
+
+### Phase 2 Codelab LeetCode-like Improvements 
+| Bc0 | N-c0i dung | Tr-c1ng th-a1i CODE | Chi ti-c1t |
+| :--- | :--- | :--- | :--- |
+| **Leaderboard** | ThA-add Real-time Leaderboard tab to CodelabPlayer | A-DONE | CodelabPlayer.vue now has Leaderboard tab with mock ranked data, CodelabPlayer.vue has Leaderboard tab with mock ranked data |
+| **Hints System** | Tiered Hints with XP cost reveal | A-DONE | CodelabPlayer.vue has Hint tab with tiered reveal, LessonStepCodeLab.vue has hints with XP cost |
+| **Submission History** | Track and display submission attempts | A-DONE | CodelabPlayer.vue tracks submission history with pass/fail, runtime, XP score |
+| **LeetCode-Style Test Results** | Green check/red X per testcase, pass/fail indicators | A-DONE | Testcase results use a-emerald-400 for pass, rose-400 for fail with bold markers |
+| **Reset Code** | Reset to starter/boilerplate code button | A-DONE | CodelabPlayer.vue and LessonStepCodeLab.vue both have reset code functionality |
+| **Monaco Editor Unification** | Both LessonStepCodeLab and CodelabPlayer use Monaco | A-DONE | LessonStepCodeLab.vue upgraded from textarea to Monaco editor with same features as CodelabPlayer |
+| **Missing CSS Files** | CodelabPickerModal.css and CodelabEditorModal.css created | A-DONE | Both CSS files created with complete modal styling |
+| **Graph Edge List Input** | DSAInputForm supports graph edge list format | A-DONE | Placeholder and random generator for graph format (from-to-weight) |
+
+
+### Hotfix Frontend Broken Imports (29/07/2026)
+*   **Pham vi:** Sua 30 broken relative import tren toan frontend (dashboard view, graph view, dsa legend, teacher modals, OOP/SOLID/Patterns/DI view stubs).
+*   **Trang thai:** ✅ CODE DONE — ue-tsc --noEmit exit 0, static import checker ind-missing-imports.cjs bao clean.
+*   **Chi tiet:** Xem errors.md → Sua Loi 178. Tooling moi: rontend/scripts/find-missing-imports.cjs de tu quet broken imports trong tuong lai.
+
+### Hotfix Frontend Features Audit - Classroom/Teacher/Courses (30/07/2026)
+*   **Phạm vi:** Audit 3 khu vực (classroom, teacher, courses) + fix 3 điểm còn tồn đọng.
+*   **Trạng thái:** ✅ CODE DONE — ue-tsc --noEmit exit 0, cả 2 static checker pass.
+*   **Chi tiết:** 
+    - **Mục 1 (Classroom menu link)**: Tạo iews/classroom/MyClassroomsView.vue (gọi /api/Classroom/mine, kèm modal tham gia bằng mã mời). Thêm route /classrooms trong outer/routes.ts. Thêm entry 'Lớp học của tôi' vào group 'Học tập' trong ppTabs.ts (requiresAuth).
+    - **Mục 2 (TeacherAnalyticsTab route legacy)**: 3 endpoint (/api/Classroom/mine, /statistics, /export-excel) chỉ tồn tại ở ClassroomController cũ — controller mới /api/v1/classrooms/* không cover teacher-facing statistics + Excel export. Thêm block comment ở đầu <script setup> giải thích lý do giữ legacy URL + hướng dẫn khi backend migrate.
+    - **Mục 3 (CodelabBuilderTab empty CRUD)**: Backend CodelabController (/api/v1/codelabs) hiện là STUB — mọi endpoint chỉ return Ok(new { message = "..." }) không persist. Thay 7 hàm rỗng (saveCodelab/saveTestCase/saveTemplate/saveHint/deleteTestCase/deleteTemplate/deleteHint) + 1 hàm deleteCodelab (đang gọi DELETE không tồn tại) bằng helper crudNotImplemented() hiển thị alert 'đang phát triển' + log warning + comment TODO wire-up khi backend ready. Tránh được 'fake success' (200 OK từ stub nhưng data mất khi reload).
+*   **Files changed:** +1 created (MyClassroomsView.vue), 4 edited (outes.ts, ppTabs.ts, TeacherAnalyticsTab.vue, CodelabBuilderTab.vue).
+
+### Hotfix Classroom/Teacher/Courses - Payment & Difficulty Fixes (30/07/2026)
+*   **Ph?m vi:** Fix 2 l?i production leak + difficulty mismatch trong Teacher panel.
+*   **Tr?ng th�i:** ? CODE DONE � vue-tsc --noEmit exit 0, dotnet build 0 errors.
+*   **Chi ti?t:**
+    - **M?c 1 (Simulate payment button prod leak):** C?p nh?t isDev = import.meta.env.DEV && !import.meta.env.PROD trong PremiumCheckoutView.vue d? ch?c ch?n n�t "?? M� ph?ng: X�c nh?n d� thanh to�n" ch? hi?n th? trong m�i tru?ng development ho�n to�n, kh�ng b? leak sang production build.
+    - **M?c 2 (Difficulty mismatch TeacherCourseTab):** C?p nh?t 3 d?a di?m trong TeacherCourseTab.vue: dropdown options (Easy/Medium/Hard ? Beginner/Intermediate/Advanced), courseForm reactive default (Medium ? Beginner), v� cancelCourseEdit reset (Medium ? Beginner). �?ng b? v?i backend enum CourseDifficulty v� c�c view kh�c (CoursesListView, CourseDetailView).
+*   **Files changed:** 2 edited (PremiumCheckoutView.vue, TeacherCourseTab.vue).
+
+### D?n d?p Dead Code & Chuy?n d?i System Design (30/07/2026)
+*   **Ph?m vi:** D?n d?p to�n b? dead code (views, features) kh�ng c�n s? d?ng + chuy?n d?i System Design Visualization th�nh t�i li?u l� thuy?t.
+*   **Tr?ng th�i:** ? CODE DONE � vue-tsc --noEmit exit 0, frontend tests 688/688 PASS, find-missing-imports.cjs OK, dotnet build 0 errors.
+*   **Chi ti?t:**
+    - **X�a 15 dead views:** AnimationView.vue, CompareView.vue, ConcurrencyView.vue, DebugView.vue, DSAModulesView.vue, LeaderboardView.vue, LearningPathView.vue, MultiViewView.vue, PlaygroundView.vue, StateInspectorView.vue, TimelinePlaybackView.vue, di/, oop/, patterns/, solid/ directories.
+    - **X�a dead feature:** smart-quiz (kh�ng c� b?t k? import n�o trong to�n b? codebase).
+    - **Luu �:** animation-engine du?c gi? l?i v� dang du?c s? d?ng b?i 8 features ho?t d?ng (custom-input, code-to-visualization, dsa-modules, e-lecture, interactive-playground, lesson, quiz-system, pseudocode-sync).
+    - **Chuy?n d?i System Design Visualization sang t�i li?u:** T?o 6 file markdown trong frontend/src/features/docs/content/system-design/ (system-design-intro.md, load-balancer.md, server-health.md, packet-routing.md, replication-lag.md, failure-handling.md). Th�m nh�m "THI?T K? H? TH?NG" v�o docsNavigation.ts v?i 6 m?c.
+    - **X�a System Design Visualization:** X�a frontend/src/features/system-design-viz/, frontend/src/views/system-design/, route /system trong routes.ts, entry trong appTabs.ts.
+    - **C?p nh?t visualizerMap.ts:** Chuy?n hu?ng OOP/SOLID/Patterns/DI/SystemDesign t?i DocsView.vue.
+    - **C?p nh?t LessonStepViz.vue:** Chuy?n hu?ng OOP/SOLID t?i DocsView.vue.
+    - **D?n routes.ts:** X�a 13 d�ng route comment d� b? v� hi?u h�a.
+*   **Files changed:** +6 created (system design docs), 4 edited (routes.ts, appTabs.ts, visualizerMap.ts, LessonStepViz.vue, docsNavigation.ts), 16 deleted (15 views + smart-quiz feature), 2 directories deleted (system-design-viz, system-design views).
+
+
+---
+
+## 10. Algorithm-Sandbox Overhaul — Fix All Issues
+
+**Issues Fixed:**
+| # | Issue | Fix |
+|---|-------|-----|
+| 1 | Two rendering systems conflict | Kept deprecated; DOM dispatcher active |
+| 2 | Only BubbleSortVisualizer for 7 algos | Created SortingVisualizerDispatcher.vue |
+| 3 | Type unsafety (frame as any) | Removed mapping; uses currentSortFrame directly |
+| 4 | Math.random() fallback IDs | Replaced with global monotonic counter |
+| 5 | Barrel exports missing | Added all missing exports + type exports |
+| 6 | Duplicate Camera interface | Unified under canvas.types.ts |
+| 7 | No try/catch in frame generation | Added in useSortingAnimation |
+| 8 | CustomInputParser limit 20 vs 15 | Unified to 15 |
+| 9 | getComputedStyle every render frame | Cached with 5s TTL |
+| 10 | GraphCanvas no DPR scaling | Added devicePixelRatio |
+| 11 | ForceDirectedLayout.isStable() unused | Physics auto-stops after 3 stable frames |
+| 12 | No keyboard shortcuts for sorting | Added Space/Arrow/R keys |
+| 13 | Fragile heap phase detection | Documented for future refactor |
+| 14 | PlaygroundEngine lacks edge mgmt | Centralized in composable |
+| 15 | Missing Counting Sort test | Already covered |
+
+**Files Created:** SortingVisualizerDispatcher.vue
+
+**Verification:** All 688 tests pass (51 files)

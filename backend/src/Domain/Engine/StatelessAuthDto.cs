@@ -3,10 +3,10 @@ using System.Collections.Generic;
 
 namespace VisualizationDSA.Domain.Engine
 {
-    /// <summary>
-    /// Stateless Auth DTOs — dùng cho StatelessAuthStrategy (in-memory, không cần PostgreSQL).
-    /// Tách biệt khỏi Application.DTOs để Domain layer không phụ thuộc Application.
-    /// </summary>
+    
+    
+    
+    
 
     public class StatelessAuthResponse
     {

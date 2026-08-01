@@ -1,6 +1,6 @@
 <template>
   <div class="admin-panel">
-    <!-- Header -->
+    
     <header class="panel-header">
       <div class="header-main">
         <h1 class="panel-title">
@@ -11,7 +11,7 @@
         <p class="panel-subtitle">Quản lý toàn bộ người dùng, quyền hệ thống, dữ liệu quiz và theo dõi doanh thu thanh toán.</p>
       </div>
 
-      <!-- Navigation Tabs -->
+      
       <div class="tabs-nav">
         <button 
           v-for="tab in tabs" 
@@ -26,7 +26,7 @@
       </div>
     </header>
 
-    <!-- Content Area -->
+    
     <div class="panel-content">
       <AdminDashboardTab v-if="activeTab === 'dashboard'" ref="dashboardTabRef" />
       <AdminUsersTab v-else-if="activeTab === 'users'" @refresh-dashboard="refreshDashboard" />

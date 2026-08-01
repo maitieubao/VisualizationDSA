@@ -8,9 +8,9 @@ using VisualizationDSA.Domain.Interfaces;
 
 namespace VisualizationDSA.Infrastructure.Services
 {
-    /// <summary>
-    /// Triển khai LeaderboardService — truy vấn trực tiếp từ User repository kèm theo in-memory cache.
-    /// </summary>
+    
+    
+    
     public class LeaderboardService : ILeaderboardService
     {
         private readonly IUnitOfWork _unitOfWork;
@@ -25,7 +25,7 @@ namespace VisualizationDSA.Infrastructure.Services
 
         public async Task<IEnumerable<LeaderboardEntryDto>> GetTopUsersAsync(int limit = 20)
         {
-            // Clamp limit để tránh truy vấn quá lớn
+            
             limit = Math.Clamp(limit, 1, 100);
 
             var cacheKey = $"{LeaderboardCacheKey}_{limit}";

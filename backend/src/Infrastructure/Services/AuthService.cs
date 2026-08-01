@@ -19,7 +19,7 @@ namespace VisualizationDSA.Infrastructure.Services
         private readonly IUnitOfWork _unitOfWork;
         private readonly IConfiguration _configuration;
 
-        // Access token sống 15 phút — refresh token sẽ gia hạn
+        
         private static readonly TimeSpan AccessTokenLifetime = TimeSpan.FromMinutes(15);
 
         public AuthService(IUnitOfWork unitOfWork, IConfiguration configuration)
@@ -30,21 +30,21 @@ namespace VisualizationDSA.Infrastructure.Services
 
         public async Task<AuthResponse> RegisterAsync(RegisterRequest request)
         {
-            // ✅ FIX 1.2: Kiểm tra email đúng cách — FindAsync trả IEnumerable
+            
             var existingUsers = await _unitOfWork.Users.FindAsync(u => u.Email == request.Email);
             if (existingUsers.Any())
             {
                 throw new ArgumentException("Email này đã được sử dụng bởi tài khoản khác.");
             }
 
-            // Kiểm tra username trùng
+            
             var existingByUsername = await _unitOfWork.Users.FindAsync(u => u.Username == request.Username);
             if (existingByUsername.Any())
             {
                 throw new ArgumentException("Username này đã được sử dụng bởi tài khoản khác.");
             }
 
-            // ✅ FIX 1.1: BCrypt thay vì SHA256 thô
+            
             var passwordHash = HashPassword(request.Password);
 
             var user = new User(request.Email, request.Username, passwordHash);
@@ -67,7 +67,7 @@ namespace VisualizationDSA.Infrastructure.Services
             var users = await _unitOfWork.Users.FindAsync(u => u.Email == request.Email);
             var user  = users.FirstOrDefault();
 
-            // Thông báo chung để không lộ user có tồn tại hay không
+            
             if (user == null || !VerifyPassword(request.Password, user.PasswordHash))
             {
                 throw new UnauthorizedAccessException("Email hoặc mật khẩu không đúng.");
@@ -87,7 +87,7 @@ namespace VisualizationDSA.Infrastructure.Services
             };
         }
 
-        // ✅ FIX 1.3: Đọc userId từ Guid string (đã xác thực bởi JWT middleware)
+        
         public async Task<UserDto> GetCurrentUserAsync(string userId)
         {
             if (!Guid.TryParse(userId, out var id))
@@ -109,7 +109,7 @@ namespace VisualizationDSA.Infrastructure.Services
             if (existingToken == null)
                 throw new UnauthorizedAccessException("Refresh token không hợp lệ hoặc đã hết hạn.");
 
-            // Revoke token cũ (Rotation strategy — mỗi refresh tạo token mới)
+            
             existingToken.Revoke();
             await _unitOfWork.CommitAsync();
 
@@ -139,17 +139,17 @@ namespace VisualizationDSA.Infrastructure.Services
                 token.Revoke();
                 await _unitOfWork.CommitAsync();
             }
-            // Không throw nếu token không tìm thấy — idempotent logout
+            
         }
 
-        // ── Helpers ──────────────────────────────────────────────────────
+        
 
         private async Task<(string accessToken, string refreshTokenValue)> GenerateTokenPairAndSaveAsync(User user)
         {
             var accessToken   = GenerateAccessToken(user);
             var refreshToken  = CreateRefreshToken(user.Id);
 
-            // Persist refresh token to DB
+            
             await _unitOfWork.RefreshTokens.AddAsync(refreshToken);
             await _unitOfWork.CommitAsync();
 
@@ -189,12 +189,12 @@ namespace VisualizationDSA.Infrastructure.Services
         {
             return new RefreshToken(
                 userId:    userId,
-                token:     Guid.NewGuid().ToString("N") + Guid.NewGuid().ToString("N"), // 64-char token
+                token:     Guid.NewGuid().ToString("N") + Guid.NewGuid().ToString("N"), 
                 expiresAt: DateTime.UtcNow.AddDays(30)
             );
         }
 
-        // ✅ FIX 1.1: BCrypt với work factor 12 — industry standard
+        
         private static string HashPassword(string password)
             => BCrypt.Net.BCrypt.HashPassword(password, workFactor: 12);
 

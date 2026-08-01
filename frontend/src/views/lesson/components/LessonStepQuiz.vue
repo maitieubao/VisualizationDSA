@@ -1,6 +1,6 @@
 <template>
   <div class="lesson-step-quiz flex flex-col h-full overflow-y-auto p-6 text-slate-200 font-sans max-w-3xl mx-auto w-full">
-    <!-- Header -->
+    
     <div class="border-b border-white/10 pb-4 mb-6 text-center">
       <div class="flex items-center justify-center gap-1.5 text-xs font-semibold text-indigo-400 uppercase tracking-wider">
         <svg class="w-4 h-4 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
@@ -12,7 +12,7 @@
       <p class="text-xs text-slate-400 mt-1">Hoàn thành bài Quiz củng cố kiến thức để mở khóa phần Code Lab.</p>
     </div>
 
-    <!-- Questions list -->
+    
     <div v-if="questions.length > 0" class="flex flex-col gap-6 flex-1">
       <div
         v-for="(q, qIdx) in questions"
@@ -42,7 +42,7 @@
         </div>
       </div>
 
-      <!-- Result / Submit -->
+      
       <div class="mt-4 p-5 rounded-2xl bg-slate-900 border border-white/10 flex items-center justify-between">
         <div>
           <span class="text-xs font-semibold text-slate-400">Đã chọn {{ answeredCount }} / {{ questions.length }} câu hỏi</span>
@@ -57,7 +57,7 @@
       </div>
     </div>
 
-    <!-- Fallback default question if none loaded -->
+    
     <div v-else class="flex flex-col items-center justify-center flex-1 text-center py-12">
       <div class="w-16 h-16 rounded-2xl bg-indigo-600/20 border border-indigo-500/30 flex items-center justify-center text-indigo-400 mb-4">
         <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">

@@ -61,7 +61,7 @@ const activeLine = computed(() => store.currentFrame?.activeLine ?? -1);
   font-style: italic;
 }
 
-/* Pseudocode line */
+
 .pseudocode-line {
   padding: 6px 12px;
   border-radius: var(--radius-md);

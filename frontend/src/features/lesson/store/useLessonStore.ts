@@ -4,8 +4,8 @@ import type { Lesson } from '../types/lesson.types';
 import { LESSONS } from '../../../data/lessons';
 import { useAuthStore } from '../../auth/store/useAuthStore';
 import { fetchLessonProgress, saveLessonProgress, awardXp } from '../services/lessonApi';
-// Giả định có composable useToast, nếu không có, sẽ dùng console.log/alert tạm
-// import { useToastStore } from '../../../composables/useToast';
+
+
 
 export function getLessonProgress(lessonId: string): {
   hasWatchedVisualizer: boolean;
@@ -26,24 +26,24 @@ export function getLessonProgress(lessonId: string): {
 export const useLessonStore = defineStore('lessonStudy', () => {
   const authStore = useAuthStore();
 
-  // State
+  
   const currentLesson = ref<Lesson | null>(null);
   const activeStep = ref<number>(1);
   const isLoading = ref<boolean>(false);
   const error = ref<string | null>(null);
 
-  // Progress State
+  
   const hasWatchedVisualizer = ref<boolean>(false);
   const quizScore = ref<number | null>(null);
   const bestScore = ref<number>(0);
   const codelabCompleted = ref<boolean>(false);
   const xpAwarded = ref<number>(0);
 
-  // Sync State
+  
   const isSyncing = ref<boolean>(false);
   const isOnline = ref<boolean>(navigator.onLine);
 
-  // Computed
+  
   const quizPassed = computed(() => {
     if (!currentLesson.value || quizScore.value === null) return false;
     const requiredScore = Math.ceil(currentLesson.value.quizQuestions.length * 0.7);
@@ -53,10 +53,10 @@ export const useLessonStore = defineStore('lessonStudy', () => {
   const totalXpEarned = computed(() => xpAwarded.value);
   const isLessonComplete = computed(() => codelabCompleted.value);
 
-  // LocalStorage Key Helper
+  
   const getStorageKey = (lessonId: string) => `lesson_progress_${lessonId}`;
 
-  // ─── Network Status ─────────────────────────────────────────
+  
   window.addEventListener('online', () => {
     isOnline.value = true;
     syncToServer().catch(() => {});
@@ -65,7 +65,7 @@ export const useLessonStore = defineStore('lessonStudy', () => {
     isOnline.value = false;
   });
 
-  // ─── Load / Sync ────────────────────────────────────────────
+  
   function loadFromLocalStorage(lessonId: string) {
     const data = localStorage.getItem(getStorageKey(lessonId));
     if (data) {
@@ -97,7 +97,7 @@ export const useLessonStore = defineStore('lessonStudy', () => {
   async function syncToServer(force = false) {
     if (!currentLesson.value) return;
     
-    // Nếu không đăng nhập hoặc mất mạng, chỉ lưu local
+    
     const token = localStorage.getItem('token');
     if (!token || !isOnline.value) {
       saveToLocalStorage();
@@ -117,11 +117,11 @@ export const useLessonStore = defineStore('lessonStudy', () => {
       };
       
       await saveLessonProgress(payload);
-      saveToLocalStorage(); // Lưu đồng bộ
+      saveToLocalStorage(); 
     } catch (err) {
       console.warn('Đồng bộ thất bại, sẽ thử lại sau', err);
       saveToLocalStorage();
-      // Thử lại sau 10 giây nếu lỗi
+      
       setTimeout(() => {
         if (isOnline.value) syncToServer(true);
       }, 10000);
@@ -130,7 +130,7 @@ export const useLessonStore = defineStore('lessonStudy', () => {
     }
   }
 
-  // ─── Debounce Sync ──────────────────────────────────────────
+  
   let syncTimeout: ReturnType<typeof setTimeout> | null = null;
   function debouncedSync() {
     if (syncTimeout) clearTimeout(syncTimeout);
@@ -140,12 +140,12 @@ export const useLessonStore = defineStore('lessonStudy', () => {
     }, 3000);
   }
 
-  // ─── Actions ────────────────────────────────────────────────
+  
   async function loadLesson(lessonId: string) {
     isLoading.value = true;
     error.value = null;
     
-    // Khôi phục giá trị mặc định
+    
     activeStep.value = 1;
     hasWatchedVisualizer.value = false;
     quizScore.value = null;
@@ -157,10 +157,10 @@ export const useLessonStore = defineStore('lessonStudy', () => {
     if (lesson) {
       currentLesson.value = lesson;
       
-      // 1. Khôi phục từ localStorage trước để hiển thị ngay
+      
       loadFromLocalStorage(lessonId);
       
-      // 2. Fetch server progress
+      
       const token = localStorage.getItem('token');
       if (token && isOnline.value) {
         try {
@@ -179,7 +179,7 @@ export const useLessonStore = defineStore('lessonStudy', () => {
         }
       }
       
-      // Khôi phục bước (step) hợp lý nhất
+      
       if (codelabCompleted.value) {
         activeStep.value = 4;
       } else if (quizPassed.value) {
@@ -222,7 +222,7 @@ export const useLessonStore = defineStore('lessonStudy', () => {
     await syncToServer(true);
 
     if (quizPassed.value) {
-      // Chỉ nhận XP phần Quiz (50%)
+      
       const halfXp = Math.floor(currentLesson.value.xpReward * 0.5);
       if (xpAwarded.value < halfXp) {
         const diff = halfXp - xpAwarded.value;
@@ -282,7 +282,7 @@ export const useLessonStore = defineStore('lessonStudy', () => {
     isLoading,
     error,
     
-    // Progress State
+    
     hasWatchedVisualizer,
     quizScore,
     bestScore,
@@ -290,13 +290,13 @@ export const useLessonStore = defineStore('lessonStudy', () => {
     codelabCompleted,
     xpAwarded,
     
-    // Sync Status
+    
     isSyncing,
     isOnline,
     totalXpEarned,
     isLessonComplete,
 
-    // Methods
+    
     loadLesson,
     markVisualizerWatched,
     submitQuiz,

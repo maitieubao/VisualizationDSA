@@ -5,7 +5,7 @@
       <p class="panel-subtitle">Quản lý danh tính cá nhân và thông tin hiển thị trên nền tảng VisualizationDSA.</p>
     </div>
 
-    <!-- Summary Hero Banner -->
+    
     <div class="summary-hero-card">
       <div class="summary-avatar" :class="{ 'summary-avatar--pro': authStore.isPremium }">
         {{ initials }}

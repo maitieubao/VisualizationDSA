@@ -15,7 +15,7 @@
       </button>
     </div>
 
-    <!-- Key Terms Tag Cloud -->
+    
     <div class="key-terms-cloud mt-4" v-if="allTags.length > 0">
       <span class="text-[10px] text-text-muted uppercase tracking-wider block mb-2 font-bold">
         Từ khóa bài học (Click để highlight Code):

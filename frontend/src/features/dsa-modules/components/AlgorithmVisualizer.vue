@@ -6,7 +6,7 @@
       v-bind="rendererProps"
     />
 
-    <!-- HUD Step Description (Glassmorphic HUD Card) -->
+    
     <div
       v-if="currentFrame"
       class="absolute top-3 left-4 max-w-[360px] pointer-events-auto hover:opacity-10 transition-opacity duration-200 rounded-xl p-3 border border-white/5 shadow-2xl select-none"
@@ -20,7 +20,7 @@
       </p>
     </div>
 
-    <!-- Empty state -->
+    
     <div
       v-if="!currentFrame"
       class="absolute inset-0 flex items-center justify-center"
@@ -30,7 +30,7 @@
       </p>
     </div>
 
-    <!-- Progress bar -->
+    
     <div class="absolute bottom-0 left-0 right-0 h-[3px] bg-bg-surface/60">
       <div
         class="h-full bg-gradient-to-r from-cyan-500 to-blue-600 rounded-r-sm transition-[width] duration-100 ease-out shadow-[0_0_8px_rgba(6,182,212,0.6)]"
@@ -48,6 +48,7 @@ import BarChartRenderer from './renderers/BarChartRenderer.vue';
 import BoxArrayRenderer from './renderers/BoxArrayRenderer.vue';
 import TreeRenderer from './renderers/TreeRenderer.vue';
 import TubeRenderer from './renderers/TubeRenderer.vue';
+import GraphRenderer from './renderers/GraphRenderer.vue';
 
 const animStore = useAnimationStore();
 const algoStore = useAlgorithmStore();
@@ -57,7 +58,8 @@ const totalSteps = computed(() => animStore.totalSteps);
 const progressPercent = computed(() => animStore.progressPercent);
 
 const activeRenderer = computed<Component>(() => {
-  const category = algoStore.currentAlgorithm?.category.toLowerCase();
+  const category = algoStore.currentAlgorithm?.category?.toLowerCase();
+  const algoId = algoStore.currentAlgorithm?.id;
 
   switch (category) {
     case 'sorting':
@@ -65,8 +67,9 @@ const activeRenderer = computed<Component>(() => {
     case 'searching':
       return BoxArrayRenderer;
     case 'tree':
-    case 'graph':
       return TreeRenderer;
+    case 'graph':
+      return GraphRenderer;
     case 'stack-queue':
       return TubeRenderer;
     default:
@@ -75,9 +78,10 @@ const activeRenderer = computed<Component>(() => {
 });
 
 const rendererProps = computed(() => {
-  const category = algoStore.currentAlgorithm?.category.toLowerCase();
+  const category = algoStore.currentAlgorithm?.category?.toLowerCase();
+  const algoId = algoStore.currentAlgorithm?.id;
+
   if (category === 'stack-queue') {
-    const algoId = algoStore.currentAlgorithm?.id ?? 'stack';
     return { mode: algoId === 'queue' ? 'queue' : 'stack' };
   }
   return {};

@@ -16,19 +16,19 @@ app.use(pinia)
 app.use(MotionPlugin)
 app.component('BaseIcon', BaseIcon)
 
-// ── Global fetch interceptor to handle Bearer token injection and auto-refresh ──
+
 const originalFetch = window.fetch;
 window.fetch = async function (input: RequestInfo | URL, init?: RequestInit): Promise<Response> {
   const authStore = useAuthStore();
   const url = typeof input === 'string' ? input : (input instanceof URL ? input.toString() : input.url);
 
-  // Check if it is a VisualizationDSA API request
+  
   const isApiRequest = url.includes('/api/v1/') || url.includes('/api/v1/concepts/');
   const isRefreshRequest = url.includes('/auth/refresh') || url.includes('/concepts/auth/refresh');
 
   let headers = new Headers(init?.headers);
 
-  // Inject Bearer token if available
+  
   if (isApiRequest && !isRefreshRequest) {
     const token = authStore.getAccessToken();
     if (token) {
@@ -36,7 +36,7 @@ window.fetch = async function (input: RequestInfo | URL, init?: RequestInit): Pr
     }
   }
 
-  // Clone the request config with the new headers
+  
   const newInit = {
     ...init,
     headers,
@@ -44,9 +44,9 @@ window.fetch = async function (input: RequestInfo | URL, init?: RequestInit): Pr
 
   let response = await originalFetch(input, newInit);
 
-  // Handle 401 Unauthorized for API requests by refreshing the token and retrying
-  // NOTE: Do NOT attempt refresh on 403 Forbidden — that is a PERMISSION error, not an auth error.
-  // Treating 403 as 401 would incorrectly clear the auth state when Admin visits Teacher-only endpoints.
+  
+  
+  
   if (response.status === 401 && isApiRequest && !isRefreshRequest) {
     console.warn(`[Fetch Interceptor] 401 Unauthorized detected for ${url}. Attempting token refresh...`);
     try {
@@ -69,8 +69,8 @@ window.fetch = async function (input: RequestInfo | URL, init?: RequestInit): Pr
   return response;
 };
 
-// ── Khởi động auth & progress TRƯỚC khi mount ──────────────────────────────
-// Thứ tự quan trọng: auth trước → progress sau (progress cần access token)
+
+
 const authStore     = useAuthStore()
 const progressStore = useUserProgressStore()
 

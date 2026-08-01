@@ -9,7 +9,7 @@
         </p>
       </div>
 
-      <!-- Demo SVG Area -->
+      
       <div class="demo-area">
         <svg
           ref="demoSvgRef"
@@ -30,7 +30,7 @@
             VisualizationDSA — Export Preview
           </text>
 
-          <!-- Sample nodes -->
+          
           <g v-for="node in demoNodes" :key="node.id">
             <rect
               :x="node.x - 60"
@@ -54,7 +54,7 @@
             </text>
           </g>
 
-          <!-- Sample edges -->
+          
           <line
             v-for="(edge, idx) in demoEdges"
             :key="idx"
@@ -70,7 +70,7 @@
         </svg>
       </div>
 
-      <!-- Action Buttons -->
+      
       <div class="action-bar">
         <button class="open-modal-btn" @click="store.openModal()">
           XUẤT SƠ ĐỒ / SHARE
@@ -78,7 +78,7 @@
       </div>
     </div>
 
-    <!-- Share Export Modal -->
+    
     <ShareExportModal
       :svg-element="demoSvgElement"
       :workspace-state="currentWorkspaceState"

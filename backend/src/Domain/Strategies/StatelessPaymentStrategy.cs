@@ -6,10 +6,10 @@ using VisualizationDSA.Domain.Engine;
 
 namespace VisualizationDSA.Domain.Strategies
 {
-    /// <summary>
-    /// Stateless Payment Strategy — mô phỏng luồng thanh toán Premium mà KHÔNG cần PostgreSQL / SePay.
-    /// In-memory: hóa đơn, giao dịch, trạng thái Premium đều lưu trong ConcurrentDictionary.
-    /// </summary>
+    
+    
+    
+    
     public class StatelessPaymentStrategy
     {
         private readonly ConcurrentDictionary<string, InMemoryOrder> _orders = new();
@@ -108,7 +108,7 @@ namespace VisualizationDSA.Domain.Strategies
             if (order.Status == "Completed")
                 return MapToOrderDto(order);
 
-            // Simulate successful payment verification
+            
             order.Status = "Completed";
             order.CompletedAt = DateTime.UtcNow;
 
@@ -211,7 +211,7 @@ namespace VisualizationDSA.Domain.Strategies
             }
         }
 
-        // ── Helpers ──────────────────────────────────────────────────────
+        
 
         private void LogTransaction(string orderId, string userId, string action, decimal amount, string status)
         {
@@ -251,7 +251,7 @@ namespace VisualizationDSA.Domain.Strategies
             };
         }
 
-        // ── Inner Types ──────────────────────────────────────────────────
+        
 
         private class InMemoryOrder
         {

@@ -1,80 +1,172 @@
 ---
-title: Hàng đợi (Queue) – Nguyên lý FIFO
-description: Khám phá Queue, cấu trúc dữ liệu mô phỏng lại cách thế giới thực vận hành sự công bằng: Người đến trước luôn được phục vụ trước.
+title: Hàng đợi (Queue)
+description: Cấu trúc dữ liệu FIFO định hình sự công bằng của vạn vật. Giải mã lý do tại sao Queue trên Mảng lại là thảm họa O(N) và cách khắc phục bằng Hàng đợi vòng (Circular Queue).
 ---
 
 # Hàng đợi (Queue) {#queue}
 
-Nếu Ngăn xếp (Stack) là sự bất công "Kẻ đến sau, được ăn trước", thì **Hàng đợi (Queue)** đại diện cho sự công bằng tuyệt đối. Nó phản ánh chính xác hình ảnh một hàng người đứng chờ mua vé xem phim, hay đoàn xe xếp hàng chờ qua trạm thu phí.
-
-Queue hoạt động theo nguyên lý **FIFO (First-In, First-Out)** - Cái gì đưa vào đầu tiên thì sẽ được lấy ra đầu tiên.
-
-## Nguyên lý hoạt động {#how-it-works}
-
-Một Queue luôn có hai đầu: một đầu chuyên dùng để nạp dữ liệu vào (Rear/Back), và một đầu chuyên dùng để rút dữ liệu ra (Front/Head).
-
-Các thao tác cơ bản trên một Queue bao gồm:
-1. **Enqueue (Xếp hàng):** Thêm một phần tử vào đuôi (Rear) của Queue.
-2. **Dequeue (Phục vụ):** Lấy (và xóa) phần tử ở đầu (Front) của Queue ra khỏi hàng.
-3. **Peek / Front:** Xem giá trị của phần tử ở đầu hàng (người chuẩn bị được phục vụ) mà không xóa nó.
-4. **IsEmpty:** Kiểm tra xem Queue có đang rỗng hay không.
-
-Tương tự như Stack, tất cả các thao tác cơ bản này đều có độ phức tạp thời gian là **O(1)**.
-
-## Cài đặt bằng C# (Code Example) {#code-example}
-
-Trong C#, .NET cung cấp sẵn class `Queue<T>` được cài đặt cực kỳ tinh vi dưới dạng một mảng vòng (Circular Array) để đảm bảo cả thao tác `Enqueue` và `Dequeue` đều đạt tốc độ O(1) mà không bị lãng phí bộ nhớ.
-
-```csharp
-using System.Collections.Generic;
-
-public void QueueExample()
-{
-    // Khởi tạo một Hàng đợi chứa các chuỗi
-    Queue<string> supportTickets = new Queue<string>();
-
-    // Enqueue: Khách hàng gửi yêu cầu hỗ trợ (Ai gửi trước, xếp trước)
-    supportTickets.Enqueue("Khách A: Lỗi nạp tiền");
-    supportTickets.Enqueue("Khách B: Quên mật khẩu");
-    supportTickets.Enqueue("Khách C: Tài khoản bị khóa");
-
-    // Peek: Xem yêu cầu của khách hàng đang đứng đầu hàng
-    Console.WriteLine($"Đang chuẩn bị xử lý: {supportTickets.Peek()}"); 
-    // In ra: "Khách A: Lỗi nạp tiền"
-
-    // Dequeue: Nhân viên hỗ trợ lấy yêu cầu đầu tiên ra để xử lý
-    string currentTicket = supportTickets.Dequeue();
-    Console.WriteLine($"Đã giải quyết xong: {currentTicket}"); 
-
-    // Kiểm tra hàng đợi còn lại ai đứng đầu?
-    Console.WriteLine($"Tiếp theo là: {supportTickets.Peek()}"); 
-    // In ra: "Khách B: Quên mật khẩu"
-}
-```
-
-:::tip Queue vs List
-Nhiều bạn mới học thường dùng `List<T>` để giả lập Queue bằng cách gọi `list.Add()` và `list.RemoveAt(0)`. **Đừng bao giờ làm thế!** 
-Khi bạn gọi `RemoveAt(0)` trên một List, toàn bộ các phần tử phía sau sẽ phải dịch chuyển lên 1 ô để lấp chỗ trống, khiến thao tác đó tốn **O(N)** thời gian. Nếu danh sách có hàng triệu phần tử, server của bạn sẽ bị "treo". Hãy luôn dùng `Queue<T>` chuẩn của C#.
+:::info Mục tiêu bài học
+- Thấu hiểu cơ chế **FIFO (Vào trước - Ra trước)** kiến tạo nên sự công bằng trong mọi hệ thống máy tính.
+- Mổ xẻ bi kịch của việc cài đặt Queue bằng Mảng (Array) và chứng minh tại sao thao tác Lấy ra (Dequeue) lại tốn tới $O(N)$.
+- Đề xuất giải pháp **Hàng đợi Vòng (Circular Queue)** để cứu vớt hiệu năng trên Mảng.
+- Tầm nhìn hệ thống: Hiểu cách Queue làm trái tim cho các Message Broker như RabbitMQ, Kafka hay luồng xử lý Node.js.
 :::
 
-## Ứng dụng thực tế {#real-world}
+## 1. Lời mở đầu: Triết lý "Ai đến trước, Phục vụ trước" {#introduction}
 
-Bất cứ nơi nào có sự "xếp hàng chờ đợi", nơi đó có Queue:
+Trái ngược hoàn toàn với sự "thiên vị" kẻ đến sau của [Ngăn xếp (Stack)](/docs/stack-queue/stack), Hàng đợi (Queue) là hiện thân của sự công bằng tuyệt đối: **Vào Trước - Ra Trước (First-In, First-Out - FIFO).**
 
-1. **Hàng chờ in ấn (Print Spooler):** Khi bạn gửi 10 tài liệu ra máy in, hệ điều hành đưa chúng vào một Queue. Máy in sẽ in lần lượt từng tài liệu theo đúng thứ tự bạn đã bấm in.
-2. **Xử lý bất đồng bộ (Message Queues):** Các hệ thống backend khổng lồ sử dụng RabbitMQ, Kafka hay AWS SQS để tạo ra các Queue. User gửi hàng nghìn request, server đưa hết vào Queue và thong thả "Dequeue" ra xử lý dần mà không bị quá tải.
-3. **Duyệt Cây & Đồ thị:** Thuật toán duyệt theo chiều rộng (BFS - Breadth First Search) sử dụng Queue làm trái tim điều phối để đảm bảo các đỉnh gần nhau sẽ được thăm trước.
-4. **Quản lý Event Loop (Vòng lặp sự kiện):** Trong JavaScript hay các UI Framework, các sự kiện click chuột, gõ phím được đưa vào một Queue (Event Queue) để xử lý tuần tự không bị xung đột.
+**Ví dụ thực tế (Real-world analogy):**
+- **Xếp hàng mua vé xem phim:** Ai đến mua vé trước thì được rạp phim phục vụ trước. Kẻ đến sau phải ngậm ngùi đứng chót hàng. Rất công bằng!
+- **Máy in (Print Queue):** Trong văn phòng, nếu 3 người cùng nhấn In tài liệu, lệnh của ai bấm trước sẽ được đẩy vào Queue và in ra đầu tiên. Lệnh thứ 3 phải đợi 2 lệnh kia in xong.
+- **Microservices (RabbitMQ / Kafka):** Hàng triệu tin nhắn từ người dùng được ném vào một Message Queue khổng lồ. Server sẽ rảnh rỗi lôi từng tin nhắn ở đầu Queue ra xử lý dần dần để tránh quá tải (Crash).
 
-## Next Steps {#next-steps}
+---
 
-Stack và Queue ở dạng nguyên thủy nhất thì rất dễ dùng. Nhưng chuyện gì sẽ xảy ra nếu ta nâng cấp Stack lên một tầm cao mới: Yêu cầu Stack không chỉ lưu dữ liệu, mà còn phải **tự động sắp xếp hoặc giữ lại một trật tự nhất định** mỗi khi Push phần tử mới vào?
+## 2. Các thao tác cơ bản và Hai đầu cầu {#operations}
 
-Kỹ thuật nâng cao này xuất hiện cực kỳ nhiều trong các bài toán tối ưu hóa, và nó được gọi là **Ngăn xếp đơn điệu (Monotonic Stack)**.
+Một Queue tiêu chuẩn có 2 con trỏ chỉ huy: **Front (Đầu hàng)** và **Rear (Cuối hàng)**. Giao diện của Queue cung cấp 3 thao tác chính, mong đợi tốc độ chớp nhoáng $O(1)$.
 
-<div class="vt-box-container next-steps">
-  <a class="vt-box" href="/docs/stack-queue/monotonic-stack">
-    <p class="next-steps-link">Ngăn xếp đơn điệu (Monotonic Stack)</p>
-    <p class="next-steps-caption">Sự kết hợp hoàn hảo giữa Stack và trật tự giá trị để giải bài toán trong O(N).</p>
-  </a>
-</div>
+| Thao tác | Ý nghĩa (FIFO) |
+| :--- | :--- |
+| **`Enqueue(x)`** | Thêm người `x` vào cuối hàng đợi (Gắn vào **Rear**). |
+| **`Dequeue()`** | Xóa và lấy người đang đứng đầu hàng đợi ra (Lấy từ **Front**). |
+| **`Peek()`** | Nhìn mặt người đang đứng đầu hàng (Không xóa). |
+
+### Minh họa Enqueue và Dequeue bằng 2 con trỏ
+
+```mermaid
+flowchart LR
+    subgraph S1 [1. Khởi tạo rỗng]
+        direction LR
+        Empty[Trống]
+        Front1((Front)) -.- Empty
+        Rear1((Rear)) -.- Empty
+        style Empty fill:transparent,stroke:none
+    end
+    
+    subgraph S2 [2. Enqueue 10, rồi Enqueue 20]
+        direction LR
+        A2[10] --- B2[20]
+        Front2((Front)) --> A2
+        Rear2((Rear)) --> B2
+        style A2 fill:#10b981,color:#fff
+        style B2 fill:#3b82f6,color:#fff
+    end
+    
+    subgraph S3 [3. Dequeue (Lấy 10 ra)]
+        direction LR
+        Pop((Lấy 10)) -.-> A3[20]
+        Front3((Front)) --> A3
+        Rear3((Rear)) --> A3
+        style Pop fill:#ef4444,color:#fff
+        style A3 fill:#3b82f6,color:#fff
+    end
+    
+    S1 ==> S2 ==> S3
+```
+
+*(Mỗi khi có người mới vào, Rear dịch chuyển. Mỗi khi có người được phục vụ, Front dịch chuyển).*
+
+---
+
+## 3. Bi kịch của Cấu trúc Mảng (Array) {#array-tragedy}
+
+Nếu bạn tự mình cài đặt Stack bằng Mảng, mọi thứ rất dễ vì thao tác Push/Pop chỉ diễn ra ở "đuôi" mảng ($O(1)$). Nhưng nếu bạn cài đặt Queue bằng Mảng, một thảm họa hiệu năng sẽ xảy ra!
+
+Hãy tưởng tượng mảng `[10, 20, 30]`. `Front` chỉ vào 10 (Index 0). `Rear` chỉ vào 30 (Index 2).
+Khi bạn gọi `Dequeue()` để lấy `10` ra, vị trí Index 0 sẽ bị trống. Để giữ đúng bản chất của Mảng (Dữ liệu liên tiếp), bạn BẮT BUỘC phải ra lệnh cho tất cả những người còn lại tiến lên 1 bước: `20` chuyển sang Index 0, `30` sang Index 1.
+
+> **Hậu quả:** Chỉ 1 lệnh `Dequeue`, nhưng nếu hàng đợi có 1 Triệu người, bạn phải ép cả 999.999 người tiến lên 1 bước. Độ phức tạp bị đội lên thành **O(N)** thay vì **O(1)**. Đây là một sự lãng phí sức mạnh CPU khủng khiếp!
+
+*(Chú ý: Nếu bạn cài đặt Queue bằng Danh sách liên kết - Linked List, việc lấy Node đầu tiên ra chỉ tốn $O(1)$ vì bạn chỉ cần đổi mối nối (Pointer) mà không bắt ai phải di chuyển cả).*
+
+---
+
+## 4. Giải pháp cứu vãn: Hàng đợi Vòng (Circular Queue) {#circular-queue}
+
+Để giải cứu Array khỏi thảm họa O(N), các kỹ sư hệ thống sáng tạo ra một kỹ thuật cực hay: **KHÔNG cần ai tiến lên cả!** 
+Khi Index 0 trống rỗng, ta cứ để nó trống. Con trỏ `Front` sẽ tự động dịch chuyển từ Index 0 sang Index 1 để chỉ vào `20`.
+
+Nhưng nếu cứ thế, `Rear` vươn tới cuối mảng (Hết sức chứa) thì sao? Rất đơn giản: Ta dùng phép toán Modulo `%` để bẻ cong Mảng thành một "Vòng tròn". Nếu `Rear` chạm đáy, nó sẽ vòng ngược lại lên Index 0 (nơi nãy giờ đã bị bỏ trống do `Front` đi qua).
+
+```mermaid
+flowchart TD
+    subgraph Bước 1: Mảng bình thường đã đầy đuôi
+        direction LR
+        F1((Front)) --> A[Index 0: Trống]
+        A --> B[Index 1: 20]
+        B --> C[Index 2: 30]
+        R1((Rear)) --> C
+    end
+    
+    subgraph Bước 2: Hàng đợi Vòng chèn phần tử mới vào đầu
+        direction LR
+        F2((Front)) --> B2[Index 1: 20]
+        B2 --> C2[Index 2: 30]
+        C2 -.Vòng ngược.-> A2[Index 0: 40]
+        R2((Rear)) --> A2
+        style A2 fill:#10b981,color:#fff
+    end
+    
+    Bước 1 ==> Bước 2
+```
+
+### Mã nguồn C# cài đặt Circular Queue
+
+```csharp
+public class CircularQueue 
+{
+    private int[] arr;
+    private int front, rear, size, capacity;
+
+    public CircularQueue(int cap) 
+    {
+        capacity = cap;
+        arr = new int[capacity];
+        front = 0;
+        rear = capacity - 1; 
+        size = 0; // Số lượng người đang đứng trong hàng
+    }
+
+    public void Enqueue(int item) 
+    {
+        if (size == capacity) return; // Hàng đã đầy kín
+        
+        // Cú lừa Vòng tròn: Nếu rear ở cuối, nó sẽ quay về 0
+        rear = (rear + 1) % capacity; 
+        arr[rear] = item;
+        size++;
+    }
+
+    public int Dequeue() 
+    {
+        if (size == 0) return -1; // Trống rỗng
+        
+        int item = arr[front];
+        
+        // Front tiến lên, nếu chạm đáy thì quay về 0
+        front = (front + 1) % capacity; 
+        size--;
+        
+        return item;
+    }
+}
+```
+Nhờ thuật toán này, toàn bộ Enqueue và Dequeue trên Array đều lấy lại được sức mạnh **O(1)** hoàn hảo. Thư viện `Queue<T>` trong C# thực chất chính là được cài đặt ngầm bằng mảng vòng (Circular Array) kết hợp với kỹ thuật Tự động x2 kích thước (Dynamic Resizing)!
+
+---
+
+## 5. Ứng dụng đỉnh cao: Duyệt theo chiều rộng (BFS) {#bfs-intro}
+
+Nếu Stack là người bạn thân của Đệ quy (DFS), thì Queue chính là vũ khí độc quyền của Thuật toán **Duyệt theo chiều rộng (BFS)**.
+Trong BFS, từ một Đỉnh gốc, bạn sẽ phải tham quan toàn bộ bạn bè của nó (Tầng 1). Rồi sau đó mới đi tham quan bạn bè của bạn bè (Tầng 2). Việc này đòi hỏi tính công bằng tuyệt đối: Đỉnh nào được tìm thấy trước sẽ phải được duyệt trước. Queue chính là sinh ra để làm việc này.
+
+*(Chúng ta sẽ đi sâu vào kỹ thuật này trong bài viết Duyệt theo chiều rộng (BFS) tiếp theo).*
+
+:::tip Tóm tắt nhanh (Key Takeaways)
+- Hàng đợi (Queue) tuân thủ luật FIFO (First-In, First-Out). Duy trì 2 con trỏ Front và Rear.
+- Nếu muốn tự code Queue, hãy dùng Linked List để tránh thảm họa O(N) khi Dequeue.
+- Nếu bắt buộc dùng Mảng để tối ưu CPU Cache, hãy dùng kỹ thuật Mảng vòng (Circular Array) với công thức `(index + 1) % capacity`.
+- Trong C#, bạn chỉ cần dùng thư viện chuẩn `Queue<T>` (được tối ưu hóa hoàn hảo) là đủ để chinh chiến mọi bài toán BFS.
+:::

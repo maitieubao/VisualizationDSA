@@ -1,10 +1,10 @@
-/**
- * EmbedCommunicationBridge — Secure Bidirectional postMessage Bridge
- *
- * Establishes a secure two-way communication channel between the host
- * website and the embedded iframe widget. Filters messages by origin
- * whitelist and validates message structure to prevent XSS attacks.
- */
+
+
+
+
+
+
+
 
 import type { EmbedMessage } from '../types/embed-widget.types';
 
@@ -20,9 +20,9 @@ export class EmbedCommunicationBridge {
     this.initializeListener();
   }
 
-  /**
-   * Sets up the global window message event listener with origin filtering.
-   */
+  
+
+
   private initializeListener(): void {
     this.windowMessageEventHandler = (event: MessageEvent) => {
       if (
@@ -49,9 +49,9 @@ export class EmbedCommunicationBridge {
     window.addEventListener('message', this.windowMessageEventHandler);
   }
 
-  /**
-   * Sends a structured message to the target window.
-   */
+  
+
+
   public sendMessage(
     targetWindow: Window,
     msg: EmbedMessage,
@@ -60,10 +60,10 @@ export class EmbedCommunicationBridge {
     targetWindow.postMessage(msg, targetOrigin);
   }
 
-  /**
-   * Registers a callback to receive validated messages.
-   * Returns an unsubscribe function for cleanup.
-   */
+  
+
+
+
   public onMessage(callback: EmbedMessageListener): () => void {
     this.listeners.add(callback);
     return () => {
@@ -71,16 +71,16 @@ export class EmbedCommunicationBridge {
     };
   }
 
-  /**
-   * Returns the current number of registered listeners.
-   */
+  
+
+
   public get listenerCount(): number {
     return this.listeners.size;
   }
 
-  /**
-   * Cleans up event listeners and releases resources to prevent memory leaks.
-   */
+  
+
+
   public destroy(): void {
     if (this.windowMessageEventHandler) {
       window.removeEventListener('message', this.windowMessageEventHandler);

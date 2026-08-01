@@ -3,7 +3,7 @@
     class="flex flex-col h-full"
     :class="{ 'compile-failed-glow': hasCompileError, 'compile-success-glow': showSuccessGlow }"
   >
-    <!-- Header -->
+    
     <div class="flex items-center justify-between px-4 py-2 border-b"
       style="border-color: rgba(255, 255, 255, 0.05); background: rgba(30, 41, 59, 0.6);"
     >
@@ -16,7 +16,7 @@
       <span class="text-[10px] text-text-muted font-mono">JetBrains Mono</span>
     </div>
 
-    <!-- Monaco Editor Container -->
+    
     <div v-if="editorLoadError" class="flex-1 flex flex-col items-center justify-center p-6 text-center bg-bg-surface/30 border border-border-default/20 rounded-xl min-h-[300px]">
       <span class="text-2xl mb-2">⚠️</span>
       <p class="text-xs font-semibold text-text-primary mb-1">Không thể tải Monaco Editor</p>

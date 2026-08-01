@@ -6,13 +6,13 @@
       @click.self="store.closeModal()"
     >
       <div class="share-export-dialog-card">
-        <!-- Title -->
+        
         <h2 class="share-dialog-title">XUẤT SƠ ĐỒ / SHARE</h2>
 
-        <!-- Format Selector -->
+        
         <ExportFormatSelector />
 
-        <!-- Export Button -->
+        
         <button
           class="export-action-btn"
           :disabled="store.isExporting"
@@ -21,13 +21,13 @@
           {{ store.isExporting ? 'Đang xuất...' : exportButtonLabel }}
         </button>
 
-        <!-- Progress Bar -->
+        
         <ExportProgressBar />
 
-        <!-- Divider -->
+        
         <div class="divider" />
 
-        <!-- Share Link Section -->
+        
         <div class="share-link-section">
           <label class="section-label">Chia sẻ trạng thái phòng lab</label>
           <button
@@ -38,12 +38,12 @@
             {{ store.isGeneratingLink ? 'Đang tạo...' : 'GENERATE SHARE LINK' }}
           </button>
 
-          <!-- Overflow Error -->
+          
           <p v-if="store.overflowError" class="overflow-error">
             {{ store.overflowError }}
           </p>
 
-          <!-- Generated Link Display -->
+          
           <div v-if="store.hasShareLink" class="link-display">
             <code class="link-text">{{ store.generatedShareLink }}</code>
             <button
@@ -56,10 +56,10 @@
           </div>
         </div>
 
-        <!-- QR Code -->
+        
         <QRCodeDisplay />
 
-        <!-- Close Button -->
+        
         <button class="close-btn" @click="store.closeModal()">Đóng</button>
       </div>
     </div>

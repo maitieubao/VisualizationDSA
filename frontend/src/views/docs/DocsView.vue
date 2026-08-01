@@ -10,7 +10,7 @@
           @headings-parsed="onHeadingsParsed"
         />
         
-        <!-- Không tìm thấy tài liệu -->
+        
         <div v-else-if="!loading" class="flex flex-col items-center justify-center py-20 text-center">
           <div class="w-24 h-24 mb-6 text-gray-600">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
@@ -28,7 +28,7 @@
         </div>
       </template>
 
-      <!-- Bảng mục lục On This Page (chỉ hiển thị khi có doc) -->
+      
       <template #toc v-if="currentDocRaw && headings.length > 0">
         <DocsTableOfContents :headings="headings" />
       </template>
@@ -49,15 +49,15 @@ const currentDocRaw = ref('');
 const loading = ref(true);
 const headings = ref<{id: string; title: string; level: number}[]>([]);
 
-// Lấy tất cả file markdown thô (raw) trong thư mục content/
-// Note: Chú ý đường dẫn tương đối từ vị trí file DocsView.vue -> content/
+
+
 const markdownFiles = import.meta.glob('../../features/docs/content/**/*.md', { as: 'raw' });
 
 const getFirstSectionOfTopic = (pathSegments: string[]) => {
-  // Tìm đường dẫn đầu tiên trong docsNavigation
-  let firstValidPath = '/docs/intro/intro'; // Fallback
   
-  // Hàm đệ quy quét mục đầu tiên có path
+  let firstValidPath = '/docs/intro/intro'; 
+  
+  
   const findFirstPath = (items: any[]): string | null => {
     for (const item of items) {
       if (item.path) return item.path;
@@ -74,18 +74,18 @@ const getFirstSectionOfTopic = (pathSegments: string[]) => {
     firstValidPath = foundPath;
   }
   
-  // Xóa "/docs/" ở đầu để khớp với cấu trúc thư mục
+  
   return firstValidPath.replace('/docs/', ''); 
 };
 
-// Tìm kiếm file markdown tương ứng với pathMatch
+
 const loadMarkdown = async () => {
   loading.value = true;
-  headings.value = []; // Reset
+  headings.value = []; 
   
   let pathSegments = route.params.pathMatch as string[];
   
-  // Nếu path rỗng (ở root /docs), tự động chuyển đến bài đầu tiên
+  
   if (!pathSegments || pathSegments.length === 0 || pathSegments[0] === '') {
     const defaultPath = getFirstSectionOfTopic([]);
     pathSegments = defaultPath.split('/');
@@ -103,7 +103,7 @@ const loadMarkdown = async () => {
       currentDocRaw.value = '';
     }
   } else {
-    // Không tìm thấy nội dung
+    
     console.warn(`[Docs] Not found in markdownFiles. targetPath: ${targetPath}`);
     console.warn("[Docs] Available keys:", Object.keys(markdownFiles));
     currentDocRaw.value = '';
@@ -111,7 +111,7 @@ const loadMarkdown = async () => {
   loading.value = false;
 };
 
-// Next / Prev Docs Navigation
+
 const prevDoc = computed(() => getNextPrevDocs(route.path).prev);
 const nextDoc = computed(() => getNextPrevDocs(route.path).next);
 

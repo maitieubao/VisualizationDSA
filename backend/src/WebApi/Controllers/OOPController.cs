@@ -10,11 +10,11 @@ using VisualizationDSA.Domain.Strategies;
 
 namespace VisualizationDSA.WebApi.Controllers;
 
-/// <summary>
-/// API Controller cho mô-đun OOP Concepts Visualizer.
-/// Cung cấp endpoint sinh chuỗi frame hoạt ảnh cho 4 trụ cột OOP:
-/// Encapsulation, Inheritance, Polymorphism, Abstraction.
-/// </summary>
+
+
+
+
+
 [ApiVersion("1.0")]
 [ApiController]
 [Route("api/v{version:apiVersion}/concepts/oop")]
@@ -30,10 +30,10 @@ public class OOPController : ControllerBase
         _cache = cache;
     }
 
-    /// <summary>
-    /// Lấy danh sách kịch bản OOP được hỗ trợ.
-    /// GET /api/v1/concepts/oop/scenarios
-    /// </summary>
+    
+    
+    
+    
     [HttpGet("scenarios")]
     public ActionResult<object> GetScenarios()
     {
@@ -46,11 +46,11 @@ public class OOPController : ControllerBase
         });
     }
 
-    /// <summary>
-    /// Thực thi kịch bản OOP và trả về chuỗi frames hoạt ảnh.
-    /// POST /api/v1/concepts/oop/execute
-    /// Body: { "scenarioId": "encapsulation" }
-    /// </summary>
+    
+    
+    
+    
+    
     [HttpPost("execute")]
     public ActionResult<List<OOPFrameDto>> Execute([FromBody] OOPScenarioRequestDto request)
     {
@@ -104,10 +104,10 @@ public class OOPController : ControllerBase
         }
     }
 
-    /// <summary>
-    /// Lấy frames cho kịch bản cụ thể (GET shorthand).
-    /// GET /api/v1/concepts/oop/scenarios/{scenarioId}/frames
-    /// </summary>
+    
+    
+    
+    
     [HttpGet("scenarios/{scenarioId}/frames")]
     public ActionResult<List<OOPFrameDto>> GetScenarioFrames(string scenarioId)
     {

@@ -1,8 +1,8 @@
 <template>
   <div class="vcr-control-panel">
-    <!-- Playback controls only -->
+    
 
-    <!-- Progress -->
+    
     <div class="progress-section">
       <div class="progress-header">
         <span class="progress-label">Progress</span>
@@ -14,7 +14,7 @@
         class="vcr-scrubber" />
     </div>
 
-    <!-- Controls -->
+    
     <div class="controls-row">
       <button @click="vcrStore.stepPrev"
         :disabled="vcrStore.totalFrames === 0 || vcrStore.isAtStart"
@@ -48,7 +48,7 @@
       </button>
     </div>
 
-    <!-- Speed -->
+    
     <div class="speed-row" data-tour-id="vcr-speed-select">
       <span class="speed-label">Speed</span>
       <div class="speed-buttons">
@@ -93,7 +93,7 @@ onBeforeUnmount(() => window.removeEventListener("keydown", handleGlobalKeydown)
   gap: 16px;
 }
 
-/* Progress section */
+
 .progress-section { display: flex; flex-direction: column; gap: 8px; }
 .progress-header  { display: flex; align-items: center; justify-content: space-between; font-size: var(--text-xs); }
 .progress-label   { color: var(--color-text-muted); }
@@ -110,7 +110,7 @@ onBeforeUnmount(() => window.removeEventListener("keydown", handleGlobalKeydown)
 }
 .vcr-scrubber:disabled { opacity: 0.4; }
 
-/* Controls row */
+
 .controls-row { display: flex; align-items: center; justify-content: center; gap: 8px; padding-top: 8px; }
 
 .ctrl-btn {
@@ -143,7 +143,7 @@ onBeforeUnmount(() => window.removeEventListener("keydown", handleGlobalKeydown)
 .ctrl-btn-play--pause { background: var(--color-accent-red); }
 .ctrl-btn-play--pause:hover { background: var(--color-accent-red-light); }
 
-/* Speed row */
+
 .speed-row    { display: flex; align-items: center; justify-content: center; gap: 8px; }
 .speed-label  { font-size: 10px; color: var(--color-text-muted); }
 .speed-buttons { display: flex; gap: 4px; }

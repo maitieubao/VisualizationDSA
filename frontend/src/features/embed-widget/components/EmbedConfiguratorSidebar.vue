@@ -1,6 +1,6 @@
 <template>
   <div class="embed-configurator-sidebar">
-    <!-- Theme Selector -->
+    
     <div class="embed-settings-group">
       <label class="embed-settings-label">Theme hiển thị</label>
       <div class="theme-buttons">
@@ -16,7 +16,7 @@
       </div>
     </div>
 
-    <!-- Algorithm Selector -->
+    
     <div class="embed-settings-group">
       <label class="embed-settings-label">Giải thuật nhúng</label>
       <select
@@ -34,7 +34,7 @@
       </select>
     </div>
 
-    <!-- Dimensions -->
+    
     <div class="embed-settings-group">
       <label class="embed-settings-label">Chiều rộng ({{ store.widgetWidth }}px)</label>
       <input
@@ -61,7 +61,7 @@
       />
     </div>
 
-    <!-- Toggles -->
+    
     <div class="embed-settings-group">
       <label class="embed-settings-label">Tùy chỉnh hiển thị</label>
 
@@ -99,7 +99,7 @@
       </div>
     </div>
 
-    <!-- Reset Button -->
+    
     <button class="reset-btn" @click="store.resetConfigurator()">
       Đặt lại Mặc định
     </button>

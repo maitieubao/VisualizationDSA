@@ -1,6 +1,6 @@
 <template>
   <div class="embed-widget-workspace">
-    <!-- Header -->
+    
     <div class="workspace-header">
       <div class="flex items-center gap-2">
         <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"
@@ -19,17 +19,17 @@
       </div>
     </div>
 
-    <!-- Main content: sidebar + preview + code -->
+    
     <div class="workspace-body">
-      <!-- Left: Configurator sidebar -->
+      
       <EmbedConfiguratorSidebar />
 
-      <!-- Center + Right: Preview and Code -->
+      
       <div class="workspace-content">
-        <!-- Live Preview -->
+        
         <LiveWidgetPreview />
 
-        <!-- Code Snippet -->
+        
         <div class="code-section">
           <EmbedCodeSnippet />
         </div>

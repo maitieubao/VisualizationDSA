@@ -1,4 +1,4 @@
-import { ref, computed } from "vue";
+import { ref, computed, onMounted } from "vue";
 import { useVcrStore } from "../../vcr-player";
 import type { SortAlgorithm, SortFrame } from "../types/sorting.types";
 import { generateBubbleSortFrames } from "../algorithms/bubbleSort";
@@ -9,6 +9,17 @@ import { generateRadixSortFrames } from "../algorithms/radixSort";
 import { generateCountingSortFrames } from "../algorithms/countingSort";
 import { generateBucketSortFrames } from "../algorithms/bucketSort";
 import { enrichFramesWithIds } from "../helpers/sortingIdEnricher";
+
+const MAX_ELEMENTS = 15;
+
+let _sharedInstance: ReturnType<typeof useSortingAnimation> | null = null;
+
+export function useSharedSortingAnimation() {
+  if (!_sharedInstance) {
+    _sharedInstance = useSortingAnimation();
+  }
+  return _sharedInstance;
+}
 
 export function useSortingAnimation() {
   const vcrStore = useVcrStore();
@@ -46,13 +57,18 @@ export function useSortingAnimation() {
       .map((num) => parseInt(num.trim(), 10))
       .filter((num) => !isNaN(num));
 
-    // Clamp: giới hạn tối đa 15 phần tử để tránh tràn Canvas và chồng lấn nhãn STT
-    const MAX_ELEMENTS = 15;
     const arr = parsedArr.length > 0
       ? parsedArr.slice(0, MAX_ELEMENTS)
       : [45, 12, 85, 32, 9, 60];
 
-    sortFrames.value = generators[algo](arr);
+    try {
+      sortFrames.value = generators[algo](arr);
+    } catch (err) {
+      console.error(`[useSortingAnimation] Generator failed for ${algo}:`, err);
+      sortFrames.value = [];
+      return;
+    }
+
     enrichFramesWithIds(sortFrames.value);
     vcrStore.playbackFrames = sortFrames.value;
     vcrStore.reset();
@@ -60,8 +76,15 @@ export function useSortingAnimation() {
 
   function selectAlgorithm(algo: SortAlgorithm): void {
     selectedAlgo.value = algo;
+    vcrStore.customCompileFn = () => recompileForAlgo(algo);
     recompileForAlgo(algo);
   }
+
+  onMounted(() => {
+    if (vcrStore.playbackFrames.length === 0) {
+      selectAlgorithm(selectedAlgo.value);
+    }
+  });
 
   return {
     selectedAlgo,

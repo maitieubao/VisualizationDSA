@@ -22,7 +22,8 @@ export function generateMergeSortFrames(inputArray: number[]): SortFrame[] {
     swap: [number, number] | null,
     actL: number,
     actR: number,
-    actLvl: number
+    actLvl: number,
+    vars: Record<string, string | number>
   ) {
     frames.push({
       stepIndex: step++,
@@ -36,7 +37,8 @@ export function generateMergeSortFrames(inputArray: number[]): SortFrame[] {
       subArrays: tree.map(s => ({
         ...s,
         isActive: s.level === actLvl && s.start === actL && s.end === actR
-      }))
+      })),
+      variables: vars,
     });
   }
 
@@ -46,7 +48,7 @@ export function generateMergeSortFrames(inputArray: number[]): SortFrame[] {
     let i = 0, j = 0, k = left;
 
     while (i < leftArr.length && j < rightArr.length) {
-      emit(`So sánh L[${i}]=${leftArr[i]} với R[${j}]=${rightArr[j]}`, [left + i, mid + 1 + j], null, left, right, lvl);
+      emit(`So sánh L[${i}]=${leftArr[i]} với R[${j}]=${rightArr[j]}`, [left + i, mid + 1 + j], null, left, right, lvl, { left, mid, right, i, j, k, lvl });
       if (leftArr[i] <= rightArr[j]) {
         arr[k] = leftArr[i];
         i++;
@@ -54,18 +56,18 @@ export function generateMergeSortFrames(inputArray: number[]): SortFrame[] {
         arr[k] = rightArr[j];
         j++;
       }
-      emit(`Ghi đè arr[${k}] = ${arr[k]}`, null, [k, k], left, right, lvl);
+      emit(`Ghi đè arr[${k}] = ${arr[k]}`, null, [k, k], left, right, lvl, { left, mid, right, i, j, k, lvl });
       k++;
     }
 
     while (i < leftArr.length) {
       arr[k] = leftArr[i];
-      emit(`Sao chép phần thừa L[${i}] → arr[${k}]`, null, [k, k], left, right, lvl);
+      emit(`Sao chép phần thừa L[${i}] → arr[${k}]`, null, [k, k], left, right, lvl, { left, mid, right, i, j, k, lvl });
       i++; k++;
     }
     while (j < rightArr.length) {
       arr[k] = rightArr[j];
-      emit(`Sao chép phần thừa R[${j}] → arr[${k}]`, null, [k, k], left, right, lvl);
+      emit(`Sao chép phần thừa R[${j}] → arr[${k}]`, null, [k, k], left, right, lvl, { left, mid, right, i, j, k, lvl });
       j++; k++;
     }
 
@@ -76,19 +78,19 @@ export function generateMergeSortFrames(inputArray: number[]): SortFrame[] {
 
   function mergeSort(left: number, right: number, lvl: number): void {
     if (left >= right) {
-      emit(`Đạt trường cơ sở: mảng con [${left}] gồm 1 phần tử`, null, null, left, right, lvl);
+      emit(`Đạt trường cơ sở: mảng con [${left}] gồm 1 phần tử`, null, null, left, right, lvl, { left, mid: left, right, i: '-', j: '-', k: '-', lvl });
       return;
     }
     const mid = Math.floor((left + right) / 2);
-    emit(`Chia [${left}..${right}] tại chỉ số [${mid}]`, null, null, left, right, lvl);
+    emit(`Chia [${left}..${right}] tại chỉ số [${mid}]`, null, null, left, right, lvl, { left, mid, right, i: '-', j: '-', k: '-', lvl });
     mergeSort(left, mid, lvl + 1);
     mergeSort(mid + 1, right, lvl + 1);
     merge(left, mid, right, lvl);
   }
 
-  emit('Khởi tạo Merge Sort — chia đôi mảng rồi gộp lại', null, null, 0, arr.length - 1, 0);
+  emit('Khởi tạo Merge Sort — chia đôi mảng rồi gộp lại', null, null, 0, arr.length - 1, 0, { left: 0, mid: '-', right: arr.length - 1, i: '-', j: '-', k: '-', lvl: 0 });
   mergeSort(0, arr.length - 1, 0);
-  emit('✅ Merge Sort hoàn thành!', null, null, 0, arr.length - 1, 0);
+  emit('✅ Merge Sort hoàn thành!', null, null, 0, arr.length - 1, 0, { left: '-', mid: '-', right: '-', i: '-', j: '-', k: '-', lvl: '-' });
 
   return frames;
 }

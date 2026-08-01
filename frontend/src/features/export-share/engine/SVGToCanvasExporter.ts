@@ -1,10 +1,10 @@
-/**
- * SVGToCanvasExporter — Chuyển đổi SVG sang PNG 3x sắc mịn Retina
- *
- * Nhúng kèm toàn bộ stylesheet CSS ngoại vi vào SVG clone,
- * vẽ lên Canvas ẩn nhân tỉ lệ Scale phóng đại, xuất Base64 PNG
- * chất lượng in ấn sắc nét Retina.
- */
+
+
+
+
+
+
+
 
 import {
   EXPORT_MIN_SCALE,
@@ -13,9 +13,9 @@ import {
 } from '../types/export-share.types';
 
 export class SVGToCanvasExporter {
-  /**
-   * Nhúng style ngoại vi và trích xuất chuỗi Base64 SVG DataURI
-   */
+  
+
+
   public static extractSVGDataURI(svgElement: SVGElement): string {
     const clone = svgElement.cloneNode(true) as SVGElement;
 
@@ -41,16 +41,16 @@ export class SVGToCanvasExporter {
     return 'data:image/svg+xml;base64,' + btoa(unicodeString);
   }
 
-  /**
-   * Clamp scale factor trong giới hạn an toàn [MIN_SCALE, MAX_SCALE]
-   */
+  
+
+
   public static clampScale(scale: number): number {
     return Math.max(EXPORT_MIN_SCALE, Math.min(EXPORT_MAX_SCALE, scale));
   }
 
-  /**
-   * Chuyển đổi SVG sang PNG Base64 với độ phóng đại scale sắc mịn
-   */
+  
+
+
   public static async exportToPNG(
     svgElement: SVGElement,
     scale: number = EXPORT_DEFAULT_SCALE,
@@ -84,7 +84,7 @@ export class SVGToCanvasExporter {
 
         const dataUrl = canvas.toDataURL('image/png');
 
-        // GC cleanup
+        
         img.onload = null;
         img.onerror = null;
 
@@ -99,9 +99,9 @@ export class SVGToCanvasExporter {
     });
   }
 
-  /**
-   * Trích xuất chuỗi SVG XML thuần khiết cho tải xuống dạng Vector
-   */
+  
+
+
   public static exportToSVGString(svgElement: SVGElement): string {
     const clone = svgElement.cloneNode(true) as SVGElement;
 

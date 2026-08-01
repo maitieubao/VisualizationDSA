@@ -134,7 +134,7 @@ export function generateBinarySearch(inputData: number[]): AlgorithmResult {
     '  return -1'
   ];
 
-  // 1. Initial Frame
+  
   frames.push({
     stepId: ++stepId,
     activeLine: 1,
@@ -149,16 +149,16 @@ export function generateBinarySearch(inputData: number[]): AlgorithmResult {
     const mid = Math.floor((low + high) / 2);
     const midVal = arr[mid];
 
-    // Dimmed elements for the current loop (outside [low, high])
+    
     const currentDimmed: number[] = [];
     for (let i = 0; i < arr.length; i++) {
       if (i < low || i > high) currentDimmed.push(i);
     }
 
-    // --- Sub-step 1: Calculate Mid ---
+    
     frames.push({
       stepId: ++stepId,
-      activeLine: 3, // mid = (low+high)/2
+      activeLine: 3, 
       explanation: `Vòng lặp mới: Tính vị trí giữa mid = (${low} + ${high}) / 2 = ${mid}. Giá trị A[mid] = ${midVal}.`,
       dataState: [...arr],
       highlights: defaultHighlights({
@@ -170,7 +170,7 @@ export function generateBinarySearch(inputData: number[]): AlgorithmResult {
       })
     });
 
-    // --- Sub-step 2: Comparison Decision ---
+    
     const decisionLine = midVal === target ? 4 : (midVal < target ? 5 : 6);
     let compExplain = "";
     if (midVal === target) {
@@ -197,7 +197,7 @@ export function generateBinarySearch(inputData: number[]): AlgorithmResult {
     });
 
     if (midVal === target) {
-      // --- Found Frame ---
+      
       frames.push({
         stepId: ++stepId,
         activeLine: 4,
@@ -216,7 +216,7 @@ export function generateBinarySearch(inputData: number[]): AlgorithmResult {
       break;
     }
 
-    // --- Sub-step 3: Shrink range & Shift boundary ---
+    
     let oldLow = low;
     let oldHigh = high;
     
@@ -226,7 +226,7 @@ export function generateBinarySearch(inputData: number[]): AlgorithmResult {
       high = mid - 1;
     }
 
-    // Dimmed list now includes the newly eliminated segment!
+    
     const nextDimmed: number[] = [];
     for (let i = 0; i < arr.length; i++) {
       if (i < low || i > high) nextDimmed.push(i);
@@ -245,7 +245,7 @@ export function generateBinarySearch(inputData: number[]): AlgorithmResult {
       explanation: shrinkExplain,
       dataState: [...arr],
       highlights: defaultHighlights({
-        // Show low/high at their new coordinates
+        
         low: low <= high ? low : null,
         high: low <= high ? high : null,
         dimmed: [...nextDimmed],
@@ -257,7 +257,7 @@ export function generateBinarySearch(inputData: number[]): AlgorithmResult {
   if (!found) {
     frames.push({
       stepId: ++stepId,
-      activeLine: 7, // return -1
+      activeLine: 7, 
       explanation: `Khoảng tìm kiếm trống (low > high). Đã xét tất cả phần tử và không tìm thấy target = ${target} trong mảng!`,
       dataState: [...arr],
       highlights: defaultHighlights({

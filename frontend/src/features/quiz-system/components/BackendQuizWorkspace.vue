@@ -1,6 +1,6 @@
 <template>
   <div class="h-full flex flex-col gap-4 p-4 overflow-auto">
-    <!-- Header -->
+    
     <div class="flex items-center justify-between">
       <div class="flex items-center gap-3">
         <div class="w-8 h-8 rounded-lg bg-accent flex items-center justify-center">
@@ -22,14 +22,14 @@
       </div>
     </div>
 
-    <!-- Loading Skeleton -->
+    
     <div v-if="store.isBackendQuizLoading" class="flex-1">
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         <SkeletonCard v-for="i in 6" :key="i" />
       </div>
     </div>
 
-    <!-- Error -->
+    
     <div v-else-if="store.backendQuizError && displayedQuizzes.length === 0" class="flex-1 flex items-center justify-center">
       <div class="text-center">
         <span class="text-sm text-accent-red">{{ store.backendQuizError }}</span>
@@ -39,7 +39,7 @@
       </div>
     </div>
 
-    <!-- Quiz Result -->
+    
     <div v-else-if="store.backendResult" class="flex-1 flex flex-col items-center justify-center gap-4">
       <div class="rounded-2xl bg-bg-secondary/45 border border-white/5 backdrop-blur-xl p-8 max-w-lg w-full text-center">
         <div class="text-4xl mb-4">{{ store.backendResult.passed ? '🎉' : '😔' }}</div>
@@ -56,7 +56,7 @@
           💡 Bạn đã nhận XP tối đa cho bài quiz này. Làm lại để ôn tập sẽ không nhận thêm XP.
         </div>
 
-        <!-- Question Results -->
+        
         <div class="text-left mt-4 space-y-2">
           <div v-for="(qr, i) in store.backendResult.questionResults" :key="qr.questionId"
             class="p-3 rounded-lg" :class="qr.isCorrect ? 'bg-accent-green/10' : 'bg-accent-red/10'">
@@ -81,16 +81,16 @@
       </div>
     </div>
 
-    <!-- Active Quiz Question -->
+    
     <div v-else-if="store.isBackendQuizMode && store.currentBackendQuestion" class="flex-1 flex flex-col gap-4">
       <div class="rounded-2xl bg-bg-secondary/45 border border-white/5 backdrop-blur-xl p-6 flex-1">
-        <!-- Question Text -->
+        
         <div class="mb-6">
           <span class="text-[10px] text-text-disabled uppercase tracking-wider">Câu hỏi {{ store.backendQuizIndex + 1 }}</span>
           <h3 class="text-sm font-semibold text-text-primary mt-1">{{ store.currentBackendQuestion.text }}</h3>
         </div>
 
-        <!-- Options -->
+        
         <div class="space-y-2">
           <button v-for="(option, idx) in store.currentBackendQuestion.options" :key="idx"
             @click="store.selectBackendAnswer(idx)"
@@ -104,7 +104,7 @@
         </div>
       </div>
 
-      <!-- Navigation -->
+      
       <div class="flex items-center justify-between">
         <button @click="store.prevBackendQuestion()" :disabled="store.backendQuizIndex <= 0"
           class="px-4 py-2 rounded-lg text-xs font-medium transition-colors"
@@ -128,11 +128,11 @@
       </div>
     </div>
 
-    <!-- Quiz Catalog (default view) -->
+    
     <div v-else class="flex-1 flex flex-col gap-4">
-      <!-- ══════════════════════════════════════════
-           TOPIC FILTER TABS (NEW)
-      ══════════════════════════════════════════ -->
+      
+
+
       <div class="topic-filter-bar">
         <button
           v-for="topic in availableTopics"
@@ -147,7 +147,7 @@
         </button>
       </div>
 
-      <!-- Search Bar -->
+      
       <div class="quiz-search-wrapper">
         <svg class="quiz-search-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
@@ -160,13 +160,13 @@
         />
       </div>
 
-      <!-- Fallback Notice -->
+      
       <div v-if="isUsingFallback" class="fallback-notice">
         ⚠ Đang hiển thị quiz mẫu. Kết nối server để tải quiz đầy đủ.
         <button @click="store.loadQuizCatalog()" class="fallback-notice__retry">Thử kết nối lại</button>
       </div>
 
-      <!-- Quiz Grid -->
+      
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         <div v-for="quiz in displayedQuizzes" :key="quiz.id"
           class="rounded-2xl bg-bg-secondary/45 border border-white/5 backdrop-blur-xl p-5 cursor-pointer hover:border-accent/30 transition-all duration-200 quiz-card"
@@ -186,7 +186,7 @@
         </div>
       </div>
 
-      <!-- Empty state -->
+      
       <div v-if="displayedQuizzes.length === 0 && !store.isBackendQuizLoading" class="text-center py-12">
         <p class="text-sm text-text-secondary mb-2">
           {{ searchQuery ? 'Không tìm thấy quiz phù hợp.' : 'Chưa có quiz nào cho chủ đề này.' }}
@@ -210,7 +210,7 @@ const selectedTopic = ref('Tất cả');
 const searchQuery = ref('');
 const isUsingFallback = ref(false);
 
-// ── Fallback quiz data for when backend is offline ────────────────────
+
 const FALLBACK_QUIZZES: StatelessQuizSummary[] = [
   { id: 'fallback-dsa-1', title: 'Thuật toán Sắp xếp cơ bản', topic: 'DSA', difficulty: 'easy', xpReward: 50, questionCount: 5 },
   { id: 'fallback-dsa-2', title: 'Cấu trúc dữ liệu Stack & Queue', topic: 'DSA', difficulty: 'medium', xpReward: 80, questionCount: 5 },
@@ -265,7 +265,7 @@ const displayedQuizzes = computed(() => {
 
 function handleQuizClick(quiz: StatelessQuizSummary): void {
   if (isUsingFallback.value) {
-    // For fallback quizzes, show a toast or message that backend is needed
+    
     store.backendQuizError = 'Cần kết nối server để làm quiz. Vui lòng khởi động backend.';
     return;
   }

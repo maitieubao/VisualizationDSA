@@ -19,9 +19,9 @@ export interface LessonProgressResponse {
   };
 }
 
-/**
- * Lấy tiến độ của một bài học từ server
- */
+
+
+
 export async function fetchLessonProgress(lessonId: string) {
   const token = localStorage.getItem('token');
   if (!token) return null;
@@ -35,9 +35,9 @@ export async function fetchLessonProgress(lessonId: string) {
   return res.json();
 }
 
-/**
- * Lưu tiến độ của một bài học
- */
+
+
+
 export async function saveLessonProgress(payload: LessonProgressPayload) {
   const token = localStorage.getItem('token');
   if (!token) return null;
@@ -51,7 +51,7 @@ export async function saveLessonProgress(payload: LessonProgressPayload) {
     body: JSON.stringify({
       hasWatchedVisualizer: payload.hasWatchedVisualizer,
       quizScore: payload.quizScore,
-      bestScore: payload.quizScore, // Fallback if backend stores bestScore
+      bestScore: payload.quizScore, 
       codelabCompleted: payload.codelabCompleted,
       xpAwarded: payload.xpAwarded
     }),
@@ -60,9 +60,9 @@ export async function saveLessonProgress(payload: LessonProgressPayload) {
   return true;
 }
 
-/**
- * Cộng XP cho user
- */
+
+
+
 export async function awardXp(amount: number, reason: string = 'Hoàn thành nhiệm vụ bài học') {
   const token = localStorage.getItem('token');
   if (!token) return null;

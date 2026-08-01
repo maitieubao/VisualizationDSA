@@ -41,10 +41,10 @@ describe('useAlgorithmStore', () => {
     const store = useAlgorithmStore();
     await store.fetchAlgorithms();
 
-    // Should contain all catalog items + 1 new item from API
+    
     expect(store.algorithms.length).toBe(ALGORITHM_CATALOG.length + 1);
     
-    // The new item should be present
+    
     const newAlgo = store.algorithms.find(a => a.id === 'new-api-algo');
     expect(newAlgo).not.toBeUndefined();
     expect(newAlgo?.name).toBe('New API Algo');
@@ -53,7 +53,7 @@ describe('useAlgorithmStore', () => {
   it('selectAlgorithm sets currentAlgorithm and loads local metadata', () => {
     const store = useAlgorithmStore();
     store.algorithms = [...ALGORITHM_CATALOG];
-    const algo = ALGORITHM_CATALOG[0]; // bubble-sort
+    const algo = ALGORITHM_CATALOG[0]; 
 
     store.selectAlgorithm(algo);
 

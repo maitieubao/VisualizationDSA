@@ -4,10 +4,10 @@ using System.Linq;
 
 namespace VisualizationDSA.Domain.Engine;
 
-/// <summary>
-/// Bộ thực thi DI Container mô phỏng.
-/// CRITICAL 4: Sử dụng DFS đệ quy với 3 trạng thái để phát hiện Cyclic Dependency.
-/// </summary>
+
+
+
+
 public class DIContainerExecutor
 {
     private enum NodeState
@@ -17,9 +17,9 @@ public class DIContainerExecutor
         Visited
     }
 
-    /// <summary>
-    /// Exception riêng cho lỗi phụ thuộc vòng.
-    /// </summary>
+    
+    
+    
     public class CyclicDependencyException : Exception
     {
         public List<string> CyclePath { get; }
@@ -31,10 +31,10 @@ public class DIContainerExecutor
         }
     }
 
-    /// <summary>
-    /// Chạy thuật toán phát hiện chu trình trên danh sách đăng ký dịch vụ.
-    /// Trả về các frame hoạt ảnh mô tả quá trình duyệt đồ thị.
-    /// </summary>
+    
+    
+    
+    
     public List<DIContainerFrameDto> ExecuteCycleDetection(List<DIServiceRegistrationDto> registrations, string targetService)
     {
         var frames = new List<DIContainerFrameDto>();
@@ -115,7 +115,7 @@ public class DIContainerExecutor
     {
         if (!serviceMap.ContainsKey(currentNode))
         {
-            // Service không được đăng ký
+            
             return;
         }
 
@@ -123,7 +123,7 @@ public class DIContainerExecutor
 
         if (states[currentNode] == NodeState.Visiting)
         {
-            // Thêm node hiện tại vào cuối currentPath để hiển thị thành vòng tròn (VD: A -> B -> C -> A)
+            
             var cyclePath = new List<string>(currentPath);
             throw new CyclicDependencyException(cyclePath);
         }
@@ -131,7 +131,7 @@ public class DIContainerExecutor
         if (states[currentNode] == NodeState.Visited)
         {
             currentPath.RemoveAt(currentPath.Count - 1);
-            return; // Đã kiểm tra an toàn trước đó
+            return; 
         }
 
         states[currentNode] = NodeState.Visiting;

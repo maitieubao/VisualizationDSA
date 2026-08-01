@@ -10,10 +10,10 @@ using Xunit;
 
 namespace VisualizationDSA.UnitTests.Services
 {
-    /// <summary>
-    /// Tests cho Graph RAG read-path (Trụ Cột 5). Dùng EF Core InMemory để xác thực
-    /// projection, induced-subgraph filtering, degree và graph density.
-    /// </summary>
+    
+    
+    
+    
     public class SemanticGraphServiceTests
     {
         private static ApplicationDbContext NewContext() =>
@@ -49,7 +49,7 @@ namespace VisualizationDSA.UnitTests.Services
             result.Stats.NodeCount.Should().Be(3);
             result.Stats.EdgeCount.Should().Be(2);
             result.Stats.CategoryCount.Should().Be(3);
-            // Mật độ có hướng: 2 / (3 * 2) = 0.3333
+            
             result.Stats.GraphDensity.Should().BeApproximately(0.3333, 0.0001);
         }
 
@@ -64,7 +64,7 @@ namespace VisualizationDSA.UnitTests.Services
 
             result.Nodes.Select(n => n.Importance)
                 .Should().BeInDescendingOrder();
-            result.Nodes.First().ConceptKey.Should().Be("oop.encapsulation"); // importance 0.9
+            result.Nodes.First().ConceptKey.Should().Be("oop.encapsulation"); 
         }
 
         [Fact]
@@ -72,8 +72,8 @@ namespace VisualizationDSA.UnitTests.Services
         {
             using var db = NewContext();
             var (oop, solid, dsa) = SeedThreeNodes(db);
-            db.Add(new KnowledgeEdge(solid.Id, oop.Id, "DependsOn", 1.5)); // oop in:1, solid out:1
-            db.Add(new KnowledgeEdge(dsa.Id, oop.Id, "Precedes", 1.0));    // oop in:2, dsa out:1
+            db.Add(new KnowledgeEdge(solid.Id, oop.Id, "DependsOn", 1.5)); 
+            db.Add(new KnowledgeEdge(dsa.Id, oop.Id, "Precedes", 1.0));    
             db.SaveChanges();
 
             var service = new SemanticGraphService(db);
@@ -89,7 +89,7 @@ namespace VisualizationDSA.UnitTests.Services
         {
             using var db = NewContext();
             var (oop, solid, dsa) = SeedThreeNodes(db);
-            // Cạnh cross-category (SOLID -> OOP) phải bị loại khi lọc category=OOP.
+            
             db.Add(new KnowledgeEdge(solid.Id, oop.Id, "DependsOn", 1.5));
             db.SaveChanges();
 
@@ -97,10 +97,10 @@ namespace VisualizationDSA.UnitTests.Services
             var result = await service.GetSemanticGraphAsync("OOP");
 
             result.Nodes.Should().ContainSingle().Which.Category.Should().Be("OOP");
-            result.Edges.Should().BeEmpty(); // induced subgraph: không còn cạnh nào nằm trọn trong tập node đã lọc
+            result.Edges.Should().BeEmpty(); 
             result.Stats.NodeCount.Should().Be(1);
             result.Stats.EdgeCount.Should().Be(0);
-            result.Stats.GraphDensity.Should().Be(0.0); // V <= 1 => density 0
+            result.Stats.GraphDensity.Should().Be(0.0); 
         }
 
         [Fact]

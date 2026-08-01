@@ -6,13 +6,13 @@ export function useHeapSortVisualizer(frame: () => SortFrame | null) {
 
   const n = computed(() => frame()?.arrayStateWithIds?.length ?? 6);
 
-  // Heap size bounds
+  
   const currentHeapSize = computed(() => {
     if (!frame()) return n.value;
     return frame()!.heapSize ?? frame()!.arrayState.length;
   });
 
-  // Phase determination: BUILD vs SORT
+  
   const currentPhase = computed(() => {
     if (!frame()) return 'BUILD';
     const desc = frame()!.description.toLowerCase();
@@ -22,7 +22,7 @@ export function useHeapSortVisualizer(frame: () => SortFrame | null) {
     return 'BUILD';
   });
 
-  // Step descriptions
+  
   const currentStepDescription = computed(() => {
     if (!frame()) return 'Khởi tạo Heap Sort';
     return frame()!.description;
@@ -50,10 +50,10 @@ export function useHeapSortVisualizer(frame: () => SortFrame | null) {
     return frame()!.description;
   });
 
-  // ─── Tree geometry (percentage-based so it fits the box) ─────────────
+  
   const maxDepth = computed(() => Math.ceil(Math.log2((n.value || 1) + 1)));
 
-  // Placeholder indices to fill out the complete tree level
+  
   const placeholderIndices = computed(() => {
     const fullTreeSize = Math.pow(2, maxDepth.value) - 1;
     const list: number[] = [];
@@ -85,53 +85,53 @@ export function useHeapSortVisualizer(frame: () => SortFrame | null) {
     return idx < currentHeapSize.value;
   }
 
-  // Real node style class binding
+  
   function getNodeClass(idx: number): string {
     if (!frame()) return '';
     const ci = frame()!.comparingIndices;
     const si = frame()!.swappedIndices;
     
-    // 1. Violation check: parent < child while build/sift phase
+    
     if (idx > 0) {
       const pIdx = getParentIndex(idx);
       const val  = frame()!.arrayState[idx];
       const pVal = frame()!.arrayState[pIdx];
-      // Only highlight active heap elements violating max-heap
+      
       if (idx < currentHeapSize.value && pVal < val && currentPhase.value === 'BUILD') {
         return 'node-violation animate-pulse';
       }
     }
     
-    // 2. Active comparison highlight (amber/yellow)
+    
     if (ci?.includes(idx)) {
       return 'node-comparing scale-105 z-20';
     }
     
-    // 3. Swap transition highlight (rose/red)
+    
     if (si?.includes(idx)) {
       return 'node-swapped scale-105 z-20';
     }
     
-    // 4. Sorted area nodes (emerald green)
+    
     if (idx >= currentHeapSize.value) {
       return 'node-sorted opacity-60';
     }
     
-    // Default active heap nodes (cyan)
+    
     return 'node-active';
   }
-  // Edge line drawing attributes
+  
   function getLineStroke(idx: number): string {
     if (!frame()) return 'color-mix(in srgb, var(--color-accent-cyan) 20%, transparent)';
     const ci = frame()!.comparingIndices;
     const pIdx = getParentIndex(idx);
     
-    // 1. Active comparison line (yellow)
+    
     if (ci?.includes(idx) && ci?.includes(pIdx)) {
       return 'var(--color-accent-yellow)';
     }
     
-    // 2. Max-Heap violation line (rose)
+    
     if (idx < currentHeapSize.value) {
       const val = frame()!.arrayState[idx];
       const pVal = frame()!.arrayState[pIdx];
@@ -140,12 +140,12 @@ export function useHeapSortVisualizer(frame: () => SortFrame | null) {
       }
     }
     
-    // 3. Sorted chốt chót line (dimmer)
+    
     if (idx >= currentHeapSize.value) {
       return 'color-mix(in srgb, var(--color-accent-green) 8%, transparent)';
     }
     
-    // 4. Default active heap line (cyan)
+    
     return 'color-mix(in srgb, var(--color-accent-cyan) 35%, transparent)';
   }
   function getLineWidth(idx: number): number {
@@ -155,7 +155,7 @@ export function useHeapSortVisualizer(frame: () => SortFrame | null) {
     if (ci?.includes(idx) && ci?.includes(pIdx)) return 3;
     return 2;
   }
-  // Array item class bindings
+  
   function getArrayItemClass(idx: number): string {
     if (!frame()) return '';
     const ci = frame()!.comparingIndices;
@@ -172,7 +172,7 @@ export function useHeapSortVisualizer(frame: () => SortFrame | null) {
     }
     return 'item-active';
   }
-  // Debug label helpers for tooltip
+  
   function getLeftChildLabel(idx: number): string {
     const left = idx * 2 + 1;
     if (left >= n.value) return 'Không có';
@@ -185,7 +185,7 @@ export function useHeapSortVisualizer(frame: () => SortFrame | null) {
     return `Index ${right} (Value: ${frame()?.arrayState[right] ?? '—'})`;
   }
 
-  // Responsive layout sizes
+  
   const nodeSize     = computed(() => n.value <= 8 ? '52px' : n.value <= 11 ? '44px' : '38px');
   const nodeFontSize = computed(() => n.value <= 8 ? '13px' : n.value <= 11 ? '11.5px' : '10.5px');
   

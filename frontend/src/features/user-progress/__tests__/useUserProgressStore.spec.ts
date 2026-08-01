@@ -65,16 +65,16 @@ describe('useUserProgressStore', () => {
   });
 
   it('should set isSyncError to true and NOT call refreshAccessToken when 401 error occurs (interceptor owns retry)', async () => {
-    // Since the global fetch interceptor handles 401 retry/refresh,
-    // loadProgress must NOT duplicate that logic to avoid race conditions.
+    
+    
     vi.mocked(fetchUserProgress).mockRejectedValue({ status: 401, message: 'Unauthorized' });
 
     const store = useUserProgressStore();
     await expect(store.loadProgress()).resolves.toBeUndefined();
 
-    // isSyncError should be true because interceptor already retried and failed
+    
     expect(store.isSyncError).toBe(true);
-    // loadProgress must NOT call refreshAccessToken — that is the interceptor's job
+    
     expect(authStore.refreshAccessToken).not.toHaveBeenCalled();
   });
 
@@ -83,7 +83,7 @@ describe('useUserProgressStore', () => {
 
     const store = useUserProgressStore();
     
-    // Should resolve, not reject/throw
+    
     await expect(store.loadProgress()).resolves.toBeUndefined();
     expect(store.isSyncError).toBe(true);
   });
@@ -102,12 +102,12 @@ describe('useUserProgressStore', () => {
   it('should reset isSyncError to false when loadProgress is called again and succeeds', async () => {
     const store = useUserProgressStore();
 
-    // Trigger initial error to set isSyncError to true
+    
     vi.mocked(fetchUserProgress).mockRejectedValue(new Error('Network Error'));
     await store.loadProgress();
     expect(store.isSyncError).toBe(true);
 
-    // Now make it succeed
+    
     const mockProgress = {
       totalXP: 100,
       currentLevel: 1,

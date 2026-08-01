@@ -1,7 +1,7 @@
 <template>
   <div class="tree-container w-full h-full flex-1 relative rounded-md border border-white/10 bg-slate-950 overflow-hidden shrink-0 select-none">
     
-    <!-- Color Legend Overlay inside Tree View -->
+    
     <div class="legend-overlay absolute top-2.5 left-2.5 border border-white/10 rounded-md px-2.5 py-1.5 text-[10px] font-mono flex items-center gap-3.5 z-10 bg-slate-900/90 backdrop-blur-md shadow-md">
       <div class="flex items-center gap-1.5">
         <span class="w-2 h-2 rounded-full bg-amber-400"></span>
@@ -21,9 +21,9 @@
       </div>
     </div>
 
-    <!-- SVG Lines (use percentage coords so they always fit the box) -->
+    
     <svg class="absolute inset-0 w-full h-full pointer-events-none">
-      <!-- Lines for real nodes -->
+      
       <line
         v-for="idx in childIndices"
         :key="idx"
@@ -35,7 +35,7 @@
         :stroke-width="getLineWidth(idx)"
         class="transition-all duration-300"
       />
-      <!-- Placeholder lines for missing complete-tree nodes -->
+      
       <line
         v-for="idx in placeholderIndices"
         :key="'p-line-' + idx"
@@ -49,7 +49,7 @@
       />
     </svg>
 
-    <!-- Real Nodes -->
+    
     <div
       v-for="(item, idx) in frame?.arrayStateWithIds || []"
       :key="item.id"
@@ -68,10 +68,10 @@
       @mouseleave="hoveredNodeIdx = null"
     >
       <span>{{ item.value }}</span>
-      <!-- Show index small on the node center bottom -->
+      
       <span v-if="(frame?.arrayStateWithIds?.length ?? 0) <= 12" class="node-idx-label text-[7.5px] font-normal -mt-0.5 select-none">[i={{ idx }}]</span>
 
-      <!-- Hover Debug Tooltip -->
+      
       <div
         v-if="hoveredNodeIdx === idx"
         class="tooltip-box absolute bottom-full mb-2 z-50 border p-2.5 rounded-xl text-left backdrop-blur-md shadow-2xl text-[9px] font-mono flex flex-col gap-1 w-44 pointer-events-none"
@@ -90,7 +90,7 @@
       </div>
     </div>
 
-    <!-- Placeholder Nodes (dotted grey circles) to make it complete tree -->
+    
     <div
       v-for="idx in placeholderIndices"
       :key="'p-node-' + idx"

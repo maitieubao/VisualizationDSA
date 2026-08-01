@@ -1,7 +1,7 @@
-/**
- * Default bubble sort source code cho VCR player.
- * Tách ra để giữ useVcrStore.ts < 100 dòng.
- */
+
+
+
+
 export const DEFAULT_BUBBLE_SORT_CODE = `// Thuật toán Sắp xếp nổi bọt
 for (let i = 0; i < array.length - 1; i++) {
   for (let j = 0; j < array.length - i - 1; j++) {

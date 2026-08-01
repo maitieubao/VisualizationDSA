@@ -45,7 +45,7 @@ namespace VisualizationDSA.Infrastructure.Repositories
                 .Select(u => u.TotalXP)
                 .FirstOrDefaultAsync();
 
-            // SQL đếm số lượng người có XP lớn hơn để tính hạng
+            
             return await _context.Users.CountAsync(u => u.TotalXP > userXp) + 1;
         }
 

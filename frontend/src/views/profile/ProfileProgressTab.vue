@@ -5,7 +5,7 @@
       <p class="panel-subtitle">Theo dõi cấp độ học tập, điểm kinh nghiệm XP và bộ sưu tập huy hiệu của bạn.</p>
     </div>
 
-    <!-- XP Level Card -->
+    
     <div class="pm-card xp-overview-card">
       <div class="xp-card-header">
         <div class="xp-title-group">
@@ -23,7 +23,7 @@
       </div>
     </div>
 
-    <!-- Badges Collection Grid -->
+    
     <div class="badges-panel-group">
       <div class="group-title-row">
         <h3>Huy hiệu đã mở khóa ({{ badgesList.length }})</h3>

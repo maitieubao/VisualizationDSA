@@ -1,77 +1,146 @@
 ---
-title: Ngăn xếp (Stack) – Nguyên lý LIFO
-description: Tìm hiểu cấu trúc dữ liệu cơ bản nhất nhưng lại đóng vai trò tối quan trọng trong việc quản lý bộ nhớ và lịch sử thao tác của mọi phần mềm.
+title: Ngăn xếp (Stack)
+description: Cấu trúc dữ liệu LIFO đằng sau cơ chế Hoàn tác (Undo) của mọi phần mềm và bộ nhớ đệ quy (Call Stack) của hệ điều hành. Khám phá tuyệt kỹ Monotonic Stack.
 ---
 
 # Ngăn xếp (Stack) {#stack}
 
-Ngăn xếp (Stack) là một cấu trúc dữ liệu tuyến tính vô cùng đơn giản nhưng lại là "xương sống" của Khoa học máy tính. Mọi chương trình máy tính (kể cả trình duyệt web bạn đang dùng, hay phần mềm bạn đang code) đều dựa vào Stack để hoạt động.
+:::info Mục tiêu bài học
+- Thấu hiểu cơ chế **LIFO (Vào sau - Ra trước)** thông qua các ví dụ đời sống.
+- Giải phẫu thuật ngữ hệ thống: **Call Stack (Ngăn xếp gọi hàm)** và hiểu lý do đệ quy gây ra lỗi `StackOverflow`.
+- Chinh phục **Monotonic Stack (Ngăn xếp đơn điệu)** - vũ khí tối thượng cho các bài toán "Tìm phần tử lớn hơn tiếp theo" với độ phức tạp $O(N)$.
+:::
 
-Stack hoạt động theo một nguyên lý duy nhất: **LIFO (Last-In, First-Out)** - Cái gì đưa vào sau cùng thì sẽ được lấy ra đầu tiên.
+## 1. Lời mở đầu: Triết lý "Vào sau - Ra trước" {#introduction}
 
-## Nguyên lý hoạt động {#how-it-works}
+Ngăn xếp (Stack) là một trong những cấu trúc dữ liệu nguyên thủy và quan trọng nhất. Nó không cho phép bạn truy cập ngẫu nhiên (như Mảng), mà ép bạn tuân theo một bộ luật duy nhất: **Phần tử nào được đưa vào cuối cùng, sẽ là phần tử đầu tiên được lấy ra (Last-In, First-Out - LIFO).**
 
-Hãy tưởng tượng bạn có một chồng đĩa trong nhà hàng. Khi bạn cất đĩa sau khi rửa xong, bạn đặt chiếc đĩa mới lên **đỉnh** của chồng đĩa. Khi có khách đến và cần lấy đĩa, nhân viên cũng chỉ lấy chiếc đĩa ở **đỉnh** ra. Sẽ thật thảm họa nếu ai đó cố gắng rút chiếc đĩa ở tận cùng dưới đáy!
+**Ví dụ thực tế (Real-world analogy):**
+- **Chồng đĩa ở nhà hàng:** Bạn rửa xong cái đĩa nào, bạn úp nó lên trên cùng của chồng đĩa. Khi có khách đến, bạn lấy cái đĩa ở **trên cùng** (chính là cái đĩa vừa mới rửa xong gần nhất) ra phục vụ trước. Cực kỳ phi logic nếu bạn cố gắng rút cái đĩa ở dưới cùng ra.
+- **Nút "Hoàn tác" (Undo):** Trong Word/Photoshop, mỗi hành động bạn làm (Gõ chữ, đổi màu, chèn ảnh) được "Push" (Đẩy) vào một Stack. Khi bạn bấm `Ctrl + Z`, hệ thống sẽ "Pop" (Lấy ra) hành động gần nhất trên cùng và đảo ngược nó. LIFO chính là cỗ máy thời gian của phần mềm!
 
-Các thao tác cơ bản trên một Stack bao gồm:
-1. **Push:** Thêm một phần tử vào Đỉnh (Top) của Stack.
-2. **Pop:** Lấy (và xóa) phần tử ở Đỉnh của Stack ra.
-3. **Peek / Top:** Xem giá trị của phần tử ở Đỉnh mà không xóa nó.
-4. **IsEmpty:** Kiểm tra xem Stack có đang rỗng hay không.
+---
 
-Tất cả các thao tác trên đều có độ phức tạp thời gian là **O(1)**.
+## 2. Các thao tác cơ bản (Operations) {#operations}
 
-## Cài đặt bằng C# (Code Example) {#code-example}
+Một Stack chuẩn mực chỉ phơi bày đúng 3 thao tác giao tiếp ra thế giới bên ngoài. Tốc độ của tất cả các thao tác này đều là chớp nhoáng **O(1)**.
 
-Trong C#, bạn hiếm khi phải tự viết lại Stack bằng mảng hay Linked List, vì .NET đã cung cấp sẵn class `Stack<T>` cực kỳ tối ưu.
+| Thao tác | Ý nghĩa | Độ phức tạp | Cảnh báo nguy hiểm |
+| :--- | :--- | :---: | :--- |
+| **`Push(x)`** | Đẩy phần tử `x` lên đỉnh (Top) của Stack. | $O(1)$ | **StackOverflow:** Nếu giới hạn RAM bị vượt qua. |
+| **`Pop()`** | Lấy và XÓA phần tử ở đỉnh Stack ra ngoài. | $O(1)$ | **EmptyStackException:** Cố gắng rút đĩa khi chồng đĩa đã trống trơn. |
+| **`Peek()`** / `Top()` | Chỉ nhìn xem phần tử trên đỉnh là gì (Không xóa). | $O(1)$ | Tương tự Pop, sẽ lỗi nếu Stack rỗng. |
+
+### Minh họa Push và Pop
+
+```mermaid
+flowchart TD
+    subgraph S1 [1. Stack Rỗng]
+        direction BT
+        Bottom1[Đáy]
+        style Bottom1 fill:transparent,stroke:none
+    end
+    
+    subgraph S2 [2. Push 10, rồi Push 20]
+        direction BT
+        Top2(20: Top) --- Mid2(10)
+        style Top2 fill:#3b82f6,color:#fff
+    end
+    
+    subgraph S3 [3. Pop ra ngoài]
+        direction BT
+        Pop((Lấy 20 ra)) -.-> Top3(10: Top mới)
+        style Pop fill:#ef4444,color:#fff
+        style Top3 fill:#3b82f6,color:#fff
+    end
+    
+    S1 ==> S2 ==> S3
+```
+
+*(Mẹo: Hãy luôn kiểm tra `if (stack.Count > 0)` trước khi gọi hàm `Pop()` hoặc `Peek()` để tránh làm sập chương trình).*
+
+---
+
+## 3. Bí ẩn sau màn hình: Call Stack và Đệ quy {#call-stack}
+
+Bạn bao giờ tự hỏi: *"Tại sao vòng lặp `while` chạy 1 tỷ lần không sao, nhưng Đệ quy (Recursion) chạy 10,000 lần là sập ứng dụng (StackOverflowException)?"*
+
+Câu trả lời nằm ở **Ngăn xếp Gọi hàm (Call Stack)** của Hệ điều hành.
+Mỗi khi bạn gọi một hàm A, máy tính không thể thực thi ngay nếu A lại gọi hàm B. Máy tính phải tạm dừng A, lưu lại toàn bộ biến cục bộ của A, đóng gói thành một hộp gọi là **Stack Frame**, và `Push` nó vào Call Stack.
+
+**Ví dụ tính Giai thừa (Factorial) của 3:**
+Hàm: `f(n) = n * f(n-1)`. Điều kiện dừng: `f(1) = 1`.
+
+```mermaid
+flowchart BT
+    subgraph Push ["Quá trình Gọi (Push)"]
+        direction BT
+        F3["Tính f(3) = 3 * f(2) <br> TẠM DỪNG ĐỢI f(2)"]
+        F2["Tính f(2) = 2 * f(1) <br> TẠM DỪNG ĐỢI f(1)"]
+        F1["Tính f(1) = 1 <br> DỪNG! Trả về 1"]
+        F3 --> F2 --> F1
+        style F1 fill:#10b981,color:#fff
+    end
+```
+
+Khi `f(1)` trả về 1, hệ thống bắt đầu `Pop` dần các hộp từ trên xuống để hoàn thành nốt phép tính bị dang dở (Unwinding).
+
+> **Lời nguyền StackOverflow:** Không gian Call Stack mà Hệ điều hành cấp cho một luồng (Thread) thường rất nhỏ (Ví dụ: 1MB trong C#, 8MB trong Linux). Nếu bạn quên viết điều kiện dừng đệ quy, máy tính sẽ `Push` hàng triệu Stack Frame cho đến khi tràn bộ nhớ 1MB đó. BÙM! Ứng dụng sập ngay lập tức!
+
+---
+
+## 4. Tuyệt kỹ Monotonic Stack (Ngăn xếp Đơn điệu) {#monotonic-stack}
+
+Đây là một biến thể nâng cao cực kỳ mạnh mẽ để giải bài toán **"Tìm phần tử lớn hơn tiếp theo" (Next Greater Element)** trong thời gian $O(N)$ thay vì $O(N^2)$ của 2 vòng lặp lồng nhau.
+
+**Khái niệm:** Là một Stack nhưng các phần tử bên trong nó được duy trì một thứ tự tăng dần hoặc giảm dần nghiêm ngặt (Đơn điệu).
+
+**Bài toán:** Cho mảng nhiệt độ `[73, 74, 75, 71, 69, 72, 76, 73]`. Trả về mảng đếm xem phải chờ bao nhiêu ngày nữa thì nhiệt độ mới cao hơn ngày hôm đó. (LeetCode 739: Daily Temperatures).
+
+**Thuật toán bằng Monotonic Stack (Giảm dần):**
+Chúng ta dùng Stack để lưu **Chỉ số (Index)** của những ngày đang "đứng xếp hàng chờ nhiệt độ cao hơn". 
+- Duyệt từng ngày một.
+- Nếu nhiệt độ hôm nay **Cao hơn** ngày đang nằm trên đỉnh Stack -> Ngày trên đỉnh Stack cuối cùng cũng tìm được câu trả lời! Ta `Pop` nó ra và tính số ngày chờ = `Index hôm nay - Index bị Pop`.
+- Nếu hôm nay **Thấp hơn**, nó chưa tìm được câu trả lời, bị tống vào Stack (`Push`) để chờ tiếp.
+
+### Bảng Mô phỏng (Trace Table)
+
+| Ngày duyệt `i` | Nhiệt độ `T[i]` | Hành động đối với Stack | Trạng thái Stack (Chỉ chứa Index) | Kết quả đếm ngày |
+| :---: | :---: | :--- | :--- | :--- |
+| 0 | **73** | Chưa có ai chờ. Push(0). | `[0]` | - |
+| 1 | **74** | `74 > T[0] (73)`. Đỉnh Stack (0) được giải thoát! <br>`KQ[0] = 1 - 0 = 1`. Pop(0). Push(1) vào chờ. | `[1]` | `KQ[0] = 1` |
+| 2 | **75** | `75 > T[1] (74)`. (1) được giải thoát!<br>`KQ[1] = 2 - 1 = 1`. Pop(1). Push(2). | `[2]` | `KQ[1] = 1` |
+| 3 | **71** | `71 < T[2] (75)`. Bị chèn ép, đành vào Stack chờ. Push(3). | `[2, 3]` (Giá trị tương ứng: 75, 71) | - |
+| 4 | **69** | `69 < T[3] (71)`. Lại vào Stack chờ. Push(4). | `[2, 3, 4]` (Giá trị: 75, 71, 69) | - |
+| 5 | **72** | **BÙNG NỔ!** `72 > T[4] (69)`. (4) được giải thoát! `KQ[4] = 5-4=1`. Pop(4). <br>`72 > T[3] (71)`. (3) được giải thoát! `KQ[3] = 5-3=2`. Pop(3). <br>`72 < T[2] (75)`. Dừng lại. Push(5). | `[2, 5]` (Giá trị tương ứng: 75, 72) | `KQ[4] = 1`<br>`KQ[3] = 2` |
+
+### Mã nguồn C# (Monotonic Stack)
 
 ```csharp
-using System.Collections.Generic;
-
-public void StackExample()
+public int[] DailyTemperatures(int[] temperatures) 
 {
-    // Khởi tạo một Stack chứa các chuỗi
-    Stack<string> history = new Stack<string>();
+    int[] result = new int[temperatures.Length];
+    // Stack lưu CHỈ SỐ (Index) của các ngày đang chờ đợi
+    Stack<int> stack = new Stack<int>();
 
-    // Push: Người dùng truy cập các trang web
-    history.Push("google.com");
-    history.Push("facebook.com");
-    history.Push("github.com");
-
-    // Peek: Xem trang hiện tại (Trang cuối cùng vừa vào)
-    Console.WriteLine(history.Peek()); // In ra: "github.com"
-
-    // Pop: Người dùng bấm nút "Back" trên trình duyệt
-    string lastPage = history.Pop();
-    Console.WriteLine($"Vừa thoát khỏi: {lastPage}"); // In ra: "github.com"
-
-    // Kiểm tra trang hiện tại sau khi Back
-    Console.WriteLine(history.Peek()); // In ra: "facebook.com"
+    for (int i = 0; i < temperatures.Length; i++) 
+    {
+        // Khi ngày hôm nay nóng hơn ngày trên đỉnh Stack -> Ngày trên đỉnh đã tìm được đáp án!
+        while (stack.Count > 0 && temperatures[i] > temperatures[stack.Peek()]) 
+        {
+            int prevIndex = stack.Pop();
+            result[prevIndex] = i - prevIndex; // Tính số ngày chênh lệch
+        }
+        
+        // Dù nãy có giải cứu ai hay không, thì ngày hôm nay vẫn phải vào Stack để tự chờ đợi tương lai của nó
+        stack.Push(i);
+    }
+    return result; // Những index còn sót lại trong Stack sẽ tự động bằng 0 (Không bao giờ nóng hơn)
 }
 ```
 
-:::warning Lưu ý về Exception
-Nếu bạn gọi hàm `.Pop()` hoặc `.Peek()` trên một Stack đang rỗng rỗng (Empty), C# sẽ ném ra lỗi `InvalidOperationException`. Hãy luôn kiểm tra `history.Count > 0` hoặc dùng hàm `.TryPop(out var result)` ở các phiên bản C# mới.
+:::tip Tóm tắt nhanh (Key Takeaways)
+- Stack là LIFO (Vào sau Ra trước). Chỉ 3 thao tác `Push`, `Pop`, `Peek` với tốc độ tuyệt đối $O(1)$.
+- Đệ quy chính là ngụy trang của Stack. Mỗi lần đệ quy tốn bộ nhớ Call Stack. Hết bộ nhớ là `StackOverflow`.
+- Monotonic Stack là mẫu thiết kế (Pattern) siêu hạng để xử lý dữ liệu theo cặp (Matching) ví dụ như: Kiểm tra ngoặc hợp lệ `() {}`, Tìm phần tử lớn hơn tiếp theo, hoặc Tính diện tích lớn nhất của Histogram.
 :::
-
-## Ứng dụng thực tế {#real-world}
-
-Vì tính chất "Nhớ lại quá khứ gần nhất" (Remembering the immediate past), Stack được sử dụng ở khắp mọi nơi:
-
-1. **Nút Back của Trình duyệt:** Mỗi khi bạn sang trang mới, URL hiện tại được Push vào Stack. Khi bấm Back, URL được Pop ra.
-2. **Tính năng Undo / Redo:** Trong Word, Photoshop hay Visual Studio. Mỗi thao tác bạn gõ phím hay vẽ một nét cọ đều được Push vào Stack "Lịch sử". Bấm `Ctrl + Z` chính là gọi lệnh Pop!
-3. **Call Stack của Hệ điều hành:** Khi Hàm A gọi Hàm B, hệ thống "Push" vị trí của Hàm A vào bộ nhớ Stack để nhớ đường quay về. Khi Hàm B chạy xong (Pop), hệ thống lấy vị trí của Hàm A ra và tiếp tục chạy. (Đó là lý do ta có lỗi `StackOverflow` nếu đệ quy vô hạn).
-4. **Kiểm tra dấu ngoặc hợp lệ (Valid Parentheses):** Dùng để parse các biểu thức toán học hoặc biên dịch mã nguồn.
-
-## Next Steps {#next-steps}
-
-Stack là cấu trúc "Vào sau, Ra trước". Nhưng trong cuộc sống thực tế, sự bất công đó ít khi được chấp nhận. Xếp hàng mua vé mà người đến sau lại được phục vụ trước thì thật là thảm họa!
-
-Vậy nên, chúng ta có một người anh em của Stack, chuyên xử lý những tình huống "Công bằng" hơn: **Hàng đợi (Queue)**.
-
-<div class="vt-box-container next-steps">
-  <a class="vt-box" href="/docs/stack-queue/queue">
-    <p class="next-steps-link">Hàng đợi (Queue) – Nguyên lý FIFO</p>
-    <p class="next-steps-caption">Người đến trước, phục vụ trước - Cấu trúc dữ liệu của sự công bằng.</p>
-  </a>
-</div>

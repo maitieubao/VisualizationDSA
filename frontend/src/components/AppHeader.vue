@@ -1,17 +1,17 @@
 <template>
-  <header class="app-header">
+  <header class="app-header z-[999999]" style="position: relative; z-index: 999999 !important;">
     <div class="app-header__inner">
 
-      <!-- ── Logo: ~/VisualizationDSA style ── -->
+      
       <div class="header-logo">
-        <!-- Traffic light dots — terminal window decoration -->
+        
         <div class="terminal-dots" aria-hidden="true">
           <span class="terminal-dot terminal-dot--close"></span>
           <span class="terminal-dot terminal-dot--min"></span>
           <span class="terminal-dot terminal-dot--max"></span>
         </div>
 
-        <!-- Logo text -->
+        
         <div class="logo-text">
           <span class="logo-prefix">~/</span>
           <span class="logo-name">VisualizationDSA</span>
@@ -19,27 +19,27 @@
         <span class="logo-badge">DSA Viz</span>
       </div>
 
-      <!-- ── Top Navigation Menu ── -->
+      
       <nav class="header-nav flex-1 flex justify-center items-center px-4 hidden lg:flex space-x-1">
         <template v-for="tabOrGroup in filteredTabs" :key="'groupName' in tabOrGroup ? tabOrGroup.groupName : tabOrGroup.id">
           
-          <!-- Dropdown cho Group -->
-          <div v-if="'groupName' in tabOrGroup" class="relative group header-nav-item">
-            <button class="flex items-center space-x-1 px-3 py-2 text-sm font-medium text-text-secondary hover:text-white rounded-md transition-colors group-hover:bg-[#1e293b]">
+          
+          <div v-if="'groupName' in tabOrGroup" class="relative group header-nav-item z-[999999]">
+            <button class="flex items-center space-x-1 px-3 py-2 text-sm font-medium text-text-secondary hover:text-text-primary rounded-md transition-colors group-hover:bg-bg-hover">
               <span>{{ tabOrGroup.groupName }}</span>
               <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="opacity-70 group-hover:opacity-100 transition-transform group-hover:rotate-180">
                 <polyline points="6 9 12 15 18 9"></polyline>
               </svg>
             </button>
-            <!-- Dropdown Menu -->
-            <div class="absolute left-0 mt-0 w-48 pt-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
-              <div class="bg-[#1e293b] border border-border-color rounded-lg shadow-xl py-1">
+            
+            <div class="absolute left-0 mt-0 w-48 pt-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-[999999]" style="z-index: 999999 !important;">
+              <div class="bg-bg-surface border border-border-default rounded-lg shadow-xl py-1 relative z-[999999]">
                 <router-link 
                   v-for="item in tabOrGroup.items" 
                   :key="item.id" 
                   :to="item.path"
-                  class="block px-4 py-2 text-sm text-text-secondary hover:text-accent-primary hover:bg-[#0f172a] transition-colors"
-                  active-class="text-accent-primary bg-[#0f172a] font-medium"
+                  class="block px-4 py-2 text-sm text-text-secondary hover:text-accent hover:bg-bg-hover transition-colors"
+                  active-class="text-accent bg-bg-active font-medium"
                 >
                   {{ item.name }}
                 </router-link>
@@ -47,12 +47,12 @@
             </div>
           </div>
 
-          <!-- Link đơn (Nếu có) -->
+          
           <router-link 
             v-else
             :to="tabOrGroup.path"
-            class="px-3 py-2 text-sm font-medium text-text-secondary hover:text-white hover:bg-[#1e293b] rounded-md transition-colors"
-            active-class="text-accent-primary bg-[#1e293b] font-medium"
+            class="px-3 py-2 text-sm font-medium text-text-secondary hover:text-text-primary hover:bg-bg-hover rounded-md transition-colors"
+            active-class="text-accent bg-bg-active font-medium"
           >
             {{ tabOrGroup.name }}
           </router-link>
@@ -60,17 +60,17 @@
         </template>
       </nav>
 
-      <!-- Spacer (Mobile only) -->
+      
       <div class="spacer lg:hidden flex-1"></div>
 
-      <!-- ── Right controls: User + GitHub ── -->
+      
       <div class="header-controls">
 
-        <!-- Authenticated user badge -->
+        
         <template v-if="authStore.isAuthenticated">
-          <!-- Notification Bell -->
+          
           <NotificationBell />
-          <!-- Premium Crown Badge -->
+          
           <span v-if="authStore.isPremium" class="premium-crown" title="Thành viên Premium">👑</span>
           <div class="user-badge" :class="{ 'user-badge--premium': authStore.isPremium }" @click="$router.push('/profile')" title="Xem hồ sơ cá nhân">
             <div class="user-badge__avatar" :class="{ 'user-badge__avatar--premium': authStore.isPremium }">
@@ -102,7 +102,7 @@
           </button>
         </template>
 
-        <!-- Guest: login button -->
+        
         <button
           v-else
           class="btn-primary"
@@ -111,7 +111,7 @@
           Đăng nhập
         </button>
 
-        <!-- Restart Guided Tour Button -->
+        
         <button
           class="btn-icon btn-icon--ghost"
           title="Xem hướng dẫn nhanh"
@@ -125,7 +125,30 @@
           </svg>
         </button>
 
-        <!-- GitHub link -->
+        
+        <button
+          class="btn-icon btn-icon--ghost"
+          title="Đổi giao diện (Sáng/Tối)"
+          aria-label="Đổi giao diện"
+          @click="themeStore.toggleTheme()"
+        >
+          <svg v-if="themeStore.currentTheme === 'light'" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+          </svg>
+          <svg v-else width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="5"></circle>
+            <line x1="12" y1="1" x2="12" y2="3"></line>
+            <line x1="12" y1="21" x2="12" y2="23"></line>
+            <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+            <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+            <line x1="1" y1="12" x2="3" y2="12"></line>
+            <line x1="21" y1="12" x2="23" y2="12"></line>
+            <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+            <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+          </svg>
+        </button>
+
+        
         <a
           href="https://github.com/maitieubao/VisualizationDSA"
           target="_blank"
@@ -146,6 +169,7 @@
 <script setup lang="ts">
 import { useAuthStore } from '../features/auth/store/useAuthStore';
 import { useGuidedTourStore } from '../features/guided-tour/store/useGuidedTourStore';
+import { useThemeStore } from '../shared/store/useThemeStore';
 import NotificationBell from '../features/e-lecture/components/NotificationBell.vue';
 import { APP_TABS } from '../appTabs';
 import type { TabGroup, TabItem } from '../appTabs';
@@ -153,6 +177,7 @@ import { computed } from 'vue';
 
 const authStore = useAuthStore();
 const tourStore = useGuidedTourStore();
+const themeStore = useThemeStore();
 
 defineEmits<{
   (e: 'logout'): void;

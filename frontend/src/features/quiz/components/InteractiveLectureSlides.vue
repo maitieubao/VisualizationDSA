@@ -1,6 +1,6 @@
 <template>
   <div class="interactive-panel">
-    <!-- Tab Headers -->
+    
     <div class="flex items-center justify-between border-b border-border-subtle pb-4">
       <div class="flex gap-2">
         <button 
@@ -22,9 +22,9 @@
       </div>
       <div class="sprint-badge">Sprint 4 Active</div>
     </div>
-    <!-- TAB 1: LECTURE SLIDES -->
+    
     <LectureSlidesSection v-if="activeTab === 'lecture'" :current-slide-index="currentSlideIndex" :slides="slides" :active-slide="activeSlide" @sync="syncSlideWithVisualizer" @prev="prevSlide" @next="nextSlide" @jump="jumpToSlide" />
-    <!-- TAB 2: INTERACTIVE QUIZ -->
+    
     <InteractiveQuizSection v-else :quiz-questions="quizQuestions" :user-answers="userAnswers" :student-code="studentCode" :compliance-result="complianceResult" :score-result="scoreResult" @update-answer="(id, val) => userAnswers[id] = val" @update-code="(val) => studentCode = val" @run-compliance="runCodeComplianceCheck" @submit="submitAndGradeQuiz" />
   </div>
 </template>

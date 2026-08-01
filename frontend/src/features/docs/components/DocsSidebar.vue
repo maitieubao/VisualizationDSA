@@ -4,7 +4,7 @@
     :class="isOpen ? 'translate-x-0' : '-translate-x-full'"
   >
     <div class="h-full overflow-y-auto p-4 pb-20 scrollbar-hide">
-      <!-- Close button for mobile -->
+      
       <button 
         @click="$emit('close')" 
         class="lg:hidden absolute top-4 right-4 text-text-muted hover:text-white"
@@ -15,12 +15,12 @@
         </svg>
       </button>
 
-      <!-- Logo / Title -->
+      
       <div class="mb-6 px-2 lg:hidden">
         <h2 class="text-xl font-bold text-text-primary">C# Documentation</h2>
       </div>
 
-      <!-- Recursive Navigation Tree -->
+      
       <nav class="mt-4 lg:mt-6">
         <ul class="space-y-1">
           <DocsSidebarItem 

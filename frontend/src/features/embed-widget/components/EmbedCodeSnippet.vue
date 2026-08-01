@@ -18,7 +18,7 @@
       <pre class="snippet-code"><code>{{ store.generatedIframeCode }}</code></pre>
     </div>
 
-    <!-- Host Integration Script -->
+    
     <div class="integration-section">
       <div class="integration-header">
         <span class="integration-title">Mã tích hợp Host (Tùy chọn)</span>

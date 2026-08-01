@@ -3,17 +3,17 @@ using Asp.Versioning;
 
 namespace VisualizationDSA.WebApi.Controllers
 {
-    /// <summary>
-    /// Gamification Config Controller — trả về cấu hình level/XP để frontend và backend đồng bộ.
-    /// Route: api/v{version:apiVersion}/gamification
-    /// </summary>
+    
+    
+    
+    
     [ApiVersion("1.0")]
     [ApiController]
     [Route("api/v{version:apiVersion}/[controller]")]
     public class GamificationController : ControllerBase
     {
-        // ✅ A3: Single Source of Truth cho level thresholds.
-        // Frontend XPEngine.ts và Backend User.cs đều phải tuân theo bảng này.
+        
+        
         private static readonly object[] LevelDefinitions = new[]
         {
             new { level = 1, name = "Novice",       xpRequired = 0,    color = "#64748b" },
@@ -38,12 +38,12 @@ namespace VisualizationDSA.WebApi.Controllers
             new { id = "dsa-champion",     name = "DSA Champion",     description = "Hoàn thành toàn bộ khóa học",              icon = "👑", color = "#eab308" },
         };
 
-        /// <summary>
-        /// Lấy cấu hình gamification: level thresholds + badge definitions.
-        /// Đây là Source of Truth để frontend XPEngine.ts và backend đồng bộ.
-        /// GET /api/v1/gamification/config
-        /// Cache 24 giờ — dữ liệu tĩnh, không thay đổi runtime.
-        /// </summary>
+        
+        
+        
+        
+        
+        
         [HttpGet("config")]
         [ResponseCache(Duration = 86400, Location = ResponseCacheLocation.Any)]
         public IActionResult GetConfig()

@@ -1,150 +1,229 @@
 ---
-title: Các mẫu nâng cao (Advanced DI)
-description: Đi sâu vào những ngóc ngách hắc búa nhất của Dependency Injection như Circular Dependency, truyền tham số động lúc chạy, và quét dịch vụ tự động (Scrutor).
+title: Các mẫu Nâng cao của Dependency Injection
+description: Vượt qua giới hạn của DI cơ bản. Tối ưu hóa hiệu năng khởi tạo bằng Lazy<T>, kết hợp hoàn hảo DI với Factory Pattern, và nhận diện sát thủ Service Locator.
 ---
 
-# Các mẫu nâng cao (Advanced DI) {#di-advanced}
+# Mẫu thiết kế DI Nâng cao (Advanced DI Patterns) {#di-advanced}
 
-DI cơ bản giúp bạn làm 90% công việc hàng ngày. Nhưng để sống sót qua 10% các "ca đẻ khó" trong các hệ thống doanh nghiệp (Enterprise), bạn cần trang bị thêm một vài tiểu xảo cao cấp. Bài viết này sẽ giải phẫu những lỗi khét tiếng nhất và cách DI Container hiện đại giải quyết chúng.
+:::info Mục tiêu bài học
+- Xử lý triệt để căn bệnh **Over-injection** (Tiêm quá liều) khi một Constructor phình to với hàng tá Services.
+- Cứu vãn hiệu năng của ứng dụng (RAM & CPU) bằng tuyệt kỹ **Tải Lười Biếng (`Lazy<T>`)**.
+- Phối hợp sức mạnh của DI Container với [Factory Pattern](/docs/patterns/factory) thông qua **`Func<T>` Delegate**.
+- Nhận diện và tiêu diệt Anti-pattern tàn phá kiến trúc nhất mọi thời đại: **Service Locator**.
+:::
 
-## 1. Lỗi Phụ thuộc Vòng tròn (Circular Dependency) {#circular-dependency}
+## 1. Lời mở đầu: Trái đắng của Inversion of Control {#introduction}
 
-Đây là lỗi phổ biến nhất khiến ứng dụng của bạn không thể khởi động.
+Trong bài [Cơ bản về DI & IoC](/docs/di/basics), chúng ta đã giác ngộ được phép màu của việc giao phó quyền khởi tạo Object cho "Người nội trợ" Container. Tuy nhiên, khi một ứng dụng Web (ví dụ ASP.NET Core) phình to đến mức Khổng lồ (Enterprise level), việc lạm dụng DI sẽ sinh ra những hệ lụy vô cùng khủng khiếp về mặt hiệu năng.
 
-**Kịch bản:**
-- Class `OrderService` cần gọi `UserService` để kiểm tra quyền người dùng trước khi đặt hàng. Nó Inject `UserService`.
-- Class `UserService` cần gọi `OrderService` để xem người này đã đặt bao nhiêu đơn. Nó Inject `OrderService`.
+Hãy tưởng tượng bạn gọi một bát phở (Request). Để nấu bát phở, Đầu bếp (Container) tự động chuẩn bị Hành, Tiêu, Tỏi, Ớt, Nước mắm, Giấm, Tương đen, Tương đỏ, Chanh, Khăn lạnh... Mặc dù cuối cùng bạn chỉ vắt đúng một miếng Chanh.
+Sự chuẩn bị dư thừa đó làm chậm tốc độ phục vụ của quán phở (Chậm tốc độ phản hồi Request). 
 
-**Chuyện gì xảy ra?**
-Khi DI Container cố gắng tạo `OrderService`, nó thấy cần `UserService`. Nó bèn chạy đi tạo `UserService`. Nhưng để tạo `UserService`, nó lại thấy cần `OrderService`. Nó lại quay về tạo `OrderService`... Một vòng lặp vô hạn (Infinite Loop) xảy ra! Ứng dụng ném ra lỗi `System.InvalidOperationException: A circular dependency was detected`.
+Trong lập trình, đó gọi là bệnh **Over-injection (Tiêm quá liều)**.
 
-```mermaid
-graph LR
-    A[DI Container] -->|Cần| B(OrderService)
-    B -->|Inject| C(UserService)
-    C -->|Inject| B
-    
-    classDef bad fill:#f9d0c4,stroke:#e06666,stroke-width:2px,color:#000;
-    class B,C bad;
-```
+---
 
-**Cách khắc phục:**
-1. **Thiết kế lại (Khuyên dùng):** Thường thì lỗi này chỉ ra kiến trúc của bạn đang bị sai (Vi phạm SRP). Thay vì A gọi B, B gọi A, hãy tách phần logic chung ra một Class thứ 3 là `UserOrderValidator`.
-2. **Dùng `Lazy<T>`:** Thay vì bắt Framework khởi tạo ngay lập tức lúc gọi Constructor, hãy nhét đối tượng vào lớp bọc `Lazy<T>`. Nó sẽ chỉ khởi tạo khi bạn gọi `.Value`.
-3. **Property/Method Injection:** Thay vì Inject vào Constructor (bắt buộc phải có ngay lúc tạo), hãy tạo xong đối tượng rồi mới gán qua hàm `SetUserService()`. C# mặc định không khuyến khích cách này.
+## 2. Bệnh viện quá tải: Hội chứng Over-injection {#over-injection}
 
-## 2. Factory Pattern kết hợp với DI {#factory-di}
-
-DI rất giỏi trong việc tạo đối tượng, nhưng nó chỉ có thể cung cấp các đối tượng **Cố định (Static dependencies)** được đăng ký lúc đầu. Điều gì xảy ra nếu bạn muốn tạo ra `PaymentService` loại A hay B tùy thuộc vào **dữ liệu người dùng nhập vào lúc Runtime**?
-
-DI không thể làm điều đó trực tiếp. Bạn phải kết hợp DI với [Factory Pattern](/docs/patterns/factory).
-
-**Cách làm:**
-Đừng Inject thẳng `IPaymentService`. Hãy Inject một cái xưởng `IPaymentFactory`.
+Đây là đoạn code cực kỳ phổ biến ở các công ty Outsourcing, nơi các Junior Dev "tiêm" mọi thứ họ nghĩ là cần thiết vào một Controller duy nhất.
 
 ```csharp
-public class PaymentFactory : IPaymentFactory
+public class OrderController
 {
-    private readonly IServiceProvider _serviceProvider;
+    private readonly IDatabase _db;
+    private readonly IEmailService _email;
+    private readonly ILogger _logger;
+    private readonly ISmsService _sms;
+    private readonly IPdfGenerator _pdf; // Khởi tạo thằng này mất 2 giây!
+    private readonly ICacheService _cache;
 
-    // Inject IServiceProvider (chính là DI Container) vào xưởng
-    public PaymentFactory(IServiceProvider serviceProvider)
+    // CONSTRUCTOR KHỔNG LỒ (Code Smell)
+    public OrderController(
+        IDatabase db, 
+        IEmailService email, 
+        ILogger logger, 
+        ISmsService sms, 
+        IPdfGenerator pdf,
+        ICacheService cache)
     {
-        _serviceProvider = serviceProvider;
+        _db = db; _email = email; _logger = logger; 
+        _sms = sms; _pdf = pdf; _cache = cache;
     }
 
-    public IPaymentService Create(string paymentType)
+    public void ViewOrder(int id)
     {
-        // Tùy vào biến Runtime mà Factory tự quyết định kéo Class nào ra từ DI Container
-        if (paymentType == "Credit")
-            return _serviceProvider.GetRequiredService<CreditCardPayment>();
-        if (paymentType == "Momo")
-            return _serviceProvider.GetRequiredService<MomoPayment>();
-            
-        throw new Exception("Unknown Type");
+        // Hàm này CHỈ truy vấn DB và Trả về Cache.
+        // Nó KHÔNG HỀ xài Email, SMS, hay PDF.
+        var data = _db.GetOrder(id);
+        _cache.Set(id, data);
     }
 }
 ```
+
+**Thảm họa hiệu năng:**
+Khi User gọi API `ViewOrder()`, DI Container phải lóc cóc chạy đi khởi tạo cả 6 món đồ nghề kia (kể cả thằng `IPdfGenerator` khởi tạo mất 2 giây). Mặc dù hàm `ViewOrder` hoàn toàn không xài tới PDF! 
+Kết quả: API phản hồi mất hơn 2 giây thay vì 10 mili-giây. RAM máy chủ nổ tung vì chứa hàng ngàn Object không bao giờ được dùng tới.
+
+---
+
+## 3. Liều thuốc tiên: Tải Lười Biếng với `Lazy<T>` {#lazy-injection}
+
+Ngôn ngữ C# hỗ trợ một Generic Class tuyệt vời mang tên `Lazy<T>`. 
+Ý nghĩa của nó là: *"Hãy chuẩn bị cho tôi một BẢN CAM KẾT (Proxy). Khi nào tôi thực sự gọi hàm `.Value`, anh hẵng chạy đi tạo cái Object đó cho tôi. Còn nếu tôi không xài, thì đừng tạo!"*
+
+Chúng ta sẽ bọc những Service nặng nề (Ví dụ: `IPdfGenerator`) vào bên trong `Lazy<>`.
+
+```csharp
+public class OrderController
+{
+    private readonly IDatabase _db;
+    private readonly Lazy<IPdfGenerator> _lazyPdf; // Chỉ tiêm cái BẢN CAM KẾT
+
+    public OrderController(IDatabase db, Lazy<IPdfGenerator> lazyPdf)
+    {
+        _db = db;
+        _lazyPdf = lazyPdf; // Lúc này, đối tượng PdfGenerator THỰC SỰ CHƯA ĐƯỢC TẠO RA! Tốc độ 0ms.
+    }
+
+    public void ViewOrder(int id)
+    {
+        // Không gọi _lazyPdf.Value -> Tránh được án phạt 2 giây! Tốc độ API cực nhanh.
+        _db.GetOrder(id);
+    }
+
+    public void ExportInvoice()
+    {
+        // Lúc này mới thực sự CẦN. 
+        // Khi gọi .Value, hệ thống mới giật mình chạy đi khởi tạo IPdfGenerator.
+        IPdfGenerator realPdf = _lazyPdf.Value; 
+        realPdf.Generate();
+    }
+}
+```
+
+**Cấu hình trong ASP.NET Core:**
+Theo mặc định, DI Container của Microsoft KHÔNG tự động hiểu `Lazy<T>`. Bạn phải đăng ký một thủ thuật nhỏ trong `Program.cs` để dạy nó cách bơm `Lazy`:
+
+```csharp
+// Đăng ký dịch vụ bình thường
+builder.Services.AddTransient<IPdfGenerator, PdfGenerator>();
+
+// Dạy Container cách tự động giải quyết mọi yêu cầu xin Lazy<T>
+builder.Services.AddTransient(typeof(Lazy<>), typeof(LazyInstance<>));
+
+// Lớp hỗ trợ ngầm (Nằm đâu đó trong hệ thống của bạn)
+public class LazyInstance<T> : Lazy<T> where T : class
+{
+    // Bắt Container phải tự dùng hàm GetRequiredService khi nào người dùng gọi .Value
+    public LazyInstance(IServiceProvider provider) 
+        : base(() => provider.GetRequiredService<T>()) 
+    { }
+}
+```
+
+---
+
+## 4. Cuộc hôn nhân hoàn hảo: DI x Factory Pattern {#di-factory}
+
+Trong bài [Factory Pattern](/docs/patterns/factory), chúng ta tự tay viết các câu lệnh `switch-case` lồng ghép. Nhưng trong thời đại DI, chúng ta có thể lợi dụng **C# Delegates (`Func<T>`)** để biến chính DI Container thành một Cỗ máy Factory khổng lồ.
+
+Bài toán: Hệ thống Thanh toán lúc thì cần `CreditCard`, lúc thì cần `Momo` (Quyết định lúc Runtime, tùy thuộc User bấm nút nào). 
 
 ```mermaid
 classDiagram
-    class IPaymentFactory {
-        <<interface>>
-        +Create(type) IPaymentService
+    class Func~string, IPayment~ {
+        <<delegate>>
     }
-    class PaymentFactory {
-        -IServiceProvider _serviceProvider
-        +Create(type)
+    class CheckoutController {
+        +Pay(type)
     }
-    class IPaymentService {
-        <<interface>>
-    }
-    class CreditCardPayment
-    class MomoPayment
+    class CreditCard
+    class Momo
     
-    IPaymentFactory <|.. PaymentFactory
-    PaymentFactory ..> IPaymentService : Khởi tạo lúc Runtime\ndựa trên tham số
-    IPaymentService <|.. CreditCardPayment
-    IPaymentService <|.. MomoPayment
+    Func~string, IPayment~ <|.. DIContainer : Tiêm hàm ẩn danh
+    CheckoutController --> Func~string, IPayment~ : Gọi hàm (Invoke)
+    Func~string, IPayment~ ..> CreditCard : Trả về nếu type="Credit"
+    Func~string, IPayment~ ..> Momo : Trả về nếu type="Momo"
 ```
 
-Bằng cách này, bạn vừa giữ được tính động (Dynamic) của ứng dụng, vừa vẫn hưởng lợi từ việc quản lý vòng đời của DI Container.
-
-## 3. Cạm bẫy DI (DI Pitfalls) và Background Services {#di-pitfalls}
-
-Dù DI rất mạnh, nhưng nếu dùng sai cách, nó sẽ trở thành "sát thủ" thầm lặng giết chết hiệu năng ứng dụng. Dưới đây là 2 cạm bẫy cực kỳ nguy hiểm:
-
-**Cạm bẫy 1: Inject IServiceProvider vào Constructor**
-Nhiều người lười suy nghĩ, thay vì Inject đúng những Service mình cần (ví dụ `IUserService`, `IOrderService`), họ lại Inject thẳng cái DI Container (`IServiceProvider`) rồi thích lấy gì ra thì lấy.
-Việc này bị coi là **Anti-pattern (Service Locator Pattern)**. Nó che giấu sự phụ thuộc của Class (nhìn vào Constructor không biết Class đó cần những gì), làm việc viết Unit Test trở thành ác mộng, và phá vỡ kiến trúc Dependency Inversion.
-
-**Cạm bẫy 2: Dùng Scoped Services bên trong Background Service**
-Background Services (như HostedService chạy ngầm quét dọn rác, gửi email) thường có vòng đời là **Singleton**. Nếu bạn Inject một dịch vụ `Scoped` (như DbContext) vào Background Service, ứng dụng sẽ Crash ngay lúc khởi động!
-Để giải quyết, bạn KHÔNG ĐƯỢC Inject DbContext trực tiếp. Thay vào đó, hãy Inject `IServiceScopeFactory`, sau đó tự mở một Scope cục bộ:
+**Mã nguồn tinh hoa:**
 
 ```csharp
-public class EmailBackgroundService : BackgroundService
+// 1. CẤU HÌNH Ở PROGRAM.CS
+builder.Services.AddTransient<CreditCardPayment>();
+builder.Services.AddTransient<MomoPayment>();
+
+// Đăng ký một HÀM (Func) đẻ ra IPayment dựa trên chuỗi string 'type'
+builder.Services.AddTransient<Func<string, IPaymentService>>(serviceProvider => key =>
 {
-    private readonly IServiceScopeFactory _scopeFactory;
-    
-    public EmailBackgroundService(IServiceScopeFactory scopeFactory)
+    switch (key)
     {
-        _scopeFactory = scopeFactory;
+        case "Credit": return serviceProvider.GetRequiredService<CreditCardPayment>();
+        case "Momo":   return serviceProvider.GetRequiredService<MomoPayment>();
+        default:       throw new ArgumentException("Loại thanh toán không tồn tại");
+    }
+});
+
+// 2. SỬ DỤNG TRONG CONTROLLER
+public class CheckoutController
+{
+    // Yêu cầu DI Container bơm cho tôi MỘT CÁI HÀM, chứ không phải một Đối tượng!
+    private readonly Func<string, IPaymentService> _paymentFactory;
+
+    public CheckoutController(Func<string, IPaymentService> paymentFactory)
+    {
+        _paymentFactory = paymentFactory;
     }
 
-    protected override async Task ExecuteAsync(CancellationToken stoppingToken)
+    public void ProcessPayment(string userChoiceType) // userChoiceType = "Momo"
     {
-        // Tự tạo ra một Scope độc lập (Giống như 1 Request giả lập)
-        using (var scope = _scopeFactory.CreateScope())
-        {
-            // Lấy DbContext an toàn, dùng xong sẽ tự động Dispose!
-            var dbContext = scope.ServiceProvider.GetRequiredService<MyDbContext>();
-            await dbContext.Emails.AddAsync(new Email());
-            await dbContext.SaveChangesAsync();
-        }
+        // Khi cần xài, tôi mới GỌI HÀM (Invoke) để yêu cầu Container đẻ ra đúng loại tôi cần!
+        IPaymentService payment = _paymentFactory(userChoiceType);
+        payment.Pay();
+    }
+}
+```
+Nhờ cách này, Controller **hoàn toàn sạch bóng** các lệnh `if/else` (Tuân thủ OCP tuyệt đối) và cũng không bị khởi tạo thừa thãi các dịch vụ không xài đến.
+
+---
+
+## 5. Sát thủ Kiến trúc: Service Locator Anti-Pattern {#service-locator}
+
+Khi mới học DI, rất nhiều người sẽ cảm thấy mệt mỏi với việc phải tiêm chục cái Service vào Constructor. Họ sẽ khôn lỏi tìm ra một "lối tắt" ma quỷ: Tiêm BẢN THÂN CÁI CONTAINER vào Controller!
+
+Cái Container đó trong .NET được gọi là `IServiceProvider`.
+
+```csharp
+// MÃ CỰC KỲ XẤU - ĐỪNG BAO GIỜ VIẾT THẾ NÀY (ANTI-PATTERN)
+public class BadController
+{
+    private readonly IServiceProvider _container;
+
+    // Chỉ tiêm đúng 1 cái Cặp Da chứa vạn vật
+    public BadController(IServiceProvider container)
+    {
+        _container = container;
+    }
+
+    public void DoSomething()
+    {
+        // Thích xài cái gì thì thò tay vào Cặp Da bới ra (Service Locator)
+        var db = _container.GetService<IDatabase>();
+        var email = _container.GetService<IEmailService>();
+        
+        db.Save("Data");
+        email.SendWelcome("User");
     }
 }
 ```
 
-## 4. Tự động hóa đăng ký với Scrutor (Assembly Scanning) {#scrutor}
+**Tại sao đây là Tội ác?**
+1. **Dối trá về Phụ thuộc (Hidden Dependencies):** Nhìn từ bên ngoài, `BadController` có vẻ như chẳng phụ thuộc vào cái gì ngoài cái Container. Nhưng nếu bạn xóa mất `IDatabase` trong hệ thống, hàm tạo vẫn chạy trơn tru, và nó sẽ NỔ TUNG BẤT THÌNH LÌNH ở giữa hàm `DoSomething()`. Điều này đi ngược lại hoàn toàn triết lý của DI là "Khai báo phụ thuộc rõ ràng" (Explicit Dependencies).
+2. **Kẻ thù của Unit Test:** Để viết Test cho Class này, bạn không thể tạo một `FakeDatabase` đơn giản được nữa. Bạn phải thiết lập giả mạo (Mock) cho TOÀN BỘ cái `IServiceProvider` cực kỳ phức tạp.
 
-Nếu hệ thống của bạn có 500 cái Services, việc gõ tay 500 dòng `services.AddScoped<IA, A>()` ở file cấu hình là một cực hình. Nó không chỉ mệt mỏi mà còn dễ bị sót (Quên đăng ký = Lỗi sập hệ thống).
-
-Trong thế giới .NET, có một thư viện mã nguồn mở cực kỳ nổi tiếng tên là **Scrutor**. Nó giúp bạn tự động "cào" (scan) toàn bộ mã nguồn để tìm và tự đăng ký các Class.
-
-```csharp
-// Thay vì viết 500 dòng, bạn chỉ cần viết 5 dòng
-services.Scan(scan => scan
-    .FromAssemblyOf<Program>() // Quét toàn bộ Assembly chứa file Program
-    .AddClasses(classes => classes.Where(type => type.Name.EndsWith("Service"))) // Tìm các class có đuôi là "Service"
-    .AsImplementedInterfaces() // Đăng ký nó với Interface mà nó kế thừa
-    .WithScopedLifetime()); // Gán vòng đời Scoped cho toàn bộ!
-```
-
-Kỹ thuật này được gọi là **Convention-based Registration** (Đăng ký theo Quy ước). Nhờ nó, các dự án nghìn file vẫn sạch sẽ tinh tươm.
-
-:::tip Lời kết khóa học
-Bạn đã đi từ những khái niệm thô sơ nhất về Mảng (Big O, Stack, Queue), qua các thuật toán cân não (Sorting, Searching, Tree, Graph), lột xác tư duy với các nguyên lý thiết kế (OOP, SOLID, Design Patterns) và cuối cùng chạm đến cảnh giới của Kiến trúc sư (Dependency Injection).
-
-Mọi ứng dụng khổng lồ như Facebook, Netflix hay chính dự án **VisualizationDSA** mà bạn đang tương tác, đều được ghép lại từ những mảnh ghép nhỏ bé đó. Vũ khí đã sẵn sàng, giờ là lúc bạn tự tay viết lên những dòng code xoay chuyển thế giới!
+:::tip Tóm tắt nhanh (Key Takeaways)
+- Đừng biến Constructor thành cái "thùng rác" nhồi nhét quá 5 Services. Đó là dấu hiệu của việc vi phạm Nguyên lý Trách nhiệm Đơn lẻ (SRP).
+- Hãy dùng **`Lazy<T>`** để bọc các Service có cấu trúc nặng nề. Container sẽ chỉ nạp chúng vào RAM khi bạn gọi `.Value`.
+- Phối hợp DI Container và Factory Pattern bằng cách tiêm **`Func<T>`**. Quyết định khởi tạo cái gì sẽ được hoãn lại cho đến lúc Runtime.
+- Tránh xa **Service Locator Pattern** (Tiêm `IServiceProvider`). Đừng bao giờ giấu giếm sự phụ thuộc bên trong các thân hàm!
 :::

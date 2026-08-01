@@ -1,111 +1,139 @@
 ---
-title: Duyệt theo chiều sâu (DFS)
-description: Khám phá Depth-First Search (DFS) - thuật toán thám hiểm mê cung bằng cách đâm xuyên tận đáy, dựa trên sức mạnh của Ngăn xếp (Stack) hoặc Đệ quy.
+title: Duyệt đồ thị theo chiều sâu (DFS)
+description: Đi sâu vào tận cùng của mê cung với thuật toán đâm lao huyền thoại. Thấu hiểu sức mạnh của Đệ quy và kỹ thuật Backtracking trong thế giới Đồ thị.
 ---
 
-# Duyệt theo chiều sâu (DFS) {#dfs}
+# Duyệt theo chiều sâu (DFS - Depth-First Search) {#dfs}
 
-Trái ngược hoàn toàn với người anh em BFS "thận trọng" (quét xong tầng này mới xuống tầng kia), **Depth-First Search (Duyệt theo chiều sâu)** là một kẻ thích phiêu lưu mạo hiểm. 
+:::info Mục tiêu bài học
+- Xây dựng tư duy **Đâm xuyên (Go Deep)** và nghệ thuật **Quay lui (Backtracking)**.
+- Thấu hiểu tại sao DFS lại ngầm sử dụng **Ngăn xếp Gọi hàm (Call Stack)** của Hệ điều hành.
+- Vẽ sơ đồ Cây Khám phá (Exploration Tree) để mô phỏng bộ nhớ Đệ quy.
+- Nhận diện các ứng dụng của DFS: Phát hiện chu trình, Trò chơi Giải đố (Sudoku, N-Queens).
+:::
 
-Phong cách của DFS là: **Cắm đầu đi sâu mãi theo một nhánh duy nhất, cho đến khi chạm đáy (không còn đường đi). Khi đó, nó mới chịu lùi lại một bước (Backtrack) để rẽ sang một nhánh khác.**
+## 1. Lời mở đầu: Nguyên lý Đâm lao và Quay đầu {#introduction}
 
-Trái tim của DFS chính là **Ngăn xếp (Stack)**. Bạn có thể sử dụng Stack có sẵn trong bộ nhớ của HĐH (thông qua hàm Đệ quy), hoặc tự tạo ra một `Stack` cục bộ để duyệt bằng vòng lặp.
+Trái ngược hoàn toàn với sự "cẩn thận loang đều" của [BFS](/docs/tree-graph/bfs), Duyệt theo chiều sâu (DFS) là một kẻ liều lĩnh mang trong mình triết lý **"Đi đến tận cùng của ngõ cụt rồi mới tính tiếp"**.
 
-## Nguyên lý hoạt động {#how-it-works}
+**Ví dụ thực tế (Real-world analogy):**
+Bạn đang khám phá một Lăng mộ (Mê cung) có nhiều ngã rẽ. 
+- Tại ngã ba đầu tiên, bạn chọn bừa đường bên Trái và cứ thế cắm đầu đi thẳng. Bạn gặp ngã rẽ tiếp theo, bạn lại cắm đầu đi Trái tiếp.
+- Bạn đi cho đến khi đập mặt vào bức tường cụt (Ngõ cụt). 
+- Lúc này, bạn quay ngược lại (Backtrack) đúng **một bước** ngã rẽ gần nhất. Nếu ngã rẽ đó còn đường bên Phải chưa đi, bạn rẽ Phải. Cứ thế lặp lại.
 
-Hình ảnh sinh động nhất của DFS là việc bạn thám hiểm một cái mê cung. Bạn luôn rẽ trái ở mọi ngã tư, đi mãi cho đến khi đụng tường (ngõ cụt). Khi đụng tường, bạn lấy viên phấn gạch dấu `X`, lùi lại ngã tư gần nhất, và thử rẽ phải. 
+Bằng cách dùng phấn đánh dấu lại những nơi đã đi qua (Tương đương mảng `Visited`), bạn chắc chắn sẽ khám phá hết 100% diện tích Lăng mộ mà không bao giờ bị lạc vào vòng lặp lẩn quẩn.
 
-Luật chơi của DFS sử dụng Stack:
-1. Bắt đầu ở Root. Bỏ Root vào Stack.
-2. Lặp lại quá trình sau cho đến khi Stack RỖNG:
-   - **Rút (Pop)** Node đang đứng ở đỉnh Stack ra. (Thăm Node này).
-   - Đẩy (Push) TẤT CẢ con/hàng xóm của nó vào Stack.
-3. Kết thúc!
+---
 
-Vì Stack hoạt động theo nguyên lý LIFO (vào sau ra trước), nên những Node con *vừa mới được đẩy vào* sẽ nằm ngay trên Đỉnh. Ở vòng lặp tiếp theo, chúng sẽ lập tức bị Rút ra. Kết quả là thuật toán cứ đi tuột xuống một dây duy nhất mà không quan tâm đến các Node cắm rễ trước đó ở đáy Stack.
+## 2. Call Stack: Cỗ máy thời gian của DFS {#call-stack-magic}
 
-## Ứng dụng thực tế: Tại sao lại là DFS? {#use-cases}
+Để thực hiện thuật toán "Quay lui" (Backtracking), máy tính cần một cơ chế ghi nhớ: *"Hồi nãy mình đang đứng ở ngã rẽ nào, và còn đường nào chưa đi không?"*.
+Và không có gì sinh ra để ghi nhớ Lịch sử tốt hơn cấu trúc LIFO của [Ngăn xếp (Stack)](/docs/stack-queue/stack). Thay vì tự tay tạo một mảng Stack, các lập trình viên thường phó thác luôn cho **Đệ quy (Recursion)** để lợi dụng **Call Stack** của Hệ điều hành.
 
-Khác với BFS (tìm đường đi ngắn nhất), DFS tỏa sáng trong các bài toán yêu cầu **vét cạn (Exhaustive Search)** hoặc tìm kiếm các thành phần liên thông.
+### Mô phỏng chi tiết bằng Mermaid (Trace)
 
-**Các bài toán kinh điển:**
-- **Giải quyết Mê cung (Maze Solver) / Backtracking:** Chơi cờ vua (minimax), giải Sudoku, bài toán 8 quân hậu. DFS cho phép bạn lùi lại (backtrack) khi đi sai nước.
-- **Phát hiện chu trình (Cycle Detection):** Tìm xem đồ thị có bị "tuần hoàn" không (rất quan trọng trong xử lý Dependency hay Deadlock).
-- **Sắp xếp Topo (Topological Sort):** Lên lịch trình môn học, công việc (việc A phải làm trước việc B).
-- **Đếm số hòn đảo (Number of Islands):** Quét qua mảng 2D để gom nhóm các phần tử liên thông với nhau.
+```mermaid
+graph TD
+    A((A)) --- B((B))
+    A --- C((C))
+    B --- D((D))
+    B --- E((E))
+    C --- F((F))
+    
+    style A fill:#ef4444,color:#fff
+```
 
-## Độ phức tạp Thuật toán {#complexity}
+**Thứ tự Duyệt DFS:**
+1. Đứng ở **A**. Đánh dấu đã thăm. Gọi đệ quy đi thăm **B** (Nhánh trái). (Hàm A bị đóng băng trên Call Stack đợi B).
+2. Tới **B**. Đánh dấu đã thăm. Gọi đệ quy đi thăm **D**. (Hàm B bị đóng băng).
+3. Tới **D**. Đánh dấu đã thăm. Nhìn quanh không còn hàng xóm nào chưa thăm (Ngõ cụt). Trả về (Return) để thoát khỏi D.
+4. Lùi về **B** (Hàm B được rã đông). B phát hiện vẫn còn hàng xóm **E**. Gọi đệ quy đi thăm **E**.
+5. Tới **E**. Ngõ cụt. Trả về **B**.
+6. **B** đã thăm xong hết hàng xóm (D, E). Trả về (Return) để thoát khỏi B.
+7. Lùi về **A** (Hàm A được rã đông). A phát hiện vẫn còn **C**. Gọi đi thăm **C**.
+8. Tới **C** -> Tới **F**.
 
-| Đặc tính | Cây (Tree) | Đồ thị (Graph) |
-| :--- | :--- | :--- |
-| **Thời gian** | **O(N)** - N là tổng số Node. | **O(V + E)** - V là số Đỉnh, E là số Cạnh. |
-| **Không gian (Space)** | **O(H)** - H là chiều cao (chiều sâu lớn nhất) của cây. Tốt hơn bộ nhớ O(W) của BFS nếu cây quá mập mạp. | **O(V)** - Kích thước Stack tối đa lưu vết các đỉnh. |
+**Thứ tự ghi nhận:** `A -> B -> D -> E -> C -> F`. (Đi tuốt luốt xuống D rồi mới quay lên).
 
-## Cài đặt DFS cho Đồ thị (Code Example) {#code-example}
+---
 
-Ở bài [Duyệt Cây](/docs/tree-graph/tree-traversal), chúng ta đã dùng Đệ quy để thực hiện DFS. Lần này, ta sẽ dùng **vòng lặp (Iterative)** kết hợp với `Stack<T>` thủ công. Ta cũng sẽ xử lý bài toán khó hơn là **Đồ thị (Graph)** bằng cách thêm mảng `visited` để chống lặp vô hạn.
+## 3. Mã nguồn C# Căn bản {#code-example}
+
+Đệ quy làm cho mã nguồn của DFS trở nên thanh lịch và siêu ngắn so với người anh em BFS (Vốn phải dùng vòng lặp `while` và khai báo biến Queue).
 
 ```csharp
-using System.Collections.Generic;
-
-// Đỉnh đồ thị có chứa danh sách kề (Neighbors)
-public class GraphNode 
+public class DFSSolver
 {
-    public int Value;
-    public List<GraphNode> Neighbors;
-    public GraphNode(int val) { Value = val; Neighbors = new List<GraphNode>(); }
-}
+    // Bắt buộc phải có 1 tập hợp Visited dùng chung cho TẤT CẢ các vòng đệ quy
+    private HashSet<int> visited = new HashSet<int>();
 
-public void DepthFirstSearch(GraphNode startNode)
-{
-    if (startNode == null) return;
-
-    // 1. Dùng HashSet để đánh dấu các Node đã thăm
-    HashSet<GraphNode> visited = new HashSet<GraphNode>();
-    
-    // 2. Trái tim của DFS: Stack
-    Stack<GraphNode> stack = new Stack<GraphNode>();
-    
-    stack.Push(startNode);
-    visited.Add(startNode);
-
-    while (stack.Count > 0)
+    public void DFS_Graph(Dictionary<int, List<int>> graph, int current)
     {
-        // 3. Rút phần tử trên đỉnh Stack
-        GraphNode current = stack.Pop();
-        Console.Write(current.Value + " ");
+        // 1. Chạm chân đến đỉnh mới, LẬP TỨC đánh dấu đã thăm
+        visited.Add(current);
+        Console.Write(current + " -> "); // Thăm (In ra)
 
-        // 4. Quét qua hàng xóm. Chú ý: Ta duyệt ngược danh sách hàng xóm
-        // để khi đẩy vào Stack, hàng xóm đầu tiên sẽ nằm ở Đỉnh Stack (chạy trước).
-        for (int i = current.Neighbors.Count - 1; i >= 0; i--)
+        // 2. Nếu đỉnh này không có hàng xóm (Ngõ cụt), ngắt đệ quy tự động
+        if (!graph.ContainsKey(current)) return;
+
+        // 3. Khám phá các hàng xóm
+        foreach (int neighbor in graph[current])
         {
-            GraphNode neighbor = current.Neighbors[i];
-            
-            // Nếu hàng xóm chưa từng xếp hàng, cho vào Stack
+            // Chỉ đi vào con đường chưa từng ai đi
             if (!visited.Contains(neighbor))
             {
-                visited.Add(neighbor);
-                stack.Push(neighbor);
+                // Gọi Đệ quy (Tương đương với việc: Đi sâu vào trong con đường đó)
+                // Khi hàm này kết thúc, có nghĩa là ta đã "Quay lui" trở về đây
+                DFS_Graph(graph, neighbor);
             }
         }
     }
 }
 ```
 
-:::info DFS bằng Đệ quy vs Vòng lặp
-DFS dùng hàm đệ quy (Recursive) viết cực kỳ ngắn và thanh lịch. Tuy nhiên, nếu đồ thị hoặc cây của bạn sâu tới 100,000 tầng, đệ quy sẽ bắn ra lỗi `StackOverflowException` làm sập Server ngay lập tức!
-Ngược lại, DFS dùng Stack thủ công (Vòng lặp `while`) sẽ lưu trữ dữ liệu trên vùng nhớ **Heap**. Bộ nhớ Heap rộng lớn tới hàng GigaBytes, vì thế code của bạn sẽ không bao giờ bị Crash dù cây có sâu tới hàng triệu tầng.
+> **Nguy hiểm chết người:** Quên khởi tạo mảng `visited` hoặc quên gọi lệnh `visited.Add()`. Trong Đồ thị có chu trình (Ví dụ A nối B, B nối A), bạn sẽ đi lại con đường cũ mãi mãi, máy tính sẽ Push đệ quy liên tục cho đến khi RAM bốc cháy và văng lỗi `StackOverflowException`.
+
+---
+
+## 4. Ứng dụng Siêu việt: Backtracking (Giải đố) {#backtracking}
+
+Sức mạnh thực sự của DFS không nằm ở việc tìm đường trên đồ thị, mà ở việc **Duyệt Cây Không Gian Trạng Thái (State Space Tree)**. 
+Ví dụ kinh điển nhất là thuật toán giải Sudoku hoặc N-Queens. Máy tính sẽ không dùng Mảng Visited ở đây, thay vào đó nó sẽ "Thử Điền -> Nếu sai thì Xóa (Backtrack) -> Thử cái khác".
+
+**Mẫu code (Template) của DFS Backtracking:**
+
+```csharp
+void Backtrack(Trạng_Thái_Hiện_Tại)
+{
+    // 1. Điều kiện Dừng (Tìm thấy lời giải)
+    if (Trạng_Thái_Hiện_Tại == Lời_Giải) {
+        Lưu_Lời_Giải();
+        return;
+    }
+
+    // 2. Thử mọi khả năng có thể xảy ra ở bước này
+    foreach (var lua_chon in Danh_sách_lựa_chọn)
+    {
+        if (Hợp_Lệ(lua_chon))
+        {
+            // Bước TỚI: Thực hiện lựa chọn
+            Thêm(lua_chon);
+
+            // Đâm sâu vào Tương lai (Đệ quy)
+            Backtrack(Trạng_Thái_Tiếp_Theo);
+
+            // Bước LÙI: Hủy bỏ lựa chọn (Rollback / Backtrack)
+            // Để vòng lặp thử sang lựa chọn thứ 2, thứ 3...
+            Xóa(lua_chon);
+        }
+    }
+}
+```
+Nhờ cái Template thần thánh này, DFS có thể sinh ra mọi cấu hình Hoán vị, Tổ hợp, và giải quyết 99% các bài toán Giải đố logic mà không cần dùng trí thông minh nhân tạo phức tạp.
+
+:::tip Tóm tắt nhanh (Key Takeaways)
+- Tôn chỉ của DFS là **Đâm sâu và Quay lui**, sử dụng Call Stack của Đệ quy để ghi nhớ đường về.
+- Code DFS cực ngắn (nhờ đệ quy), nhưng ẩn chứa rủi ro `StackOverflow` nếu đồ thị sâu hàng chục triệu tầng (Trong trường hợp đó, bạn bắt buộc phải dùng mảng `Stack<int>` tự tạo thay vì dùng Đệ quy).
+- Vũ khí độc tôn của BFS là "Đường đi ngắn nhất", còn của DFS chính là "Tìm kiếm Tổ hợp / Backtracking".
 :::
-
-## Next Steps {#next-steps}
-
-Đến lúc này, bạn đã trang bị đủ thanh gươm (DFS) và khiên chắn (BFS) để đương đầu với những bài toán cấu trúc Phi tuyến tính.
-
-Để giúp bạn không bị "tẩu hỏa nhập ma" khi nhận đề bài, hãy cùng đến với bài tổng hợp cuối cùng của phần Cấu trúc dữ liệu và Giải thuật: **Tổng hợp: Bảng so sánh và kinh nghiệm làm bài Đồ thị & Cây**.
-
-<div class="vt-box-container next-steps">
-  <a class="vt-box" href="/docs/tree-graph/summary">
-    <p class="next-steps-link">Tổng hợp Ứng dụng Cây & Đồ thị</p>
-    <p class="next-steps-caption">Bí quyết nhận dạng BFS/DFS và vượt qua bài kiểm tra thuật toán Graph.</p>
-  </a>
-</div>

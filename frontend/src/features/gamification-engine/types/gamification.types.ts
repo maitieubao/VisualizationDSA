@@ -2,7 +2,7 @@ export interface UserProgressState {
   userId: string;
   totalXP: number;
   activeStreak: number;
-  lastActiveDate: string; // YYYY-MM-DD
+  lastActiveDate: string; 
   unlockedBadges: string[];
   streakFreezesCount: number;
 }
@@ -48,7 +48,7 @@ export const CONFETTI_PARTICLE_COUNT = 150;
 export const CONFETTI_COLORS = ['#FF007F', '#06B6D4', '#10B981', '#F59E0B', '#8B5CF6'];
 export const CONFETTI_DURATION_MS = 4000;
 export const LEADERBOARD_TOP_N = 10;
-export const WEEKLY_RESET_DAY = 0; // Sunday
+export const WEEKLY_RESET_DAY = 0; 
 
 export const BADGE_TEMPLATES: BadgeDefinition[] = [
   { id: 'recursion-master', title: 'Recursion Master', description: 'Hoàn thành Quiz thuật toán Đệ Quy xuất sắc', icon: '🔄', xpThresholdRequired: 500, streakThresholdRequired: 3, requiredAlgorithmId: 'quicksort' },

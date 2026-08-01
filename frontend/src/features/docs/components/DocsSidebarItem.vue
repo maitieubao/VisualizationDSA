@@ -1,10 +1,10 @@
 <template>
   <li class="docs-sidebar-item">
-    <!-- Nút cho thư mục (có children) -->
+    
     <div 
       v-if="item.children" 
       class="flex items-center justify-between px-2 py-1.5 cursor-pointer rounded-md transition-colors group"
-      :class="isOpen ? '' : 'hover:bg-[#1e293b]'"
+      :class="isOpen ? '' : 'hover:bg-bg-hover'"
       @click="toggle"
     >
       <span 
@@ -22,20 +22,20 @@
       </svg>
     </div>
 
-    <!-- Link cho bài viết (không có children) -->
+    
     <router-link
       v-else-if="item.path"
       :to="item.path"
       class="block px-2 py-1.5 text-sm rounded-md transition-colors select-none"
       :class="isCurrentRoute(item.path) 
         ? 'text-accent-primary font-medium' 
-        : 'text-text-secondary hover:bg-[#1e293b] hover:text-text-primary'"
+        : 'text-text-secondary hover:bg-bg-hover hover:text-text-primary'"
       @click="$emit('link-clicked')"
     >
       {{ item.title }}
     </router-link>
 
-    <!-- Menu con đệ quy -->
+    
     <ul 
       v-if="item.children" 
       v-show="isOpen"
@@ -75,7 +75,7 @@ const isCurrentRoute = (path: string) => {
   return props.currentRoute === path || props.currentRoute + '/' === path;
 };
 
-// Đệ quy kiểm tra xem route hiện tại có nằm trong thư mục này không
+
 const containsActiveRoute = (navItem: NavItem): boolean => {
   if (navItem.path && isCurrentRoute(navItem.path)) return true;
   if (navItem.children) {
@@ -84,7 +84,7 @@ const containsActiveRoute = (navItem: NavItem): boolean => {
   return false;
 };
 
-// Tự động mở thư mục nếu đang ở bài viết bên trong
+
 watch(() => props.currentRoute, () => {
   if (props.item.children && containsActiveRoute(props.item)) {
     isOpen.value = true;
@@ -99,7 +99,7 @@ onMounted(() => {
 </script>
 
 <script lang="ts">
-// Định nghĩa tên component để có thể gọi đệ quy chính nó
+
 export default {
   name: 'DocsSidebarItem'
 }
