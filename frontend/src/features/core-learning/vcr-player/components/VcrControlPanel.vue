@@ -1,8 +1,8 @@
 <template>
   <div class="vcr-control-panel">
-    <!-- Playback controls only -->
+    
 
-    <!-- Progress -->
+    
     <div class="progress-section">
       <div class="progress-header">
         <span class="progress-label">Progress</span>
@@ -14,7 +14,7 @@
         class="vcr-scrubber" />
     </div>
 
-    <!-- Controls -->
+    
     <div class="controls-row">
       <button @click="vcrStore.stepPrev"
         :disabled="vcrStore.totalFrames === 0 || vcrStore.isAtStart"
@@ -48,7 +48,7 @@
       </button>
     </div>
 
-    <!-- Speed -->
+    
     <div class="speed-row" data-tour-id="vcr-speed-select">
       <span class="speed-label">Speed</span>
       <div class="speed-buttons">
@@ -93,11 +93,11 @@ onBeforeUnmount(() => window.removeEventListener("keydown", handleGlobalKeydown)
   gap: 16px;
 }
 
-/* Progress section */
+
 .progress-section { display: flex; flex-direction: column; gap: 8px; }
 .progress-header  { display: flex; align-items: center; justify-content: space-between; font-size: var(--text-xs); }
 .progress-label   { color: var(--color-text-muted); }
-.progress-counter { font-family: var(--font-mono); color: var(--color-accent-cyan); }
+.progress-counter { font-family: var(--font-mono); color: var(--color-accent-primary-text); }
 
 .vcr-scrubber {
   width: 100%;
@@ -106,11 +106,11 @@ onBeforeUnmount(() => window.removeEventListener("keydown", handleGlobalKeydown)
   appearance: none;
   cursor: pointer;
   background: var(--color-bg-hover);
-  accent-color: var(--color-accent-cyan);
+  accent-color: var(--color-accent-primary);
 }
 .vcr-scrubber:disabled { opacity: 0.4; }
 
-/* Controls row */
+
 .controls-row { display: flex; align-items: center; justify-content: center; gap: 8px; padding-top: 8px; }
 
 .ctrl-btn {
@@ -138,12 +138,12 @@ onBeforeUnmount(() => window.removeEventListener("keydown", handleGlobalKeydown)
   transition: var(--transition-fast);
 }
 .ctrl-btn-play:disabled { opacity: 0.3; cursor: not-allowed; }
-.ctrl-btn-play--play  { background: var(--color-accent-cyan); }
-.ctrl-btn-play--play:hover  { background: var(--color-accent-primary); }
+.ctrl-btn-play--play  { background: var(--color-accent-primary); }
+.ctrl-btn-play--play:hover  { background: var(--color-accent-primary-light); }
 .ctrl-btn-play--pause { background: var(--color-accent-red); }
 .ctrl-btn-play--pause:hover { background: var(--color-accent-red-light); }
 
-/* Speed row */
+
 .speed-row    { display: flex; align-items: center; justify-content: center; gap: 8px; }
 .speed-label  { font-size: 10px; color: var(--color-text-muted); }
 .speed-buttons { display: flex; gap: 4px; }
@@ -158,5 +158,5 @@ onBeforeUnmount(() => window.removeEventListener("keydown", handleGlobalKeydown)
   transition: var(--transition-fast);
 }
 .speed-btn:hover        { color: var(--color-text-secondary); }
-.speed-btn--active      { background: var(--color-accent-cyan-dim); color: var(--color-accent-cyan); }
+.speed-btn--active      { background: var(--color-accent-primary-dim); color: var(--color-accent-primary-text); }
 </style>

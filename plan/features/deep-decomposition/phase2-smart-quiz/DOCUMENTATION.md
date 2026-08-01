@@ -26,5 +26,3 @@ Hệ thống quyết định phát triển giải pháp **Trắc nghiệm tươn
     *   **Đồng bộ 100% dòng thời gian:** Khi trả lời xong, dòng thời gian VCR được mở khóa để tua tiếp tục mượt mà.
 *   **Điểm cần lưu ý (Cons):**
     *   Phải quản lý dọn dẹp các event listener click canvas cực kỳ sạch sẽ khi đóng quiz, khôi phục lại tính năng tương tác bình thường của mảng/cây để tránh lỗi xung đột chuột.
-    
-    

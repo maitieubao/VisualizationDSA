@@ -2,10 +2,10 @@ using VisualizationDSA.Domain.Engine;
 
 namespace VisualizationDSA.Domain.Strategies;
 
-/// <summary>
-/// Strategy sinh chuỗi frame cho mô-đun DI/IoC Container Visualizer.
-/// Hỗ trợ 2 kịch bản: lifetime-demo (Singleton vs Transient) và cycle-detection.
-/// </summary>
+
+
+
+
 public class DIContainerStrategy : IConceptStrategy
 {
     public string ConceptId => "di-container";
@@ -27,7 +27,7 @@ public class DIContainerStrategy : IConceptStrategy
     {
         var frames = new List<DIContainerFrameDto>();
 
-        // Frame 1: Register services
+        
         frames.Add(new DIContainerFrameDto
         {
             StepIndex = 0,
@@ -51,7 +51,7 @@ public class DIContainerStrategy : IConceptStrategy
             }
         });
 
-        // Frame 2: Resolve ILogger (Singleton — first time)
+        
         frames.Add(new DIContainerFrameDto
         {
             StepIndex = 1,
@@ -71,7 +71,7 @@ public class DIContainerStrategy : IConceptStrategy
             ResolvedLifetime = "SINGLETON"
         });
 
-        // Frame 3: Resolve IRepository (Transient — creates new each time)
+        
         frames.Add(new DIContainerFrameDto
         {
             StepIndex = 2,
@@ -92,7 +92,7 @@ public class DIContainerStrategy : IConceptStrategy
             ResolvedLifetime = "TRANSIENT"
         });
 
-        // Frame 4: Resolve IRepository again (Transient — NEW instance)
+        
         frames.Add(new DIContainerFrameDto
         {
             StepIndex = 3,
@@ -114,7 +114,7 @@ public class DIContainerStrategy : IConceptStrategy
             ResolvedLifetime = "TRANSIENT"
         });
 
-        // Frame 5: Conclusion
+        
         frames.Add(new DIContainerFrameDto
         {
             StepIndex = 4,
@@ -140,7 +140,7 @@ public class DIContainerStrategy : IConceptStrategy
     {
         var frames = new List<DIContainerFrameDto>();
 
-        // Frame 1: Register services with circular dependency
+        
         frames.Add(new DIContainerFrameDto
         {
             StepIndex = 0,
@@ -166,7 +166,7 @@ public class DIContainerStrategy : IConceptStrategy
             HasCycle = false
         });
 
-        // Frame 2: Attempt to resolve → detect cycle
+        
         frames.Add(new DIContainerFrameDto
         {
             StepIndex = 1,
@@ -192,7 +192,7 @@ public class DIContainerStrategy : IConceptStrategy
             HasCycle = true
         });
 
-        // Frame 3: Fix by introducing interface
+        
         frames.Add(new DIContainerFrameDto
         {
             StepIndex = 2,
@@ -219,7 +219,7 @@ public class DIContainerStrategy : IConceptStrategy
             HasCycle = false
         });
 
-        // Frame 4: Conclusion
+        
         frames.Add(new DIContainerFrameDto
         {
             StepIndex = 3,

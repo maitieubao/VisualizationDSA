@@ -7,7 +7,7 @@
       </p>
     </div>
 
-    <!-- Download Template & Import Controls -->
+    
     <div class="controls-row">
       <button class="btn-secondary" @click="downloadTemplate">
         📥 Tải File Mẫu Excel
@@ -24,7 +24,7 @@
       </label>
     </div>
 
-    <!-- Preview Area -->
+    
     <div v-if="parsedQuizzes.length > 0" class="preview-section">
       <h4 class="preview-heading">👀 Xem trước dữ liệu (Tìm thấy {{ parsedQuizzes.length }} bài trắc nghiệm)</h4>
       
@@ -57,14 +57,14 @@
             </span>
           </div>
 
-          <!-- Errors list -->
+          
           <ul v-if="quiz.validationErrors.length > 0" class="errors-list">
             <li v-for="(err, ei) in quiz.validationErrors" :key="ei">
               ⚠️ {{ err }}
             </li>
           </ul>
 
-          <!-- Questions list nested preview -->
+          
           <div class="preview-questions">
             <div 
               v-for="(q, qidx) in quiz.questions" 
@@ -151,9 +151,9 @@ function getTopicLabel(topic: string): string {
   return map[topic.toLowerCase()] || topic;
 }
 
-/**
- * Tạo & tải xuống file Excel mẫu
- */
+
+
+
 function downloadTemplate(): void {
   const headers = [
     'Tiêu đề trắc nghiệm',
@@ -218,20 +218,20 @@ function downloadTemplate(): void {
   XLSX.writeFile(wb, 'vdsa_quiz_template.xlsx');
 }
 
-/**
- * Xử lý file upload Excel
- */
+
+
+
 async function handleFileUpload(event: Event): Promise<void> {
   const target = event.target as HTMLInputElement;
   if (!target.files || target.files.length === 0) return;
 
   const file = target.files[0];
   
-  // 1. Giới hạn kích thước file tải lên (Tối đa 5MB)
+  
   const maxSizeBytes = 5 * 1024 * 1024;
   if (file.size > maxSizeBytes) {
     alert("Kích thước file vượt quá giới hạn cho phép (Tối đa 5MB).");
-    target.value = ''; // Reset file input
+    target.value = ''; 
     return;
   }
 
@@ -245,10 +245,10 @@ async function handleFileUpload(event: Event): Promise<void> {
       const worksheet = workbook.Sheets[sheetName];
       const rows = XLSX.utils.sheet_to_json<ExcelRowInput>(worksheet);
 
-      // 2. Giới hạn số lượng câu hỏi/dòng tối đa (Tối đa 2000 dòng)
+      
       if (rows.length > 2000) {
         alert("File Excel chứa quá nhiều câu hỏi (Giới hạn tối đa là 2000 dòng).");
-        target.value = ''; // Reset file input
+        target.value = ''; 
         parsedQuizzes.value = [];
         return;
       }
@@ -256,7 +256,7 @@ async function handleFileUpload(event: Event): Promise<void> {
       parsedQuizzes.value = parseExcelRows(rows);
     } catch (err) {
       alert("Đã xảy ra lỗi khi đọc file Excel. Vui lòng kiểm tra lại định dạng file.");
-      target.value = ''; // Reset file input
+      target.value = ''; 
       parsedQuizzes.value = [];
     }
   };
@@ -265,9 +265,9 @@ async function handleFileUpload(event: Event): Promise<void> {
 }
 
 
-/**
- * Submit tất cả các Quiz hợp lệ lên Backend
- */
+
+
+
 async function submitAllQuizzes(): Promise<void> {
   if (hasInvalidQuizzes.value || parsedQuizzes.value.length === 0) return;
 
@@ -316,307 +316,5 @@ async function submitAllQuizzes(): Promise<void> {
 </script>
 
 <style scoped>
-.excel-importer-card {
-  background: rgba(30, 41, 59, 0.4);
-  backdrop-filter: blur(16px);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 16px;
-  padding: 1.5rem;
-  margin-bottom: 2rem;
-  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.2);
-}
-
-.card-header {
-  margin-bottom: 1.25rem;
-}
-
-.card-title {
-  font-size: 1.1rem;
-  font-weight: 600;
-  color: #f1f5f9;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-
-.card-subtitle {
-  font-size: 0.825rem;
-  color: #94a3b8;
-  margin-top: 0.25rem;
-}
-
-.controls-row {
-  display: flex;
-  gap: 1rem;
-  margin-bottom: 1.5rem;
-}
-
-.btn-primary, .btn-secondary {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0.6rem 1.2rem;
-  font-size: 0.85rem;
-  font-weight: 600;
-  border-radius: 8px;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.btn-primary {
-  background: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);
-  color: #ffffff;
-  border: none;
-  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.2);
-}
-
-.btn-primary:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 6px 16px rgba(99, 102, 241, 0.35);
-}
-
-.btn-secondary {
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  color: #e2e8f0;
-}
-
-.btn-secondary:hover {
-  background: rgba(255, 255, 255, 0.1);
-  border-color: rgba(255, 255, 255, 0.2);
-}
-
-.file-input-label {
-  position: relative;
-}
-
-.hidden-file-input {
-  position: absolute;
-  top: 0;
-  left: 0;
-  opacity: 0;
-  width: 100%;
-  height: 100%;
-  cursor: pointer;
-}
-
-/* ── Preview Area ───────────────────────── */
-.preview-section {
-  border-top: 1px solid rgba(255, 255, 255, 0.08);
-  padding-top: 1.25rem;
-}
-
-.preview-heading {
-  font-size: 0.95rem;
-  font-weight: 600;
-  color: #cbd5e1;
-  margin-bottom: 1rem;
-}
-
-.quizzes-preview-list {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-  max-height: 400px;
-  overflow-y: auto;
-  margin-bottom: 1.5rem;
-  padding-right: 0.25rem;
-}
-
-.quiz-preview-card {
-  background: rgba(255, 255, 255, 0.02);
-  border: 1px solid rgba(255, 255, 255, 0.06);
-  border-radius: 10px;
-  padding: 1rem;
-  transition: border-color 0.2s;
-}
-
-.quiz-preview-card:hover {
-  border-color: rgba(255, 255, 255, 0.12);
-}
-
-.quiz-preview-card--invalid {
-  border-color: rgba(239, 68, 68, 0.3);
-  background: rgba(239, 68, 68, 0.02);
-}
-
-.quiz-preview-card__header {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  margin-bottom: 0.75rem;
-}
-
-.quiz-title {
-  font-size: 0.95rem;
-  font-weight: 600;
-  color: #f8fafc;
-}
-
-.quiz-meta-row {
-  display: flex;
-  gap: 0.5rem;
-  margin-top: 0.35rem;
-}
-
-.badge {
-  font-size: 0.7rem;
-  padding: 2px 8px;
-  border-radius: 4px;
-  font-weight: 500;
-  background: rgba(255, 255, 255, 0.06);
-  color: #cbd5e1;
-}
-
-.badge--topic {
-  background: rgba(99, 102, 241, 0.15);
-  color: #818cf8;
-}
-
-.badge--diff-easy {
-  background: rgba(34, 197, 94, 0.15);
-  color: #4ade80;
-}
-
-.badge--diff-medium {
-  background: rgba(234, 179, 8, 0.15);
-  color: #facc15;
-}
-
-.badge--diff-hard {
-  background: rgba(239, 68, 68, 0.15);
-  color: #f87171;
-}
-
-.badge--xp {
-  background: rgba(168, 85, 247, 0.15);
-  color: #c084fc;
-}
-
-.status-badge {
-  font-size: 0.725rem;
-  font-weight: 600;
-  padding: 3px 8px;
-  border-radius: 6px;
-}
-
-.status-badge--ready {
-  background: rgba(59, 130, 246, 0.15);
-  color: #60a5fa;
-}
-
-.status-badge--error {
-  background: rgba(239, 68, 68, 0.2);
-  color: #f87171;
-}
-
-.status-badge--success {
-  background: rgba(34, 197, 94, 0.2);
-  color: #4ade80;
-}
-
-.errors-list {
-  background: rgba(239, 68, 68, 0.06);
-  border: 1px solid rgba(239, 68, 68, 0.12);
-  border-radius: 6px;
-  padding: 0.5rem 1rem;
-  margin-bottom: 0.75rem;
-  font-size: 0.775rem;
-  color: #fca5a5;
-  list-style: none;
-}
-
-.preview-questions {
-  border-top: 1px solid rgba(255, 255, 255, 0.04);
-  padding-top: 0.5rem;
-  margin-top: 0.5rem;
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-}
-
-.preview-q-row {
-  display: flex;
-  gap: 0.5rem;
-  font-size: 0.8rem;
-}
-
-.q-num {
-  color: #94a3b8;
-  font-weight: 600;
-}
-
-.q-content {
-  flex: 1;
-}
-
-.q-text {
-  color: #e2e8f0;
-  margin-bottom: 0.25rem;
-}
-
-.options-preview {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 0.25rem;
-}
-
-.opt-item {
-  color: #94a3b8;
-  padding: 2px 6px;
-  border-radius: 4px;
-}
-
-.opt-item--correct {
-  color: #4ade80;
-  background: rgba(34, 197, 94, 0.08);
-  font-weight: 500;
-}
-
-.opt-label {
-  font-weight: 600;
-}
-
-.q-explanation {
-  font-size: 0.75rem;
-  color: #64748b;
-  margin-top: 0.25rem;
-}
-
-.import-actions {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 0.5rem;
-}
-
-.btn-submit-all {
-  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-  color: white;
-  border: none;
-  font-size: 0.9rem;
-  font-weight: 600;
-  padding: 0.75rem 2rem;
-  border-radius: 10px;
-  cursor: pointer;
-  transition: all 0.2s;
-  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2);
-}
-
-.btn-submit-all:disabled {
-  background: #334155;
-  color: #64748b;
-  box-shadow: none;
-  cursor: not-allowed;
-}
-
-.btn-submit-all:hover:not(:disabled) {
-  transform: translateY(-1px);
-  box-shadow: 0 6px 16px rgba(16, 185, 129, 0.35);
-}
-
-.warning-text {
-  font-size: 0.75rem;
-  color: #f87171;
-}
+@import "./ExcelQuizImporter.css";
 </style>

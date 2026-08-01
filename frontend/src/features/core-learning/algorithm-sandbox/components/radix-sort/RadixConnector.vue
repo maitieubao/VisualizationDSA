@@ -7,7 +7,7 @@
       preserveAspectRatio="none"
       xmlns="http://www.w3.org/2000/svg"
     >
-      <!-- Curved bezier path from element column to bucket column -->
+      
       <defs>
         <filter id="glow-dist" x="-50%" y="-50%" width="200%" height="200%">
           <feGaussianBlur stdDeviation="3" result="blur"/>
@@ -17,7 +17,7 @@
           <feGaussianBlur stdDeviation="3" result="blur"/>
           <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
         </filter>
-        <!-- Define marker for arrowhead -->
+        
         <marker
           id="arrowhead-dist"
           viewBox="0 0 10 10"
@@ -53,7 +53,7 @@
         :filter="isDistributePhase ? 'url(#glow-dist)' : 'url(#glow-coll)'"
       />
 
-      <!-- Dashed trail on top for dash effect -->
+      
       <path
         :d="connPath"
         fill="none"
@@ -63,7 +63,7 @@
         stroke-linecap="round"
       />
 
-      <!-- Animated particle traveling the path (sleek constant circle) -->
+      
       <circle r="4.5" :fill="isDistributePhase ? 'var(--color-accent-yellow)' : 'var(--color-accent-green)'" opacity="0.95" :filter="isDistributePhase ? 'url(#glow-dist)' : 'url(#glow-coll)'">
         <animateMotion
           :path="connPath"
@@ -73,7 +73,7 @@
       </circle>
     </svg>
 
-    <!-- When no active connection: show faint divider line -->
+    
     <div v-else class="r-conn-divider"></div>
   </div>
 </template>

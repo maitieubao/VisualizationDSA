@@ -3,7 +3,7 @@
     class="canvas-container relative w-full h-[400px] rounded-2xl border overflow-hidden shadow-2xl"
     ref="container"
   >
-    <!-- background grid -->
+    
     <div class="canvas-grid absolute inset-0 [mask-image:radial-gradient(ellipse_60%_50%_at_50%_50%,#000_70%,transparent_100%)] opacity-20 pointer-events-none"></div>
 
     <canvas
@@ -15,13 +15,13 @@
       @mouseleave="onMouseLeave"
     ></canvas>
 
-    <!-- HUD Info -->
+    
     <div class="absolute top-4 left-4 pointer-events-none select-none flex flex-col gap-1">
       <div class="text-xs font-semibold uppercase tracking-wider text-accent-cyan">DSA Viewport</div>
       <div class="text-lg font-bold text-text-primary drop-shadow-md">{{ currentStepDescription }}</div>
     </div>
 
-    <!-- Viewport Controls -->
+    
     <div class="viewport-controls absolute top-4 right-4 flex items-center gap-2 backdrop-blur border p-1.5 rounded-xl shadow-lg">
       <button
         @click="handleResetViewport"

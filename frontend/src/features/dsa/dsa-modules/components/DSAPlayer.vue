@@ -1,12 +1,12 @@
 <template>
   <div class="dsa-player-wrapper flex h-full w-full gap-4 relative" :class="{ 'theory-expanded-layout': isTheoryOpen && isDesktopWide }">
     <div class="flex-1 flex flex-col h-full w-full gap-2 min-w-0">
-      <!-- Mode: Dashboard (no algorithm selected) -->
+      
       <template v-if="!algoStore.currentAlgorithm">
         <AlgorithmDashboard :allowedCategories="allowedCategories" @select="onAlgorithmSelected" />
       </template>
 
-      <!-- Mode: Visualization (algorithm selected) -->
+      
       <template v-else>
         <DSAHeader
           :algorithm="algoStore.currentAlgorithm"
@@ -18,14 +18,14 @@
           @toggleTheory="isTheoryOpen = !isTheoryOpen"
         />
 
-        <div class="flex-1 flex gap-2 min-h-0">
-          <!-- Canvas Visualizer (65%) -->
-          <div class="flex-[65] rounded-xl overflow-hidden border border-border-subtle shadow-lg relative">
+        <div class="flex-1 flex gap-2 min-h-0 flex-col lg:flex-row">
+          
+          <div class="flex-[65] lg:flex-[65] flex-none w-full lg:w-auto rounded-xl overflow-hidden border border-border-subtle shadow-lg relative">
             <AlgorithmVisualizer />
           </div>
 
-          <!-- Sidebar: Pseudocode + Input (35%) -->
-          <div class="flex-[35] flex flex-col gap-2 min-h-0">
+          
+          <div class="flex-[35] lg:flex-[35] flex-none w-full lg:w-auto flex flex-col gap-2 min-h-0">
             <PseudocodeViewer
               v-if="algoStore.metadata"
               :pseudoCode="algoStore.metadata.pseudoCode"
@@ -35,18 +35,19 @@
             <DSAInputForm
               v-model="inputText"
               :algorithmCategory="algoStore.currentAlgorithm.category"
+              :algorithmId="algoStore.currentAlgorithm.id"
               @submit="executeVisualization"
             />
           </div>
         </div>
 
-        <!-- Explanation Row -->
+        
         <div v-if="animStore.currentFrame"
           class="h-10 rounded-xl overflow-hidden border border-border-subtle shadow-lg bg-bg-secondary flex items-center px-4">
           <span class="text-xs text-text-secondary">{{ animStore.currentFrame.explanation }}</span>
         </div>
 
-        <!-- Control Panel -->
+        
         <AnimationVcrControls
           :isPlaying="animStore.isPlaying"
           :currentIndex="animStore.currentIndex"
@@ -62,7 +63,7 @@
       </template>
     </div>
 
-    <!-- Collapsible theory panel -->
+    
     <TheoryCollapsiblePanel
       v-model:isOpen="isTheoryOpen"
       :document="dsaTheoryDoc"
@@ -148,7 +149,7 @@ const dsaTheoryDoc = computed<TheoryDocument | null>(() => {
   };
 });
 
-// Watch current frame to sync active section in Theory Panel
+
 watch(() => animStore.currentIndex, (newIdx) => {
   if (newIdx === 0) {
     activeTheorySectionId.value = 'algo-concept';
@@ -157,11 +158,11 @@ watch(() => animStore.currentIndex, (newIdx) => {
   }
 });
 
-// Watch viewMode of store. If selected as theory from dashboard, auto open panel
+
 watch(() => algoStore.viewMode, (newMode) => {
   if (newMode === 'theory') {
     isTheoryOpen.value = true;
-    algoStore.setViewMode('simulation'); // reset to simulation mode so layout render stays active
+    algoStore.setViewMode('simulation'); 
   }
 });
 
@@ -175,7 +176,16 @@ function generateDefaultInput(algo: Algorithm): void {
   if (category === 'searching')       inputText.value = '2, 5, 8, 12, 16, 23, 38, 56, 72, 91, 23';
   else if (category === 'tree')       inputText.value = '50, 30, 70, 20, 40, 60, 80';
   else if (category === 'stack-queue') inputText.value = '10, 20, 30, 40, 50';
-  else                                inputText.value = '5, 3, 8, 1, 9, 2, 7';
+  else if (category === 'graph') {
+    if (algo.id === 'bfs' || algo.id === 'dfs')
+      inputText.value = '0-1,0-2,1-3,1-4,2-5,2-6';
+    else if (algo.id === 'dijkstra' || algo.id === 'bellman-ford' || algo.id === 'a-star')
+      inputText.value = '0-1-4,0-2-2,1-2-5,1-3-10,2-3-3,3-4-1';
+    else if (algo.id === 'kruskal' || algo.id === 'prim')
+      inputText.value = '0-1-2,0-2-3,1-2-1,1-3-1,2-3-4,3-4-2';
+    else inputText.value = '0-1-1,0-2-4,1-2-2,1-3-6,2-3-3';
+  }
+  else inputText.value = '5, 3, 8, 1, 9, 2, 7';
 }
 
 async function executeVisualization(): Promise<void> {
@@ -185,7 +195,23 @@ async function executeVisualization(): Promise<void> {
     const data = inputText.value.split(',').map(s => parseInt(s.trim(), 10)).filter(n => !isNaN(n));
     if (data.length === 0) return;
     const result = await executeDSAAlgorithm(algoStore.currentAlgorithm.id, data);
-    animStore.loadResult({ algorithmId: result.algorithmId, pseudoCode: result.pseudoCode, frames: result.frames });
+    animStore.loadResult({
+      algorithmId: result.algorithmId,
+      pseudoCode: result.pseudoCode,
+      frames: result.frames.map(f => ({
+        stepId: f.stepId,
+        activeLine: f.activeLine,
+        explanation: f.explanation,
+        dataState: f.dataState,
+        highlights: {
+          compare: f.highlights?.compare ?? [],
+          swap: f.highlights?.swap ?? [],
+          sorted: f.highlights?.sorted ?? [],
+          dimmed: f.highlights?.dimmed ?? [],
+          active: f.highlights?.active ?? [],
+        },
+      })),
+    });
   } catch (error) { console.error('Lỗi thực thi trực quan hóa:', error); }
   finally { isExecuting.value = false; }
 }

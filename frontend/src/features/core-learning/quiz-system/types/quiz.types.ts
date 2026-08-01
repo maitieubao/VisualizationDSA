@@ -1,8 +1,8 @@
-/**
- * Quiz System Type Definitions
- * Defines data structures for Interactive Quiz checkpoints,
- * Canvas-targeted questions, and local statistics.
- */
+
+
+
+
+
 
 export type QuestionType = 'MULTIPLE_CHOICE' | 'TRUE_FALSE' | 'CANVAS_TARGET';
 

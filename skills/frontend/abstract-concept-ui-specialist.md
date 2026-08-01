@@ -122,4 +122,3 @@ function drawMorphingNode(
 }
 ```
  Việc "vật lý hóa" các khái niệm OOP phức tạp bằng các vết nứt ziczac chân thực và chuyển thể đa hình 60 FPS giúp cho bài giảng lý thuyết công nghệ trở nên hấp dẫn trực quan cực độ.
-

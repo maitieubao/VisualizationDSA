@@ -85,4 +85,3 @@ export const useVcrPlaybackStore = defineStore('vcrPlayback', {
 });
 ```
  Cấu trúc Pinia Store phẳng dẹt phản ứng cực nhạy dưới 5ms bọc kẹp biên an toàn giúp ngăn ngừa 100% lỗi tràn mảng dữ liệu, giữ cho timeline luôn đồng bộ sắc bén.
-

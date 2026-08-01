@@ -4,10 +4,14 @@
  * Tương ứng backend: POST /api/v1/auth/login|register|refresh|logout
  */
 
+
+
+
+
 import { api } from '@/services/apiClient';
 import type { ApiError } from '@/services/apiClient';
 
-// ── Types ─────────────────────────────────────────────────────────────────────
+
 
 export interface AuthUserDto {
   id:           string;
@@ -34,7 +38,7 @@ export interface AuthUserDto {
 export interface AuthResponse {
   accessToken:  string;
   refreshToken: string;
-  expiresIn:    number;
+  expiresIn:    number;    
   user:         AuthUserDto;
 }
 
@@ -51,6 +55,21 @@ export interface LoginPayload {
 
 // ── Endpoints ─────────────────────────────────────────────────────────────────
 
+
+
+async function handleResponse<T>(response: Response): Promise<T> {
+  if (!response.ok) {
+    const body = await response.json().catch(() => null);
+    throw new Error(body?.message ?? `HTTP ${response.status}: ${response.statusText}`);
+  }
+  return response.json() as Promise<T>;
+}
+
+const JSON_HEADERS: HeadersInit = { 'Content-Type': 'application/json' };
+
+
+
+
 export async function register(payload: RegisterPayload): Promise<AuthResponse> {
   try {
     return await api.post<AuthResponse>('/auth/register', payload);
@@ -60,6 +79,7 @@ export async function register(payload: RegisterPayload): Promise<AuthResponse> 
   }
 }
 
+
 export async function login(payload: LoginPayload): Promise<AuthResponse> {
   try {
     return await api.post<AuthResponse>('/auth/login', payload);
@@ -68,6 +88,7 @@ export async function login(payload: LoginPayload): Promise<AuthResponse> {
     throw new Error(error.detail ?? 'Login failed');
   }
 }
+
 
 export async function refreshAccessToken(refreshToken: string): Promise<AuthResponse> {
   try {
@@ -85,6 +106,7 @@ export async function logout(accessToken: string, refreshToken: string): Promise
     // Logout always succeeds on client even if server errors
   }
 }
+
 
 export async function getMe(accessToken: string): Promise<AuthUserDto> {
   try {

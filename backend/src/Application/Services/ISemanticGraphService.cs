@@ -4,15 +4,15 @@ using System.Threading.Tasks;
 
 namespace VisualizationDSA.Application.Services
 {
-    /// <summary>
-    /// Truy vấn đồ thị tri thức ngữ nghĩa (Graph RAG) — trả về các concept node
-    /// và knowledge edge phục vụ trực quan hóa / suy luận cross-cutting dependency.
-    /// </summary>
+    
+    
+    
+    
     public interface ISemanticGraphService
     {
-        /// <summary>
-        /// Lấy toàn bộ (hoặc lọc theo category) đồ thị ngữ nghĩa: nodes + edges + thống kê.
-        /// </summary>
+        
+        
+        
         Task<SemanticGraphDto> GetSemanticGraphAsync(string? category = null);
     }
 
@@ -32,7 +32,7 @@ namespace VisualizationDSA.Application.Services
         public string   Category    { get; set; } = string.Empty;
         public string   Description { get; set; } = string.Empty;
         public double   Importance  { get; set; }
-        public int      Degree      { get; set; }  // bậc của đỉnh (in + out)
+        public int      Degree      { get; set; }  
         public double[] Embedding   { get; set; } = Array.Empty<double>();
     }
 
@@ -49,7 +49,7 @@ namespace VisualizationDSA.Application.Services
     {
         public int    NodeCount     { get; set; }
         public int    EdgeCount     { get; set; }
-        public double GraphDensity  { get; set; }  // mật độ đồ thị có hướng
+        public double GraphDensity  { get; set; }  
         public int    CategoryCount { get; set; }
     }
 }

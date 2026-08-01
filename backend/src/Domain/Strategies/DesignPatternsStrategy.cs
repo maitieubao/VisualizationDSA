@@ -2,10 +2,10 @@ using VisualizationDSA.Domain.Engine;
 
 namespace VisualizationDSA.Domain.Strategies;
 
-/// <summary>
-/// Strategy sinh chuỗi frame cho mô-đun Design Patterns Visualizer.
-/// Hỗ trợ 3 kịch bản: Strategy Pattern, Observer Pattern, Singleton Pattern.
-/// </summary>
+
+
+
+
 public class DesignPatternsStrategy : IConceptStrategy
 {
     public string ConceptId => "design-patterns";
@@ -28,7 +28,7 @@ public class DesignPatternsStrategy : IConceptStrategy
     {
         var frames = new List<DesignPatternFrameDto>();
 
-        // Frame 1: Giới thiệu vấn đề — hardcoded if/else
+        
         frames.Add(new DesignPatternFrameDto
         {
             StepIndex = 0,
@@ -43,7 +43,7 @@ public class DesignPatternsStrategy : IConceptStrategy
             CouplingIndex = 85
         });
 
-        // Frame 2: Introduce Strategy Interface
+        
         frames.Add(new DesignPatternFrameDto
         {
             StepIndex = 1,
@@ -63,7 +63,7 @@ public class DesignPatternsStrategy : IConceptStrategy
             CouplingIndex = 40
         });
 
-        // Frame 3: Implement concrete strategies
+        
         frames.Add(new DesignPatternFrameDto
         {
             StepIndex = 2,
@@ -86,7 +86,7 @@ public class DesignPatternsStrategy : IConceptStrategy
             CouplingIndex = 20
         });
 
-        // Frame 4: Runtime swap demonstration
+        
         frames.Add(new DesignPatternFrameDto
         {
             StepIndex = 3,
@@ -118,7 +118,7 @@ public class DesignPatternsStrategy : IConceptStrategy
     {
         var frames = new List<DesignPatternFrameDto>();
 
-        // Frame 1: Subject holds list of observers
+        
         frames.Add(new DesignPatternFrameDto
         {
             StepIndex = 0,
@@ -137,7 +137,7 @@ public class DesignPatternsStrategy : IConceptStrategy
             CouplingIndex = 30
         });
 
-        // Frame 2: Register observers
+        
         frames.Add(new DesignPatternFrameDto
         {
             StepIndex = 1,
@@ -162,7 +162,7 @@ public class DesignPatternsStrategy : IConceptStrategy
             CouplingIndex = 25
         });
 
-        // Frame 3: Notify pulse
+        
         frames.Add(new DesignPatternFrameDto
         {
             StepIndex = 2,
@@ -188,7 +188,7 @@ public class DesignPatternsStrategy : IConceptStrategy
             CouplingIndex = 20
         });
 
-        // Frame 4: Conclusion
+        
         frames.Add(new DesignPatternFrameDto
         {
             StepIndex = 3,
@@ -214,7 +214,7 @@ public class DesignPatternsStrategy : IConceptStrategy
     {
         var frames = new List<DesignPatternFrameDto>();
 
-        // Frame 1: Problem — multiple instances
+        
         frames.Add(new DesignPatternFrameDto
         {
             StepIndex = 0,
@@ -231,7 +231,7 @@ public class DesignPatternsStrategy : IConceptStrategy
             CouplingIndex = 70
         });
 
-        // Frame 2: Singleton implementation
+        
         frames.Add(new DesignPatternFrameDto
         {
             StepIndex = 1,
@@ -246,7 +246,7 @@ public class DesignPatternsStrategy : IConceptStrategy
             CouplingIndex = 30
         });
 
-        // Frame 3: Multiple callers, same instance
+        
         frames.Add(new DesignPatternFrameDto
         {
             StepIndex = 2,
@@ -268,7 +268,7 @@ public class DesignPatternsStrategy : IConceptStrategy
             CouplingIndex = 25
         });
 
-        // Frame 4: Conclusion
+        
         frames.Add(new DesignPatternFrameDto
         {
             StepIndex = 3,

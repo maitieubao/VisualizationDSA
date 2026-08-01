@@ -1,9 +1,9 @@
 namespace VisualizationDSA.Domain.Engine;
 
-/// <summary>
-/// Snapshot một bước trong kịch bản OOP Concepts.
-/// Mỗi frame chứa trạng thái lớp, heap, con trỏ thực thi và vi phạm (nếu có).
-/// </summary>
+
+
+
+
 public class OOPFrameDto
 {
     public int StepId { get; set; }
@@ -17,10 +17,10 @@ public class OOPFrameDto
     public Dictionary<string, object>? ActionPayload { get; set; }
 }
 
-/// <summary>
-/// Định nghĩa một lớp OOP (UML card) với danh sách thành viên.
-/// Tương ứng với frontend ClassDefinition.
-/// </summary>
+
+
+
+
 public class ClassDefinitionDto
 {
     public string ClassName { get; set; } = string.Empty;
@@ -29,23 +29,23 @@ public class ClassDefinitionDto
     public List<ClassMemberDto> Members { get; set; } = new();
 }
 
-/// <summary>
-/// Thành viên của lớp (trường hoặc phương thức) với modifier truy cập.
-/// </summary>
+
+
+
 public class ClassMemberDto
 {
     public string Name { get; set; } = string.Empty;
-    public string Type { get; set; } = string.Empty;  // "FIELD" | "METHOD"
-    public string AccessModifier { get; set; } = string.Empty;  // "PUBLIC" | "PROTECTED" | "PRIVATE"
+    public string Type { get; set; } = string.Empty;  
+    public string AccessModifier { get; set; } = string.Empty;  
     public bool IsOverridden { get; set; }
     public bool IsAbstract { get; set; }
     public string? ReturnType { get; set; }
 }
 
-/// <summary>
-/// Đối tượng trên vùng nhớ Heap — địa chỉ, lớp, dữ liệu trường và bảng VTable.
-/// Tương ứng với frontend HeapObjectInstance.
-/// </summary>
+
+
+
+
 public class HeapObjectDto
 {
     public string Address { get; set; } = string.Empty;
@@ -54,23 +54,23 @@ public class HeapObjectDto
     public Dictionary<string, string> VTable { get; set; } = new();
 }
 
-/// <summary>
-/// Con trỏ thực thi hiện tại — theo dõi trạng thái VTable dispatch.
-/// Tương ứng với frontend ExecutionPointer.
-/// </summary>
+
+
+
+
 public class ExecutionPointerDto
 {
     public string CallerClass { get; set; } = string.Empty;
     public string ActiveObjectAddress { get; set; } = string.Empty;
     public string ActiveMethod { get; set; } = string.Empty;
-    public string DispatchStatus { get; set; } = "IDLE";  // "IDLE" | "SEEKING_VTABLE" | "DISPATCHED" | "ACCESS_VIOLATED"
+    public string DispatchStatus { get; set; } = "IDLE";  
     public string? ResolvedClass { get; set; }
 }
 
-/// <summary>
-/// Sự kiện vi phạm đóng gói khi truy cập trường private trực tiếp.
-/// Tương ứng với frontend EncapsulationViolation.
-/// </summary>
+
+
+
+
 public class EncapsulationViolationDto
 {
     public string TargetClass { get; set; } = string.Empty;

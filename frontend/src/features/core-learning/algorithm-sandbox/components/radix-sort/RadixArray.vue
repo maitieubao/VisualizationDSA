@@ -114,7 +114,7 @@ const {
 .r-hot--on  { color: var(--color-accent-yellow); transform: scale(1.2); filter: drop-shadow(0 0 8px var(--color-accent-yellow-glow)); text-decoration: underline 2px; }
 .r-idx      { font-family: var(--font-mono); opacity: .35; font-size: 9.5px; margin-top: 2px; color: var(--color-text-muted); }
 
-/* Transition animations */
+
 .sort-list-move         { transition: transform .4s cubic-bezier(.25,.8,.25,1); }
 .sort-list-enter-from   { opacity: 0; transform: translateY(-8px) scale(.92); }
 .sort-list-leave-to     { opacity: 0; transform: translateY(8px) scale(.92); }

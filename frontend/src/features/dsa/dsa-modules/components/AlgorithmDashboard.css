@@ -1,0 +1,188 @@
+
+@keyframes linearScan {
+  0%, 100% { 
+    background: rgba(6, 182, 212, 0.03); 
+    border-color: rgba(6, 182, 212, 0.15); 
+    color: #64748b;
+    transform: scale(1); 
+  }
+  10%, 25% { 
+    background: rgba(34, 211, 238, 0.2); 
+    border-color: #22d3ee; 
+    color: #22d3ee;
+    transform: scale(1.1); 
+    box-shadow: 0 0 6px rgba(34, 211, 238, 0.35); 
+  }
+}
+.group:hover .linear-box-0 { animation: linearScan 2s infinite 0s; }
+.group:hover .linear-box-1 { animation: linearScan 2s infinite 0.4s; }
+.group:hover .linear-box-2 { animation: linearScan 2s infinite 0.8s; }
+.group:hover .linear-box-3 { animation: linearScan 2s infinite 1.2s; }
+.group:hover .linear-box-4 { animation: linearScan 2s infinite 1.6s; }
+
+
+@keyframes binaryScanRight {
+  0%, 30% { 
+    opacity: 1; 
+    border-color: rgba(6, 182, 212, 0.15); 
+    background: rgba(6, 182, 212, 0.03); 
+  }
+  8%, 18% { 
+    border-color: #eab308; 
+    background: rgba(234, 179, 8, 0.1);
+    box-shadow: 0 0 5px rgba(234, 179, 8, 0.3); 
+  }
+  35%, 85% { 
+    opacity: 0.18; 
+    border-color: rgba(239, 68, 68, 0.15);
+  }
+  90%, 100% { 
+    opacity: 1; 
+    border-color: rgba(6, 182, 212, 0.15); 
+  }
+}
+.group:hover .binary-box-right { animation: binaryScanRight 3.2s infinite; }
+
+
+@keyframes slideOverlay {
+  0%, 100% { left: 8px; width: 28px; }
+  50% { left: 52px; width: 28px; }
+}
+.group:hover .sliding-window-overlay { animation: slideOverlay 2.8s infinite ease-in-out; }
+
+
+@keyframes stackItem0 {
+  0% { transform: translateY(-40px); opacity: 0; }
+  15%, 80% { transform: translateY(0); opacity: 1; }
+  90%, 100% { transform: translateY(-40px); opacity: 0; }
+}
+@keyframes stackItem1 {
+  0%, 20% { transform: translateY(-40px); opacity: 0; }
+  35%, 60% { transform: translateY(0); opacity: 1; }
+  75%, 100% { transform: translateY(-40px); opacity: 0; }
+}
+@keyframes stackItem2 {
+  0%, 40% { transform: translateY(-40px); opacity: 0; }
+  52%, 58% { transform: translateY(0); opacity: 1; }
+  64%, 100% { transform: translateY(-40px); opacity: 0; }
+}
+.group:hover .stack-push-pop-0 { animation: stackItem0 3s infinite ease-in; }
+.group:hover .stack-push-pop-1 { animation: stackItem1 3s infinite ease-in; }
+.group:hover .stack-push-pop-2 { animation: stackItem2 3s infinite ease-in; }
+
+
+@keyframes queueItem0 {
+  0% { transform: translateX(50px); opacity: 0; }
+  15% { transform: translateX(24px); opacity: 1; }
+  45% { transform: translateX(12px); opacity: 1; }
+  75% { transform: translateX(0px); opacity: 1; }
+  90%, 100% { transform: translateX(-50px); opacity: 0; }
+}
+@keyframes queueItem1 {
+  0%, 10% { transform: translateX(50px); opacity: 0; }
+  25% { transform: translateX(36px); opacity: 1; }
+  55% { transform: translateX(24px); opacity: 1; }
+  85%, 100% { transform: translateX(-50px); opacity: 0; }
+}
+@keyframes queueItem2 {
+  0%, 20% { transform: translateX(50px); opacity: 0; }
+  35% { transform: translateX(48px); opacity: 1; }
+  65%, 100% { transform: translateX(-50px); opacity: 0; }
+}
+.group:hover .queue-flow-0 { animation: queueItem0 2.5s infinite linear; }
+.group:hover .queue-flow-1 { animation: queueItem1 2.5s infinite linear; }
+.group:hover .queue-flow-2 { animation: queueItem2 2.5s infinite linear; }
+
+
+@keyframes mono0 {
+  0% { transform: translateY(-40px); opacity: 0; }
+  10%, 80% { transform: translateY(0); opacity: 1; }
+  90%, 100% { transform: translateY(-40px); opacity: 0; }
+}
+@keyframes mono1 {
+  0%, 15% { transform: translateY(-40px); opacity: 0; }
+  25%, 55% { transform: translateY(0); opacity: 1; }
+  62%, 100% { transform: translate(30px, -20px) rotate(45deg); opacity: 0; }
+}
+@keyframes mono2 {
+  0%, 30% { transform: translateY(-40px); opacity: 0; }
+  40%, 55% { transform: translateY(0); opacity: 1; }
+  60%, 100% { transform: translate(30px, -20px) rotate(45deg); opacity: 0; }
+}
+.group:hover .mono-box-0 { animation: mono0 3.2s infinite ease-in; }
+.group:hover .mono-box-1 { animation: mono1 3.2s infinite ease-in; }
+.group:hover .mono-box-2 { animation: mono2 3.2s infinite ease-in; }
+
+
+@keyframes bstPulseRoot {
+  0%, 100% { border-color: rgba(6, 182, 212, 0.15); background: transparent; }
+  10%, 25% { border-color: #22d3ee; background: rgba(34, 211, 238, 0.2); box-shadow: 0 0 4px #22d3ee; }
+}
+@keyframes bstPulseLeft {
+  0%, 30%, 100% { border-color: rgba(6, 182, 212, 0.15); background: transparent; }
+  40%, 55% { border-color: #22d3ee; background: rgba(34, 211, 238, 0.2); box-shadow: 0 0 4px #22d3ee; }
+}
+@keyframes bstPulseRight {
+  0%, 60%, 100% { border-color: rgba(6, 182, 212, 0.15); background: transparent; }
+  70%, 85% { border-color: #22d3ee; background: rgba(34, 211, 238, 0.2); box-shadow: 0 0 4px #22d3ee; }
+}
+.group:hover .bst-root { animation: bstPulseRoot 2.5s infinite; }
+.group:hover .bst-left { animation: bstPulseLeft 2.5s infinite; }
+.group:hover .bst-right { animation: bstPulseRight 2.5s infinite; }
+
+
+@keyframes bfsPulseRoot {
+  0%, 100% { border-color: rgba(6, 182, 212, 0.15); background: transparent; }
+  10%, 30% { border-color: #22d3ee; background: rgba(34, 211, 238, 0.2); box-shadow: 0 0 4px #22d3ee; }
+}
+@keyframes bfsPulseChild {
+  0%, 40%, 100% { border-color: rgba(6, 182, 212, 0.15); background: transparent; }
+  50%, 75% { border-color: #22d3ee; background: rgba(34, 211, 238, 0.2); box-shadow: 0 0 4px #22d3ee; }
+}
+.group:hover .bfs-root { animation: bfsPulseRoot 2.4s infinite; }
+.group:hover .bfs-child { animation: bfsPulseChild 2.4s infinite; }
+
+
+@keyframes dfsPulseRoot {
+  0%, 100% { border-color: rgba(6, 182, 212, 0.15); background: transparent; }
+  5%, 20% { border-color: #22d3ee; background: rgba(34, 211, 238, 0.2); box-shadow: 0 0 4px #22d3ee; }
+}
+@keyframes dfsPulseLeft {
+  0%, 25%, 100% { border-color: rgba(6, 182, 212, 0.15); background: transparent; }
+  35%, 55% { border-color: #22d3ee; background: rgba(34, 211, 238, 0.2); box-shadow: 0 0 4px #22d3ee; }
+}
+@keyframes dfsPulseRight {
+  0%, 60%, 100% { border-color: rgba(6, 182, 212, 0.15); background: transparent; }
+  70%, 90% { border-color: #22d3ee; background: rgba(34, 211, 238, 0.2); box-shadow: 0 0 4px #22d3ee; }
+}
+.group:hover .dfs-root { animation: dfsPulseRoot 2.8s infinite; }
+.group:hover .dfs-left { animation: dfsPulseLeft 2.8s infinite; }
+.group:hover .dfs-right { animation: dfsPulseRight 2.8s infinite; }
+
+
+@keyframes dijPulseNodeStart {
+  0%, 100% { border-color: rgba(6, 182, 212, 0.15); background: transparent; }
+  5%, 20% { border-color: #22d3ee; background: rgba(34, 211, 238, 0.2); box-shadow: 0 0 4.5px #22d3ee; }
+}
+@keyframes dijPulseLineTop {
+  22%, 40% { background: #22d3ee; }
+  0%, 20%, 42%, 100% { background: rgba(15, 23, 42, 0.3); }
+}
+@keyframes dijPulseNodeMid {
+  0%, 35%, 100% { border-color: rgba(6, 182, 212, 0.15); background: transparent; }
+  45%, 60% { border-color: #22d3ee; background: rgba(34, 211, 238, 0.2); box-shadow: 0 0 4.5px #22d3ee; }
+}
+@keyframes dijPulseLineMid {
+  62%, 80% { background: #22d3ee; }
+  0%, 60%, 82%, 100% { background: rgba(15, 23, 42, 0.3); }
+}
+@keyframes dijPulseNodeEnd {
+  0%, 75%, 100% { border-color: rgba(6, 182, 212, 0.15); background: transparent; }
+  85%, 98% { border-color: #22d3ee; background: rgba(34, 211, 238, 0.2); box-shadow: 0 0 4.5px #22d3ee; }
+}
+.group:hover .dij-node-start { animation: dijPulseNodeStart 3s infinite; }
+.group:hover .dij-line-top { animation: dijPulseLineTop 3s infinite; }
+.group:hover .dij-node-mid { animation: dijPulseNodeStart 3s infinite; }
+.group:hover .dij-line-bottom { animation: dijPulseLineTop 3s infinite; }
+.group:hover .dij-line-mid { animation: dijPulseLineMid 3s infinite; }
+.group:hover .dij-node-end { animation: dijPulseNodeEnd 3s infinite; }

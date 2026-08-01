@@ -94,7 +94,7 @@ async function syncSessionToServer(): Promise<void> {
   await gamificationApi.awardXP(xpEarned, 'Checkpoint quiz completed');
 }
 
-  // ── Standalone Backend Quiz Mode ──────────────────────────────
+  
   const quizCatalog = ref<StatelessQuizSummary[]>([]);
   const activeBackendQuiz = ref<StatelessQuizDetail | null>(null);
   const backendQuizIndex = ref(0);
@@ -191,7 +191,7 @@ async function syncSessionToServer(): Promise<void> {
     loadCheckpoints, checkFrameForQuiz, triggerCheckpointQuestion,
     submitOptionAnswer, handleCanvasClickAnswer, dismissQuestionAndContinue,
     resetQuizStore, syncSessionToServer,
-    // Backend quiz mode
+    
     quizCatalog, activeBackendQuiz, backendQuizIndex, backendAnswers, backendResult,
     isBackendQuizLoading, backendQuizError, isBackendQuizMode,
     currentBackendQuestion, backendQuizProgress,

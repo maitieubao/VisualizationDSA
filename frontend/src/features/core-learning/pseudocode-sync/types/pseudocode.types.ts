@@ -1,7 +1,7 @@
-/**
- * pseudocode.types.ts — Type interfaces cho hệ thống đồng bộ mã giả đa ngôn ngữ.
- * Hỗ trợ ánh xạ logicalId chéo ngôn ngữ và biến Watch Panel.
- */
+
+
+
+
 
 export type SupportedLanguage = 'cpp' | 'java' | 'python' | 'javascript';
 

@@ -1,7 +1,7 @@
-/**
- * QuizSchemaValidator — Validates quiz JSON structure before loading.
- * Ensures all required fields are present for each question type.
- */
+
+
+
+
 export class QuizSchemaValidator {
   static validateQuizJson(jsonData: unknown): { isValid: boolean; errors: string[] } {
     const errors: string[] = [];

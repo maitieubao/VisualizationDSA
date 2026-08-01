@@ -1,7 +1,7 @@
-/**
- * useConfetti.ts — Full-screen confetti celebration composable.
- * Uses canvas-confetti for epic reward moments.
- */
+
+
+
+
 
 import confetti from 'canvas-confetti';
 
@@ -94,7 +94,7 @@ export function useConfetti() {
     }
     frame();
 
-    // Grand finale burst
+    
     setTimeout(() => {
       confetti({
         particleCount: 150,

@@ -66,7 +66,7 @@ function renderCanvas(): void {
   const ctx = canvas.getContext('2d');
   if (!ctx) return;
 
-  // Retrieve theme colors dynamically
+  
   const style = getComputedStyle(document.documentElement);
   const colorBg = style.getPropertyValue('--canvas-bg').trim() || '#080808';
   const colorMuted = style.getPropertyValue('--color-text-muted').trim() || '#64748B';

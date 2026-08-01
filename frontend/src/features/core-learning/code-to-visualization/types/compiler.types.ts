@@ -1,7 +1,7 @@
-/**
- * compiler.types.ts — Type-safe interfaces cho Code-to-Visualization Compiler.
- * Định nghĩa cấu trúc LiveFrameDTO, CompilationResult, ConsoleLogEntry.
- */
+
+
+
+
 
 export interface LiveFrameDTO {
   frameIndex: number;

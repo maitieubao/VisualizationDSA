@@ -1,4 +1,4 @@
-// @vitest-environment jsdom
+
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { CanvasConfettiEngine } from '../engine/CanvasConfettiEngine';
 
@@ -134,7 +134,7 @@ describe('CanvasConfettiEngine', () => {
 
   it('should remove particles that fall below canvas height', () => {
     engine.burst(1);
-    // Simulate many ticks to let particle fall off screen
+    
     for (let i = 0; i < 500; i++) {
       engine.tick();
     }

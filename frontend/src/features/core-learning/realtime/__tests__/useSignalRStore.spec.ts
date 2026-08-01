@@ -12,7 +12,7 @@ import type {
   QuizRoomParticipant
 } from '@/features/core-learning/realtime/types/signalr.types'
 
-// Mock @microsoft/signalr
+
 const mockStart = vi.fn().mockResolvedValue(undefined)
 const mockStop = vi.fn().mockResolvedValue(undefined)
 const mockInvoke = vi.fn().mockResolvedValue(undefined)
@@ -313,7 +313,7 @@ describe('useSignalRStore', () => {
     it('should handle ScoreUpdate', async () => {
       await store.connectQuizRoom('token')
 
-      // Set initial room
+      
       const roomHandler = mockOn.mock.calls.find((c: string[]) => c[0] === 'RoomCreated')![1]
       roomHandler({
         roomCode: 'ABC',
@@ -423,7 +423,7 @@ describe('useSignalRStore', () => {
     it('should disconnect quiz room and clear state', async () => {
       await store.connectQuizRoom('token')
 
-      // Set some state
+      
       const roomHandler = mockOn.mock.calls.find((c: string[]) => c[0] === 'RoomCreated')![1]
       roomHandler({
         roomCode: 'ABC', quizTitle: 'Q', quizId: 'q1', hostUsername: 'H',

@@ -73,7 +73,7 @@ namespace VisualizationDSA.WebApi.Hubs
             var userId = GetCurrentUserId();
             var username = GetCurrentUsername();
 
-            // Check if already in room
+            
             var participant = room.Participants.FirstOrDefault(p => p.UserId == userId);
             if (participant == null)
             {
@@ -89,7 +89,7 @@ namespace VisualizationDSA.WebApi.Hubs
             }
             else
             {
-                participant.ConnectionId = Context.ConnectionId; // update connection ID
+                participant.ConnectionId = Context.ConnectionId; 
             }
 
             await Groups.AddToGroupAsync(Context.ConnectionId, roomCode);
@@ -111,7 +111,7 @@ namespace VisualizationDSA.WebApi.Hubs
 
                     if (room.Participants.Count == 0 || room.HostUserId == userId)
                     {
-                        // Clean up room if empty or host leaves
+                        
                         Rooms.TryRemove(roomCode, out _);
                     }
                     else
@@ -154,7 +154,7 @@ namespace VisualizationDSA.WebApi.Hubs
             var participant = room.Participants.FirstOrDefault(p => p.UserId == userId);
             if (participant == null || participant.HasAnswered) return;
 
-            // Simple validation and scoring
+            
             var isCorrect = IsAnswerCorrect(room.QuizId, questionIndex, answerIndex);
             var points = isCorrect ? 100 : 0;
             
@@ -181,7 +181,7 @@ namespace VisualizationDSA.WebApi.Hubs
                 p.IsHost
             }));
 
-            // If all participants have answered, auto advance or show results
+            
             if (room.Participants.All(p => p.HasAnswered))
             {
                 if (room.CurrentQuestionIndex >= room.TotalQuestions - 1)
@@ -247,7 +247,7 @@ namespace VisualizationDSA.WebApi.Hubs
                 RoomCode = room.RoomCode,
                 QuizTitle = room.QuizTitle,
                 FinalRankings = rankings.Select(p => new { p.UserId, p.Username, p.Score, p.IsHost }),
-                XpAwarded = 50 // Standard multiplayer completion XP reward
+                XpAwarded = 50 
             });
 
             await BroadcastActiveRooms();
@@ -314,7 +314,7 @@ namespace VisualizationDSA.WebApi.Hubs
             };
         }
 
-        // Mock data helpers representing the quizzes database matching seed contents
+        
         private string GetQuizTitle(string quizId)
         {
             return quizId switch
@@ -332,7 +332,7 @@ namespace VisualizationDSA.WebApi.Hubs
 
         private List<MockQuestion> GetQuizQuestions(string quizId)
         {
-            // Mirrors QuizBankStrategy Seed questions
+            
             if (quizId == "sorting-fundamentals")
             {
                 return new List<MockQuestion>

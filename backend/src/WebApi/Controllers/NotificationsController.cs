@@ -23,10 +23,10 @@ namespace VisualizationDSA.WebApi.Controllers
             _dbContext = dbContext;
         }
 
-        /// <summary>
-        /// Lấy danh sách thông báo của người dùng hiện tại.
-        /// GET /api/v1/concepts/notifications
-        /// </summary>
+        
+        
+        
+        
         [HttpGet]
         [RequireJwtRole]
         public async Task<IActionResult> GetNotifications()
@@ -51,10 +51,10 @@ namespace VisualizationDSA.WebApi.Controllers
             return Ok(notifications);
         }
 
-        /// <summary>
-        /// Đánh dấu một thông báo là đã đọc.
-        /// PUT /api/v1/concepts/notifications/{id}/read
-        /// </summary>
+        
+        
+        
+        
         [HttpPut("{id}/read")]
         [RequireJwtRole]
         public async Task<IActionResult> MarkAsRead(Guid id)
@@ -75,10 +75,10 @@ namespace VisualizationDSA.WebApi.Controllers
             return Ok(new { success = true, message = "Đã đánh dấu đã đọc." });
         }
 
-        /// <summary>
-        /// Đánh dấu tất cả thông báo là đã đọc.
-        /// PUT /api/v1/concepts/notifications/read-all
-        /// </summary>
+        
+        
+        
+        
         [HttpPut("read-all")]
         [RequireJwtRole]
         public async Task<IActionResult> MarkAllAsRead()

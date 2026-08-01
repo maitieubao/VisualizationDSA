@@ -1,6 +1,6 @@
 <template>
   <div class="vcr-controls-left">
-    <!-- Step Backward -->
+    
     <button class="vcr-action-btn" :disabled="isFirstFrame || isUninitialized"
       title="Lùi 1 bước (ArrowLeft)" @click="$emit('stepBackward')">
       <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -8,7 +8,7 @@
       </svg>
     </button>
 
-    <!-- Play / Pause / Replay -->
+    
     <button class="vcr-play-btn" :disabled="isUninitialized"
       :title="isPlaying ? 'Tạm dừng (Space)' : isFinished ? 'Phát lại (Space)' : 'Phát (Space)'"
       @click="$emit('togglePlay')">
@@ -23,7 +23,7 @@
       </svg>
     </button>
 
-    <!-- Step Forward -->
+    
     <button class="vcr-action-btn" :disabled="isLastFrame || isUninitialized"
       title="Tiến 1 bước (ArrowRight)" @click="$emit('stepForward')">
       <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">

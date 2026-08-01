@@ -108,4 +108,3 @@ export class ForceDirectedLayout {
 }
 ```
  Phương trình phân bổ lực đàn hồi Hooke và lực đẩy Coulomb kết hợp hệ số hãm dao động damping giúp các node đồ thị tự sắp đặt vị trí mỹ thuật tối ưu và cân đối tự nhiên.
-

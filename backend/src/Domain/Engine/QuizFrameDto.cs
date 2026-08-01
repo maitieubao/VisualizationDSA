@@ -1,9 +1,9 @@
 namespace VisualizationDSA.Domain.Engine
 {
-    /// <summary>
-    /// Stateless quiz data — seeded quiz bank for DSA/OOP/Architecture topics.
-    /// No database required — serves pre-built quizzes directly from memory.
-    /// </summary>
+    
+    
+    
+    
     public class StatelessQuizDto
     {
         public string Id { get; set; } = string.Empty;
@@ -46,9 +46,9 @@ namespace VisualizationDSA.Domain.Engine
         public string Explanation { get; set; } = string.Empty;
     }
 
-    /// <summary>
-    /// Stateless gamification profile — mock user progress for demo.
-    /// </summary>
+    
+    
+    
     public class StatelessUserProfile
     {
         public string UserId { get; set; } = "demo-user";

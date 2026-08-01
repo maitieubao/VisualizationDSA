@@ -92,4 +92,3 @@ Hệ thống sẽ tự động:
 4. Liên tục cập nhật các bugs vào `plan/tracking/errors.md`.
 
 *Dự án đang trong giai đoạn khởi tạo nền tảng (Foundation setup).*
-

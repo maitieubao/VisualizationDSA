@@ -35,7 +35,7 @@ const paymentStore = usePaymentStore();
 const hasAccess = computed(() => {
   if (paymentStore.isPremium) return true;
   if (!props.featureId) return false;
-  // Free features always accessible
+  
   const freeFeatures = ['basic-viz', 'quiz-basic'];
   return freeFeatures.includes(props.featureId);
 });

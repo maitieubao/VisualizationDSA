@@ -12,10 +12,10 @@ using Xunit;
 
 namespace VisualizationDSA.UnitTests.Services
 {
-    /// <summary>
-    /// Tests cho Event Sourcing Ledger (Trụ Cột 6): AuditEventService append-only
-    /// và ImmutableAuditInterceptor chặn UPDATE/DELETE.
-    /// </summary>
+    
+    
+    
+    
     public class AuditEventLedgerTests
     {
         private static ApplicationDbContext NewContext(bool withImmutableGuard = false)
@@ -83,9 +83,9 @@ namespace VisualizationDSA.UnitTests.Services
             using var db = NewContext(withImmutableGuard: true);
             var frame = new SystemAuditEventStream("VcrScrub", null, null, "GET", "/x", 200, "{}");
             db.Add(frame);
-            db.SaveChanges(); // append allowed
+            db.SaveChanges(); 
 
-            // Buộc entry sang trạng thái Modified (dù setters private) để kích hoạt guard.
+            
             db.Entry(frame).State = EntityState.Modified;
 
             var act = () => db.SaveChanges();

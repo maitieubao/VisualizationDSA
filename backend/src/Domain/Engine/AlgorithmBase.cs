@@ -1,9 +1,9 @@
 namespace VisualizationDSA.Domain.Engine;
 
-/// <summary>
-/// Lớp cơ sở cho tất cả các thuật toán. Cung cấp cơ chế State Recorder
-/// để ghi nhận snapshot mảng tại mỗi bước thực thi.
-/// </summary>
+
+
+
+
 public abstract class AlgorithmBase
 {
     protected List<FrameDTO> _frames = new();
@@ -15,10 +15,10 @@ public abstract class AlgorithmBase
         _stepCounter = 0;
     }
 
-    /// <summary>
-    /// Chụp ảnh nhanh trạng thái mảng và lưu lại vào danh sách.
-    /// CRITICAL: Bắt buộc dùng .Clone() để tạo vùng nhớ mảng hoàn toàn mới.
-    /// </summary>
+    
+    
+    
+    
     protected void CaptureState(
         int[] currentData,
         int activeLine,

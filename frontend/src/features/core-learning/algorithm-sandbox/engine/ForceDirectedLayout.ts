@@ -28,7 +28,7 @@ export class ForceDirectedLayout {
   public computePhysicsStep(nodes: GraphNode[], edges: GraphEdge[]): void {
     nodes.forEach(n => { n.fx = 0; n.fy = 0; });
 
-    // 1. Coulomb Repulsion
+    
     for (let i = 0; i < nodes.length; i++) {
       for (let j = i + 1; j < nodes.length; j++) {
         const n1 = nodes[i];
@@ -44,7 +44,7 @@ export class ForceDirectedLayout {
       }
     }
 
-    // 2. Hooke Attraction
+    
     edges.forEach(edge => {
       const source = nodes.find(n => n.id === edge.sourceId);
       const target = nodes.find(n => n.id === edge.targetId);
@@ -61,7 +61,7 @@ export class ForceDirectedLayout {
       target.fx! -= fx; target.fy! -= fy;
     });
 
-    // 3. Update Positions
+    
     nodes.forEach(node => {
       node.x += (node.fx || 0) * this.damping;
       node.y += (node.fy || 0) * this.damping;
@@ -74,7 +74,7 @@ export class ForceDirectedLayout {
     }
   }
 
-  public isStable(nodes: GraphNode[], threshold = 0.1): boolean {
+  public isStable(nodes: GraphNode[], threshold = 0.5): boolean {
     return nodes.every(n => Math.abs(n.fx || 0) < threshold && Math.abs(n.fy || 0) < threshold);
   }
 }

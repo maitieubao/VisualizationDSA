@@ -17,6 +17,8 @@ export const APP_TABS: readonly (TabGroup | TabItem)[] = [
     items: [
       { id: 'roadmap',      path: '/courses',      name: 'Visual / Roadmap' },
       { id: 'cheatsheet',   path: '/cheatsheet',   name: 'DSA CheatSheet' },
+      { id: 'learning-path', path: '/courses',    name: 'Khóa học' },
+      { id: 'classrooms',    path: '/classrooms', name: 'Lớp học của tôi', requiresAuth: true }
     ]
   },
   {
@@ -35,6 +37,7 @@ export const APP_TABS: readonly (TabGroup | TabItem)[] = [
       { id: 'profile',      path: '/profile',      name: 'Hồ sơ', requiresAuth: true },
       { id: 'teacher-studio', path: '/teacher-studio', name: 'Teacher Studio', requiresAuth: true, requiresRole: 'Teacher' },
       { id: 'admin',        path: '/admin',        name: 'Quản trị Admin', requiresAuth: true, requiresRole: 'Admin' },
+      { id: 'docs',      path: '/docs',      name: 'Tài liệu tham khảo' }
     ]
   }
 ] as const;

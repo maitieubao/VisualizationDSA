@@ -2,9 +2,9 @@ import type { AlgorithmRequest, AlgorithmResult } from '@/features/core-learning
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:5055';
 
-/**
- * Gọi API Backend thực thi thuật toán và nhận về chuỗi frames hoạt họa.
- */
+
+
+
 export async function executeAlgorithm(request: AlgorithmRequest): Promise<AlgorithmResult> {
   const response = await fetch(`${API_BASE}/api/v1/algorithms/execute`, {
     method: 'POST',
@@ -24,10 +24,10 @@ export async function executeAlgorithm(request: AlgorithmRequest): Promise<Algor
   return response.json() as Promise<AlgorithmResult>;
 }
 
-/**
- * Sinh dữ liệu Bubble Sort giả lập (Dummy) để phát triển Frontend
- * mà không cần Backend chạy.
- */
+
+
+
+
 export function generateDummyBubbleSortResult(inputData: number[]): AlgorithmResult {
   const arr = [...inputData];
   const n = arr.length;

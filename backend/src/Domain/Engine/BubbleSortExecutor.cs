@@ -1,9 +1,9 @@
 namespace VisualizationDSA.Domain.Engine;
 
-/// <summary>
-/// Bộ thực thi Bubble Sort kế thừa AlgorithmBase.
-/// Sinh chuỗi FrameDTO mô tả từng bước: compare → swap → sorted mark.
-/// </summary>
+
+
+
+
 public class BubbleSortExecutor : AlgorithmBase
 {
     private const int MaxInputSize = 50;

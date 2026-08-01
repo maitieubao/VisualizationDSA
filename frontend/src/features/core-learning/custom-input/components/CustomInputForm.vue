@@ -1,6 +1,6 @@
 <template>
   <div class="flex flex-col h-full w-full gap-3 p-4 bg-bg-secondary/80 overflow-auto">
-    <!-- Header -->
+    
     <div class="flex items-center gap-2">
       <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24"
         fill="none" stroke="currentColor" stroke-width="2.5" class="text-accent-yellow">
@@ -9,7 +9,7 @@
       <span class="text-xs font-bold uppercase tracking-wider text-text-secondary">Custom Input</span>
     </div>
 
-    <!-- TextArea -->
+    
     <div class="flex flex-col gap-1.5">
       <label class="text-[11px] text-text-secondary">Nhập mảng số nguyên (cách nhau bằng dấu phẩy):</label>
       <textarea v-model="inputStore.rawText" :readonly="inputStore.isLoading"
@@ -24,9 +24,9 @@
       <div v-if="inputStore.apiErrorMessage" class="text-[11px] font-mono text-accent-red">{{ inputStore.apiErrorMessage }}</div>
     </div>
 
-    <!-- Action Buttons -->
+    
     <div class="flex items-center gap-2 flex-wrap">
-      <!-- Random Generate Dropdown -->
+      
       <div class="relative" ref="dropdownRef">
         <button class="px-3 py-1.5 rounded-lg text-[11px] font-bold bg-bg-surface border border-border-default text-text-secondary hover:text-white hover:border-border-strong transition-colors flex items-center gap-1.5"
           @click="showDropdown = !showDropdown">

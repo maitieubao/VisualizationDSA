@@ -22,25 +22,25 @@ export class PseudocodeSyncer {
     this.mappings = mappings;
   }
 
-  /**
-   * Truy vấn số dòng code ứng với chỉ số bước giải thuật K (Forward Lookup)
-   */
+  
+
+
   public getLineForStep(stepIndex: number): number | null {
     const found = this.mappings.find(m => m.stepIndex === stepIndex);
     return found ? found.lineNumber : null;
   }
 
-  /**
-   * Truy vấn bước giải thuật đầu tiên thực thi số dòng code L (Reverse Lookup - Seek Step)
-   */
+  
+
+
   public getFirstStepForLine(lineNumber: number): number | null {
     const found = this.mappings.find(m => m.lineNumber === lineNumber);
     return found ? found.stepIndex : null;
   }
 
-  /**
-   * Cập nhật lớp CSS bôi sáng dòng đang chạy trên Monaco Editor dưới 10ms
-   */
+  
+
+
   public static highlightMonacoLine(
     editorInstance: MonacoEditorForHighlight,
     lineNumber: number,
@@ -48,8 +48,8 @@ export class PseudocodeSyncer {
   ): string[] {
     if (!editorInstance) return previousDecorations;
 
-    // Cuộn dòng code về trung tâm mượt mà 60 FPS
-    editorInstance.revealLineInCenter(lineNumber, 0); // 0 = ScrollType.Smooth
+    
+    editorInstance.revealLineInCenter(lineNumber, 0); 
 
     const newDecorations = [
       {
@@ -61,13 +61,13 @@ export class PseudocodeSyncer {
         },
         options: {
           isWholeLine: true,
-          className: 'monaco-pseudocode-active-line-glow', // Tên lớp CSS bọc Neon Amber viền trái
+          className: 'monaco-pseudocode-active-line-glow', 
           marginClassName: 'monaco-pseudocode-gutter-decorator'
         }
       }
     ];
 
-    // Cập nhật đè trang trí cũ
+    
     return editorInstance.deltaDecorations(previousDecorations, newDecorations);
   }
 }

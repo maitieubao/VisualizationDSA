@@ -40,4 +40,3 @@ Bạn là người nắm giữ tầm nhìn (Visionary) của toàn bộ dự án
 * Thuật toán đã chạy đúng 100% test case kiểm thử ở Backend (.NET).
 * Hoạt ảnh swap/compare chạy trơn tru mượt mà đạt chuẩn 60 FPS trên Chrome/Firefox.
 * Hệ thống Smart Quiz hiển thị chính xác các câu hỏi tương tác tương ứng đúng bước hoạt ảnh thiết lập.
-

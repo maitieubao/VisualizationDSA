@@ -48,7 +48,7 @@ public class MonotonicStackStrategy : AlgorithmStrategyBase
         int n = arr.Length;
         int[] res = Enumerable.Repeat(-1, n).ToArray();
 
-        Stack<int> stack = new(); // Stores indices of array
+        Stack<int> stack = new(); 
 
         CaptureStackFrame(new List<int>(), 0, "Khởi tạo ngăn xếp đơn điệu rỗng.");
 
@@ -84,7 +84,7 @@ public class MonotonicStackStrategy : AlgorithmStrategyBase
 
     private List<int> GetStackValues(Stack<int> stack, int[] arr)
     {
-        // Return values of elements in stack from bottom to top for visual display in TubeRenderer
+        
         var list = stack.Select(idx => arr[idx]).ToList();
         list.Reverse();
         return list;
@@ -111,7 +111,7 @@ public class MonotonicStackStrategy : AlgorithmStrategyBase
             StepId = _frames.Count + 1,
             ActiveLine = activeLine,
             Explanation = explanation,
-            DataState = stackValues.ToArray(), // Current elements shown in the tube stack!
+            DataState = stackValues.ToArray(), 
             Highlights = highlights
         });
     }

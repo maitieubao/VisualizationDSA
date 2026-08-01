@@ -1,10 +1,10 @@
 import { onMounted, onBeforeUnmount } from 'vue';
 import { useAnimationStore } from '@/features/core-learning/animation-engine/store/useAnimationStore';
 
-/**
- * Composable: lắng nghe phím tắt DSA Player.
- * Space = Play/Pause, ← → = Step, R = Stop.
- */
+
+
+
+
 export function useDSAKeyboard(
   isAlgorithmActive: () => boolean,
   animStore: ReturnType<typeof useAnimationStore>,

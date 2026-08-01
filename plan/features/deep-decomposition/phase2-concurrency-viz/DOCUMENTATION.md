@@ -26,4 +26,3 @@ Hệ thống quyết định áp dụng giải pháp **Giả lập Vết đa lu�
     *   **Bảo vệ tab duyệt web:** Trình duyệt của sinh viên không bị đơ giật hay treo cứng khi phát sinh lỗi Deadlock.
 *   **Điểm cần lưu ý (Cons):**
     *   Mã nguồn đa luồng hiển thị trong Monaco Editor là mã nguồn giả lập (Pseudocode) được cấu trúc hóa sẵn các hàm `lock()` / `unlock()`, không phải là luồng chạy thô tự viết của hệ điều hành thực tế. Tuy nhiên điều này rất phù hợp cho mục đích sư phạm EdTech của bài giảng đa luồng.
-    

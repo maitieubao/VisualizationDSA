@@ -1,6 +1,6 @@
 <template>
   <div class="flex flex-col gap-6">
-    <!-- Multiple choice block -->
+    
     <div class="flex flex-col gap-4">
       <h4 class="section-title">
         <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="icon-blue">
@@ -26,7 +26,7 @@
     </div>
     <div class="divider" />
     
-    <!-- Interactive Code Compliance Block -->
+    
     <div class="flex flex-col gap-3">
       <div class="flex justify-between items-center">
         <h4 class="section-title">
@@ -51,7 +51,7 @@
       </div>
     </div>
 
-    <!-- Submit Result Section -->
+    
     <div class="mt-2 flex flex-col gap-4">
       <button @click="$emit('submit')" class="submit-btn">
         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="w-4 h-4"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14M22 4L12 14.01l-3-3" /></svg>
@@ -90,213 +90,5 @@ defineEmits<{
 </script>
 
 <style scoped>
-.section-title {
-  font-size: var(--text-sm);
-  font-weight: var(--font-bold);
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  color: var(--color-text-secondary);
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  margin: 0;
-}
-
-.icon-blue {
-  color: var(--color-accent-blue);
-}
-
-.question-card {
-  padding: 16px;
-  background-color: color-mix(in srgb, var(--vis-panel-bg-deep) 50%, transparent);
-  border: 1px solid color-mix(in srgb, var(--color-border-subtle) 80%, transparent);
-  border-radius: var(--radius-xl);
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-.option-label {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 10px 12px;
-  border-radius: var(--radius-lg);
-  font-size: var(--text-xs);
-  cursor: pointer;
-  transition: var(--transition-fast);
-}
-
-.option-label.active {
-  border: 1px solid color-mix(in srgb, var(--color-accent-blue) 50%, transparent);
-  background-color: var(--color-accent-blue-dim);
-  color: var(--color-text-primary);
-  font-weight: var(--font-semibold);
-}
-
-.option-label.inactive {
-  border: 1px solid var(--color-border-subtle);
-  background-color: color-mix(in srgb, var(--color-bg-secondary) 40%, transparent);
-  color: var(--color-text-secondary);
-}
-
-.option-label.inactive:hover {
-  border-color: var(--color-border-default);
-  color: var(--color-text-primary);
-}
-
-.radio-input {
-  accent-color: var(--color-accent-blue-light);
-}
-
-.divider {
-  height: 1px;
-  background-color: var(--color-border-subtle);
-}
-
-.required-badge {
-  font-size: 10px;
-  font-weight: var(--font-bold);
-  color: var(--color-accent-yellow);
-  background-color: var(--color-accent-yellow-dim);
-  border: 1px solid color-mix(in srgb, var(--color-accent-yellow) 20%, transparent);
-  padding: 2px 8px;
-  border-radius: var(--radius-lg);
-}
-
-.code-textarea {
-  width: 100%;
-  background-color: var(--color-bg-primary);
-  border: 1px solid color-mix(in srgb, var(--color-border-default) 80%, transparent);
-  color: var(--color-text-primary);
-  border-radius: var(--radius-xl);
-  padding: 12px;
-  font-size: var(--text-xs);
-  font-family: var(--font-mono);
-  outline: none;
-  resize: vertical;
-  transition: var(--transition-fast);
-}
-
-.code-textarea:focus {
-  border-color: var(--color-accent-blue);
-}
-
-.code-textarea::placeholder {
-  color: var(--color-text-muted);
-}
-
-.compliance-btn {
-  padding: 8px 16px;
-  background-color: color-mix(in srgb, var(--color-bg-hover) 60%, transparent);
-  border: 1px solid color-mix(in srgb, var(--color-accent-blue) 40%, transparent);
-  color: var(--color-accent-blue);
-  font-size: var(--text-xs);
-  font-weight: var(--font-bold);
-  border-radius: var(--radius-lg);
-  transition: var(--transition-smooth);
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  gap: 4px;
-}
-
-.compliance-btn:hover {
-  border-color: color-mix(in srgb, var(--color-accent-blue) 60%, transparent);
-  background-color: var(--color-bg-active);
-}
-
-.submit-btn {
-  width: 100%;
-  padding: 12px;
-  background: linear-gradient(to right, var(--color-accent-green), color-mix(in srgb, var(--color-accent-green) 80%, var(--color-accent-cyan)));
-  color: var(--color-text-primary);
-  font-weight: var(--font-bold);
-  font-size: var(--text-sm);
-  border: none;
-  border-radius: var(--radius-xl);
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  transition: var(--transition-smooth);
-  box-shadow: var(--shadow-accent);
-}
-
-.submit-btn:hover {
-  opacity: 0.95;
-  transform: translateY(-1px);
-}
-
-.submit-btn:active {
-  transform: scale(0.98);
-}
-
-.score-result-panel {
-  padding: 16px;
-  border-radius: var(--radius-xl);
-  border: 1px solid transparent;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  transition: var(--transition-smooth);
-}
-
-.score-result-panel.passed {
-  background-color: var(--color-accent-green-dim);
-  border-color: color-mix(in srgb, var(--color-accent-green) 35%, transparent);
-  color: var(--color-accent-green);
-  box-shadow: 0 0 15px var(--color-accent-green-glow);
-}
-
-.score-result-panel.failed {
-  background-color: var(--color-accent-yellow-dim);
-  border-color: color-mix(in srgb, var(--color-accent-yellow) 35%, transparent);
-  color: var(--color-accent-yellow);
-  box-shadow: 0 0 15px var(--color-accent-yellow-glow);
-}
-
-.passed-badge-circle {
-  width: 28px;
-  height: 28px;
-  border-radius: var(--radius-full);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: var(--font-bold);
-  font-size: var(--text-sm);
-  flex-shrink: 0;
-  color: var(--color-bg-primary);
-}
-
-.passed-badge-circle.passed {
-  background-color: var(--color-accent-green);
-}
-
-.passed-badge-circle.failed {
-  background-color: var(--color-accent-yellow);
-}
-
-.passed-title {
-  font-size: var(--text-sm);
-  font-weight: var(--font-bold);
-  margin: 0;
-}
-
-.passed-title.passed {
-  color: var(--color-accent-green);
-}
-
-.passed-title.failed {
-  color: var(--color-accent-yellow);
-}
-
-.text-accent-green {
-  color: var(--color-accent-green);
-}
-
-.text-accent-red {
-  color: var(--color-accent-red);
-}
+@import "./InteractiveQuizSection.css";
 </style>

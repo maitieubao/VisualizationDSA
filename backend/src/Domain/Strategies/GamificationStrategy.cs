@@ -2,10 +2,10 @@ using VisualizationDSA.Domain.Engine;
 
 namespace VisualizationDSA.Domain.Strategies
 {
-    /// <summary>
-    /// Stateless gamification engine — manages mock XP, levels, badges, leaderboard.
-    /// No database required. Uses in-memory state for demo purposes.
-    /// </summary>
+    
+    
+    
+    
     public class GamificationStrategy
     {
         private StatelessUserProfile _demoProfile;

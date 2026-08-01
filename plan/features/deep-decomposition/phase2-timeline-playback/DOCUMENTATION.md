@@ -26,5 +26,3 @@ Hệ thống quyết định tự phát triển **Cơ chế Caching Snapshot m�
     *   **Bộ nhớ RAM siêu tiết kiệm:** Một giải thuật chạy 100 bước chỉ tốn khoảng **200KB** RAM dưới máy khách, hoàn toàn mát lạnh trên cả điện thoại di động cấu hình thấp.
 *   **Điểm cần lưu ý (Cons):**
     *   Phải dọn dẹp giải phóng mảng cache `frames` sạch sẽ khi đóng phòng học tránh lỗi rò rỉ RAM (Memory Leak).
-    
-    

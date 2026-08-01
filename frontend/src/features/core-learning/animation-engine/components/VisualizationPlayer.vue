@@ -1,6 +1,6 @@
 <template>
   <div class="flex flex-col h-full w-full gap-2">
-    <!-- Top Area: Canvas + Sidebar -->
+    
     <div class="flex-1 flex gap-2 min-h-0">
       <VisualizationCanvas
         :is-loading="inputStore.isLoading"
@@ -13,7 +13,7 @@
         @open-lecture="openLecture"
       />
 
-      <!-- Sidebar (40%): Pseudocode + Custom Input stacked -->
+      
       <div class="flex-[4] flex flex-col gap-2 min-h-0">
         <div class="sidebar-panel flex-1 min-h-0">
           <MultilingualCodePanel />
@@ -24,12 +24,12 @@
       </div>
     </div>
 
-    <!-- Explanation Row -->
+    
     <div class="sidebar-panel h-16">
       <ExplanationPanel />
     </div>
 
-    <!-- Control Panel Row -->
+    
     <div class="sidebar-panel h-40">
       <AnimControlPanel />
     </div>
@@ -90,7 +90,7 @@ function closeQuizSummary(): void { showQuizSummary.value = false; }
 </script>
 
 <style scoped>
-/* Sidebar panels dùng CSS token thay vì border-border-subtle hardcoded */
+
 .sidebar-panel {
   border-radius: var(--radius-xl);
   overflow: hidden;

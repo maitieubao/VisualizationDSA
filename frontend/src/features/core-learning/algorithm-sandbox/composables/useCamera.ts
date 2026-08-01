@@ -1,17 +1,7 @@
 import type { Ref } from 'vue';
 import { ref } from 'vue';
+import type { Camera } from '../types/canvas.types';
 
-
-export interface Camera {
-  x: number;
-  y: number;
-  zoom: number;
-}
-
-/**
- * useCamera — quản lý trạng thái camera viewport (pan, zoom, reset).
- * Tách ra từ AlgorithmCanvas.vue để đảm bảo SRP.
- */
 export function useCamera(
   canvasRef: Ref<HTMLCanvasElement | null>,
   slotWidth: number,

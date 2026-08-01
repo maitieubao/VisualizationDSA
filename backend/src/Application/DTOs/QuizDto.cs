@@ -20,13 +20,13 @@ namespace VisualizationDSA.Application.DTOs
         public required string Question { get; set; }
         public required string[] Options { get; set; }
         public required string Explanation { get; set; }
-        // Note: CorrectIndex is NOT included to prevent cheating
+        
     }
 
     public class QuizAttemptRequest
     {
         public Guid QuizId { get; set; }
-        public required int[] Answers { get; set; } // Selected option indices
+        public required int[] Answers { get; set; } 
     }
 
     public class QuizAttemptResult
@@ -46,4 +46,3 @@ namespace VisualizationDSA.Application.DTOs
         public required string Explanation { get; set; }
     }
 }
-

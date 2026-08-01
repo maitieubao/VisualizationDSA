@@ -1,10 +1,10 @@
-/**
- * ASTInstrumentationEngine — Bộ máy phân tích AST & tiêm mã tracing tự động.
- *
- * Sử dụng Acorn để parse JS → AST, acorn-walk để duyệt cây,
- * escodegen để tái tạo mã nguồn đã tiêm traceCompare/traceAssign
- * và __loopCounter chống lặp vô hạn.
- */
+
+
+
+
+
+
+
 
 import * as acorn from 'acorn';
 import * as walk from 'acorn-walk';
@@ -14,11 +14,11 @@ import type { CompilationResult } from '@/features/core-learning/code-to-visuali
 
 const LOOP_LIMIT = 5000;
 
-/**
- * Phân tích mã nguồn thô của học sinh và tiêm mã ghi vết tự động.
- * Hỗ trợ: BinaryExpression (so sánh mảng), AssignmentExpression (hoán đổi),
- * ForStatement/WhileStatement/DoWhileStatement (chống loop vô hạn).
- */
+
+
+
+
+
 export function compileAndInstrument(rawJsCode: string): CompilationResult {
   try {
     const ast = acorn.parse(rawJsCode, {
@@ -53,10 +53,10 @@ function extractErrorLine(err: unknown): number | undefined {
   return undefined;
 }
 
-/**
- * Tìm FunctionDeclaration ở top-level và thêm lời gọi hàm cuối chương trình.
- * Truyền tham số 'arr' từ Worker sandbox vào hàm người dùng.
- */
+
+
+
+
 function appendAutoInvoke(program: import('estree').Program): void {
   const funcDecl = program.body.find(
     (stmt): stmt is import('estree').FunctionDeclaration =>
@@ -77,10 +77,10 @@ function appendAutoInvoke(program: import('estree').Program): void {
   program.body.push(callStatement as import('estree').Statement);
 }
 
-/**
- * Duyệt qua cây AST và tiêm mã tracing vào các nút phù hợp.
- * Sử dụng walk.ancestor để truy cập parent context.
- */
+
+
+
+
 function instrumentAST(ast: Node): void {
   const nodesToReplace: Array<{
     parent: Node;
@@ -157,9 +157,9 @@ function instrumentAST(ast: Node): void {
   applyReplacements(ast, assignReplacements);
 }
 
-/**
- * Tiêm biến đếm __loopCounter vào đầu khối lặp.
- */
+
+
+
 function injectLoopGuard(
   node: import('estree').ForStatement | import('estree').WhileStatement | import('estree').DoWhileStatement,
 ): void {
@@ -206,9 +206,9 @@ function injectLoopGuard(
   }
 }
 
-/**
- * Áp dụng thay thế node trong toàn bộ AST bằng cách duyệt đệ quy.
- */
+
+
+
 function applyReplacements(ast: Node, replacements: Map<Node, Node>): void {
   if (replacements.size === 0) return;
   replaceInNode(ast, replacements);

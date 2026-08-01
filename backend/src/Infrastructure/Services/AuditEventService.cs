@@ -6,11 +6,11 @@ using VisualizationDSA.Infrastructure.Data;
 
 namespace VisualizationDSA.Infrastructure.Services
 {
-    /// <summary>
-    /// Append-only writer cho Event Sourcing Ledger. Mỗi lần ghi tạo một frame mới
-    /// và lưu xuống PostgreSQL; tính bất biến được bảo vệ thêm bởi
-    /// <see cref="Interceptors.ImmutableAuditInterceptor"/>.
-    /// </summary>
+    
+    
+    
+    
+    
     public class AuditEventService : IAuditEventService
     {
         private readonly ApplicationDbContext _db;

@@ -1,7 +1,7 @@
 import { ref } from 'vue';
 import { useAnimationStore } from '../store/useAnimationStore';
 
-const THROTTLE_MS = 33; // ~30 FPS
+const THROTTLE_MS = 33; 
 
 export function useThrottledScrub() {
   const animStore = useAnimationStore();

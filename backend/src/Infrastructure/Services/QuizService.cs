@@ -15,11 +15,16 @@ namespace VisualizationDSA.Infrastructure.Services
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IGamificationService _gamificationService;
+        private readonly VisualizationDSA.Application.Interfaces.IApplicationDbContext _context;
+        private readonly IProgressRuleEngine _progressRuleEngine;
 
-        public QuizService(IUnitOfWork unitOfWork, IGamificationService gamificationService)
+        public QuizService(IUnitOfWork unitOfWork, IGamificationService gamificationService, 
+            VisualizationDSA.Application.Interfaces.IApplicationDbContext context, IProgressRuleEngine progressRuleEngine)
         {
             _unitOfWork = unitOfWork;
             _gamificationService = gamificationService;
+            _context = context;
+            _progressRuleEngine = progressRuleEngine;
         }
 
         public async Task<IEnumerable<QuizDto>> GetAllQuizzesAsync()
@@ -52,7 +57,7 @@ namespace VisualizationDSA.Infrastructure.Services
                 throw new Exception("Number of answers does not match number of questions");
             }
 
-            // Calculate score
+            
             int score = 0;
             var questionResults = new List<QuestionResult>();
 
@@ -72,34 +77,28 @@ namespace VisualizationDSA.Infrastructure.Services
             }
 
             var maxScore = questions.Count;
-            var passed = score >= maxScore * 0.7; // 70% to pass
+            var passed = score >= maxScore * 0.7; 
 
-            // Save attempt
+            
             var attempt = new QuizAttempt(userId, quiz.Id, request.Answers, score, maxScore);
             await _unitOfWork.QuizAttempts.AddAsync(attempt);
 
-            // Award XP if passed with upgrade criteria:
-            // - First time passing: award full XP.
-            // - Subsequent passes: award XP only if the score is higher than all previous passes
-            //   and improvements is >= 20% or reaches 100% score for the first time.
-            // - Capped at 2 XP awards total per quiz.
+            
             int xpEarned = 0;
             if (passed)
             {
                 var previousAttempts = await _unitOfWork.QuizAttempts.FindAsync(a => a.UserId == userId && a.QuizId == quiz.Id);
                 var chronologicalPasses = previousAttempts
-                    .Where(a => a.Passed && a.Id != attempt.Id) // exclude current attempt
+                    .Where(a => a.Passed && a.Id != attempt.Id) 
                     .OrderBy(a => a.AttemptedAt)
                     .ToList();
 
                 if (chronologicalPasses.Count == 0)
                 {
-                    // First time passing
                     xpEarned = quiz.XPReward;
                 }
                 else
                 {
-                    // Chronological analysis to check if they already claimed a second reward
                     int runningMax = chronologicalPasses[0].Score;
                     bool hasEarnedSecondReward = false;
                     for (int i = 1; i < chronologicalPasses.Count; i++)
@@ -135,6 +134,27 @@ namespace VisualizationDSA.Infrastructure.Services
                     await _gamificationService.AwardXPAsync(userId, xpEarned, $"Completed quiz: {quiz.Title}");
                     await _gamificationService.CompleteModuleAsync(userId, $"quiz-{quiz.Topic}");
                 }
+
+                
+                var moduleItems = await Microsoft.EntityFrameworkCore.EntityFrameworkQueryableExtensions.ToListAsync(_context.ModuleItems
+                    .Where(m => m.QuizId == quiz.Id && !m.IsDeleted));
+
+                foreach (var moduleItem in moduleItems)
+                {
+                    var progress = await Microsoft.EntityFrameworkCore.EntityFrameworkQueryableExtensions.FirstOrDefaultAsync(_context.UserModuleItemProgresses
+                        .Where(p => p.UserId == userId && p.ModuleItemId == moduleItem.Id));
+                        
+                    if (progress == null)
+                    {
+                        progress = new UserModuleItemProgress(userId, moduleItem.Id);
+                        _context.UserModuleItemProgresses.Add(progress);
+                    }
+                    
+                    progress.UpdateProgress(activeFrame: 0, scrollPercent: 100, isCompleted: true, score: score);
+                    await _progressRuleEngine.ProcessCompletionAsync(userId, moduleItem.Id);
+                }
+
+                await _context.SaveChangesAsync(new System.Threading.CancellationToken());
             }
 
             await _unitOfWork.CommitAsync();
@@ -151,7 +171,7 @@ namespace VisualizationDSA.Infrastructure.Services
 
         public async Task<IEnumerable<QuizAttemptDto>> GetUserQuizHistoryAsync(Guid userId, int pageNumber, int pageSize)
         {
-            // Clamp values safely
+            
             if (pageNumber < 1) pageNumber = 1;
             if (pageSize < 1) pageSize = 10;
             if (pageSize > 100) pageSize = 100;
@@ -184,7 +204,7 @@ namespace VisualizationDSA.Infrastructure.Services
                     Id = q.Id,
                     Question = q.Question,
                     Options = q.Options,
-                    Explanation = string.Empty // ✅ Anti-cheat: Hide explanation in initial load
+                    Explanation = string.Empty 
                 }).ToList()
             };
         }

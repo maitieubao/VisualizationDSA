@@ -1,11 +1,11 @@
-/**
- * statelessPaymentApi.ts — HTTP client cho Stateless Payment endpoints.
- * Giao tiếp với: /api/v1/concepts/payment/* (in-memory, không cần PostgreSQL / SePay)
- */
+
+
+
+
 
 const BASE_URL = import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:5055';
 
-// ── Types ─────────────────────────────────────────────────────────────────────
+
 
 export interface StatelessOrderDto {
   id:           string;
@@ -56,7 +56,7 @@ export interface StatelessTransactionLog {
   status:    string;
 }
 
-// ── Helper ────────────────────────────────────────────────────────────────────
+
 
 async function handleResponse<T>(response: Response): Promise<T> {
   if (!response.ok) {
@@ -68,7 +68,7 @@ async function handleResponse<T>(response: Response): Promise<T> {
 
 const JSON_HEADERS: HeadersInit = { 'Content-Type': 'application/json' };
 
-// ── API ───────────────────────────────────────────────────────────────────────
+
 
 export const statelessPaymentApi = {
   async getConfig(): Promise<StatelessPaymentConfig> {

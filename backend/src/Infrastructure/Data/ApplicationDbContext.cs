@@ -5,7 +5,7 @@ using VisualizationDSA.Domain.Entities;
 
 namespace VisualizationDSA.Infrastructure.Data
 {
-    public class ApplicationDbContext : DbContext
+    public class ApplicationDbContext : DbContext, VisualizationDSA.Application.Interfaces.IApplicationDbContext
     {
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options) { }
 
@@ -24,6 +24,7 @@ namespace VisualizationDSA.Infrastructure.Data
         public DbSet<Course>         Courses         { get; set; }
         public DbSet<Lesson>         Lessons         { get; set; }
         public DbSet<UserLessonProgress> UserLessonProgresses { get; set; }
+        public DbSet<UserModuleItemProgress> UserModuleItemProgresses { get; set; }
         public DbSet<LessonComment>  LessonComments  { get; set; }
         public DbSet<AuditLog>       AuditLogs       { get; set; }
         public DbSet<Notification>   Notifications   { get; set; }
@@ -32,19 +33,229 @@ namespace VisualizationDSA.Infrastructure.Data
         public DbSet<LearningSession> LearningSessions { get; set; }
         public DbSet<UserRoadmapLanguage> UserRoadmapLanguages => Set<UserRoadmapLanguage>();
         public DbSet<CheatSheetSnippet> CheatSheetSnippets => Set<CheatSheetSnippet>();
-        public DbSet<Classroom> Classrooms => Set<Classroom>();
-        public DbSet<ClassroomMember> ClassroomMembers => Set<ClassroomMember>();
         public DbSet<CustomRoadmap> CustomRoadmaps => Set<CustomRoadmap>();
         public DbSet<CustomNode> CustomNodes => Set<CustomNode>();
-        public DbSet<ClassroomLeaderboardHistory> ClassroomLeaderboardHistories => Set<ClassroomLeaderboardHistory>();
         public DbSet<RoadmapEditLog> RoadmapEditLogs => Set<RoadmapEditLog>();
         public DbSet<ContentReport> ContentReports => Set<ContentReport>();
         public DbSet<KeywordBlacklist> KeywordBlacklists => Set<KeywordBlacklist>();
         public DbSet<UserDailyQuest> UserDailyQuests => Set<UserDailyQuest>();
         public DbSet<QuestTemplate> QuestTemplates => Set<QuestTemplate>();
+        public DbSet<Classroom> Classrooms { get; set; }
+        public DbSet<ClassroomLesson> ClassroomLessons { get; set; }
+        public DbSet<ClassroomEnrollment> ClassroomEnrollments { get; set; }
+        public DbSet<ClassroomQuiz> ClassroomQuizzes { get; set; }
+        public DbSet<ClassroomQuizAttempt> ClassroomQuizAttempts { get; set; }
+        public DbSet<LessonReview> LessonReviews { get; set; }
+        public DbSet<CourseModule> CourseModules { get; set; }
+        public DbSet<ModuleItem> ModuleItems { get; set; }
+        public DbSet<ClassroomModuleItemOverride> ClassroomModuleItemOverrides { get; set; }
+        public DbSet<ClassroomModule> ClassroomModules { get; set; }
+        public DbSet<ClassroomModuleItem> ClassroomModuleItems { get; set; }
+        public DbSet<TheoryArticle> TheoryArticles { get; set; }
+        public DbSet<TheoryArticleVersion> TheoryArticleVersions { get; set; }
+        public DbSet<LessonTheoryArticle> LessonTheoryArticles { get; set; }
+        public DbSet<ClassroomAnnouncement> ClassroomAnnouncements { get; set; }
+        public DbSet<Codelab> Codelabs { get; set; }
+        public DbSet<CodelabTestCase> CodelabTestCases { get; set; }
+        public DbSet<CodelabTemplate> CodelabTemplates { get; set; }
+        public DbSet<CodelabSubmission> CodelabSubmissions { get; set; }
+
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+            
+            
+            modelBuilder.Entity<CourseModule>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+                entity.HasIndex(e => new { e.CourseId, e.OrderIndex }).IsUnique();
+                entity.Property(e => e.Title).IsRequired().HasMaxLength(200);
+                entity.HasOne(e => e.Course)
+                      .WithMany(c => c.Modules)
+                      .HasForeignKey(e => e.CourseId)
+                      .OnDelete(DeleteBehavior.Cascade);
+                entity.HasQueryFilter(e => !e.IsDeleted);
+            });
+
+            
+            modelBuilder.Entity<ModuleItem>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+                entity.HasIndex(e => new { e.ModuleId, e.OrderIndex }).IsUnique();
+                entity.HasOne(e => e.Module)
+                      .WithMany(m => m.Items)
+                      .HasForeignKey(e => e.ModuleId)
+                      .OnDelete(DeleteBehavior.Cascade);
+                
+                entity.ToTable(t => t.HasCheckConstraint("CK_ModuleItem_OneReference", 
+                    "(\"LessonId\" IS NOT NULL AND \"QuizId\" IS NULL AND \"CodelabId\" IS NULL) OR " +
+                    "(\"LessonId\" IS NULL AND \"QuizId\" IS NOT NULL AND \"CodelabId\" IS NULL) OR " +
+                    "(\"LessonId\" IS NULL AND \"QuizId\" IS NULL AND \"CodelabId\" IS NOT NULL)"));
+
+                entity.HasQueryFilter(e => !e.IsDeleted);
+
+                
+            });
+            
+            
+            modelBuilder.Entity<ClassroomModuleItemOverride>(entity => {
+                entity.HasKey(o => o.Id);
+                entity.HasIndex(o => new { o.ClassroomId, o.ModuleItemId }).IsUnique();
+                entity.HasOne(o => o.Classroom)
+                    .WithMany(c => c.ModuleItemOverrides)
+                    .HasForeignKey(o => o.ClassroomId)
+                    .OnDelete(DeleteBehavior.Cascade);
+                entity.HasOne(o => o.ModuleItem)
+                    .WithMany()
+                    .HasForeignKey(o => o.ModuleItemId)
+                    .OnDelete(DeleteBehavior.Cascade);
+            });
+
+            
+            modelBuilder.Entity<ClassroomModule>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+                entity.HasIndex(e => new { e.ClassroomId, e.OrderIndex }).IsUnique();
+                entity.Property(e => e.Title).IsRequired().HasMaxLength(200);
+                entity.HasOne(e => e.Classroom)
+                      .WithMany(c => c.Modules)
+                      .HasForeignKey(e => e.ClassroomId)
+                      .OnDelete(DeleteBehavior.Cascade);
+                entity.HasQueryFilter(e => !e.IsDeleted);
+            });
+
+            
+            modelBuilder.Entity<ClassroomModuleItem>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+                entity.HasIndex(e => new { e.ModuleId, e.OrderIndex }).IsUnique();
+                entity.HasOne(e => e.Module)
+                      .WithMany(m => m.Items)
+                      .HasForeignKey(e => e.ModuleId)
+                      .OnDelete(DeleteBehavior.Cascade);
+                
+                entity.ToTable(t => t.HasCheckConstraint("CK_ClassroomModuleItem_OneReference", 
+                    "(\"LessonId\" IS NOT NULL AND \"QuizId\" IS NULL AND \"CodelabId\" IS NULL) OR " +
+                    "(\"LessonId\" IS NULL AND \"QuizId\" IS NOT NULL AND \"CodelabId\" IS NULL) OR " +
+                    "(\"LessonId\" IS NULL AND \"QuizId\" IS NULL AND \"CodelabId\" IS NOT NULL)"));
+
+                entity.HasQueryFilter(e => !e.IsDeleted);
+            });
+
+            
+            modelBuilder.Entity<TheoryArticle>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+                entity.HasIndex(e => e.Slug).IsUnique();
+                entity.Property(e => e.Title).IsRequired().HasMaxLength(200);
+                entity.Property(e => e.Slug).IsRequired().HasMaxLength(250);
+                entity.Property(e => e.ContentMd).IsRequired();
+                entity.Property(e => e.Category).HasMaxLength(100);
+                entity.Property(e => e.Difficulty).HasMaxLength(30);
+                entity.HasOne(e => e.Author)
+                      .WithMany()
+                      .HasForeignKey(e => e.AuthorId)
+                      .OnDelete(DeleteBehavior.Restrict);
+                entity.HasQueryFilter(e => !e.IsDeleted);
+            });
+
+            
+            modelBuilder.Entity<TheoryArticleVersion>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+                entity.HasOne(e => e.Article)
+                      .WithMany(a => a.Versions)
+                      .HasForeignKey(e => e.ArticleId)
+                      .OnDelete(DeleteBehavior.Cascade);
+            });
+
+            
+            modelBuilder.Entity<LessonTheoryArticle>(entity =>
+            {
+                entity.HasKey(e => new { e.LessonId, e.TheoryArticleId });
+                entity.HasOne(e => e.Lesson)
+                      .WithMany()
+                      .HasForeignKey(e => e.LessonId)
+                      .OnDelete(DeleteBehavior.Cascade);
+                entity.HasOne(e => e.TheoryArticle)
+                      .WithMany()
+                      .HasForeignKey(e => e.TheoryArticleId)
+                      .OnDelete(DeleteBehavior.Cascade);
+            });
+
+            
+            modelBuilder.Entity<ClassroomAnnouncement>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+                entity.HasIndex(e => new { e.ClassroomId, e.PublishedAt });
+                entity.Property(e => e.Title).IsRequired().HasMaxLength(200);
+                entity.Property(e => e.ContentMd).IsRequired();
+                entity.HasOne(e => e.Classroom)
+                      .WithMany()
+                      .HasForeignKey(e => e.ClassroomId)
+                      .OnDelete(DeleteBehavior.Cascade);
+                entity.HasOne(e => e.Author)
+                      .WithMany()
+                      .HasForeignKey(e => e.AuthorId)
+                      .OnDelete(DeleteBehavior.Restrict);
+            });
+            
+            
+            modelBuilder.Entity<UserModuleItemProgress>(entity =>
+            {
+                entity.HasKey(e => new { e.UserId, e.ModuleItemId, e.AttemptNumber });
+                entity.Property(e => e.Status).IsRequired().HasMaxLength(30).HasDefaultValue("NotStarted");
+                entity.Property(e => e.LastActiveFrameIndex).HasDefaultValue(0);
+                entity.Property(e => e.LastScrollPercent).HasDefaultValue(0.0);
+                entity.HasOne(e => e.User)
+                      .WithMany()
+                      .HasForeignKey(e => e.UserId)
+                      .OnDelete(DeleteBehavior.Cascade);
+                entity.HasOne(e => e.ModuleItem)
+                      .WithMany()
+                      .HasForeignKey(e => e.ModuleItemId)
+                      .OnDelete(DeleteBehavior.Cascade);
+            });
+
+            modelBuilder.Entity<Lesson>().HasQueryFilter(e => !e.IsDeleted);
+            modelBuilder.Entity<Quiz>().HasQueryFilter(e => !e.IsDeleted);
+            modelBuilder.Entity<Codelab>(entity => {
+                entity.HasKey(e => e.Id);
+                entity.HasQueryFilter(e => !e.IsDeleted);
+            });
+
+            modelBuilder.Entity<CodelabTestCase>(entity => {
+                entity.HasKey(e => e.Id);
+                entity.HasOne(e => e.Codelab)
+                    .WithMany(c => c.TestCases)
+                    .HasForeignKey(e => e.CodelabId)
+                    .OnDelete(DeleteBehavior.Restrict); 
+            });
+
+            modelBuilder.Entity<CodelabTemplate>(entity => {
+                entity.HasKey(e => e.Id);
+                entity.HasOne(e => e.Codelab)
+                    .WithMany(c => c.Templates)
+                    .HasForeignKey(e => e.CodelabId)
+                    .OnDelete(DeleteBehavior.Restrict); 
+            });
+
+            modelBuilder.Entity<CodelabSubmission>(entity => {
+                entity.HasKey(e => e.Id);
+                entity.HasIndex(e => new { e.UserId, e.CodelabId, e.CreatedAt }).IsDescending(false, false, true); 
+                
+                entity.Property(e => e.Status).HasConversion<string>().HasMaxLength(30);
+
+                entity.HasOne(e => e.User)
+                    .WithMany()
+                    .HasForeignKey(e => e.UserId)
+                    .OnDelete(DeleteBehavior.Cascade);
+                    
+                entity.HasOne(e => e.Codelab)
+                    .WithMany(c => c.Submissions)
+                    .HasForeignKey(e => e.CodelabId)
+                    .OnDelete(DeleteBehavior.Cascade);
+            });
             base.OnModelCreating(modelBuilder);
 
             modelBuilder.Entity<UserInventory>()
@@ -66,6 +277,7 @@ namespace VisualizationDSA.Infrastructure.Data
                 .OnDelete(DeleteBehavior.Restrict);
 
             // User configuration
+            
             modelBuilder.Entity<User>(entity =>
             {
                 entity.HasKey(e => e.Id);
@@ -78,7 +290,7 @@ namespace VisualizationDSA.Infrastructure.Data
                 entity.Property(e => e.TotalXP).HasDefaultValue(0);
                 entity.Property(e => e.CurrentLevel).HasDefaultValue(1);
                 entity.Property(e => e.StreakDays).HasDefaultValue(0);
-                // ✅ FIX 3.4: LastActivityDate — nullable, dùng để tính streak chính xác
+                
                 entity.Property(e => e.LastActivityDate).IsRequired(false);
                 entity.Property(e => e.Role).IsRequired().HasMaxLength(20).HasDefaultValue("Student");
                 if (!Database.IsSqlite())
@@ -90,7 +302,7 @@ namespace VisualizationDSA.Infrastructure.Data
                 }
             });
 
-            // Badge configuration
+            
             modelBuilder.Entity<Badge>(entity =>
             {
                 entity.HasKey(e => e.Id);
@@ -101,7 +313,7 @@ namespace VisualizationDSA.Infrastructure.Data
                 entity.Property(e => e.Color).HasMaxLength(20);
             });
 
-            // UserBadge configuration (many-to-many)
+            
             modelBuilder.Entity<UserBadge>(entity =>
             {
                 entity.HasKey(e => e.Id);
@@ -110,7 +322,7 @@ namespace VisualizationDSA.Infrastructure.Data
                 entity.HasOne(e => e.Badge).WithMany(b => b.UserBadges).HasForeignKey(e => e.BadgeId);
             });
 
-            // Quiz configuration
+            
             modelBuilder.Entity<Quiz>(entity =>
             {
                 entity.HasKey(e => e.Id);
@@ -120,14 +332,14 @@ namespace VisualizationDSA.Infrastructure.Data
                 entity.HasMany(e => e.Questions).WithOne().HasForeignKey(q => q.QuizId);
             });
 
-            // QuizQuestion configuration
+            
             modelBuilder.Entity<QuizQuestion>(entity =>
             {
                 entity.HasKey(e => e.Id);
                 entity.Property(e => e.Question).IsRequired().HasMaxLength(500);
             });
 
-            // QuizAttempt configuration
+            
             modelBuilder.Entity<QuizAttempt>(entity =>
             {
                 entity.HasKey(e => e.Id);
@@ -135,7 +347,7 @@ namespace VisualizationDSA.Infrastructure.Data
                 entity.HasOne(e => e.Quiz).WithMany(q => q.Attempts).HasForeignKey(e => e.QuizId);
             });
 
-            // LearningProgress configuration
+            
             modelBuilder.Entity<LearningProgress>(entity =>
             {
                 entity.HasKey(e => e.Id);
@@ -143,7 +355,7 @@ namespace VisualizationDSA.Infrastructure.Data
                 entity.HasOne(e => e.User).WithMany(u => u.LearningProgresses).HasForeignKey(e => e.UserId);
             });
 
-            // RefreshToken configuration
+            
             modelBuilder.Entity<RefreshToken>(entity =>
             {
                 entity.HasKey(e => e.Id);
@@ -156,7 +368,7 @@ namespace VisualizationDSA.Infrastructure.Data
                       .OnDelete(DeleteBehavior.Cascade);
             });
 
-            // Order configuration
+            
             modelBuilder.Entity<Order>(entity =>
             {
                 entity.HasKey(e => e.Id);
@@ -172,7 +384,7 @@ namespace VisualizationDSA.Infrastructure.Data
                       .OnDelete(DeleteBehavior.Cascade);
             });
 
-            // SemanticConceptNode configuration — đỉnh đồ thị tri thức (Graph RAG)
+            
             modelBuilder.Entity<SemanticConceptNode>(entity =>
             {
                 entity.HasKey(e => e.Id);
@@ -182,7 +394,7 @@ namespace VisualizationDSA.Infrastructure.Data
                 entity.Property(e => e.Title).IsRequired().HasMaxLength(200);
                 entity.Property(e => e.Category).IsRequired().HasMaxLength(60);
                 entity.Property(e => e.Description).HasMaxLength(2000);
-                // Vector embedding ngữ nghĩa — ánh xạ sang double precision[] của PostgreSQL.
+                
                 var embeddingProp = entity.Property(e => e.Embedding);
                 if (Database.IsSqlite())
                 {
@@ -198,7 +410,7 @@ namespace VisualizationDSA.Infrastructure.Data
                 entity.Property(e => e.Importance).HasDefaultValue(0.0);
             });
 
-            // KnowledgeEdge configuration — cạnh có hướng giữa hai concept node
+            
             modelBuilder.Entity<KnowledgeEdge>(entity =>
             {
                 entity.HasKey(e => e.Id);
@@ -212,18 +424,18 @@ namespace VisualizationDSA.Infrastructure.Data
                       .HasForeignKey(e => e.SourceNodeId)
                       .OnDelete(DeleteBehavior.Cascade);
 
-                // Restrict ở chiều còn lại để tránh multiple cascade paths trên cùng một bảng.
+                
                 entity.HasOne(e => e.TargetNode)
                       .WithMany(n => n.IncomingEdges)
                       .HasForeignKey(e => e.TargetNodeId)
                       .OnDelete(DeleteBehavior.Restrict);
             });
 
-            // SystemAuditEventStream configuration — Event Sourcing Ledger (append-only time-series)
+            
             modelBuilder.Entity<SystemAuditEventStream>(entity =>
             {
                 entity.HasKey(e => e.Id);
-                // Index thời gian + sequence để truy vấn time-series hiệu quả.
+                
                 entity.HasIndex(e => e.OccurredAt);
                 entity.HasIndex(e => e.Sequence);
                 entity.HasIndex(e => new { e.UserId, e.OccurredAt });
@@ -232,7 +444,7 @@ namespace VisualizationDSA.Infrastructure.Data
                 entity.Property(e => e.CorrelationId).HasMaxLength(100);
                 entity.Property(e => e.HttpMethod).HasMaxLength(10);
                 entity.Property(e => e.Path).HasMaxLength(500);
-                // Payload thô lưu dạng JSONB của PostgreSQL.
+                
                 var payloadProp = entity.Property(e => e.Payload);
                 if (!Database.IsSqlite())
                 {
@@ -240,7 +452,7 @@ namespace VisualizationDSA.Infrastructure.Data
                 }
             });
 
-            // Course configuration
+            
             modelBuilder.Entity<Course>(entity =>
             {
                 entity.HasKey(e => e.Id);
@@ -253,23 +465,17 @@ namespace VisualizationDSA.Infrastructure.Data
                       .OnDelete(DeleteBehavior.Restrict);
             });
 
-            // Lesson configuration
+            
             modelBuilder.Entity<Lesson>(entity =>
             {
                 entity.HasKey(e => e.Id);
                 entity.Property(e => e.Title).IsRequired().HasMaxLength(200);
                 entity.Property(e => e.SandboxType).HasMaxLength(50);
-                entity.HasOne(e => e.Course)
-                      .WithMany(c => c.Lessons)
-                      .HasForeignKey(e => e.CourseId)
-                      .OnDelete(DeleteBehavior.Cascade);
-                entity.HasOne(e => e.Quiz)
-                      .WithMany()
-                      .HasForeignKey(e => e.QuizId)
-                      .OnDelete(DeleteBehavior.SetNull);
+                
+                
             });
 
-            // UserLessonProgress configuration
+            
             modelBuilder.Entity<UserLessonProgress>(entity =>
             {
                 entity.HasKey(e => new { e.UserId, e.LessonId });
@@ -299,6 +505,7 @@ namespace VisualizationDSA.Infrastructure.Data
             });
 
             // LessonComment configuration
+            
             modelBuilder.Entity<LessonComment>(entity =>
             {
                 entity.HasKey(e => e.Id);
@@ -317,7 +524,7 @@ namespace VisualizationDSA.Infrastructure.Data
                       .OnDelete(DeleteBehavior.Cascade);
             });
 
-            // AuditLog configuration
+            
             modelBuilder.Entity<AuditLog>(entity =>
             {
                 entity.HasKey(e => e.Id);
@@ -327,7 +534,7 @@ namespace VisualizationDSA.Infrastructure.Data
                 entity.HasIndex(e => e.CreatedAt);
             });
 
-            // Notification configuration
+            
             modelBuilder.Entity<Notification>(entity =>
             {
                 entity.HasKey(e => e.Id);
@@ -381,38 +588,7 @@ namespace VisualizationDSA.Infrastructure.Data
                 entity.Property(e => e.CodeSnippet).IsRequired();
             });
 
-            modelBuilder.Entity<Classroom>(entity =>
-            {
-                entity.HasKey(e => e.Id);
-                entity.Property(e => e.Name).IsRequired().HasMaxLength(100);
-                entity.Property(e => e.JoinCode).IsRequired().HasMaxLength(6);
-                entity.HasIndex(e => e.JoinCode).IsUnique();
-                
-                entity.HasOne(e => e.Teacher)
-                    .WithMany()
-                    .HasForeignKey(e => e.TeacherId)
-                    .OnDelete(DeleteBehavior.Restrict);
 
-                entity.HasOne(e => e.Roadmap)
-                    .WithMany()
-                    .HasForeignKey(e => e.RoadmapId)
-                    .OnDelete(DeleteBehavior.Restrict);
-            });
-
-            modelBuilder.Entity<ClassroomMember>(entity =>
-            {
-                entity.HasKey(e => new { e.ClassroomId, e.StudentId });
-
-                entity.HasOne(e => e.Classroom)
-                    .WithMany(c => c.Members)
-                    .HasForeignKey(e => e.ClassroomId)
-                    .OnDelete(DeleteBehavior.Cascade);
-
-                entity.HasOne(e => e.Student)
-                    .WithMany()
-                    .HasForeignKey(e => e.StudentId)
-                    .OnDelete(DeleteBehavior.Cascade);
-            });
 
             // ClassroomLeaderboardHistory configuration
             modelBuilder.Entity<ClassroomLeaderboardHistory>(entity =>

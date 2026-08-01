@@ -4,11 +4,11 @@ export interface GraphAnimationStep {
   stepId: number;
   activeLine: number;
   explanation: string;
-  visitedNodes: string[]; // Node IDs
-  activeNodes: string[]; // Node IDs
-  visitedEdges: string[]; // Edge IDs
-  distances?: Record<string, number>; // Node ID -> distance
-  queueStack?: string[]; // Node labels in queue/stack
+  visitedNodes: string[]; 
+  activeNodes: string[]; 
+  visitedEdges: string[]; 
+  distances?: Record<string, number>; 
+  queueStack?: string[]; 
 }
 
 export interface SimulationResult {
@@ -105,7 +105,7 @@ export class GraphAlgorithmSimulator {
     const queue: string[] = [];
     const visitedEdges: string[] = [];
 
-    // Frame 0: Init
+    
     frames.push({
       stepId: stepId++,
       activeLine: 1,
@@ -120,7 +120,7 @@ export class GraphAlgorithmSimulator {
     queue.push(startId);
     const startLabel = this.getNodeLabel(nodes, startId);
 
-    // Frame 1: Enqueue source
+    
     frames.push({
       stepId: stepId++,
       activeLine: 2,
@@ -146,7 +146,7 @@ export class GraphAlgorithmSimulator {
         queueStack: [currLabel, ...qLabels]
       });
 
-      // Find neighbors along directed edges
+      
       const outgoingEdges = edges.filter(e => e.from === currId);
       
       for (const edge of outgoingEdges) {
@@ -169,7 +169,7 @@ export class GraphAlgorithmSimulator {
             queueStack: curQLabels
           });
         } else {
-          // Already visited
+          
           const curQLabels = queue.map(id => this.getNodeLabel(nodes, id));
           frames.push({
             stepId: stepId++,
@@ -206,11 +206,11 @@ export class GraphAlgorithmSimulator {
     let stepId = 1;
 
     const visited = new Set<string>();
-    // Stack stores [nodeId, edgeId_that_discovered_it]
+    
     const stack: { id: string; edgeId: string | null }[] = [];
     const visitedEdges: string[] = [];
 
-    // Frame 0: Init
+    
     frames.push({
       stepId: stepId++,
       activeLine: 1,
@@ -224,7 +224,7 @@ export class GraphAlgorithmSimulator {
     stack.push({ id: startId, edgeId: null });
     const startLabel = this.getNodeLabel(nodes, startId);
 
-    // Frame 1: Push source
+    
     frames.push({
       stepId: stepId++,
       activeLine: 2,
@@ -243,7 +243,7 @@ export class GraphAlgorithmSimulator {
       if (!visited.has(currId)) {
         visited.add(currId);
         
-        // Add the tree edge that successfully discovered this node
+        
         if (incomingEdgeId && !visitedEdges.includes(incomingEdgeId)) {
           visitedEdges.push(incomingEdgeId);
         }
@@ -258,7 +258,7 @@ export class GraphAlgorithmSimulator {
           queueStack: [...sLabels]
         });
 
-        // Find neighbors along directed edges
+        
         const outgoingEdges = edges.filter(e => e.from === currId);
 
         for (const edge of outgoingEdges) {
@@ -281,7 +281,7 @@ export class GraphAlgorithmSimulator {
           }
         }
       } else {
-        // Pop node already visited
+        
         frames.push({
           stepId: stepId++,
           activeLine: 6,
@@ -316,7 +316,7 @@ export class GraphAlgorithmSimulator {
     let stepId = 1;
 
     const dist: Record<string, number> = {};
-    const parentEdge: Record<string, string> = {}; // To trace shortest path tree edges
+    const parentEdge: Record<string, string> = {}; 
     const visited = new Set<string>();
 
     for (const node of nodes) {
@@ -326,7 +326,7 @@ export class GraphAlgorithmSimulator {
 
     const startLabel = this.getNodeLabel(nodes, startId);
 
-    // Frame 0: Init distances
+    
     frames.push({
       stepId: stepId++,
       activeLine: 1,
@@ -340,7 +340,7 @@ export class GraphAlgorithmSimulator {
     const unvisited = new Set<string>(nodes.map(n => n.id));
 
     while (unvisited.size > 0) {
-      // Find node with minimum distance
+      
       let currId: string | null = null;
       let minD = Infinity;
 
@@ -359,7 +359,7 @@ export class GraphAlgorithmSimulator {
       visited.add(currId);
       const currLabel = this.getNodeLabel(nodes, currId);
 
-      // Frame 1: Select min node
+      
       const currentVisitedEdges = Object.values(parentEdge);
       frames.push({
         stepId: stepId++,
@@ -371,7 +371,7 @@ export class GraphAlgorithmSimulator {
         distances: { ...dist }
       });
 
-      // Relax outgoing edges
+      
       const outgoingEdges = edges.filter(e => e.from === currId);
 
       for (const edge of outgoingEdges) {
@@ -382,7 +382,7 @@ export class GraphAlgorithmSimulator {
 
         const alt = dist[currId] + edge.weight;
 
-        // Frame 2: Scan neighbor
+        
         frames.push({
           stepId: stepId++,
           activeLine: 8,
@@ -395,7 +395,7 @@ export class GraphAlgorithmSimulator {
 
         if (alt < dist[neighborId]) {
           dist[neighborId] = alt;
-          parentEdge[neighborId] = edge.id; // Update edge in shortest path tree
+          parentEdge[neighborId] = edge.id; 
 
           const updatedVisitedEdges = Object.values(parentEdge);
           frames.push({

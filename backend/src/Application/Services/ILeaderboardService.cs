@@ -6,10 +6,10 @@ namespace VisualizationDSA.Application.Services
 {
     public interface ILeaderboardService
     {
-        /// <summary>Top N user theo TotalXP — dùng cho bảng xếp hạng toàn cục.</summary>
+        
         Task<IEnumerable<LeaderboardEntryDto>> GetTopUsersAsync(int limit = 20);
 
-        /// <summary>Xếp hạng của một user cụ thể trong leaderboard.</summary>
+        
         Task<UserRankDto> GetUserRankAsync(Guid userId);
 
         /// <summary>Top N user theo Weekly XP trong một Lớp học (hiện tại).</summary>

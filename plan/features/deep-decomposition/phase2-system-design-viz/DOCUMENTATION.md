@@ -26,5 +26,3 @@ Hệ thống quyết định tự phát triển **Bộ máy mô phỏng hành vi
     *   **Chịu tải mưa hạt lớn:** Máy khách dễ dàng render 200 hạt dữ liệu đồng hành trôi nổi không sụt giảm FPS.
 *   **Điểm cần lưu ý (Cons):**
     *   Phải dọn sạch các hạt đã về đích hoặc bị drop khỏi RAM GC triệt để để tránh rò rỉ bộ nhớ khi học viên xả lũ dồn dập.
-    
-    

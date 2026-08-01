@@ -1,6 +1,6 @@
-/**
- * canvas.types.ts — Type definitions cho algorithm-sandbox feature module.
- */
+
+
+
 
 export interface RGB {
   r: number;

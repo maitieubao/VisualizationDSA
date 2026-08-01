@@ -56,11 +56,19 @@ namespace VisualizationDSA.WebApi.Controllers
         }
 
         [HttpGet("history")]
-        public async Task<ActionResult<IEnumerable<QuizAttemptDto>>> GetHistory([FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10)
+        public async Task<ActionResult<VisualizationDSA.Application.Features.Analytics.Queries.GetQuizHistory.QuizHistoryResult>> GetHistory(
+            [FromServices] MediatR.IMediator mediator,
+            [FromQuery] int pageNumber = 1, 
+            [FromQuery] int pageSize = 10)
         {
             var userId  = GetCurrentUserId();
-            var history = await _quizService.GetUserQuizHistoryAsync(userId, pageNumber, pageSize);
-            return Ok(history);
+            var result = await mediator.Send(new VisualizationDSA.Application.Features.Analytics.Queries.GetQuizHistory.GetQuizHistoryQuery
+            {
+                UserId = userId,
+                Page = pageNumber,
+                PageSize = pageSize
+            });
+            return Ok(result);
         }
 
         private Guid GetCurrentUserId()

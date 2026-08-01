@@ -1,9 +1,9 @@
 import type { AnimatedItem } from '@/features/core-learning/algorithm-sandbox/types/canvas.types';
 
-/**
- * renderArrayBar — vẽ một card/bar đại diện cho phần tử trong mảng.
- * Pure function: không có side effect ngoài draw calls lên ctx.
- */
+
+
+
+
 export function renderArrayBar(
   ctx: CanvasRenderingContext2D,
   item: AnimatedItem,
@@ -24,7 +24,7 @@ export function renderArrayBar(
   ctx.scale(scale, scale);
   ctx.translate(-(x + slotWidth / 2), -(y + cardH / 2));
 
-  // Gradient fill
+  
   const grad = ctx.createLinearGradient(x, y, x, y + cardH);
   if (item.status === 'normal') {
     grad.addColorStop(0, 'rgba(6, 182, 212, 0.7)');
@@ -46,14 +46,14 @@ export function renderArrayBar(
   ctx.stroke();
   ctx.shadowBlur = 0;
 
-  // Value label
+  
   ctx.fillStyle = '#ffffff';
   ctx.font = 'bold 18px "Inter", sans-serif';
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
   ctx.fillText(item.value.toString(), x + slotWidth / 2, y + cardH / 2);
 
-  // Index label
+  
   ctx.fillStyle = item.status === 'normal' ? '#94a3b8' : colorStr;
   ctx.font = 'bold 12px "JetBrains Mono", monospace';
   ctx.fillText(`[${idx}]`, x + slotWidth / 2, y + cardH + 20);

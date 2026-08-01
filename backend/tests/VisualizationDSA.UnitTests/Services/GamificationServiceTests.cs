@@ -28,17 +28,17 @@ namespace VisualizationDSA.UnitTests.Services
         [Fact]
         public async Task AwardXPAsync_ShouldIncreaseUserXpAndRecordActivity()
         {
-            // Arrange
+            
             var userId = Guid.NewGuid();
             var user = new User("test@email.com", "testuser", "hashed_password");
             _mockUserRepo.Setup(r => r.GetByIdAsync(userId)).ReturnsAsync(user);
 
-            // Act
+            
             await _service.AwardXPAsync(userId, 150, "Completed Quiz");
 
-            // Assert
+            
             user.TotalXP.Should().Be(150);
-            user.CurrentLevel.Should().Be(2); // level 2 threshold is 100 XP
+            user.CurrentLevel.Should().Be(2); 
             user.LastActivityDate.Should().NotBeNull();
             _mockUow.Verify(u => u.CommitAsync(), Times.Once);
         }
@@ -46,7 +46,7 @@ namespace VisualizationDSA.UnitTests.Services
         [Fact]
         public async Task GetUserProgressAsync_ShouldCalculateProgressCorrectly()
         {
-            // Arrange
+            
             var userId = Guid.NewGuid();
             var domainModel = new UserProgressDomainModel
             {
@@ -60,20 +60,20 @@ namespace VisualizationDSA.UnitTests.Services
             
             _mockUserRepo.Setup(r => r.GetUserProgressDomainModelAsync(userId)).ReturnsAsync(domainModel);
 
-            // Act
+            
             var progress = await _service.GetUserProgressAsync(userId);
 
-            // Assert
+            
             progress.TotalXP.Should().Be(150);
             progress.CurrentLevel.Should().Be(2);
-            progress.XpToNextLevel.Should().Be(150); // 300 - 150
-            progress.LevelProgressPercent.Should().Be(25); // (150 - 100) / (300 - 100) = 50 / 200 = 25%
+            progress.XpToNextLevel.Should().Be(150); 
+            progress.LevelProgressPercent.Should().Be(25); 
         }
 
         [Fact]
         public async Task CheckAndAwardBadgesAsync_ShouldAwardBadgeWhenCriteriaMet()
         {
-            // Arrange
+            
             var userId = Guid.NewGuid();
             var user = new User("test@email.com", "testuser", "hashed_password");
             user.CompleteModule("sorting-bubble");
@@ -88,10 +88,10 @@ namespace VisualizationDSA.UnitTests.Services
             mockBadgeRepo.Setup(r => r.GetAllAsync()).ReturnsAsync(badgeList);
             _mockUserRepo.Setup(r => r.GetByIdWithDetailsAsync(userId, It.IsAny<bool>())).ReturnsAsync(user);
 
-            // Act
+            
             var awardedBadges = await _service.CheckAndAwardBadgesAsync(userId);
 
-            // Assert
+            
             awardedBadges.Should().ContainSingle();
             awardedBadges.First().Name.Should().Be("Sorting Wizard");
             user.UserBadges.Should().ContainSingle(ub => ub.BadgeId == awardedBadges.First().Id);

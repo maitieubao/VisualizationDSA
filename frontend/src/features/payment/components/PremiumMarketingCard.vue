@@ -40,5 +40,5 @@
 </template>
 
 <script setup lang="ts">
-// Component thuần hiển thị UI (Presentation component)
+
 </script>

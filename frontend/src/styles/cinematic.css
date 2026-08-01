@@ -1,4 +1,4 @@
-/* ── Cinematic VCR Frame Transitions ────────────────────────────── */
+
 
 .vcr-frame-enter {
   animation: vcr-slide-in var(--duration-vcr) var(--ease-smooth) forwards;
@@ -17,7 +17,7 @@
   }
 }
 
-/* Spring hover for interactive cards */
+
 .spring-hover {
   transition: transform var(--duration-slow) var(--ease-spring),
               box-shadow var(--duration-medium) ease;
@@ -31,7 +31,7 @@
   transition-duration: var(--duration-fast);
 }
 
-/* Glassmorphism base class */
+
 .glass-panel {
   background: var(--glass-bg);
   backdrop-filter: var(--glass-blur);
@@ -45,7 +45,7 @@
   border-color: var(--glass-border);
 }
 
-/* Subtle pulse glow for active VCR elements */
+
 .vcr-active-glow {
   animation: vcr-glow 2s ease-in-out infinite alternate;
 }
@@ -55,7 +55,7 @@
   to   { box-shadow: 0 0 16px rgba(66, 85, 255, 0.44); }
 }
 
-/* Staggered list entry animation */
+
 .stagger-enter {
   animation: stagger-fade-in var(--duration-medium) ease-out forwards;
   opacity: 0;
@@ -72,7 +72,7 @@
   }
 }
 
-/* ── Shared VCR Banner Transition ──────────────────────────────── */
+
 .vcr-banner-fade-enter-active {
   transition: opacity 0.25s ease, transform 0.25s var(--ease-smooth);
 }

@@ -4,11 +4,15 @@
  * Giao tiếp với: /api/v1/concepts/auth/* (in-memory, không cần PostgreSQL)
  */
 
+
+
+
+
 import { api } from '@/services/apiClient';
 import type { ApiError } from '@/services/apiClient';
 
 
-// ── Types ─────────────────────────────────────────────────────────────────────
+
 
 export interface StatelessUserDto {
   id:           string;
@@ -61,6 +65,19 @@ export interface StatelessUserProgress {
 
 // ── API ───────────────────────────────────────────────────────────────────────
 
+
+async function handleResponse<T>(response: Response): Promise<T> {
+  if (!response.ok) {
+    const body: { message?: string } | null = await response.json().catch(() => null);
+    throw new Error(body?.message ?? `HTTP ${response.status}: ${response.statusText}`);
+  }
+  return response.json() as Promise<T>;
+}
+
+const JSON_HEADERS: HeadersInit = { 'Content-Type': 'application/json' };
+
+
+
 function handleError(err: unknown, fallback: string): Error {
     const error = err as ApiError;
   return new Error(error.detail ?? fallback);
@@ -97,6 +114,12 @@ export const statelessAuthApi = {
     } catch {
       // Logout always succeeds on client
     }
+    const BASE_URL = import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:5055';
+    await fetch(`${BASE_URL}/api/v1/auth/logout`, {
+      method: 'POST',
+      headers: JSON_HEADERS,
+      body: JSON.stringify({ refreshToken }),
+    }).catch(() => {  });
   },
 
   async getMe(userId?: string): Promise<StatelessUserDto> {

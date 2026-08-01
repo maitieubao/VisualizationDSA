@@ -1,10 +1,10 @@
-/** Hằng số layout cho canvas bar chart */
+
 export const MARGIN         = 40;
 export const MARGIN_BOTTOM  = 40;
 export const PADDING_TOP    = 50;
 export const GAP            = 8;
 
-/** Bảng màu trực quan */
+
 export const COLOR_DEFAULT = '#38BDF8';
 export const COLOR_COMPARE = '#FBBF24';
 export const COLOR_SWAP    = '#EF4444';

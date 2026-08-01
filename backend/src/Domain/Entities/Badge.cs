@@ -10,7 +10,7 @@ namespace VisualizationDSA.Domain.Entities
         public string Description { get; private set; }
         public string Icon { get; private set; }
         public string Color { get; private set; }
-        public string Criteria { get; private set; } // JSON criteria for earning
+        public string Criteria { get; private set; } 
         
         public virtual ICollection<UserBadge> UserBadges { get; private set; }
 

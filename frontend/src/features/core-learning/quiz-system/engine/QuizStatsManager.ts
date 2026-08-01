@@ -2,10 +2,10 @@ import type { UserQuizStats } from '@/features/core-learning/quiz-system/types/q
 
 const STORAGE_KEY = 'dsa_quiz_statistics';
 
-/**
- * QuizStatsManager — Persists quiz statistics to localStorage.
- * Tracks total attempts, correct answers, streak, and completed quizzes.
- */
+
+
+
+
 export class QuizStatsManager {
   static getStats(): UserQuizStats {
     try {

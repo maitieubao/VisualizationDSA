@@ -7,7 +7,7 @@
       'is-expanded-width': isExpandedWidth
     }"
   >
-    <!-- Toggle tab button (shows when collapsed) -->
+    
     <button
       v-if="!isOpen"
       class="theory-toggle-tab"
@@ -18,9 +18,9 @@
       <span class="tab-text">Lý thuyết & Tài liệu</span>
     </button>
 
-    <!-- Main Drawer Content -->
+    
     <div class="theory-drawer-content" v-if="isOpen">
-      <!-- Header -->
+      
       <div class="drawer-header">
         <div class="flex items-center justify-between w-full">
           <h3 class="drawer-title flex items-center gap-2">
@@ -28,7 +28,7 @@
             <span>{{ document?.title || 'Tài liệu Lý thuyết' }}</span>
           </h3>
           <div class="flex items-center gap-3">
-            <!-- Expand/Collapse width toggle button -->
+            
             <button
               class="expand-toggle-btn"
               @click="toggleExpandWidth"
@@ -42,7 +42,7 @@
               </svg>
             </button>
 
-            <!-- Close panel button -->
+            
             <button class="close-btn" @click="closePanel" title="Thu gọn (Đóng)">
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
                 <line x1="18" y1="6" x2="6" y2="18"></line>
@@ -53,9 +53,9 @@
         </div>
       </div>
 
-      <!-- Main Body Container -->
+      
       <div class="drawer-body" ref="bodyRef">
-        <!-- 1. Simplified Core Concept Summary view -->
+        
         <TheorySummaryView
           v-if="!showFullDocs && document"
           :document="document"
@@ -63,7 +63,7 @@
           @readMore="showFullDocs = true"
         />
 
-        <!-- 2. Accordion Document Sections list -->
+        
         <div v-else-if="showFullDocs && document" class="accordion-container">
           <TheoryAccordionItem
             v-for="(sec, idx) in document.sections"
@@ -79,7 +79,7 @@
             @nextPillar="triggerNextPillar"
           />
 
-          <!-- Bottom Back To Summary toggle -->
+          
           <button class="back-to-summary-footer-btn mt-4" @click="showFullDocs = false">
             ◀ Quay lại Tóm tắt Khái niệm
           </button>
@@ -117,14 +117,14 @@ const flashedSectionId = ref<string | null>(null);
 
 function toggleSection(id: string) {
   if (expandedSectionId.value === id) {
-    expandedSectionId.value = null; // collapse
+    expandedSectionId.value = null; 
   } else {
-    expandedSectionId.value = id; // expand
+    expandedSectionId.value = id; 
     emit('sectionActivated', id);
   }
 }
 
-// Next pillar names map
+
 const PILLAR_NAMES: Record<string, string> = {
   encapsulation: 'Tính Kế Thừa',
   inheritance: 'Tính Đa Hình',
@@ -150,7 +150,7 @@ function triggerNextPillar() {
   window.dispatchEvent(event);
 }
 
-// Toggle panel state
+
 function toggleOpen() {
   emit('update:isOpen', !props.isOpen);
   triggerResizeAfterAnimation();
@@ -188,7 +188,7 @@ onUnmounted(() => {
   window.removeEventListener('resize', checkWidth);
 });
 
-// Switch documents: reset view to summary
+
 watch(() => props.document, (newDoc) => {
   showFullDocs.value = false;
   if (newDoc?.sections.length) {
@@ -198,7 +198,7 @@ watch(() => props.document, (newDoc) => {
   }
 });
 
-// Auto-expand showFullDocs when active section is synced from scenario player steps
+
 watch(() => props.activeSectionId, (newId) => {
   if (newId) {
     const isIntro = ['encap-concept', 'inherit-concept', 'poly-concept', 'abstract-concept', 'interface-concept'].includes(newId);
@@ -227,171 +227,5 @@ function scrollToSection(id: string) {
 </script>
 
 <style scoped>
-/* ==================== PANEL SIDEBAR CONTAINER ==================== */
-.theory-panel {
-  position: fixed;
-  right: 0;
-  top: 56px;
-  height: calc(100vh - 56px);
-  width: 420px;
-  min-width: 380px;
-  max-width: 550px;
-  z-index: 99;
-  background: color-mix(in srgb, var(--color-bg-secondary) 96%, transparent);
-  border-left: 1px solid var(--color-border-subtle);
-  transform: translateX(100%);
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  display: flex;
-  flex-direction: column;
-  box-shadow: var(--shadow-2xl);
-  backdrop-filter: blur(20px);
-  min-height: 0;
-  max-height: 100%;
-}
-
-.theory-panel.open {
-  transform: translateX(0);
-}
-
-.theory-panel.is-expanded-width {
-  width: 50vw !important;
-  max-width: 800px !important;
-}
-
-/* Wide Desktop Push configuration */
-@media (min-width: 1700px) {
-  .theory-panel.is-desktop-push.open {
-    position: relative;
-    top: 0;
-    height: 100%;
-    transform: none;
-    flex-shrink: 0;
-    box-shadow: none;
-    border-radius: var(--radius-2xl);
-  }
-  .theory-panel.is-desktop-push:not(.open) {
-    display: none;
-  }
-}
-
-/* ==================== TOGGLE TAB BUTTON ==================== */
-.theory-toggle-tab {
-  position: absolute;
-  left: -40px;
-  top: 140px;
-  width: 40px;
-  padding: 16px 8px;
-  background: var(--color-accent-primary);
-  border: 1px solid var(--color-border-subtle);
-  border-right: none;
-  border-radius: var(--radius-lg) 0 0 var(--radius-lg);
-  color: white;
-  font-weight: 700;
-  cursor: pointer;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 8px;
-  box-shadow: -4px 0 16px var(--color-accent-primary-glow);
-  z-index: 10;
-  transition: all 0.2s ease;
-}
-
-.theory-toggle-tab:hover {
-  background: var(--color-accent-primary-light);
-  left: -42px;
-}
-
-.tab-icon {
-  font-size: 14px;
-}
-
-.tab-text {
-  writing-mode: vertical-rl;
-  text-orientation: mixed;
-  font-size: 10px;
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
-  white-space: nowrap;
-}
-
-/* ==================== DRAWER BODY & CONTENT ==================== */
-.theory-drawer-content {
-  display: flex;
-  flex-direction: column;
-  height: 100%;
-  max-height: 100%;
-  overflow: hidden;
-  min-height: 0;
-}
-
-.drawer-header {
-  padding: 16px 20px;
-  border-bottom: 1px solid var(--color-border-subtle);
-  background: color-mix(in srgb, var(--color-bg-surface) 40%, transparent);
-  flex-shrink: 0;
-}
-
-.drawer-title {
-  font-size: 13.5px;
-  font-weight: 800;
-  color: var(--color-text-primary);
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-}
-
-.expand-toggle-btn, .close-btn {
-  background: transparent;
-  border: none;
-  color: var(--color-text-muted);
-  cursor: pointer;
-  transition: color 0.2s ease;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.expand-toggle-btn:hover {
-  color: var(--color-accent-cyan);
-}
-
-.close-btn:hover {
-  color: var(--color-accent-red-light);
-}
-
-/* ==================== DRAWER SCROLLABLE BODY ==================== */
-.drawer-body {
-  flex: 1;
-  overflow-y: auto;
-  padding: 20px;
-  display: flex;
-  flex-direction: column;
-  background: color-mix(in srgb, var(--color-bg-secondary) 30%, transparent);
-  min-height: 0;
-}
-
-.accordion-container {
-  display: flex;
-  flex-direction: column;
-  width: 100%;
-}
-
-.back-to-summary-footer-btn {
-  background: transparent;
-  border: 1px solid var(--color-border-subtle);
-  color: var(--color-text-muted);
-  font-size: 10.5px;
-  font-weight: 700;
-  padding: 8px;
-  border-radius: var(--radius-md);
-  cursor: pointer;
-  transition: all 0.2s ease;
-  width: 100%;
-  text-align: center;
-}
-
-.back-to-summary-footer-btn:hover {
-  background: var(--color-bg-hover);
-  color: var(--color-text-secondary);
-}
+@import "./TheoryCollapsiblePanel.css";
 </style>

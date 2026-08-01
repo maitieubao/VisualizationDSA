@@ -9,6 +9,7 @@ export function useGraphPhysics(
 ) {
   const isAutoLayout = ref(false);
   let layoutAnimationId: number | null = null;
+  let stableCount = 0;
 
   const forceLayout = new ForceDirectedLayout({
     kRepulsion: 500,
@@ -19,6 +20,7 @@ export function useGraphPhysics(
 
   function startLayoutLoop() {
     if (layoutAnimationId !== null) return;
+    stableCount = 0;
     const runLayout = () => {
       if (vertices.value.length >= 2 && edges.value.length > 0) {
         const nodes: GraphNode[] = vertices.value.map((v) => ({
@@ -39,10 +41,23 @@ export function useGraphPhysics(
 
         const c = canvas.value;
         if (c) {
+          const dpr = window.devicePixelRatio || 1;
+          const w = c.width / dpr;
+          const h = c.height / dpr;
           vertices.value.forEach((v) => {
-            v.x = Math.max(20, Math.min(c.width - 20, v.x));
-            v.y = Math.max(20, Math.min(c.height - 20, v.y));
+            v.x = Math.max(20, Math.min(w - 20, v.x));
+            v.y = Math.max(20, Math.min(h - 20, v.y));
           });
+        }
+
+        if (forceLayout.isStable(nodes)) {
+          stableCount++;
+          if (stableCount >= 3) {
+            stopLayoutLoop();
+            return;
+          }
+        } else {
+          stableCount = 0;
         }
       }
       layoutAnimationId = requestAnimationFrame(runLayout);

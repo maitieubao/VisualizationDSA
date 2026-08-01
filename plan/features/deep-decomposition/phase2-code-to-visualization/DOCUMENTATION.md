@@ -28,4 +28,3 @@ Hệ thống quyết định áp dụng phương án **Phân tích AST & Tiêm m
     *   **Bảo vệ an toàn tuyệt đối:** Giao diện lớp học luôn mượt mà lướt đi, không bao giờ bị đơ cứng màn hình khi học sinh viết lỗi lặp vô hạn.
 *   **Điểm cần lưu ý (Cons):**
     *   Giới hạn người học viết các thao tác thuật toán dạng sắp xếp mảng (Array-based sort) và thao tác biến trong Phase 2 MVP. Định dạng này hoàn hảo cho 90% bài học thuật toán cơ bản.
-    

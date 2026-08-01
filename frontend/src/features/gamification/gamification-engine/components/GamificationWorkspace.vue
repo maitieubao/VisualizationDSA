@@ -1,6 +1,6 @@
 <template>
   <div class="h-full flex flex-col gap-4 p-4 overflow-auto">
-    <!-- Header -->
+    
     <div class="flex items-center justify-between">
       <div class="flex items-center gap-3">
         <div class="w-8 h-8 rounded-lg bg-accent flex items-center justify-center"><span class="text-text-primary font-bold text-sm">🏆</span></div>
@@ -10,7 +10,7 @@
         </div>
       </div>
 
-      <!-- XP Display -->
+      
       <div class="flex items-center gap-4">
         <div v-if="store.backendProfile" class="text-right">
           <div class="text-lg font-bold text-accent">{{ store.backendProfile.totalXp.toLocaleString() }} XP</div>
@@ -31,7 +31,7 @@
       </div>
     </div>
 
-    <!-- XP Progress Bar -->
+    
     <div class="rounded-xl bg-bg-secondary/45 border border-white/5 backdrop-blur-xl p-4">
       <div class="flex items-center justify-between mb-2">
         <span class="text-xs text-text-secondary">Tiến độ huy hiệu tiếp theo</span>
@@ -46,7 +46,7 @@
       </div>
     </div>
 
-    <!-- Backend Loading/Error -->
+    
     <div v-if="store.isBackendLoading" class="text-center py-2">
       <span class="text-xs text-text-secondary">Đang tải dữ liệu từ server...</span>
     </div>
@@ -54,13 +54,13 @@
       <span class="text-xs text-accent-red">{{ store.backendError }}</span>
     </div>
 
-    <!-- Main Grid -->
+    
     <div class="flex-1 grid grid-cols-2 gap-4 min-h-0">
       <div class="flex flex-col gap-4 overflow-auto">
         <StreakFire :streak-count="store.backendProfile?.streakDays ?? store.activeStreak" />
         <BadgesCabinet :all-badges="store.allBadges" :unlocked-badges="store.unlockedBadges" />
 
-        <!-- Backend Badges List -->
+        
         <div v-if="store.backendBadges.length > 0" class="rounded-xl bg-bg-secondary/45 border border-white/5 p-3">
           <h3 class="text-xs font-semibold text-text-primary mb-2">Huy hiệu từ Server</h3>
           <div class="space-y-1.5">
@@ -78,7 +78,7 @@
         </div>
       </div>
       <div class="overflow-auto">
-        <!-- Backend Leaderboard -->
+        
         <div v-if="store.backendLeaderboard.length > 0" class="rounded-xl bg-bg-secondary/45 border border-white/5 p-3 mb-4">
           <h3 class="text-xs font-semibold text-text-primary mb-2">Bảng xếp hạng (Server)</h3>
           <div class="space-y-1">
@@ -101,7 +101,7 @@
       </div>
     </div>
 
-    <!-- Confetti Overlay -->
+    
     <CanvasConfettiOverlay :visible="store.showConfetti" />
   </div>
 </template>
@@ -121,14 +121,14 @@ function handleAwardXp(): void {
 }
 
 onMounted(async () => {
-  // Load from backend API (stateless)
+  
   await Promise.all([
     store.loadBackendProfile(),
     store.loadBackendBadges(),
     store.loadBackendLeaderboard(10),
   ]);
 
-  // Fallback: keep hardcoded leaderboard if backend fails
+  
   if (store.leaderboardData.length === 0) {
     store.setLeaderboardData([
       { userId: 'user-009', fullName: 'Nguyễn Hoàng Nam', weeklyXP: 1450, rank: 1 },

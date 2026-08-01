@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using VisualizationDSA.Domain.Enums;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
@@ -26,6 +27,11 @@ namespace VisualizationDSA.Infrastructure.Data
             await SeedSemanticGraphAsync();
             await SeedCoursesAsync();
             await SeedCheatSheetAsync();
+            try { await SeedBadgesAsync(); } catch (Exception ex) { Console.WriteLine($"[SeedBadges Error]: {ex.Message}"); }
+            try { await SeedLeaderboardUsersAsync(); } catch (Exception ex) { Console.WriteLine($"[SeedUsers Error]: {ex.Message}"); }
+            try { await SeedQuizzesAsync(); } catch (Exception ex) { Console.WriteLine($"[SeedQuizzes Error]: {ex.Message}"); }
+            try { await SeedCoursesAsync(); } catch (Exception ex) { Console.WriteLine($"[SeedCourses Error]: {ex}"); }
+            try { await SeedSemanticGraphAsync(); } catch (Exception ex) { Console.WriteLine($"[SeedGraph Error]: {ex.Message}"); }
         }
 
         private async Task SeedBadgesAsync()
@@ -72,125 +78,67 @@ namespace VisualizationDSA.Infrastructure.Data
         {
             if (_context.Quizzes.Any()) return;
 
-            // Bubble Sort Quiz
-            var bubbleSortQuiz = new Quiz(
-                "Bubble Sort Mastery",
-                "Test your knowledge of Bubble Sort algorithm",
-                "sorting",
-                1,
-                50
-            );
-            bubbleSortQuiz.AddQuestion(
-                "What is the time complexity of Bubble Sort in the worst case?",
-                new[] { "O(n)", "O(n log n)", "O(n²)", "O(2^n)" },
-                2,
-                "Bubble Sort compares adjacent elements and swaps them if needed, resulting in O(n²) complexity."
-            );
-            bubbleSortQuiz.AddQuestion(
-                "What is the best case time complexity of Bubble Sort?",
-                new[] { "O(n)", "O(n log n)", "O(n²)", "O(1)" },
-                0,
-                "When the array is already sorted, Bubble Sort only needs one pass, achieving O(n)."
-            );
-            bubbleSortQuiz.AddQuestion(
-                "Is Bubble Sort a stable sorting algorithm?",
-                new[] { "Yes", "No", "Only with integers", "Depends on implementation" },
-                0,
-                "Bubble Sort is stable because it only swaps adjacent elements when necessary."
-            );
+            
+            var bubbleSortQuiz = new Quiz("Bubble Sort Mastery", "Test your knowledge of Bubble Sort algorithm", "sorting", 1, 50);
+            bubbleSortQuiz.AddQuestion("What is the time complexity of Bubble Sort in the worst case?", new[] { "O(n)", "O(n log n)", "O(n²)", "O(2^n)" }, 2, "Bubble Sort compares adjacent elements and swaps them if needed, resulting in O(n²) complexity.");
+            bubbleSortQuiz.AddQuestion("What is the best case time complexity of Bubble Sort?", new[] { "O(n)", "O(n log n)", "O(n²)", "O(1)" }, 0, "When the array is already sorted, Bubble Sort only needs one pass, achieving O(n).");
+            bubbleSortQuiz.AddQuestion("Is Bubble Sort a stable sorting algorithm?", new[] { "Yes", "No", "Only with integers", "Depends on implementation" }, 0, "Bubble Sort is stable because it only swaps adjacent elements when necessary.");
 
-            // Quick Sort Quiz
-            var quickSortQuiz = new Quiz(
-                "Quick Sort Fundamentals",
-                "Master the divide-and-conquer approach of Quick Sort",
-                "sorting",
-                2,
-                75
-            );
-            quickSortQuiz.AddQuestion(
-                "What is the average case time complexity of Quick Sort?",
-                new[] { "O(n)", "O(n log n)", "O(n²)", "O(log n)" },
-                1,
-                "Quick Sort divides the array and sorts partitions, achieving O(n log n) on average."
-            );
-            quickSortQuiz.AddQuestion(
-                "What is the pivot in Quick Sort?",
-                new[] { "The first element", "The middle element", "An element that partitions the array", "The largest element" },
-                2,
-                "The pivot is an element that divides the array into elements less than and greater than it."
-            );
+            
+            var quickSortQuiz = new Quiz("Quick Sort Fundamentals", "Master the divide-and-conquer approach of Quick Sort", "sorting", 2, 75);
+            quickSortQuiz.AddQuestion("What is the average case time complexity of Quick Sort?", new[] { "O(n)", "O(n log n)", "O(n²)", "O(log n)" }, 1, "Quick Sort divides the array and sorts partitions, achieving O(n log n) on average.");
+            quickSortQuiz.AddQuestion("What is the pivot in Quick Sort?", new[] { "The first element", "The middle element", "An element that partitions the array", "The largest element" }, 2, "The pivot is an element that divides the array into elements less than and greater than it.");
 
-            // OOP Quiz
-            var oopQuiz = new Quiz(
-                "OOP Concepts",
-                "Test your understanding of Object-Oriented Programming",
-                "oop",
-                2,
-                100
-            );
-            oopQuiz.AddQuestion(
-                "Which principle hides implementation details and exposes only necessary functionality?",
-                new[] { "Inheritance", "Encapsulation", "Polymorphism", "Abstraction" },
-                1,
-                "Encapsulation bundles data and methods, hiding internal implementation."
-            );
-            oopQuiz.AddQuestion(
-                "What allows a subclass to inherit properties from a parent class?",
-                new[] { "Inheritance", "Encapsulation", "Polymorphism", "Composition" },
-                0,
-                "Inheritance enables code reuse by allowing subclasses to inherit parent properties."
-            );
+            
+            var oopQuiz = new Quiz("OOP Concepts", "Test your understanding of Object-Oriented Programming", "oop", 2, 100);
+            oopQuiz.AddQuestion("Which principle hides implementation details and exposes only necessary functionality?", new[] { "Inheritance", "Encapsulation", "Polymorphism", "Abstraction" }, 1, "Encapsulation bundles data and methods, hiding internal implementation.");
+            oopQuiz.AddQuestion("What allows a subclass to inherit properties from a parent class?", new[] { "Inheritance", "Encapsulation", "Polymorphism", "Composition" }, 0, "Inheritance enables code reuse by allowing subclasses to inherit parent properties.");
 
-            // SOLID Quiz
-            var solidQuiz = new Quiz(
-                "SOLID Principles",
-                "Master the 5 SOLID principles of software design",
-                "solid",
-                3,
-                125
-            );
-            solidQuiz.AddQuestion(
-                "Which principle states that a class should have only one reason to change?",
-                new[] { "Open/Closed", "Single Responsibility", "Liskov Substitution", "Interface Segregation" },
-                1,
-                "Single Responsibility Principle (SRP) states a class should have one responsibility."
-            );
-            solidQuiz.AddQuestion(
-                "Which principle suggests classes should be open for extension but closed for modification?",
-                new[] { "Open/Closed", "Single Responsibility", "Liskov Substitution", "Dependency Inversion" },
-                0,
-                "Open/Closed Principle (OCP) encourages extension through inheritance or composition."
-            );
+            
+            var solidQuiz = new Quiz("SOLID Principles", "Master the 5 SOLID principles of software design", "solid", 3, 125);
+            solidQuiz.AddQuestion("Which principle states that a class should have only one reason to change?", new[] { "Open/Closed", "Single Responsibility", "Liskov Substitution", "Interface Segregation" }, 1, "Single Responsibility Principle (SRP) states a class should have one responsibility.");
+            solidQuiz.AddQuestion("Which principle suggests classes should be open for extension but closed for modification?", new[] { "Open/Closed", "Single Responsibility", "Liskov Substitution", "Dependency Inversion" }, 0, "Open/Closed Principle (OCP) encourages extension through inheritance or composition.");
 
-            // Design Patterns Quiz
-            var patternsQuiz = new Quiz(
-                "Design Patterns",
-                "Recognize common design patterns and their use cases",
-                "patterns",
-                3,
-                150
-            );
-            patternsQuiz.AddQuestion(
-                "Which pattern defines a one-to-many dependency between objects?",
-                new[] { "Strategy", "Observer", "Factory", "Singleton" },
-                1,
-                "Observer pattern allows objects to subscribe to events and get notified automatically."
-            );
-            patternsQuiz.AddQuestion(
-                "Which pattern lets you change an algorithm's behavior at runtime?",
-                new[] { "Observer", "Strategy", "Decorator", "Builder" },
-                1,
-                "Strategy pattern defines a family of algorithms and makes them interchangeable."
-            );
+            
+            var patternsQuiz = new Quiz("Design Patterns", "Recognize common design patterns and their use cases", "patterns", 3, 150);
+            patternsQuiz.AddQuestion("Which pattern defines a one-to-many dependency between objects?", new[] { "Strategy", "Observer", "Factory", "Singleton" }, 1, "Observer pattern allows objects to subscribe to events and get notified automatically.");
+            patternsQuiz.AddQuestion("Which pattern lets you change an algorithm's behavior at runtime?", new[] { "Observer", "Strategy", "Decorator", "Builder" }, 1, "Strategy pattern defines a family of algorithms and makes them interchangeable.");
 
-            await _context.Quizzes.AddRangeAsync(bubbleSortQuiz, quickSortQuiz, oopQuiz, solidQuiz, patternsQuiz);
+            
+            var dsaBasicsQuiz = new Quiz("Trắc nghiệm Nền tảng DSA", "Đánh giá kiến thức về Big O và Mảng", "dsa", 1, 40);
+            dsaBasicsQuiz.AddQuestion("Độ phức tạp O(1) nghĩa là gì?", new[] { "Thời gian tuyến tính", "Thời gian hằng số", "Thời gian bình phương", "Thời gian mũ" }, 1, "O(1) là thời gian thực thi không phụ thuộc vào kích thước đầu vào N.");
+
+            
+            var linkedListQuiz = new Quiz("Trắc nghiệm Danh sách liên kết", "Đánh giá nguy cơ rò rỉ bộ nhớ và con trỏ", "dsa", 1, 50);
+            linkedListQuiz.AddQuestion("Trường hợp nào dẫn tới Memory Leak trong Linked List?", new[] { "Gán head = head.next mà không giải phóng node cũ", "Duyệt qua danh sách", "Tạo node mới", "Đếm số node" }, 0, "Khi làm mất con trỏ trỏ tới node mà không deallocate, dữ liệu bị rò rỉ bộ nhớ.");
+
+            
+            var stackQueueQuiz = new Quiz("Trắc nghiệm Ngăn xếp & Hàng đợi", "Phân biệt nguyên lý LIFO và FIFO", "dsa", 1, 50);
+            stackQueueQuiz.AddQuestion("Cấu trúc dữ liệu nào tuân theo nguyên lý LIFO (Last In First Out)?", new[] { "Queue", "Stack", "Array", "Graph" }, 1, "Stack (Ngăn xếp) vào sau ra trước (LIFO).");
+
+            
+            var treeQuiz = new Quiz("Trắc nghiệm Duyệt cây Nhị phân", "Xác định thứ tự duyệt cây DFS và BFS", "dsa", 2, 80);
+            treeQuiz.AddQuestion("Thứ tự duyệt In-order (Trung thứ) trên cây tìm kiếm nhị phân cho ra kết quả gì?", new[] { "Mảng đã sắp xếp giảm dần", "Mảng đã sắp xếp tăng dần", "Mảng ngẫu nhiên", "Danh sách rỗng" }, 1, "In-order traversal trên BST luôn cho dãy giá trị tăng dần.");
+
+            
+            var graphQuiz = new Quiz("Trắc nghiệm Đồ thị & Dijkstra", "Phân tích rủi ro thuật toán đường đi ngắn nhất", "graph", 3, 120);
+            graphQuiz.AddQuestion("Thuật toán Dijkstra không hoạt động chính xác trong trường hợp nào?", new[] { "Đồ thị có hướng", "Đồ thị vô hướng", "Đồ thị có cạnh trọng số âm", "Đồ thị dày" }, 2, "Dijkstra hoạt động dựa trên tham ăn và có thể đưa ra kết quả sai nếu đồ thị chứa cạnh trọng số âm.");
+
+            
+            var dpQuiz = new Quiz("Trắc nghiệm Quy hoạch động", "Phân biệt Memoization và Tabulation", "dsa", 3, 140);
+            dpQuiz.AddQuestion("Tabulation trong Quy hoạch động là phương pháp gì?", new[] { "Top-down đệ quy", "Bottom-up điền bảng", "Greedy tham ăn", "Brute force" }, 1, "Tabulation điền bảng tính từ các bài toán cơ sở nhỏ nhất lên bài toán lớn (Bottom-up).");
+
+            
+            var systemQuiz = new Quiz("Trắc nghiệm System Design & Multithreading", "Phát hiện Race Condition và Deadlock", "system", 3, 150);
+            systemQuiz.AddQuestion("Race Condition xảy ra khi nào?", new[] { "Chỉ có 1 thread truy cập tài nguyên", "Nhiều thread cùng đọc/ghi tài nguyên dùng chung mà không có đồng bộ", "Khi server bị quá tải", "Khi hết RAM" }, 1, "Race condition xuất hiện khi kết quả phụ thuộc vào thứ tự thực thi ngẫu nhiên của các luồng.");
+
+            await _context.Quizzes.AddRangeAsync(
+                bubbleSortQuiz, quickSortQuiz, oopQuiz, solidQuiz, patternsQuiz,
+                dsaBasicsQuiz, linkedListQuiz, stackQueueQuiz, treeQuiz, graphQuiz, dpQuiz, systemQuiz
+            );
             await _context.SaveChangesAsync();
         }
 
-        /// <summary>
-        /// Seed 10 Vietnamese leaderboard users vào bảng Users.
-        /// Mỗi user có XP, level, streak khác nhau để tạo bảng xếp hạng phong phú.
-        /// </summary>
         private async Task SeedLeaderboardUsersAsync()
         {
             var users = new (string email, string username, string password, int xp, int level, int streak, string role)[]
@@ -222,7 +170,6 @@ namespace VisualizationDSA.Infrastructure.Data
                 }
                 else
                 {
-                    // Luôn đồng bộ role
                     existingUser.SetRole(role);
                 }
             }
@@ -254,7 +201,6 @@ namespace VisualizationDSA.Infrastructure.Data
             await _context.SemanticConceptNodes.AddRangeAsync(oop, inheritance, polymorphism, srp, ocp, dip, array, bst);
             await _context.SaveChangesAsync();
 
-            // Seed Edges
             var edges = new List<KnowledgeEdge>
             {
                 new KnowledgeEdge(inheritance.Id, oop.Id, "DependsOn", 1.2),
@@ -270,459 +216,660 @@ namespace VisualizationDSA.Infrastructure.Data
 
         private async Task SeedCoursesAsync()
         {
-            if (_context.Courses.Any()) return;
+            if (_context.Courses.Count() < 11)
+            {
+                _context.Lessons.RemoveRange(_context.Lessons);
+                _context.Courses.RemoveRange(_context.Courses);
+                await _context.SaveChangesAsync();
+            }
 
-            var teacher = await _context.Users.FirstOrDefaultAsync(u => u.Role == "Teacher" || u.Role == "Admin");
-            if (teacher == null) return;
+            var teacher = await _context.Users.FirstOrDefaultAsync(u => u.Role == "Teacher" || u.Role == "Admin")
+                          ?? await _context.Users.FirstOrDefaultAsync();
+            if (teacher == null)
+            {
+                teacher = new User("teacher@visualizationdsa.dev", "Default Teacher", HashPasswordSHA256("Teacher@2024"));
+                teacher.SetRole("Teacher");
+                await _context.Users.AddAsync(teacher);
+                await _context.SaveChangesAsync();
+            }
 
             var bubbleSortQuiz = await _context.Quizzes.FirstOrDefaultAsync(q => q.Title.Contains("Bubble"));
             var quickSortQuiz = await _context.Quizzes.FirstOrDefaultAsync(q => q.Title.Contains("Quick"));
             var oopQuiz = await _context.Quizzes.FirstOrDefaultAsync(q => q.Title.Contains("OOP"));
             var solidQuiz = await _context.Quizzes.FirstOrDefaultAsync(q => q.Title.Contains("SOLID"));
             var patternsQuiz = await _context.Quizzes.FirstOrDefaultAsync(q => q.Title.Contains("Patterns"));
+            var dsaBasicsQuiz = await _context.Quizzes.FirstOrDefaultAsync(q => q.Title.Contains("Nền tảng DSA"));
+            var linkedListQuiz = await _context.Quizzes.FirstOrDefaultAsync(q => q.Title.Contains("Danh sách liên kết"));
+            var stackQueueQuiz = await _context.Quizzes.FirstOrDefaultAsync(q => q.Title.Contains("Ngăn xếp"));
+            var treeQuiz = await _context.Quizzes.FirstOrDefaultAsync(q => q.Title.Contains("Duyệt cây"));
+            var graphQuiz = await _context.Quizzes.FirstOrDefaultAsync(q => q.Title.Contains("Đồ thị"));
+            var dpQuiz = await _context.Quizzes.FirstOrDefaultAsync(q => q.Title.Contains("Quy hoạch động"));
+            var systemQuiz = await _context.Quizzes.FirstOrDefaultAsync(q => q.Title.Contains("System Design"));
 
-            // 1. Sorting Course
-            var c1 = new Course(teacher.Id, "Thuật toán Sắp xếp Cơ bản", "Khóa học đi từ con số 0 đến nâng cao về các thuật toán sắp xếp. Tìm hiểu cách tổ chức dữ liệu, so sánh hiệu năng và trực quan hóa từng bước chạy của thuật toán.", "sorting", "Easy", false, "https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?w=500&q=80");
             
-            c1.Lessons.Add(new Lesson(c1.Id, "1. Thuật toán Sắp xếp là gì?", """
-# I. Khái niệm cốt lõi
-**Sắp xếp (Sorting)** là một trong những bài toán nền tảng và lâu đời nhất trong Khoa học máy tính. Nhiệm vụ của nó đơn giản là: *Nhận vào một tập hợp dữ liệu lộn xộn và tổ chức lại chúng theo một thứ tự có tính logic chặt chẽ (tăng dần, giảm dần, theo bảng chữ cái, hoặc theo một quy tắc tùy chỉnh).*
-
-Hãy tưởng tượng bạn bước vào một thư viện mà hàng triệu cuốn sách bị vứt vung vãi trên sàn nhà thay vì được xếp gọn gàng lên kệ theo chủ đề và vần A-Z. Việc tìm ra một cuốn sách cụ thể trong đống lộn xộn đó gần như là một cực hình. Trong thế giới lập trình, hệ điều hành và các phần mềm cũng gặp phải vấn đề tương tự nếu dữ liệu không được sắp xếp.
-
-**Vì sao chúng ta phải học thuật toán sắp xếp cơ bản?**
-Nhiều người nghĩ rằng: *"Tại sao phải tự viết thuật toán sắp xếp khi các ngôn ngữ lập trình đều đã có sẵn hàm `Array.Sort()`?"*. Câu trả lời là:
-1. **Rèn luyện Tư duy Thuật toán:** Các bài toán sắp xếp cơ bản là công cụ tuyệt vời nhất để bạn làm quen với vòng lặp lồng nhau (nested loops), điều kiện rẽ nhánh và cách thao tác với chỉ mục (index) của mảng.
-2. **Hiểu rõ Bản chất:** Hàm `Sort()` có sẵn không phải là một phép thuật. Nó được xây dựng từ chính các thuật toán mà bạn sắp học. Hiểu rõ ưu/nhược điểm của từng thuật toán giúp bạn chọn đúng công cụ cho đúng bài toán.
-
-# II. Ứng dụng thực tế
-Sắp xếp không bao giờ đứng một mình. Nó luôn đóng vai trò là **bước tiền xử lý (preprocessing)** mang tính sống còn cho các tác vụ lớn hơn:
-
-- **Tăng tốc độ tìm kiếm:** Bạn không thể dùng Thuật toán Tìm kiếm Nhị phân (Binary Search với tốc độ $O(\log n)$) nếu mảng chưa được sắp xếp. Việc mảng đã sắp xếp cho phép máy tính thu hẹp một nửa phạm vi tìm kiếm chỉ sau mỗi bước.
-- **Thống kê và Gom nhóm:** Khi dữ liệu đã được xếp liền kề nhau, việc đếm số lượng các phần tử trùng lặp hoặc tìm kiếm Min/Max trở nên dễ dàng.
-- **Hiển thị giao diện người dùng (UI):** Bảng xếp hạng game, danh bạ điện thoại, danh sách sản phẩm theo giá từ thấp đến cao... tất cả đều là ứng dụng của thuật toán sắp xếp.
-
-# III. Tóm tắt
-> 💡 Sắp xếp giúp chuẩn hóa thế giới dữ liệu hỗn loạn thành các cấu trúc có trật tự. Trong những bài tiếp theo, chúng ta sẽ lần lượt bóc tách bộ 3 thuật toán kinh điển nhất: **Bubble Sort, Selection Sort và Insertion Sort** để xem cách các nhà khoa học máy tính thế hệ đầu tiên giải quyết bài toán này.
-""", "sorting", "{\"array\":[5,3,8,4,2]}", null, 10, 1));
             
-            c1.Lessons.Add(new Lesson(c1.Id, "2. Đánh giá hiệu suất: Big O Notation", """
-# I. Big O Notation là gì?
-Trong thế giới lập trình, chúng ta không đo lường tốc độ của một thuật toán bằng đơn vị "giây" hay "phút". Vì một chiếc máy tính lượng tử chắc chắn sẽ chạy nhanh hơn chiếc laptop đời cũ của bạn, bất kể thuật toán có tệ đến đâu.
-
-Thay vào đó, chúng ta đo lường bằng **Big O Notation** - một khái niệm toán học mô tả: *Số lượng phép tính mà CPU phải thực hiện sẽ tăng lên nhanh như thế nào khi kích thước dữ liệu đầu vào ($n$) phình to ra.*
-
-# II. Độ phức tạp $O(n^2)$ - Nhóm thuật toán Sắp xếp cơ bản
-Toàn bộ 3 thuật toán mà bạn sắp học (Bubble, Selection, Insertion) đều thuộc nhóm độ phức tạp **$O(n^2)$** (Thời gian bậc hai).
-- **Đặc điểm nhận dạng:** Chúng thường yêu cầu 2 vòng lặp lồng nhau (`for i` lồng bên ngoài `for j`).
-- **Ý nghĩa thực tế:** Nếu mảng có $n=10$ phần tử, máy tính mất khoảng $100$ phép so sánh. Nhưng nếu mảng tăng gấp 10 lần ($n=100$), thời gian chạy sẽ **tăng gấp 100 lần** ($10.000$ phép tính). 
-- **Ứng dụng:** $O(n^2)$ là một tốc độ rùa bò đối với dữ liệu lớn (Big Data). Tuy nhiên, đối với các mảng siêu nhỏ (dưới 50 phần tử), do chi phí khởi tạo cực thấp nên chúng đôi khi lại chạy nhanh hơn cả các thuật toán tiên tiến.
-
-# III. Tóm tắt
-> 💡 Khái niệm Big O là chiếc la bàn để lập trình viên quyết định xem có nên đưa một đoạn code vào hệ thống phục vụ hàng triệu user hay không. Hãy nhớ: Mảng nhỏ dùng $O(n^2)$, mảng lớn dùng $O(n \log n)$.
-""", "sorting", "{\"array\":[5,4,3,2,1]}", null, 20, 2));
-
-            c1.Lessons.Add(new Lesson(c1.Id, "3. Sắp xếp Nổi bọt (Bubble Sort)", """
-# I. Ý tưởng thuật toán
-Lấy cảm hứng từ những bọt khí trong cốc nước có ga luôn tìm cách nổi lên mặt nước, **Bubble Sort** hoạt động bằng cách liên tục quét qua mảng từ trái sang phải. 
-
-Tại mỗi bước, nó so sánh hai phần tử đứng kề nhau. Nếu phần tử đứng trước lớn hơn phần tử đứng sau, nó sẽ tráo đổi (swap) vị trí của hai phần tử này.
-- **Kết thúc Vòng lặp thứ 1:** Phần tử lớn nhất chắc chắn bị "đẩy" về vị trí cuối cùng của mảng.
-- **Kết thúc Vòng lặp thứ 2:** Phần tử lớn thứ nhì bị đẩy về vị trí áp chót.
-Cứ thế lặp lại cho đến khi không còn phần tử nào bị sai vị trí.
-
-# II. Đặc tính kỹ thuật & Đánh giá
-- **Độ phức tạp thời gian:** $O(n^2)$ trong trường hợp xấu nhất và $O(n)$ trong trường hợp tốt nhất (nếu có cờ `isSwapped` để dừng sớm).
-- **Bộ nhớ phụ (Space Complexity):** $O(1)$. Khả năng hoán đổi trực tiếp (In-place) không tốn thêm RAM.
-- **Ưu điểm:** Thuật toán kinh điển, cấu trúc vòng lặp vô cùng đơn giản dễ học cho người mới bắt đầu.
-- **Nhược điểm:** Đây được coi là thuật toán sắp xếp **chậm nhất** trong thực tế do phải thực hiện quá nhiều phép hoán đổi bộ nhớ (Swap operations) thừa thãi.
-
-# III. Tóm tắt
-> 💡 Quét liên tục, thấy sai thì đổi chỗ ngay lập tức. Mặc dù chậm rề rà, nhưng tính "Ngây thơ" của Bubble Sort lại là viên gạch nền móng để bạn tiến lên các thuật toán phức tạp hơn.
-""", "sorting", "{\"array\":[34,1,23,4,8]}", null, 25, 3));
-
-            c1.Lessons.Add(new Lesson(c1.Id, "4. Sắp xếp Chọn (Selection Sort)", """
-# I. Ý tưởng thuật toán
-Nếu Bubble Sort hơi "tăng động" vì cứ thấy lệch là đổi chỗ, thì **Selection Sort** lại điềm tĩnh hơn rất nhiều. Nó chia mảng làm hai nửa: **Nửa đã sắp xếp (bên trái)** và **Nửa chưa sắp xếp (bên phải)**.
-
-Cách hoạt động:
-1. Đứng ở vị trí hiện tại (giả sử vị trí đầu tiên).
-2. Quét một vòng toàn bộ các phần tử bên phải để tìm ra **phần tử nhỏ nhất (Min)**.
-3. Hoán đổi phần tử Min đó với phần tử ở vị trí hiện tại.
-4. Nhích sang vị trí kế tiếp và lặp lại quá trình tìm Min.
-
-# II. Đặc tính kỹ thuật & So sánh
-- **Tối ưu Số lần Hoán đổi (Swap):** Trong khi Bubble Sort có thể phải hoán đổi hàng ngàn lần, Selection Sort chỉ thực hiện **tối đa $n-1$ phép hoán đổi**. Nó sinh ra để giải quyết bài toán: *"Việc ghi dữ liệu vào bộ nhớ (Write operation) quá đắt đỏ, hãy hạn chế ghi càng ít càng tốt"*.
-- **Căn bệnh "Mù quáng":** Dù mảng của bạn đã được sắp xếp hoàn hảo 100%, Selection Sort vẫn lôi từng phần tử ra và quét lại toàn bộ phần mảng còn lại để tìm Min. Do đó, trường hợp tốt nhất hay xấu nhất của nó đều tốn thời gian **$O(n^2)$**.
-
-# III. Tóm tắt
-> 💡 Khảo sát toàn bộ mảng, "Chọn" ra đứa nhỏ nhất, và ném nó về đầu hàng. Chậm nhưng chắc, cực kỳ phù hợp cho các thiết bị cần hạn chế số lần ghi đè phần cứng.
-""", "sorting", "{\"array\":[29,10,14,37,13]}", null, 30, 4));
-
-            c1.Lessons.Add(new Lesson(c1.Id, "5. Sắp xếp Chèn (Insertion Sort)", """
-# I. Ý tưởng thuật toán
-Mọi người chơi bài tiến lên đều vô thức sử dụng thuật toán này! Hãy tưởng tượng tay trái bạn cầm một bộ bài đã được xếp gọn. Mỗi khi rút thêm một lá bài mới từ nọc, bạn lướt mắt từ phải sang trái tập bài trên tay, và **"Chèn" (Insert)** lá bài mới vào đúng khe hở giữa lá bài nhỏ hơn và lớn hơn nó.
-
-Insertion Sort hoạt động y hệt: Cầm từng phần tử ở nửa mảng chưa sắp, lùi về nửa mảng đã sắp, đẩy các phần tử lớn hơn sang phải để tạo chỗ trống, rồi chèn phần tử đó vào.
-
-# II. Đặc tính kỹ thuật & "Sức mạnh ngầm"
-Đừng để cái mác độ phức tạp **$O(n^2)$** đánh lừa bạn! Insertion Sort sở hữu những "siêu năng lực" mà các thuật toán khác phải thèm khát:
-1. **Nhanh như chớp với mảng gần như đã sắp xếp:** Nếu mảng chỉ có vài phần tử bị sai vị trí, Insertion Sort chỉ tốn thời gian **$O(n)$** để chạy xong.
-2. **Khả năng luồng dữ liệu (Online Sorting):** Hệ thống không cần phải có sẵn toàn bộ dữ liệu mới bắt đầu sắp xếp. Dữ liệu cứ "chảy" vào đến đâu, thuật toán chèn vào đến đó. Vô địch trong các bài toán truyền phát (Streaming).
-3. **Overhead cực thấp:** Với các mảng rất bé ($n < 50$), nó thậm chí đánh bại cả Quicksort và Merge Sort.
-
-# III. Tóm tắt
-> 💡 Đó là lý do tại sao bộ thư viện của JavaScript hay C++ STL đều lén lút sử dụng Insertion Sort làm phương án dự phòng khi chia mảng trong Quicksort xuống kích thước đủ nhỏ.
-""", "sorting", "{\"array\":[12,5,15,3,8,9]}", null, 35, 5));
-
-            c1.Lessons.Add(new Lesson(c1.Id, "6. Tính ổn định (Stability) & Bộ nhớ (In-place)", """
-# I. Sắp xếp Tại chỗ (In-place)
-Khi thao tác với hàng triệu bản ghi, việc cấp phát thêm bộ nhớ phụ (RAM) để chứa mảng tạm là điều vô cùng xa xỉ. 
-Thuật toán **In-place** là thuật toán có **Space Complexity là $O(1)$**. Nghĩa là nó chỉ hoán đổi trực tiếp các phần tử trên mảng gốc mà không cần tạo thêm mảng mới. 
-- **Tin vui:** Cả Bubble, Selection và Insertion Sort đều là thuật toán In-place.
-
-# II. Tính ổn định (Stability)
-Đây là một khái niệm vô cùng quan trọng khi bạn xử lý dữ liệu thực tế (Database).
-Giả sử bạn có một danh sách sinh viên đã được sắp xếp sẵn theo **Tên (A-Z)**. Bây giờ sếp yêu cầu bạn sắp xếp lại danh sách đó theo **Điểm số**.
-- Nếu 2 sinh viên (An và Bình) có cùng điểm số, thì liệu An có còn đứng trước Bình (do xếp theo Tên trước đó) nữa không?
-- **Thuật toán Ổn định (Stable):** Đảm bảo giữ nguyên thứ tự tương đối của các phần tử có giá trị bằng nhau. 
-  - *Bubble Sort & Insertion Sort* là các thuật toán **Ổn định**. Nó không hoán đổi những phần tử bằng nhau.
-- **Thuật toán Không Ổn định (Unstable):** Vô tình làm đảo lộn thứ tự cũ.
-  - *Selection Sort* là thuật toán **Không ổn định**. Vì phép hoán đổi khoảng cách xa của nó có thể ném một phần tử đi qua đầu một phần tử có giá trị bằng với nó.
-
-# III. Tóm tắt
-> 💡 Trong thực tế, Tính ổn định (Stability) mang tính quyết định khi bạn cần sắp xếp dữ liệu qua nhiều vòng (multi-pass sorting) giống như tính năng "Sort by Column" trên Excel.
-""", "sorting", "{\"array\":[7,2,9,2,3]}", null, 40, 6));
-
-            c1.Lessons.Add(new Lesson(c1.Id, "7. Bảng vàng Tổng kết", """
-# I. Nhìn lại chặng đường
-Chúc mừng bạn đã hoàn thành bộ 3 thuật toán sắp xếp nền tảng nhất của Khoa học Máy tính! Hãy cùng đối chiếu chúng:
-
-| Thuật toán | Độ phức tạp (Best) | Độ phức tạp (Worst) | Bộ nhớ (Space) | Ổn định (Stable) | Ứng dụng nổi bật |
-| :--- | :--- | :--- | :--- | :--- | :--- |
-| **Bubble Sort** | $O(n)$ | $O(n^2)$ | $O(1)$ | Có | Giảng dạy & Dữ liệu cực nhỏ |
-| **Selection Sort** | $O(n^2)$ | $O(n^2)$ | $O(1)$ | Không | Hạn chế số lần ghi bộ nhớ Flash (EEPROM) |
-| **Insertion Sort** | $O(n)$ | $O(n^2)$ | $O(1)$ | Có | Mảng gần có thứ tự, Dữ liệu Streaming liên tục |
-
-# II. Lời khuyên thực chiến từ Chuyên gia
-Trên thực tế đi làm, bạn sẽ gần như KHÔNG BAO GIỜ phải tự tay code lại 3 thuật toán này từ đầu, mà sẽ gọi các hàm có sẵn như `Array.Sort()` hay `Collections.sort()`.
-
-Vậy tại sao các giáo sư tại MIT hay Stanford vẫn ép sinh viên học chúng?
-- Vì nó rèn luyện cho bạn **Tư duy về Độ phức tạp thuật toán (Big O)**. Bạn sẽ hiểu được tại sao hệ thống bị "treo" khi chọc vào database 1 triệu dòng với 2 vòng lặp lồng nhau.
-- Vì **Insertion Sort** là xương sống của `TimSort` (Thuật toán sắp xếp mặc định của Python, Java 7+ và V8 JavaScript Engine) khi xử lý các chunk mảng nhỏ. Không có kiến thức nền tảng, bạn không thể vươn lên thành Senior Engineer.
-
-# III. Tóm tắt
-> 💡 Các thuật toán cơ bản này là viên gạch đầu tiên. Ở các khóa học sau (như Chia để trị - Divide & Conquer), chúng ta sẽ thấy sự bùng nổ sức mạnh thực sự với Merge Sort và Quick Sort.
-""", "sorting", "{\"array\":[1,2,3,4,5]}", null, 45, 7));
-
-            c1.Lessons.Add(new Lesson(c1.Id, "8. Trắc nghiệm cuối khóa (Quiz Boss)", """
-# I. Thử thách cuối cùng
-Mọi lý thuyết sẽ trôi tuột đi nếu bạn không thực hành. Đây là bài kiểm tra tổng hợp cuối khóa học Sắp xếp Cơ bản. 
-
-Bài kiểm tra này được thiết kế để đánh giá 3 trụ cột kiến thức của bạn:
-1. **Phân biệt luồng chạy:** Nhìn vào một mảng đang chạy dở, bạn có đoán được đó là thuật toán nào không?
-2. **Hiểu Big O:** Biết khi nào nên dùng thuật toán nào để tối ưu hiệu suất.
-3. **Thực hành Code:** Thử thách tự viết code JS trực tiếp trên trình duyệt, không được dùng các hàm có sẵn, hệ thống sẽ đo lường Latency & RAM của bạn theo chuẩn LeetCode.
-
-# II. Điều kiện Vượt ải
-- Bạn cần trả lời đúng ít nhất **80%** số câu hỏi.
-- Phải qua được bài kiểm tra độ trễ (Linter Check) trong phần Code Sandbox.
-- Nếu vượt qua, bạn sẽ nhận được một lượng lớn **XP** và có cơ hội thu thập huy hiệu **Sorting Wizard 📊** siêu hiếm.
-
-# III. Tóm tắt
-> 💡 Đã đến lúc chứng minh thực lực. Hãy bấm Khởi động Quiz để bắt đầu bài đánh giá cuối cùng!
-""", "sorting", "{\"array\":[]}", bubbleSortQuiz?.Id, 50, 8));
-
-            // 2. Graph Course
-            var c2 = new Course(teacher.Id, "Thuật toán Đồ thị Nâng cao", "Khảo sát thế giới đồ thị, các phương pháp duyệt đỉnh BFS/DFS và bài toán tìm đường đi ngắn nhất Dijkstra.", "graph", "Medium", false, "https://images.unsplash.com/photo-1558494949-ef010cbdcc31?w=500&q=80");
-            c2.Lessons.Add(new Lesson(c2.Id, "1. Khái niệm Cơ bản về Đồ thị", """
-# 1. Khái niệm Cơ bản về Đồ thị (Graph Theory)
-
-Đồ thị (Graph) là một cấu trúc dữ liệu mạnh mẽ, bao gồm tập các **đỉnh (Vertices - V)** và tập các **cạnh (Edges - E)** kết nối các đỉnh đó lại với nhau. Đồ thị được sử dụng để mô hình hóa các mối quan hệ đa chiều trong thế giới thực như mạng xã hội, bản đồ giao thông, hay mạng máy tính.
-
-### Phân loại đồ thị:
-- **Đồ thị vô hướng (Undirected Graph):** Cạnh nối giữa A và B có thể đi theo cả 2 chiều. Ví dụ: Kết bạn trên Facebook.
-- **Đồ thị có hướng (Directed Graph):** Cạnh chỉ đi theo 1 chiều có mũi tên. Ví dụ: Follow trên Instagram (bạn follow người ta chưa chắc người ta follow lại).
-- **Đồ thị có trọng số (Weighted Graph):** Mỗi cạnh có một giá trị (chi phí, độ dài, thời gian). Ví dụ: Quãng đường di chuyển giữa các thành phố trên Google Maps.
-
-### Biểu diễn đồ thị trong máy tính:
-1. **Ma trận kề (Adjacency Matrix):** Mảng 2 chiều kích thước VxV, truy xuất $O(1)$ nhưng tốn bộ nhớ $O(V^2)$.
-2. **Danh sách kề (Adjacency List):** Mảng chứa các danh sách liên kết, tối ưu bộ nhớ $O(V + E)$, thường được dùng nhiều nhất trong thực tế.
-""", "graph", "{}", null, 20, 1));
             
-            c2.Lessons.Add(new Lesson(c2.Id, "2. Duyệt Đồ thị BFS & DFS", """
-# 2. Duyệt Đồ thị BFS & DFS
 
-Duyệt đồ thị là quá trình "đi thăm" tất cả các đỉnh của đồ thị một cách có hệ thống. Có 2 chiến thuật phổ biến:
-
-### A. BFS (Breadth-First Search - Duyệt theo chiều rộng)
-- **Cơ chế:** Quét loang ra xung quanh như vết dầu loang. Thăm tất cả các đỉnh kề trực tiếp trước khi đi sâu hơn.
-- **Cấu trúc dữ liệu:** Sử dụng **Hàng đợi (Queue - FIFO)**.
-- **Ứng dụng:** Tìm đường đi ngắn nhất (ít số cạnh nhất) trên đồ thị không có trọng số, quét mạng xã hội (tìm bạn chung cấp 1, cấp 2).
-- **Độ phức tạp:** Thời gian $O(V + E)$, Không gian $O(V)$.
-
-### B. DFS (Depth-First Search - Duyệt theo chiều sâu)
-- **Cơ chế:** "Đâm lao thì phải theo lao", đi sâu vào một nhánh cho tới khi cụt đường thì mới quay lui (Backtracking).
-- **Cấu trúc dữ liệu:** Sử dụng **Ngăn xếp (Stack - LIFO)** hoặc dùng đệ quy (Recursion Call Stack).
-- **Ứng dụng:** Dò đường trong mê cung, phát hiện chu trình (cycle detection), sắp xếp topo (Topological sort).
-- **Độ phức tạp:** Thời gian $O(V + E)$, Không gian $O(V)$.
-""", "graph", "{}", null, 30, 2));
             
-            c2.Lessons.Add(new Lesson(c2.Id, "3. Dijkstra (Đường đi ngắn nhất)", """
-# 3. Thuật toán Dijkstra
+            var c1 = new Course(teacher.Id, "Nhập môn Cấu trúc dữ liệu & Giải thuật",
+                "Làm quen với giao diện AlgoLens, hiểu bản chất Big-O, thao tác mảng, đệ quy và xử lý chuỗi cơ bản.",
+                CourseCategory.DataStructure, CourseDifficulty.Beginner, true,
+                "https://images.unsplash.com/photo-1516116211223-48a122638c59?w=500&q=80");
+            AddLessonToCourse(c1, "Độ phức tạp thuật toán (Big O) & Mảng",
+                @"# 📖 Đánh Giá Độ Phức Tạp Big O
+Big O mô tả xu hướng tăng thời gian/bộ nhớ khi kích thước đầu vào N tăng dần.
 
-Dijkstra là thuật toán nổi tiếng bậc nhất để tìm **đường đi ngắn nhất** từ một đỉnh nguồn (Source) đến tất cả các đỉnh còn lại trên đồ thị có **trọng số không âm (Non-negative weights)**.
+### Mảng (Array)
+- Lưu trữ các phần tử liên tiếp trên RAM.
+- Truy cập ngẫu nhiên qua index `O(1)`.
+- Chèn/xóa phần tử trung gian `O(N)`.
 
-### Cách hoạt động:
-1. Gán khoảng cách từ đỉnh nguồn đến chính nó bằng `0`, và đến mọi đỉnh khác là `Vô cực (Infinity)`.
-2. Sử dụng **Hàng đợi Ưu tiên (Priority Queue / Min-Heap)** để luôn chọn ra đỉnh đang có khoảng cách ngắn nhất chưa được chốt (visited).
-3. Thăm đỉnh đó và cập nhật lại khoảng cách cho tất cả các đỉnh kề của nó (Quá trình này gọi là **Relaxation**).
-4. Lặp lại cho đến khi chốt xong tất cả các đỉnh.
+### Phân tích một số hàm phổ biến:
+- `O(1)`: truy cập phần tử mảng.
+- `O(log N)`: tìm kiếm nhị phân.
+- `O(N)`: duyệt mảng tuyến tính.
+- `O(N log N)`: sắp xếp nhanh.
+- `O(N²)`: hai vòng lặp lồng nhau.",
+                "dsa", "{\"array\":[5,12,8,25,3]}", dsaBasicsQuiz?.Id, 30, 1);
 
-### Đặc điểm & Giới hạn:
-- **Ưu điểm:** Cực kỳ nhanh và chính xác với đồ thị thông thường. Ứng dụng cốt lõi của Google Maps (phiên bản cơ bản), OSPF Routing.
-- **Nhược điểm:** **Không thể xử lý trọng số âm**. Nếu có cạnh mang giá trị âm, Dijkstra sẽ cho ra kết quả sai lệch hoặc bị kẹt.
-- **Độ phức tạp thời gian:** $O((V + E) \log V)$ nhờ sức mạnh của Min-Heap.
-""", "graph", "{}", null, 40, 3));
-            
-            c2.Lessons.Add(new Lesson(c2.Id, "4. Bellman-Ford", """
-# 4. Thuật toán Bellman-Ford
+            AddLessonToCourse(c1, "Đệ quy & phân tích độ phức tạp không gian",
+                @"# 🔁 Đệ Quy (Recursion)
+Một hàm gọi lại chính nó với đầu vào nhỏ hơn cho đến khi đạt điều kiện dừng (base case).
 
-Khi Dijkstra thất bại trước **đồ thị có trọng số âm**, Bellman-Ford chính là vị cứu tinh. Dù chậm hơn Dijkstra, nhưng nó có thể chịu đựng được trọng số âm và đặc biệt là phát hiện được **Chu trình âm (Negative Weight Cycle)**.
-
-### Cơ chế hoạt động (Duyệt toàn cục):
-Thay vì chọn lọc đỉnh bằng Heap, Bellman-Ford dùng chiến thuật "thà giết lầm hơn bỏ sót":
-1. Khởi tạo khoảng cách nguồn là `0`, còn lại là `Vô cực`.
-2. Lặp lại quá trình relaxation (cập nhật đường đi) cho **TẤT CẢ các cạnh** chính xác `V - 1` lần (với V là số đỉnh).
-3. **Phát hiện chu trình âm:** Lặp thêm lần thứ `V`. Nếu vẫn còn bất kỳ khoảng cách nào được cập nhật ngắn hơn, tức là hệ thống đang kẹt trong một vòng lặp âm vô tận.
-
-### Ứng dụng thực tế:
-- Giao thức định tuyến Distance Vector Routing Protocol (RIP).
-- Giao dịch ngoại tệ (Arbitrage trading) trong tài chính: tìm vòng lặp tỷ giá để sinh lời vô hạn (chính là ứng dụng của Negative Cycle).
-- **Độ phức tạp thời gian:** $O(V \times E)$ - Chậm hơn khá nhiều so với Dijkstra.
-""", "graph", "{}", null, 40, 4));
-            
-            c2.Lessons.Add(new Lesson(c2.Id, "5. Kruskal (Cây khung nhỏ nhất)", """
-# 5. Thuật toán Kruskal (MST)
-
-**Cây khung nhỏ nhất (Minimum Spanning Tree - MST)** là một mạng lưới nối tất cả các đỉnh của đồ thị với nhau sao cho **tổng trọng số các cạnh là nhỏ nhất** và **không có chu trình**. Ứng dụng tiêu biểu là việc kéo dây mạng LAN kết nối các tòa nhà với chi phí dây cáp rẻ nhất.
-
-### Chiến thuật của Kruskal (Tham lam - Greedy):
-1. Đập vụn đồ thị: Lấy tất cả các cạnh ra và sắp xếp chúng theo chiều tăng dần của trọng số.
-2. Lần lượt bốc từng cạnh có trọng số nhỏ nhất ghép vào cây.
-3. Trước khi ghép, kiểm tra xem cạnh đó có tạo thành chu trình khép kín không. (Dùng cấu trúc dữ liệu **Disjoint Set / Union-Find** để kiểm tra siêu tốc).
-4. Nếu tạo chu trình -> Vứt bỏ cạnh đó. Nếu không -> Chấp nhận.
-5. Dừng lại khi đã gom đủ `V - 1` cạnh.
-
-- **Độ phức tạp thời gian:** $O(E \log E)$ do tốn công sắp xếp tất cả các cạnh từ đầu.
-""", "graph", "{}", null, 50, 5));
-            
-            c2.Lessons.Add(new Lesson(c2.Id, "6. Prim (Cây khung nhỏ nhất)", """
-# 6. Thuật toán Prim (MST)
-
-Giống như Kruskal, **Prim** cũng giải quyết bài toán Cây khung nhỏ nhất (MST), nhưng cách tiếp cận của Prim lại giống hệt sự lan truyền của một mầm cây.
-
-### Chiến thuật của Prim:
-1. Bắt đầu từ một đỉnh bất kỳ, gieo mầm tại đó.
-2. Tại mỗi bước, nhìn ra xung quanh các đỉnh kề đang nối với "cây" hiện tại.
-3. Chọn cạnh nối có trọng số nhỏ nhất để kết nạp một đỉnh mới vào cây (Sử dụng **Priority Queue / Min-Heap** để luôn rút ra được cạnh nhỏ nhất cực nhanh).
-4. Cứ liên tục lan rộng như vết dầu cho đến khi toàn bộ các đỉnh đều bị kết nạp vào cây.
-
-### So sánh Prim vs Kruskal:
-- **Kruskal:** Thích hợp cho đồ thị thưa (ít cạnh), vì thao tác sắp xếp cạnh chi phối hiệu năng.
-- **Prim:** Vô đối trong các đồ thị dày đặc (Dense Graph - số cạnh khổng lồ), nhờ việc kiểm soát qua Min-Heap theo đỉnh.
-- **Độ phức tạp thời gian của Prim:** $O((V + E) \log V)$ (Rất giống thuật toán Dijkstra).
-""", "graph", "{}", null, 50, 6));
-            
-            c2.Lessons.Add(new Lesson(c2.Id, "7. Tarjan (Liên thông mạnh)", """
-# 7. Thuật toán Tarjan (Strongly Connected Components)
-
-Một **Thành phần liên thông mạnh (SCC)** trong đồ thị có hướng là một nhóm các đỉnh mà từ đỉnh nào cũng có thể đi đến tất cả các đỉnh còn lại trong nhóm. Ví dụ: Nhóm bạn thân chơi vòng tròn với nhau trên mạng xã hội, nhóm các giao lộ vòng xoay liên hoàn.
-
-### Thuật toán siêu việt của Robert Tarjan:
-Thay vì phải duyệt tới duyệt lui nhiều lần, thuật toán Tarjan có thể tìm ra tất cả các cụm SCC chỉ với **DUY NHẤT MỘT LẦN DUYỆT DFS**.
-
-1. Sử dụng một ngăn xếp (Stack) để lưu vết các đỉnh đang khám phá.
-2. Cấp cho mỗi đỉnh 2 chỉ số: `Id` (thứ tự thăm) và `LowLink` (id nhỏ nhất mà nó có thể vòng về được).
-3. Nếu một đỉnh đi vào ngõ cụt và vòng về chính nó (`LowLink == Id`), đó chính là đỉnh "trưởng tộc" (Root) của một SCC. Toàn bộ các đỉnh trên Stack tính từ Root trở lên sẽ gom lại thành một cụm SCC.
-
-- **Độ phức tạp siêu tốc:** Thời gian $O(V + E)$ - Đây là một trong những giải thuật thanh lịch và hiệu quả nhất trong khoa học máy tính.
-""", "graph", "{}", null, 60, 7));
-            
-            c2.Lessons.Add(new Lesson(c2.Id, "8. A* Search (Đường đi tối ưu)", """
-# 8. Thuật toán A* Search (A-Star)
-
-Dijkstra tuy tìm được đường đi ngắn nhất nhưng nó quá "ngây thơ", lan tỏa một cách mù quáng ra 4 phương 8 hướng. **A* (A-Star)** ra đời để gắn thêm "trí tuệ nhân tạo" vào Dijkstra.
-
-### Hàm Heuristic - Bộ não của A*:
-A* sử dụng một hàm đánh giá: **`F(n) = G(n) + H(n)`**
-- `G(n)`: Khoảng cách thực tế từ nguồn đến đỉnh n (Giống Dijkstra).
-- `H(n)`: Hàm Heuristic - **Dự đoán** khoảng cách từ n đến đích (Ví dụ: Khoảng cách đường chim bay Euclidean).
-
-Thay vì quét mọi hướng, A* luôn ưu tiên bốc ra những đỉnh có `F(n)` nhỏ nhất trong Priority Queue. Điều này giúp A* có định hướng rõ ràng, luôn đi "thẳng" về phía đích đến giống như la bàn, thay vì lan man vô hướng.
-
-### Ứng dụng thực tế:
-- Là thuật toán số 1 đằng sau việc NPC dò đường (Pathfinding) trong hàng loạt tựa game nổi tiếng (StarCraft, Age of Empires, Liên Minh Huyền Thoại).
-- Đóng vai trò cốt lõi trong hệ thống dẫn đường của Google Maps và Robot tự hành.
-""", "graph", "{}", null, 80, 8));
-
-            // 3. OOP Course
-            var c3 = new Course(teacher.Id, "Lập trình Hướng đối tượng thực chiến", "Làm chủ 4 cột trụ của OOP: Encapsulation, Inheritance, Polymorphism, Abstraction với các mô phỏng bộ nhớ trực quan.", "oop", "Medium", false, "https://images.unsplash.com/photo-1517694712202-14dd9538aa97?w=500&q=80");
-            c3.Lessons.Add(new Lesson(c3.Id, "1. Nhập môn OOP & Tại sao cần nó?", """
-# Bài 1: Nhập môn Lập trình Hướng đối tượng (OOP)
-
-### 1. Vấn đề của Lập trình Thủ tục (Procedural Programming)
-- Trước khi có OOP, lập trình viên thường viết code theo hướng thủ tục (các hàm thực thi từ trên xuống dưới).
-- **Hạn chế:** Khi hệ thống phình to, dữ liệu bị phân tán, hàm và dữ liệu không gắn kết với nhau khiến code trở thành một mớ bòng bong (Spaghetti code) rất khó bảo trì.
-
-### 2. Lập trình Hướng đối tượng là gì?
-- **OOP (Object-Oriented Programming)** là phương pháp nhóm dữ liệu (thuộc tính) và các hàm xử lý dữ liệu (phương thức) lại với nhau thành các **thực thể (Objects)** giống như thế giới thực.
-- Ví dụ: Thay vì có 2 mảng rời rạc `Tên_Xe[]` và `Tốc_Độ[]` cùng hàm `Chạy()`, ta tạo ra đối tượng `Xe` chứa cả Tên, Tốc độ và hành vi Chạy bên trong nó.
-
-### 3. Tại sao lại cần OOP?
-- **Dễ quản lý:** Giúp chia nhỏ bài toán phức tạp thành các đối tượng độc lập giao tiếp với nhau.
-- **Dễ tái sử dụng:** Code có thể được tái sử dụng qua các cơ sở kế thừa.
-- **Bảo vệ dữ liệu:** Ngăn chặn việc sửa đổi dữ liệu tùy tiện thông qua tính đóng gói.
-""", "oop", "{}", null, 10, 1));
-
-            c3.Lessons.Add(new Lesson(c3.Id, "2. Lớp, Đối tượng & Đóng gói", """
-# Bài 2: Lớp, Đối tượng & Tính Đóng gói (Encapsulation)
-
-### 1. Bản vẽ và Thực thể (Class & Object)
-- **Lớp (Class):** Là một bản thiết kế (blueprint) định nghĩa các thuộc tính và hành vi. Không chiếm bộ nhớ thực tế.
-- **Đối tượng (Object):** Là một thực thể được sinh ra từ Lớp, được cấp phát vùng nhớ trên **Heap** khi dùng từ khóa `new`.
-
-### 2. Tính Đóng gói (Encapsulation)
-- Là hành lang bảo vệ dữ liệu. Biến nội bộ được đặt là `private` và chỉ cho phép truy cập qua các "cửa khẩu" an toàn là `public methods` (Getter/Setter).
-- **Mô phỏng trực quan:** Một khối hộp trên Heap với biến `_balance` màu Đỏ (Private) bị khóa. Kẻ xấu truy cập trực tiếp sẽ bị dội ngược. Chỉ có thể thông qua hàm `Deposit()` (màu Xanh) để thay đổi dữ liệu một cách an toàn.
-
-### 3. Code Minh Họa (C#)
+### Ví dụ tính giai thừa
 ```csharp
-public class BankAccount {
-    private decimal _balance; // Đóng gói
+int Factorial(int n) {
+    if (n <= 1) return 1;          // base case
+    return n * Factorial(n - 1);   // recursive case
+}
+```
 
-    public BankAccount(decimal initialBalance) {
-        _balance = initialBalance;
+### Ngăn xếp gọi đệ quy (Call Stack)
+Mỗi lần gọi đệ quy, một stack frame được đẩy vào. Tổng số frame chiếm `O(N)` bộ nhớ, có thể gây StackOverflow với N lớn.
+
+### So sánh với vòng lặp
+- Đệ quy: code gọn, trực quan với bài toán chia để trị.
+- Vòng lặp: tiết kiệm bộ nhớ hơn trong đa số trường hợp.",
+                "dsa", "{}", null, 25, 2);
+
+            AddLessonToCourse(c1, "Xử lý chuỗi cơ bản",
+                @"# 🔤 Xử Lý Chuỗi
+Chuỗi là mảng ký tự, thường là immutable trong C#.
+
+### Các thao tác hay dùng
+- `Length`: lấy độ dài.
+- `Substring(start, length)`: lấy chuỗi con.
+- `IndexOf(char)`: tìm vị trí ký tự.
+- Duyệt bằng `foreach` hoặc `for`.
+
+### Bài toán mẫu: đảo ngược chuỗi
+```csharp
+string Reverse(string s) {
+    char[] arr = s.ToCharArray();
+    Array.Reverse(arr);
+    return new string(arr);
+}
+```
+### Palindrome kiểm tra
+```csharp
+bool IsPalindrome(string s) {
+    int left = 0, right = s.Length - 1;
+    while (left < right) {
+        if (s[left] != s[right]) return false;
+        left++; right--;
     }
+    return true;
+}
+```
+Độ phức tạp `O(N)` thời gian, `O(1)` không gian.",
+                "dsa", "{}", null, 25, 3);
 
-    public void Withdraw(decimal amount) {
-        if (amount > 0 && amount <= _balance) {
-            _balance -= amount;
-        } else {
-            throw new Exception("Lỗi: Số dư không đủ!");
+            
+            var c2 = new Course(teacher.Id, "Làm chủ Danh sách liên kết (Linked List)",
+                "Nắm vững con trỏ, Node, Singly vs Doubly Linked List, kỹ thuật cắt nối, quản lý bộ nhớ và ứng dụng LRU Cache.",
+                CourseCategory.DataStructure, CourseDifficulty.Beginner, true,
+                "https://images.unsplash.com/photo-1544383835-bda2bc66a55d?w=500&q=80");
+            AddLessonToCourse(c2, "Con trỏ & Cắt nối Node trong Linked List",
+                @"# 📖 Cấu Trúc Danh Sách Liên Kết
+Mỗi Node chứa giá trị `Data` và con trỏ `Next` trỏ tới phần tử tiếp theo.
+
+### Thao tác cắt nối
+- **Thêm vào đầu**: tạo node mới → trỏ `next` vào head cũ → gán head = node mới.
+- **Xóa node giữa**: cập nhật `prev.next = curr.next` (cần con trỏ prev).
+- **Đảo ngược**: dùng 3 con trỏ `prev, curr, next`.
+
+### Bẫy thường gặp: Memory Leak
+Khi gán `head = head.next` mà không giải phóng node cũ (trong ngôn ngữ không có GC như C++). Trong C#/.NET, GC sẽ dọn, nhưng vẫn cần cẩn thận với các tham chiếu vòng.",
+                "dsa", "{\"nodes\":[10,20,30]}", linkedListQuiz?.Id, 35, 1);
+
+            AddLessonToCourse(c2, "Doubly Linked List & Sentinel Nodes",
+                @"# 🔗 Doubly Linked List
+Mỗi node có thêm con trỏ `Prev` trỏ về node trước.
+
+### Ưu điểm
+- Duyệt hai chiều, xóa node khi chỉ có con trỏ đến chính node đó trong O(1).
+- Sentinel (node giả đầu/cuối) giúp đơn giản code thêm/xóa tại biên.
+
+### Cài đặt Sentinel đơn giản
+```csharp
+class LinkedList {
+    Node head = new Node(0); // sentinel
+    Node tail = new Node(0);
+    // head.next = tail; tail.prev = head;
+}
+```
+Mọi node thật nằm giữa hai sentinel, tránh phải kiểm tra null liên tục.",
+                "dsa", "{}", null, 30, 2);
+
+            AddLessonToCourse(c2, "Ứng dụng: LRU Cache",
+                @"# 💾 LRU Cache (Least Recently Used)
+Kết hợp **Hash Map** (truy cập O(1)) và **Doubly Linked List** (duy trì thứ tự truy cập).
+
+### Ý tưởng
+- Mỗi khi truy cập một key, di chuyển node tương ứng lên đầu danh sách.
+- Khi cache đầy, xóa node ở cuối danh sách (ít được dùng nhất).
+
+### Độ phức tạp
+- `Get(key)`: O(1) – tìm trong map và di chuyển node.
+- `Put(key, value)`: O(1) – thêm mới hoặc cập nhật.
+
+Đây là bài phỏng vấn kinh điển, minh họa rõ cách kết hợp hai cấu trúc dữ liệu.",
+                "dsa", "{}", null, 30, 3);
+
+            
+            var c3 = new Course(teacher.Id, "Ngăn xếp & Hàng đợi (Stack & Queue)",
+                "Hiểu rõ nguyên lý LIFO vs FIFO, ứng dụng Stack trong Undo/Redo, tính toán biểu thức và Queue trong xử lý hàng chờ.",
+                CourseCategory.DataStructure, CourseDifficulty.Beginner, true,
+                "https://images.unsplash.com/photo-1555066931-4365d14bab8c?w=500&q=80");
+            AddLessonToCourse(c3, "Nguyên lý LIFO vs FIFO & Valid Parentheses",
+                @"# 📖 Ngăn Xếp (Stack) & Hàng Đợi (Queue)
+- **Stack**: Vào sau Ra trước (LIFO). Thao tác `Push` / `Pop` / `Peek`.
+- **Queue**: Vào trước Ra trước (FIFO). Thao tác `Enqueue` / `Dequeue`.
+
+### Ứng dụng Stack: Valid Parentheses
+Kiểm tra chuỗi ngoặc hợp lệ:
+- Gặp `(`, `[`, `{` → push vào stack.
+- Gặp `)`, `]`, `}` → pop stack và kiểm tra khớp.
+- Cuối cùng stack phải rỗng.
+
+```csharp
+bool IsValid(string s) {
+    var stack = new Stack<char>();
+    foreach (char c in s) {
+        if (c == '(') stack.Push(')');
+        else if (c == '[') stack.Push(']');
+        else if (c == '{') stack.Push('}');
+        else if (stack.Count == 0 || stack.Pop() != c) return false;
+    }
+    return stack.Count == 0;
+}
+```",
+                "dsa", "{\"stack\":[\"(\",\"[\"]}", stackQueueQuiz?.Id, 35, 1);
+
+            AddLessonToCourse(c3, "Stack & tính toán biểu thức (Infix ↔ Postfix)",
+                @"# 📊 Stack với biểu thức số học
+- **Infix** (toán tử giữa hai toán hạng): `A + B * C`
+- **Postfix** (RPN - ký pháp nghịch đảo Ba Lan): `A B C * +`
+
+### Chuyển Infix sang Postfix
+Sử dụng stack toán tử, quy tắc ưu tiên:
+1. Toán hạng → xuất thẳng.
+2. Toán tử → pop các toán tử có độ ưu tiên cao hơn hoặc bằng khỏi stack trước khi push.
+3. Dấu ngoặc `(` push, `)` pop đến khi gặp `(`.
+
+### Tính Postfix
+Duyệt trái sang phải: gặp toán hạng push vào stack, gặp toán tử pop 2 toán hạng, tính rồi push kết quả. Kết quả cuối cùng nằm ở đỉnh stack.",
+                "dsa", "{}", null, 30, 2);
+
+            AddLessonToCourse(c3, "Circular Queue & Deque",
+                @"# 🔄 Hàng đợi vòng (Circular Queue)
+Dùng mảng cố định, hai con trỏ `front` và `rear` di chuyển vòng quanh.
+
+### Ưu điểm
+- Tránh lãng phí bộ nhớ so với hàng đợi tuyến tính khi dequeue.
+- Thường dùng trong scheduler, buffer.
+
+### Deque (Double-ended Queue)
+Hàng đợi hai đầu, cho phép thêm/xóa ở cả front và rear. Có thể cài bằng doubly linked list hoặc mảng vòng. Ứng dụng: lưu lịch sử undo/redo hai chiều.",
+                "dsa", "{}", null, 25, 3);
+
+            
+            
+            
+
+            
+            var c4 = new Course(teacher.Id, "Sắp xếp & Tìm kiếm hiệu quả",
+                "Làm chủ tư duy Divide & Conquer, so sánh side-by-side tốc độ Bubble vs Quick vs Merge Sort và tìm kiếm nhị phân nâng cao.",
+                CourseCategory.Sorting, CourseDifficulty.Intermediate, true,
+                "https://images.unsplash.com/photo-1618401471353-b98aedd07871?w=500&q=80");
+            AddLessonToCourse(c4, "So sánh Sắp xếp Nổi bọt & Quick Sort",
+                @"# 📖 Thuật Toán Sắp Xếp Kinh Điển
+- **Bubble Sort**: O(n²), so sánh cặp kề nhau.
+- **Quick Sort**: O(n log n) trung bình, chia mảng dựa trên Pivot.
+
+### Bubble Sort code
+```csharp
+void BubbleSort(int[] arr) {
+    for (int i = 0; i < arr.Length - 1; i++)
+        for (int j = 0; j < arr.Length - i - 1; j++)
+            if (arr[j] > arr[j + 1])
+                (arr[j], arr[j + 1]) = (arr[j + 1], arr[j]);
+}
+```
+### Quick Sort: chọn pivot & phân đoạn
+```csharp
+int Partition(int[] arr, int low, int high) {
+    int pivot = arr[high];
+    int i = low - 1;
+    for (int j = low; j < high; j++) {
+        if (arr[j] <= pivot) {
+            i++;
+            (arr[i], arr[j]) = (arr[j], arr[i]);
+        }
+    }
+    (arr[i+1], arr[high]) = (arr[high], arr[i+1]);
+    return i + 1;
+}
+```
+Pivot quyết định hiệu năng: nếu chọn pivot xấu nhất → O(n²).",
+                "sorting", "{\"array\":[29,10,14,37,13]}", bubbleSortQuiz?.Id, 45, 1);
+
+            AddLessonToCourse(c4, "Quick Sort – chi tiết Pivot & phân vùng",
+                @"# ⚡ Quick Sort In-Depth
+### Chiến lược chọn Pivot
+- Đầu/cuối mảng: đơn giản nhưng dễ gặp worst-case (mảng đã sắp xếp).
+- Ngẫu nhiên: tránh worst-case (Las Vegas).
+- Median-of-three: chọn median của first, middle, last.
+
+### Phân vùng Lomuto vs Hoare
+- **Lomuto**: chọn pivot cuối, đơn giản, thường chậm hơn.
+- **Hoare**: hai con trỏ từ hai đầu, hiệu quả hơn nhưng khó cài đặt đúng.
+
+Quick Sort là **unstable** nhưng có thể cài đặt **in-place** (O(log n) stack).",
+                "sorting", null, quickSortQuiz?.Id, 50, 2);
+
+            AddLessonToCourse(c4, "Merge Sort & Tìm kiếm nhị phân",
+                @"# 🔀 Merge Sort – Chia để trị
+- Đệ quy chia mảng làm đôi cho đến khi mỗi phần chỉ còn 1 phần tử.
+- Hợp nhất (merge) hai mảng con đã sắp xếp thành mảng lớn hơn.
+- Luôn đạt O(n log n), **ổn định** (stable), nhưng cần O(n) bộ nhớ phụ.
+
+### Tìm kiếm nhị phân (Binary Search)
+Áp dụng trên mảng đã sắp xếp.
+- So sánh phần tử giữa: nếu bằng → tìm thấy.
+- Nhỏ hơn → tìm nửa trái, lớn hơn → tìm nửa phải.
+- Độ phức tạp O(log n).
+
+Biến thể: tìm kiếm nhị phân trên mảng xoay (Rotated Sorted Array).",
+                "sorting", "{}", null, 40, 3);
+
+            
+            var c5 = new Course(teacher.Id, "Cây nhị phân & Duyệt cây (Binary Trees)",
+                "Khảo sát tư duy đệ quy, duyệt cây DFS (Pre/In/Post order), BFS theo tầng và cây tìm kiếm nhị phân.",
+                CourseCategory.DataStructure, CourseDifficulty.Intermediate, true,
+                "https://images.unsplash.com/photo-1518770660439-4636190af475?w=500&q=80");
+            AddLessonToCourse(c5, "Duyệt Cây DFS & BFS Quay Lui",
+                @"# 📖 Cấu Trúc Cây Nhị Phân & Traversal
+### DFS (Depth-First Search)
+- **Pre-order**: Nốt → trái → phải.
+- **In-order**: trái → nốt → phải.
+- **Post-order**: trái → phải → nốt.
+Dùng đệ quy hoặc stack (tường minh).
+
+### BFS (Breadth-First Search)
+Duyệt theo tầng (Level Order), dùng queue:
+```csharp
+void BFS(TreeNode root) {
+    var q = new Queue<TreeNode>();
+    q.Enqueue(root);
+    while (q.Count > 0) {
+        var node = q.Dequeue();
+        Process(node);
+        if (node.left != null) q.Enqueue(node.left);
+        if (node.right != null) q.Enqueue(node.right);
+    }
+}
+```",
+                "dsa", "{\"tree\":[1,2,3,4,5]}", treeQuiz?.Id, 45, 1);
+
+            AddLessonToCourse(c5, "Cây tìm kiếm nhị phân (BST) & thao tác",
+                @"# 🌳 Binary Search Tree
+- Mọi nốt con trái < nốt cha < mọi nốt con phải.
+- Thao tác tìm kiếm, thêm, xóa trung bình O(log n), worst-case O(n) nếu cây suy biến thành danh sách liên kết.
+
+### Xóa node trong BST
+1. Nốt lá: xóa trực tiếp.
+2. Một con: thay bằng con.
+3. Hai con: tìm node nhỏ nhất bên phải (in-order successor), copy giá trị, xóa successor.
+
+### Duyệt In-order trên BST cho dãy tăng dần
+Đây là tính chất quan trọng để kiểm tra tính hợp lệ của BST.",
+                "dsa", "{}", null, 45, 2);
+
+            AddLessonToCourse(c5, "Cây AVL & cân bằng cây",
+                @"# ⚖️ Cây AVL (Adelson-Velsky Landis)
+BST tự cân bằng, đảm bảo chiều cao O(log n) bằng cách giữ độ lệch ≤ 1.
+
+### Hệ số cân bằng
+`balance = height(left) - height(right)` nằm trong {-1, 0, 1}.
+
+### Các phép xoay
+- Xoay trái (Left Rotation)
+- Xoay phải (Right Rotation)
+- Xoay kép (Left-Right, Right-Left)
+
+Nhờ cân bằng, AVL duy trì hiệu năng O(log n) cho mọi thao tác, thích hợp cho ứng dụng cần tìm kiếm nhanh.",
+                "dsa", "{}", null, 40, 3);
+
+            
+            var c6 = new Course(teacher.Id, "Tư duy Hướng đối tượng (OOP Mastery)",
+                "Visual hóa 4 trụ cột OOP, bảng VTable, Composition vs Inheritance và các loại interface.",
+                CourseCategory.OOP, CourseDifficulty.Intermediate, true,
+                "https://images.unsplash.com/photo-1517694712202-14dd9538aa97?w=500&q=80");
+            AddLessonToCourse(c6, "Đóng gói & Đa hình qua VTable",
+                @"# 🔐 4 Trụ Cột OOP & VTable
+### Encapsulation (Đóng gói)
+Ẩn chi tiết bên trong, chỉ phơi bày những gì cần thiết qua public methods. Sử dụng `private`, `protected`.
+
+### Polymorphism (Đa hình)
+Phương thức ảo (virtual) cho phép lớp con override. Khi gọi qua tham chiếu lớp cha, runtime tra cứu VTable để gọi đúng phương thức của lớp thực tế.
+
+VTable: mỗi lớp có bảng chứa địa chỉ các phương thức ảo. Cơ chế Dynamic Dispatch chọn đúng hàm lúc runtime.",
+                "oop", "{}", oopQuiz?.Id, 50, 1);
+
+            AddLessonToCourse(c6, "Kế thừa sâu & Composition vs Inheritance",
+                @"# 🧬 Kế thừa vs Composition
+### Vấn đề kế thừa sâu
+- Lớp con phụ thuộc chặt vào lớp cha, khó thay đổi.
+- Dễ vi phạm Liskov Substitution Principle.
+- Kế thừa đa cấp tạo ra cây phức tạp.
+
+### Ưu tiên Composition
+`""Favor composition over inheritance""` – sử dụng field/object bên trong thay vì kế thừa, tạo sự linh hoạt, dễ mở rộng.
+
+### Ví dụ
+```csharp
+class Car {
+    Engine engine;  // composition
+    void Start() { engine.Ignite(); }
+}
+```
+Thay đổi `Engine` không ảnh hưởng đến `Car`.",
+                "oop", "{}", null, 45, 2);
+
+            AddLessonToCourse(c6, "Abstract Class, Interface & Default Implementation",
+                @"# 📜 Abstract Class vs Interface
+- **Abstract class**: có thể chứa method thường, constructor, state. Dùng khi các lớp có mối quan hệ ""is-a"" và chia sẻ code.
+- **Interface**: khai báo hợp đồng, hỗ trợ đa kế thừa. Từ C# 8.0 có default implementation.
+
+### Khi nào dùng?
+- Dùng interface cho khả năng (can-do), abstract class cho bản chất (is-a).
+- Ví dụ: `IFlyable`, `ISwimmable` là interface; `Animal` là abstract class.
+
+### Dependency Inversion
+Code hướng interface giúp giảm coupling, dễ test và bảo trì.",
+                "oop", "{}", null, 40, 3);
+
+            
+            var c7 = new Course(teacher.Id, "Design Patterns cơ bản",
+                "Học cách thiết kế phần mềm linh hoạt bằng Singleton, Factory, Observer, Strategy, Decorator, Proxy.",
+                CourseCategory.Patterns, CourseDifficulty.Intermediate, true,
+                "https://images.unsplash.com/photo-1504639725590-34d0984388bd?w=500&q=80");
+            AddLessonToCourse(c7, "Observer & Strategy Pattern",
+                @"# 👀 Observer Pattern
+Định nghĩa phụ thuộc 1-nhiều: khi một đối tượng (Subject) thay đổi trạng thái, tất cả Observer được thông báo tự động.
+- Subject giữ danh sách Observer, cung cấp Attach/Detach/Notify.
+- Sử dụng trong event handling, MVC.
+
+### 🧠 Strategy Pattern
+Đóng gói các thuật toán vào từng lớp riêng, cho phép hoán đổi linh hoạt lúc runtime.
+- Ví dụ: `ICompressionStrategy` với `ZipCompression`, `RarCompression`.
+- Context chỉ cần tham chiếu đến strategy interface.",
+                "patterns", "{}", patternsQuiz?.Id, 50, 1);
+
+            AddLessonToCourse(c7, "Singleton & Factory Method",
+                @"# 🔒 Singleton Pattern
+Đảm bảo chỉ một instance duy nhất, cung cấp global access point.
+```csharp
+public class Logger {
+    private static Logger instance;
+    private Logger() {}
+    public static Logger Instance {
+        get {
+            if (instance == null) instance = new Logger();
+            return instance;
         }
     }
 }
 ```
-""", "oop", "{}", null, 20, 2));
+### 🏭 Factory Method
+Định nghĩa interface để tạo đối tượng, nhưng để subclass quyết định class cụ thể.
+- Giảm sự phụ thuộc vào `new`, dễ mở rộng thêm loại mới.
+- Ví dụ: `Document` với `CreatePage()` factory method, các subclass `Resume`, `Report` override.",
+                "patterns", "{}", null, 45, 2);
 
-            c3.Lessons.Add(new Lesson(c3.Id, "3. Tính Kế thừa (Inheritance)", """
-# Bài 3: Tính Kế thừa (Inheritance) - Tái sử dụng mã nguồn
+            AddLessonToCourse(c7, "Decorator & Proxy Pattern",
+                @"# 🎀 Decorator Pattern
+Gán thêm trách nhiệm cho object một cách động mà không sửa code gốc. Các decorator wrap object gốc.
+- Ví dụ: `ICoffee` → `SimpleCoffee` → `MilkDecorator` → `SugarDecorator`.
+- Mỗi decorator thêm hành vi trước/sau khi gọi đối tượng gốc.
 
-### 1. Khái niệm Kế thừa
-- Là khả năng một lớp con (Derived Class) thừa hưởng lại các thuộc tính và phương thức của lớp cha (Base Class).
-- Biểu diễn mối quan hệ **"Is-A"** (Là một). Ví dụ: Chó là một Động vật (`Dog is an Animal`).
-- Giúp tránh việc lặp lại mã (DRY - Don't Repeat Yourself).
+### 🛡️ Proxy Pattern
+Cung cấp đối tượng thay thế để kiểm soát truy cập đến object thật.
+- Virtual Proxy: lazy loading.
+- Protection Proxy: kiểm tra quyền truy cập.
+- Remote Proxy: giao tiếp qua mạng.",
+                "patterns", "{}", null, 40, 3);
 
-### 2. Mô phỏng Trực quan
-- **Cây phân cấp (Hierarchy Tree):** Canvas vẽ ra một sơ đồ hình cây. Lớp gốc là `Animal`, truyền các thuộc tính `Age`, `Weight` xuống cho 2 lớp con là `Dog` và `Cat`.
-- Khi khởi tạo `new Dog()`, vùng nhớ Heap của Dog không chỉ chứa dữ liệu của Dog mà còn "cõng" thêm vùng nhớ của Animal bên trong nó.
+            
+            
+            
 
-### 3. Code Minh Họa (C#)
+            
+            var c8 = new Course(teacher.Id, "Đồ thị & Bài toán tối ưu đường đi",
+                "Khảo sát biểu diễn đồ thị, Dijkstra, Bellman-Ford, duyệt đồ thị và Topological Sort.",
+                CourseCategory.Graph, CourseDifficulty.Advanced, true,
+                "https://images.unsplash.com/photo-1558494949-ef010cbdcc31?w=500&q=80");
+            AddLessonToCourse(c8, "Thuật toán Dijkstra & Cạnh trọng số âm",
+                @"# 📈 Dijkstra – Đường đi ngắn nhất
+Sử dụng hàng đợi ưu tiên (Min-Heap) chọn đỉnh có khoảng cách nhỏ nhất chưa xét.
+- Bắt đầu từ nguồn: dist[src]=0, còn lại ∞.
+- Vòng lặp: lấy đỉnh u có dist nhỏ nhất → cập nhật các đỉnh v kề nếu `dist[u] + w < dist[v]`.
+
+### Lưu ý quan trọng
+**Không dùng được với cạnh trọng số âm** vì khi cố định khoảng cách một đỉnh, ta không thể giảm thêm nếu có đường đi qua cạnh âm chưa xét. Khi đó dùng Bellman-Ford.",
+                "graph", "{}", graphQuiz?.Id, 60, 1);
+
+            AddLessonToCourse(c8, "Bellman-Ford & Phát hiện chu trình âm",
+                @"# 🔄 Bellman-Ford
+- Khởi tạo dist[src]=0, còn lại ∞.
+- Lặp |V|-1 lần: relax tất cả các cạnh (`if dist[u] + w < dist[v] then update`).
+- Sau |V|-1 lần, nếu vẫn còn cạnh có thể relax → đồ thị chứa chu trình âm.
+
+### So sánh với Dijkstra
+- Bellman-Ford chậm hơn O(VE) nhưng xử lý được cạnh âm.
+- Thường dùng trong các bài toán tài chính, mạng máy tính phát hiện arbitrage.",
+                "graph", "{}", null, 55, 2);
+
+            AddLessonToCourse(c8, "Duyệt đồ thị (BFS/DFS) & Topological Sort",
+                @"# 🌐 Duyệt đồ thị
+- **BFS**: Duyệt theo chiều rộng, dùng queue. Tìm đường ngắn nhất trên đồ thị không trọng số.
+- **DFS**: Duyệt theo chiều sâu, dùng stack/đệ quy. Phát hiện chu trình, topological sort.
+
+### Topological Sort (Sắp xếp topo)
+Chỉ áp dụng cho DAG (Directed Acyclic Graph). Dùng DFS: khi duyệt xong một đỉnh, đẩy vào stack. Thứ tự pop ra cho ta thứ tự topo.
+- Ứng dụng: lập lịch công việc, phân giải phụ thuộc.",
+                "graph", "{}", null, 50, 3);
+
+            
+            var c9 = new Course(teacher.Id, "Nguyên lý SOLID & Tái cấu trúc code",
+                "Tối ưu kiến trúc phần mềm với 5 nguyên lý SOLID, chỉ số LCOM4, kỹ thuật Refactoring God Class và Dependency Injection.",
+                CourseCategory.SOLID, CourseDifficulty.Advanced, true,
+                "https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=500&q=80");
+            AddLessonToCourse(c9, "Đo lường LCOM4 & Nguyên lý SOLID",
+                @"# 🔨 SOLID & Code Metrics
+### LCOM4 (Lack of Cohesion of Methods)
+Đo lường sự thiếu gắn kết giữa các phương thức trong một lớp. LCOM4 cao → lớp làm quá nhiều việc, vi phạm SRP.
+- Cách tính: đếm số thành phần liên thông trong đồ thị gọi phương thức.
+- Mục tiêu: LCOM4 = 1 (tất cả phương thức liên quan chặt chẽ).
+
+### Nguyên lý SOLID
+- **S**ingle Responsibility
+- **O**pen/Closed
+- **L**iskov Substitution
+- **I**nterface Segregation
+- **D**ependency Inversion",
+                "solid", "{}", solidQuiz?.Id, 60, 1);
+
+            AddLessonToCourse(c9, "Refactoring God Class & Feature Envy",
+                @"# 🧹 Refactoring Code Smells
+### God Class (Lớp thần thánh)
+Một lớp tập trung quá nhiều trách nhiệm, hàng nghìn dòng code.
+- Giải pháp: tách thành các lớp nhỏ hơn, mỗi lớp một nhiệm vụ.
+- Dùng Extract Class, Extract Method.
+
+### Feature Envy (Ghen tị chức năng)
+Một phương thức gọi quá nhiều phương thức của lớp khác hơn là của chính nó.
+- Di chuyển phương thức đó sang lớp mà nó ""ghen tị"".
+
+### Data Clumps, Long Parameter List...
+Nhận diện qua công cụ phân tích tĩnh (SonarQube) và refactor dần.",
+                "solid", "{}", null, 50, 2);
+
+            AddLessonToCourse(c9, "Dependency Injection & Inversion of Control",
+                @"# 🔄 IoC & DI
+### Inversion of Control (IoC)
+Nhường quyền kiểm soát việc tạo đối tượng cho framework/container, thay vì tự `new` trong code.
+
+### Dependency Injection (DI)
+- Constructor Injection: truyền dependency qua constructor.
+- Method/Property Injection.
+- DI Container (Unity, Autofac, .NET Core DI) quản lý vòng đời (Singleton, Scoped, Transient).
+
+Lợi ích: giảm coupling, dễ unit test với mock, tuân thủ DIP.",
+                "solid", "{}", null, 45, 3);
+
+            
+            var c10 = new Course(teacher.Id, "Quy hoạch động (Dynamic Programming)",
+                "Bản chất Memoization vs Tabulation, bài toán Knapsack 0/1, LCS, Edit Distance và tối ưu không gian.",
+                CourseCategory.DataStructure, CourseDifficulty.Advanced, true,
+                "https://images.unsplash.com/photo-1509228468518-180dd4864904?w=500&q=80");
+            AddLessonToCourse(c10, "Bảng Tabulation & Bài toán Cái túi (Knapsack)",
+                @"# 🎒 Dynamic Programming cơ bản
+### Hai cách tiếp cận
+- **Memoization (Top-down)**: đệ quy có lưu trữ kết quả con.
+- **Tabulation (Bottom-up)**: điền bảng từ bài toán nhỏ nhất.
+
+### Knapsack 0/1
+Cho N đồ vật, trọng lượng w[i], giá trị v[i]. Túi chứa tối đa W. Chọn đồ vật (0/1) để tổng giá trị max.
+- DP[i][j]: giá trị max với i đồ vật đầu và trọng lượng j.
+- `dp[i][j] = max(dp[i-1][j], v[i] + dp[i-1][j-w[i]])` nếu `j >= w[i]`.
+- Độ phức tạp O(N*W).",
+                "dsa", "{}", dpQuiz?.Id, 65, 1);
+
+            AddLessonToCourse(c10, "Longest Common Subsequence (LCS) & Edit Distance",
+                @"# 📏 LCS – Dãy con chung dài nhất
+- Cho hai chuỗi X, Y. Tìm độ dài dãy con chung dài nhất (không cần liên tiếp).
+- `dp[i][j] = dp[i-1][j-1] + 1` nếu `X[i]==Y[j]`, ngược lại `max(dp[i-1][j], dp[i][j-1])`.
+
+### Edit Distance (Levenshtein)
+Số thao tác ít nhất (insert, delete, replace) để biến chuỗi A thành B.
+- `dp[i][j]` với i ký tự đầu của A, j ký tự đầu của B.
+- Nếu `A[i]==B[j]`: `dp[i][j] = dp[i-1][j-1]`
+- Ngược lại: `1 + min(dp[i-1][j], dp[i][j-1], dp[i-1][j-1])`.
+
+Cả hai đều là DP 2D kinh điển, nền tảng cho so sánh văn bản, diff tool.",
+                "dsa", "{}", null, 55, 2);
+
+            AddLessonToCourse(c10, "State Machine DP & Tối ưu không gian",
+                @"# 🔄 DP nâng cao
+### DP với máy trạng thái
+Một số bài toán yêu cầu lưu trạng thái (ví dụ: mua bán cổ phiếu với số lần giao dịch giới hạn). DP[ngày][trạng thái] lưu lợi nhuận tối đa.
+
+### Tối ưu không gian
+Nhiều bài DP 2D có thể giảm xuống 1D hoặc O(1) bằng cách chỉ lưu hàng trước đó (rolling array).
+- Ví dụ: Knapsack 0/1 có thể dùng mảng 1D duyệt ngược:
 ```csharp
-public class Animal {
-    public int Age { get; set; }
-    public void Eat() { Console.WriteLine("Đang ăn..."); }
-}
-
-public class Dog : Animal {
-    public string Breed { get; set; }
-    public void Bark() { Console.WriteLine("Gâu gâu!"); }
-}
-
-// Sử dụng
-Dog myDog = new Dog();
-myDog.Eat(); // Kế thừa từ Animal
-myDog.Bark(); // Của riêng Dog
+int[] dp = new int[W+1];
+for (int i = 0; i < N; i++)
+    for (int j = W; j >= w[i]; j--)
+        dp[j] = Math.Max(dp[j], v[i] + dp[j - w[i]]);
 ```
-""", "oop", "{}", null, 25, 3));
+Giảm không gian từ O(N*W) xuống O(W).",
+                "dsa", "{}", null, 50, 3);
 
-            c3.Lessons.Add(new Lesson(c3.Id, "4. Tính Đa hình (Polymorphism)", """
-# Bài 4: Tính Đa hình (Polymorphism) - Muôn hình vạn trạng
+            
+            var c11 = new Course(teacher.Id, "System Design nhập môn & Concurrency",
+                "Mô phỏng Packet Routing, Load Balancing, Race Condition, Lock & Thread-safe Singleton, Caching và Consistent Hashing.",
+                CourseCategory.SystemDesign, CourseDifficulty.Advanced, true,
+                "https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?w=500&q=80");
+            AddLessonToCourse(c11, "Race Condition & Load Balancer Router",
+                @"# 🧵 Concurrency & Load Balancing
+### Race Condition
+Nhiều thread cùng đọc/ghi tài nguyên dùng chung mà không đồng bộ → kết quả không đoán trước.
+- Giải pháp: lock (`Monitor.Enter`/`Exit`), Mutex, Semaphore, `Concurrent` collections.
 
-### 1. Khái niệm Đa hình
-- Cho phép một giao diện (hoặc phương thức) có nhiều cách thực thi khác nhau tùy thuộc vào đối tượng gọi nó.
-- **Nạp chồng (Overloading):** Cùng tên hàm nhưng khác tham số (Compile-time).
-- **Ghi đè (Overriding):** Lớp con thay đổi hành vi của lớp cha bằng từ khóa `virtual` và `override` (Runtime).
+### Load Balancer
+Phân phối request đến nhiều server backend.
+- **Round Robin**: lần lượt từng server.
+- **Least Connections**: chọn server có ít kết nối nhất.
+- **IP Hash**: hash client IP để chọn server, giúp session stickiness.",
+                "system", "{}", systemQuiz?.Id, 70, 1);
 
-### 2. Mô phỏng Trực quan (V-Table)
-- Có một mảng kiểu `Animal[]` chứa `[Dog, Cat]`. Vòng lặp gọi hàm `.Speak()`.
-- **Trực quan:** Dù gọi cùng một hàm `.Speak()`, nhưng khi trỏ tới `Dog` thì bong bóng hiện *"Gâu gâu!"*, trỏ tới `Cat` thì hiện *"Meo meo!"*.
-- **Cơ chế dưới ngầm:** Trình duyệt sẽ zoom vào bảng phương thức ảo (**Virtual Method Table - V-Table**) để chứng minh con trỏ hàm được phân giải động (Late Binding) tại thời gian thực.
+            AddLessonToCourse(c11, "Microservices vs Monolith & Communication",
+                @"# 🏗️ Kiến trúc hệ thống
+### Monolith
+- Toàn bộ ứng dụng đóng gói cùng nhau. Dễ phát triển ban đầu, khó scale và bảo trì khi lớn.
 
-### 3. Code Minh Họa (C#)
-```csharp
-public class Animal {
-    public virtual void Speak() { Console.WriteLine("..."); }
-}
+### Microservices
+- Chia thành các service nhỏ, độc lập, giao tiếp qua API (REST/gRPC) hoặc message broker (RabbitMQ, Kafka).
+- Ưu: scale từng phần, triển khai độc lập.
+- Nhược: độ phức tạp quản lý, distributed transactions.
 
-public class Dog : Animal {
-    public override void Speak() { Console.WriteLine("Gâu gâu!"); }
-}
+### Communication patterns
+- Synchronous (HTTP/REST, gRPC)
+- Asynchronous (Event-driven, message queue)",
+                "system", "{}", null, 55, 2);
 
-public class Cat : Animal {
-    public override void Speak() { Console.WriteLine("Meo meo!"); }
-}
+            AddLessonToCourse(c11, "Caching Strategies & Consistent Hashing",
+                @"# 💨 Caching & Consistent Hashing
+### Caching Strategies
+- **Cache-Aside**: App kiểm tra cache, nếu miss thì lấy từ DB rồi ghi vào cache.
+- **Write-Through**: Ghi DB + cache đồng thời.
+- **Write-Behind**: Ghi cache trước, async ghi DB sau.
 
-Animal[] pets = new Animal[] { new Dog(), new Cat() };
-foreach (Animal pet in pets) {
-    pet.Speak(); // Tự động chọn đúng hàm tại Runtime
-}
-```
-""", "oop", "{}", oopQuiz?.Id, 30, 4));
+### Consistent Hashing
+Dùng trong hệ thống cache phân tán (Memcached, Redis cluster).
+- Hash cả key và server lên một vòng tròn.
+- Key được gán cho server gần nhất theo chiều kim đồng hồ.
+- Khi thêm/bớt server, chỉ 1/N key bị ảnh hưởng (thay vì tất cả như hash modulo).",
+                "system", "{}", null, 50, 3);
 
-            c3.Lessons.Add(new Lesson(c3.Id, "5. Tính Trừu tượng (Abstraction)", """
-# Bài 5: Tính Trừu tượng (Abstraction) - Tập trung vào bản chất
-
-### 1. Khái niệm Trừu tượng
-- Ẩn đi các chi tiết cài đặt phức tạp, chỉ bộc lộ ra những tính năng thiết yếu cho người dùng.
-- Trừu tượng được thực hiện thông qua **Lớp trừu tượng (Abstract Class)** hoặc **Giao diện (Interface)**.
-- Đóng vai trò như một "bản hợp đồng" (Contract) bắt buộc các lớp con phải tuân thủ.
-
-### 2. Giao diện (Interface) vs Lớp Trừu Tượng (Abstract Class)
-- **Interface:** Chỉ chứa khai báo, không chứa cài đặt. Một lớp có thể thực thi nhiều Interface (Đa kế thừa hành vi).
-- **Abstract Class:** Có thể chứa cả khai báo lẫn cài đặt dùng chung. Một lớp chỉ được kế thừa một Abstract Class.
-
-### 3. Code Minh Họa (C#)
-```csharp
-// Bản hợp đồng
-public interface IShape {
-    double CalculateArea();
-}
-
-public class Circle : IShape {
-    public double Radius { get; set; }
-    
-    // Bắt buộc phải tuân thủ hợp đồng (thực thi hàm)
-    public double CalculateArea() {
-        return Math.PI * Radius * Radius;
-    }
-}
-```
-""", "oop", "{}", null, 35, 5));
-
-            // 4. SOLID Course
-            var c4 = new Course(teacher.Id, "Áp dụng Nguyên lý SOLID", "Đi sâu vào 5 nguyên lý thiết kế SOLID giúp mã nguồn dễ mở rộng, bảo trì và kiểm thử.", "solid", "Hard", true, "https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=500&q=80");
-            c4.Lessons.Add(new Lesson(c4.Id, "Nguyên lý Đơn Trách Nhiệm (SRP)", "# Nguyên lý Đơn Trách Nhiệm (Single Responsibility Principle)\nMỗi lớp chỉ nên đảm nhận duy nhất một lý do để thay đổi.\n\n### Dấu hiệu vi phạm:\nMột lớp vừa đọc file, vừa parse JSON, vừa ghi log lên DB.", "solid", "{}", null, 25, 1));
-            c4.Lessons.Add(new Lesson(c4.Id, "Nguyên lý Đóng Mở (OCP)", "# Nguyên lý Đóng Mở (Open/Closed Principle)\nLớp nên mở rộng cho kế thừa tiếp theo nhưng đóng cho sửa đổi trực tiếp.\n\n### Giải pháp:\nSử dụng Interface và kế thừa đa hình để thêm chức năng mới.", "solid", "{}", solidQuiz?.Id, 35, 2));
-
-            // 5. Design Patterns Course
-            var c5 = new Course(teacher.Id, "Mẫu thiết kế Kinh điển", "Học cách thiết kế hệ thống phần mềm chuyên nghiệp sử dụng Strategy, Observer, Factory và các DI container.", "patterns", "Hard", true, "https://images.unsplash.com/photo-1504639725590-34d0984388bd?w=500&q=80");
-            c5.Lessons.Add(new Lesson(c5.Id, "Strategy Pattern", "# Mẫu Thiết kế Chiến lược (Strategy Pattern)\nStrategy đóng gói các thuật toán thành các lớp riêng biệt để client có thể hoán đổi hành vi tại runtime.", "patterns", "{}", null, 25, 1));
-            c5.Lessons.Add(new Lesson(c5.Id, "Observer Pattern", "# Mẫu Thiết kế Quan sát (Observer Pattern)\nĐịnh nghĩa quan hệ một-nhiều giữa các đối tượng để khi một đối tượng đổi trạng thái, các subscriber tự động nhận thông báo.", "patterns", "{}", patternsQuiz?.Id, 35, 2));
-
-            await _context.Courses.AddRangeAsync(c1, c2, c3, c4, c5);
+            await _context.Courses.AddRangeAsync(c1, c2, c3, c4, c5, c6, c7, c8, c9, c10, c11);
             await _context.SaveChangesAsync();
         }
-    }
+    
+        private void AddLessonToCourse(Course course, string title, string contentMd, string sandboxType, string sandboxConfig, Guid? quizId, int xpReward, int index)
+        {
+            var module = course.Modules.FirstOrDefault();
+            if (module == null)
+            {
+                module = new CourseModule(course.Id, "Chương Mặc Định", "Nội dung khóa học", 1000);
+                course.Modules.Add(module);
+            }
+
+            var lesson = new Lesson(title, contentMd, sandboxType, sandboxConfig, xpReward, course.TeacherId);
+            _context.Lessons.Add(lesson);
+
+            var itemOrder = (module.Items.Count + 1) * 1000;
+            var lessonItem = new ModuleItem(module.Id, null, VisualizationDSA.Domain.Enums.ModuleItemType.Lesson, lesson.Id, null, null, title, itemOrder, true);
+            module.Items.Add(lessonItem);
+
+            if (quizId.HasValue)
+            {
+                var quizItem = new ModuleItem(module.Id, null, VisualizationDSA.Domain.Enums.ModuleItemType.Quiz, null, quizId.Value, null, "Quiz: " + title, itemOrder + 500, true);
+                module.Items.Add(quizItem);
+            }
+        }
+}
 }

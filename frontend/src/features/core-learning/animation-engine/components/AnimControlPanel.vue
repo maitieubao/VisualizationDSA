@@ -1,6 +1,6 @@
 <template>
   <div class="control-panel-container" :class="{ 'disabled-panel': store.interactionLocked }">
-    <!-- VCR Controls Row -->
+    
     <div class="vcr-row">
       <VcrButtonsRow
         :is-first-frame="isFirstFrame"
@@ -30,7 +30,7 @@
         ref="timelineRef"
       />
 
-      <!-- Speed Dropdown -->
+      
       <div class="speed-controls-right">
         <select v-model.number="playbackSpeedModel" class="speed-select-dropdown" :disabled="store.interactionLocked">
           <option v-for="speed in SPEED_PRESETS" :key="speed" :value="speed">
@@ -40,7 +40,7 @@
       </div>
     </div>
 
-    <!-- State indicator row -->
+    
     <div class="state-indicator-row">
       <span class="state-dot" :class="{
         'state-dot--idle':     store.playbackState === 'UNINITIALIZED',
@@ -135,12 +135,12 @@ onBeforeUnmount(() => { if (cleanupHotkeys) cleanupHotkeys(); });
 .speed-select-dropdown:focus    { border-color: var(--color-accent-green); box-shadow: 0 0 8px var(--color-accent-green-glow); }
 .speed-select-dropdown:disabled { opacity: 0.4; cursor: not-allowed; }
 
-/* State indicator */
+
 .state-indicator-row { display: flex; align-items: center; gap: 8px; }
 .state-dot  { width: 8px; height: 8px; border-radius: 50%; }
 .state-label { font-size: var(--text-xs); color: var(--color-text-muted); }
 
-/* State-specific dot colors — semantic, không phụ thuộc theme */
+
 .state-dot--idle     { background: var(--color-text-disabled); }
 .state-dot--loaded   { background: var(--color-accent-cyan); }
 .state-dot--playing  { background: var(--color-accent-green); }

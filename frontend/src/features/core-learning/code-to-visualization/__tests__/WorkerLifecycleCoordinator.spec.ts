@@ -30,7 +30,7 @@ describe('WorkerLifecycleCoordinator', () => {
 
     class MockBlob {
       constructor(_parts: BlobPart[], _options?: BlobPropertyBag) {
-        // no-op
+        
       }
     }
 

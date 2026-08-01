@@ -1,0 +1,80 @@
+.status-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 16px;
+  background-color: color-mix(in srgb, var(--color-bg-secondary) 80%, transparent);
+  backdrop-filter: blur(var(--glass-blur));
+  border-bottom: 1px solid var(--color-border-subtle);
+}
+
+.status-info {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: var(--text-xs);
+  color: var(--color-text-secondary);
+}
+
+.separator {
+  color: var(--color-text-muted);
+  user-select: none;
+}
+
+.mode-badge {
+  padding: 2px 10px;
+  border-radius: var(--radius-xl);
+  background-color: var(--color-accent-green-dim);
+  color: var(--color-accent-green);
+  font-weight: var(--font-semibold);
+  font-size: var(--text-xs);
+}
+
+.status-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.action-btn, .action-btn-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 12px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-border-subtle);
+  background-color: color-mix(in srgb, var(--color-bg-hover) 60%, transparent);
+  color: var(--color-text-secondary);
+  font-size: var(--text-xs);
+  cursor: pointer;
+  transition: var(--transition-fast);
+  font-family: var(--font-sans);
+}
+
+.action-btn:hover, .action-btn-label:hover {
+  background-color: var(--color-bg-active);
+  color: var(--color-text-primary);
+}
+
+.action-btn-label input[type="file"] {
+  display: none;
+}
+
+.run-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 12px;
+  border-radius: var(--radius-md);
+  border: 1px solid color-mix(in srgb, var(--color-accent-green) 30%, transparent);
+  background-color: var(--color-accent-green-dim);
+  color: var(--color-accent-green);
+  font-size: var(--text-xs);
+  cursor: pointer;
+  transition: var(--transition-fast);
+  font-family: var(--font-sans);
+}
+
+.run-btn:hover {
+  background-color: color-mix(in srgb, var(--color-accent-green) 30%, transparent);
+}

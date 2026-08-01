@@ -54,4 +54,3 @@ Kỹ sư sư phạm định nghĩa giao ước câu hỏi trắc nghiệm ngắt
 * **Quy tắc 3 Dòng:** Trình giải thích văn bản (Explanation panel) tại chân VCR Timeline tuyệt đối không vượt quá 3 dòng text để giữ sự tập trung cao độ vào hình ảnh.
 * **Đồng bộ Màu sắc:** Thuật ngữ trong đoạn văn bản phải được tô màu chính xác khớp với trạng thái của hình ảnh (Ví dụ: Chữ **[Hoán vị]** được sơn màu cam giống với vệt màu của 2 nút tròn đang swap trên Canvas).
 * **Smart Highlight:** Dòng mã giả đang chạy trong cửa sổ Monaco Editor bên phải bắt buộc phải được tự động cuộn (Auto-scroll-to-center) để bảo đảm điểm nhìn của học viên luôn trùng khớp.
-

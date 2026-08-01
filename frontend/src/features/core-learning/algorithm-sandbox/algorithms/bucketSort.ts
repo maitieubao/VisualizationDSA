@@ -10,7 +10,6 @@ export function generateBucketSortFrames(arr: number[]): SortFrame[] {
   let stepIndex = 0;
 
   const n = arr.length;
-  // Assign stable IDs once at bootstrap
   const initialElements: TrackedElement[] = arr.map((val, idx) => ({
     id: idx,
     value: val,
@@ -19,12 +18,6 @@ export function generateBucketSortFrames(arr: number[]): SortFrame[] {
   const bucketCount = 4;
   const buckets: TrackedElement[][] = Array.from({ length: bucketCount }, () => []);
 
-  // Determine bucket ranges based on value [0 - 100]
-  // The user specified exact ranges:
-  // Bucket 0: [0-25]
-  // Bucket 1: [25-50]
-  // Bucket 2: [50-75]
-  // Bucket 3: [75-100]
   const getBucketIndex = (val: number): number => {
     if (val < 25) return 0;
     if (val < 50) return 1;
@@ -32,19 +25,20 @@ export function generateBucketSortFrames(arr: number[]): SortFrame[] {
     return 3;
   };
 
-  // Helper to clone buckets state
   const cloneBuckets = (bks: TrackedElement[][]): TrackedElement[][] => {
     return bks.map((b) => b.map((e) => ({ ...e })));
   };
 
-  // Helper to clone output array
   const cloneOutput = (out: (TrackedElement | null)[]): ({ id: number; value: number } | null)[] => {
     return out.map((e) => (e ? { id: e.id, value: e.value } : null));
   };
 
   const outputArrayWithIds: (TrackedElement | null)[] = Array.from({ length: n }, () => null);
 
-  // Frame 0: Initial
+  const baseVars = (overrides: Record<string, string | number>): Record<string, string | number> => ({
+    i: "-", bucketIdx: "-", b: "-", j: "-", outputCount: "-", ...overrides,
+  });
+
   frames.push({
     stepIndex: ++stepIndex,
     arrayState: initialElements.map((e) => e.value),
@@ -61,14 +55,13 @@ export function generateBucketSortFrames(arr: number[]): SortFrame[] {
     bucketSortActiveIdx: null,
     bucketSortComparingBucketIndices: null,
     bucketSortOutputWithIds: cloneOutput(outputArrayWithIds),
+    variables: baseVars({}),
   });
 
-  // Step 1: Distribute elements to buckets
   for (let i = 0; i < initialElements.length; i++) {
     const elem = initialElements[i];
     const bucketIdx = getBucketIndex(elem.value);
-    
-    // Highlight the active input element before push
+
     frames.push({
       stepIndex: ++stepIndex,
       arrayState: initialElements.map((e) => e.value),
@@ -85,9 +78,9 @@ export function generateBucketSortFrames(arr: number[]): SortFrame[] {
       bucketSortActiveIdx: bucketIdx,
       bucketSortComparingBucketIndices: null,
       bucketSortOutputWithIds: cloneOutput(outputArrayWithIds),
+      variables: baseVars({ i, bucketIdx }),
     });
 
-    // Actually push it into the bucket
     buckets[bucketIdx].push({ ...elem });
 
     frames.push({
@@ -106,10 +99,10 @@ export function generateBucketSortFrames(arr: number[]): SortFrame[] {
       bucketSortActiveIdx: bucketIdx,
       bucketSortComparingBucketIndices: null,
       bucketSortOutputWithIds: cloneOutput(outputArrayWithIds),
+      variables: baseVars({ i, bucketIdx }),
     });
   }
 
-  // Step 2: Sort each bucket (using Insertion Sort inside bucket for high visual clarity)
   for (let b = 0; b < bucketCount; b++) {
     const bucket = buckets[b];
     if (bucket.length === 0) continue;
@@ -130,14 +123,13 @@ export function generateBucketSortFrames(arr: number[]): SortFrame[] {
       bucketSortActiveIdx: b,
       bucketSortComparingBucketIndices: null,
       bucketSortOutputWithIds: cloneOutput(outputArrayWithIds),
+      variables: baseVars({ b }),
     });
 
     if (bucket.length > 1) {
-      // Insertion sort in bucket
       for (let i = 1; i < bucket.length; i++) {
         let j = i;
         while (j > 0) {
-          // Compare
           frames.push({
             stepIndex: ++stepIndex,
             arrayState: initialElements.map((e) => e.value),
@@ -154,10 +146,10 @@ export function generateBucketSortFrames(arr: number[]): SortFrame[] {
             bucketSortActiveIdx: b,
             bucketSortComparingBucketIndices: [j - 1, j] as [number, number],
             bucketSortOutputWithIds: cloneOutput(outputArrayWithIds),
+            variables: baseVars({ b, j }),
           });
 
           if (bucket[j - 1].value > bucket[j].value) {
-            // Swap
             const temp = bucket[j];
             bucket[j] = bucket[j - 1];
             bucket[j - 1] = temp;
@@ -178,6 +170,7 @@ export function generateBucketSortFrames(arr: number[]): SortFrame[] {
               bucketSortActiveIdx: b,
               bucketSortComparingBucketIndices: [j - 1, j] as [number, number],
               bucketSortOutputWithIds: cloneOutput(outputArrayWithIds),
+              variables: baseVars({ b, j }),
             });
             j--;
           } else {
@@ -187,7 +180,6 @@ export function generateBucketSortFrames(arr: number[]): SortFrame[] {
       }
     }
 
-    // Finished sorting bucket b
     frames.push({
       stepIndex: ++stepIndex,
       arrayState: initialElements.map((e) => e.value),
@@ -204,10 +196,10 @@ export function generateBucketSortFrames(arr: number[]): SortFrame[] {
       bucketSortActiveIdx: b,
       bucketSortComparingBucketIndices: null,
       bucketSortOutputWithIds: cloneOutput(outputArrayWithIds),
+      variables: baseVars({ b }),
     });
   }
 
-  // Step 3: Collect elements from buckets
   frames.push({
     stepIndex: ++stepIndex,
     arrayState: initialElements.map((e) => e.value),
@@ -224,12 +216,13 @@ export function generateBucketSortFrames(arr: number[]): SortFrame[] {
     bucketSortActiveIdx: null,
     bucketSortComparingBucketIndices: null,
     bucketSortOutputWithIds: cloneOutput(outputArrayWithIds),
+    variables: baseVars({}),
   });
 
   let outputCount = 0;
   for (let b = 0; b < bucketCount; b++) {
     const bucket = buckets[b];
-    
+
     if (bucket.length > 0) {
       frames.push({
         stepIndex: ++stepIndex,
@@ -247,14 +240,13 @@ export function generateBucketSortFrames(arr: number[]): SortFrame[] {
         bucketSortActiveIdx: b,
         bucketSortComparingBucketIndices: null,
         bucketSortOutputWithIds: cloneOutput(outputArrayWithIds),
+        variables: baseVars({ b, outputCount }),
       });
     }
 
     while (bucket.length > 0) {
-      // Pull first element
       const elem = bucket.shift()!;
 
-      // Add to outputArray
       outputArrayWithIds[outputCount] = elem;
 
       frames.push({
@@ -273,13 +265,13 @@ export function generateBucketSortFrames(arr: number[]): SortFrame[] {
         bucketSortActiveIdx: b,
         bucketSortComparingBucketIndices: null,
         bucketSortOutputWithIds: cloneOutput(outputArrayWithIds),
+        variables: baseVars({ b, outputCount }),
       });
 
       outputCount++;
     }
   }
 
-  // Final complete state
   frames.push({
     stepIndex: ++stepIndex,
     arrayState: outputArrayWithIds.map((e) => e!.value),
@@ -296,6 +288,7 @@ export function generateBucketSortFrames(arr: number[]): SortFrame[] {
     bucketSortActiveIdx: null,
     bucketSortComparingBucketIndices: null,
     bucketSortOutputWithIds: cloneOutput(outputArrayWithIds),
+    variables: baseVars({ outputCount }),
   });
 
   return frames;

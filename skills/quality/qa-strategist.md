@@ -75,4 +75,3 @@ describe('VCR Playback State Engine Integration Tests', () => {
 });
 ```
  Chiến lược kiểm thử tự động hóa bám sát cấu trúc JSON State mang lại chốt chặn chất lượng hoàn hảo, ngăn ngừa tuyệt đối mọi hiện tượng lệch nhịp giữa hoạt ảnh và Monaco code highlight.
-

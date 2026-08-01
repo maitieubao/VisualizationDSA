@@ -27,5 +27,3 @@ Hệ thống quyết định sử dụng **Kiến trúc nhúng thẻ Iframe có 
 *   **Điểm cần lưu ý (Cons):**
     *   Cần cấu hình giao tiếp postMessage Bridge để truyền tin nhắn hai chiều thay vì gọi biến Javascript trực tiếp (tuy nhiên lớp `EmbedCommunicationBridge` đã giải quyết cực kỳ gọn gàng).
     *   Giới hạn một số đặc quyền popup (nhưng không ảnh hưởng đến trải nghiệm học thuật trực quan).
-    
-    

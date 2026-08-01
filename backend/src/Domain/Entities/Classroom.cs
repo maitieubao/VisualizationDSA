@@ -5,41 +5,88 @@ namespace VisualizationDSA.Domain.Entities
 {
     public class Classroom
     {
-        public string Id { get; private set; }
-        public string Name { get; private set; }
-        public Guid RoadmapId { get; private set; }
-        public Guid TeacherId { get; private set; }
-        public string JoinCode { get; private set; }
+        public Guid Id { get; private set; }
+        public string Name { get; private set; } = string.Empty;
+        public string Description { get; private set; } = string.Empty;
+        public Guid OwnerTeacherId { get; private set; }
+        public Guid? CourseId { get; private set; }
+        public Guid? ImportedFromCourseId { get; private set; }
+        public string InviteCode { get; private set; } = string.Empty;
+        public bool IsArchived { get; private set; }
         public DateTime CreatedAt { get; private set; }
+        public DateTime? InviteCodeExpiresAt { get; private set; }
+        public int? MaxEnrollmentCapacity { get; private set; }
 
-        // Navigation properties
-        public Course Roadmap { get; private set; } = null!;
-        public User Teacher { get; private set; } = null!;
-        public ICollection<ClassroomMember> Members { get; private set; } = new List<ClassroomMember>();
+        
+        public virtual User OwnerTeacher { get; private set; } = null!;
+        public virtual ICollection<ClassroomEnrollment> Enrollments { get; private set; }
+        public virtual ICollection<ClassroomLesson> Lessons { get; private set; }
+        public virtual ICollection<ClassroomModule> Modules { get; private set; }
+        public virtual ICollection<ClassroomModuleItemOverride> ModuleItemOverrides { get; private set; }
+        public virtual ICollection<ClassroomQuiz> Quizzes { get; private set; }
+        public virtual ICollection<ClassroomAnnouncement> Announcements { get; private set; }
 
-        protected Classroom() { } // For EF Core
+        private Classroom() { }
 
-        public Classroom(string name, Guid roadmapId, Guid teacherId)
+        public Classroom(Guid ownerTeacherId, string name, string description, string inviteCode, DateTime? inviteCodeExpiresAt = null, int? maxEnrollmentCapacity = null)
         {
-            Id = Guid.NewGuid().ToString();
-            Name = name;
-            RoadmapId = roadmapId;
-            TeacherId = teacherId;
-            JoinCode = GenerateJoinCode();
+            Id = Guid.NewGuid();
+            OwnerTeacherId = ownerTeacherId;
+            Name = string.IsNullOrWhiteSpace(name) ? throw new ArgumentException("Name cannot be empty.", nameof(name)) : name;
+            Description = description ?? string.Empty;
+            InviteCode = inviteCode;
+            InviteCodeExpiresAt = inviteCodeExpiresAt;
+            MaxEnrollmentCapacity = maxEnrollmentCapacity;
+            IsArchived = false;
             CreatedAt = DateTime.UtcNow;
+
+            Enrollments = new HashSet<ClassroomEnrollment>();
+            Lessons = new HashSet<ClassroomLesson>();
+            Modules = new HashSet<ClassroomModule>();
+            ModuleItemOverrides = new HashSet<ClassroomModuleItemOverride>();
+            Quizzes = new HashSet<ClassroomQuiz>();
+            Announcements = new HashSet<ClassroomAnnouncement>();
         }
 
-        private static string GenerateJoinCode()
+        public void Archive()
         {
-            // Create a random 6-character alphanumeric string
-            var random = new Random();
-            const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-            var result = new char[6];
-            for (int i = 0; i < 6; i++)
-            {
-                result[i] = chars[random.Next(chars.Length)];
-            }
-            return new string(result);
+            IsArchived = true;
+        }
+
+        public void UpdateDetails(string name, string description)
+        {
+            if (string.IsNullOrWhiteSpace(name))
+                throw new ArgumentException("Classroom name cannot be empty.", nameof(name));
+                
+            Name = name;
+            Description = description ?? string.Empty;
+        }
+
+        public void UpdateInviteCode(string code, DateTime? expiresAt = null)
+        {
+            if (string.IsNullOrWhiteSpace(code))
+                throw new ArgumentException("Invite code cannot be empty.", nameof(code));
+                
+            InviteCode = code;
+            InviteCodeExpiresAt = expiresAt;
+        }
+
+        public void UpdateCapacity(int? maxCapacity)
+        {
+            if (maxCapacity.HasValue && maxCapacity.Value <= 0)
+                throw new ArgumentException("Max capacity must be greater than zero.", nameof(maxCapacity));
+                
+            MaxEnrollmentCapacity = maxCapacity;
+        }
+
+        public void SetImportedFromCourse(Guid courseId)
+        {
+            ImportedFromCourseId = courseId;
+        }
+
+        public void LinkToCourse(Guid courseId)
+        {
+            CourseId = courseId;
         }
     }
 }

@@ -1,9 +1,9 @@
 namespace VisualizationDSA.Domain.Engine;
 
-/// <summary>
-/// Frame DTO cho mô-đun SOLID Principles Visualizer.
-/// Mỗi frame thể hiện một bước trong kịch bản vi phạm hoặc tuân thủ nguyên tắc SOLID.
-/// </summary>
+
+
+
+
 public class SOLIDFrameDto
 {
     public int StepIndex { get; set; }
@@ -29,7 +29,7 @@ public class SOLIDClassNodeDto
 public class SOLIDMemberDto
 {
     public string Name { get; set; } = string.Empty;
-    public string MemberType { get; set; } = string.Empty; // "FIELD" | "METHOD"
+    public string MemberType { get; set; } = string.Empty; 
     public List<string> AccessedFields { get; set; } = new();
 }
 
@@ -37,5 +37,5 @@ public class SOLIDMetricsDto
 {
     public double Lcom4Score { get; set; }
     public int ResponsibilityCount { get; set; }
-    public string CouplingLevel { get; set; } = string.Empty; // "LOW" | "MEDIUM" | "HIGH"
+    public string CouplingLevel { get; set; } = string.Empty; 
 }

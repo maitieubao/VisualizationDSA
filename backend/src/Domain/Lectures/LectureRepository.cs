@@ -3,10 +3,10 @@ using System.Linq;
 
 namespace VisualizationDSA.Domain.Lectures;
 
-/// <summary>
-/// In-memory repository chứa kịch bản bài giảng mẫu.
-/// Phase 1: hardcoded seed data. Phase 2+: đọc từ DB/file.
-/// </summary>
+
+
+
+
 public static class LectureRepository
 {
     private static readonly List<Lecture> Lectures = new()

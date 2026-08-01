@@ -1,133 +1,19 @@
 <template>
-  <!--
-    App Shell — VisualizationDSA
-    Phong cách: Terminal / Code Editor aesthetic
-    Font: JetBrains Mono (logo/code), Inter (nav/UI)
-    Theme: data-theme attribute được set trên <html> trong index.html
-  -->
+  
+
+
+
+
+
   <div class="app-shell" :class="{ 'is-embed': isMinimalMode }">
-    <!-- ══════════════════════════════════════════════════════════
-         HEADER — Logo + Right Controls only
-    ══════════════════════════════════════════════════════════ -->
-    <header v-if="!isMinimalMode" class="app-header">
-      <div class="app-header__inner">
+    
+    <AppHeader
+      v-if="!isMinimalMode"
+      @logout="handleLogout"
+      @openLogin="handleOpenLogin"
+    />
 
-        <!-- ── Logo: ~/VisualizationDSA style ── -->
-        <div class="header-logo">
-          <!-- Traffic light dots — terminal window decoration -->
-          <div class="terminal-dots" aria-hidden="true">
-            <span class="terminal-dot terminal-dot--close"></span>
-            <span class="terminal-dot terminal-dot--min"></span>
-            <span class="terminal-dot terminal-dot--max"></span>
-          </div>
-
-          <!-- Logo text -->
-          <div class="logo-text">
-            <span class="logo-prefix">~/</span>
-            <span class="logo-name">VisualizationDSA</span>
-          </div>
-          <span class="logo-badge">DSA Viz</span>
-        </div>
-
-        <!-- Spacer to push controls to the right -->
-        <div class="spacer"></div>
-
-        <!-- ── Right controls: User + GitHub ── -->
-        <div class="header-controls">
-
-          <!-- Authenticated user badge -->
-          <template v-if="authStore.isAuthenticated">
-            <!-- Heart Display -->
-            <HeartDisplay />
-            <!-- Notification Bell -->
-            <!-- NotificationBell removed -->
-            <!-- Role Badges — emoji kept for warmth; chip wraps with semantic accent tint -->
-            <span v-if="authStore.isAdmin" class="role-badge role-badge--admin" title="Quản trị viên">
-              <span class="role-badge__emoji" aria-hidden="true">🛡️</span>
-              <BaseIcon name="shield" class="role-badge__icon" aria-hidden="true" />
-            </span>
-            <span v-else-if="authStore.isTeacher" class="role-badge role-badge--teacher" title="Giảng viên">
-              <span class="role-badge__emoji" aria-hidden="true">👩‍🏫</span>
-              <BaseIcon name="teacher" class="role-badge__icon" aria-hidden="true" />
-            </span>
-            <span v-else-if="authStore.isPremium" class="role-badge role-badge--premium" title="Thành viên Premium">
-              <span class="role-badge__emoji" aria-hidden="true">👑</span>
-              <BaseIcon name="gem" class="role-badge__icon" aria-hidden="true" />
-            </span>
-            <span v-else class="role-badge role-badge--free" title="Thành viên Miễn phí">
-              <span class="role-badge__emoji" aria-hidden="true">🌱</span>
-              <BaseIcon name="check-circle" class="role-badge__icon" aria-hidden="true" />
-            </span>
-
-            <div class="user-badge" :class="{ 'user-badge--premium': authStore.isPremium }" @click="router.push('/profile')" title="Xem hồ sơ cá nhân" role="button" tabindex="0" @keydown.enter="router.push('/profile')">
-              <div class="user-badge__avatar" :class="[
-                { 'user-badge__avatar--premium': authStore.isPremium },
-                authStore.currentUser?.avatarFrameType ? `avatar-frame--${authStore.currentUser.avatarFrameType.toLowerCase()}` : ''
-              ]">
-                {{ authStore.userName.charAt(0).toUpperCase() }}
-              </div>
-              <div class="user-badge__info">
-                <span class="user-badge__name">
-                  {{ authStore.userName }}
-                </span>
-                <span class="user-badge__meta">
-                  Lv.{{ authStore.userLevel }}&nbsp;&middot;&nbsp;{{ authStore.userXP }} XP
-                </span>
-              </div>
-            </div>
-            <button
-              class="btn-icon btn-icon--ghost"
-              title="Đăng xuất"
-              aria-label="Đăng xuất"
-              @click="handleLogout"
-            >
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
-                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
-                <polyline points="16 17 21 12 16 7"/>
-                <line x1="21" y1="12" x2="9" y2="12"/>
-              </svg>
-            </button>
-          </template>
-
-          <!-- Guest: login button -->
-          <button
-            v-else
-            class="btn-primary"
-            @click="showLoginModal = true"
-          >
-            Đăng nhập
-          </button>
-
-          <!-- Restart Guided Tour Button -->
-          <button
-            class="btn-icon btn-icon--ghost"
-            title="Xem hướng dẫn nhanh"
-            aria-label="Xem hướng dẫn nhanh"
-          >
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
-              <circle cx="12" cy="12" r="10"/>
-              <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/>
-              <line x1="12" y1="17" x2="12.01" y2="17"/>
-            </svg>
-          </button>
-
-          <!-- GitHub link -->
-          <a
-            href="https://github.com/maitieubao/VisualizationDSA"
-            target="_blank"
-            rel="noopener noreferrer"
-            class="btn-icon btn-icon--ghost"
-            aria-label="GitHub Repository"
-          >
-            <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
-              <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/>
-            </svg>
-          </a>
-        </div>
-
-      </div>
-    </header>
-
+    
     <!-- ══════════════════════════════════════════════════════════
          BODY — Sidebar + Main Content Layout
     ══════════════════════════════════════════════════════════ -->
@@ -174,6 +60,7 @@
       </aside>
 
       <!-- ── MAIN CONTENT AREA ── -->
+      
       <main class="app-main" :class="{ 'app-main--full': isLandingPage }">
         <RouterView v-slot="{ Component }">
           <Transition name="page-fade">
@@ -191,7 +78,7 @@
   </div>
 
   <!-- Impersonation Banner (Phase C) -->
-  <div v-if="authStore.isImpersonating" class="impersonate-banner" role="alert">
+  <div v-if="authStore.isImpersonating" class="impersonate-banner">
     <div class="impersonate-banner__pulse"></div>
     <div class="impersonate-banner__text">
       <span class="impersonate-banner__icon" aria-hidden="true">🎭</span>
@@ -203,7 +90,7 @@
   </div>
 
   <!-- Sync Error Banner -->
-  <div v-if="progressStore.isSyncError" class="sync-error-banner" role="alert">
+  <div v-if="progressStore.isSyncError" class="sync-error-banner">
     <div class="sync-error-banner__pulse"></div>
     <div class="sync-error-banner__text">
       <span class="sync-error-banner__icon" aria-hidden="true">⚠️</span>
@@ -214,13 +101,13 @@
     </button>
   </div>
 
-  <!-- Login Modal -->
+  
   <LoginModal :visible="showLoginModal" @close="showLoginModal = false" />
 
-  <!-- Global Toast Notifications -->
+  
   <ToastContainer />
 
-  <!-- Interactive Guided Tour Overlay -->
+  
   <GuidedTourOverlay />
 
   <!-- Epic 2 Gamification Modals -->
@@ -241,15 +128,12 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue';
-import { RouterView, RouterLink, useRoute, useRouter } from 'vue-router';
+import { RouterView, useRoute, useRouter } from 'vue-router';
 import { useAuthStore } from './features/auth/store/useAuthStore';
-import { APP_TABS } from './appTabs';
-import type { TabGroup, TabItem } from './appTabs';
-import BaseIcon from './shared/components/BaseIcon.vue';
+import { useGuidedTourStore } from './features/guided-tour/store/useGuidedTourStore';
+import AppHeader from './components/AppHeader.vue';
 import LoginModal from './features/auth/components/LoginModal.vue';
 import ToastContainer from './components/ToastContainer.vue';
-
-
 import { useUserProgressStore } from './features/gamification/user-progress/store/useUserProgressStore';
 // NotificationBell removed
 import HeartDisplay from './components/common/HeartDisplay.vue';
@@ -258,23 +142,35 @@ import HeartDisplay from './components/common/HeartDisplay.vue';
 import { useSessionStore } from './features/gamification/gamification-engine/store/useSessionStore';
 import OutOfHeartsModal from './features/gamification/components/OutOfHeartsModal.vue';
 import SessionResumePrompt from './features/gamification/components/SessionResumePrompt.vue';
+import GuidedTourOverlay from './features/guided-tour/components/GuidedTourOverlay.vue';
+import { useThemeStore } from './shared/store/useThemeStore';
 
 const authStore      = useAuthStore();
 const progressStore  = useUserProgressStore();
 const sessionStore   = useSessionStore();
+const themeStore     = useThemeStore();
+const tourStore      = useGuidedTourStore();
 const route          = useRoute();
 const router         = useRouter();
 const showLoginModal = ref(false);
 const isSyncingProgress = ref(false);
 
-const isSidebarCollapsed = ref(localStorage.getItem('sidebar_collapsed') === 'true');
+const isSidebarCollapsed = ref(false);
 function toggleSidebar() {
   isSidebarCollapsed.value = !isSidebarCollapsed.value;
-  localStorage.setItem('sidebar_collapsed', String(isSidebarCollapsed.value));
-  setTimeout(() => {
-    window.dispatchEvent(new Event('resize'));
-  }, 200);
 }
+const filteredTabs = computed<any[]>(() => {
+  return [
+    { id: 'dashboard', name: 'Bảng điều khiển', path: '/dashboard' },
+    { id: 'courses', name: 'Lộ trình', path: '/courses' },
+    { id: 'classrooms', name: 'Lớp học', path: '/classrooms' },
+    { id: 'gems-shop', name: 'Cửa hàng', path: '/gems-shop' },
+    { id: 'teacher', name: 'Teacher', path: '/teacher' },
+  ];
+});
+
+const isLandingPage = computed(() => route.name === 'landing');
+const isMinimalMode = computed(() => route.path === '/embed' && route.query.algo !== undefined);
 
 async function handleRetrySync(): Promise<void> {
   isSyncingProgress.value = true;
@@ -283,39 +179,6 @@ async function handleRetrySync(): Promise<void> {
   } finally {
     isSyncingProgress.value = false;
   }
-}
-
-const isLandingPage = computed(() => route.name === 'landing');
-const isMinimalMode = computed(() => route.path === '/embed' && route.query.algo !== undefined);
-
-const filteredTabs = computed(() => {
-  return APP_TABS.filter((tabOrGroup) => {
-    if ('groupName' in tabOrGroup) {
-      const group = tabOrGroup as TabGroup;
-      const visibleItems = group.items.filter((item: TabItem) => isTabVisible(item));
-      return visibleItems.length > 0;
-    }
-    return isTabVisible(tabOrGroup as TabItem);
-  }).map((tabOrGroup) => {
-    if ('groupName' in tabOrGroup) {
-      const group = tabOrGroup as TabGroup;
-      return {
-        ...group,
-        items: group.items.filter((item: TabItem) => isTabVisible(item)),
-      };
-    }
-    return tabOrGroup;
-  });
-});
-
-function isTabVisible(tab: TabItem): boolean {
-  if (tab.requiresAuth && !authStore.isAuthenticated) return false;
-  if (tab.requiresRole) {
-    const role = authStore.userRole;
-    if (role === 'Admin') return true; // Admin sees everything
-    if (role !== tab.requiresRole) return false;
-  }
-  return true;
 }
 
 async function handleLogout(): Promise<void> {
@@ -340,6 +203,9 @@ function handleStopImpersonating(): void {
 onMounted(() => {
   authStore.init();
   // tourStore.initTour();
+  themeStore.initTheme();
+  authStore.statelessInit();
+  tourStore.initTour();
 });
 
 async function handleWatchAd() {
@@ -1108,4 +974,7 @@ async function handleWatchAd() {
   opacity: 0.6;
   cursor: not-allowed;
 }
+</style>
+<style>
+@import "./App.css";
 </style>

@@ -5,6 +5,8 @@ export function generateQuickSortFrames(inputArray: number[]): SortFrame[] {
   const arr = [...inputArray];
   const sortedIndices: number[] = [];
   let step = 0;
+  let comparisons = 0;
+  let swaps = 0;
 
   let partitionsList: Partition[] = [
     { low: 0, high: arr.length - 1, isActive: true, isSorted: false }
@@ -14,7 +16,8 @@ export function generateQuickSortFrames(inputArray: number[]): SortFrame[] {
     desc: string,
     comp: [number, number] | null,
     pivot: number | null,
-    swap: [number, number] | null
+    swap: [number, number] | null,
+    vars: Record<string, string | number>
   ) {
     frames.push({
       stepIndex: step++,
@@ -25,7 +28,8 @@ export function generateQuickSortFrames(inputArray: number[]): SortFrame[] {
       sortedIndices: [...sortedIndices],
       description: desc,
       algorithm: 'quick',
-      partitions: partitionsList.map(p => ({ ...p }))
+      partitions: partitionsList.map(p => ({ ...p })),
+      variables: vars,
     });
   }
 
@@ -46,16 +50,18 @@ export function generateQuickSortFrames(inputArray: number[]): SortFrame[] {
     partitionsList.forEach(p => {
       p.isActive = (p.low === low && p.high === high);
     });
-    emit(`Chọn Pivot = ${pivot} tại [${high}]`, null, high, null);
+    emit(`Chọn Pivot = ${pivot} tại [${high}]`, null, high, null, { low, high, i: '-', j: '-', pivot, comparisons, swaps });
 
     let i = low - 1;
     for (let j = low; j < high; j++) {
-      emit(`So sánh arr[${j}]=${arr[j]} với Pivot=${pivot}`, [j, high], high, null);
+      comparisons++;
+      emit(`So sánh arr[${j}]=${arr[j]} với Pivot=${pivot}`, [j, high], high, null, { low, high, i, j, pivot, comparisons, swaps });
       if (arr[j] <= pivot) {
         i++;
         if (i !== j) {
           [arr[i], arr[j]] = [arr[j], arr[i]];
-          emit(`arr[${j}] <= Pivot → Hoán vị [${i}]↔[${j}]`, null, high, [i, j]);
+          swaps++;
+          emit(`arr[${j}] <= Pivot → Hoán vị [${i}]↔[${j}]`, null, high, [i, j], { low, high, i, j, pivot, comparisons, swaps });
         }
       }
     }
@@ -64,7 +70,7 @@ export function generateQuickSortFrames(inputArray: number[]): SortFrame[] {
     const pIdx = i + 1;
     sortedIndices.push(pIdx);
     splitPartition(low, high, pIdx);
-    emit(`Đặt Pivot về đúng vị trí [${pIdx}]`, null, pIdx, [pIdx, high]);
+    emit(`Đặt Pivot về đúng vị trí [${pIdx}]`, null, pIdx, [pIdx, high], { low, high, i, j: '-', pivot, comparisons, swaps });
     return pIdx;
   }
 
@@ -83,9 +89,9 @@ export function generateQuickSortFrames(inputArray: number[]): SortFrame[] {
     }
   }
 
-  emit('Khởi tạo Quick Sort — phân hoạch chia để trị', null, null, null);
+  emit('Khởi tạo Quick Sort — phân hoạch chia để trị', null, null, null, { low: 0, high: arr.length - 1, i: '-', j: '-', pivot: '-', comparisons, swaps });
   quickSort(0, arr.length - 1);
-  emit('✅ Quick Sort hoàn thành!', null, null, null);
+  emit('✅ Quick Sort hoàn thành!', null, null, null, { low: '-', high: '-', i: '-', j: '-', pivot: '-', comparisons, swaps });
 
   return frames;
 }

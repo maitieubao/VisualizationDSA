@@ -6,20 +6,14 @@ using VisualizationDSA.Domain.Engine;
 
 namespace VisualizationDSA.Domain.Strategies;
 
-public class DijkstraStrategy : AlgorithmStrategyBase
+
+
+
+public class DijkstraStrategy : GraphStrategyBase
 {
     public override string AlgorithmId => "dijkstra";
-    public override string Name => "Dijkstra's Shortest Path (Đường đi ngắn nhất)";
+    public override string Name => "Dijkstra (Đường đi ngắn nhất)";
     public override string Category => "Graph";
-
-    private class BSTNode
-    {
-        public int Id { get; set; }
-        public int OriginalValue { get; set; }
-        public int CurrentDistance { get; set; } = 999; // 999 represents Infinity
-        public BSTNode? Left { get; set; }
-        public BSTNode? Right { get; set; }
-    }
 
     public override AlgorithmMetadata GetMetadata()
     {
@@ -27,20 +21,25 @@ public class DijkstraStrategy : AlgorithmStrategyBase
         {
             TimeComplexity = "O((V + E) log V)",
             SpaceComplexity = "O(V)",
-            Description = "Thuật toán Dijkstra tìm đường đi ngắn nhất từ đỉnh nguồn (nút gốc) đến tất cả các đỉnh khác trên đồ thị có trọng số. Mỗi cạnh trái có trọng số = 3, cạnh phải = 5.",
+            Description = "Tìm đường đi ngắn nhất từ đỉnh nguồn đến tất cả các đỉnh còn lại trên đồ thị có trọng số không âm. Sử dụng hàng đợi ưu tiên (Priority Queue) để luôn mở rộng đỉnh có khoảng cách nhỏ nhất. Hiển thị cập nhật distance và predecessor (đường đi).",
             PseudoCode = new List<string>
             {
                 "Dijkstra(graph, source):",
-                "  dist = {v: infinity for v in graph}",
+                "  dist = [INF for v in V]",
+                "  prev = [null for v in V]",
                 "  dist[source] = 0",
-                "  pq = PriorityQueue(source, 0)",
-                "  while pq is not empty:",
-                "    curr, d = pq.popMin()",
-                "    for neighbor, weight in curr.edges:",
-                "      newDist = d + weight",
-                "      if newDist < dist[neighbor]:",
-                "        dist[neighbor] = newDist",
-                "        pq.push(neighbor, newDist)"
+                "  pq = PriorityQueue()",
+                "  pq.enqueue(source, 0)",
+                "  while pq not empty:",
+                "    u = pq.dequeue()",
+                "    if u.visited: continue",
+                "    u.visited = true",
+                "    for (v, w) in u.neighbors:",
+                "      alt = dist[u] + w",
+                "      if alt < dist[v]:",
+                "        dist[v] = alt",
+                "        prev[v] = u",
+                "        pq.enqueue(v, alt)"
             }
         };
     }
@@ -51,155 +50,204 @@ public class DijkstraStrategy : AlgorithmStrategyBase
 
         if (inputData == null || inputData.Length == 0)
         {
-            CaptureGraphFrame(null, 0, "Cây rỗng, không thể chạy Dijkstra.", new List<int>());
+            CaptureEmptyFrame(0, "Đồ thị rỗng, không thể chạy Dijkstra.");
             return _frames;
         }
 
-        // Dựng cây nhị phân tìm kiếm
-        BSTNode? root = null;
-        int idCounter = 0;
-        foreach (int val in inputData)
+        var (nodes, edges) = BuildGraph(inputData);
+        CalculateInitialPositions(nodes, edges);
+
+        int V = nodes.Count;
+        const int INF = int.MaxValue / 2;
+
+        var adj = new List<List<(int neighbor, int weight)>>();
+        for (int i = 0; i < V; i++) adj.Add(new List<(int, int)>());
+        foreach (var e in edges)
         {
-            cancellationToken.ThrowIfCancellationRequested();
-            root = Insert(root, val, ref idCounter);
+            adj[e.From].Add((e.To, e.Weight));
+            if (!e.Directed) adj[e.To].Add((e.From, e.Weight));
         }
 
-        CaptureGraphFrame(root, 0, "Khởi tạo cây. Đặt khoảng cách tới gốc = 0, các nút khác = Vô cùng (999).", new List<int>());
+        int startNode = 0;
+        for (int i = 0; i < V; i++) if (nodes[i].Value == 0) startNode = i;
 
-        // Dijkstra algorithm
-        if (root == null) return _frames;
+        var dist = new int[V];
+        var prev = new int?[V];
+        var visited = new bool[V];
+        var inQueue = new bool[V];
 
-        root.CurrentDistance = 0;
-        CaptureGraphFrame(root, 2, "Thiết lập khoảng cách của nút nguồn (nút gốc) = 0.", new List<int>(), activeNodeId: root.Id);
+        for (int i = 0; i < V; i++)
+        {
+            dist[i] = INF;
+            prev[i] = null;
+        }
+        dist[startNode] = 0;
 
-        var allNodes = new List<BSTNode>();
-        GetAllNodes(root, allNodes);
+        
+        var pq = new PriorityQueue<int, int>();
+        pq.Enqueue(startNode, 0);
+        inQueue[startNode] = true;
 
-        var unvisited = new HashSet<BSTNode>(allNodes);
-        var visitedDistances = new List<int>();
+        
+        CaptureFrame(nodes, edges, 0,
+            $"Khởi tạo Dijkstra từ đỉnh {nodes[startNode].Value}. Distance: {startNode}=0, others=∞",
+            dist, prev, visited, new List<int>(), startNode);
 
-        while (unvisited.Count > 0)
+        int step = 1;
+        int processed = 0;
+
+        while (pq.Count > 0)
         {
             cancellationToken.ThrowIfCancellationRequested();
 
-            // Lấy nút có khoảng cách nhỏ nhất
-            var curr = unvisited.OrderBy(n => n.CurrentDistance).First();
-            if (curr.CurrentDistance == 999)
+            int u = pq.Dequeue();
+            if (visited[u]) continue;
+
+            visited[u] = true;
+            inQueue[u] = false;
+            processed++;
+
+            
+            var distDict = dist
+                .Select((d, i) => new { Index = i, Value = d })
+                .Where(x => x.Value < INF)
+                .ToDictionary(x => x.Index, x => x.Value);
+            var prevDict = prev
+                .Select((p, i) => new { Index = i, Value = p })
+                .Where(x => x.Value.HasValue)
+                .ToDictionary(x => x.Index, x => x.Value!.Value);
+
+            CaptureFrame(nodes, edges, step++,
+                $"Xử lý đỉnh {nodes[u].Value} (distance = {dist[u]}). Đã xử lý: {processed}/{V}",
+                dist, prev, visited, new List<int>(), u, distDict, prevDict);
+
+            
+            foreach (var (v, weight) in adj[u])
             {
-                // Tất cả các nút còn lại không thể tới được từ nguồn
-                break;
-            }
+                if (visited[v]) continue;
 
-            unvisited.Remove(curr);
-            visitedDistances.Add(curr.CurrentDistance);
-
-            CaptureGraphFrame(root, 4, $"Chọn nút {curr.OriginalValue} có dist = {curr.CurrentDistance} nhỏ nhất để duyệt.", visitedDistances, activeNodeId: curr.Id);
-
-            // Thư giãn các nút con (Left: weight 3, Right: weight 5)
-            if (curr.Left != null && unvisited.Contains(curr.Left))
-            {
-                int weight = 3;
-                int newDist = curr.CurrentDistance + weight;
-                CaptureGraphFrame(root, 6, $"Xét nút con trái {curr.Left.OriginalValue}. Tính khoảng cách mới = {curr.CurrentDistance} + {weight} = {newDist}.", visitedDistances, activeNodeId: curr.Left.Id);
-
-                if (newDist < curr.Left.CurrentDistance)
+                int alt = dist[u] + weight;
+                if (alt < dist[v])
                 {
-                    curr.Left.CurrentDistance = newDist;
-                    CaptureGraphFrame(root, 7, $"Cập nhật dist[{curr.Left.OriginalValue}] = {newDist} (nhỏ hơn {curr.Left.CurrentDistance}).", visitedDistances, activeNodeId: curr.Left.Id);
-                }
-            }
+                    dist[v] = alt;
+                    prev[v] = u;
 
-            if (curr.Right != null && unvisited.Contains(curr.Right))
-            {
-                int weight = 5;
-                int newDist = curr.CurrentDistance + weight;
-                CaptureGraphFrame(root, 6, $"Xét nút con phải {curr.Right.OriginalValue}. Tính khoảng cách mới = {curr.CurrentDistance} + {weight} = {newDist}.", visitedDistances, activeNodeId: curr.Right.Id);
+                    
+                    pq.Enqueue(v, alt);
+                    inQueue[v] = true;
 
-                if (newDist < curr.Right.CurrentDistance)
-                {
-                    curr.Right.CurrentDistance = newDist;
-                    CaptureGraphFrame(root, 7, $"Cập nhật dist[{curr.Right.OriginalValue}] = {newDist} (nhỏ hơn {curr.Right.CurrentDistance}).", visitedDistances, activeNodeId: curr.Right.Id);
+                    
+                    var updatedDistDict = dist
+                        .Select((d, i) => new { Index = i, Value = d })
+                        .Where(x => x.Value < INF)
+                        .ToDictionary(x => x.Index, x => x.Value);
+                    var updatedPrevDict = prev
+                        .Select((p, i) => new { Index = i, Value = p })
+                        .Where(x => x.Value.HasValue)
+                        .ToDictionary(x => x.Index, x => x.Value!.Value!);
+
+                    CaptureFrame(nodes, edges, step++,
+                        $"Relax cạnh ({nodes[u].Value} → {nodes[v].Value}) trọng số {weight}. Cập nhật distance[{nodes[v].Value}] = {alt}",
+                        dist, prev, visited, new List<int>(), u,
+                        updatedDistDict, 
+                        updatedPrevDict,  
+                        highlightedEdge: (u, v));
                 }
             }
         }
 
-        CaptureGraphFrame(root, 0, "Thuật toán Dijkstra hoàn tất! Khoảng cách ngắn nhất từ nút gốc đến mọi nút đã được xác định.", visitedDistances);
+        
+        var finalDist = dist
+            .Select((d, i) => new { Index = i, Value = d })
+            .Where(x => x.Value < INF)
+            .ToDictionary(x => x.Index, x => x.Value);
+        var finalPrev = prev
+            .Select((p, i) => new { Index = i, Value = p })
+            .Where(x => x.Value.HasValue)
+            .ToDictionary(x => x.Index, x => x.Value!.Value);
+
+        CaptureFrame(nodes, edges, step++,
+            $"Dijkstra hoàn tất! Shortest distances từ {nodes[startNode].Value}: {string.Join(", ", finalDist.OrderBy(k => k.Key).Select(k => $"{nodes[k.Key].Value}={k.Value}"))}",
+            dist, prev, visited, new List<int>(), -1, finalDist, finalPrev);
 
         return _frames;
     }
 
-    private BSTNode Insert(BSTNode? node, int value, ref int idCounter)
-    {
-        if (node == null)
-        {
-            return new BSTNode { Id = ++idCounter, OriginalValue = value };
-        }
-
-        if (value < node.OriginalValue)
-        {
-            node.Left = Insert(node.Left, value, ref idCounter);
-        }
-        else
-        {
-            node.Right = Insert(node.Right, value, ref idCounter);
-        }
-
-        return node;
-    }
-
-    private void GetAllNodes(BSTNode? node, List<BSTNode> list)
-    {
-        if (node == null) return;
-        list.Add(node);
-        GetAllNodes(node.Left, list);
-        GetAllNodes(node.Right, list);
-    }
-
-    private void CaptureGraphFrame(
-        BSTNode? root,
-        int activeLine,
+    private void CaptureFrame(
+        List<GraphNode> nodes,
+        List<GraphEdge> edges,
+        int stepId,
         string explanation,
-        List<int> visitedDistances,
-        int activeNodeId = -1)
+        int[] dist,
+        int?[] prev,
+        bool[] visited,
+        List<int> queue,
+        int? activeNodeId = null,
+        Dictionary<int, int>? updatedDist = null,
+        Dictionary<int, int>? updatedPrev = null,
+        (int from, int to)? highlightedEdge = null)
     {
-        var treeNodes = new List<TreeNodeDTO>();
-        var dataValues = new List<int>();
-        SerializeTree(root, treeNodes, dataValues);
+        const int INF = int.MaxValue / 2;
 
-        var highlights = new HighlightIndices
+        var frame = new FrameDTO
         {
-            Compare = new List<int>(),
-            Swap = new List<int>(),
-            Sorted = new List<int>(),
-            Active = activeNodeId >= 0 ? new List<int> { activeNodeId } : new List<int>()
+            StepId = stepId,
+            ActiveLine = GetLineForStep(stepId),
+            Explanation = explanation,
+            DataState = dist.Where(d => d < INF).ToArray(),
+            Highlights = new HighlightIndices
+            {
+                Active = activeNodeId.HasValue && activeNodeId.Value >= 0 ? new List<int> { activeNodeId.Value } : new List<int>(),
+                Compare = new List<int>(), 
+                Sorted = Enumerable.Range(0, visited.Length).Where(i => visited[i]).ToList(), 
+                Found = updatedDist?.Keys.FirstOrDefault() ?? -1, 
+            }
         };
 
+        
+        frame.Distances = dist
+            .Select((d, i) => d < INF ? new { Key = i, Value = d } : null)
+            .Where(x => x != null)
+            .ToDictionary(x => x.Key, x => x.Value);
+        frame.Predecessors = prev
+            .Select((p, i) => new { Index = i, Value = p })
+            .Where(x => x.Value.HasValue)
+            .ToDictionary(x => x.Index, x => x.Value!.Value);
+
+        
+        var highlightedEdges = new HashSet<int>();
+        if (highlightedEdge.HasValue)
+        {
+            highlightedEdges.Add(highlightedEdge.Value.from * 1000 + highlightedEdge.Value.to);
+        }
+
+        PopulateFrameGraph(frame, nodes, edges,
+            highlightedNodes: updatedDist?.Keys.ToHashSet(),
+            highlightedEdges: highlightedEdges,
+            activeNodeId: activeNodeId);
+
+        _frames.Add(frame);
+    }
+
+    private void CaptureEmptyFrame(int stepId, string explanation)
+    {
         _frames.Add(new FrameDTO
         {
-            StepId = _frames.Count + 1,
-            ActiveLine = activeLine,
+            StepId = stepId,
+            ActiveLine = 0,
             Explanation = explanation,
-            DataState = visitedDistances.ToArray(),
-            Highlights = highlights,
-            TreeNodes = treeNodes.Count > 0 ? treeNodes : null
+            DataState = Array.Empty<int>(),
+            Highlights = new HighlightIndices()
         });
     }
 
-    private static void SerializeTree(BSTNode? node, List<TreeNodeDTO> nodes, List<int> values)
+    private int GetLineForStep(int step)
     {
-        if (node == null) return;
-
-        // Render the CurrentDistance as the node value in the UI visualizer so it updates in real time!
-        nodes.Add(new TreeNodeDTO
-        {
-            Id = node.Id,
-            Value = node.CurrentDistance == 999 ? 999 : node.CurrentDistance,
-            LeftNodeId = node.Left?.Id,
-            RightNodeId = node.Right?.Id
-        });
-        values.Add(node.CurrentDistance);
-
-        SerializeTree(node.Left, nodes, values);
-        SerializeTree(node.Right, nodes, values);
+        if (step == 0) return 1;
+        if (step <= 2) return 2;
+        if (step <= 5) return 3;
+        if (step <= 8) return 4;
+        if (step <= 12) return 5;
+        return 6;
     }
 }

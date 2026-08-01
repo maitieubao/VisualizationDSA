@@ -23,12 +23,12 @@ namespace VisualizationDSA.Infrastructure.Services
 
         public async Task<OrderDto> CreateOrderAsync(Guid userId)
         {
-            // Kiểm tra user có tồn tại
+            
             var user = await _unitOfWork.Users.GetByIdAsync(userId);
             if (user == null)
                 throw new KeyNotFoundException("Người dùng không tồn tại.");
 
-            // Lấy cấu hình thanh toán
+            
             var bankId = _configuration["SePay:BankId"] ?? "MBBank";
             var bankAccount = _configuration["SePay:BankAccount"] ?? "99999999999";
             var accountName = _configuration["SePay:AccountName"] ?? "DSA VISUALIZER ACADEMY";
@@ -36,10 +36,10 @@ namespace VisualizationDSA.Infrastructure.Services
             
             if (!decimal.TryParse(priceStr, out var amount))
             {
-                amount = 199000m; // Default
+                amount = 199000m; 
             }
 
-            // Sinh mã thanh toán độc nhất
+            
             string paymentCode = string.Empty;
             bool isUnique = false;
             int retries = 0;
@@ -60,7 +60,7 @@ namespace VisualizationDSA.Infrastructure.Services
                 throw new InvalidOperationException("Không thể tạo mã thanh toán độc nhất tại thời điểm này. Vui lòng thử lại.");
             }
 
-            // Tạo hóa đơn mới
+            
             var order = new Order(userId, paymentCode, amount);
             await _unitOfWork.Orders.AddAsync(order);
             await _unitOfWork.CommitAsync();
@@ -83,13 +83,13 @@ namespace VisualizationDSA.Infrastructure.Services
 
         public async Task<bool> ProcessSePayWebhookAsync(SePayWebhookPayload payload)
         {
-            // Chỉ chấp nhận tiền nạp vào (in)
+            
             if (!"in".Equals(payload.TransferType, StringComparison.OrdinalIgnoreCase))
             {
                 return false;
             }
 
-            // Kiểm tra Idempotency bằng TransactionReference
+            
             var transactionRef = payload.Id.ToString();
             var existingByRef = await _unitOfWork.Orders.FindAsync(o => o.TransactionReference == transactionRef);
             if (existingByRef.Any())
@@ -97,17 +97,17 @@ namespace VisualizationDSA.Infrastructure.Services
                 return true;
             }
 
-            // Bước 1: Tìm mã thanh toán
+            
             string? paymentCode = null;
 
-            // Nếu SePay đã trích xuất được code
+            
             if (!string.IsNullOrEmpty(payload.Code))
             {
                 paymentCode = payload.Code.Trim().ToUpper();
             }
             else if (!string.IsNullOrEmpty(payload.Content))
             {
-                // Quét nội dung chuyển khoản bằng Regex để tìm mã dạng VDSAxxxxxx
+                
                 var match = Regex.Match(payload.Content, @"VDSA[A-Z0-9]{6}", RegexOptions.IgnoreCase);
                 if (match.Success)
                 {
@@ -117,42 +117,42 @@ namespace VisualizationDSA.Infrastructure.Services
 
             if (string.IsNullOrEmpty(paymentCode))
             {
-                // Không tìm thấy mã thanh toán hợp lệ trong nội dung chuyển khoản
+                
                 return false;
             }
 
-            // Tìm hóa đơn khớp với mã thanh toán
+            
             var orders = await _unitOfWork.Orders.FindAsync(o => o.PaymentCode == paymentCode);
             var order = orders.FirstOrDefault();
 
             if (order == null)
             {
-                // Không tìm thấy hóa đơn khớp với mã thanh toán này
+                
                 return false;
             }
 
-            // Nếu hóa đơn đã được hoàn thành trước đó (Idempotency)
+            
             if (order.Status == "Completed")
             {
                 return true;
             }
 
-            // Bước 2: Kiểm tra số tiền
-            // SePay gửi số tiền thực tế nhận được qua transferAmount
+            
+            
             if (payload.TransferAmount < order.Amount)
             {
-                // Số tiền nạp nhỏ hơn giá trị hóa đơn
+                
                 return false;
             }
 
-            // Bước 3: Cập nhật trạng thái đơn hàng và kích hoạt Premium trong giao dịch (Transaction)
+            
             await _unitOfWork.BeginTransactionAsync();
             try
             {
                 order.SetTransactionReference(transactionRef);
                 order.MarkAsCompleted();
 
-                // Kích hoạt Premium cho người dùng
+                
                 var user = await _unitOfWork.Users.GetByIdAsync(order.UserId);
                 if (user != null)
                 {
@@ -170,7 +170,7 @@ namespace VisualizationDSA.Infrastructure.Services
             }
         }
 
-        // ── Helpers ──────────────────────────────────────────────────────────
+        
 
         private static string GenerateRandomPaymentCode()
         {

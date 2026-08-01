@@ -24,12 +24,12 @@ export function useRadixSortVisualizer(frame: () => SortFrame | null) {
 
   const n = computed(() => Math.max(displayItems.value.length, 1));
 
-  // ── Sizing (responsive) ───────────────────────────────────────────────────────
+  
   const cellH  = computed(() => n.value <= 8 ? '72px' : n.value <= 12 ? '60px' : '50px');
   const arrGap = computed(() => n.value <= 8 ? '8px'  : '5px');
   const cellFs = computed(() => n.value <= 8 ? '14px' : '12px');
 
-  // ── Phase ─────────────────────────────────────────────────────────────────────
+  
   const isDistributePhase = computed(() => frame()?.radixStep !== 'collect');
   const activeDigitPlace  = computed(() => frame()?.activeDigitPlace ?? 1);
 
@@ -38,7 +38,7 @@ export function useRadixSortVisualizer(frame: () => SortFrame | null) {
     return e === 1 ? 'Hàng đơn vị (1s)' : e === 10 ? 'Hàng chục (10s)' : e === 100 ? 'Hàng trăm (100s)' : `×${e}`;
   });
 
-  // ── Text ──────────────────────────────────────────────────────────────────────
+  
   const currentStepDescription = computed(() => frame()?.description ?? 'Khởi tạo Radix Sort');
 
   const miniStepExplanation = computed(() => {
@@ -59,7 +59,7 @@ export function useRadixSortVisualizer(frame: () => SortFrame | null) {
     return f.description;
   });
 
-  // ── Active tracking ───────────────────────────────────────────────────────────
+  
   const comparingIndices = computed(() => frame()?.comparingIndices ?? null);
 
   const activeElementIdx = computed(() => {
@@ -77,7 +77,7 @@ export function useRadixSortVisualizer(frame: () => SortFrame | null) {
     activeElementIdx.value !== -1 && activeBucketIdx.value !== -1
   );
 
-  // ── SVG connector path ────────────────────────────────────────────────────────
+  
   const connectionCoords = ref({ x1: 500, x2: 500 });
 
   const updateCoords = () => {
@@ -133,7 +133,7 @@ export function useRadixSortVisualizer(frame: () => SortFrame | null) {
     return `M ${x2} 92 L ${x2} 78 C ${x2} 40, ${x1} 60, ${x1} 22 L ${x1} 8`;
   });
 
-  // ── Bucket helpers ────────────────────────────────────────────────────────────
+  
   function bucketItems(d: number): Array<{ id: number; value: number }> {
     const wids = frame()?.radixBucketsWithIds?.[d];
     if (wids) return wids;
@@ -141,7 +141,7 @@ export function useRadixSortVisualizer(frame: () => SortFrame | null) {
   }
   function isBucketActive(d: number) { return activeBucketIdx.value === d; }
 
-  // ── Class helpers ─────────────────────────────────────────────────────────────
+  
   function cellClass(idx: number): string {
     if (!frame()) return 'r-cell--idle';
     const { comparingIndices: ci, radixStep } = frame()!;
@@ -158,7 +158,7 @@ export function useRadixSortVisualizer(frame: () => SortFrame | null) {
     return 'r-bitem--idle';
   }
 
-  // ── Digit text helpers ────────────────────────────────────────────────────────
+  
   function activeDigit(val: number): string {
     return String(Math.floor(val / activeDigitPlace.value) % 10);
   }

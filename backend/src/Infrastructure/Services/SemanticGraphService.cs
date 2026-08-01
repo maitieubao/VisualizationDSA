@@ -8,10 +8,10 @@ using VisualizationDSA.Infrastructure.Data;
 
 namespace VisualizationDSA.Infrastructure.Services
 {
-    /// <summary>
-    /// Truy vấn ma trận vector quan hệ (SemanticConceptNode / KnowledgeEdge) trực tiếp
-    /// trên ApplicationDbContext bằng projection + AsNoTracking để tối ưu read-path.
-    /// </summary>
+    
+    
+    
+    
     public class SemanticGraphService : ISemanticGraphService
     {
         private readonly ApplicationDbContext _db;
@@ -45,7 +45,7 @@ namespace VisualizationDSA.Infrastructure.Services
 
             var nodeIds = nodes.Select(n => n.Id).ToHashSet();
 
-            // Chỉ lấy các cạnh nằm trọn trong tập node đã lọc (induced subgraph).
+            
             var edges = await _db.KnowledgeEdges
                 .AsNoTracking()
                 .Where(e => nodeIds.Contains(e.SourceNodeId) && nodeIds.Contains(e.TargetNodeId))
@@ -61,7 +61,7 @@ namespace VisualizationDSA.Infrastructure.Services
 
             var nodeCount = nodes.Count;
             var edgeCount = edges.Count;
-            // Mật độ đồ thị có hướng: E / (V * (V - 1)).
+            
             var density = nodeCount > 1
                 ? Math.Round((double)edgeCount / (nodeCount * (nodeCount - 1)), 4)
                 : 0.0;

@@ -32,7 +32,7 @@ namespace VisualizationDSA.UnitTests.Services
         [Fact]
         public async Task GetUserQuizHistoryAsync_ShouldClampParametersAndCallRepository()
         {
-            // Arrange
+            
             var userId = Guid.NewGuid();
             var attempts = new List<QuizAttempt>
             {
@@ -42,10 +42,10 @@ namespace VisualizationDSA.UnitTests.Services
             _mockQuizRepo.Setup(r => r.GetUserAttemptsWithQuizPaginatedAsync(userId, 1, 10))
                 .ReturnsAsync(attempts);
 
-            // Act
-            var result = await _service.GetUserQuizHistoryAsync(userId, -5, -20); // Testing negative clamps
+            
+            var result = await _service.GetUserQuizHistoryAsync(userId, -5, -20); 
 
-            // Assert
+            
             result.Should().HaveCount(1);
             _mockQuizRepo.Verify(r => r.GetUserAttemptsWithQuizPaginatedAsync(userId, 1, 10), Times.Once);
         }

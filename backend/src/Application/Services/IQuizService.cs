@@ -14,7 +14,7 @@ namespace VisualizationDSA.Application.Services
         Task<IEnumerable<QuizAttemptDto>>    GetUserQuizHistoryAsync(Guid userId, int pageNumber, int pageSize);
     }
 
-    /// <summary>DTO tóm tắt lịch sử làm quiz — tránh trùng với Domain.Entities.QuizAttempt</summary>
+    
     public class QuizAttemptDto
     {
         public Guid     QuizId      { get; set; }

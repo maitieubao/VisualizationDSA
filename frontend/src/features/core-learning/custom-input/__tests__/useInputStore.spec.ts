@@ -8,9 +8,9 @@ describe('useInputStore', () => {
     vi.restoreAllMocks();
   });
 
-  // ==========================================
-  // Initial State
-  // ==========================================
+  
+  
+  
   describe('initial state', () => {
     it('starts with empty rawText', () => {
       const store = useInputStore();
@@ -33,9 +33,9 @@ describe('useInputStore', () => {
     });
   });
 
-  // ==========================================
-  // parsedArray computed
-  // ==========================================
+  
+  
+  
   describe('parsedArray', () => {
     it('returns empty array for empty input', () => {
       const store = useInputStore();
@@ -73,9 +73,9 @@ describe('useInputStore', () => {
     });
   });
 
-  // ==========================================
-  // elementCount computed
-  // ==========================================
+  
+  
+  
   describe('elementCount', () => {
     it('is 0 for empty input', () => {
       const store = useInputStore();
@@ -89,9 +89,9 @@ describe('useInputStore', () => {
     });
   });
 
-  // ==========================================
-  // isValidFormat computed
-  // ==========================================
+  
+  
+  
   describe('isValidFormat', () => {
     it('returns true for empty string', () => {
       const store = useInputStore();
@@ -135,9 +135,9 @@ describe('useInputStore', () => {
     });
   });
 
-  // ==========================================
-  // isWithinLimit computed
-  // ==========================================
+  
+  
+  
   describe('isWithinLimit', () => {
     it('returns true when element count <= maxLimit', () => {
       const store = useInputStore();
@@ -153,9 +153,9 @@ describe('useInputStore', () => {
     });
   });
 
-  // ==========================================
-  // canExecute computed
-  // ==========================================
+  
+  
+  
   describe('canExecute', () => {
     it('returns false when rawText is empty', () => {
       const store = useInputStore();
@@ -189,9 +189,9 @@ describe('useInputStore', () => {
     });
   });
 
-  // ==========================================
-  // setLimit action
-  // ==========================================
+  
+  
+  
   describe('setLimit', () => {
     it('updates maxLimit', () => {
       const store = useInputStore();
@@ -200,9 +200,9 @@ describe('useInputStore', () => {
     });
   });
 
-  // ==========================================
-  // generateRandomInput action
-  // ==========================================
+  
+  
+  
   describe('generateRandomInput', () => {
     it('generates random array and fills rawText', () => {
       const store = useInputStore();
@@ -257,9 +257,9 @@ describe('useInputStore', () => {
     });
   });
 
-  // ==========================================
-  // clear action
-  // ==========================================
+  
+  
+  
   describe('clear', () => {
     it('resets rawText to empty', () => {
       const store = useInputStore();
@@ -283,9 +283,9 @@ describe('useInputStore', () => {
     });
   });
 
-  // ==========================================
-  // submitCustomInput action (fallback path)
-  // ==========================================
+  
+  
+  
   describe('submitCustomInput', () => {
     it('does nothing when canExecute is false', async () => {
       const store = useInputStore();

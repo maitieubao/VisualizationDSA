@@ -1,9 +1,9 @@
 <template>
   <div class="h-full flex flex-col bg-bg-secondary/50">
-    <!-- Variables HUD -->
+    
     <VariablesHud :activeLoopVars="activeLoopVars" />
 
-    <!-- Code Lines -->
+    
     <div class="flex-1 overflow-y-auto p-2" ref="viewport">
       <div class="font-mono text-sm leading-7">
         <div
@@ -18,7 +18,7 @@
           class="group flex items-center rounded-md px-2 py-0.5 cursor-pointer select-none transition-all"
           :class="getLineClasses(idx + 1)"
         >
-          <!-- Line number -->
+          
           <span
             class="w-8 text-right pr-3 text-xs select-none"
             :class="isLineActive(idx + 1) ? 'text-accent' : 'text-text-disabled'"
@@ -26,7 +26,7 @@
             {{ idx + 1 }}
           </span>
 
-          <!-- Code content -->
+          
           <span class="whitespace-pre" v-html="highlightSyntax(line)"></span>
         </div>
       </div>

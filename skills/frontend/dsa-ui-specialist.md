@@ -60,4 +60,3 @@ export class DsaAnimationMath {
 }
 ```
  Việc uốn cong parabol mượt mà 60 FPS giúp các cột mảng hoán vị hoán đổi vị trí uyển chuyển, loại bỏ hiện tượng đứt gãy hình ảnh khô khan.
-

@@ -129,7 +129,7 @@ describe('useGamificationStore', () => {
       store.useStreakFreeze();
       store.useStreakFreeze();
       store.useStreakFreeze();
-      store.useStreakFreeze(); // fourth attempt
+      store.useStreakFreeze(); 
       expect(store.streakFreezesCount).toBe(0);
     });
 
@@ -152,11 +152,11 @@ describe('useGamificationStore', () => {
   describe('badge unlocking', () => {
     it('should unlock badges when thresholds are met', () => {
       const store = useGamificationStore();
-      // Set state to meet sorting-champion requirements (300 XP, 2 streak)
+      
       store.earnXPLocal(200);
       store.earnXPLocal(200);
-      // activeStreak should be at least 1 after earning XP
-      // Manually set for testing
+      
+      
       store.setStreakForTesting(3);
       store.checkAndUnlockBadges();
       expect(store.unlockedBadges.length).toBeGreaterThan(0);

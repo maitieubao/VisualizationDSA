@@ -12,15 +12,16 @@ echo   VisualizationDSA — Starting Full Stack
 echo   Backend  : http://localhost:5055
 echo   Frontend : http://localhost:5173
 echo ============================================================
+set "PATH=C:\Program Files\dotnet;C:\Program Files\nodejs;%PATH%"
 echo.
 
 REM --- Start Backend in a new terminal window ---
-start "VisualizationDSA Backend" cmd /k "set ASPNETCORE_ENVIRONMENT=Development&& dotnet run --project backend\src\WebApi\WebApi.csproj --urls http://localhost:5055"
+start "VisualizationDSA Backend" cmd /k "set ASPNETCORE_ENVIRONMENT=Development&& set DOTNET_ROLL_FORWARD=Major&& dotnet run --project backend\src\WebApi\WebApi.csproj --urls http://localhost:5055"
 
 
 
 REM --- Wait briefly for backend to begin initializing ---
-timeout /t 3 /nobreak >nul
+ping 127.0.0.1 -n 4 >nul
 
 REM --- Start Frontend in a new terminal window ---
 start "VisualizationDSA Frontend" cmd /k "cd frontend && set VITE_API_BASE_URL=http://localhost:5055&& npm run dev"

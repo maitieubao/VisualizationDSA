@@ -10,7 +10,7 @@
       </button>
     </div>
 
-    <!-- Canvas Container -->
+    
     <div class="playground-canvas-wrapper relative w-full h-[250px] rounded-xl border overflow-hidden" ref="canvasContainer">
       <div class="canvas-grid absolute inset-0 opacity-10 pointer-events-none"></div>
 
@@ -28,7 +28,7 @@
       <svg v-if="draggingEdge" class="absolute inset-0 pointer-events-none w-full h-full">
         <path
           :d="getBezierPath(draggingEdge.x1, draggingEdge.y1, draggingEdge.x2, draggingEdge.y2)"
-          stroke="var(--color-accent-cyan)"
+          stroke="var(--color-accent-primary-text)"
           stroke-width="3"
           stroke-dasharray="4"
           class="dragging-edge-path animate-[dash_1s_linear_infinite]"
@@ -37,7 +37,7 @@
       </svg>
     </div>
 
-    <!-- HUD Details -->
+    
     <GraphPlaygroundHud
       :verticesCount="vertices.length"
       :edgesCount="edges.length"

@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.AspNetCore.RateLimiting;
+using VisualizationDSA.Application;
 using Microsoft.AspNetCore.ResponseCompression;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
@@ -26,7 +27,7 @@ using VisualizationDSA.Infrastructure.Services;
 using VisualizationDSA.WebApi.Middlewares;
 using VisualizationDSA.Application.Common.Interfaces;
 
-// ── Bootstrap logger (vọ ngay khi start, trước khi DI sẵn sàng) ──────────
+
 Log.Logger = new LoggerConfiguration()
     .MinimumLevel.Override("Microsoft", LogEventLevel.Warning)
     .MinimumLevel.Override("System",    LogEventLevel.Warning)
@@ -36,12 +37,12 @@ Log.Logger = new LoggerConfiguration()
 
 var builder = WebApplication.CreateBuilder(args);
 
-// ── Serilog full logger (thay thế ILogger mặc định của .NET) ────────────────
+
 builder.Host.UseSerilog((context, services, configuration) =>
 {
     configuration
-        .ReadFrom.Configuration(context.Configuration)   // đọc từ appsettings.json
-        .ReadFrom.Services(services)                     // hỗ trợ enrichers DI
+        .ReadFrom.Configuration(context.Configuration)   
+        .ReadFrom.Services(services)                     
         .MinimumLevel.Override("Microsoft", LogEventLevel.Warning)
         .MinimumLevel.Override("System",    LogEventLevel.Warning)
         .Enrich.FromLogContext()
@@ -51,14 +52,15 @@ builder.Host.UseSerilog((context, services, configuration) =>
         .WriteTo.File(
             path:              "logs/app-.log",
             rollingInterval:   RollingInterval.Day,
-            retainedFileCountLimit: 7,           // giữ tối đa 7 ngày
+            retainedFileCountLimit: 7,           
             outputTemplate:    "[{Timestamp:yyyy-MM-dd HH:mm:ss} {Level:u3}] {SourceContext} {Message:lj}{NewLine}{Exception}");
 });
 
-// Add services to the container
+
+builder.Services.AddApplicationServices();
 builder.Services.AddControllers(options =>
     {
-        // Ghi mọi tương tác API vào Event Sourcing Ledger (append-only) một cách reactively.
+        
         options.Filters.Add<VisualizationDSA.WebApi.Filters.AuditEventActionFilter>();
     })
     .AddJsonOptions(options =>
@@ -84,7 +86,7 @@ builder.Services.AddApiVersioning(options =>
     options.SubstituteApiVersionInUrl = true;
 });
 builder.Services.AddEndpointsApiExplorer();
-// ✅ B4: Swagger JWT config — show Authorize button trong Swagger UI
+
 builder.Services.AddSwaggerGen(options =>
 {
     options.SwaggerDoc("v1", new Microsoft.OpenApi.Models.OpenApiInfo
@@ -94,7 +96,7 @@ builder.Services.AddSwaggerGen(options =>
         Description = "Backend API cho ứng dụng trực quan hóa DSA & OOP",
     });
 
-    // Định nghĩa scheme Bearer
+    
     var jwtScheme = new Microsoft.OpenApi.Models.OpenApiSecurityScheme
     {
         Name         = "Authorization",
@@ -106,7 +108,7 @@ builder.Services.AddSwaggerGen(options =>
     };
     options.AddSecurityDefinition("Bearer", jwtScheme);
 
-    // Yêu cầu Bearer cho mọi endpoint có [Authorize]
+    
     options.AddSecurityRequirement(new Microsoft.OpenApi.Models.OpenApiSecurityRequirement
     {
         {
@@ -123,7 +125,7 @@ builder.Services.AddSwaggerGen(options =>
     });
 });
 
-// Configure Response Compression (Brotli + Gzip)
+
 builder.Services.AddResponseCompression(options =>
 {
     options.EnableForHttps = true;
@@ -141,7 +143,7 @@ builder.Services.Configure<GzipCompressionProviderOptions>(options =>
     options.Level = CompressionLevel.Optimal;
 });
 
-// ✅ C1: CORS đọc từ appsettings.json Cors:AllowedOrigins — không hardcode nữa
+
 var allowedOrigins = builder.Configuration
     .GetSection("Cors:AllowedOrigins")
     .Get<string[]>()
@@ -160,14 +162,16 @@ builder.Services.AddCors(options =>
 // Configure Database (PostgreSQL)
 builder.Services.AddDbContextPool<ApplicationDbContext>(options =>
     options
-        .UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"))
+        .UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection"))
         // Bảo vệ tính bất biến của Event Sourcing Ledger (chặn UPDATE/DELETE).
         .AddInterceptors(new ImmutableAuditInterceptor()));
 
-// Register Repository & Unit of Work
+builder.Services.AddScoped<VisualizationDSA.Application.Interfaces.IApplicationDbContext>(provider => provider.GetRequiredService<VisualizationDSA.Infrastructure.Data.ApplicationDbContext>());
+
+
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 
-// Register Application Services
+
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IGemsShopService, GemsShopService>();
 builder.Services.AddScoped<IQuizService, QuizService>();
@@ -183,14 +187,13 @@ builder.Services.AddScoped<IPaymentService, PaymentService>();
 builder.Services.AddScoped<ISemanticGraphService, SemanticGraphService>();
 builder.Services.AddScoped<IAuditEventService, AuditEventService>();
 builder.Services.AddScoped<ITeacherStudioService, TeacherStudioService>();
-builder.Services.AddScoped<INotificationService, NotificationService>();
+builder.Services.AddScoped<VisualizationDSA.Application.Services.INotificationService, NotificationService>();
 builder.Services.AddScoped<IAiQuotaService, AiQuotaService>();
 builder.Services.AddHttpClient<IAiAssistantService, AiAssistantService>();
 builder.Services.AddScoped<IRoadmapAuditService, RoadmapAuditService>();
 builder.Services.AddScoped<IContentModerationService, ContentModerationService>();
 builder.Services.AddScoped<ISessionService, SessionService>();
 builder.Services.AddScoped<IRoadmapLanguageService, RoadmapLanguageService>();
-builder.Services.AddScoped<IClassroomService, ClassroomService>();
 builder.Services.AddScoped<ICheatSheetService, CheatSheetService>();
 builder.Services.AddScoped<IUploadService, CloudinaryUploadService>();
 builder.Services.AddScoped<IHeartService, HeartService>();
@@ -200,17 +203,21 @@ builder.Services.AddHttpClient<ISandboxService, SandboxService>();
 builder.Services.AddScoped<ITeacherApplicationService, TeacherApplicationService>();
 // Register Background Jobs
 builder.Services.AddHostedService<VisualizationDSA.Infrastructure.Jobs.PremiumExpiryJob>();
-builder.Services.AddHostedService<VisualizationDSA.Infrastructure.Jobs.ClassroomInactiveAlertJob>();
 builder.Services.AddHostedService<VisualizationDSA.Infrastructure.Jobs.StreakReminderJob>();
 builder.Services.AddHostedService<VisualizationDSA.Infrastructure.Jobs.PremiumExpiryWarningJob>();
 builder.Services.AddHostedService<VisualizationDSA.Infrastructure.Jobs.TeacherAppReminderJob>();
-builder.Services.AddHostedService<VisualizationDSA.Infrastructure.Jobs.ClassroomWeeklyBXHJob>();
 builder.Services.AddHostedService<VisualizationDSA.Infrastructure.Jobs.StreakCheckJob>();
+builder.Services.AddScoped<ICodeJudgeService, MockCodeJudgeService>();
+builder.Services.AddScoped<VisualizationDSA.Application.Services.IProgressRuleEngine, VisualizationDSA.Infrastructure.Services.ProgressRuleEngine>();
 
-// Register Algorithm Strategies (Reflection-based auto-scan)
+
+builder.Services.AddScoped<VisualizationDSA.Application.Services.IClassroomProgressService, VisualizationDSA.Infrastructure.Services.ClassroomProgressService>();
+builder.Services.AddScoped<VisualizationDSA.Application.Services.IClassroomUnlockRuleEngine, VisualizationDSA.Infrastructure.Services.ClassroomUnlockRuleEngine>();
+
+
 builder.Services.AddAlgorithmStrategies();
 
-// Configure JWT Authentication
+
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
     {
@@ -224,10 +231,10 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             ValidAudience            = builder.Configuration["Jwt:Audience"],
             IssuerSigningKey         = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]!)),
 
-            // ✅ FIX: Map "sub" JWT claim → ClaimTypes.NameIdentifier
-            // AuthService.cs tạo JWT với JwtRegisteredClaimNames.Sub ("sub").
-            // Nếu không set NameClaimType, FindFirstValue(ClaimTypes.NameIdentifier) trả null
-            // → GetCurrentUserId() throw UnauthorizedAccessException → 401 trên mọi endpoint /me/*
+            
+            
+            
+            
             NameClaimType = "sub",
             RoleClaimType = "role",
         };
@@ -238,12 +245,12 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             {
                 var accessToken = context.Request.Query["access_token"];
 
-                // If the request is for our hub...
+                
                 var path = context.HttpContext.Request.Path;
                 if (!string.IsNullOrEmpty(accessToken) &&
                     (path.StartsWithSegments("/hubs/notifications") || path.StartsWithSegments("/hubs/quiz-room")))
                 {
-                    // Read the token out of the query string
+                    
                     context.Token = accessToken;
                 }
                 return Task.CompletedTask;
@@ -251,14 +258,14 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         };
     });
 
-// Health checks — self and DbContext
+
 builder.Services.AddHealthChecks()
     .AddCheck<VisualizationDSA.WebApi.Filters.DatabaseHealthCheck>("Database");
 
-// ── Rate Limiting (built-in .NET 7+) — bảo vệ auth endpoints & chống spam ──
+
 builder.Services.AddRateLimiter(options =>
 {
-    // "auth" policy: max 10 requests/60 giây mỗi IP — ngăn brute-force login
+    
     options.AddPolicy("auth", context =>
         RateLimitPartition.GetFixedWindowLimiter(
             partitionKey: context.Connection.RemoteIpAddress?.ToString() ?? "global",
@@ -266,11 +273,11 @@ builder.Services.AddRateLimiter(options =>
             {
                 PermitLimit          = 10,
                 Window               = TimeSpan.FromMinutes(1),
-                QueueLimit           = 0,  // reject immediately khi quá limit
+                QueueLimit           = 0,  
                 QueueProcessingOrder = QueueProcessingOrder.OldestFirst
             }));
 
-    // "api" policy: max 60 requests/60 giây mỗi IP — bảo vệ API thông thường
+    
     options.AddPolicy("api", context =>
         RateLimitPartition.GetFixedWindowLimiter(
             partitionKey: context.Connection.RemoteIpAddress?.ToString() ?? "global",
@@ -282,7 +289,7 @@ builder.Services.AddRateLimiter(options =>
                 QueueProcessingOrder = QueueProcessingOrder.OldestFirst
             }));
 
-    // "heavy" policy: max 15 requests/60 giây mỗi IP — bảo vệ các endpoint tính toán nặng
+    
     options.AddPolicy("heavy", context =>
         RateLimitPartition.GetFixedWindowLimiter(
             partitionKey: context.Connection.RemoteIpAddress?.ToString() ?? "global",
@@ -290,11 +297,11 @@ builder.Services.AddRateLimiter(options =>
             {
                 PermitLimit          = 15,
                 Window               = TimeSpan.FromMinutes(1),
-                QueueLimit           = 0,  // reject immediately để tránh nghẽn thread pool
+                QueueLimit           = 0,  
                 QueueProcessingOrder = QueueProcessingOrder.OldestFirst
             }));
 
-    // Response khi bị rate-limit
+    
     options.OnRejected = async (context, token) =>
     {
         context.HttpContext.Response.StatusCode = 429;
@@ -309,30 +316,31 @@ builder.Services.AddAuthorization();
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline
+
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
 }
 
-// Middleware phải đứng đầu tiên để bắt mọi exception từ các middleware phía sau
+
 app.UseGlobalErrorHandling();
 
-// ✅ TASK 4.4: Serilog HTTP request logging — log method, path, status, duration
+
 app.UseSerilogRequestLogging(options =>
 {
-    // Bỏ qua /health để tránh log spam từ uptime monitoring
+    
     options.GetLevel = (ctx, elapsed, ex) =>
         ctx.Request.Path.StartsWithSegments("/health")
             ? LogEventLevel.Verbose
             : LogEventLevel.Information;
 });
 
-// Security headers gắn vào mọi response
+
 app.UseSecurityHeaders();
 
 app.UseResponseCompression();
+app.UseStaticFiles(); 
 if (!app.Environment.IsDevelopment())
 {
     app.UseHttpsRedirection();
@@ -344,12 +352,12 @@ app.UseUserLogging();
 app.UseRateLimiter();
 app.MapControllers();
 
-// Map SignalR Hubs
+
 app.MapHub<VisualizationDSA.WebApi.Hubs.LeaderboardHub>("/hubs/leaderboard");
 app.MapHub<VisualizationDSA.WebApi.Hubs.NotificationHub>("/hubs/notifications");
 app.MapHub<VisualizationDSA.WebApi.Hubs.QuizRoomHub>("/hubs/quiz-room");
 
-// Health check endpoint — GET /health
+
 app.MapHealthChecks("/health", new HealthCheckOptions
 {
     ResponseWriter = async (context, report) =>
@@ -371,7 +379,7 @@ app.MapHealthChecks("/health", new HealthCheckOptions
     }
 });
 
-// Ensure database is created and seed data
+
 try
 {
     using (var scope = app.Services.CreateScope())
@@ -382,10 +390,12 @@ try
         
         var seeder = new DbSeeder(context);
         await seeder.SeedAsync();
+        Console.WriteLine("[DB SEEDER SUCCESS]: Đã nạp thành công 11 khóa học và 12 bài Quiz!");
     }
 }
 catch (Exception ex)
 {
+    Console.WriteLine($"[DB SEED ERROR]: {ex}");
     Log.Warning(ex, "Không thể kết nối cơ sở dữ liệu local để chạy migrations. Hệ thống vẫn khởi động bình thường.");
 }
 

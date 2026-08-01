@@ -2151,3 +2151,39 @@ Tài liệu này ghi nhận trạng thái kiểm thử đơn vị tự động (
 | 1884 | **Compilation** | npm run test | Frontend 1555/1555 tests PASS (including simulation test cases) | âœ… PASSED |
 | 1885 | **Guided Tour** | should correctly load tour steps for newly added academic routes | Expand testCases array to verify all 12 academic modules (including /sorting) | 🟢 PASSED |
 | 1886 | **Compilation** | npm run test | Frontend 1549/1549 tests PASS with all 12-step guided tour validations | 🟢 PASSED |
+
+## Tái Cấu Trúc Khóa Học & Codelab (Strangler Fig)
+- ✅ SubmitCodelabCommandHandlerTests: Kiểm thử logic gửi mã nguồn Codelab, tính toán điểm, gọi Mock Judge Service và cập nhật XP.
+
+### Phase 3 Classroom & Teacher Features � Integration Tests
+
+| STT | Ph�n h? | T�nh nang | Phuong th?c ki?m th? | Tr?ng th�i |
+| :--- | :--- | :--- | :--- | :--- |
+| 1887 | **Classroom** | MyClassroomsView loads joinable classrooms | GET /api/Classroom/mine returns classrooms with join code | ?? PASSED |
+| 1888 | **Classroom** | Join classroom with valid code | POST /api/Classroom/join persists enrollment | ?? PASSED |
+| 1889 | **Classroom** | TeacherAnalyticsTab role check | Unauthenticated write ? 401 RequireJwtRole | ?? PASSED |
+| 1890 | **Teacher** | TeacherStudentTab displays student list | GET /api/Classroom/{id}/students returns enrolled students | ?? PASSED |
+| 1891 | **Teacher** | TeacherQuizTab create quiz | POST /api/quiz/manage persists quiz to PostgreSQL | ?? PASSED |
+| 1892 | **Teacher** | TeacherQuizTab edit quiz | PUT /api/quiz/manage/{id} updates quiz | ?? PASSED |
+| 1893 | **Teacher** | TeacherQuizTab delete quiz | DELETE /api/quiz/manage/{id} removes quiz | ?? PASSED |
+| 1894 | **Teacher** | TeacherAnalyticsTab quiz stats | GET /api/quiz/analytics returns total/attempts/pass-rate | ?? PASSED |
+| 1895 | **Course** | TeacherCourseTab difficulty sync | Beginner/Intermediate/Advanced matches backend enum | ?? PASSED |
+| 1896 | **Payment** | Simulate payment button hidden in prod | isDev = import.meta.env.DEV && !import.meta.env.PROD | ?? PASSED |
+| 1897 | **Compilation** | dotnet build + vue-tsc | Backend 0 errors, Frontend 0 errors | ?? PASSED |
+
+### Phase 3 Dead Code Cleanup & System Design Documentation (2026-07-30)
+
+| STT | Ph�n h? | T�nh nang | Phuong th?c ki?m th? | Tr?ng th�i |
+| :--- | :--- | :--- | :--- | :--- |
+| 2098 | **Dead Code** | Removed 15 dead views | AnimationView, CompareView, ConcurrencyView, DebugView, DSAModulesView, LeaderboardView, LearningPathView, MultiViewView, PlaygroundView, StateInspectorView, TimelinePlaybackView, di/, oop/, patterns/, solid/ | ?? PASSED |
+| 2099 | **Dead Code** | Removed smart-quiz feature | No references found in codebase | ?? PASSED |
+| 2100 | **System Design Docs** | Created 6 documentation pages | system-design-intro, load-balancer, server-health, packet-routing, replication-lag, failure-handling | ?? PASSED |
+| 2101 | **System Design Docs** | Added to docsNavigation.ts | New "THI?T K? H? TH?NG" group with 6 children | ?? PASSED |
+| 2102 | **System Design Docs** | Removed system-design-viz feature | Deleted feature directory, view, route, appTabs entry | ?? PASSED |
+| 2103 | **Routes** | Cleaned up commented-out routes | Removed 13 commented-out route lines from routes.ts | ?? PASSED |
+| 2104 | **visualizerMap.ts** | Updated references | OOP/SOLID/Patterns/DI/SystemDesign ? DocsView.vue | ?? PASSED |
+| 2105 | **LessonStepViz.vue** | Updated references | OOP/SOLID ? DocsView.vue | ?? PASSED |
+| 2106 | **Compilation** | vue-tsc --noEmit | Frontend 0 errors | ?? PASSED |
+| 2107 | **Tests** | npm run test | Frontend 688/688 tests PASS (removed 154 system-design-viz + smart-quiz tests) | ?? PASSED |
+| 2108 | **Compilation** | dotnet build | Backend 0 errors | ?? PASSED |
+| 2109 | **Static Analysis** | find-missing-imports.cjs | No missing relative imports found | ?? PASSED |

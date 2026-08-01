@@ -1,17 +1,14 @@
 import type { SortFrame } from '@/features/core-learning/algorithm-sandbox/types/sorting.types';
 
-/**
- * bubbleSort.ts — [ALGORITHM] Frame generator cho Bubble Sort.
- * Sinh danh sách SortFrame[] mô tả từng bước: compare → swap → sorted mark.
- */
 export function generateBubbleSortFrames(inputArray: number[]): SortFrame[] {
   const frames: SortFrame[] = [];
   const arr = [...inputArray];
   const n = arr.length;
   const sortedIndices: number[] = [];
   let step = 0;
+  let comparisons = 0;
+  let swaps = 0;
 
-  // Frame khởi tạo
   frames.push({
     stepIndex: step++,
     arrayState: [...arr],
@@ -21,11 +18,12 @@ export function generateBubbleSortFrames(inputArray: number[]): SortFrame[] {
     sortedIndices: [],
     description: 'Khởi tạo mảng dữ liệu đầu vào',
     algorithm: 'bubble',
+    variables: { i: '-', j: '-', comparisons: 0, swaps: 0 },
   });
 
   for (let i = 0; i < n - 1; i++) {
     for (let j = 0; j < n - i - 1; j++) {
-      // Bước so sánh
+      comparisons++;
       frames.push({
         stepIndex: step++,
         arrayState: [...arr],
@@ -35,12 +33,12 @@ export function generateBubbleSortFrames(inputArray: number[]): SortFrame[] {
         sortedIndices: [...sortedIndices],
         description: `So sánh arr[${j}]=${arr[j]} và arr[${j + 1}]=${arr[j + 1]}`,
         algorithm: 'bubble',
+        variables: { i, j, comparisons, swaps },
       });
 
       if (arr[j] > arr[j + 1]) {
-        // Thực hiện hoán vị
         [arr[j], arr[j + 1]] = [arr[j + 1], arr[j]];
-
+        swaps++;
         frames.push({
           stepIndex: step++,
           arrayState: [...arr],
@@ -50,11 +48,11 @@ export function generateBubbleSortFrames(inputArray: number[]): SortFrame[] {
           sortedIndices: [...sortedIndices],
           description: `Hoán vị: arr[${j}]↔arr[${j + 1}] → [${arr[j]}, ${arr[j + 1]}]`,
           algorithm: 'bubble',
+          variables: { i, j, comparisons, swaps },
         });
       }
     }
 
-    // Đánh dấu phần tử đã yên vị
     sortedIndices.push(n - i - 1);
     frames.push({
       stepIndex: step++,
@@ -65,10 +63,10 @@ export function generateBubbleSortFrames(inputArray: number[]): SortFrame[] {
       sortedIndices: [...sortedIndices],
       description: `arr[${n - i - 1}] = ${arr[n - i - 1]} đã yên vị ✓`,
       algorithm: 'bubble',
+      variables: { i, j: '-', comparisons, swaps },
     });
   }
 
-  // Phần tử cuối cùng cũng đã sắp xếp xong
   sortedIndices.push(0);
   frames.push({
     stepIndex: step++,
@@ -79,6 +77,7 @@ export function generateBubbleSortFrames(inputArray: number[]): SortFrame[] {
     sortedIndices: [...sortedIndices],
     description: `✅ Bubble Sort hoàn thành! Mảng đã được sắp xếp tăng dần.`,
     algorithm: 'bubble',
+    variables: { i: '-', j: '-', comparisons, swaps },
   });
 
   return frames;

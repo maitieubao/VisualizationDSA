@@ -1,23 +1,19 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using VisualizationDSA.Domain.Engine;
 
 namespace VisualizationDSA.Domain.Strategies;
 
-public class DFSStrategy : AlgorithmStrategyBase
+
+
+
+public class DFSStrategy : GraphStrategyBase
 {
     public override string AlgorithmId => "dfs";
-    public override string Name => "Depth-First Search (Duyệt chiều sâu)";
+    public override string Name => "Depth-First Search (Duyệt DFS)";
     public override string Category => "Graph";
-
-    private class BSTNode
-    {
-        public int Id { get; set; }
-        public int Value { get; set; }
-        public BSTNode? Left { get; set; }
-        public BSTNode? Right { get; set; }
-    }
 
     public override AlgorithmMetadata GetMetadata()
     {
@@ -25,14 +21,20 @@ public class DFSStrategy : AlgorithmStrategyBase
         {
             TimeComplexity = "O(V + E)",
             SpaceComplexity = "O(V)",
-            Description = "Duyệt theo chiều sâu (DFS) bắt đầu từ gốc, đi sâu hết mức có thể dọc theo mỗi nhánh trước khi quay lui (backtrack). Sử dụng Ngăn xếp (Stack) hoặc Đệ quy.",
+            Description = "Duyệt đồ thị theo chiều sâu (DFS) từ đỉnh bắt đầu. Sử dụng ngăn xếp (Stack) hoặc đệ quy để đi sâu hết mức trước khi quay lui (backtrack). Ứng dụng: tìm chu trình, sắp xếp topo, tìm thành phần liên thông mạnh.",
             PseudoCode = new List<string>
             {
-                "DFS(node, visited):",
-                "  visited.add(node)",
-                "  for neighbor in node.neighbors:",
-                "    if neighbor not in visited:",
-                "      DFS(neighbor, visited)"
+                "DFS(graph, start):",
+                "  visited = {v: false for v in graph}",
+                "  stack = Stack()",
+                "  stack.push(start)",
+                "  while stack not empty:",
+                "    u = stack.pop()",
+                "    if not visited[u]:",
+                "      visited[u] = true",
+                "      for v in u.neighbors:",
+                "        if not visited[v]:",
+                "          stack.push(v)"
             }
         };
     }
@@ -43,115 +45,123 @@ public class DFSStrategy : AlgorithmStrategyBase
 
         if (inputData == null || inputData.Length == 0)
         {
-            CaptureGraphFrame(null, 0, "Cây rỗng, không thể duyệt DFS.", new List<int>());
+            CaptureEmptyFrame(0, "Đồ thị rỗng, không thể chạy DFS.");
             return _frames;
         }
 
-        // Dựng cây nhị phân tìm kiếm từ inputData
-        BSTNode? root = null;
-        int idCounter = 0;
-        foreach (int val in inputData)
+        var (nodes, edges) = BuildGraph(inputData);
+        CalculateInitialPositions(nodes, edges);
+
+        int V = nodes.Count;
+        var adj = new List<List<int>>();
+        for (int i = 0; i < V; i++) adj.Add(new List<int>());
+        foreach (var e in edges)
         {
-            cancellationToken.ThrowIfCancellationRequested();
-            root = Insert(root, val, ref idCounter);
+            adj[e.From].Add(e.To);
+            if (!e.Directed) adj[e.To].Add(e.From);
         }
 
-        CaptureGraphFrame(root, 0, "Khởi tạo cây nhị phân để thực hiện duyệt DFS.", new List<int>());
+        int startNode = 0;
+        for (int i = 0; i < V; i++) if (nodes[i].Value == 0) startNode = i;
 
-        List<int> visitedValues = new();
-        DFS(root, visitedValues, root, cancellationToken);
+        var visited = new bool[V];
+        var stack = new Stack<int>();
+        var order = new List<int>();
 
-        CaptureGraphFrame(root, 0, $"Duyệt DFS hoàn tất! Kết quả: [{string.Join(", ", visitedValues)}]", visitedValues);
+        stack.Push(startNode);
+
+        CaptureFrame(nodes, edges, 0,
+            $"Khởi tạo DFS từ đỉnh {nodes[startNode].Value}. Đưa vào ngăn xếp: [{nodes[startNode].Value}]",
+            visited, new List<int>(stack), startNode);
+
+        int step = 1;
+
+        while (stack.Count > 0)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+
+            int u = stack.Pop();
+
+            if (visited[u]) continue;
+
+            visited[u] = true;
+            order.Add(u);
+
+            CaptureFrame(nodes, edges, step++,
+                $"Lấy đỉnh {nodes[u].Value} từ ngăn xếp, đánh dấu đã duyệt. Đã duyệt: [{string.Join(", ", order.Select(i => nodes[i].Value))}]",
+                visited, new List<int>(stack), u);
+
+            
+            var neighbors = adj[u].OrderByDescending(v => v).ToList();
+            foreach (int v in neighbors)
+            {
+                if (!visited[v])
+                {
+                    stack.Push(v);
+                    CaptureFrame(nodes, edges, step++,
+                        $"Khám phá đỉnh {nodes[v].Value} (kề {nodes[u].Value}). Đẩy vào ngăn xếp: [{string.Join(", ", stack.Select(i => nodes[i].Value))}]",
+                        visited, new List<int>(stack), v);
+                }
+            }
+        }
+
+        CaptureFrame(nodes, edges, step++,
+            $"DFS hoàn tất! Thứ tự duyệt: [{string.Join(" → ", order.Select(i => nodes[i].Value))}]",
+            visited, new List<int>(), order.LastOrDefault());
 
         return _frames;
     }
 
-    private void DFS(BSTNode? node, List<int> visited, BSTNode? root, CancellationToken cancellationToken)
-    {
-        if (node == null) return;
-        cancellationToken.ThrowIfCancellationRequested();
-
-        visited.Add(node.Value);
-        CaptureGraphFrame(root, 1, $"Duyệt qua nút {node.Value} và thêm vào danh sách kết quả.", visited, activeNodeId: node.Id);
-
-        if (node.Left != null)
-        {
-            CaptureGraphFrame(root, 3, $"Đi sâu xuống cây con trái của nút {node.Value}.", visited, activeNodeId: node.Left.Id);
-            DFS(node.Left, visited, root, cancellationToken);
-        }
-
-        if (node.Right != null)
-        {
-            CaptureGraphFrame(root, 4, $"Đi sâu xuống cây con phải của nút {node.Value}.", visited, activeNodeId: node.Right.Id);
-            DFS(node.Right, visited, root, cancellationToken);
-        }
-
-        CaptureGraphFrame(root, 0, $"Quay lui (Backtrack) từ nút {node.Value}.", visited, activeNodeId: node.Id);
-    }
-
-    private BSTNode Insert(BSTNode? node, int value, ref int idCounter)
-    {
-        if (node == null)
-        {
-            return new BSTNode { Id = ++idCounter, Value = value };
-        }
-
-        if (value < node.Value)
-        {
-            node.Left = Insert(node.Left, value, ref idCounter);
-        }
-        else
-        {
-            node.Right = Insert(node.Right, value, ref idCounter);
-        }
-
-        return node;
-    }
-
-    private void CaptureGraphFrame(
-        BSTNode? root,
-        int activeLine,
+    private void CaptureFrame(
+        List<GraphNode> nodes,
+        List<GraphEdge> edges,
+        int stepId,
         string explanation,
-        List<int> visitedValues,
-        int activeNodeId = -1)
+        bool[] visited,
+        List<int> stack,
+        int? activeNodeId = null)
     {
-        var treeNodes = new List<TreeNodeDTO>();
-        var dataValues = new List<int>();
-        SerializeTree(root, treeNodes, dataValues);
-
-        var highlights = new HighlightIndices
+        var frame = new FrameDTO
         {
-            Compare = new List<int>(),
-            Swap = new List<int>(),
-            Sorted = new List<int>(),
-            Active = activeNodeId >= 0 ? new List<int> { activeNodeId } : new List<int>()
+            StepId = stepId,
+            ActiveLine = GetLineForStep(stepId),
+            Explanation = explanation,
+            DataState = Enumerable.Range(0, visited.Length).Where(i => visited[i]).Select(i => nodes[i].Value).ToArray(),
+            Highlights = new HighlightIndices
+            {
+                Active = activeNodeId.HasValue ? new List<int> { activeNodeId.Value } : new List<int>(),
+                Compare = stack, 
+                Sorted = Enumerable.Range(0, visited.Length).Where(i => visited[i]).ToList() 
+            }
         };
 
+        PopulateFrameGraph(frame, nodes, edges,
+            highlightedNodes: new HashSet<int>(Enumerable.Range(0, visited.Length).Where(i => visited[i])),
+            activeNodeId: activeNodeId);
+
+        frame.QueueState = stack; 
+
+        _frames.Add(frame);
+    }
+
+    private void CaptureEmptyFrame(int stepId, string explanation)
+    {
         _frames.Add(new FrameDTO
         {
-            StepId = _frames.Count + 1,
-            ActiveLine = activeLine,
+            StepId = stepId,
+            ActiveLine = 0,
             Explanation = explanation,
-            DataState = visitedValues.ToArray(),
-            Highlights = highlights,
-            TreeNodes = treeNodes.Count > 0 ? treeNodes : null
+            DataState = Array.Empty<int>(),
+            Highlights = new HighlightIndices()
         });
     }
 
-    private static void SerializeTree(BSTNode? node, List<TreeNodeDTO> nodes, List<int> values)
+    private int GetLineForStep(int step)
     {
-        if (node == null) return;
-
-        nodes.Add(new TreeNodeDTO
-        {
-            Id = node.Id,
-            Value = node.Value,
-            LeftNodeId = node.Left?.Id,
-            RightNodeId = node.Right?.Id
-        });
-        values.Add(node.Value);
-
-        SerializeTree(node.Left, nodes, values);
-        SerializeTree(node.Right, nodes, values);
+        if (step == 0) return 1;
+        if (step <= 2) return 2;
+        if (step <= 4) return 3;
+        if (step <= 6) return 4;
+        return 5;
     }
 }

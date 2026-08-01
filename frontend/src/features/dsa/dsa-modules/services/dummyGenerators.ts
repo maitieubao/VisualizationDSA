@@ -14,6 +14,7 @@ import {
 } from './sortingGenerators';
 import { generateStack, generateQueue, generateBST } from './dataStructureGenerators';
 import { generateBFS, generateDFS, generateDijkstra, generateSlidingWindow, generateMonotonicStack } from './premiumGenerators';
+import { generateBellmanFord } from './graphGenerators';
 import { LOCAL_METADATA } from '../store/algorithmLocalMetadata';
 
 function defaultHighlights(overrides?: Partial<HighlightIndices>): HighlightIndices {
@@ -40,6 +41,7 @@ const GENERATORS: Record<string, (input: number[]) => AlgorithmResult> = {
   bfs:               generateBFS,
   dfs:               generateDFS,
   dijkstra:          generateDijkstra,
+  'bellman-ford':    generateBellmanFord,
 };
 
 export function generateDummyResult(algorithmId: string, inputData: number[]): AlgorithmResult {

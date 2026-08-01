@@ -10,7 +10,7 @@ Chào mừng bạn đến với **Deep Decomposition Master Index** của **Visu
 
 ### 🟢 PHÂN HỆ PHASE 1 (CẤU TRÚC DỮ LIỆU & GIẢI THUẬT CƠ BẢN)
 
-> Chú thích: `✅ CODE DONE` = code thực tế đã viết | `🟡 IN PROGRESS` = đang viết | `🟠 PARTIAL` = có skeleton chưa tích hợp | `❌ SPEC ONLY` = chỉ có tài liệu
+> Chú thích: `✅ CODE DONE` = code thực tế đã viết | `🟡 IN PROGRESS` = đang viết | `🟠 PARTIAL` = có skeleton chưa tích hợp | `✅ CODE DONE` = chỉ có tài liệu
 
 - **[01. Animation Engine](./phase1-animation-engine)** `✅ CODE DONE` — `CoreAnimationEngine.ts`, `CompilerStepExecutor.ts`, **Phase 1 Backend-Driven**: `useAnimationStore.ts`, `CanvasLayer.vue`, `VisualizationPlayer.vue`, `BubbleSortExecutor.cs`, `AlgorithmsController.cs`
 - **[02. Custom Input](./phase1-custom-input)** `✅ CODE DONE` — `CustomInputParser.ts`, **Phase 1 Custom Input Generator**: `useInputStore.ts`, `CustomInputForm.vue`, `InputParser.cs`, `ConstraintResolver.cs`, custom-execute API endpoint

@@ -1,6 +1,6 @@
 <template>
   <div class="canvas-wrapper">
-    <!-- Loading Overlay -->
+    
     <div v-if="isLoading" class="canvas-loading-overlay">
       <div class="loading-spinner"></div>
     </div>
@@ -54,7 +54,7 @@ defineEmits<{ retry: []; 'close-summary': []; 'open-lecture': [] }>();
   position: relative;
 }
 
-/* Loading overlay */
+
 .canvas-loading-overlay {
   position: absolute;
   inset: 0;
@@ -73,7 +73,7 @@ defineEmits<{ retry: []; 'close-summary': []; 'open-lecture': [] }>();
 }
 @keyframes spin { to { transform: rotate(360deg); } }
 
-/* E-Lecture button */
+
 .e-lecture-btn {
   position: absolute;
   top: 12px; right: 12px;

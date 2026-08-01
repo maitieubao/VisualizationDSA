@@ -17,7 +17,7 @@
       <BaseIcon name="step-forward" class="w-3.5 h-3.5" />
     </button>
 
-    <!-- Timeline Scrubber -->
+    
     <input
       type="range"
       min="0"
@@ -27,7 +27,7 @@
       @input="onScrub"
     />
 
-    <!-- Speed -->
+    
     <select
       class="speed-select"
       :value="playbackSpeed"

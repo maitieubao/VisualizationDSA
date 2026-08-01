@@ -6,11 +6,11 @@ using VisualizationDSA.Domain.Entities;
 
 namespace VisualizationDSA.Infrastructure.Interceptors
 {
-    /// <summary>
-    /// EF Core SaveChanges interceptor bảo vệ tính bất biến của Event Sourcing Ledger:
-    /// chặn mọi thao tác UPDATE/DELETE trên <see cref="SystemAuditEventStream"/>.
-    /// Chỉ cho phép append (Added).
-    /// </summary>
+    
+    
+    
+    
+    
     public sealed class ImmutableAuditInterceptor : SaveChangesInterceptor
     {
         public override InterceptionResult<int> SavingChanges(

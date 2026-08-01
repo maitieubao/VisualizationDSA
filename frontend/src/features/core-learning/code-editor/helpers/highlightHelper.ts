@@ -7,7 +7,7 @@ export const highlightSyntax = (text: string): string => {
     .replace(/</g, "&lt;")
     .replace(/>/g, "&gt;");
 
-  // Keywords - blue
+  
   const keywords = [
     "let",
     "var",
@@ -28,7 +28,7 @@ export const highlightSyntax = (text: string): string => {
     );
   });
 
-  // API functions - cyan
+  
   const apiFuncs = ["compare", "swap", "highlight"];
   apiFuncs.forEach((fn) => {
     escaped = escaped.replace(
@@ -37,19 +37,19 @@ export const highlightSyntax = (text: string): string => {
     );
   });
 
-  // Brackets - gray
+  
   escaped = escaped.replace(
     /([{}()\[\]])/g,
     '<span style="color: #64748b;">$1</span>'
   );
 
-  // Numbers - amber
+  
   escaped = escaped.replace(
     /\b(\d+)\b/g,
     '<span style="color: #fbbf24;">$1</span>'
   );
 
-  // Comments - gray italic
+  
   escaped = escaped.replace(
     /(\/.*)/g,
     '<span style="color: #64748b; font-style: italic;">$1</span>'

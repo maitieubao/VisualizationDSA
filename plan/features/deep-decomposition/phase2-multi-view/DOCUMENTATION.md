@@ -26,5 +26,3 @@ Hệ thống quyết định sử dụng **Bộ điều phối sự kiện Đồ
     *   **Nhẹ nhàng cho CPU trình duyệt:** Giảm tải gánh nặng CPU gánh vác Virtual DOM Virtual so sánh chéo, hoạt động hoàn hảo trên cả máy tính bảng cũ của sinh viên.
 *   **Điểm cần lưu ý (Cons):**
     *   Phải đảm bảo giải phóng bộ nhớ RAM `unsubscribeAll()` triệt để khi học viên chuyển trang học tập để tránh lỗi rò rỉ RAM (Memory Leak).
-    
-    

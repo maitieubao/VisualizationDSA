@@ -1,4 +1,4 @@
-# IDEs
+﻿# IDEs
 .vscode/
 .idea/
 *.suo
@@ -55,3 +55,6 @@ all_docs_temp.txt
 *.db-shm
 *.db-wal
 backend/src/WebApi/visualization_dsa.db
+
+# Backend publish output
+backend/src/WebApi/out/

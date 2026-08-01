@@ -12,17 +12,17 @@ export type GenerationType = 'random' | 'nearly-sorted' | 'reversed';
 export const useInputStore = defineStore('input', () => {
   const animationStore = useAnimationStore();
 
-  // ==========================================
-  // 1. STATE
-  // ==========================================
+  
+  
+  
   const rawText = ref<string>('');
   const maxLimit = ref<number>(15);
   const isLoading = ref<boolean>(false);
   const apiErrorMessage = ref<string>('');
 
-  // ==========================================
-  // 2. GETTERS (Computed)
-  // ==========================================
+  
+  
+  
 
   const parsedArray = computed<number[]>(() => {
     const cleanText = rawText.value.trim();
@@ -54,9 +54,9 @@ export const useInputStore = defineStore('input', () => {
     );
   });
 
-  // ==========================================
-  // 3. ACTIONS
-  // ==========================================
+  
+  
+  
 
   function setLimit(limit: number): void {
     maxLimit.value = limit;

@@ -1,13 +1,13 @@
 import type { AnimatedItem } from '@/features/core-learning/algorithm-sandbox/types/canvas.types';
 
 const POINTER_COLORS: Record<string, string> = {
-  i: '#a78bfa',  // violet
-  j: '#f472b6',  // pink
+  i: '#a78bfa',  
+  j: '#f472b6',  
 };
 
-/**
- * renderLoopPointer — vẽ arrow pointer cho một biến vòng lặp (i, j, k...).
- */
+
+
+
 export function renderLoopPointer(
   ctx: CanvasRenderingContext2D,
   varName: string,
@@ -24,7 +24,7 @@ export function renderLoopPointer(
   ctx.strokeStyle = color;
   ctx.lineWidth = 1.5;
 
-  // Arrow triangle
+  
   ctx.beginPath();
   ctx.moveTo(x, 70);
   ctx.lineTo(x - 5, 62);
@@ -32,13 +32,13 @@ export function renderLoopPointer(
   ctx.closePath();
   ctx.fill();
 
-  // Arrow stem
+  
   ctx.beginPath();
   ctx.moveTo(x, 70);
   ctx.lineTo(x, arrowY);
   ctx.stroke();
 
-  // Label badge
+  
   ctx.beginPath();
   ctx.roundRect(x - 12, arrowY - 18, 24, 18, 4);
   ctx.fill();
@@ -54,9 +54,9 @@ export function renderLoopPointer(
   ctx.restore();
 }
 
-/**
- * renderLoopPointers — vẽ arrow pointer cho nhiều biến vòng lặp.
- */
+
+
+
 export function renderLoopPointers(
   ctx: CanvasRenderingContext2D,
   loopVariables: Record<string, number>,
@@ -74,4 +74,3 @@ export function renderLoopPointers(
     pointerOffset += 24;
   });
 }
-

@@ -8,9 +8,10 @@ namespace VisualizationDSA.Domain.Entities
         public Guid Id { get; private set; }
         public string Title { get; private set; }
         public string Description { get; private set; }
-        public string Topic { get; private set; } // e.g., "sorting", "oop", "solid"
-        public int Difficulty { get; private set; } // 1-5
+        public string Topic { get; private set; } 
+        public int Difficulty { get; private set; } 
         public int XPReward { get; private set; }
+        public bool IsDeleted { get; private set; }
         
         public virtual ICollection<QuizQuestion> Questions { get; private set; }
         public virtual ICollection<QuizAttempt> Attempts { get; private set; }
@@ -95,7 +96,7 @@ namespace VisualizationDSA.Domain.Entities
             Answers = answers;
             Score = score;
             MaxScore = maxScore;
-            Passed = score >= maxScore * 0.7; // 70% to pass
+            Passed = score >= maxScore * 0.7; 
             AttemptedAt = DateTime.UtcNow;
         }
     }

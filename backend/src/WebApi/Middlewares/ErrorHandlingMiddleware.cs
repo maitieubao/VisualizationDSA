@@ -4,11 +4,11 @@ using Microsoft.EntityFrameworkCore;
 
 namespace VisualizationDSA.WebApi.Middlewares;
 
-/// <summary>
-/// Middleware xử lý lỗi tập trung (Enterprise-grade).
-/// Bắt mọi Exception chưa được xử lý, ghi log và trả về JSON chuẩn hóa.
-/// Response format: { success, message, errorType, statusCode, traceId, detail? }
-/// </summary>
+
+
+
+
+
 public sealed class ErrorHandlingMiddleware
 {
     private readonly RequestDelegate _next;
@@ -95,7 +95,7 @@ public sealed class ErrorHandlingMiddleware
     };
 }
 
-/// <summary>Extension method để đăng ký middleware gọn hơn trong Program.cs</summary>
+
 public static class ErrorHandlingMiddlewareExtensions
 {
     public static IApplicationBuilder UseGlobalErrorHandling(this IApplicationBuilder app)

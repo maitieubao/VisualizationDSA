@@ -10,9 +10,9 @@ using VisualizationDSA.Infrastructure.Data;
 
 namespace VisualizationDSA.Infrastructure.Services
 {
-    /// <summary>
-    /// Triển khai LeaderboardService — truy vấn trực tiếp từ User repository kèm theo in-memory cache.
-    /// </summary>
+    
+    
+    
     public class LeaderboardService : ILeaderboardService
     {
         private readonly IUnitOfWork _unitOfWork;
@@ -29,7 +29,7 @@ namespace VisualizationDSA.Infrastructure.Services
 
         public async Task<IEnumerable<LeaderboardEntryDto>> GetTopUsersAsync(int limit = 20)
         {
-            // Clamp limit để tránh truy vấn quá lớn
+            
             limit = Math.Clamp(limit, 1, 100);
 
             var cacheKey = $"{LeaderboardCacheKey}_{limit}";
@@ -76,65 +76,13 @@ namespace VisualizationDSA.Infrastructure.Services
             };
         }
 
-        public async Task<IEnumerable<LeaderboardEntryDto>> GetClassroomWeeklyLeaderboardAsync(string classroomId, int limit = 20)
+        public async Task<IEnumerable<LeaderboardEntryDto>> GetClassroomLeaderboardAsync(string classroomId, int limit = 10)
         {
-            limit = Math.Clamp(limit, 1, 100);
-            var cacheKey = $"{LeaderboardCacheKey}_Classroom_{classroomId}_{limit}";
-
-            if (!_cache.TryGetValue(cacheKey, out IEnumerable<LeaderboardEntryDto>? cachedEntries))
-            {
-                var now = DateTime.UtcNow;
-                var weekStart = now.AddDays(-7);
-
-                var studentIds = await _dbContext.ClassroomMembers
-                    .Where(m => m.ClassroomId == classroomId)
-                    .Select(m => m.StudentId)
-                    .ToListAsync();
-
-                if (!studentIds.Any()) return Enumerable.Empty<LeaderboardEntryDto>();
-
-                var weeklyProgresses = await _dbContext.UserLessonProgresses
-                    .Where(p => studentIds.Contains(p.UserId) && p.CompletedAt != null && p.CompletedAt >= weekStart && p.CompletedAt <= now)
-                    .ToListAsync();
-
-                var userXpMap = weeklyProgresses
-                    .GroupBy(p => p.UserId)
-                    .ToDictionary(g => g.Key, g => g.Sum(p => p.XPRewarded));
-
-                var topUserIds = userXpMap
-                    .OrderByDescending(kvp => kvp.Value)
-                    .Take(limit)
-                    .Select(kvp => kvp.Key)
-                    .ToList();
-
-                var topUsersInfo = await _dbContext.Users
-                    .Include(u => u.UserBadges)
-                    .Where(u => topUserIds.Contains(u.Id))
-                    .ToListAsync();
-
-                cachedEntries = topUserIds.Select((userId, index) => 
-                {
-                    var u = topUsersInfo.First(user => user.Id == userId);
-                    return new LeaderboardEntryDto
-                    {
-                        Rank       = index + 1,
-                        UserId     = u.Id,
-                        Username   = u.Username,
-                        TotalXP    = userXpMap[userId], 
-                        Level      = u.CurrentLevel,
-                        StreakDays = u.StreakDays,
-                        BadgeCount = u.UserBadges?.Count ?? 0,
-                    };
-                }).ToList();
-
-                var cacheOptions = new MemoryCacheEntryOptions()
-                    .SetSlidingExpiration(TimeSpan.FromSeconds(30))
-                    .SetAbsoluteExpiration(TimeSpan.FromSeconds(120));
-
-                _cache.Set(cacheKey, cachedEntries, cacheOptions);
-            }
-
-            return cachedEntries!;
+            // Gamification Classroom dropped in favor of LMS Classroom. 
+            // Classroom Leaderboards will be re-implemented later.
+            return await Task.FromResult(Enumerable.Empty<LeaderboardEntryDto>());
         }
+
+        public async Task<IEnumerable<LeaderboardEntryDto>> GetClassroomWeeklyLeaderboardAsync(string classroomId, int limit = 20) { return await Task.FromResult(Enumerable.Empty<LeaderboardEntryDto>()); }
     }
 }

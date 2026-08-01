@@ -1,8 +1,8 @@
 namespace VisualizationDSA.Domain.Engine;
 
-/// <summary>
-/// Kết quả trả về sau khi chạy thuật toán, bao gồm danh sách frames và mã giả.
-/// </summary>
+
+
+
 public class AlgorithmResult
 {
     public string AlgorithmId { get; set; } = string.Empty;

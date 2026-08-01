@@ -1,32 +1,31 @@
 <template>
-  <div class="heap-array-container w-full flex flex-col gap-1.5 pt-3 shrink-0 select-none">
-    <div class="flex items-center justify-between px-2 text-[10px] font-mono font-bold label-row">
-      <span>CẤU TRÚC MẢNG VẬT LÝ DƯỚI BỘ NHỚ</span>
-      <span class="muted-label">Heap Size: <span class="accent-cyan-label">{{ currentHeapSize }} / {{ n }}</span></span>
+  <div class="heap-array-container w-full flex items-center justify-between gap-2 py-1 shrink-0 select-none border-t border-white/10 font-sans">
+    <div class="text-[10px] font-mono text-slate-400 shrink-0">
+      Heap Size: <span class="font-bold text-indigo-400">{{ currentHeapSize }}/{{ n }}</span>
     </div>
 
-    <div class="relative w-full flex items-center justify-center py-1">
+    <div class="relative flex-1 flex items-center justify-center overflow-x-auto min-w-0">
       <transition-group
         name="sort-list"
         tag="div"
-        class="flex justify-center w-full"
+        class="flex justify-center"
         :style="{ gap: itemGap }"
       >
         <div
           v-for="(item, idx) in frame?.arrayStateWithIds || []"
           :key="item.id"
-          class="array-cell rounded-xl border flex flex-col items-center justify-center font-bold
-                 transition-all duration-300 shadow-md shrink-0 relative"
+          class="array-cell rounded-md border flex flex-col items-center justify-center font-mono font-bold
+                 transition-all duration-300 shadow-sm shrink-0 relative"
           :class="getArrayItemClass(idx)"
           :style="{ width: itemSize, height: itemHeight, fontSize: fontSize }"
         >
-          <!-- Highlight bar at top of the cell -->
+          
           <div 
-            class="highlight-top-bar absolute top-0 left-0 right-0 h-1.5 rounded-t-xl" 
+            class="highlight-top-bar absolute top-0 left-0 right-0 h-1 rounded-t-md" 
             :class="isNodeInHeap(idx) ? 'bar-in-heap' : 'bar-sorted'"
           ></div>
           <span>{{ item.value }}</span>
-          <span class="font-mono cell-idx-label">[{{ idx }}]</span>
+          <span class="font-mono text-[9px] text-slate-400">[{{ idx }}]</span>
         </div>
       </transition-group>
     </div>
@@ -76,7 +75,7 @@ const {
   color: var(--color-text-muted);
 }
 
-/* top status highlights */
+
 .bar-in-heap {
   background-color: var(--color-accent-cyan-dim);
 }
@@ -85,7 +84,7 @@ const {
   background-color: var(--color-accent-green-dim);
 }
 
-/* node classes from getArrayItemClass */
+
 .item-active {
   border-color: color-mix(in srgb, var(--color-accent-cyan) 35%, transparent);
   color: var(--color-accent-cyan);
@@ -112,7 +111,7 @@ const {
   color: var(--color-accent-green) !important;
 }
 
-/* Transition animations */
+
 .sort-list-move         { transition: transform .4s cubic-bezier(.25,.8,.25,1); }
 .sort-list-enter-from   { opacity: 0; transform: translateY(-8px) scale(.92); }
 .sort-list-leave-to     { opacity: 0; transform: translateY(8px) scale(.92); }

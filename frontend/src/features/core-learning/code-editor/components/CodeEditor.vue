@@ -1,6 +1,6 @@
 <template>
-  <div class="flex flex-col h-full w-full" data-tour-id="pseudocode-syncer">
-    <div class="px-4 pt-4 pb-2">
+  <div class="flex flex-col w-full" data-tour-id="pseudocode-syncer">
+    <div v-if="!hidePresets" class="px-4 pt-4 pb-2">
       <CodeEditorPresetTabs
         :presets="PRESETS"
         :active-preset="activePreset"
@@ -25,13 +25,36 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onBeforeUnmount } from "vue";
-import loader from "@monaco-editor/loader";
+import { ref, computed, onMounted, onBeforeUnmount } from "vue";
+import * as monaco from "monaco-editor";
+// @ts-ignore
+import "monaco-editor/esm/vs/language/typescript/monaco.contribution";
+import "monaco-editor/min/vs/editor/editor.main.css";
+import editorWorker from "monaco-editor/esm/vs/editor/editor.worker?worker";
+import tsWorker from "monaco-editor/esm/vs/language/typescript/ts.worker?worker";
 import { useVcrStore } from "../../vcr-player/store/useVcrStore";
+import { useThemeStore } from "@/shared/store/useThemeStore";
 import { MonacoLineSyncerCoordinator } from "../../algorithm-sandbox/engine/MonacoLineSyncerCoordinator";
 import CodeEditorPresetTabs from "./CodeEditorPresetTabs.vue";
 
+defineProps<{ hidePresets?: boolean }>();
+
+interface MonacoWorkerEnvironment {
+  MonacoEnvironment: {
+    getWorker(moduleId: string, label: string): Worker;
+  };
+}
+
+(globalThis as unknown as MonacoWorkerEnvironment).MonacoEnvironment = {
+  getWorker: (_moduleId: string, label: string): Worker => {
+    if (label === "typescript" || label === "javascript") return new tsWorker();
+    return new editorWorker();
+  },
+};
+
 const vcrStore = useVcrStore();
+const themeStore = useThemeStore();
+const monacoTheme = computed(() => themeStore.currentTheme === 'light' ? 'vs' : 'vs-dark');
 const editorContainer = ref<HTMLDivElement | null>(null);
 const editorLoadError = ref(false);
 
@@ -39,7 +62,7 @@ function reloadPage() {
   window.location.reload();
 }
 
-let editorInstance: any = null;
+let editorInstance: monaco.editor.IStandaloneCodeEditor | null = null;
 let syncerCoordinator: MonacoLineSyncerCoordinator | null = null;
 
 const activePreset = ref<"bubble" | "selection" | "insertion">("bubble");
@@ -89,32 +112,29 @@ for (let i = 1; i < array.length; i++) {
   },
 };
 
-onMounted(async () => {
-  let monaco;
-  try {
-    monaco = await loader.init();
-  } catch (err) {
-    console.error('Monaco load failed in code editor:', err);
-    editorLoadError.value = true;
-    return;
-  }
+onMounted(() => {
   if (!editorContainer.value) return;
-  editorInstance = monaco.editor.create(editorContainer.value, {
-    value: vcrStore.code, language: "javascript", theme: "vs-dark",
-    automaticLayout: true, fontSize: 14, lineNumbers: "on",
-    minimap: { enabled: false }, scrollBeyondLastLine: false,
-    cursorBlinking: "smooth", cursorSmoothCaretAnimation: "on",
-    padding: { top: 12, bottom: 12 },
-    fontFamily: "JetBrains Mono, Fira Code, monospace",
-    scrollbar: { vertical: "visible", horizontal: "visible", verticalScrollbarSize: 8, horizontalScrollbarSize: 8 },
-  });
-  editorInstance.onDidChangeModelContent(() => { 
-    vcrStore.code = editorInstance.getValue(); 
-    // Invalidate current playback so hitting Play recompiles the new code
-    vcrStore.playbackFrames = [];
-    vcrStore.reset();
-  });
-  syncerCoordinator = new MonacoLineSyncerCoordinator(editorInstance, vcrStore);
+  try {
+    editorInstance = monaco.editor.create(editorContainer.value, {
+      value: vcrStore.code, language: "javascript", theme: monacoTheme.value,
+      automaticLayout: true, fontSize: 14, lineNumbers: "on",
+      minimap: { enabled: false }, scrollBeyondLastLine: false,
+      cursorBlinking: "smooth", cursorSmoothCaretAnimation: "on",
+      padding: { top: 12, bottom: 12 },
+      fontFamily: "JetBrains Mono, Fira Code, monospace",
+      scrollbar: { vertical: "visible", horizontal: "visible", verticalScrollbarSize: 8, horizontalScrollbarSize: 8 },
+    });
+    editorInstance.onDidChangeModelContent(() => { 
+      vcrStore.code = editorInstance?.getValue() ?? ""; 
+      vcrStore.customCompileFn = null;
+      vcrStore.playbackFrames = [];
+      vcrStore.reset();
+    });
+    syncerCoordinator = new MonacoLineSyncerCoordinator(editorInstance as any, vcrStore);
+  } catch (err) {
+    console.error('Monaco create failed in code editor:', err);
+    editorLoadError.value = true;
+  }
 });
 
 onBeforeUnmount(() => {
@@ -127,6 +147,7 @@ function loadPreset(key: string): void {
   activePreset.value = key;
   const newCode = PRESETS[key].code;
   vcrStore.code = newCode;
+  vcrStore.customCompileFn = null;
   editorInstance?.setValue(newCode);
   vcrStore.compileAndLoad();
   // Bỏ auto-play để người dùng có thể chỉnh sửa code trước khi chạy
@@ -134,6 +155,6 @@ function loadPreset(key: string): void {
 </script>
 
 <style scoped>
-/* No extra backgrounds needed, letting it inherit from parent */
+
 </style>
 

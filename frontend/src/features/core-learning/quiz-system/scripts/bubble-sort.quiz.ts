@@ -1,9 +1,9 @@
 import type { QuizScript } from '@/features/core-learning/quiz-system/types/quiz.types';
 
-/**
- * Bubble Sort Interactive Quiz Script
- * Contains checkpoint questions triggered at specific animation frames.
- */
+
+
+
+
 export const bubbleSortQuiz: QuizScript = {
   algorithmId: 'bubble-sort',
   checkpoints: [

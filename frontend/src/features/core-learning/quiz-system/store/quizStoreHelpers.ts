@@ -3,7 +3,7 @@ import type { QuizQuestion, QuizCheckpoint } from '@/features/core-learning/quiz
 import { QuizVerificationEngine } from '../engine/QuizVerificationEngine';
 import { QuizStatsManager } from '../engine/QuizStatsManager';
 
-/** Reset toàn bộ active question state về mặc định */
+
 export function resetActiveQuestionState(
   activeQuestion: Ref<QuizQuestion | null>,
   selectedAnswerIndex: Ref<number | null>,
@@ -22,7 +22,7 @@ export function resetActiveQuestionState(
   isCanvasTargetMode.value  = false;
 }
 
-/** Tạo verification result cho option answer */
+
 export function verifyAndRecordOption(
   index: number,
   question: QuizQuestion,

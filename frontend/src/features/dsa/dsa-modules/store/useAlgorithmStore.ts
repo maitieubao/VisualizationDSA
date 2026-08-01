@@ -36,7 +36,7 @@ export const useAlgorithmStore = defineStore('algorithm', () => {
       if (!response.ok) throw new Error('Không thể tải danh sách thuật toán từ máy chủ.');
       const backendAlgos = await response.json() as Algorithm[];
       
-      // Merge frontend catalog with backend to ensure new theory-only algorithms show up
+      
       const backendIds = new Set(backendAlgos.map(a => a.id));
       const missingFromBackend = ALGORITHM_CATALOG.filter(a => !backendIds.has(a.id));
       

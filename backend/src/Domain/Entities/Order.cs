@@ -9,14 +9,14 @@ namespace VisualizationDSA.Domain.Entities
         public string PaymentCode { get; private set; } = string.Empty;
         public string? TransactionReference { get; private set; }
         public decimal Amount { get; private set; }
-        public string Status { get; private set; } = "Pending"; // Pending, Completed, Cancelled
+        public string Status { get; private set; } = "Pending"; 
         public DateTime CreatedAt { get; private set; }
         public DateTime? CompletedAt { get; private set; }
 
-        // Navigation property
+        
         public virtual User User { get; private set; } = null!;
 
-        private Order() { } // EF Core constructor
+        private Order() { } 
 
         public Order(Guid userId, string paymentCode, decimal amount)
         {

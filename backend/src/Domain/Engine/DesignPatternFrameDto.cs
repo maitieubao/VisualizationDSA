@@ -1,9 +1,9 @@
 namespace VisualizationDSA.Domain.Engine;
 
-/// <summary>
-/// Frame DTO cho mô-đun Design Patterns Visualizer.
-/// Mỗi frame thể hiện một bước trong kịch bản pattern (Strategy swap, Observer notify, etc.).
-/// </summary>
+
+
+
+
 public class DesignPatternFrameDto
 {
     public int StepIndex { get; set; }
@@ -21,7 +21,7 @@ public class UMLNodeDto
 {
     public string Id { get; set; } = string.Empty;
     public string Name { get; set; } = string.Empty;
-    public string NodeType { get; set; } = string.Empty; // "class" | "interface" | "abstract"
+    public string NodeType { get; set; } = string.Empty; 
     public List<string> Attributes { get; set; } = new();
     public List<string> Methods { get; set; } = new();
     public double X { get; set; }
@@ -34,6 +34,6 @@ public class UMLLinkDto
     public string Id { get; set; } = string.Empty;
     public string SourceId { get; set; } = string.Empty;
     public string TargetId { get; set; } = string.Empty;
-    public string LinkType { get; set; } = string.Empty; // "dependency" | "realization" | "association"
+    public string LinkType { get; set; } = string.Empty; 
     public bool IsActive { get; set; }
 }

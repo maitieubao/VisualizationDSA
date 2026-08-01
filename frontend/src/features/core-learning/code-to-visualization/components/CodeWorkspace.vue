@@ -1,6 +1,6 @@
 <template>
   <div class="ide-workspace-container">
-    <!-- Left Panel: Monaco Editor + Compiler Console -->
+    
     <div class="ide-editor-panel">
       <div class="flex-[6] min-h-0"><MonacoEditorPanel /></div>
       <div class="flex-[4] min-h-0 border-t" style="border-color: rgba(255, 255, 255, 0.05);">
@@ -8,7 +8,7 @@
       </div>
     </div>
 
-    <!-- Right Panel: Canvas + Controls -->
+    
     <div class="ide-canvas-panel">
       <ArrayInputBar
         v-model="inputArrayText"
@@ -18,7 +18,7 @@
         @run="runCompilation"
       />
 
-      <!-- Canvas Visualization -->
+      
       <div class="flex-1 rounded-xl overflow-hidden border shadow-lg relative min-h-0" style="border-color: rgba(255, 255, 255, 0.05);">
         <CanvasLayer />
         <div v-if="!hasFrames" class="absolute inset-0 flex items-center justify-center" style="background: rgba(15, 23, 42, 0.8);">
@@ -34,7 +34,7 @@
         </div>
       </div>
 
-      <!-- Control Panel -->
+      
       <div class="mt-2 rounded-xl overflow-hidden border shadow-lg h-32" style="border-color: rgba(255, 255, 255, 0.05);">
         <AnimControlPanel />
       </div>

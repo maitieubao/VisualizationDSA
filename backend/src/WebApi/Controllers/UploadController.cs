@@ -1,153 +1,72 @@
+using Asp.Versioning;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using System.Linq;
+using Microsoft.AspNetCore.Hosting;
+using System;
+using System.IO;
 using System.Threading.Tasks;
 using VisualizationDSA.WebApi.Filters;
-using VisualizationDSA.Application.Common.Interfaces;
-using System.IO;
-using System;
-using VisualizationDSA.WebApi.Helpers;
 
 namespace VisualizationDSA.WebApi.Controllers
 {
+    [ApiVersion("1.0")]
     [ApiController]
-    [Route("api/v1/upload")]
+    [Route("api/v{version:apiVersion}/upload")]
     public class UploadController : ControllerBase
     {
-        private readonly IUploadService _uploadService;
+        private readonly IWebHostEnvironment _env;
 
-        public UploadController(IUploadService uploadService)
+        public UploadController(IWebHostEnvironment env)
         {
-            _uploadService = uploadService;
+            _env = env;
         }
 
-        [HttpPost("theory-image")]
-        [RequireJwtRole("Teacher,Admin")]
-        public async Task<IActionResult> UploadTheoryImage(IFormFile file)
+        
+        
+        
+        
+        [HttpPost("image")]
+        [RequireJwtRole] 
+        public async Task<IActionResult> UploadImage(IFormFile file)
         {
             if (file == null || file.Length == 0)
-                return BadRequest(new { error = "INVALID_FILE", message = "File không hợp lệ." });
+            {
+                return BadRequest(new { error = "NO_FILE", message = "Vui lòng chọn một file ảnh." });
+            }
 
+            
+            var ext = Path.GetExtension(file.FileName).ToLowerInvariant();
+            if (ext != ".jpg" && ext != ".jpeg" && ext != ".png" && ext != ".gif" && ext != ".webp")
+            {
+                return BadRequest(new { error = "INVALID_FILE_TYPE", message = "Chỉ chấp nhận file ảnh (.jpg, .png, .gif, .webp)." });
+            }
+
+            
             if (file.Length > 5 * 1024 * 1024)
-                return BadRequest(new { error = "FILE_TOO_LARGE", message = "Dung lượng ảnh tối đa 5MB." });
-
-            var allowedExtensions = new[] { ".png", ".jpg", ".jpeg", ".webp" };
-            var ext = Path.GetExtension(file.FileName).ToLowerInvariant();
-            if (!allowedExtensions.Contains(ext))
-                return BadRequest(new { error = "INVALID_FORMAT", message = "Chỉ hỗ trợ PNG, JPG, WEBP." });
-
-            try
             {
-                using var stream = file.OpenReadStream();
-                if (!FileSignatureValidator.IsValidFileSignature(stream, ext))
-                    return BadRequest(new { error = "INVALID_FILE_SIGNATURE", message = "File bị giả mạo hoặc không đúng định dạng." });
-
-                var url = await _uploadService.UploadImageAsync(stream, file.FileName);
-                if (string.IsNullOrEmpty(url))
-                    return StatusCode(500, new { error = "UPLOAD_FAILED", message = "Tải ảnh thất bại." });
-
-                return Ok(new { url });
+                return BadRequest(new { error = "FILE_TOO_LARGE", message = "File ảnh không được vượt quá 5MB." });
             }
-            catch (Exception ex)
+
+            var webRootPath = _env.WebRootPath ?? Path.Combine(Directory.GetCurrentDirectory(), "wwwroot");
+            var uploadsFolder = Path.Combine(webRootPath, "uploads");
+
+            if (!Directory.Exists(uploadsFolder))
             {
-                return StatusCode(500, new { error = "UPLOAD_FAILED", message = ex.Message });
+                Directory.CreateDirectory(uploadsFolder);
             }
-        }
 
-        [HttpPost("theory-video")]
-        [RequireJwtRole("Teacher,Admin")]
-        public async Task<IActionResult> UploadTheoryVideo(IFormFile file)
-        {
-            if (file == null || file.Length == 0)
-                return BadRequest(new { error = "INVALID_FILE", message = "File không hợp lệ." });
+            var uniqueFileName = Guid.NewGuid().ToString() + ext;
+            var filePath = Path.Combine(uploadsFolder, uniqueFileName);
 
-            if (file.Length > 50 * 1024 * 1024)
-                return BadRequest(new { error = "FILE_TOO_LARGE", message = "Dung lượng video tối đa 50MB." });
-
-            var allowedExtensions = new[] { ".mp4", ".webm" };
-            var ext = Path.GetExtension(file.FileName).ToLowerInvariant();
-            if (!allowedExtensions.Contains(ext))
-                return BadRequest(new { error = "INVALID_FORMAT", message = "Chỉ hỗ trợ MP4, WEBM." });
-
-            try
+            using (var fileStream = new FileStream(filePath, FileMode.Create))
             {
-                using var stream = file.OpenReadStream();
-                var url = await _uploadService.UploadVideoAsync(stream, file.FileName);
-                if (string.IsNullOrEmpty(url))
-                    return StatusCode(500, new { error = "UPLOAD_FAILED", message = "Tải video thất bại." });
-
-                return Ok(new { url });
+                await file.CopyToAsync(fileStream);
             }
-            catch (Exception ex)
-            {
-                return StatusCode(500, new { error = "UPLOAD_FAILED", message = ex.Message });
-            }
-        }
 
-        [HttpPost("avatar")]
-        [RequireJwtRole]
-        public async Task<IActionResult> UploadAvatar(IFormFile file)
-        {
-            if (file == null || file.Length == 0)
-                return BadRequest(new { error = "INVALID_FILE", message = "File không hợp lệ." });
+            
+            var fileUrl = $"/uploads/{uniqueFileName}";
 
-            if (file.Length > 5 * 1024 * 1024)
-                return BadRequest(new { error = "FILE_TOO_LARGE", message = "Dung lượng ảnh tối đa 5MB." });
-
-            var allowedExtensions = new[] { ".png", ".jpg", ".jpeg", ".webp" };
-            var ext = Path.GetExtension(file.FileName).ToLowerInvariant();
-            if (!allowedExtensions.Contains(ext))
-                return BadRequest(new { error = "INVALID_FORMAT", message = "Chỉ hỗ trợ PNG, JPG, WEBP." });
-
-            try
-            {
-                using var stream = file.OpenReadStream();
-                if (!FileSignatureValidator.IsValidFileSignature(stream, ext))
-                    return BadRequest(new { error = "INVALID_FILE_SIGNATURE", message = "File bị giả mạo hoặc không đúng định dạng." });
-
-                var url = await _uploadService.UploadImageAsync(stream, $"avatar_{Guid.NewGuid()}{ext}");
-                if (string.IsNullOrEmpty(url))
-                    return StatusCode(500, new { error = "UPLOAD_FAILED", message = "Tải ảnh thất bại." });
-
-                return Ok(new { url });
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, new { error = "UPLOAD_FAILED", message = ex.Message });
-            }
-        }
-
-        [HttpPost("cv-document")]
-        [RequireJwtRole]
-        public async Task<IActionResult> UploadCV(IFormFile file)
-        {
-            if (file == null || file.Length == 0)
-                return BadRequest(new { error = "INVALID_FILE", message = "File không hợp lệ." });
-
-            if (file.Length > 5 * 1024 * 1024)
-                return BadRequest(new { error = "FILE_TOO_LARGE", message = "Dung lượng file tối đa 5MB." });
-
-            var allowedExtensions = new[] { ".pdf" };
-            var ext = Path.GetExtension(file.FileName).ToLowerInvariant();
-            if (!allowedExtensions.Contains(ext))
-                return BadRequest(new { error = "INVALID_FORMAT", message = "Chỉ hỗ trợ file PDF." });
-
-            try
-            {
-                using var stream = file.OpenReadStream();
-                if (!FileSignatureValidator.IsValidFileSignature(stream, ext))
-                    return BadRequest(new { error = "INVALID_FILE_SIGNATURE", message = "File bị giả mạo hoặc không đúng định dạng PDF." });
-
-                var url = await _uploadService.UploadDocumentAsync(stream, $"cv_{Guid.NewGuid()}{ext}");
-                if (string.IsNullOrEmpty(url))
-                    return StatusCode(500, new { error = "UPLOAD_FAILED", message = "Tải file thất bại." });
-
-                return Ok(new { url });
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, new { error = "UPLOAD_FAILED", message = ex.Message });
-            }
+            return Ok(new { url = fileUrl, message = "Upload thành công." });
         }
     }
 }

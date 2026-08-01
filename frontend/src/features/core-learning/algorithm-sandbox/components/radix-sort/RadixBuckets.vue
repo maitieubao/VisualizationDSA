@@ -6,7 +6,7 @@
       class="r-bucket"
       :class="isBucketActive(d-1) ? 'r-bucket--active' : ''"
     >
-      <!-- Active indicator arrow above bucket label -->
+      
       <div class="r-barrow" :class="isBucketActive(d-1) ? 'r-barrow--on' : ''">▼</div>
       <span class="r-blbl" :class="isBucketActive(d-1) ? 'r-blbl--on' : ''">[{{ d-1 }}]</span>
       <div class="r-bitems">

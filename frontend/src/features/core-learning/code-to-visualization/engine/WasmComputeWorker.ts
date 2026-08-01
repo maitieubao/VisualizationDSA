@@ -1,24 +1,24 @@
-/**
- * WasmComputeWorker — Web Worker container for WASM-accelerated computation.
- *
- * Offloads heavy iterative/recursive operations (AST parsing, sorting loops)
- * into a dedicated thread with optional WASM module execution.
- *
- * Communication protocol:
- *   Main → Worker: WasmWorkerRequest (with transferable ArrayBuffers)
- *   Worker → Main: WasmWorkerResponse (with transferable ArrayBuffers)
- */
 
-// ── Message Types ────────────────────────────────────────────────────────────
+
+
+
+
+
+
+
+
+
+
+
 
 export interface WasmWorkerRequest {
   type: 'init' | 'compute' | 'abort';
   taskId: string;
-  /** Raw input data as transferable ArrayBuffer for zero-copy throughput */
+  
   payload?: ArrayBuffer;
-  /** WASM module bytes for dynamic instantiation */
+  
   wasmBytes?: ArrayBuffer;
-  /** Configuration parameters for the compute task */
+  
   config?: ComputeConfig;
 }
 
@@ -31,25 +31,25 @@ export interface ComputeConfig {
 export interface WasmWorkerResponse {
   type: 'ready' | 'result' | 'progress' | 'error';
   taskId: string;
-  /** Computed output as transferable ArrayBuffer */
+  
   payload?: ArrayBuffer;
-  /** Progress percentage (0–100) for long-running tasks */
+  
   progress?: number;
-  /** Execution time in milliseconds */
+  
   elapsedMs?: number;
-  /** Error message if type === 'error' */
+  
   error?: string;
 }
 
-// ── Worker Context (runs inside Web Worker thread) ───────────────────────────
+
 
 let wasmInstance: WebAssembly.Instance | null = null;
 let wasmMemory: WebAssembly.Memory | null = null;
 
-/**
- * Initialize WASM module from raw bytes.
- * Sets up shared linear memory for data exchange.
- */
+
+
+
+
 async function initWasmModule(wasmBytes: ArrayBuffer): Promise<void> {
   wasmMemory = new WebAssembly.Memory({ initial: 256, maximum: 4096 });
 
@@ -64,10 +64,10 @@ async function initWasmModule(wasmBytes: ArrayBuffer): Promise<void> {
   wasmInstance = instance;
 }
 
-/**
- * Execute a compute task using either WASM or JS fallback.
- * Uses transferable ArrayBuffers for zero-copy data exchange.
- */
+
+
+
+
 function executeCompute(
   taskId: string,
   inputBuffer: ArrayBuffer,
@@ -79,7 +79,7 @@ function executeCompute(
     let resultBuffer: ArrayBuffer;
 
     if (wasmInstance && wasmInstance.exports['compute']) {
-      // WASM path: copy input → WASM linear memory → execute → copy output
+      
       const inputView = new Float32Array(inputBuffer);
       const wasmMem = new Float32Array(
         (wasmMemory as WebAssembly.Memory).buffer,
@@ -104,7 +104,7 @@ function executeCompute(
         resultView.byteOffset + resultView.byteLength,
       );
     } else {
-      // JS fallback: process in-worker without WASM
+      
       resultBuffer = jsFallbackCompute(inputBuffer, config);
     }
 
@@ -126,10 +126,10 @@ function executeCompute(
   }
 }
 
-/**
- * JS fallback compute — runs sorting/graph operations in pure JS
- * when no WASM module is loaded.
- */
+
+
+
+
 function jsFallbackCompute(inputBuffer: ArrayBuffer, config: ComputeConfig): ArrayBuffer {
   const view = config.precision === 'f64'
     ? new Float64Array(inputBuffer.slice(0))
@@ -139,7 +139,7 @@ function jsFallbackCompute(inputBuffer: ArrayBuffer, config: ComputeConfig): Arr
   const maxIter = config.maxIterations;
 
   if (config.algorithm === 'sort') {
-    // In-place insertion sort with iteration guard
+    
     for (let i = 1; i < view.length && iterations < maxIter; i++) {
       const key = view[i];
       let j = i - 1;
@@ -151,8 +151,8 @@ function jsFallbackCompute(inputBuffer: ArrayBuffer, config: ComputeConfig): Arr
       view[j + 1] = key;
     }
   } else if (config.algorithm === 'graph-force') {
-    // Simplified force-directed step: repulsion pass
-    const nodeCount = view.length / 4; // x, y, vx, vy per node
+    
+    const nodeCount = view.length / 4; 
     const repulsion = 100.0;
     const damping = 0.95;
     for (let i = 0; i < nodeCount && iterations < maxIter; i++) {
@@ -167,17 +167,17 @@ function jsFallbackCompute(inputBuffer: ArrayBuffer, config: ComputeConfig): Arr
         fy += (dy / dist) * (repulsion / (dist * dist));
         iterations++;
       }
-      view[i * 4 + 2] = (view[i * 4 + 2] + fx * 0.016) * damping; // vx
-      view[i * 4 + 3] = (view[i * 4 + 3] + fy * 0.016) * damping; // vy
-      view[ix] += view[i * 4 + 2] * 0.016; // x
-      view[iy] += view[i * 4 + 3] * 0.016; // y
+      view[i * 4 + 2] = (view[i * 4 + 2] + fx * 0.016) * damping; 
+      view[i * 4 + 3] = (view[i * 4 + 3] + fy * 0.016) * damping; 
+      view[ix] += view[i * 4 + 2] * 0.016; 
+      view[iy] += view[i * 4 + 3] * 0.016; 
     }
   }
 
   return view.buffer;
 }
 
-// ── Message Handler ──────────────────────────────────────────────────────────
+
 
 self.onmessage = async (event: MessageEvent<WasmWorkerRequest>) => {
   const { type, taskId, payload, wasmBytes, config } = event.data;
@@ -213,14 +213,14 @@ self.onmessage = async (event: MessageEvent<WasmWorkerRequest>) => {
       }
 
       const result = executeCompute(taskId, payload, config);
-      // Transfer the result buffer back to main thread (zero-copy)
+      
       const transferables: Transferable[] = result.payload ? [result.payload] : [];
       self.postMessage(result, { transfer: transferables });
       break;
     }
 
     case 'abort': {
-      // Reset WASM state
+      
       wasmInstance = null;
       wasmMemory = null;
       const response: WasmWorkerResponse = { type: 'ready', taskId };
@@ -230,20 +230,20 @@ self.onmessage = async (event: MessageEvent<WasmWorkerRequest>) => {
   }
 };
 
-// ── Main-Thread Bridge (import from Vue components) ──────────────────────────
 
-/**
- * Creates a typed bridge to the WasmComputeWorker from the main thread.
- * Uses transferable ArrayBuffers for maximum data throughput.
- *
- * Usage:
- * ```ts
- * const bridge = createWasmBridge();
- * await bridge.init();
- * const result = await bridge.compute(inputArray, { algorithm: 'sort', ... });
- * bridge.terminate();
- * ```
- */
+
+
+
+
+
+
+
+
+
+
+
+
+
 export function createWasmBridge(): WasmBridge {
   const worker = new Worker(new URL('./WasmComputeWorker.ts', import.meta.url), {
     type: 'module',
@@ -293,7 +293,7 @@ export function createWasmBridge(): WasmBridge {
       config: ComputeConfig,
     ): Promise<{ output: ArrayBuffer; elapsedMs: number }> {
       const taskId = `compute-${++taskCounter}`;
-      // Transfer the input buffer (zero-copy to worker)
+      
       const buffer = inputData.buffer.slice(
         inputData.byteOffset,
         inputData.byteOffset + inputData.byteLength,
