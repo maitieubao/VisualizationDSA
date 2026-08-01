@@ -159,12 +159,22 @@ builder.Services.AddCors(options =>
     });
 });
 
-// Configure Database (PostgreSQL)
+// Configure Database (PostgreSQL / SQLite)
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 builder.Services.AddDbContextPool<ApplicationDbContext>(options =>
-    options
-        .UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection"))
-        // Bảo vệ tính bất biến của Event Sourcing Ledger (chặn UPDATE/DELETE).
-        .AddInterceptors(new ImmutableAuditInterceptor()));
+{
+    if (connectionString != null && connectionString.Contains("Host="))
+    {
+        options.UseNpgsql(connectionString);
+    }
+    else
+    {
+        options.UseSqlite(connectionString);
+    }
+    
+    // Bảo vệ tính bất biến của Event Sourcing Ledger (chặn UPDATE/DELETE).
+    options.AddInterceptors(new ImmutableAuditInterceptor());
+});
 
 builder.Services.AddScoped<VisualizationDSA.Application.Interfaces.IApplicationDbContext>(provider => provider.GetRequiredService<VisualizationDSA.Infrastructure.Data.ApplicationDbContext>());
 
