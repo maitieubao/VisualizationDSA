@@ -4,7 +4,7 @@
       
       <div class="settings-modal-header">
         <div class="header-title-box">
-          <BaseIcon name="admin" class="w-4 h-4 text-indigo-400 mr-2" />
+          <BaseIcon name="admin" class="w-4 h-4 text-accent mr-2" />
           <h1 class="header-title">Settings</h1>
         </div>
 

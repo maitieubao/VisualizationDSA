@@ -26,7 +26,7 @@
         <span class="dash-text-accent font-bold shrink-0">$ find</span>
         
         <div class="relative w-full flex items-center">
-          <svg class="absolute left-0 w-3.5 h-3.5 text-zinc-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <svg class="absolute left-0 w-3.5 h-3.5 text-text-muted" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
             <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
           </svg>
           <input
@@ -73,8 +73,8 @@
     
     <div v-if="featuredAlgorithms.length && !searchQuery.trim() && selectedDifficulty === 'All' && (!allowedCategories || allowedCategories.length === 0)" class="space-y-3 mt-2">
       <div class="flex items-center gap-1.5 px-1">
-        <span class="text-[10px] text-amber-500 font-mono font-bold">⭐ GỢI Ý HỌC TẬP /</span>
-        <h3 class="text-[10px] font-bold uppercase tracking-wider text-amber-500 font-mono">
+        <span class="text-[10px] text-accent-yellow font-mono font-bold">⭐ GỢI Ý HỌC TẬP /</span>
+        <h3 class="text-[10px] font-bold uppercase tracking-wider text-accent-yellow font-mono">
           featured-skills
         </h3>
       </div>
@@ -91,7 +91,7 @@
         >
           
           <div class="absolute -top-2.5 left-4 px-2 py-0.5 rounded dash-badge-recommended text-[9px] font-bold flex items-center gap-1 shadow-md font-mono">
-            <span class="w-1.5 h-1.5 rounded-full bg-amber-400 animate-ping"></span>
+            <span class="w-1.5 h-1.5 rounded-full bg-accent-yellow animate-ping"></span>
             highly-recommended
           </div>
 
@@ -99,9 +99,9 @@
           <div class="flex items-center justify-between dash-border-b pb-2 mb-3 mt-1">
             <div class="flex items-center gap-1.5">
               <div class="flex gap-1">
-                <span class="w-1.5 h-1.5 rounded-full bg-rose-500"></span>
-                <span class="w-1.5 h-1.5 rounded-full bg-amber-500"></span>
-                <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                <span class="w-1.5 h-1.5 rounded-full bg-accent-red"></span>
+                <span class="w-1.5 h-1.5 rounded-full bg-accent-yellow"></span>
+                <span class="w-1.5 h-1.5 rounded-full bg-accent-green"></span>
               </div>
               <span class="text-xs font-mono font-bold dash-text-secondary group-hover:dash-text-primary">
                 {{ algo.id }}
@@ -184,9 +184,9 @@
           <div class="flex items-center justify-between dash-border-b pb-2 mb-3">
             <div class="flex items-center gap-1.5 min-w-0">
               <div class="flex gap-1 shrink-0">
-                <span class="w-1.5 h-1.5 rounded-full bg-rose-500/80"></span>
-                <span class="w-1.5 h-1.5 rounded-full bg-amber-500/80"></span>
-                <span class="w-1.5 h-1.5 rounded-full bg-emerald-500/80"></span>
+                <span class="w-1.5 h-1.5 rounded-full bg-accent-red/80"></span>
+                <span class="w-1.5 h-1.5 rounded-full bg-accent-yellow/80"></span>
+                <span class="w-1.5 h-1.5 rounded-full bg-accent-green/80"></span>
               </div>
               <span class="text-xs font-mono font-bold dash-text-secondary truncate">
                 {{ algo.id }}
@@ -296,11 +296,11 @@ function toggleProgress(algoId: string) {
 function progressClass(status: 'NOT_STARTED' | 'IN_PROGRESS' | 'COMPLETED'): string {
   switch (status) {
     case 'COMPLETED':
-      return 'bg-emerald-950/40 text-emerald-400 border-emerald-900/30 hover:bg-emerald-950/60';
+      return 'bg-accent-green/40 text-accent-green border-accent-green/30 hover:bg-accent-green/60';
     case 'IN_PROGRESS':
-      return 'bg-amber-950/40 text-amber-400 border-amber-900/30 hover:bg-amber-950/60';
+      return 'bg-accent-yellow/40 text-accent-yellow border-accent-yellow/30 hover:bg-accent-yellow/60';
     default:
-      return 'bg-zinc-950/40 text-zinc-500 border-zinc-900 hover:bg-zinc-900/20';
+      return 'bg-bg-secondary/40 text-text-muted border-zinc-900 hover:bg-bg-secondary/20';
   }
 }
 
@@ -396,10 +396,10 @@ const groupedAlgorithms = computed(() => {
 
 function difficultyClass(difficulty: string): string {
   switch (difficulty) {
-    case 'Easy': return 'bg-emerald-950/40 text-emerald-400 border border-emerald-900/30';
-    case 'Medium': return 'bg-amber-950/40 text-amber-400 border border-amber-900/30';
-    case 'Hard': return 'bg-rose-950/40 text-rose-400 border border-rose-900/30';
-    default: return 'bg-zinc-900 text-zinc-500';
+    case 'Easy': return 'bg-accent-green/40 text-accent-green border border-accent-green/30';
+    case 'Medium': return 'bg-accent-yellow/40 text-accent-yellow border border-accent-yellow/30';
+    case 'Hard': return 'bg-accent-red/40 text-accent-red border border-accent-red/30';
+    default: return 'bg-bg-secondary text-text-muted';
   }
 }
 
@@ -473,7 +473,7 @@ function getMiniVisualizer(algoId: string) {
             return h('div', { class: hCls }, [
               h('div', { class: 'flex gap-1.5' }, Array.from({ length: 5 }).map((_, i) => 
                 h('div', { 
-                  class: `w-4 h-4 rounded border text-[7px] flex items-center justify-center font-mono linear-box-${i} border-zinc-800 bg-zinc-900/50 text-zinc-500`
+                  class: `w-4 h-4 rounded border text-[7px] flex items-center justify-center font-mono linear-box-${i} border-zinc-800 bg-bg-secondary/50 text-text-muted`
                 }, String((i + 1) * 10))
               ))
             ]);
@@ -482,7 +482,7 @@ function getMiniVisualizer(algoId: string) {
             return h('div', { class: hCls }, [
               h('div', { class: 'flex gap-1 relative' }, Array.from({ length: 7 }).map((_, i) => 
                 h('div', {
-                  class: `w-3.5 h-3.5 rounded border text-[7px] flex items-center justify-center font-mono border-zinc-800 text-zinc-500 bg-zinc-900/50 ${
+                  class: `w-3.5 h-3.5 rounded border text-[7px] flex items-center justify-center font-mono border-zinc-800 text-text-muted bg-bg-secondary/50 ${
                     i >= 4 ? 'binary-box-right' : ''
                   }`
                 }, String(i * 5 + 5))
@@ -493,69 +493,69 @@ function getMiniVisualizer(algoId: string) {
             return h('div', { class: hCls + ' relative px-2' }, [
               h('div', { class: 'flex gap-1 w-full justify-between relative' }, [
                 Array.from({ length: 6 }).map((_, i) => 
-                  h('div', { class: 'w-3.5 h-3.5 rounded border border-zinc-800/60 bg-zinc-900/30' })
+                  h('div', { class: 'w-3.5 h-3.5 rounded border border-zinc-800/60 bg-bg-secondary/30' })
                 ),
-                h('div', { class: 'absolute top-0 h-3.5 rounded border border-cyan-400 bg-cyan-950/30 shadow-sm shadow-cyan-500/20 sliding-window-overlay' })
+                h('div', { class: 'absolute top-0 h-3.5 rounded border border-accent-cyan bg-accent-cyan/30 shadow-sm shadow-accent-cyan/20 sliding-window-overlay' })
               ])
             ]);
             
           case 'stack':
             return h('div', { class: hCls }, [
               h('div', { class: 'w-8 h-10 border-b border-x border-zinc-800 relative flex flex-col justify-end items-center gap-0.5 pb-0.5 overflow-hidden' }, [
-                h('div', { class: 'w-6 h-2 rounded bg-cyan-500/90 stack-push-pop-2' }),
-                h('div', { class: 'w-6 h-2 rounded bg-cyan-600/70 stack-push-pop-1' }),
-                h('div', { class: 'w-6 h-2 rounded bg-cyan-700/50 stack-push-pop-0' })
+                h('div', { class: 'w-6 h-2 rounded bg-accent-cyan/90 stack-push-pop-2' }),
+                h('div', { class: 'w-6 h-2 rounded bg-accent-cyan/70 stack-push-pop-1' }),
+                h('div', { class: 'w-6 h-2 rounded bg-accent-cyan/50 stack-push-pop-0' })
               ])
             ]);
             
           case 'queue':
             return h('div', { class: hCls }, [
               h('div', { class: 'w-16 h-5 border-y border-zinc-800 relative flex items-center overflow-hidden justify-around' }, [
-                h('div', { class: 'w-3 h-3 rounded-full bg-cyan-500 shadow-sm shadow-cyan-400/45 queue-flow-2' }),
-                h('div', { class: 'w-3 h-3 rounded-full bg-cyan-600/70 queue-flow-1' }),
-                h('div', { class: 'w-3 h-3 rounded-full bg-cyan-700/50 queue-flow-0' })
+                h('div', { class: 'w-3 h-3 rounded-full bg-accent-cyan shadow-sm shadow-accent-cyan/45 queue-flow-2' }),
+                h('div', { class: 'w-3 h-3 rounded-full bg-accent-cyan/70 queue-flow-1' }),
+                h('div', { class: 'w-3 h-3 rounded-full bg-accent-cyan/50 queue-flow-0' })
               ])
             ]);
             
           case 'monotonic-stack':
             return h('div', { class: hCls }, [
               h('div', { class: 'w-8 h-10 border-b border-x border-zinc-800 relative flex flex-col justify-end items-center gap-0.5 pb-0.5 overflow-hidden' }, [
-                h('div', { class: 'w-6 h-3 rounded bg-cyan-500/90 mono-box-2' }),
-                h('div', { class: 'w-5 h-2 rounded bg-cyan-600/70 mono-box-1' }),
-                h('div', { class: 'w-4 h-1.5 rounded bg-cyan-700/50 mono-box-0' })
+                h('div', { class: 'w-6 h-3 rounded bg-accent-cyan/90 mono-box-2' }),
+                h('div', { class: 'w-5 h-2 rounded bg-accent-cyan/70 mono-box-1' }),
+                h('div', { class: 'w-4 h-1.5 rounded bg-accent-cyan/50 mono-box-0' })
               ])
             ]);
             
           case 'bst':
             return h('div', { class: hCls + ' relative' }, [
               h('div', { class: 'w-14 h-10 relative' }, [
-                h('div', { class: 'absolute top-2 left-3 w-4 h-px bg-zinc-900 rotate-45 origin-left' }),
-                h('div', { class: 'absolute top-2 right-3 w-4 h-px bg-zinc-900 -rotate-45 origin-right' }),
-                h('div', { class: 'absolute top-0 left-1/2 -translate-x-1/2 w-3.5 h-3.5 rounded-full border border-zinc-800 bg-zinc-950 bst-root' }),
-                h('div', { class: 'absolute bottom-0 left-0 w-3.5 h-3.5 rounded-full border border-zinc-800 bg-zinc-950 bst-left' }),
-                h('div', { class: 'absolute bottom-0 right-0 w-3.5 h-3.5 rounded-full border border-zinc-800 bg-zinc-950 bst-right' })
+                h('div', { class: 'absolute top-2 left-3 w-4 h-px bg-bg-secondary rotate-45 origin-left' }),
+                h('div', { class: 'absolute top-2 right-3 w-4 h-px bg-bg-secondary -rotate-45 origin-right' }),
+                h('div', { class: 'absolute top-0 left-1/2 -translate-x-1/2 w-3.5 h-3.5 rounded-full border border-zinc-800 bg-bg-secondary bst-root' }),
+                h('div', { class: 'absolute bottom-0 left-0 w-3.5 h-3.5 rounded-full border border-zinc-800 bg-bg-secondary bst-left' }),
+                h('div', { class: 'absolute bottom-0 right-0 w-3.5 h-3.5 rounded-full border border-zinc-800 bg-bg-secondary bst-right' })
               ])
             ]);
             
           case 'bfs':
             return h('div', { class: hCls }, [
               h('div', { class: 'w-14 h-10 relative' }, [
-                h('div', { class: 'absolute top-2 left-3 w-4 h-px bg-zinc-900 rotate-45' }),
-                h('div', { class: 'absolute top-2 right-3 w-4 h-px bg-zinc-900 -rotate-45' }),
-                h('div', { class: 'absolute top-0 left-1/2 -translate-x-1/2 w-3.5 h-3.5 rounded-full border border-zinc-800 bg-zinc-950 bfs-root' }),
-                h('div', { class: 'absolute bottom-0 left-0 w-3.5 h-3.5 rounded-full border border-zinc-800 bg-zinc-950 bfs-child' }),
-                h('div', { class: 'absolute bottom-0 right-0 w-3.5 h-3.5 rounded-full border border-zinc-800 bg-zinc-950 bfs-child' })
+                h('div', { class: 'absolute top-2 left-3 w-4 h-px bg-bg-secondary rotate-45' }),
+                h('div', { class: 'absolute top-2 right-3 w-4 h-px bg-bg-secondary -rotate-45' }),
+                h('div', { class: 'absolute top-0 left-1/2 -translate-x-1/2 w-3.5 h-3.5 rounded-full border border-zinc-800 bg-bg-secondary bfs-root' }),
+                h('div', { class: 'absolute bottom-0 left-0 w-3.5 h-3.5 rounded-full border border-zinc-800 bg-bg-secondary bfs-child' }),
+                h('div', { class: 'absolute bottom-0 right-0 w-3.5 h-3.5 rounded-full border border-zinc-800 bg-bg-secondary bfs-child' })
               ])
             ]);
             
           case 'dfs':
             return h('div', { class: hCls }, [
               h('div', { class: 'w-14 h-10 relative' }, [
-                h('div', { class: 'absolute top-2 left-3 w-4 h-px bg-zinc-900 rotate-45' }),
-                h('div', { class: 'absolute top-2 right-3 w-4 h-px bg-zinc-900 -rotate-45' }),
-                h('div', { class: 'absolute top-0 left-1/2 -translate-x-1/2 w-3.5 h-3.5 rounded-full border border-zinc-800 bg-zinc-950 dfs-root' }),
-                h('div', { class: 'absolute bottom-0 left-0 w-3.5 h-3.5 rounded-full border border-zinc-800 bg-zinc-950 dfs-left' }),
-                h('div', { class: 'absolute bottom-0 right-0 w-3.5 h-3.5 rounded-full border border-zinc-800 bg-zinc-950 dfs-right' })
+                h('div', { class: 'absolute top-2 left-3 w-4 h-px bg-bg-secondary rotate-45' }),
+                h('div', { class: 'absolute top-2 right-3 w-4 h-px bg-bg-secondary -rotate-45' }),
+                h('div', { class: 'absolute top-0 left-1/2 -translate-x-1/2 w-3.5 h-3.5 rounded-full border border-zinc-800 bg-bg-secondary dfs-root' }),
+                h('div', { class: 'absolute bottom-0 left-0 w-3.5 h-3.5 rounded-full border border-zinc-800 bg-bg-secondary dfs-left' }),
+                h('div', { class: 'absolute bottom-0 right-0 w-3.5 h-3.5 rounded-full border border-zinc-800 bg-bg-secondary dfs-right' })
               ])
             ]);
             
@@ -567,19 +567,19 @@ function getMiniVisualizer(algoId: string) {
           case 'a-star':
             return h('div', { class: hCls }, [
               h('div', { class: 'w-14 h-10 relative flex items-center justify-between' }, [
-                h('div', { class: 'w-3.5 h-3.5 rounded-full border border-zinc-800 bg-zinc-950 dij-node-start relative' }, [
-                  h('div', { class: 'absolute top-1/2 left-full w-6 h-0.5 bg-zinc-900 dij-line-top origin-left' }),
-                  h('div', { class: 'absolute top-1/2 left-full w-6 h-0.5 bg-zinc-900 dij-line-bottom origin-left rotate-45' })
+                h('div', { class: 'w-3.5 h-3.5 rounded-full border border-zinc-800 bg-bg-secondary dij-node-start relative' }, [
+                  h('div', { class: 'absolute top-1/2 left-full w-6 h-0.5 bg-bg-secondary dij-line-top origin-left' }),
+                  h('div', { class: 'absolute top-1/2 left-full w-6 h-0.5 bg-bg-secondary dij-line-bottom origin-left rotate-45' })
                 ]),
-                h('div', { class: 'w-3.5 h-3.5 rounded-full border border-zinc-800 bg-zinc-950 dij-node-mid relative' }, [
-                  h('div', { class: 'absolute top-1/2 left-full w-6 h-0.5 bg-zinc-900 dij-line-mid origin-left -rotate-45' })
+                h('div', { class: 'w-3.5 h-3.5 rounded-full border border-zinc-800 bg-bg-secondary dij-node-mid relative' }, [
+                  h('div', { class: 'absolute top-1/2 left-full w-6 h-0.5 bg-bg-secondary dij-line-mid origin-left -rotate-45' })
                 ]),
-                h('div', { class: 'w-3.5 h-3.5 rounded-full border border-zinc-800 bg-zinc-950 dij-node-end' })
+                h('div', { class: 'w-3.5 h-3.5 rounded-full border border-zinc-800 bg-bg-secondary dij-node-end' })
               ])
             ]);
             
           default:
-            return h('div', { class: 'text-[9px] text-zinc-500 font-mono' }, '[ Blueprint ]');
+            return h('div', { class: 'text-[9px] text-text-muted font-mono' }, '[ Blueprint ]');
         }
       };
     }

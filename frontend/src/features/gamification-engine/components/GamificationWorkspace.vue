@@ -32,13 +32,13 @@
     </div>
 
     
-    <div class="rounded-xl bg-bg-secondary/45 border border-white/5 backdrop-blur-xl p-4">
+    <div class="rounded-xl bg-bg-secondary/45 border border-border-subtle backdrop-blur-xl p-4">
       <div class="flex items-center justify-between mb-2">
         <span class="text-xs text-text-secondary">Tiến độ huy hiệu tiếp theo</span>
         <span class="text-xs text-accent">{{ store.xpProgressPercent }}%</span>
       </div>
       <div class="h-2 rounded-full bg-bg-surface overflow-hidden">
-        <div class="h-full rounded-full bg-gradient-to-r from-cyan-500 to-emerald-500 transition-all duration-500" :style="{ width: `${store.xpProgressPercent}%` }" />
+        <div class="h-full rounded-full bg-gradient-to-r from-accent-cyan to-accent-green transition-all duration-500" :style="{ width: `${store.xpProgressPercent}%` }" />
       </div>
       <div class="flex items-center justify-between mt-1">
         <span class="text-[10px] text-text-disabled">{{ store.currentXP }} XP</span>
@@ -61,7 +61,7 @@
         <BadgesCabinet :all-badges="store.allBadges" :unlocked-badges="store.unlockedBadges" />
 
         
-        <div v-if="store.backendBadges.length > 0" class="rounded-xl bg-bg-secondary/45 border border-white/5 p-3">
+        <div v-if="store.backendBadges.length > 0" class="rounded-xl bg-bg-secondary/45 border border-border-subtle p-3">
           <h3 class="text-xs font-semibold text-text-primary mb-2">Huy hiệu từ Server</h3>
           <div class="space-y-1.5">
             <div v-for="badge in store.backendBadges" :key="badge.id"
@@ -79,7 +79,7 @@
       </div>
       <div class="overflow-auto">
         
-        <div v-if="store.backendLeaderboard.length > 0" class="rounded-xl bg-bg-secondary/45 border border-white/5 p-3 mb-4">
+        <div v-if="store.backendLeaderboard.length > 0" class="rounded-xl bg-bg-secondary/45 border border-border-subtle p-3 mb-4">
           <h3 class="text-xs font-semibold text-text-primary mb-2">Bảng xếp hạng (Server)</h3>
           <div class="space-y-1">
             <div v-for="entry in store.backendLeaderboard" :key="entry.rank"

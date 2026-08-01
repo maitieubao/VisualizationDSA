@@ -185,7 +185,7 @@
 
 .module-checkbox:hover {
   background: rgba(15, 23, 42, 0.8);
-  border-color: rgba(24color: rgba(99, 102, 241, 0.2);
+  border-color: rgba(99, 102, 241, 0.2);
 }
 
 .module-checkbox:has(input:checked) {

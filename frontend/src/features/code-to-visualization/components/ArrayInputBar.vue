@@ -18,7 +18,7 @@
       <svg v-if="!isCompiling" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="currentColor" class="mr-1.5">
         <polygon points="5 3 19 12 5 21 5 3" />
       </svg>
-      <div v-else class="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin mr-1.5" />
+      <div v-else class="w-3.5 h-3.5 border-2 border-border-default border-t-transparent rounded-full animate-spin mr-1.5" />
       <span class="text-xs font-semibold uppercase tracking-wider">{{ isCompiling ? 'Đang biên dịch...' : 'Run' }}</span>
     </button>
   </div>

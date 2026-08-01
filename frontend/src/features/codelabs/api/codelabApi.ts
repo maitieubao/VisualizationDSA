@@ -45,5 +45,9 @@ export const codelabApi = {
   async runCodelab(id: string, payload: SubmitCodeRequest): Promise<SubmitCodeResult> {
     const response = await axios.post(`/api/codelabs/${id}/run`, payload);
     return response.data;
+  },
+
+  async revealHint(id: string, hintIndex: number): Promise<void> {
+    await axios.post(`/api/codelabs/${id}/hints/${hintIndex}/reveal`);
   }
 };

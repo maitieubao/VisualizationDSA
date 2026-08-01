@@ -216,3 +216,122 @@ html[data-theme="dark"] .vue-docs-theme .custom-block.caution .custom-block-titl
   max-width: 100%;
   height: auto;
 }
+
+
+.vue-docs-theme .playground-demo-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin: 1.5rem 0;
+  padding: 1rem 1.25rem;
+  border-radius: 10px;
+  border: 1px solid rgba(129, 140, 248, 0.35);
+  background: linear-gradient(135deg, rgba(129, 140, 248, 0.12), rgba(16, 185, 129, 0.08));
+  backdrop-filter: blur(4px);
+}
+.vue-docs-theme .playground-demo-info {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  min-width: 0;
+}
+.vue-docs-theme .playground-demo-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  flex-shrink: 0;
+  border-radius: 10px;
+  background: rgba(129, 140, 248, 0.2);
+  color: #818cf8;
+}
+.vue-docs-theme .playground-demo-text {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+.vue-docs-theme .playground-demo-text strong {
+  color: var(--color-text-heading);
+  font-size: 0.95rem;
+}
+.vue-docs-theme .playground-demo-text span {
+  color: var(--color-text-muted);
+  font-size: 0.8rem;
+  line-height: 1.4;
+}
+.vue-docs-theme a.playground-demo-link {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #fff;
+  background: #6366f1;
+  box-shadow: 0 0 12px rgba(99, 102, 241, 0.35);
+  text-decoration: none;
+  transition: background 0.2s, transform 0.15s;
+}
+.vue-docs-theme a.playground-demo-link:hover {
+  background: #4f46e5;
+  text-decoration: none;
+  transform: translateY(-1px);
+}
+@media (max-width: 640px) {
+  .vue-docs-theme .playground-demo-card {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}
+
+
+.vue-docs-theme .dual-code-block {
+  margin: 1.5rem 0;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: #282c34;
+}
+.vue-docs-theme .dual-code-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.5rem 1rem;
+  background: rgba(255, 255, 255, 0.04);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+.vue-docs-theme .dual-code-label {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--color-text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.vue-docs-theme .dual-code-select {
+  flex-shrink: 0;
+  background: #1e2229;
+  color: #e2e8f0;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 6px;
+  padding: 0.3rem 0.5rem;
+  font-size: 0.8rem;
+  font-family: 'JetBrains Mono', Consolas, monospace;
+  cursor: pointer;
+}
+.vue-docs-theme .dual-code-select:focus {
+  outline: 2px solid rgba(129, 140, 248, 0.5);
+}
+.vue-docs-theme .dual-code-pane {
+  font-size: 0.95em;
+}
+.vue-docs-theme .dual-code-pane div[class*="language-"] {
+  margin: 0;
+  border: none;
+  border-radius: 0;
+}

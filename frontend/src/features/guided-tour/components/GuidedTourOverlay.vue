@@ -8,7 +8,7 @@
       
       <div
         class="absolute inset-0 transition-all duration-300"
-        :class="spotlightStyle ? 'bg-transparent' : 'bg-slate-950/70 backdrop-blur-[2px]'"
+        :class="spotlightStyle ? 'bg-transparent' : 'bg-bg-secondary backdrop-blur-[2px]'"
         @click="handleBackdropClick"
       />
 
@@ -36,7 +36,7 @@
       <Transition name="scale" mode="out-in">
         <div
           :key="tourStore.currentStepIndex"
-          class="dialog-card p-6 rounded-2xl border border-white/10 shadow-2xl flex flex-col gap-4 text-left transition-all duration-300"
+          class="dialog-card p-6 rounded-2xl border border-border-subtle shadow-2xl flex flex-col gap-4 text-left transition-all duration-300"
           :style="[cardStyle, defaultCardStyle]"
         >
           
@@ -65,7 +65,7 @@
                     v-for="(_, idx) in tourStore.currentSteps"
                     :key="idx"
                     class="w-1.5 h-1.5 rounded-full transition-all duration-200"
-                    :class="idx === tourStore.currentStepIndex ? 'bg-accent-cyan w-3' : 'bg-white/20'"
+                    :class="idx === tourStore.currentStepIndex ? 'bg-accent-cyan w-3' : 'bg-bg-hover'"
                   />
                 </div>
               </div>
@@ -83,9 +83,9 @@
           </div>
 
           
-          <div class="flex items-center justify-between mt-1 pt-4 border-t border-white/5">
+          <div class="flex items-center justify-between mt-1 pt-4 border-t border-border-subtle">
             <button
-              class="px-3 py-1.5 rounded-lg text-xs font-bold text-text-muted hover:text-text-primary hover:bg-white/5 transition-all cursor-pointer"
+              class="px-3 py-1.5 rounded-lg text-xs font-bold text-text-muted hover:text-text-primary hover:bg-bg-hover transition-all cursor-pointer"
               @click="tourStore.skipTour()"
             >
               Bỏ qua
@@ -94,7 +94,7 @@
             
             <button
               v-if="currentStep.actionScript && currentStep.actionScript.length > 0"
-              class="px-3 py-1.5 rounded-lg text-xs font-bold bg-amber-500/20 text-amber-400 border border-amber-500/30 hover:bg-amber-500/35 transition-all cursor-pointer flex items-center gap-1 shadow-lg shadow-amber-500/10"
+              class="px-3 py-1.5 rounded-lg text-xs font-bold bg-accent-yellow/20 text-accent-yellow border border-accent-yellow/30 hover:bg-accent-yellow/35 transition-all cursor-pointer flex items-center gap-1 shadow-lg shadow-accent-yellow/10"
               :disabled="tourStore.isExecutingScript"
               @click="tourStore.runCurrentStepScript()"
             >
@@ -104,7 +104,7 @@
             <div class="flex gap-2">
               <button
                 v-if="tourStore.currentStepIndex > 0"
-                class="px-3.5 py-1.5 rounded-lg text-xs font-bold text-text-secondary border border-white/10 hover:bg-white/5 transition-all cursor-pointer"
+                class="px-3.5 py-1.5 rounded-lg text-xs font-bold text-text-secondary border border-border-subtle hover:bg-bg-hover transition-all cursor-pointer"
                 @click="tourStore.prevStep()"
               >
                 Quay lại

@@ -34,8 +34,8 @@
       <button
         @click="vcrStore.togglePlay"
         :disabled="vcrStore.totalFrames === 0"
-        class="w-9 h-9 flex items-center justify-center rounded-xl font-bold transition-all shadow-md shadow-indigo-600/30 active:scale-95 disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer shrink-0"
-        :class="vcrStore.isPlaying ? 'bg-rose-600 hover:bg-rose-500 text-white' : 'bg-accent hover:bg-accent-hover text-white'"
+        class="w-9 h-9 flex items-center justify-center rounded-xl font-bold transition-all shadow-md shadow-accent/30 active:scale-95 disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer shrink-0"
+        :class="vcrStore.isPlaying ? 'bg-accent-red hover:bg-accent-red-light text-white' : 'bg-accent hover:bg-accent-hover text-white'"
         title="Phát / Tạm dừng"
       >
         <svg v-if="vcrStore.isPlaying" class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z" /></svg>
@@ -56,7 +56,7 @@
       <button
         @click="vcrStore.reset"
         :disabled="vcrStore.totalFrames === 0"
-        class="w-7 h-7 flex items-center justify-center rounded-lg bg-bg-active hover:bg-red-500/10 text-text-muted hover:text-red-500 border border-border-default hover:border-red-500/30 transition-all disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer"
+        class="w-7 h-7 flex items-center justify-center rounded-lg bg-bg-active hover:bg-accent-red/10 text-text-muted hover:text-accent-red border border-border-default hover:border-accent-red/30 transition-all disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer"
         title="Đặt lại"
       >
         <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">

@@ -18,12 +18,12 @@
     </section>
 
     
-    <div class="panel-tabs flex border-b border-white/10 gap-6 mb-8 mt-2 flex-wrap">
+    <div class="panel-tabs flex border-b border-border-subtle gap-6 mb-8 mt-2 flex-wrap">
       <button 
         v-for="tab in tabs" :key="tab.id"
         type="button" 
         class="pb-3 text-lg font-bold transition-all relative cursor-pointer whitespace-nowrap"
-        :class="activeTab === tab.id ? 'text-indigo-400 border-b-2 border-indigo-500' : 'text-slate-400 hover:text-slate-200'"
+        :class="activeTab === tab.id ? 'text-accent border-b-2 border-accent' : 'text-text-muted hover:text-text-primary'"
         @click="activeTab = tab.id"
       >
         {{ tab.label }}

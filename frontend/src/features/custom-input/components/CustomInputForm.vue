@@ -14,7 +14,7 @@
       <label class="text-[11px] text-text-secondary">Nhập mảng số nguyên (cách nhau bằng dấu phẩy):</label>
       <textarea v-model="inputStore.rawText" :readonly="inputStore.isLoading"
         :placeholder="'Ví dụ: 14, 25, 38, 9, 4'" rows="3"
-        class="w-full rounded-lg px-3 py-2 text-sm font-mono text-text-primary placeholder-slate-600 outline-none resize-none transition-all duration-200"
+        class="w-full rounded-lg px-3 py-2 text-sm font-mono text-text-primary placeholder-text-muted outline-none resize-none transition-all duration-200"
         :class="textareaClasses" @keydown="onKeydown"></textarea>
       <div class="flex items-center justify-between text-[11px]">
         <span :class="counterClasses">{{ inputStore.elementCount }} / {{ inputStore.maxLimit }} phần tử</span>

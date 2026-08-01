@@ -24,7 +24,8 @@ export const APP_TABS: readonly (TabGroup | TabItem)[] = [
     items: [
       { id: 'sorting',     path: '/sorting',     name: 'Sắp xếp' },
       { id: 'graph',       path: '/graph',       name: 'Đồ thị' },
-      { id: 'code-ide',    path: '/code-ide',    name: 'Gỡ lỗi Code' }
+      { id: 'code-ide',    path: '/code-ide',    name: 'Gỡ lỗi Code' },
+      { id: 'playground',  path: '/playground',  name: 'Playground' }
     ]
   },
   {

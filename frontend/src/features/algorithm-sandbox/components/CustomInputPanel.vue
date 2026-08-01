@@ -1,7 +1,7 @@
 <template>
-  <div class="custom-input-panel backdrop-blur-md rounded-2xl p-4 shadow-xl flex flex-col gap-3.5 border border-white/5 bg-bg-secondary/65 max-h-full overflow-hidden">
+  <div class="custom-input-panel backdrop-blur-md rounded-2xl p-4 shadow-xl flex flex-col gap-3.5 border border-border-subtle bg-bg-secondary/65 max-h-full overflow-hidden">
     
-    <div class="flex items-center justify-between border-b border-white/5 pb-2.5 select-none">
+    <div class="flex items-center justify-between border-b border-border-subtle pb-2.5 select-none">
       <div class="flex items-center gap-2">
         <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="text-accent-cyan">
           <path d="M18 3a3 3 0 0 0-3 3v12a3 3 0 0 0 3 3 3 3 0 0 0 3-3V6a3 3 0 0 0-3-3z" /><circle cx="6" cy="6" r="3" /><circle cx="6" cy="18" r="3" /><path d="M20 4L7.5 16.5" /><path d="M20 20L7.5 7.5" />
@@ -13,7 +13,7 @@
     </div>
 
     
-    <div class="tabs-control flex bg-white/5 p-1 rounded-xl border border-white/5">
+    <div class="tabs-control flex bg-bg-hover p-1 rounded-xl border border-border-subtle">
       <button
         @click="activeTab = 'build'"
         :class="[
@@ -78,7 +78,7 @@
         v-model="graphInputText"
         placeholder="Ví dụ: A-B:10, B-C:20, A-C:50"
         rows="3"
-        class="import-textarea w-full border rounded-xl p-2.5 text-xs font-mono text-text-primary outline-none transition-all resize-none bg-black/20 border-white/5 focus:border-accent-cyan"
+        class="import-textarea w-full border rounded-xl p-2.5 text-xs font-mono text-text-primary outline-none transition-all resize-none bg-black/20 border-border-subtle focus:border-accent-cyan"
       ></textarea>
       
       
@@ -95,7 +95,7 @@
             @mouseenter="onHoverImportedEdge(edge.sourceId, edge.targetId, true)"
             @mouseleave="onHoverImportedEdge(edge.sourceId, edge.targetId, false)"
             @click="onSelectImportedEdge(edge.sourceId, edge.targetId)"
-            class="flex-shrink-0 px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-white/5 border border-white/10 text-accent-cyan hover:text-white hover:bg-accent-cyan/20 hover:border-accent-cyan/30 cursor-pointer select-none transition-all"
+            class="flex-shrink-0 px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-bg-hover border border-border-subtle text-accent-cyan hover:text-white hover:bg-accent-cyan/20 hover:border-accent-cyan/30 cursor-pointer select-none transition-all"
           >
             {{ edge.sourceId }}➔{{ edge.targetId }} ({{ edge.weight }})
           </div>
@@ -104,7 +104,7 @@
     </div>
 
     
-    <div class="border-t border-white/5 pt-3 flex flex-col gap-2 bg-white/[0.01] pb-1 shrink-0">
+    <div class="border-t border-border-subtle pt-3 flex flex-col gap-2 bg-white/[0.01] pb-1 shrink-0">
       <div class="text-[10px] font-bold text-text-secondary uppercase tracking-wider select-none">
         Trình sinh đồ thị (Generator)
       </div>
@@ -125,11 +125,11 @@
           <span class="text-[9px] text-text-muted font-bold uppercase select-none">Mật độ</span>
           <select
             v-model="genDensity"
-            class="builder-select text-xs py-1 px-1.5 font-bold bg-white/5 border border-white/10 outline-none rounded-md cursor-pointer transition-colors hover:border-white/20"
+            class="builder-select text-xs py-1 px-1.5 font-bold bg-bg-hover border border-border-subtle outline-none rounded-md cursor-pointer transition-colors hover:border-border-default"
           >
-            <option value="low" class="bg-slate-900 text-slate-100">Thưa (Low)</option>
-            <option value="medium" class="bg-slate-900 text-slate-100">Vừa (Medium)</option>
-            <option value="high" class="bg-slate-900 text-slate-100">Dày (High)</option>
+            <option value="low" class="bg-bg-secondary text-text-primary">Thưa (Low)</option>
+            <option value="medium" class="bg-bg-secondary text-text-primary">Vừa (Medium)</option>
+            <option value="high" class="bg-bg-secondary text-text-primary">Dày (High)</option>
           </select>
         </div>
       </div>
@@ -137,7 +137,7 @@
       <div class="flex gap-2 mt-1">
         <button
           @click="generateCustomGraph"
-          class="random-btn flex-1 py-1.5 rounded-lg border border-white/5 text-accent-cyan hover:bg-accent-cyan/10 hover:border-accent-cyan/20 text-xs font-bold transition-all flex items-center justify-center gap-1 cursor-pointer bg-white/5"
+          class="random-btn flex-1 py-1.5 rounded-lg border border-border-subtle text-accent-cyan hover:bg-accent-cyan/10 hover:border-accent-cyan/20 text-xs font-bold transition-all flex items-center justify-center gap-1 cursor-pointer bg-bg-hover"
           title="Sinh ngẫu nhiên đồ thị dựa trên số đỉnh và mật độ"
         >
           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
@@ -148,7 +148,7 @@
         
         <button
           @click="store.clearAll"
-          class="clear-btn px-3 py-1.5 rounded-lg border border-white/5 text-accent-red hover:bg-accent-red/10 hover:border-accent-red/20 text-xs font-bold transition-all flex items-center justify-center gap-1 cursor-pointer bg-white/5"
+          class="clear-btn px-3 py-1.5 rounded-lg border border-border-subtle text-accent-red hover:bg-accent-red/10 hover:border-accent-red/20 text-xs font-bold transition-all flex items-center justify-center gap-1 cursor-pointer bg-bg-hover"
           title="Xóa toàn bộ bản vẽ"
         >
           Xóa sạch

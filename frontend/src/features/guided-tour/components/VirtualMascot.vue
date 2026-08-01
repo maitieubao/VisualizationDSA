@@ -2,7 +2,7 @@
   <div class="virtual-mascot-container relative flex flex-col items-center select-none">
     
     <div
-      class="mascot-avatar w-16 h-16 rounded-full border border-white/20 flex items-center justify-center shadow-lg transition-all duration-500"
+      class="mascot-avatar w-16 h-16 rounded-full border border-border-default flex items-center justify-center shadow-lg transition-all duration-500"
       :class="[mascotClass, emotionGlowClass]"
     >
       
@@ -40,13 +40,13 @@
             <path d="M 56 47 Q 60 40 66 47" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" />
           </g>
 
-          <g v-else-if="state === 'SIMULATING'" class="text-amber-400">
+          <g v-else-if="state === 'SIMULATING'" class="text-accent-yellow">
             
             <line x1="33" y1="45" x2="45" y2="45" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" />
             <line x1="55" y1="45" x2="67" y2="45" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" />
           </g>
 
-          <g v-else-if="state === 'SUCCESS'" class="text-emerald-400">
+          <g v-else-if="state === 'SUCCESS'" class="text-accent-green">
             
             <path d="M 33 48 Q 40 40 45 48" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" />
             <path d="M 55 45 L 67 49 M 55 49 L 67 45" stroke="currentColor" stroke-width="3" stroke-linecap="round" />
@@ -93,13 +93,13 @@ const props = defineProps<{
 const mascotClass = computed(() => {
   switch (props.state) {
     case 'GREETING':
-      return 'border-accent-cyan/40 bg-slate-900/60 text-accent-cyan';
+      return 'border-accent-cyan/40 bg-bg-secondary text-accent-cyan';
     case 'SIMULATING':
-      return 'border-amber-500/40 bg-slate-900/60 text-amber-400';
+      return 'border-accent-yellow/40 bg-bg-secondary text-accent-yellow';
     case 'SUCCESS':
-      return 'border-emerald-500/40 bg-slate-900/60 text-emerald-400';
+      return 'border-accent-green/40 bg-bg-secondary text-accent-green';
     default:
-      return 'border-white/20 bg-slate-900/60 text-accent-cyan';
+      return 'border-border-default bg-bg-secondary text-accent-cyan';
   }
 });
 

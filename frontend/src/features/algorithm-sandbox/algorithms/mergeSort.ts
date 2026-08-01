@@ -5,6 +5,8 @@ export function generateMergeSortFrames(inputArray: number[]): SortFrame[] {
   const arr = [...inputArray];
   const sortedIndices: number[] = [];
   let step = 0;
+  let comparisons = 0;
+  let writes = 0;
 
   const tree: SubArray[] = [];
   function buildTree(l: number, r: number, lvl: number) {
@@ -48,7 +50,8 @@ export function generateMergeSortFrames(inputArray: number[]): SortFrame[] {
     let i = 0, j = 0, k = left;
 
     while (i < leftArr.length && j < rightArr.length) {
-      emit(`So sánh L[${i}]=${leftArr[i]} với R[${j}]=${rightArr[j]}`, [left + i, mid + 1 + j], null, left, right, lvl, { left, mid, right, i, j, k, lvl });
+      comparisons++;
+      emit(`So sánh L[${i}]=${leftArr[i]} với R[${j}]=${rightArr[j]}`, [left + i, mid + 1 + j], null, left, right, lvl, { left, mid, right, i, j, k, lvl, comparisons, writes });
       if (leftArr[i] <= rightArr[j]) {
         arr[k] = leftArr[i];
         i++;
@@ -56,41 +59,47 @@ export function generateMergeSortFrames(inputArray: number[]): SortFrame[] {
         arr[k] = rightArr[j];
         j++;
       }
-      emit(`Ghi đè arr[${k}] = ${arr[k]}`, null, [k, k], left, right, lvl, { left, mid, right, i, j, k, lvl });
+      writes++;
+      emit(`Ghi đè arr[${k}] = ${arr[k]}`, null, [k, k], left, right, lvl, { left, mid, right, i, j, k, lvl, comparisons, writes });
       k++;
     }
 
     while (i < leftArr.length) {
       arr[k] = leftArr[i];
-      emit(`Sao chép phần thừa L[${i}] → arr[${k}]`, null, [k, k], left, right, lvl, { left, mid, right, i, j, k, lvl });
+      writes++;
+      emit(`Sao chép phần thừa L[${i}] → arr[${k}]`, null, [k, k], left, right, lvl, { left, mid, right, i, j, k, lvl, comparisons, writes });
       i++; k++;
     }
     while (j < rightArr.length) {
       arr[k] = rightArr[j];
-      emit(`Sao chép phần thừa R[${j}] → arr[${k}]`, null, [k, k], left, right, lvl, { left, mid, right, i, j, k, lvl });
+      writes++;
+      emit(`Sao chép phần thừa R[${j}] → arr[${k}]`, null, [k, k], left, right, lvl, { left, mid, right, i, j, k, lvl, comparisons, writes });
       j++; k++;
     }
 
-    for (let x = left; x <= right; x++) {
-      if (!sortedIndices.includes(x)) sortedIndices.push(x);
+    // Chỉ đánh dấu "đã yên vị" khi segment là phép gộp cuối cùng phủ toàn bộ mảng
+    if (left === 0 && right === arr.length - 1) {
+      for (let x = left; x <= right; x++) {
+        if (!sortedIndices.includes(x)) sortedIndices.push(x);
+      }
     }
   }
 
   function mergeSort(left: number, right: number, lvl: number): void {
     if (left >= right) {
-      emit(`Đạt trường cơ sở: mảng con [${left}] gồm 1 phần tử`, null, null, left, right, lvl, { left, mid: left, right, i: '-', j: '-', k: '-', lvl });
+      emit(`Đạt trường cơ sở: mảng con [${left}] gồm 1 phần tử`, null, null, left, right, lvl, { left, mid: left, right, i: '-', j: '-', k: '-', lvl, comparisons, writes });
       return;
     }
     const mid = Math.floor((left + right) / 2);
-    emit(`Chia [${left}..${right}] tại chỉ số [${mid}]`, null, null, left, right, lvl, { left, mid, right, i: '-', j: '-', k: '-', lvl });
+    emit(`Chia [${left}..${right}] tại chỉ số [${mid}]`, null, null, left, right, lvl, { left, mid, right, i: '-', j: '-', k: '-', lvl, comparisons, writes });
     mergeSort(left, mid, lvl + 1);
     mergeSort(mid + 1, right, lvl + 1);
     merge(left, mid, right, lvl);
   }
 
-  emit('Khởi tạo Merge Sort — chia đôi mảng rồi gộp lại', null, null, 0, arr.length - 1, 0, { left: 0, mid: '-', right: arr.length - 1, i: '-', j: '-', k: '-', lvl: 0 });
+  emit('Khởi tạo Merge Sort — chia đôi mảng rồi gộp lại', null, null, 0, arr.length - 1, 0, { left: 0, mid: '-', right: arr.length - 1, i: '-', j: '-', k: '-', lvl: 0, comparisons, writes });
   mergeSort(0, arr.length - 1, 0);
-  emit('✅ Merge Sort hoàn thành!', null, null, 0, arr.length - 1, 0, { left: '-', mid: '-', right: '-', i: '-', j: '-', k: '-', lvl: '-' });
+  emit('✅ Merge Sort hoàn thành!', null, null, 0, arr.length - 1, 0, { left: '-', mid: '-', right: '-', i: '-', j: '-', k: '-', lvl: '-', comparisons, writes });
 
   return frames;
 }

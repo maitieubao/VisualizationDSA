@@ -1,15 +1,15 @@
 <template>
-  <div class="lesson-step-quiz flex flex-col h-full overflow-y-auto p-6 text-slate-200 font-sans max-w-3xl mx-auto w-full">
+  <div class="lesson-step-quiz flex flex-col h-full overflow-y-auto p-6 text-text-primary font-sans max-w-3xl mx-auto w-full">
     
-    <div class="border-b border-white/10 pb-4 mb-6 text-center">
-      <div class="flex items-center justify-center gap-1.5 text-xs font-semibold text-indigo-400 uppercase tracking-wider">
-        <svg class="w-4 h-4 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+    <div class="border-b border-border-subtle pb-4 mb-6 text-center">
+      <div class="flex items-center justify-center gap-1.5 text-xs font-semibold text-accent uppercase tracking-wider">
+        <svg class="w-4 h-4 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
           <path stroke-linecap="round" stroke-linejoin="round" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 01-2 2h-0a2 2 0 01-2-2v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
         </svg>
         <span>Bước 3 / 4</span>
       </div>
       <h2 class="text-xl font-extrabold text-white mt-1">Kiểm Tra Nhận Thức Nhanh</h2>
-      <p class="text-xs text-slate-400 mt-1">Hoàn thành bài Quiz (đạt ≥ 70%) để mở khóa phần Code Lab.</p>
+      <p class="text-xs text-text-muted mt-1">Hoàn thành bài Quiz (đạt ≥ 70%) để mở khóa phần Code Lab.</p>
     </div>
 
     
@@ -17,11 +17,11 @@
       <div
         v-for="(q, qIdx) in questions"
         :key="q.id"
-        class="bg-slate-900/80 border border-white/10 rounded-2xl p-5 shadow-lg"
-        :class="{'border-emerald-500/50 bg-emerald-950/20': isSubmitted && userAnswers[q.id] === q.correctIndex, 'border-rose-500/50 bg-rose-950/20': isSubmitted && userAnswers[q.id] !== undefined && userAnswers[q.id] !== q.correctIndex}"
+        class="bg-bg-secondary border border-border-subtle rounded-2xl p-5 shadow-lg"
+        :class="{'border-accent-green/50 bg-accent-green/20': isSubmitted && userAnswers[q.id] === q.correctIndex, 'border-accent-red/50 bg-accent-red/20': isSubmitted && userAnswers[q.id] !== undefined && userAnswers[q.id] !== q.correctIndex}"
       >
         <div class="flex items-start gap-3 mb-4">
-          <span class="w-6 h-6 rounded-full bg-indigo-600/30 border border-indigo-500/50 text-indigo-300 font-bold text-xs flex items-center justify-center shrink-0">
+          <span class="w-6 h-6 rounded-full bg-accent/30 border border-accent/50 text-accent font-bold text-xs flex items-center justify-center shrink-0">
             {{ qIdx + 1 }}
           </span>
           <p class="text-sm font-bold text-white leading-relaxed">{{ q.questionText }}</p>
@@ -34,11 +34,11 @@
             @click="!isSubmitted && (userAnswers[q.id] = oIdx)"
             class="px-4 py-3 rounded-xl border text-left text-xs font-semibold transition-all flex items-center justify-between"
             :class="[
-              userAnswers[q.id] === oIdx && !isSubmitted ? 'bg-indigo-600 text-white border-indigo-400 shadow-md' : '',
-              !isSubmitted && userAnswers[q.id] !== oIdx ? 'bg-slate-950/60 text-slate-300 border-white/10 hover:border-white/20 hover:bg-slate-800 cursor-pointer' : '',
-              isSubmitted && oIdx === q.correctIndex ? 'bg-emerald-600 text-white border-emerald-400 shadow-md' : '',
-              isSubmitted && userAnswers[q.id] === oIdx && oIdx !== q.correctIndex ? 'bg-rose-600 text-white border-rose-400 shadow-md' : '',
-              isSubmitted && oIdx !== q.correctIndex && userAnswers[q.id] !== oIdx ? 'bg-slate-950/60 text-slate-500 border-white/5 opacity-50 cursor-default' : ''
+              userAnswers[q.id] === oIdx && !isSubmitted ? 'bg-accent text-white border-accent shadow-md' : '',
+              !isSubmitted && userAnswers[q.id] !== oIdx ? 'bg-bg-secondary text-text-secondary border-border-subtle hover:border-border-default hover:bg-bg-surface cursor-pointer' : '',
+              isSubmitted && oIdx === q.correctIndex ? 'bg-accent-green text-white border-accent-green shadow-md' : '',
+              isSubmitted && userAnswers[q.id] === oIdx && oIdx !== q.correctIndex ? 'bg-accent-red text-white border-accent-red shadow-md' : '',
+              isSubmitted && oIdx !== q.correctIndex && userAnswers[q.id] !== oIdx ? 'bg-bg-secondary text-text-muted border-border-subtle opacity-50 cursor-default' : ''
             ]"
             :disabled="isSubmitted"
           >
@@ -50,8 +50,8 @@
         </div>
 
         
-        <div v-if="isSubmitted" class="mt-4 ml-9 p-3 rounded-xl border bg-slate-950/80 text-xs leading-relaxed"
-          :class="userAnswers[q.id] === q.correctIndex ? 'border-emerald-500/30 text-emerald-200' : 'border-rose-500/30 text-rose-200'"
+        <div v-if="isSubmitted" class="mt-4 ml-9 p-3 rounded-xl border bg-bg-secondary text-xs leading-relaxed"
+          :class="userAnswers[q.id] === q.correctIndex ? 'border-accent-green/30 text-accent-green' : 'border-accent-red/30 text-accent-red'"
         >
           <span class="font-bold uppercase tracking-wider mr-1">{{ userAnswers[q.id] === q.correctIndex ? 'Chính xác:' : 'Chưa đúng:' }}</span>
           {{ q.explanation }}
@@ -59,18 +59,18 @@
       </div>
 
       
-      <div class="mt-4 p-5 rounded-2xl bg-slate-900 border border-white/10 flex items-center justify-between">
+      <div class="mt-4 p-5 rounded-2xl bg-bg-secondary border border-border-subtle flex items-center justify-between">
         <div v-if="!isSubmitted">
-          <span class="text-xs font-semibold text-slate-400">Đã chọn {{ answeredCount }} / {{ questions.length }} câu hỏi</span>
+          <span class="text-xs font-semibold text-text-muted">Đã chọn {{ answeredCount }} / {{ questions.length }} câu hỏi</span>
         </div>
         <div v-else>
-          <span class="text-sm font-bold" :class="quizPassed ? 'text-emerald-400' : 'text-rose-400'">
+          <span class="text-sm font-bold" :class="quizPassed ? 'text-accent-green' : 'text-accent-red'">
             Điểm số: {{ quizScore }} / {{ questions.length }} ({{ Math.round((quizScore || 0) / questions.length * 100) }}%)
           </span>
-          <span v-if="bestScore > 0" class="ml-3 text-xs text-slate-400 bg-slate-800 px-2 py-1 rounded-lg">
+          <span v-if="bestScore > 0" class="ml-3 text-xs text-text-muted bg-bg-surface px-2 py-1 rounded-lg">
             Cao nhất: {{ bestScore }} / {{ questions.length }}
           </span>
-          <p class="text-[11px] text-slate-400 mt-1">
+          <p class="text-[11px] text-text-muted mt-1">
             {{ quizPassed ? 'Chúc mừng! Bạn đã đủ điều kiện chuyển sang phần Code Lab.' : 'Bạn chưa đạt điểm yêu cầu (70%). Hãy thử lại!' }}
           </p>
         </div>
@@ -79,7 +79,7 @@
           <button
             v-if="isSubmitted"
             @click="resetQuiz"
-            class="px-5 py-3 bg-slate-800 hover:bg-slate-700 text-white rounded-xl text-xs font-bold transition-all shadow-lg cursor-pointer"
+            class="px-5 py-3 bg-bg-surface hover:bg-bg-hover text-white rounded-xl text-xs font-bold transition-all shadow-lg cursor-pointer"
           >
             Làm lại
           </button>
@@ -87,7 +87,7 @@
           <button
             v-if="!isSubmitted"
             @click="submitQuiz"
-            class="px-6 py-3 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-xs font-bold transition-all shadow-lg cursor-pointer"
+            class="px-6 py-3 bg-accent hover:bg-accent text-white rounded-xl text-xs font-bold transition-all shadow-lg cursor-pointer"
           >
             Nộp Bài Quiz
           </button>
@@ -95,7 +95,7 @@
           <button
             v-if="isSubmitted && quizPassed"
             @click="$emit('completeStep')"
-            class="px-6 py-3 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-bold transition-all shadow-lg cursor-pointer"
+            class="px-6 py-3 bg-accent-green hover:bg-accent-green text-white rounded-xl text-xs font-bold transition-all shadow-lg cursor-pointer"
           >
             Mở Khóa Code Lab →
           </button>
@@ -105,7 +105,7 @@
 
     
     <div v-else class="flex flex-col items-center justify-center flex-1 text-center py-12">
-      <div class="text-slate-400">Không có câu hỏi nào.</div>
+      <div class="text-text-muted">Không có câu hỏi nào.</div>
     </div>
   </div>
 </template>

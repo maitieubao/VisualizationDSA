@@ -72,11 +72,14 @@ flowchart TD
 | **Không gian bộ nhớ** | **O(N + K)** - Cần bộ nhớ để tạo K cái xô và chứa N phần tử. |
 | **Tính ổn định (Stable)** | **Có (Tùy thuộc)** - Bucket Sort sẽ là Stable nếu thuật toán sắp xếp cục bộ bên trong từng xô (ví dụ: Insertion Sort) là Stable. |
 
-## Cài đặt bằng C# (Code Example) {#code-example}
+## Cài đặt (Code Example) {#code-example}
 
 Dưới đây là cài đặt Bucket Sort kinh điển dành cho các số thập phân có giá trị từ 0.0 đến nhỏ hơn 1.0.
 
-```csharp
+```playground:bucket-sort
+```
+
+```dual:bucket-sort
 public void BucketSort(float[] array)
 {
     int n = array.Length;

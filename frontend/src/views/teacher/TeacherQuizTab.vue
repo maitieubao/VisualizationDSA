@@ -129,15 +129,15 @@
           </thead>
           <tbody>
             <template v-for="q in quizzesList" :key="q.id">
-              <tr @click="toggleQuizAccordion(String(q.id))" class="cursor-pointer hover:bg-white/5 transition-colors">
+              <tr @click="toggleQuizAccordion(String(q.id))" class="cursor-pointer hover:bg-bg-hover transition-colors">
                 <td class="font-bold text-white">
                   <span class="inline-block mr-1 transition-transform duration-200" :style="expandedQuizId === String(q.id) ? 'transform: rotate(90deg)' : ''">▶</span>
                   {{ q.title }}
                 </td>
                 <td><span class="topic-badge" :class="'topic-' + q.topic">{{ formatTopic(q.topic) }}</span></td>
                 <td><span class="diff-badge" :class="'diff-' + q.difficulty">{{ formatDifficulty(q.difficulty) }}</span></td>
-                <td class="font-mono text-amber-400 font-bold"><BaseIcon name="diamond" class="w-4 h-4 text-amber-400 inline mr-1 align-text-bottom" />+{{ q.xpReward }} XP</td>
-                <td class="font-mono text-slate-300">{{ q.questionCount }} câu</td>
+                <td class="font-mono text-accent-yellow font-bold"><BaseIcon name="diamond" class="w-4 h-4 text-accent-yellow inline mr-1 align-text-bottom" />+{{ q.xpReward }} XP</td>
+                <td class="font-mono text-text-secondary">{{ q.questionCount }} câu</td>
                 <td>
                   <div class="flex justify-center gap-2" @click.stop>
                     <button type="button" class="btn-action btn-action--edit" @click="editQuiz(q.id)" title="Chỉnh sửa">
@@ -158,7 +158,7 @@
                   </div>
                   <div v-else-if="quizDetails[String(q.id)]" class="quiz-detail-panel animate-fade-in">
                     <div class="flex justify-between items-center mb-4">
-                      <h4 class="detail-title text-indigo-400 font-bold m-0"><BaseIcon name="quiz" class="w-4 h-4 text-indigo-400 inline mr-1 align-text-bottom" /> Chỉnh sửa câu hỏi con</h4>
+                      <h4 class="detail-title text-accent font-bold m-0"><BaseIcon name="quiz" class="w-4 h-4 text-accent inline mr-1 align-text-bottom" /> Chỉnh sửa câu hỏi con</h4>
                       <button type="button" class="btn-add-inline" @click="addInlineQuestion(String(q.id))">
                         <BaseIcon name="plus" class="w-3.5 h-3.5 inline mr-1 align-text-bottom" /> Thêm câu hỏi mới
                       </button>
@@ -168,7 +168,7 @@
                     </div>
                     <div v-for="(subQ, qi) in quizDetails[String(q.id)].questions" :key="qi" class="sub-question-card">
                       <div class="flex justify-between items-center mb-3">
-                        <span class="sub-q-num text-amber-400 font-bold">Câu hỏi {{ Number(qi) + 1 }}</span>
+                        <span class="sub-q-num text-accent-yellow font-bold">Câu hỏi {{ Number(qi) + 1 }}</span>
                         <button type="button" class="btn-remove-inline" @click="removeInlineQuestion(String(q.id), Number(qi))">
                           <BaseIcon name="close" class="w-3 h-3 inline mr-1 align-text-bottom" /> Xóa câu này
                         </button>
@@ -195,7 +195,7 @@
                       </button>
                       <button type="button" class="btn-close-inline" @click="expandedQuizId = null">Đóng</button>
                     </div>
-                    <p v-if="inlineError[String(q.id)]" class="text-rose-400 text-sm mt-2 text-right">
+                    <p v-if="inlineError[String(q.id)]" class="text-accent-red text-sm mt-2 text-right">
                       {{ inlineError[String(q.id)] }}
                     </p>
                   </div>
@@ -207,15 +207,15 @@
       </div>
 
       
-      <div class="quizzes-report-container mt-10 p-6 rounded-2xl border border-white/10 bg-slate-900/40">
+      <div class="quizzes-report-container mt-10 p-6 rounded-2xl border border-border-subtle bg-bg-secondary/40">
         <h3 class="subsection-heading mb-2 flex items-center gap-2 text-white">
-          <BaseIcon name="chart-bar" class="w-5 h-5 text-indigo-400" />
+          <BaseIcon name="chart-bar" class="w-5 h-5 text-accent" />
           Báo cáo hiệu suất bài tập trắc nghiệm
         </h3>
-        <p class="text-xs text-slate-400 mb-6">Thống kê tổng hợp điểm số trung bình và tỷ lệ đậu theo từng chủ đề bài thi.</p>
+        <p class="text-xs text-text-muted mb-6">Thống kê tổng hợp điểm số trung bình và tỷ lệ đậu theo từng chủ đề bài thi.</p>
 
-        <div v-if="loadingAnalytics" class="text-center py-6 text-slate-500">Đang tải dữ liệu báo cáo...</div>
-        <div v-else-if="!quizPerformanceStats.length" class="text-center py-6 text-slate-500">Chưa có lượt làm bài nào để thống kê hiệu suất.</div>
+        <div v-if="loadingAnalytics" class="text-center py-6 text-text-muted">Đang tải dữ liệu báo cáo...</div>
+        <div v-else-if="!quizPerformanceStats.length" class="text-center py-6 text-text-muted">Chưa có lượt làm bài nào để thống kê hiệu suất.</div>
         <div v-else class="table-responsive">
           <table class="quizzes-table">
             <thead>
@@ -232,13 +232,13 @@
               <tr v-for="stat in quizPerformanceStats" :key="stat.quizId">
                 <td class="font-bold text-white">{{ stat.title }}</td>
                 <td><span class="topic-badge" :class="'topic-' + stat.topic">{{ formatTopic(stat.topic) }}</span></td>
-                <td class="text-center font-mono font-bold text-slate-300">{{ stat.totalAttempts }} lượt</td>
-                <td class="text-center font-mono text-emerald-400">{{ stat.passedCount }} lượt</td>
-                <td class="text-center font-mono text-indigo-300 font-bold">{{ stat.avgScore }}%</td>
+                <td class="text-center font-mono font-bold text-text-secondary">{{ stat.totalAttempts }} lượt</td>
+                <td class="text-center font-mono text-accent-green">{{ stat.passedCount }} lượt</td>
+                <td class="text-center font-mono text-accent font-bold">{{ stat.avgScore }}%</td>
                 <td class="text-center">
                   <span 
                     class="px-2 py-0.5 rounded-lg text-xs font-bold font-mono"
-                    :class="stat.passRatePercent >= 70 ? 'bg-emerald-500/10 text-emerald-400' : stat.passRatePercent >= 40 ? 'bg-amber-500/10 text-amber-400' : 'bg-rose-500/10 text-rose-400'"
+                    :class="stat.passRatePercent >= 70 ? 'bg-accent-green/10 text-accent-green' : stat.passRatePercent >= 40 ? 'bg-accent-yellow/10 text-accent-yellow' : 'bg-accent-red/10 text-accent-red'"
                   >
                     {{ stat.passRatePercent }}%
                   </span>

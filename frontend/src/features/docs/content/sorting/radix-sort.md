@@ -49,11 +49,14 @@ Tuy nhiên, **Radix Sort** đã lách luật! Nó thuộc nhóm các thuật to�
 | **Không gian bộ nhớ** | **O(N + k)** - Cần bộ nhớ phụ cho các xô chứa và mảng đầu ra. Trả giá bằng dung lượng RAM để lấy tốc độ. |
 | **Tính ổn định (Stable)** | **Bắt buộc Có** - Nếu xô ở vòng trước không giữ nguyên thứ tự tương đối, thuật toán sẽ sụp đổ. (Counting Sort thường được dùng làm thuật toán ném xô nội bộ vì nó Stable). |
 
-## Cài đặt bằng C# (Code Example) {#code-example}
+## Cài đặt (Code Example) {#code-example}
 
 Để cài đặt Radix Sort, chúng ta thường dùng **Counting Sort** làm thuật toán hỗ trợ để "chia xô" cho từng chữ số.
 
-```csharp
+```playground:radix-sort
+```
+
+```dual:radix-sort
 public void RadixSort(int[] array)
 {
     int n = array.Length;

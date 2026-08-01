@@ -38,8 +38,8 @@ async function createCourse() {
   isSubmitting.value = true;
   try {
     const res = await courseApi.createCourse(courseForm.value);
-    courseId.value = res.data.courseId;
-    successMessage.value = res.data.message;
+    courseId.value = res.courseId;
+    successMessage.value = res.message;
     step.value = 2;
   } catch (error) {
     alert('Failed to create course');
@@ -53,8 +53,8 @@ async function addModule() {
   isSubmitting.value = true;
   try {
     const res = await courseApi.addModule(courseId.value, moduleForm.value);
-    moduleId.value = res.data.moduleId;
-    successMessage.value = res.data.message;
+    moduleId.value = res.moduleId;
+    successMessage.value = res.message;
     step.value = 3;
   } catch (error) {
     alert('Failed to add module');
@@ -74,7 +74,7 @@ async function addModuleItem() {
     if (!payload.codelabId) payload.codelabId = null;
 
     const res = await courseApi.addModuleItem(moduleId.value, payload);
-    successMessage.value = res.data.message;
+    successMessage.value = res.message;
     
     
     itemForm.value.overrideTitle = '';

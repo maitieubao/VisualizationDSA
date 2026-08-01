@@ -41,7 +41,7 @@
 
     
     <div v-else-if="store.backendResult" class="flex-1 flex flex-col items-center justify-center gap-4">
-      <div class="rounded-2xl bg-bg-secondary/45 border border-white/5 backdrop-blur-xl p-8 max-w-lg w-full text-center">
+      <div class="rounded-2xl bg-bg-secondary/45 border border-border-subtle backdrop-blur-xl p-8 max-w-lg w-full text-center">
         <div class="text-4xl mb-4">{{ store.backendResult.passed ? '🎉' : '😔' }}</div>
         <h3 class="text-xl font-bold text-text-primary mb-2">
           {{ store.backendResult.passed ? 'Xuất sắc!' : 'Cần cải thiện' }}
@@ -52,7 +52,7 @@
         <div v-if="store.backendResult.xpAwarded > 0" class="text-sm text-accent mb-4">
           +{{ store.backendResult.xpAwarded }} XP
         </div>
-        <div v-else-if="store.backendResult.passed" class="text-xs text-text-secondary mb-4 bg-white/5 border border-white/10 rounded-lg p-2.5">
+        <div v-else-if="store.backendResult.passed" class="text-xs text-text-secondary mb-4 bg-bg-hover border border-border-subtle rounded-lg p-2.5">
           💡 Bạn đã nhận XP tối đa cho bài quiz này. Làm lại để ôn tập sẽ không nhận thêm XP.
         </div>
 
@@ -83,7 +83,7 @@
 
     
     <div v-else-if="store.isBackendQuizMode && store.currentBackendQuestion" class="flex-1 flex flex-col gap-4">
-      <div class="rounded-2xl bg-bg-secondary/45 border border-white/5 backdrop-blur-xl p-6 flex-1">
+      <div class="rounded-2xl bg-bg-secondary/45 border border-border-subtle backdrop-blur-xl p-6 flex-1">
         
         <div class="mb-6">
           <span class="text-[10px] text-text-disabled uppercase tracking-wider">Câu hỏi {{ store.backendQuizIndex + 1 }}</span>
@@ -169,7 +169,7 @@
       
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         <div v-for="quiz in displayedQuizzes" :key="quiz.id"
-          class="rounded-2xl bg-bg-secondary/45 border border-white/5 backdrop-blur-xl p-5 cursor-pointer hover:border-accent/30 transition-all duration-200 quiz-card"
+          class="rounded-2xl bg-bg-secondary/45 border border-border-subtle backdrop-blur-xl p-5 cursor-pointer hover:border-accent/30 transition-all duration-200 quiz-card"
           @click="handleQuizClick(quiz)">
           <div class="flex items-center justify-between mb-3">
             <span class="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider"

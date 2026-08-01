@@ -3,9 +3,9 @@
     
     <div class="flex justify-between items-center mb-6 flex-wrap gap-3">
       <div>
-        <h2 class="section-heading m-0">Quáº£n lÃ½ ChÆ°Æ¡ng trÃ¬nh há»c (Curriculum)</h2>
-        <p class="text-slate-400 text-sm mt-1">
-          KÃ©o tháº£ Ä‘á»ƒ sáº¯p xáº¿p Module & BÃ i há»c. Má»—i Module/BÃ i há»c cÃ³ thá»ƒ tÃ¹y chá»‰nh riÃªng cho lá»›p nÃ y.
+        <h2 class="section-heading m-0">Quản lý Chương trình học (Curriculum)</h2>
+        <p class="text-text-muted text-sm mt-1">
+          Kéo thả để sắp xếp Module & Bài học. Mỗi Module/Bài học có thể tùy chỉnh riêng cho lớp này.
         </p>
       </div>
       
@@ -16,7 +16,7 @@
           @click="showImportCourseModal = true"
         >
           <BaseIcon name="download" class="w-4 h-4 inline mr-1 align-middle" />
-          Import tá»« KhÃ³a há»c
+          Import từ Khóa học
         </button>
         
         <button 
@@ -26,7 +26,7 @@
           :disabled="saving"
         >
           <BaseIcon name="plus" class="w-4 h-4 inline mr-1 align-middle" />
-          ThÃªm Module
+          Thêm Module
         </button>
       </div>
     </div>
@@ -34,22 +34,22 @@
     
     <div v-if="loading" class="loading-state">
       <div class="spinner"></div>
-      <span>Äang táº£i chÆ°Æ¡ng trÃ¬nh há»c...</span>
+      <span>Đang tải chương trình học...</span>
     </div>
 
     
     <div v-else-if="!curriculum || curriculum.modules.length === 0" class="empty-state">
-      <div class="text-5xl mb-4">ðŸ“š</div>
-      <h3 class="text-xl font-bold text-white">ChÆ°a cÃ³ Module nÃ o</h3>
-      <p class="text-slate-400 mt-2 max-w-md">
-        Táº¡o Module Ä‘áº§u tiÃªn hoáº·c Import tá»« KhÃ³a há»c cÃ³ sáºµn Ä‘á»ƒ báº¯t Ä‘áº§u xÃ¢y dá»±ng chÆ°Æ¡ng trÃ¬nh há»c.
+      <div class="text-5xl mb-4">📚</div>
+      <h3 class="text-xl font-bold text-white">Chưa có Module nào</h3>
+      <p class="text-text-muted mt-2 max-w-md">
+        Tạo Module đầu tiên hoặc Import từ Khóa học có sẵn để bắt đầu xây dựng chương trình học.
       </p>
       <div class="flex gap-2 mt-6 justify-center">
         <button class="btn-primary" @click="addNewModule">
-          <BaseIcon name="plus" class="w-4 h-4 inline mr-1" /> Táº¡o Module Ä‘áº§u tiÃªn
+          <BaseIcon name="plus" class="w-4 h-4 inline mr-1" /> Tạo Module đầu tiên
         </button>
         <button class="btn-secondary" @click="showImportCourseModal = true">
-          <BaseIcon name="download" class="w-4 h-4 inline mr-1" /> Import tá»« KhÃ³a há»c
+          <BaseIcon name="download" class="w-4 h-4 inline mr-1" /> Import từ Khóa học
         </button>
       </div>
     </div>
@@ -59,7 +59,7 @@
       <div 
         v-for="module in curriculum.modules" 
         :key="module.id"
-        class="module-accordion bg-slate-900/60 border border-white/5 rounded-2xl overflow-hidden"
+        class="module-accordion bg-bg-secondary border border-border-subtle rounded-2xl overflow-hidden"
         :class="{ 'module-hidden': module.isHidden }"
         @dragstart="onDragStartModule(module)"
         @dragover.prevent="onDragOverModule(module)"
@@ -70,33 +70,33 @@
         
         <button
           type="button"
-          class="module-header w-full flex items-center justify-between p-5 cursor-pointer hover:bg-white/5 transition-colors"
+          class="module-header w-full flex items-center justify-between p-5 cursor-pointer hover:bg-bg-hover transition-colors"
           @click="toggleModuleExpanded(module.id)"
         >
           <div class="flex items-center gap-4 flex-1 min-w-0">
-            <div class="flex items-center justify-center w-10 h-10 rounded-xl bg-indigo-500/20 border border-indigo-500/30 text-indigo-400 font-bold text-lg">
+            <div class="flex items-center justify-center w-10 h-10 rounded-xl bg-accent/20 border border-accent/30 text-accent font-bold text-lg">
               {{ getModuleIndex(module.id) + 1 }}
             </div>
             <div class="flex-1 min-w-0">
               <div class="flex items-center gap-3 flex-wrap">
                 <h3 class="font-bold text-white truncate">{{ module.title }}</h3>
-                <span v-if="module.isHidden" class="badge badge-warning text-xs">áº¨n</span>
+                <span v-if="module.isHidden" class="badge badge-warning text-xs">Ẩn</span>
                 <span v-if="module.unlockAt" class="badge badge-info text-xs">
                   <BaseIcon name="clock" class="w-3 h-3 inline mr-1" /> 
                   {{ formatDate(module.unlockAt) }}
                 </span>
               </div>
-              <p v-if="module.description" class="text-slate-400 text-sm mt-1 line-clamp-1">{{ module.description }}</p>
+              <p v-if="module.description" class="text-text-muted text-sm mt-1 line-clamp-1">{{ module.description }}</p>
             </div>
           </div>
           
           <div class="flex items-center gap-2">
-            <span class="text-slate-400 text-sm font-mono">
-              {{ module.items.length }} bÃ i
+            <span class="text-text-muted text-sm font-mono">
+              {{ module.items.length }} bài
             </span>
             <BaseIcon 
               :name="isModuleExpanded(module.id) ? 'chevron-up' : 'chevron-down'" 
-              class="w-5 h-5 text-slate-400 transition-transform"
+              class="w-5 h-5 text-text-muted transition-transform"
             />
           </div>
         </button>
@@ -104,7 +104,7 @@
         
         <div 
           v-show="isModuleExpanded(module.id)"
-          class="module-items px-5 pb-5 border-t border-white/5 animate-slide-down"
+          class="module-items px-5 pb-5 border-t border-border-subtle animate-slide-down"
         >
           
           <div class="flex gap-2 mb-4 pt-4">
@@ -114,13 +114,13 @@
               @click.stop="addNewItem(module)"
             >
               <BaseIcon name="plus" class="w-4 h-4 inline mr-1" />
-              ThÃªm bÃ i há»c
+              Thêm bài học
             </button>
             <button 
               type="button" 
               class="btn-action btn-action--edit" 
               @click.stop="editModule(module)"
-              title="Chá»‰nh sá»­a Module"
+              title="Chỉnh sửa Module"
             >
               <BaseIcon name="edit" class="w-4 h-4" />
             </button>
@@ -128,7 +128,7 @@
               type="button" 
               class="btn-action btn-action--delete" 
               @click.stop="confirmDeleteModule(module)"
-              title="XÃ³a Module"
+              title="Xóa Module"
             >
               <BaseIcon name="trash" class="w-4 h-4" />
             </button>
@@ -141,7 +141,7 @@
             @drag-over="handleDragOver"
             @drag-end="handleDragEnd"
           >
-            <SortableContext items={module.items.map(i => i.id)}>
+            <SortableContextWrapper :items="module.items.map(i => i.id)">
               <div class="space-y-2" ref="itemsContainer">
                 <template v-for="(item, index) in module.items" :key="item.id">
                   <ModuleItemRow
@@ -165,17 +165,17 @@
                 
                 <div 
                   class="drop-zone h-8 border-2 border-dashed border-transparent transition-colors rounded-xl"
-                  :class="{ 'border-indigo-500 bg-indigo-500/10': dragOverModuleId === module.id }"
+                  :class="{ 'border-accent bg-accent/10': dragOverModuleId === module.id }"
                   @dragover.prevent="onDragOverModule(module)"
                   @dragleave="onDragLeaveModule(module)"
                   @drop="onDropItem(module, -1)"
                 >
-                  <div class="flex items-center justify-center h-full text-slate-500 text-xs">
-                    <BaseIcon name="arrow-down" class="w-4 h-4 mr-1" /> Tháº£ bÃ i há»c vÃ o Ä‘Ã¢y
+                  <div class="flex items-center justify-center h-full text-text-muted text-xs">
+                    <BaseIcon name="arrow-down" class="w-4 h-4 mr-1" /> Thả bài học vào đây
                   </div>
                 </div>
               </div>
-            </SortableContext>
+            </SortableContextWrapper>
           </DndContext>
         </div>
       </div>
@@ -216,7 +216,7 @@
       v-model:show="showConfirmDelete"
       :title="confirmDeleteTitle"
       :message="confirmDeleteMessage"
-      :confirm-text="'XÃ³a'"
+      :confirm-text="'Xóa'"
       :variant="'danger'"
       @confirm="executeDelete"
     />
@@ -227,7 +227,7 @@
 import { ref, computed, onMounted, nextTick } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 import { DndContext, closestCenter } from '@dnd-kit/core';
-import { SortableContext } from '@dnd-kit/sortable/dist/components';
+import SortableContextWrapper from '@/components/ui/SortableContextWrapper.vue';
 import { useClassroomCurriculumStore } from '@/stores/classroomCurriculum';
 import { useAuthStore } from '@/features/auth/store/useAuthStore';
 
@@ -294,8 +294,8 @@ function editModule(module: any) {
 }
 
 function confirmDeleteModule(module: any) {
-  confirmDeleteTitle.value = 'XÃ³a Module';
-  confirmDeleteMessage.value = `Báº¡n cÃ³ cháº¯c cháº¯n muá»‘n xÃ³a module "${module.title}" vÃ  táº¥t cáº£ cÃ¡c bÃ i há»c bÃªn trong? HÃ nh Ä‘á»™ng nÃ y khÃ´ng thá»ƒ hoÃ n tÃ¡c.`;
+  confirmDeleteTitle.value = 'Xóa Module';
+  confirmDeleteMessage.value = `Bạn có chắc chắn muốn xóa module "${module.title}" và tất cả các bài học bên trong? Hành động này không thể hoàn tác.`;
   deleteAction.value = async () => {
     await curriculumStore.deleteModuleApi(module.id);
   };
@@ -315,8 +315,8 @@ function editItem(item: any, module: any) {
 }
 
 function confirmDeleteItem(item: any, module: any) {
-  confirmDeleteTitle.value = 'XÃ³a BÃ i há»c';
-  confirmDeleteMessage.value = `Báº¡n cÃ³ cháº¯c cháº¯n muá»‘n xÃ³a "${item.overrideTitle || item.lessonTitle || item.quizTitle || item.codelabTitle}"?`;
+  confirmDeleteTitle.value = 'Xóa Bài học';
+  confirmDeleteMessage.value = `Bạn có chắc chắn muốn xóa "${item.overrideTitle || item.lessonTitle || item.quizTitle || item.codelabTitle}"?`;
   deleteAction.value = async () => {
     await curriculumStore.deleteItemApi(module.id, item.id);
   };

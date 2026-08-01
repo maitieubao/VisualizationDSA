@@ -81,7 +81,7 @@
           <div class="absolute top-2 left-2 flex gap-1.5">
             <span
               v-if="course.isPremium"
-              class="px-2 py-0.5 rounded text-[10px] font-bold uppercase bg-amber-400 text-black shadow-sm"
+              class="px-2 py-0.5 rounded text-[10px] font-bold uppercase bg-accent-yellow text-black shadow-sm"
             >
               Premium
             </span>

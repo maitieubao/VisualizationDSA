@@ -1,7 +1,7 @@
 <template>
-  <div class="heap-array-container w-full flex items-center justify-between gap-2 py-1 shrink-0 select-none border-t border-white/10 font-sans">
-    <div class="text-[10px] font-mono text-slate-400 shrink-0">
-      Heap Size: <span class="font-bold text-indigo-400">{{ currentHeapSize }}/{{ n }}</span>
+  <div class="heap-array-container w-full flex items-center justify-between gap-2 py-1 shrink-0 select-none border-t font-sans">
+    <div class="text-[10px] font-mono text-text-muted shrink-0">
+      Heap Size: <span class="font-bold accent-cyan-label">{{ currentHeapSize }}/{{ n }}</span>
     </div>
 
     <div class="relative flex-1 flex items-center justify-center overflow-x-auto min-w-0">
@@ -25,7 +25,7 @@
             :class="isNodeInHeap(idx) ? 'bar-in-heap' : 'bar-sorted'"
           ></div>
           <span>{{ item.value }}</span>
-          <span class="font-mono text-[9px] text-slate-400">[{{ idx }}]</span>
+          <span class="font-mono text-[9px] text-text-muted">[{{ idx }}]</span>
         </div>
       </transition-group>
     </div>

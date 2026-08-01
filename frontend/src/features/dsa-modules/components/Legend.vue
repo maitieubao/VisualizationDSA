@@ -10,7 +10,7 @@
       <span class="w-2.5 h-2.5 rounded-full" style="background:#06B6D4"></span> Frontier/Queue
     </span>
     <span v-if="showWeights" class="flex items-center gap-1 px-2 py-1 rounded-md" style="background:rgba(15,23,42,0.8);backdrop-filter:blur(8px)">
-      <span class="text-cyan-400 font-mono">w</span> Edge Weight
+      <span class="text-accent-cyan font-mono">w</span> Edge Weight
     </span>
     <span v-if="showMST" class="flex items-center gap-1 px-2 py-1 rounded-md" style="background:rgba(15,23,42,0.8);backdrop-filter:blur(8px)">
       <span class="w-2.5 h-2.5 rounded-sm" style="background:#A855F7"></span> MST Edge

@@ -1,9 +1,9 @@
 <template>
-  <div class="absolute top-1/2 left-5 -translate-y-1/2 flex flex-col gap-2 p-2.5 bg-bg-secondary/65 backdrop-blur-md border border-white/8 rounded-[20px] shadow-2xl z-[1001]">
+  <div class="absolute top-1/2 left-5 -translate-y-1/2 flex flex-col gap-2 p-2.5 bg-bg-secondary/65 backdrop-blur-md border border-border-default/8 rounded-[20px] shadow-2xl z-[1001]">
     <button
       v-for="tool in tools"
       :key="tool.mode"
-      class="w-11 h-11 flex items-center justify-center rounded-xl border-none bg-transparent text-text-muted cursor-pointer transition-all duration-200 hover:bg-white/5 hover:text-text-primary"
+      class="w-11 h-11 flex items-center justify-center rounded-xl border-none bg-transparent text-text-muted cursor-pointer transition-all duration-200 hover:bg-bg-hover hover:text-text-primary"
       :class="{ 'bg-accent-emerald !text-white shadow-[0_0_12px_rgba(16,185,129,0.4)]': store.mode === tool.mode }"
       :title="tool.title"
       @click="store.setMode(tool.mode)"
@@ -36,7 +36,7 @@
     <div class="w-7 h-[1px] my-1 mx-auto bg-white/8"></div>
 
     <button
-      class="w-11 h-11 flex items-center justify-center rounded-xl border-none bg-transparent text-text-muted cursor-pointer transition-all duration-200 hover:bg-white/5 hover:text-text-primary"
+      class="w-11 h-11 flex items-center justify-center rounded-xl border-none bg-transparent text-text-muted cursor-pointer transition-all duration-200 hover:bg-bg-hover hover:text-text-primary"
       :class="{ 'bg-accent-emerald !text-white shadow-[0_0_12px_rgba(16,185,129,0.4)]': store.isPhysicsEnabled }"
       title="Bật/Tắt lực đẩy vật lý"
       @click="store.togglePhysics()"

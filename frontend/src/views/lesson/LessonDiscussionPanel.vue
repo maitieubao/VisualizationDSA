@@ -1,15 +1,15 @@
 <template>
-  <div class="lesson-discussion bg-slate-900/40 border border-white/5 rounded-3xl p-6 flex flex-col h-full overflow-hidden text-slate-300">
+  <div class="lesson-discussion bg-bg-secondary/40 border border-border-subtle rounded-3xl p-6 flex flex-col h-full overflow-hidden text-text-secondary">
     <div class="flex items-center justify-between mb-4 flex-shrink-0">
       <h3 class="text-sm font-black text-white flex items-center gap-2">
         💬 THẢO LUẬN & HỎI ĐÁP
-        <span class="px-2 py-0.5 rounded-full bg-indigo-500/20 text-indigo-400 text-[10px] font-bold">
+        <span class="px-2 py-0.5 rounded-full bg-accent/20 text-accent text-[10px] font-bold">
           {{ comments.length }} bình luận
         </span>
       </h3>
       <button 
         @click="loadComments" 
-        class="text-xs text-indigo-400 hover:text-indigo-300 font-semibold transition-colors"
+        class="text-xs text-accent hover:text-accent font-semibold transition-colors"
         :disabled="loading"
       >
         {{ loading ? 'Đang làm mới...' : 'Làm mới ↻' }}
@@ -19,7 +19,7 @@
     
     <div class="mb-4 flex-shrink-0">
       <div class="relative">
-        <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+        <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-text-muted" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
           <circle cx="11" cy="11" r="8"/>
           <line x1="21" y1="21" x2="16.65" y2="16.65"/>
         </svg>
@@ -27,13 +27,13 @@
           v-model="searchQuery"
           type="text"
           placeholder="Tìm kiếm trong thảo luận..."
-          class="w-full bg-slate-950 border border-white/10 rounded-xl pl-9 pr-3 py-2 text-xs focus:border-indigo-500 focus:outline-none text-white placeholder-slate-500 transition-colors"
+          class="w-full bg-bg-secondary border border-border-subtle rounded-xl pl-9 pr-3 py-2 text-xs focus:border-accent focus:outline-none text-white placeholder-text-muted transition-colors"
           @input="debouncedSearch"
         />
         <button
           v-if="searchQuery"
           @click="clearSearch"
-          class="absolute right-2 top-1/2 -translate-y-1/2 text-slate-500 hover:text-white transition-colors text-xs"
+          class="absolute right-2 top-1/2 -translate-y-1/2 text-text-muted hover:text-white transition-colors text-xs"
         >
           ✕
         </button>
@@ -41,31 +41,31 @@
     </div>
 
     
-    <div v-if="error" class="p-3 bg-rose-500/10 border border-rose-500/20 text-rose-400 text-xs rounded-xl mb-4 flex-shrink-0">
+    <div v-if="error" class="p-3 bg-accent-red/10 border border-accent-red/20 text-accent-red text-xs rounded-xl mb-4 flex-shrink-0">
       {{ error }}
     </div>
 
     
     <div class="flex-1 overflow-y-auto pr-2 scrollbar-thin space-y-4 mb-4">
-      <div v-if="loading && comments.length === 0" class="h-32 flex items-center justify-center text-xs text-slate-500">
-        <div class="inline-block w-4 h-4 border-2 border-indigo-500/20 border-t-indigo-400 rounded-full animate-spin mr-2"></div>
+      <div v-if="loading && comments.length === 0" class="h-32 flex items-center justify-center text-xs text-text-muted">
+        <div class="inline-block w-4 h-4 border-2 border-accent/20 border-t-indigo-400 rounded-full animate-spin mr-2"></div>
         Đang tải các thảo luận...
       </div>
 
-      <div v-else-if="rootComments.length === 0" class="h-32 flex flex-col items-center justify-center text-xs text-slate-500 text-center">
+      <div v-else-if="rootComments.length === 0" class="h-32 flex flex-col items-center justify-center text-xs text-text-muted text-center">
         <div class="text-2xl mb-1">💬</div>
         Chưa có thảo luận nào cho bài học này.
-        <span class="text-[10px] text-slate-600 mt-0.5">Đặt câu hỏi đầu tiên của bạn ở dưới!</span>
+        <span class="text-[10px] text-text-disabled mt-0.5">Đặt câu hỏi đầu tiên của bạn ở dưới!</span>
       </div>
 
       
       <div v-else v-for="comment in rootComments" :key="comment.id" class="space-y-3">
         
-        <div class="p-4 bg-white/[0.02] border border-white/5 rounded-2xl hover:border-white/10 transition-all">
+        <div class="p-4 bg-white/[0.02] border border-border-subtle rounded-2xl hover:border-border-subtle transition-all">
           <div class="flex items-start justify-between gap-3">
             <div class="flex items-center gap-2">
               
-              <div class="w-7 h-7 rounded-full bg-indigo-500/20 text-indigo-400 flex items-center justify-center font-bold text-xs capitalize">
+              <div class="w-7 h-7 rounded-full bg-accent/20 text-accent flex items-center justify-center font-bold text-xs capitalize">
                 {{ comment.username.charAt(0) }}
               </div>
               <div>
@@ -74,33 +74,33 @@
                   
                   <span 
                     v-if="comment.role === 'Admin'" 
-                    class="px-1.5 py-0.2 text-[8px] font-extrabold uppercase rounded bg-rose-500/20 text-rose-400 border border-rose-500/10 animate-pulse"
+                    class="px-1.5 py-0.2 text-[8px] font-extrabold uppercase rounded bg-accent-red/20 text-accent-red border border-accent-red/10 animate-pulse"
                   >
                     Admin
                   </span>
                   <span 
                     v-else-if="comment.role === 'Teacher'" 
-                    class="px-1.5 py-0.2 text-[8px] font-extrabold uppercase rounded bg-amber-500/20 text-amber-400 border border-amber-500/10"
+                    class="px-1.5 py-0.2 text-[8px] font-extrabold uppercase rounded bg-accent-yellow/20 text-accent-yellow border border-accent-yellow/10"
                   >
                     Teacher
                   </span>
                   <span 
                     v-if="comment.isPremium" 
-                    class="px-1 py-0.2 text-[8px] font-extrabold uppercase rounded bg-emerald-500/20 text-emerald-400 border border-emerald-500/10"
+                    class="px-1 py-0.2 text-[8px] font-extrabold uppercase rounded bg-accent-green/20 text-accent-green border border-accent-green/10"
                   >
                     Premium
                   </span>
                 </div>
-                <span class="text-[9px] text-slate-500">{{ formatDate(comment.createdAt) }}</span>
+                <span class="text-[9px] text-text-muted">{{ formatDate(comment.createdAt) }}</span>
               </div>
             </div>
           </div>
-          <p class="text-xs text-slate-300 mt-2 leading-relaxed whitespace-pre-wrap">{{ comment.content }}</p>
+          <p class="text-xs text-text-secondary mt-2 leading-relaxed whitespace-pre-wrap">{{ comment.content }}</p>
           
           <div class="mt-3 flex items-center justify-end">
             <button 
               @click="toggleReplyForm(comment.id)" 
-              class="text-[10px] text-indigo-400 hover:text-indigo-300 font-bold transition-colors flex items-center gap-0.5"
+              class="text-[10px] text-accent hover:text-accent font-bold transition-colors flex items-center gap-0.5"
             >
               ↩ Trả lời
             </button>
@@ -108,10 +108,10 @@
         </div>
 
         
-        <div class="pl-8 space-y-2 border-l border-indigo-500/10">
-          <div v-for="reply in getReplies(comment.id)" :key="reply.id" class="p-3 bg-white/[0.01] border border-white/5 rounded-xl">
+        <div class="pl-8 space-y-2 border-l border-accent/10">
+          <div v-for="reply in getReplies(comment.id)" :key="reply.id" class="p-3 bg-white/[0.01] border border-border-subtle rounded-xl">
             <div class="flex items-start gap-2">
-              <div class="w-6 h-6 rounded-full bg-purple-500/20 text-purple-400 flex items-center justify-center font-bold text-[10px] capitalize flex-shrink-0">
+              <div class="w-6 h-6 rounded-full bg-accent-purple/20 text-accent-purple flex items-center justify-center font-bold text-[10px] capitalize flex-shrink-0">
                 {{ reply.username.charAt(0) }}
               </div>
               <div class="flex-1 min-w-0">
@@ -119,41 +119,41 @@
                   <span class="text-xs font-bold text-white">{{ reply.username }}</span>
                   <span 
                     v-if="reply.role === 'Admin'" 
-                    class="px-1.5 py-0.2 text-[8px] font-extrabold uppercase rounded bg-rose-500/20 text-rose-400 border border-rose-500/10"
+                    class="px-1.5 py-0.2 text-[8px] font-extrabold uppercase rounded bg-accent-red/20 text-accent-red border border-accent-red/10"
                   >
                     Admin
                   </span>
                   <span 
                     v-else-if="reply.role === 'Teacher'" 
-                    class="px-1.5 py-0.2 text-[8px] font-extrabold uppercase rounded bg-amber-500/20 text-amber-400 border border-amber-500/10"
+                    class="px-1.5 py-0.2 text-[8px] font-extrabold uppercase rounded bg-accent-yellow/20 text-accent-yellow border border-accent-yellow/10"
                   >
                     Teacher
                   </span>
                 </div>
-                <span class="text-[8px] text-slate-500 block mb-1">{{ formatDate(reply.createdAt) }}</span>
-                <p class="text-xs text-slate-300 leading-relaxed whitespace-pre-wrap">{{ reply.content }}</p>
+                <span class="text-[8px] text-text-muted block mb-1">{{ formatDate(reply.createdAt) }}</span>
+                <p class="text-xs text-text-secondary leading-relaxed whitespace-pre-wrap">{{ reply.content }}</p>
               </div>
             </div>
           </div>
 
           
-          <div v-if="replyingToId === comment.id" class="p-3 bg-indigo-500/5 border border-indigo-500/15 rounded-xl space-y-2">
+          <div v-if="replyingToId === comment.id" class="p-3 bg-accent/5 border border-accent/15 rounded-xl space-y-2">
             <textarea 
               v-model="replyText" 
               placeholder="Nhập nội dung câu trả lời..." 
-              class="w-full h-16 bg-slate-950 border border-white/10 rounded-lg p-2 text-xs focus:border-indigo-500 focus:outline-none resize-none text-white"
+              class="w-full h-16 bg-bg-secondary border border-border-subtle rounded-lg p-2 text-xs focus:border-accent focus:outline-none resize-none text-white"
             ></textarea>
             <div class="flex items-center justify-end gap-2">
               <button 
                 @click="replyingToId = null" 
-                class="px-2.5 py-1 text-[10px] bg-white/5 text-slate-400 font-bold rounded-lg border border-white/5 hover:bg-white/10 transition-all"
+                class="px-2.5 py-1 text-[10px] bg-bg-hover text-text-muted font-bold rounded-lg border border-border-subtle hover:bg-bg-hover transition-all"
               >
                 Hủy
               </button>
               <button 
                 @click="submitComment(comment.id)" 
                 :disabled="submitting || !replyText.trim()"
-                class="px-3 py-1 text-[10px] bg-indigo-600 text-white font-bold rounded-lg hover:bg-indigo-500 transition-all disabled:opacity-50"
+                class="px-3 py-1 text-[10px] bg-accent text-white font-bold rounded-lg hover:bg-accent transition-all disabled:opacity-50"
               >
                 {{ submitting ? 'Đang gửi...' : 'Gửi trả lời' }}
               </button>
@@ -164,18 +164,18 @@
     </div>
 
     
-    <div class="border-t border-white/10 pt-4 flex-shrink-0 space-y-2">
+    <div class="border-t border-border-subtle pt-4 flex-shrink-0 space-y-2">
       <textarea 
         v-model="newCommentText" 
         placeholder="Đặt câu hỏi hoặc chia sẻ ý kiến về bài học này..." 
-        class="w-full h-20 bg-slate-950 border border-white/10 rounded-xl p-3 text-xs focus:border-indigo-500 focus:outline-none resize-none text-white scrollbar-none"
+        class="w-full h-20 bg-bg-secondary border border-border-subtle rounded-xl p-3 text-xs focus:border-accent focus:outline-none resize-none text-white scrollbar-none"
       ></textarea>
       <div class="flex items-center justify-between">
-        <span class="text-[10px] text-slate-500">Tối đa 2000 ký tự. Vui lòng tôn trọng nội quy thảo luận.</span>
+        <span class="text-[10px] text-text-muted">Tối đa 2000 ký tự. Vui lòng tôn trọng nội quy thảo luận.</span>
         <button 
           @click="submitComment(null)" 
           :disabled="submitting || !newCommentText.trim()"
-          class="px-4 py-2 bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-bold rounded-xl hover:from-indigo-500 hover:to-purple-500 transition-all text-xs disabled:opacity-50 shadow-lg shadow-indigo-600/10"
+          class="px-4 py-2 bg-gradient-to-r from-accent to-accent-purple text-white font-bold rounded-xl hover:from-accent hover:to-accent-purple transition-all text-xs disabled:opacity-50 shadow-lg shadow-accent/10"
         >
           {{ submitting ? 'Đang gửi...' : 'Đăng thảo luận 💬' }}
         </button>

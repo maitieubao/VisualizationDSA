@@ -5,7 +5,7 @@
         <div class="modal-header">
           <h3 class="modal-title">
             <BaseIcon name="plus" class="w-5 h-5 inline mr-2" />
-            Táº¡o bÃ i há»c tÃ¹y chá»‰nh cho Lá»›p: {{ classroomName }}
+            Tạo bài học tùy chỉnh cho Lớp: {{ classroomName }}
           </h3>
           <button type="button" class="modal-close" @click="$emit('update:show', false)">
             <BaseIcon name="x" class="w-5 h-5" />
@@ -17,79 +17,79 @@
           <div class="step-indicator mb-6">
             <div class="step" :class="{ active: currentStep >= 1, completed: currentStep > 1 }">
               <span class="step-number">1</span>
-              <span class="step-label">ThÃ´ng tin cÆ¡ báº£n</span>
+              <span class="step-label">Thông tin cơ bản</span>
             </div>
             <div class="step-connector" :class="{ completed: currentStep > 1 }"></div>
             <div class="step" :class="{ active: currentStep >= 2, completed: currentStep > 2 }">
               <span class="step-number">2</span>
-              <span class="step-label">Ná»™i dung & LÃ½ thuyáº¿t</span>
+              <span class="step-label">Nội dung & Lý thuyết</span>
             </div>
             <div class="step-connector" :class="{ completed: currentStep > 2 }"></div>
             <div class="step" :class="{ active: currentStep >= 3, completed: currentStep > 3 }">
               <span class="step-number">3</span>
-              <span class="step-label">Hoáº¡t Ä‘á»™ng thá»±c hÃ nh</span>
+              <span class="step-label">Hoạt động thực hành</span>
             </div>
             <div class="step-connector" :class="{ completed: currentStep > 3 }"></div>
             <div class="step" :class="{ active: currentStep >= 4 }">
               <span class="step-number">4</span>
-              <span class="step-label">CÃ i Ä‘áº·t & Xuáº¥t báº£n</span>
+              <span class="step-label">Cài đặt & Xuất bản</span>
             </div>
           </div>
 
           
           <div v-if="currentStep === 1" class="step-content animate-fade-in">
-            <h4 class="step-title">ThÃ´ng tin cÆ¡ báº£n</h4>
+            <h4 class="step-title">Thông tin cơ bản</h4>
             
             <div class="form-field">
-              <label class="form-label">TiÃªu Ä‘á» bÃ i há»c <span class="text-rose-400">*</span></label>
-              <input v-model="form.title" type="text" class="form-input" placeholder="VD: Giá»›i thiá»‡u vá» Bubble Sort" required maxlength="200" />
-              <p class="form-hint">{{ form.title.length }}/200 kÃ½ tá»±</p>
+              <label class="form-label">Tiêu đề bài học <span class="text-accent-red">*</span></label>
+              <input v-model="form.title" type="text" class="form-input" placeholder="VD: Giới thiệu về Bubble Sort" required maxlength="200" />
+              <p class="form-hint">{{ form.title.length }}/200 ký tự</p>
             </div>
             
             <div class="form-field">
-              <label class="form-label">MÃ´ táº£ ngáº¯n</label>
-              <textarea v-model="form.description" class="form-input form-textarea" placeholder="MÃ´ táº£ ngáº¯n gá»n vá» bÃ i há»c..." rows="3" maxlength="1000"></textarea>
-              <p class="form-hint">{{ form.description.length }}/1000 kÃ½ tá»±</p>
+              <label class="form-label">Mô tả ngắn</label>
+              <textarea v-model="form.description" class="form-input form-textarea" placeholder="Mô tả ngắn gọn về bài học..." rows="3" maxlength="1000"></textarea>
+              <p class="form-hint">{{ form.description.length }}/1000 ký tự</p>
             </div>
             
             <div class="form-row">
               <div class="form-field">
-                <label class="form-label">Module <span class="text-rose-400">*</span></label>
+                <label class="form-label">Module <span class="text-accent-red">*</span></label>
                 <select v-model="form.moduleId" class="form-select" required>
-                  <option value="">Chá»n module</option>
+                  <option value="">Chọn module</option>
                   <option v-for="m in modules" :key="m.id" :value="m.id">{{ m.title }}</option>
                 </select>
               </div>
               <div class="form-field">
-                <label class="form-label">Thá»© tá»± trong module <span class="text-rose-400">*</span></label>
+                <label class="form-label">Thứ tự trong module <span class="text-accent-red">*</span></label>
                 <input v-model.number="form.orderIndex" type="number" class="form-input" min="1" required />
               </div>
             </div>
             
             <div class="form-row">
               <div class="form-field">
-                <label class="form-label">XP ThÆ°á»Ÿng <span class="text-rose-400">*</span></label>
+                <label class="form-label">XP Thưởng <span class="text-accent-red">*</span></label>
                 <input v-model.number="form.xpReward" type="number" class="form-input" min="10" max="500" required />
               </div>
               <div class="form-field">
-                <label class="form-label">Thá»i gian Æ°á»›c tÃ­nh (phÃºt)</label>
+                <label class="form-label">Thời gian ước tính (phút)</label>
                 <input v-model.number="form.estimatedTime" type="number" class="form-input" min="5" max="180" />
               </div>
             </div>
             
             <div class="form-actions">
               <button type="button" class="btn-primary" @click="nextStep" :disabled="!isStep1Valid">
-                <BaseIcon name="arrow-right" class="w-4 h-4 inline mr-1" /> BÆ°á»›c tiáº¿p theo
+                <BaseIcon name="arrow-right" class="w-4 h-4 inline mr-1" /> Bước tiếp theo
               </button>
             </div>
           </div>
 
           
           <div v-if="currentStep === 2" class="step-content animate-fade-in">
-            <h4 class="step-title">Ná»™i dung & LÃ½ thuyáº¿t</h4>
+            <h4 class="step-title">Nội dung & Lý thuyết</h4>
             
             <div class="form-field">
-              <label class="form-label">Loáº¡i ná»™i dung <span class="text-rose-400">*</span></label>
+              <label class="form-label">Loại nội dung <span class="text-accent-red">*</span></label>
               <div class="type-selector">
                 <label 
                   v-for="type in contentTypes" 
@@ -106,35 +106,35 @@
             
             
             <div v-if="form.contentType === 'custom'" class="form-field">
-              <label class="form-label">Ná»™i dung Markdown <span class="text-rose-400">*</span></label>
+              <label class="form-label">Nội dung Markdown <span class="text-accent-red">*</span></label>
               <CustomMarkdownEditor 
                 v-model="form.customContent" 
-                :placeholder="'Viáº¿t ná»™i dung bÃ i há»c báº±ng Markdown...'"
+                :placeholder="'Viết nội dung bài học bằng Markdown...'"
                 :height="350"
               />
             </div>
             
             
             <div v-if="form.contentType === 'theory'" class="form-field">
-              <label class="form-label">Chá»n bÃ i viáº¿t lÃ½ thuyáº¿t <span class="text-rose-400">*</span></label>
+              <label class="form-label">Chọn bài viết lý thuyết <span class="text-accent-red">*</span></label>
               <TheoryArticlePickerModal
                 v-model:show="showTheoryPicker"
                 :multiple="false"
                 @select="onTheorySelected"
               />
-              <div v-if="form.theoryArticleId" class="selected-theory p-4 bg-indigo-500/10 border border-indigo-500/20 rounded-xl">
+              <div v-if="form.theoryArticleId" class="selected-theory p-4 bg-accent/10 border border-accent/20 rounded-xl">
                 <div class="flex items-center justify-between">
                   <div>
                     <p class="font-semibold text-white">{{ selectedTheory?.title }}</p>
-                    <p class="text-sm text-slate-400">{{ selectedTheory?.category }} â€¢ {{ selectedTheory?.readTimeMinutes }} phÃºt Ä‘á»c</p>
+                    <p class="text-sm text-text-muted">{{ selectedTheory?.category }} • {{ selectedTheory?.readTimeMinutes }} phút đọc</p>
                   </div>
                   <button type="button" class="btn-secondary text-sm" @click="removeTheory">
-                    <BaseIcon name="x" class="w-4 h-4 inline mr-1" /> Gá»¡ bá»
+                    <BaseIcon name="x" class="w-4 h-4 inline mr-1" /> Gỡ bỏ
                   </button>
                 </div>
               </div>
               <button type="button" class="btn-primary" @click="showTheoryPicker = true">
-                <BaseIcon name="search" class="w-4 h-4 inline mr-1" /> Chá»n bÃ i viáº¿t lÃ½ thuyáº¿t
+                <BaseIcon name="search" class="w-4 h-4 inline mr-1" /> Chọn bài viết lý thuyết
               </button>
             </div>
             
@@ -142,40 +142,40 @@
             <div class="form-section">
               <h4 class="form-section-title">
                 <BaseIcon name="cube" class="w-4 h-4 inline mr-1" />
-                Trá»±c quan hÃ³a (Sandbox)
+                Trực quan hóa (Sandbox)
               </h4>
               <div class="form-field">
-                <label class="form-label">Loáº¡i Sandbox</label>
+                <label class="form-label">Loại Sandbox</label>
                 <select v-model="form.sandboxType" class="form-select">
-                  <option value="">KhÃ´ng cÃ³ trá»±c quan hÃ³a</option>
-                  <option value="sorting">Sáº¯p xáº¿p (Sorting)</option>
-                  <option value="graph">Äá»“ thá»‹ (Graph)</option>
-                  <option value="tree">CÃ¢y (Tree)</option>
-                  <option value="array">Máº£ng (Array)</option>
-                  <option value="hash">Báº£ng bÄƒm (Hash)</option>
+                  <option value="">Không có trực quan hóa</option>
+                  <option value="sorting">Sắp xếp (Sorting)</option>
+                  <option value="graph">Đồ thị (Graph)</option>
+                  <option value="tree">Cây (Tree)</option>
+                  <option value="array">Mảng (Array)</option>
+                  <option value="hash">Bảng băm (Hash)</option>
                 </select>
               </div>
               <div class="form-field">
-                <label class="form-label">Cáº¥u hÃ¬nh Sandbox (JSON)</label>
+                <label class="form-label">Cấu hình Sandbox (JSON)</label>
                 <textarea v-model="form.sandboxConfig" class="form-input form-textarea font-mono text-sm" placeholder='{"initialArray": [5,2,9,1,5,6], "algorithm": "bubble"}' rows="4"></textarea>
               </div>
             </div>
             
             <div class="step-navigation">
               <button type="button" class="btn-secondary" @click="prevStep">
-                <BaseIcon name="arrow-left" class="w-4 h-4 inline mr-1" /> Quay láº¡i
+                <BaseIcon name="arrow-left" class="w-4 h-4 inline mr-1" /> Quay lại
               </button>
               <button type="button" class="btn-primary" @click="nextStep" :disabled="!isStep2Valid">
-                <BaseIcon name="arrow-right" class="w-4 h-4 inline ml-1" /> BÆ°á»›c tiáº¿p theo
+                <BaseIcon name="arrow-right" class="w-4 h-4 inline ml-1" /> Bước tiếp theo
               </button>
             </div>
           </div>
 
           
           <div v-if="currentStep === 3" class="step-content animate-fade-in">
-            <h4 class="step-title">Hoáº¡t Ä‘á»™ng thá»±c hÃ nh</h4>
+            <h4 class="step-title">Hoạt động thực hành</h4>
             
-            <p class="text-slate-400 text-sm mb-6">Chá»n cÃ¡c hoáº¡t Ä‘á»™ng thá»±c hÃ nh bá»• sung cho bÃ i há»c (tÃ¹y chá»n)</p>
+            <p class="text-text-muted text-sm mb-6">Chọn các hoạt động thực hành bổ sung cho bài học (tùy chọn)</p>
             
             <div class="practice-options grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
               <label v-for="activity in practiceActivities" :key="activity.key" class="practice-card" :class="{ selected: form.practiceActivities.includes(activity.key) }" @click="togglePracticeActivity(activity.key)">
@@ -183,10 +183,10 @@
                   <BaseIcon :name="activity.icon" class="w-8 h-8" />
                 </div>
                 <h5 class="font-semibold text-white">{{ activity.label }}</h5>
-                <p class="text-xs text-slate-400">{{ activity.description }}</p>
+                <p class="text-xs text-text-muted">{{ activity.description }}</p>
                 <div class="practice-check">
                   <input type="checkbox" :value="activity.key" v-model="form.practiceActivities" class="form-checkbox" />
-                  <span>Chá»n</span>
+                  <span>Chọn</span>
                 </div>
               </label>
             </div>
@@ -195,25 +195,25 @@
             <div v-if="form.practiceActivities.includes('quiz')" class="form-section">
               <h4 class="form-section-title">
                 <BaseIcon name="help-circle" class="w-4 h-4 inline mr-1" />
-                Cáº¥u hÃ¬nh Quiz
+                Cấu hình Quiz
               </h4>
               <QuizPickerModal
                 v-model:show="showQuizPicker"
                 @select="onQuizSelected"
               />
-              <div v-if="form.quizId" class="selected-quiz p-4 bg-purple-500/10 border border-purple-500/20 rounded-xl">
+              <div v-if="form.quizId" class="selected-quiz p-4 bg-accent-purple/10 border border-accent-purple/20 rounded-xl">
                 <div class="flex items-center justify-between">
                   <div>
                     <p class="font-semibold text-white">{{ selectedQuiz?.title }}</p>
-                    <p class="text-sm text-slate-400">{{ selectedQuiz?.topic }} â€¢ Äá»™ khÃ³ {{ selectedQuiz?.difficulty }} â€¢ {{ selectedQuiz?.questionCount }} cÃ¢u</p>
+                    <p class="text-sm text-text-muted">{{ selectedQuiz?.topic }} • Độ khó {{ selectedQuiz?.difficulty }} • {{ selectedQuiz?.questionCount }} câu</p>
                   </div>
                   <button type="button" class="btn-secondary text-sm" @click="removeQuiz">
-                    <BaseIcon name="x" class="w-4 h-4 inline mr-1" /> Gá»¡ bá»
+                    <BaseIcon name="x" class="w-4 h-4 inline mr-1" /> Gỡ bỏ
                   </button>
                 </div>
               </div>
               <button type="button" class="btn-primary" @click="showQuizPicker = true" v-if="!form.quizId">
-                <BaseIcon name="plus" class="w-4 h-4 inline mr-1" /> Chá»n Quiz
+                <BaseIcon name="plus" class="w-4 h-4 inline mr-1" /> Chọn Quiz
               </div>
             </div>
             
@@ -221,97 +221,97 @@
             <div v-if="form.practiceActivities.includes('codelab')" class="form-section">
               <h4 class="form-section-title">
                 <BaseIcon name="code" class="w-4 h-4 inline mr-1" />
-                Cáº¥u hÃ¬nh Codelab
+                Cấu hình Codelab
               </h4>
               <CodelabPickerModal
                 v-model:show="showCodelabPicker"
                 @select="onCodelabSelected"
               />
-              <div v-if="form.codelabId" class="selected-codelab p-4 bg-emerald-500/10 border border-emerald-500/20 rounded-xl">
+              <div v-if="form.codelabId" class="selected-codelab p-4 bg-accent-green/10 border border-accent-green/20 rounded-xl">
                 <div class="flex items-center justify-between">
                   <div>
                     <p class="font-semibold text-white">{{ selectedCodelab?.title }}</p>
-                    <p class="text-sm text-slate-400">{{ selectedCodelab?.difficulty }} â€¢ {{ selectedCodelab?.testCaseCount }} testcases</p>
+                    <p class="text-sm text-text-muted">{{ selectedCodelab?.difficulty }} • {{ selectedCodelab?.testCaseCount }} testcases</p>
                   </div>
                   <button type="button" class="btn-secondary text-sm" @click="removeCodelab">
-                    <BaseIcon name="x" class="w-4 h-4 inline mr-1" /> Gá»¡ bá»
+                    <BaseIcon name="x" class="w-4 h-4 inline mr-1" /> Gỡ bỏ
                   </button>
                 </div>
               </div>
               <button type="button" class="btn-primary" @click="showCodelabPicker = true" v-if="!form.codelabId">
-                <BaseIcon name="plus" class="w-4 h-4 inline mr-1" /> Chá»n Codelab
+                <BaseIcon name="plus" class="w-4 h-4 inline mr-1" /> Chọn Codelab
               </div>
             </div>
             
             <div class="step-navigation">
               <button type="button" class="btn-secondary" @click="prevStep">
-                <BaseIcon name="arrow-left" class="w-4 h-4 inline mr-1" /> Quay láº¡i
+                <BaseIcon name="arrow-left" class="w-4 h-4 inline mr-1" /> Quay lại
               </button>
               <button type="button" class="btn-primary" @click="nextStep">
-                <BaseIcon name="arrow-right" class="w-4 h-4 inline ml-1" /> BÆ°á»›c tiáº¿p theo
+                <BaseIcon name="arrow-right" class="w-4 h-4 inline ml-1" /> Bước tiếp theo
               </button>
             </div>
           </div>
 
           
           <div v-if="currentStep === 4" class="step-content animate-fade-in">
-            <h4 class="step-title">CÃ i Ä‘áº·t & Xuáº¥t báº£n</h4>
+            <h4 class="step-title">Cài đặt & Xuất bản</h4>
             
             <div class="form-field">
               <label class="form-label flex items-center gap-2 cursor-pointer">
                 <input v-model="form.isRequired" type="checkbox" class="form-checkbox" />
-                <span>Báº¯t buá»™c hoÃ n thÃ nh Ä‘á»ƒ má»Ÿ khÃ³a bÃ i tiáº¿p theo</span>
+                <span>Bắt buộc hoàn thành để mở khóa bài tiếp theo</span>
               </label>
             </div>
             
             <div class="form-field">
               <label class="form-label flex items-center gap-2 cursor-pointer">
                 <input v-model="form.isHidden" type="checkbox" class="form-checkbox" />
-                <span>áº¨n bÃ i há»c khá»i há»c viÃªn (chá»‰ giÃ¡o viÃªn tháº¥y)</span>
+                <span>Ẩn bài học khỏi học viên (chỉ giáo viên thấy)</span>
               </label>
             </div>
             
             <div class="form-row">
               <div class="form-field">
-                <label class="form-label">Má»Ÿ khÃ³a vÃ o lÃºc (Unlock At)</label>
+                <label class="form-label">Mở khóa vào lúc (Unlock At)</label>
                 <input v-model="form.unlockAt" type="datetime-local" class="form-input" />
               </div>
               <div class="form-field">
-                <label class="form-label">Háº¡n ná»™p (Due At)</label>
+                <label class="form-label">Hạn nộp (Due At)</label>
                 <input v-model="form.dueAt" type="datetime-local" class="form-input" />
               </div>
             </div>
             
             <div class="form-field">
-              <label class="form-label">Sá»‘ láº§n thá»­ tá»‘i Ä‘a (cho Quiz/Codelab)</label>
-              <input v-model.number="form.maxAttempts" type="number" class="form-input" min="1" max="100" placeholder="KhÃ´ng giá»›i háº¡n" />
+              <label class="form-label">Số lần thử tối đa (cho Quiz/Codelab)</label>
+              <input v-model.number="form.maxAttempts" type="number" class="form-input" min="1" max="100" placeholder="Không giới hạn" />
             </div>
             
             <div class="form-field">
               <label class="form-label flex items-center gap-2 cursor-pointer">
                 <input v-model="form.isSequential" type="checkbox" class="form-checkbox" />
-                <span>YÃªu cáº§u hoÃ n thÃ nh theo thá»© tá»± (Sequential)</span>
+                <span>Yêu cầu hoàn thành theo thứ tự (Sequential)</span>
               </label>
             </div>
             
             <div class="form-field">
               <label class="form-label flex items-center gap-2 cursor-pointer">
                 <input v-model="form.isPublished" type="checkbox" class="form-checkbox" />
-                <span>Xuáº¥t báº£n ngay sau khi táº¡o</span>
+                <span>Xuất bản ngay sau khi tạo</span>
               </label>
             </div>
             
             <div class="step-navigation">
               <button type="button" class="btn-secondary" @click="prevStep">
-                <BaseIcon name="arrow-left" class="w-4 h-4 inline mr-1" /> Quay láº¡i
+                <BaseIcon name="arrow-left" class="w-4 h-4 inline mr-1" /> Quay lại
               </button>
               <button type="submit" class="btn-primary" :disabled="saving">
                 <span v-if="saving" class="flex items-center gap-2">
                   <span class="spinner-sm"></span>
-                  Äang táº¡o...
+                  Đang tạo...
                 </span>
                 <span v-else>
-                  <BaseIcon name="check" class="w-4 h-4 inline mr-1" /> Táº¡o bÃ i há»c
+                  <BaseIcon name="check" class="w-4 h-4 inline mr-1" /> Tạo bài học
                 </span>
               </button>
             </div>
@@ -351,13 +351,13 @@ const saving = ref(false);
 const modules = computed(() => props.modules.filter((m: any) => !m.isDeleted).sort((a: any, b: any) => a.orderIndex - b.orderIndex));
 
 const contentTypes = [
-  { value: 'custom', label: 'Tá»± soáº¡n tháº£o (Markdown)', icon: 'file-text' },
-  { value: 'theory', label: 'Chá»n bÃ i viáº¿t lÃ½ thuyáº¿t', icon: 'book-open' }
+  { value: 'custom', label: 'Tự soạn thảo (Markdown)', icon: 'file-text' },
+  { value: 'theory', label: 'Chọn bài viết lý thuyết', icon: 'book-open' }
 ];
 
 const practiceActivities = [
-  { key: 'quiz', label: 'Tráº¯c nghiá»‡m (Quiz)', icon: 'help-circle', description: 'Kiá»ƒm tra kiáº¿n thá»©c' },
-  { key: 'codelab', label: 'Thá»±c hÃ nh Code (Codelab)', icon: 'code', description: 'Viáº¿t vÃ  cháº¡y code' }
+  { key: 'quiz', label: 'Trắc nghiệm (Quiz)', icon: 'help-circle', description: 'Kiểm tra kiến thức' },
+  { key: 'codelab', label: 'Thực hành Code (Codelab)', icon: 'code', description: 'Viết và chạy code' }
 ];
 
 const form = reactive({

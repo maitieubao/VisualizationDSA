@@ -1,5 +1,5 @@
 <template>
-  <div class="rounded-2xl bg-bg-secondary/45 border border-white/5 backdrop-blur-xl p-6">
+  <div class="rounded-2xl bg-bg-secondary/45 border border-border-subtle backdrop-blur-xl p-6">
     <h3 class="text-sm font-semibold text-text-secondary uppercase tracking-wider mb-4">
       Bảng Vinh Danh Top 10 Tuần
     </h3>

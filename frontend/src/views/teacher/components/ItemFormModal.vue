@@ -5,7 +5,7 @@
         <div class="modal-header">
           <h3 class="modal-title">
             <BaseIcon :name="editingItem ? 'edit' : 'plus'" class="w-5 h-5 inline mr-2" />
-            {{ editingItem ? 'Chá»‰nh sá»­a BÃ i há»c' : 'ThÃªm BÃ i há»c má»›i' }}
+            {{ editingItem ? 'Chỉnh sửa Bài học' : 'Thêm Bài học mới' }}
           </h3>
           <button type="button" class="modal-close" @click="$emit('update:show', false)">
             <BaseIcon name="x" class="w-5 h-5" />
@@ -15,7 +15,7 @@
         <form @submit.prevent="handleSubmit" class="modal-body">
           
           <div class="form-field">
-            <label class="form-label">Loáº¡i ná»™i dung <span class="text-rose-400">*</span></label>
+            <label class="form-label">Loại nội dung <span class="text-accent-red">*</span></label>
             <div class="type-selector">
               <label 
                 v-for="type in itemTypes" 
@@ -33,7 +33,7 @@
           
           <div class="form-field" v-if="form.itemType !== 'CustomLesson'">
             <label class="form-label">
-              {{ linkedContentLabel }} <span class="text-rose-400">*</span>
+              {{ linkedContentLabel }} <span class="text-accent-red">*</span>
             </label>
             <div class="linked-content-selector">
               <select 
@@ -42,7 +42,7 @@
                 :disabled="!linkedContentOptions.length"
                 @change="updateLinkedContent"
               >
-                <option :value="null" disabled>-- Chá»n {{ linkedContentLabel.toLowerCase() }} --</option>
+                <option :value="null" disabled>-- Chọn {{ linkedContentLabel.toLowerCase() }} --</option>
                 <option 
                   v-for="opt in linkedContentOptions" 
                   :key="opt.id" 
@@ -52,7 +52,7 @@
                 </option>
               </select>
               <p v-if="!linkedContentOptions.length" class="form-hint">
-                ChÆ°a cÃ³ {{ linkedContentLabel.toLowerCase() }} nÃ o. HÃ£y táº¡o trÆ°á»›c á»Ÿ tab quáº£n lÃ½.
+                Chưa có {{ linkedContentLabel.toLowerCase() }} nào. Hãy tạo trước ở tab quản lý.
               </p>
             </div>
           </div>
@@ -61,7 +61,7 @@
           <div v-if="form.itemType === 'CustomLesson'" class="custom-lesson-editor">
             <CustomMarkdownEditor 
               v-model="form.customLessonContent" 
-              :placeholder="'Viáº¿t ná»™i dung bÃ i há»c báº±ng Markdown...'"
+              :placeholder="'Viết nội dung bài học bằng Markdown...'"
             />
           </div>
           
@@ -69,32 +69,32 @@
           <div class="form-section">
             <h4 class="form-section-title">
               <BaseIcon name="settings" class="w-4 h-4 inline mr-1" />
-              TÃ¹y chá»‰nh cho Module nÃ y
+              Tùy chỉnh cho Module này
             </h4>
             
             <div class="form-field">
-              <label class="form-label">TiÃªu Ä‘á» hiá»ƒn thá»‹ (ghi Ä‘Ã¨)</label>
+              <label class="form-label">Tiêu đề hiển thị (ghi đè)</label>
               <input 
                 v-model="form.overrideTitle" 
                 type="text" 
                 class="form-input" 
-                placeholder="Äá»ƒ trá»‘ng Ä‘á»ƒ dÃ¹ng tiÃªu Ä‘á» gá»‘c"
+                placeholder="Để trống để dùng tiêu đề gốc"
               />
             </div>
             
             <div class="form-field">
-              <label class="form-label">MÃ´ táº£ hiá»ƒn thá»‹ (ghi Ä‘Ã¨)</label>
+              <label class="form-label">Mô tả hiển thị (ghi đè)</label>
               <textarea 
                 v-model="form.overrideDescription" 
                 class="form-input form-textarea" 
-                placeholder="MÃ´ táº£ ngáº¯n gá»n cho há»c viÃªn..."
+                placeholder="Mô tả ngắn gọn cho học viên..."
                 rows="2"
               ></textarea>
             </div>
             
             <div class="form-row">
               <div class="form-field">
-                <label class="form-label">Thá»© tá»± <span class="text-rose-400">*</span></label>
+                <label class="form-label">Thứ tự <span class="text-accent-red">*</span></label>
                 <input 
                   v-model.number="form.orderIndex" 
                   type="number" 
@@ -105,7 +105,7 @@
               </div>
               
               <div class="form-field">
-                <label class="form-label">Má»Ÿ khÃ³a vÃ o</label>
+                <label class="form-label">Mở khóa vào</label>
                 <input 
                   v-model="form.unlockAt" 
                   type="datetime-local" 
@@ -116,7 +116,7 @@
             
             <div class="form-row">
               <div class="form-field">
-                <label class="form-label">Háº¡n ná»™p (Due date)</label>
+                <label class="form-label">Hạn nộp (Due date)</label>
                 <input 
                   v-model="form.dueAt" 
                   type="datetime-local" 
@@ -125,13 +125,13 @@
               </div>
               
               <div class="form-field">
-                <label class="form-label">Sá»‘ láº§n thá»­ tá»‘i Ä‘a (Quiz/Codelab)</label>
+                <label class="form-label">Số lần thử tối đa (Quiz/Codelab)</label>
                 <input 
                   v-model.number="form.maxAttempts" 
                   type="number" 
                   class="form-input" 
                   min="1"
-                  placeholder="KhÃ´ng giá»›i háº¡n"
+                  placeholder="Không giới hạn"
                 />
               </div>
             </div>
@@ -143,7 +143,7 @@
                   type="checkbox" 
                   class="form-checkbox"
                 />
-                <span>Báº¯t buá»™c hoÃ n thÃ nh Ä‘á»ƒ má»Ÿ khÃ³a bÃ i tiáº¿p theo</span>
+                <span>Bắt buộc hoàn thành để mở khóa bài tiếp theo</span>
               </label>
             </div>
             
@@ -154,24 +154,24 @@
                   type="checkbox" 
                   class="form-checkbox"
                 />
-                <span>áº¨n bÃ i há»c nÃ y khá»i há»c viÃªn</span>
+                <span>Ẩn bài học này khỏi học viên</span>
               </label>
             </div>
             
             
             <div class="form-field" v-if="parentModule && parentModule.items.length > 1">
-              <label class="form-label">Äiá»u kiá»‡n má»Ÿ khÃ³a (Prerequisite)</label>
+              <label class="form-label">Điều kiện mở khóa (Prerequisite)</label>
               <select v-model="form.prerequisiteItemId" class="form-input">
-                <option value="">KhÃ´ng cÃ³ (Má»Ÿ ngay khi module má»Ÿ)</option>
+                <option value="">Không có (Mở ngay khi module mở)</option>
                 <option 
                   v-for="item in parentModule.items" 
                   :key="item.id" 
                   :value="item.id"
                 >
-                  {{ item.overrideTitle || item.lessonTitle || item.quizTitle || item.codelabTitle || 'Untitled' }} (BÆ°á»›c {{ parentModule.items.indexOf(item) + 1 }})
+                  {{ item.overrideTitle || item.lessonTitle || item.quizTitle || item.codelabTitle || 'Untitled' }} (Bước {{ parentModule.items.indexOf(item) + 1 }})
                 </option>
               </select>
-              <p class="form-hint">Chá»‰ má»Ÿ khÃ³a khi bÃ i há»c trÆ°á»›c Ä‘Ã£ hoÃ n thÃ nh</p>
+              <p class="form-hint">Chỉ mở khóa khi bài học trước đã hoàn thành</p>
             </div>
             
             <div class="form-field">
@@ -181,21 +181,21 @@
                   type="checkbox" 
                   class="form-checkbox"
                 />
-                <span>YÃªu cáº§u hoÃ n thÃ nh theo thá»© tá»± (Sequential)</span>
+                <span>Yêu cầu hoàn thành theo thứ tự (Sequential)</span>
               </label>
             </div>
           </div>
           
           <div class="modal-footer">
             <button type="button" class="btn-secondary" @click="$emit('update:show', false)">
-              Há»§y
+              Hủy
             </button>
             <button type="submit" class="btn-primary" :disabled="saving || !isValid">
               <span v-if="saving" class="flex items-center gap-2">
                 <span class="spinner-sm"></span>
-                Äang lÆ°u...
+                Đang lưu...
               </span>
-              <span v-else>{{ editingItem ? 'Cáº­p nháº­t' : 'Táº¡o BÃ i há»c' }}</span>
+              <span v-else>{{ editingItem ? 'Cập nhật' : 'Tạo Bài học' }}</span>
             </button>
           </div>
         </form>
@@ -205,7 +205,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch } from 'vue';
+import { ref, computed, watch, reactive } from 'vue';
 import BaseIcon from '@/shared/components/BaseIcon.vue';
 import CustomMarkdownEditor from '@/components/editor/CustomMarkdownEditor.vue';
 
@@ -226,11 +226,11 @@ const emit = defineEmits<Emits>();
 const saving = ref(false);
 const linkedContentId = ref<string | null>(null);
 
-const itemTypes = [
-  { value: 'Lesson', label: 'BÃ i há»c (Lesson)', icon: 'book-open' },
-  { value: 'Quiz', label: 'Tráº¯c nghiá»‡m (Quiz)', icon: 'help-circle' },
-  { value: 'Codelab', label: 'Thá»±c hÃ nh Code (Codelab)', icon: 'code' },
-  { value: 'CustomLesson', label: 'Tá»± soáº¡n bÃ i há»c', icon: 'file-text' }
+const itemTypes: Array<{ value: 'Lesson' | 'Quiz' | 'Codelab' | 'CustomLesson'; label: string; icon: string }> = [
+  { value: 'Lesson', label: 'Bài học (Lesson)', icon: 'book-open' },
+  { value: 'Quiz', label: 'Trắc nghiệm (Quiz)', icon: 'help-circle' },
+  { value: 'Codelab', label: 'Thực hành Code (Codelab)', icon: 'code' },
+  { value: 'CustomLesson', label: 'Tự soạn bài học', icon: 'file-text' }
 ];
 
 const form = reactive({
@@ -258,8 +258,8 @@ const linkedContentOptions = computed(() => {
 
 const linkedContentLabel = computed(() => {
   switch (form.itemType) {
-    case 'Lesson': return 'BÃ i há»c';
-    case 'Quiz': return 'Tráº¯c nghiá»‡m';
+    case 'Lesson': return 'Bài học';
+    case 'Quiz': return 'Trắc nghiệm';
     case 'Codelab': return 'Codelab';
     default: return '';
   }

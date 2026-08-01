@@ -67,7 +67,7 @@ export function generateBubbleSortFrames(inputArray: number[]): SortFrame[] {
     });
   }
 
-  sortedIndices.push(0);
+  if (n > 0) sortedIndices.push(0);
   frames.push({
     stepIndex: step++,
     arrayState: [...arr],

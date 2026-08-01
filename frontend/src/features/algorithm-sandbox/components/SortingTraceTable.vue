@@ -1,15 +1,5 @@
 <template>
   <div class="sorting-trace-table flex flex-col min-h-0 w-full" data-tour-id="trace-table">
-    <!-- Header -->
-    <div class="shrink-0 flex items-center justify-between px-3 py-1.5 border-b" style="border-color: var(--vis-panel-border)">
-      <span class="text-[10px] font-bold text-text-muted uppercase tracking-wider font-mono">
-        BẢNG MÔ PHỎNG BIẾN
-      </span>
-      <span class="text-[10px] font-mono text-text-muted">
-        {{ frames.length }} bước
-      </span>
-    </div>
-
     <!-- Table -->
     <div class="flex-1 min-h-0 overflow-auto relative">
       <table class="w-full h-full border-collapse text-[11px] font-mono leading-tight">

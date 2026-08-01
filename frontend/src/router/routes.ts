@@ -13,6 +13,7 @@ export const routes: RouteRecordRaw[] = [
   
   { path: '/sorting',       name: 'sorting',       component: () => import('../views/sorting/SortingView.vue'),          meta: { title: 'Sắp xếp',         icon: 'sorting' } },
   { path: '/code-ide',      name: 'code-ide',      component: () => import('../views/code-ide/CodeIDEView.vue'),          meta: { title: 'Gỡ lỗi Code',     icon: 'code-ide' } },
+  { path: '/playground',    name: 'playground',    component: () => import('../views/playground/PlaygroundView.vue'),      meta: { title: 'Playground',       icon: 'playground' } },
   { path: '/graph',         name: 'graph',         component: () => import('../views/graph/GraphView.vue'),            meta: { title: 'Đồ thị',          icon: 'graph' } },
   { path: '/checkout',      name: 'checkout',      component: () => import('../views/checkout/PremiumCheckoutView.vue'),  meta: { title: 'Nâng cấp Premium', icon: 'checkout' } },
 

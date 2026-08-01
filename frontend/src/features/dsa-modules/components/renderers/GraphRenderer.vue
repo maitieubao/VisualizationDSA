@@ -14,9 +14,9 @@
 
     
     <div v-if="frame?.graphNodes?.length" class="absolute top-3 right-3 flex flex-col gap-1 z-10">
-      <button @click="zoomIn" class="w-8 h-8 rounded-lg flex items-center justify-center text-sm font-bold text-text-primary hover:bg-white/10 transition" style="background:rgba(15,23,42,0.8);backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,0.05)" title="Phóng to">+</button>
-      <button @click="zoomOut" class="w-8 h-8 rounded-lg flex items-center justify-center text-sm font-bold text-text-primary hover:bg-white/10 transition" style="background:rgba(15,23,42,0.8);backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,0.05)" title="Thu nhỏ">−</button>
-      <button @click="resetView" class="w-8 h-8 rounded-lg flex items-center justify-center text-xs font-bold text-text-primary hover:bg-white/10 transition" style="background:rgba(15,23,42,0.8);backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,0.05)" title="Đặt lại">⟳</button>
+      <button @click="zoomIn" class="w-8 h-8 rounded-lg flex items-center justify-center text-sm font-bold text-text-primary hover:bg-bg-hover transition" style="background:rgba(15,23,42,0.8);backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,0.05)" title="Phóng to">+</button>
+      <button @click="zoomOut" class="w-8 h-8 rounded-lg flex items-center justify-center text-sm font-bold text-text-primary hover:bg-bg-hover transition" style="background:rgba(15,23,42,0.8);backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,0.05)" title="Thu nhỏ">−</button>
+      <button @click="resetView" class="w-8 h-8 rounded-lg flex items-center justify-center text-xs font-bold text-text-primary hover:bg-bg-hover transition" style="background:rgba(15,23,42,0.8);backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,0.05)" title="Đặt lại">⟳</button>
     </div>
 
     
@@ -31,16 +31,16 @@
         <span class="w-2.5 h-2.5 rounded-full" style="background:#06B6D4"></span> Frontier
       </span>
       <span v-if="hasDistances" class="flex items-center gap-1 px-2 py-1 rounded-md" style="background:rgba(15,23,42,0.8);backdrop-filter:blur(8px)">
-        <span class="text-cyan-400 font-mono">dist</span> Labels
+        <span class="text-accent-cyan font-mono">dist</span> Labels
       </span>
     </div>
 
     
     <div v-if="showDistanceTable && distances" class="absolute top-3 right-12 text-[10px] p-2 rounded-lg max-h-[40%] overflow-auto z-10" style="background:rgba(15,23,42,0.8);backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,0.05)">
       <div class="font-bold text-accent mb-1">Distances</div>
-      <div v-for="(d, nodeId) in sortedDistances" :key="nodeId" class="flex justify-between gap-2">
+      <div v-for="([nodeId, d]) in sortedDistances" :key="nodeId" class="flex justify-between gap-2">
         <span>{{ getName(nodeId) }}</span>
-        <span class="font-mono" :class="d === Infinity ? 'text-text-muted' : 'text-cyan-400'">{{ d === Infinity ? '∞' : d }}</span>
+        <span class="font-mono" :class="d === Infinity ? 'text-text-muted' : 'text-accent-cyan'">{{ d === Infinity ? '∞' : d }}</span>
       </div>
     </div>
   </div>
@@ -67,7 +67,7 @@ let panStartX = 0;
 let panStartY = 0;
 let panStartOX = 0;
 let panStartOY = 0;
-let hoveredNode: GraphNodeDTO | null = null;
+let hoveredNode = ref<GraphNodeDTO | null>(null);
 let dragNode: GraphNodeDTO | null = null;
 let dragStartX = 0;
 let dragStartY = 0;
@@ -88,10 +88,11 @@ const sortedDistances = computed(() => {
   return Object.entries(d).sort((a, b) => Number(a[0]) - Number(b[0]));
 });
 
-const getName = (nodeId: number) => {
+const getName = (nodeId: number | string) => {
   const nodes = props.frame?.graphNodes;
-  const node = nodes?.find(n => n.id === nodeId);
-  return node?.label ?? `V${nodeId}`;
+  const numericId = typeof nodeId === 'string' ? Number(nodeId) : nodeId;
+  const node = nodes?.find(n => n.id === numericId);
+  return node?.label ?? `V${numericId}`;
 };
 
 const showDistanceTable = computed(() => {
@@ -165,8 +166,8 @@ function onMouseMove(e: MouseEvent): void {
     return;
   }
 
-  hoveredNode = findNodeAt(world.x, world.y);
-  canvas.style.cursor = hoveredNode ? 'pointer' : 'grab';
+  hoveredNode.value = findNodeAt(world.x, world.y);
+  canvas.style.cursor = hoveredNode.value ? 'pointer' : 'grab';
   renderCanvas();
 }
 
@@ -390,7 +391,7 @@ function renderCanvas(): void {
     const isCompare = compareIds.has(node.id);
     const isSorted = sortedIds.has(node.id);
     const isDimmed = dimmedIds.has(node.id);
-    const isHovered = hoveredNode?.id === node.id;
+    const isHovered = hoveredNode.value?.id === node.id;
 
     const nodeRadius = isHovered ? 22 : 18;
 
@@ -450,15 +451,16 @@ function renderCanvas(): void {
   }
 
   
-  if (frame.currentPath && frame.currentPath.length > 1) {
+  const currentPath = frame.currentPath;
+  if (currentPath && currentPath.length > 1) {
     ctx.beginPath();
     ctx.strokeStyle = '#F59E0B';
     ctx.lineWidth = 4;
     ctx.setLineDash([8, 4]);
     ctx.lineCap = 'round';
     ctx.lineJoin = 'round';
-    for (let i = 0; i < frame.currentPath.length; i++) {
-      const node = nodes.find(n => n.id === frame.currentPath[i]);
+    for (let i = 0; i < currentPath.length; i++) {
+      const node = nodes.find(n => n.id === currentPath[i]);
       if (!node) continue;
       if (i === 0) ctx.moveTo(node.x, node.y);
       else ctx.lineTo(node.x, node.y);

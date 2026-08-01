@@ -40,8 +40,11 @@ describe('E2E Learning Flow Integration Test (Vitest Mock)', () => {
       currentLevel: 2,
       xpToNextLevel: 150,
       levelProgressPercent: 50,
+      badgesEarned: 1,
+      modulesCompleted: 1,
       currentStreak: 1,
-      completedModuleIds: ['lesson-1-id'] 
+      completedModuleIds: ['lesson-1-id'],
+      badges: []
     });
 
     await progressStore.loadProgress();
@@ -51,11 +54,9 @@ describe('E2E Learning Flow Integration Test (Vitest Mock)', () => {
 
     
     vi.mocked(userProgressApi.syncXPToServer).mockResolvedValueOnce({
+      message: 'OK',
       totalXP: 150,
-      currentLevel: 2,
-      xpToNextLevel: 100,
-      levelProgressPercent: 75,
-      currentStreak: 1
+      currentLevel: 2
     });
     vi.mocked(userProgressApi.markModuleComplete).mockResolvedValueOnce();
 
@@ -68,11 +69,9 @@ describe('E2E Learning Flow Integration Test (Vitest Mock)', () => {
     
     
     vi.mocked(userProgressApi.syncXPToServer).mockResolvedValueOnce({
+      message: 'OK',
       totalXP: 250,
-      currentLevel: 3,
-      xpToNextLevel: 200,
-      levelProgressPercent: 25,
-      currentStreak: 1
+      currentLevel: 3
     });
     vi.mocked(userProgressApi.markModuleComplete).mockResolvedValueOnce();
 
@@ -93,8 +92,11 @@ describe('E2E Learning Flow Integration Test (Vitest Mock)', () => {
       currentLevel: 1,
       xpToNextLevel: 50,
       levelProgressPercent: 50,
+      badgesEarned: 0,
+      modulesCompleted: 0,
       currentStreak: 1,
-      completedModuleIds: []
+      completedModuleIds: [],
+      badges: []
     });
 
     await progressStore.loadProgress();

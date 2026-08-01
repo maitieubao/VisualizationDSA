@@ -49,18 +49,18 @@
       <div class="form-row">
         <label class="form-label">Ảnh bìa khóa học</label>
         <div class="flex items-center gap-4">
-          <input type="file" accept="image/*" @change="uploadCoverImage" class="file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-indigo-500/20 file:text-indigo-400 hover:file:bg-indigo-500/30 text-slate-300 text-sm" />
-          <span v-if="uploadingImage" class="text-xs text-indigo-400 animate-pulse">Đang tải...</span>
+          <input type="file" accept="image/*" @change="uploadCoverImage" class="file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-accent/20 file:text-accent hover:file:bg-accent/30 text-text-secondary text-sm" />
+          <span v-if="uploadingImage" class="text-xs text-accent animate-pulse">Đang tải...</span>
         </div>
         <div v-if="courseForm.coverImageUrl" class="mt-3">
-          <img :src="courseForm.coverImageUrl.startsWith('http') ? courseForm.coverImageUrl : `${BASE_URL}${courseForm.coverImageUrl}`" alt="Cover Preview" class="w-48 h-28 object-cover rounded-xl border border-white/10 shadow-lg" />
+          <img :src="courseForm.coverImageUrl.startsWith('http') ? courseForm.coverImageUrl : `${BASE_URL}${courseForm.coverImageUrl}`" alt="Cover Preview" class="w-48 h-28 object-cover rounded-xl border border-border-subtle shadow-lg" />
         </div>
       </div>
       <div class="form-row flex items-center gap-6 mt-4">
-        <label class="flex items-center gap-2 cursor-pointer text-slate-300 text-sm">
+        <label class="flex items-center gap-2 cursor-pointer text-text-secondary text-sm">
           <input type="checkbox" v-model="courseForm.isPremium" /> Yêu cầu tài khoản Premium
         </label>
-        <label class="flex items-center gap-2 cursor-pointer text-slate-300 text-sm">
+        <label class="flex items-center gap-2 cursor-pointer text-text-secondary text-sm">
           <input type="checkbox" v-model="courseForm.isPublished" /> Xuất bản khóa học ngay
         </label>
       </div>
@@ -149,7 +149,7 @@
           </thead>
           <tbody>
             <template v-for="c in coursesList" :key="c.id">
-              <tr @click="toggleCourseAccordion(String(c.id))" class="cursor-pointer hover:bg-white/5 transition-colors">
+              <tr @click="toggleCourseAccordion(String(c.id))" class="cursor-pointer hover:bg-bg-hover transition-colors">
                 <td class="font-bold text-white">
                   <span class="inline-block mr-1 transition-transform duration-200" :style="expandedCourseId === String(c.id) ? 'transform: rotate(90deg)' : ''">▶</span>
                   {{ c.title }}
@@ -157,10 +157,10 @@
                 <td><span class="topic-badge" :class="'topic-' + c.category">{{ formatTopic(c.category) }}</span></td>
                 <td><span class="diff-badge" :class="'diff-' + c.difficulty?.toLowerCase()">{{ formatDifficulty(c.difficulty?.toLowerCase()) }}</span></td>
                 <td class="font-bold">
-                  <span v-if="c.isPremium" class="text-amber-400">👑 Premium</span>
-                  <span v-else class="text-slate-400">Miễn phí</span>
+                  <span v-if="c.isPremium" class="text-accent-yellow">👑 Premium</span>
+                  <span v-else class="text-text-muted">Miễn phí</span>
                 </td>
-                <td class="font-mono text-slate-300">{{ c.totalLessons }} bài</td>
+                <td class="font-mono text-text-secondary">{{ c.totalLessons }} bài</td>
                 <td>
                   <div class="flex justify-center gap-2" @click.stop>
                     <button type="button" class="btn-action btn-action--edit" @click="editCourse(c)" title="Chỉnh sửa">
@@ -181,7 +181,7 @@
                   </div>
                   <div v-else class="quiz-detail-panel animate-fade-in">
                     <div class="flex justify-between items-center mb-4">
-                      <h4 class="detail-title text-indigo-400 font-bold m-0"><BaseIcon name="academic" class="w-4 h-4 text-indigo-400 inline mr-1 align-text-bottom" /> Danh sách bài giảng của khóa</h4>
+                      <h4 class="detail-title text-accent font-bold m-0"><BaseIcon name="academic" class="w-4 h-4 text-accent inline mr-1 align-text-bottom" /> Danh sách bài giảng của khóa</h4>
                       <button type="button" class="btn-add-inline" @click="addNewLessonToCourse(c)">
                         <BaseIcon name="plus" class="w-3.5 h-3.5 inline mr-1 align-text-bottom" /> Thêm bài giảng mới
                       </button>
@@ -190,14 +190,14 @@
                       Khóa học này chưa có bài giảng nào. Hãy thêm mới!
                     </div>
                     <div v-else class="space-y-3">
-                      <div v-for="l in courseLessons[String(c.id)]" :key="l.id" class="sub-question-card flex justify-between items-center p-4 border border-white/5 bg-slate-950/20 rounded-xl">
+                      <div v-for="l in courseLessons[String(c.id)]" :key="l.id" class="sub-question-card flex justify-between items-center p-4 border border-border-subtle bg-bg-secondary/20 rounded-xl">
                         <div>
-                          <span class="text-xs text-indigo-300 font-mono mr-2">#{{ l.orderIndex }}</span>
+                          <span class="text-xs text-accent font-mono mr-2">#{{ l.orderIndex }}</span>
                           <span class="text-sm font-bold text-white">{{ l.title }}</span>
-                          <div class="flex gap-3 text-xs text-slate-400 mt-1">
+                          <div class="flex gap-3 text-xs text-text-muted mt-1">
                             <span>⚡ {{ l.xpReward }} XP</span>
-                            <span v-if="l.sandboxType" class="text-indigo-400 uppercase text-[10px] font-bold">{{ l.sandboxType }}</span>
-                            <span v-if="l.quizId" class="text-purple-400 text-[10px]">Có liên kết quiz</span>
+                            <span v-if="l.sandboxType" class="text-accent uppercase text-[10px] font-bold">{{ l.sandboxType }}</span>
+                            <span v-if="l.quizId" class="text-accent-purple text-[10px]">Có liên kết quiz</span>
                           </div>
                         </div>
                         <div class="flex gap-2">

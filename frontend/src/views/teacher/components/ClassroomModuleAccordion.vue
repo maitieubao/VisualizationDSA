@@ -1,6 +1,6 @@
 <template>
   <div 
-    class="module-accordion bg-slate-900/60 border border-white/5 rounded-2xl overflow-hidden"
+    class="module-accordion bg-bg-secondary border border-border-subtle rounded-2xl overflow-hidden"
     :class="{ 'module-hidden': module.isHidden }"
     @dragstart="onDragStartModule"
     @dragover.prevent="onDragOverModule"
@@ -11,11 +11,11 @@
     
     <button
       type="button"
-      class="module-header w-full flex items-center justify-between p-5 cursor-pointer hover:bg-white/5 transition-colors"
+      class="module-header w-full flex items-center justify-between p-5 cursor-pointer hover:bg-bg-hover transition-colors"
       @click="toggleExpanded"
     >
       <div class="flex items-center gap-4 flex-1 min-w-0">
-        <div class="flex items-center justify-center w-10 h-10 rounded-xl bg-indigo-500/20 border border-indigo-500/30 text-indigo-400 font-bold text-lg">
+        <div class="flex items-center justify-center w-10 h-10 rounded-xl bg-accent/20 border border-accent/30 text-accent font-bold text-lg">
           {{ moduleIndex + 1 }}
         </div>
         <div class="flex-1 min-w-0">
@@ -27,17 +27,17 @@
               {{ formatDate(module.unlockAt) }}
             </span>
           </div>
-          <p v-if="module.description" class="text-slate-400 text-sm mt-1 line-clamp-1">{{ module.description }}</p>
+          <p v-if="module.description" class="text-text-muted text-sm mt-1 line-clamp-1">{{ module.description }}</p>
         </div>
       </div>
       
       <div class="flex items-center gap-2">
-        <span class="text-slate-400 text-sm font-mono">
+        <span class="text-text-muted text-sm font-mono">
           {{ module.items.length }} bài
         </span>
         <BaseIcon 
           :name="expanded ? 'chevron-up' : 'chevron-down'" 
-          class="w-5 h-5 text-slate-400 transition-transform"
+          class="w-5 h-5 text-text-muted transition-transform"
         />
       </div>
     </button>
@@ -45,7 +45,7 @@
     
     <div 
       v-show="expanded"
-      class="module-items px-5 pb-5 border-t border-white/5 animate-slide-down"
+      class="module-items px-5 pb-5 border-t border-border-subtle animate-slide-down"
     >
       
       <div class="flex gap-2 mb-4 pt-4">
@@ -78,7 +78,7 @@
       
       <div v-if="module.items.length === 0" class="empty-items text-center py-8">
         <div class="text-4xl mb-2">📝</div>
-        <p class="text-slate-400">Module này chưa có bài học nào</p>
+        <p class="text-text-muted">Module này chưa có bài học nào</p>
         <button class="btn-primary mt-4" @click="$emit('add-item', module)">
           <BaseIcon name="plus" class="w-4 h-4 inline mr-1" /> Thêm bài học đầu tiên
         </button>
@@ -99,7 +99,9 @@
           <ModuleItemRow 
             :module="module"
             :item="item"
-            :item-index="index"
+            :index="Number(index)"
+            :is-dragging="false"
+            :is-drag-over="false"
             @edit-item="$emit('edit-item', module, item)"
             @delete-item="$emit('delete-item', module, item)"
             @drag-start="$emit('drag-start-item', module, item)"
@@ -124,6 +126,7 @@ interface Props {
 
 const props = defineProps<Props>();
 const emit = defineEmits<{
+  'toggle-expanded': [any];
   'add-item': [any];
   'edit-module': [any];
   'delete-module': [any];
@@ -168,11 +171,11 @@ function onDropModule(e: DragEvent) {
   emit('drop-module', props.module);
 }
 
-function onDragStartItem(item: any, index: number) {
+function onDragStartItem(item: any, index: number | string) {
   
 }
 
-function onDragOverItem(item: any, index: number) {
+function onDragOverItem(item: any, index: number | string) {
   
 }
 
@@ -180,7 +183,7 @@ function onDragLeaveItem() {
   
 }
 
-function onDropItem(item: any, index: number) {
+function onDropItem(item: any, index: number | string) {
   
 }
 </script>

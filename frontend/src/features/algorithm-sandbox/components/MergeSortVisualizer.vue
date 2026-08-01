@@ -1,24 +1,6 @@
 <template>
-  <div class="h-full w-full flex flex-col gap-4 items-center px-4 pb-4 overflow-y-auto" :style="containerStyle">
-    
-    <div class="phase-banner">
-      <div class="flex items-center gap-2">
-        <span class="state-label">Trạng thái:</span>
-        <span class="state-desc">{{ frame?.description || 'Khởi tạo' }}</span>
-      </div>
-      <span
-        class="phase-badge"
-        :class="isMergePhase ? 'merge' : 'split'"
-      >
-        {{ isMergePhase ? 'Gộp' : 'Chia' }}
-      </span>
-    </div>
-
-    
-    <div
-      class="tree-view-container"
-      :style="{ height: treeContainerHeight + 'px' }"
-    >
+  <div class="h-full w-full flex items-center justify-center px-4 overflow-x-auto" :style="containerStyle">
+    <div class="tree-view-container" :style="{ height: treeContainerHeight + 'px' }">
       <div
         class="tree-scroll-area"
         :style="{ transform: `translateY(${-visibleLevelOffset * TREE_ROW_HEIGHT}px)` }"
@@ -57,18 +39,12 @@
         </div>
       </div>
     </div>
-
-    
-    <div class="inspector-section">
-      <MergeInspector :frame="frame" />
-    </div>
   </div>
 </template>
 
 <script setup lang="ts">
 import { computed } from 'vue';
 import type { SortFrame, SubArray } from '../types/sorting.types';
-import MergeInspector from './MergeInspector.vue';
 
 const TREE_ROW_HEIGHT = 104;
 
@@ -102,12 +78,6 @@ const allLevels = computed(() => {
 
 const treeContainerHeight = computed(() => {
   return Math.min(allLevels.value.length, 3) * TREE_ROW_HEIGHT;
-});
-
-const isMergePhase = computed(() => {
-  if (!props.frame) return false;
-  const desc = props.frame.description.toLowerCase();
-  return desc.includes('ghi đè') || desc.includes('so sánh') || desc.includes('sao chép') || desc.includes('hoàn thành');
 });
 
 const activeSubarray = computed(() => {

@@ -18,6 +18,7 @@
     "@vueuse/motion": "^3.0.3",
     "acorn": "^8.16.0",
     "acorn-walk": "^8.3.5",
+    "axios": "^1.19.0",
     "canvas-confetti": "^1.9.4",
     "chart.js": "^4.5.1",
     "escodegen": "^2.1.0",

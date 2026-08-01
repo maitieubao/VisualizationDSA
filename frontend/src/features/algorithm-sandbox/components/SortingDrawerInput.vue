@@ -63,7 +63,7 @@
         
         <div class="space-y-1.5">
           <div class="flex items-center justify-between text-xs">
-            <span class="font-semibold text-slate-400 uppercase tracking-wide">Số lượng phần tử (N):</span>
+            <span class="font-semibold text-text-muted uppercase tracking-wide">Số lượng phần tử (N):</span>
             <span class="font-mono font-bold text-accent">{{ arraySize }}</span>
           </div>
           <input

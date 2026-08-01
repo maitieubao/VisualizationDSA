@@ -42,9 +42,12 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch, onMounted, nextTick } from 'vue';
+import { ref, watch, onMounted, onBeforeUnmount, nextTick } from 'vue';
+import { useRouter } from 'vue-router';
 import { marked } from 'marked';
 import { createHighlighter } from 'shiki';
+import { getPlaygroundDemo } from '../../html-playground/demos/playgroundDemos';
+import { PlaygroundUrlCodec } from '../../html-playground/engine/PlaygroundUrlCodec';
 import '../styles/vue-docs-theme.css';
 
 const props = defineProps<{
@@ -57,6 +60,8 @@ const emit = defineEmits<{
   (e: 'headings-parsed', headings: { id: string; title: string; level: number }[]): void;
 }>();
 
+const router = useRouter();
+
 const title = ref('');
 const description = ref('');
 const htmlContent = ref('');
@@ -64,6 +69,39 @@ const loading = ref(true);
 const markdownContainer = ref<HTMLElement | null>(null);
 
 let highlighter: any = null;
+let containerListenersAttached = false;
+
+const ensureContainerListeners = () => {
+  if (containerListenersAttached || !markdownContainer.value) return;
+  containerListenersAttached = true;
+  markdownContainer.value.addEventListener('click', handleContainerClick);
+  markdownContainer.value.addEventListener('change', handleContainerChange);
+};
+
+const handleContainerClick = (event: Event) => {
+  const target = (event.target as HTMLElement).closest('a.playground-demo-link');
+  if (target) {
+    event.preventDefault();
+    const url = target.getAttribute('data-playground-url') || target.getAttribute('href');
+    if (url) {
+      const [, query] = url.split('?');
+      router.push({ path: '/playground', query: query ? { code: new URLSearchParams(query).get('code') || '' } : {} });
+    }
+  }
+};
+
+const handleContainerChange = (event: Event) => {
+  const select = event.target as HTMLSelectElement;
+  if (!select.classList.contains('dual-code-select')) return;
+  const block = select.closest('.dual-code-block');
+  if (!block) return;
+  const jsPane = block.querySelector('.dual-code-pane-js') as HTMLElement | null;
+  const csPane = block.querySelector('.dual-code-pane-cs') as HTMLElement | null;
+  const isCs = select.value === 'cs';
+  if (jsPane) jsPane.style.display = isCs ? 'none' : '';
+  if (csPane) csPane.style.display = isCs ? '' : 'none';
+};
+
 
 const preprocessMarkdown = (raw: string) => {
   let content = raw;
@@ -182,6 +220,62 @@ const renderMarkdown = async () => {
         return `<div class="mermaid-diagram flex justify-center my-6" data-mermaid-code="${encoded}"><div style="color:#888;font-size:14px;">⏳ Đang vẽ biểu đồ...</div></div>`;
       }
       
+      
+      const playgroundMatch = validLang.match(/^playground:([a-zA-Z0-9-]+)$/);
+      if (playgroundMatch) {
+        const demo = getPlaygroundDemo(playgroundMatch[1]);
+        if (demo) {
+          const payload = PlaygroundUrlCodec.encode(demo.source);
+          const shareUrl = `#/playground?code=${encodeURIComponent(payload)}`;
+          return `<div class="playground-demo-card" data-demo-id="${demo.id}">
+            <div class="playground-demo-info">
+              <span class="playground-demo-icon">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+              </span>
+              <div class="playground-demo-text">
+                <strong>${demo.title}</strong>
+                <span>${demo.description}</span>
+              </div>
+            </div>
+            <a class="playground-demo-link" href="${shareUrl}" data-playground-url="${shareUrl}" title="Mở trong Playground với code mẫu có sẵn">
+              ▶ Mở Playground
+            </a>
+          </div>`;
+        }
+      }
+      
+      
+      const dualMatch = validLang.match(/^dual:([a-zA-Z0-9-]+)$/);
+      if (dualMatch) {
+        const demo = getPlaygroundDemo(dualMatch[1]);
+        if (demo) {
+          let jsHtml = '';
+          let csHtml = '';
+          try {
+            jsHtml = highlighter.codeToHtml(demo.source.js, { lang: 'javascript', theme: 'one-dark-pro' });
+          } catch (e) {
+            jsHtml = `<pre><code>${demo.source.js}</code></pre>`;
+          }
+          try {
+            csHtml = highlighter.codeToHtml(code, { lang: 'csharp', theme: 'one-dark-pro' });
+          } catch (e) {
+            csHtml = `<pre><code>${code}</code></pre>`;
+          }
+          
+          return `<div class="dual-code-block" data-demo-id="${demo.id}">
+            <div class="dual-code-header">
+              <span class="dual-code-label">Code mẫu — ${demo.title}</span>
+              <select class="dual-code-select" aria-label="Chọn ngôn ngữ">
+                <option value="js" selected>JavaScript</option>
+                <option value="cs">C#</option>
+              </select>
+            </div>
+            <div class="dual-code-pane dual-code-pane-js">${jsHtml}</div>
+            <div class="dual-code-pane dual-code-pane-cs" style="display:none;">${csHtml}</div>
+          </div>`;
+        }
+      }
+      
       try {
         const highlighted = highlighter.codeToHtml(code, {
           lang: validLang,
@@ -192,7 +286,7 @@ const renderMarkdown = async () => {
         
         return `<div class="language-${validLang} relative group">
           <div class="absolute top-3 right-3 z-10 flex items-center">
-            <button class="copy-code-btn opacity-0 group-hover:opacity-100 transition-all flex items-center justify-center w-8 h-8 rounded-md bg-transparent hover:bg-white/10 text-gray-400 hover:text-white" onclick="navigator.clipboard.writeText(decodeURIComponent('${encodeURIComponent(code)}'))" title="Copy code">
+            <button class="copy-code-btn opacity-0 group-hover:opacity-100 transition-all flex items-center justify-center w-8 h-8 rounded-md bg-transparent hover:bg-bg-hover text-text-muted hover:text-white" onclick="navigator.clipboard.writeText(decodeURIComponent('${encodeURIComponent(code)}'))" title="Copy code">
               ${svgIcon}
             </button>
           </div>
@@ -249,6 +343,8 @@ const renderMarkdown = async () => {
     
     await nextTick(); 
     
+    ensureContainerListeners();
+    
     extractHeadings(htmlContent.value);
     
     if (!markdownContainer.value) return;
@@ -256,7 +352,7 @@ const renderMarkdown = async () => {
     if (diagrams.length === 0) return;
     
     try {
-      const { default: mermaid } = await import( '/node_modules/mermaid/dist/mermaid.esm.min.mjs');
+      const { default: mermaid } = await import('mermaid');
       mermaid.initialize({
         startOnLoad: false,
         theme: 'default',
@@ -287,7 +383,7 @@ const renderMarkdown = async () => {
     }
   } catch (error) {
     console.error("Lỗi khi render markdown:", error);
-    htmlContent.value = `<div class="text-red-500">Lỗi khi phân giải tài liệu: ${error}</div>`;
+    htmlContent.value = `<div class="text-accent-red">Lỗi khi phân giải tài liệu: ${error}</div>`;
     loading.value = false;
   }
 };
@@ -298,5 +394,13 @@ watch(() => props.rawMarkdown, () => {
 
 onMounted(() => {
   renderMarkdown();
+});
+
+onBeforeUnmount(() => {
+  if (markdownContainer.value && containerListenersAttached) {
+    markdownContainer.value.removeEventListener('click', handleContainerClick);
+    markdownContainer.value.removeEventListener('change', handleContainerChange);
+    containerListenersAttached = false;
+  }
 });
 </script>

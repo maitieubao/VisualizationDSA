@@ -3,6 +3,8 @@ using Microsoft.AspNetCore.Authorization;
 using MediatR;
 using System;
 using System.Threading.Tasks;
+using VisualizationDSA.Application.Features.Codelabs.Commands;
+using VisualizationDSA.Application.Features.Codelabs.Queries;
 using VisualizationDSA.WebApi.Filters;
 
 namespace VisualizationDSA.WebApi.Controllers
@@ -22,155 +24,132 @@ namespace VisualizationDSA.WebApi.Controllers
         [HttpGet]
         public async Task<IActionResult> GetCodelabs(
             [FromQuery] string? tag,
-            [FromQuery] string? difficulty,
+            [FromQuery] int? difficulty,
             [FromQuery] string? search,
+            [FromQuery] string? language,
             [FromQuery] int page = 1,
-            [FromQuery] int pageSize = 20)
+            [FromQuery] int pageSize = 50)
         {
-            
-            return Ok(new { message = "Get codelabs endpoint - implement query" });
+            var items = await _mediator.Send(new GetCodelabsQuery
+            {
+                Tag = tag,
+                Difficulty = difficulty,
+                Search = search,
+                Language = language,
+                Page = page,
+                PageSize = pageSize
+            });
+            return Ok(items);
         }
 
         [HttpGet("{id}")]
         public async Task<IActionResult> GetCodelab(Guid id)
         {
-            
-            return Ok(new { message = "Get codelab endpoint - implement query" });
+            var result = await _mediator.Send(new GetCodelabByIdQuery { CodelabId = id });
+            return Ok(result);
         }
 
         [HttpPost]
         [Authorize(Roles = "Teacher,Admin")]
-        public async Task<IActionResult> CreateCodelab([FromBody] CreateCodelabRequest request)
+        public async Task<IActionResult> CreateCodelab([FromBody] CreateCodelabCommand command)
         {
-            var userIdStr = JwtHelper.ExtractSubFromToken(Request);
-            if (!Guid.TryParse(userIdStr, out var teacherId))
-                return Unauthorized();
-
-            
-            return Ok(new { message = "Create codelab endpoint - implement command" });
+            var id = await _mediator.Send(command);
+            return Ok(new { id });
         }
 
         [HttpPut("{id}")]
         [Authorize(Roles = "Teacher,Admin")]
-        public async Task<IActionResult> UpdateCodelab(Guid id, [FromBody] UpdateCodelabRequest request)
+        public async Task<IActionResult> UpdateCodelab(Guid id, [FromBody] UpdateCodelabCommand command)
         {
-            var userIdStr = JwtHelper.ExtractSubFromToken(Request);
-            if (!Guid.TryParse(userIdStr, out var teacherId))
-                return Unauthorized();
+            command.CodelabId = id;
+            await _mediator.Send(command);
+            return Ok(new { id });
+        }
 
-            
-            return Ok(new { message = "Update codelab endpoint - implement command" });
+        [HttpDelete("{id}")]
+        [Authorize(Roles = "Teacher,Admin")]
+        public async Task<IActionResult> DeleteCodelab(Guid id)
+        {
+            await _mediator.Send(new DeleteCodelabCommand { CodelabId = id });
+            return Ok(new { success = true });
         }
 
         [HttpPost("{id}/testcases")]
         [Authorize(Roles = "Teacher,Admin")]
-        public async Task<IActionResult> AddTestCase(Guid id, [FromBody] AddTestCaseRequest request)
+        public async Task<IActionResult> AddTestCase(Guid id, [FromBody] AddTestCaseCommand command)
         {
-            var userIdStr = JwtHelper.ExtractSubFromToken(Request);
-            if (!Guid.TryParse(userIdStr, out var teacherId))
-                return Unauthorized();
-
-            
-            return Ok(new { message = "Add test case endpoint - implement command" });
+            command.CodelabId = id;
+            var testCaseId = await _mediator.Send(command);
+            return Ok(new { id = testCaseId });
         }
 
-        [HttpPut("{id}/testcases/reorder")]
+        [HttpPut("{id}/testcases/{testCaseId}")]
         [Authorize(Roles = "Teacher,Admin")]
-        public async Task<IActionResult> ReorderTestCases(Guid id, [FromBody] ReorderTestCasesRequest request)
+        public async Task<IActionResult> UpdateTestCase(Guid id, Guid testCaseId, [FromBody] UpdateTestCaseCommand command)
         {
-            var userIdStr = JwtHelper.ExtractSubFromToken(Request);
-            if (!Guid.TryParse(userIdStr, out var teacherId))
-                return Unauthorized();
+            command.TestCaseId = testCaseId;
+            await _mediator.Send(command);
+            return Ok(new { id = testCaseId });
+        }
 
-            
-            return Ok(new { message = "Reorder test cases endpoint - implement command" });
+        [HttpDelete("{id}/testcases/{testCaseId}")]
+        [Authorize(Roles = "Teacher,Admin")]
+        public async Task<IActionResult> DeleteTestCase(Guid id, Guid testCaseId)
+        {
+            await _mediator.Send(new DeleteTestCaseCommand { CodelabId = id, TestCaseId = testCaseId });
+            return Ok(new { success = true });
         }
 
         [HttpPost("{id}/templates")]
         [Authorize(Roles = "Teacher,Admin")]
-        public async Task<IActionResult> AddTemplate(Guid id, [FromBody] AddTemplateRequest request)
+        public async Task<IActionResult> AddTemplate(Guid id, [FromBody] AddTemplateCommand command)
         {
-            var userIdStr = JwtHelper.ExtractSubFromToken(Request);
-            if (!Guid.TryParse(userIdStr, out var teacherId))
-                return Unauthorized();
-
-            
-            return Ok(new { message = "Add template endpoint - implement command" });
+            command.CodelabId = id;
+            var templateId = await _mediator.Send(command);
+            return Ok(new { id = templateId });
         }
-    }
 
-    public class CreateCodelabRequest
-    {
-        public string Title { get; set; } = string.Empty;
-        public string Description { get; set; } = string.Empty;
-        public string InitialCode { get; set; } = string.Empty;
-        public int Difficulty { get; set; } = 1;
-        public int XPReward { get; set; } = 50;
-        public int MaxRuntimeMs { get; set; } = 2000;
-        public int MaxMemoryBytes { get; set; } = 128000000;
-        public string AllowedLanguages { get; set; } = "csharp,python,java,javascript";
-        public string Constraints { get; set; } = string.Empty;
-        public string Examples { get; set; } = string.Empty;
-        public string Hints { get; set; } = string.Empty;
-        public string Tags { get; set; } = string.Empty;
-        public List<CreateTestCaseDto> TestCases { get; set; } = new();
-        public List<CreateTemplateDto> Templates { get; set; } = new();
-    }
+        [HttpPut("{id}/templates/{templateId}")]
+        [Authorize(Roles = "Teacher,Admin")]
+        public async Task<IActionResult> UpdateTemplate(Guid id, Guid templateId, [FromBody] UpdateTemplateCommand command)
+        {
+            command.TemplateId = templateId;
+            await _mediator.Send(command);
+            return Ok(new { id = templateId });
+        }
 
-    public class CreateTestCaseDto
-    {
-        public string Input { get; set; } = string.Empty;
-        public string ExpectedOutput { get; set; } = string.Empty;
-        public bool IsHidden { get; set; }
-        public int OrderIndex { get; set; }
-    }
+        [HttpDelete("{id}/templates/{templateId}")]
+        [Authorize(Roles = "Teacher,Admin")]
+        public async Task<IActionResult> DeleteTemplate(Guid id, Guid templateId)
+        {
+            await _mediator.Send(new DeleteTemplateCommand { CodelabId = id, TemplateId = templateId });
+            return Ok(new { success = true });
+        }
 
-    public class CreateTemplateDto
-    {
-        public string Language { get; set; } = string.Empty;
-        public string StarterCode { get; set; } = string.Empty;
-        public string SolutionCode { get; set; } = string.Empty;
-    }
+        [HttpPost("{id}/hints")]
+        [Authorize(Roles = "Teacher,Admin")]
+        public async Task<IActionResult> AddHint(Guid id, [FromBody] AddHintCommand command)
+        {
+            command.CodelabId = id;
+            var hintId = await _mediator.Send(command);
+            return Ok(new { id = hintId });
+        }
 
-    public class UpdateCodelabRequest
-    {
-        public string Title { get; set; } = string.Empty;
-        public string Description { get; set; } = string.Empty;
-        public string InitialCode { get; set; } = string.Empty;
-        public int Difficulty { get; set; }
-        public int XPReward { get; set; }
-        public int MaxRuntimeMs { get; set; }
-        public int MaxMemoryBytes { get; set; }
-        public string AllowedLanguages { get; set; } = string.Empty;
-        public string Constraints { get; set; } = string.Empty;
-        public string Examples { get; set; } = string.Empty;
-        public string Hints { get; set; } = string.Empty;
-        public string Tags { get; set; } = string.Empty;
-    }
+        [HttpPut("{id}/hints/{hintId}")]
+        [Authorize(Roles = "Teacher,Admin")]
+        public async Task<IActionResult> UpdateHint(Guid id, Guid hintId, [FromBody] UpdateHintCommand command)
+        {
+            command.HintId = hintId;
+            await _mediator.Send(command);
+            return Ok(new { id = hintId });
+        }
 
-    public class AddTestCaseRequest
-    {
-        public string Input { get; set; } = string.Empty;
-        public string ExpectedOutput { get; set; } = string.Empty;
-        public bool IsHidden { get; set; }
-        public int OrderIndex { get; set; }
-    }
-
-    public class ReorderTestCasesRequest
-    {
-        public List<TestCaseOrderDto> TestCaseOrders { get; set; } = new();
-    }
-
-    public class TestCaseOrderDto
-    {
-        public Guid TestCaseId { get; set; }
-        public int OrderIndex { get; set; }
-    }
-
-    public class AddTemplateRequest
-    {
-        public string Language { get; set; } = string.Empty;
-        public string StarterCode { get; set; } = string.Empty;
-        public string SolutionCode { get; set; } = string.Empty;
+        [HttpDelete("{id}/hints/{hintId}")]
+        [Authorize(Roles = "Teacher,Admin")]
+        public async Task<IActionResult> DeleteHint(Guid id, Guid hintId)
+        {
+            await _mediator.Send(new DeleteHintCommand { CodelabId = id, HintId = hintId });
+            return Ok(new { success = true });
+        }
     }
 }

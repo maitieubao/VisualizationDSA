@@ -1,0 +1,23 @@
+.curriculum-manage-section {
+  position: relative;
+}
+
+.module-accordion {
+  transition: box-shadow 0.2s ease;
+}
+
+.module-accordion:hover {
+  box-shadow: 0 8px 30px rgba(15, 23, 42, 0.5);
+}
+
+.item-wrapper {
+  transition: opacity 0.2s ease;
+}
+
+.item-wrapper.dragging {
+  opacity: 0.5;
+}
+
+.drop-zone {
+  transition: border-color 0.2s ease, background 0.2s ease;
+}

@@ -85,7 +85,7 @@ export class BubbleSortRenderer {
           
           
           
-          const otherIdx = frame.highlights.swap.find(idx => idx !== i) ?? i;
+          const otherIdx = frame.highlights?.swap.find(idx => idx !== i) ?? i;
           const targetX = padding + otherIdx * (barWidth + spacing);
           
           

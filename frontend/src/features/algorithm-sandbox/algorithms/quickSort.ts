@@ -67,6 +67,7 @@ export function generateQuickSortFrames(inputArray: number[]): SortFrame[] {
     }
 
     [arr[i + 1], arr[high]] = [arr[high], arr[i + 1]];
+    swaps++;
     const pIdx = i + 1;
     sortedIndices.push(pIdx);
     splitPartition(low, high, pIdx);
@@ -74,23 +75,34 @@ export function generateQuickSortFrames(inputArray: number[]): SortFrame[] {
     return pIdx;
   }
 
-  function quickSort(low: number, high: number): void {
-    if (low < high) {
-      const pi = partition(low, high);
-      quickSort(low, pi - 1);
-      quickSort(pi + 1, high);
-    } else if (low === high) {
-      if (!sortedIndices.includes(low)) {
-        sortedIndices.push(low);
-        partitionsList = partitionsList.map(p => 
-          (p.low === low && p.high === low) ? { ...p, isSorted: true, isActive: false } : p
-        );
+  // Dùng stack tường minh thay cho đệ quy — không bao giờ tràn stack
+  // (Lomuto trên mảng đã sắp xếp có độ sâu = n, dễ StackOverflow nếu đệ quy thường)
+  function quickSortIterative(low: number, high: number): void {
+    const stack: Array<[number, number]> = [[low, high]];
+
+    while (stack.length > 0) {
+      const [lo, hi] = stack.pop()!;
+      if (lo > hi) continue;
+
+      if (lo === hi) {
+        if (!sortedIndices.includes(lo)) {
+          sortedIndices.push(lo);
+          partitionsList = partitionsList.map(p =>
+            (p.low === lo && p.high === lo) ? { ...p, isSorted: true, isActive: false } : p
+          );
+        }
+        continue;
       }
+
+      const pi = partition(lo, hi);
+      // Đẩy phần phải trước, phần trái sau để giữ đúng thứ tự frame như đệ quy cũ
+      if (pi + 1 <= hi) stack.push([pi + 1, hi]);
+      if (lo <= pi - 1) stack.push([lo, pi - 1]);
     }
   }
 
   emit('Khởi tạo Quick Sort — phân hoạch chia để trị', null, null, null, { low: 0, high: arr.length - 1, i: '-', j: '-', pivot: '-', comparisons, swaps });
-  quickSort(0, arr.length - 1);
+  quickSortIterative(0, arr.length - 1);
   emit('✅ Quick Sort hoàn thành!', null, null, null, { low: '-', high: '-', i: '-', j: '-', pivot: '-', comparisons, swaps });
 
   return frames;

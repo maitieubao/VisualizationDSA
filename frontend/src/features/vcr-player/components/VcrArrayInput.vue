@@ -8,13 +8,13 @@
           type="text"
           placeholder="45, 12, 85, 32, 9, 60"
           @input="$emit('update:rawInputArray', ($event.target as HTMLInputElement).value)"
-          class="vcr-array-input w-full bg-bg-primary border border-border-default/50 rounded-lg px-3 py-2 text-sm font-mono text-text-secondary placeholder-slate-600 focus:border-accent-cyan/50 focus:outline-none transition-colors"
+          class="vcr-array-input w-full bg-bg-primary border border-border-default/50 rounded-lg px-3 py-2 text-sm font-mono text-text-secondary placeholder-text-muted focus:border-accent-cyan/50 focus:outline-none transition-colors"
         />
       </div>
-      <button @click="$emit('randomize')" class="px-3 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-600 rounded-lg text-xs font-bold transition-colors cursor-pointer">
+      <button @click="$emit('randomize')" class="px-3 py-2 bg-bg-surface hover:bg-bg-hover text-text-secondary border border-border-default rounded-lg text-xs font-bold transition-colors cursor-pointer">
         Random
       </button>
-      <button @click="$emit('compile')" class="px-5 py-2 bg-indigo-600 hover:bg-indigo-500 text-white shadow-lg shadow-indigo-500/20 rounded-lg text-xs font-bold transition-colors cursor-pointer">
+      <button @click="$emit('compile')" class="px-5 py-2 bg-accent hover:bg-accent-light text-white shadow-lg shadow-accent/30 rounded-lg text-xs font-bold transition-colors cursor-pointer">
         Run
       </button>
     </div>

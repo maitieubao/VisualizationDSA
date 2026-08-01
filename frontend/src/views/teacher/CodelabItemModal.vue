@@ -4,8 +4,8 @@
       <div class="modal-container modal-lg">
         <div class="modal-header">
           <h3 class="modal-title">
-            <BaseIcon :name="editingTestCaseModalType === 'testcase' ? 'database' : Type === 'template' ? 'file-text' : 'lightbulb'" class="w-5 h-5 inline mr-2" />
-            {{ Type === 'testcase' ? 'Testcase' : Type === 'template' ? 'Template' : 'Gá»£i Ã½' }}: {{ editingItem ? 'Chá»‰nh sá»­a' : 'ThÃªm má»›i' }}
+            <BaseIcon :name="Type === 'testcase' ? 'database' : Type === 'template' ? 'file-text' : 'lightbulb'" class="w-5 h-5 inline mr-2" />
+            {{ Type === 'testcase' ? 'Testcase' : Type === 'template' ? 'Template' : 'Gợi ý' }}: {{ editingItem ? 'Chỉnh sửa' : 'Thêm mới' }}
           </h3>
           <button type="button" class="modal-close" @click="$emit('update:show', false)">
             <BaseIcon name="x" class="w-5 h-5" />
@@ -15,24 +15,24 @@
         <form @submit.prevent="handleSubmit" class="modal-body">
           <template v-if="Type === 'testcase'">
             <div class="form-field">
-              <label class="form-label">Input <span class="text-rose-400">*</span></label>
+              <label class="form-label">Input <span class="text-accent-red">*</span></label>
               <textarea v-model="form.input" class="form-input form-textarea font-mono text-sm" placeholder="Input test case (VD: [5,2,9,1,5,6])" rows="4" required maxlength="5000"></textarea>
             </div>
             
             <div class="form-field">
-              <label class="form-label">Expected Output <span class="text-rose-400">*</span></label>
+              <label class="form-label">Expected Output <span class="text-accent-red">*</span></label>
               <textarea v-model="form.expectedOutput" class="form-input form-textarea font-mono text-sm" placeholder="Expected output (VD: [1,2,5,5,6,9])" rows="4" required maxlength="5000"></textarea>
             </div>
             
             <div class="form-row">
               <div class="form-field">
-                <label class="form-label">Thá»© tá»± <span class="text-rose-400">*</span></label>
+                <label class="form-label">Thứ tự <span class="text-accent-red">*</span></label>
                 <input v-model.number="form.orderIndex" type="number" class="form-input" min="1" required />
               </div>
               <div class="form-field">
                 <label class="form-label flex items-center gap-2 cursor-pointer">
                   <input v-model="form.isHidden" type="checkbox" class="form-checkbox" />
-                  <span>áº¨n test case (chá»‰ dÃ¹ng cho grading)</span>
+                  <span>Ẩn test case (chỉ dùng cho grading)</span>
                 </label>
               </div>
             </div>
@@ -40,9 +40,9 @@
           
           <template v-if="Type === 'template'">
             <div class="form-field">
-              <label class="form-label">NgÃ´n ngá»¯ <span class="text-rose-400">*</span></label>
+              <label class="form-label">Ngôn ngữ <span class="text-accent-red">*</span></label>
               <select v-model="form.language" class="form-select" required>
-                <option value="">Chá»n ngÃ´n ngá»¯</option>
+                <option value="">Chọn ngôn ngữ</option>
                 <option value="csharp">C#</option>
                 <option value="python">Python</option>
                 <option value="java">Java</option>
@@ -55,19 +55,19 @@
             </div>
             
             <div class="form-field">
-              <label class="form-label">Starter Code <span class="text-rose-400">*</span></label>
+              <label class="form-label">Starter Code <span class="text-accent-red">*</span></label>
               <CustomMarkdownEditor 
                 v-model="form.starterCode" 
-                :placeholder="'Starter code cho há»c viÃªn...'"
+                :placeholder="'Starter code cho học viên...'"
                 :height="250"
               />
             </div>
             
             <div class="form-field">
-              <label class="form-label">Solution Code (Ä‘Ã¡p Ã¡n)</label>
+              <label class="form-label">Solution Code (đáp án)</label>
               <CustomMarkdownEditor 
                 v-model="form.solutionCode" 
-                :placeholder="'Solution code (Ä‘Ã¡p Ã¡n máº«u)...'"
+                :placeholder="'Solution code (đáp án mẫu)...'"
                 :height="250"
               />
             </div>
@@ -75,41 +75,41 @@
           
           <template v-if="Type === 'hint'">
             <div class="form-field">
-              <label class="form-label">Ná»™i dung gá»£i Ã½ <span class="text-rose-400">*</span></label>
-              <textarea v-model="form.content" class="form-input form-textarea" placeholder="Ná»™i dung gá»£i Ã½..." rows="4" required maxlength="2000"></textarea>
+              <label class="form-label">Nội dung gợi ý <span class="text-accent-red">*</span></label>
+              <textarea v-model="form.content" class="form-input form-textarea" placeholder="Nội dung gợi ý..." rows="4" required maxlength="2000"></textarea>
             </div>
             
             <div class="form-row">
               <div class="form-field">
-                <label class="form-label">Thá»© tá»± <span class="text-rose-400">*</span></label>
+                <label class="form-label">Thứ tự <span class="text-accent-red">*</span></label>
                 <input v-model.number="form.orderIndex" type="number" class="form-input" min="1" required />
               </div>
               <div class="form-field">
                 <label class="form-label flex items-center gap-2 cursor-pointer">
                   <input v-model="form.isTiered" type="checkbox" class="form-checkbox" />
-                  <span>Gá»£i Ã½ tiered (tá»‘n XP)</span>
+                  <span>Gợi ý tiered (tốn XP)</span>
                 </label>
               </div>
             </div>
             
             <div v-if="form.isTiered" class="form-field">
-              <label class="form-label">XP Cost <span class="text-rose-400">*</span></label>
+              <label class="form-label">XP Cost <span class="text-accent-red">*</span></label>
               <input v-model.number="form.xpCost" type="number" class="form-input" min="1" max="50" required />
-              <p class="form-hint">Sá»‘ XP há»c viÃªn bá»‹ trá»« khi xem gá»£i Ã½ nÃ y</p>
+              <p class="form-hint">Số XP học viên bị trừ khi xem gợi ý này</p>
             </div>
           </template>
         </form>
         
         <div class="modal-footer">
           <button type="button" class="btn-secondary" @click="$emit('update:show', false)">
-            Há»§y
+            Hủy
           </button>
           <button type="submit" class="btn-primary" :disabled="saving" form="codelab-modal-form">
             <span v-if="saving" class="flex items-center gap-2">
               <span class="spinner-sm"></span>
-              Äang lÆ°u...
+              Đang lưu...
             </span>
-            <span v-else>{{ editingItem ? 'Cáº­p nháº­t' : 'ThÃªm' }}</span>
+            <span v-else>{{ editingItem ? 'Cập nhật' : 'Thêm' }}</span>
           </button>
         </div>
       </div>
@@ -155,7 +155,6 @@ const form = reactive({
   
   
   content: '',
-  orderIndex: 1,
   isTiered: false,
   xpCost: 5
 });
@@ -200,17 +199,17 @@ watch(() => props.show, (newShow) => {
 async function handleSubmit() {
   if (props.Type === 'testcase') {
     if (!form.input.trim() || !form.expectedOutput.trim()) {
-      alert('Input vÃ  Expected Output khÃ´ng Ä‘Æ°á»£c Ä‘á»ƒ trá»‘ng');
+      alert('Input và Expected Output không được để trống');
       return;
     }
   } else if (props.Type === 'template') {
     if (!form.language || !form.starterCode.trim()) {
-      alert('NgÃ´n ngá»¯ vÃ  Starter Code khÃ´ng Ä‘Æ°á»£c Ä‘á»ƒ trá»‘ng');
+      alert('Ngôn ngữ và Starter Code không được để trống');
       return;
     }
   } else if (props.Type === 'hint') {
     if (!form.content.trim()) {
-      alert('Ná»™i dung gá»£i Ã½ khÃ´ng Ä‘Æ°á»£c Ä‘á»ƒ trá»‘ng');
+      alert('Nội dung gợi ý không được để trống');
       return;
     }
   }

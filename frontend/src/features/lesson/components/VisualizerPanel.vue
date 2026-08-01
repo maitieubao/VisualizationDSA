@@ -1,19 +1,19 @@
 <template>
-  <div class="lesson-step-viz flex flex-col h-full w-full bg-slate-950 relative overflow-hidden">
+  <div class="lesson-step-viz flex flex-col h-full w-full bg-bg-secondary relative overflow-hidden">
     
     <button
       v-if="hasWatched"
       @click="$emit('completeStep')"
-      class="absolute top-3 right-4 z-30 px-3.5 py-1.5 bg-indigo-600/90 hover:bg-indigo-500 text-white rounded-xl text-xs font-bold transition-all shadow-lg backdrop-blur-md cursor-pointer border border-indigo-400/30 flex items-center gap-1.5 animate-pulse"
+      class="absolute top-3 right-4 z-30 px-3.5 py-1.5 bg-accent/90 hover:bg-accent text-white rounded-xl text-xs font-bold transition-all shadow-lg backdrop-blur-md cursor-pointer border border-accent/30 flex items-center gap-1.5 animate-pulse"
     >
       <span>Làm Quiz Ngay</span>
       <span>→</span>
     </button>
     <div
       v-else
-      class="absolute top-3 right-4 z-30 px-3.5 py-1.5 bg-slate-800/90 text-slate-400 rounded-xl text-xs font-bold shadow-lg backdrop-blur-md border border-white/10 flex items-center gap-1.5"
+      class="absolute top-3 right-4 z-30 px-3.5 py-1.5 bg-bg-surface/90 text-text-muted rounded-xl text-xs font-bold shadow-lg backdrop-blur-md border border-border-subtle flex items-center gap-1.5"
     >
-      <svg class="w-4 h-4 animate-spin text-slate-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+      <svg class="w-4 h-4 animate-spin text-text-muted" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
         <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
         <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
       </svg>
@@ -32,7 +32,7 @@
           @click="startLecture"
           :disabled="isLoadingLecture"
           class="absolute bottom-4 left-4 z-40 px-4 py-2.5 rounded-xl text-xs font-bold transition-all shadow-lg backdrop-blur-md cursor-pointer border flex items-center gap-2"
-          :class="isLoadingLecture ? 'bg-slate-800/80 text-slate-400 border-white/10' : 'bg-cyan-600/90 hover:bg-cyan-500 text-white border-cyan-400/30'"
+          :class="isLoadingLecture ? 'bg-bg-surface/80 text-text-muted border-border-subtle' : 'bg-accent-cyan/90 hover:bg-accent-cyan text-white border-accent-cyan/30'"
         >
           <svg v-if="isLoadingLecture" class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
             <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
@@ -47,14 +47,14 @@
         
         <LectureOverlay />
       </template>
-      <div v-else class="flex flex-col items-center justify-center h-full text-slate-400 p-8 text-center">
-        <div class="w-12 h-12 rounded-full bg-slate-800 flex items-center justify-center text-indigo-400 mb-3">
+      <div v-else class="flex flex-col items-center justify-center h-full text-text-muted p-8 text-center">
+        <div class="w-12 h-12 rounded-full bg-bg-surface flex items-center justify-center text-accent mb-3">
           <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
             <path stroke-linecap="round" stroke-linejoin="round" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
           </svg>
         </div>
-        <p class="text-sm font-semibold text-slate-300">Chưa có Trực Quan Hóa</p>
-        <p class="text-xs text-slate-500 mt-1">Module mô phỏng cho thuật toán này đang được phát triển hoặc không tồn tại.</p>
+        <p class="text-sm font-semibold text-text-secondary">Chưa có Trực Quan Hóa</p>
+        <p class="text-xs text-text-muted mt-1">Module mô phỏng cho thuật toán này đang được phát triển hoặc không tồn tại.</p>
       </div>
     </div>
   </div>

@@ -12,7 +12,7 @@
     </button>
 
     <transition name="drawer-slide">
-      <div v-if="isOpen" class="drawer-card absolute bottom-12 right-0 z-40 p-3 rounded-lg bg-bg-surface border border-border-default shadow-2xl backdrop-blur-xl w-96 min-h-[300px] max-h-[520px] flex flex-col gap-2 overflow-hidden">
+      <div v-if="isOpen" class="drawer-card absolute bottom-12 right-0 z-40 p-3 rounded-lg bg-bg-surface border border-border-default shadow-2xl backdrop-blur-xl w-80 max-w-[calc(100vw_-_1.5rem)] max-h-[min(520px,calc(100vh_-_6rem))] flex flex-col gap-2 overflow-hidden">
         <div class="flex items-center justify-between border-b border-border-subtle pb-2 flex-shrink-0">
           <span class="text-xs font-semibold text-text-primary flex items-center gap-1.5">
             <svg class="w-3.5 h-3.5 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">

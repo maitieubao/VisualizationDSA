@@ -1199,3 +1199,49 @@ Phản hồi từ người dùng chỉ ra rằng giao diện 3 cột đồng th�
 - **Context:** Inconsistent limits: CustomInputParser (20), useSortingAnimation (15), useInputValidation (15).
 - **Decision:** Unified all limits to 15 max elements.
 - **Consequences:** Consistent behavior across all input paths.
+
+### ADR-17: Multi-Pass LSD Counting Sort with Negative Offset
+- **Date:** 2026-08-01
+- **Status:** Accepted
+- **Context:** countingSort.ts only performed a single LSD counting pass (unit digit, fixed 10-cell Count), returning UNSORTED results for multi-digit arrays while its description claimed "sorted". Negative values were clamped, corrupting order. The CountingSortVisualizer is hard-wired to the digit-grid UI (10 count cells, digit connector lines).
+- **Decision:** Rewrite the generator as multi-pass LSD counting (Count → Prefix Sum → Output per digit place, from units to highest digit), shifting all values by -min when negatives exist so digits are always in [0..9]. Each frame carries ctiveDigitPlace; stepIndex starts at 0; final frame gets full sortedIndices; output phase uses a "merged view" (placed elements occupy stable positions, unplaced elements are compacted in order) so the main bars animate progressively with unique ids.
+- **Consequences:** Counting Sort is now mathematically correct for any non-negative magnitude and for negatives via offset. Visualizer updated to compute digits with digitOf(value, place, offset) instead of al % 10; tier subtitle shows the active digit place. Radix Sort (radixSort.ts) applies the same negative-offset technique for consistency.
+
+### ADR-18: Iterative Quick Sort (Explicit Stack) + Full Swap Accounting
+- **Date:** 2026-08-01
+- **Status:** Accepted
+- **Context:** quickSort.ts used recursion with no depth guard — Lomuto on a pre-sorted array reaches depth = n → StackOverflowException (silently hidden by MAX_ELEMENTS=15 at the caller). Pivot placement swap [i+1]↔[high] did not increment swaps, so stats undercounted.
+- **Decision:** Replace recursion with an explicit stack (right subrange pushed first to preserve frame ordering). Add swaps++ on pivot placement so ariables.swaps equals the number of swap frames 100% of the time.
+- **Consequences:** No stack overflow possible for any input size; swap statistics are truthful. Frame emission order is identical to the previous recursive version.
+
+### ADR-19: Deterministic Identity via Swap Events in sortingIdEnricher
+- **Date:** 2026-08-01
+- **Status:** Accepted
+- **Context:** Greedy nearest-value matching swapped identities between equal-valued elements on far jumps (e.g., heap [10,5,5] swap [0]↔[2] produced wrong ids), causing bars to visually "hover" mid-animation.
+- **Decision:** When a frame carries swappedIndices (bubble/quick/heap swaps), copy the previous frame's id array and swap the two entries deterministically (skip for merge writes). Greedy nearest-value matching remains as fallback for write-style frames (merge overwrites).
+- **Consequences:** Duplicate-valued elements keep true identity through swaps. Merge-style frames (where identity is ambiguous by nature) still use greedy approximation. Identities stay unique in every frame.
+
+### ADR-20: Merge Sort sortedIndices Only at Root Merge + comparisons/writes Stats
+- **Date:** 2026-08-01
+- **Status:** Accepted
+- **Context:** mergeSort.ts pushed indices into sortedIndices after every intermediate merge even though those elements move again in later merges — bars flashed "sorted" prematurely. Merge had no comparison/write statistics unlike bubble/quick.
+- **Decision:** Mark sortedIndices only when the merge covers the full array (root merge). Add comparisons (one per while-loop iteration, matching comparison frames) and writes (one per arr[k] overwrite) to ariables.
+- **Consequences:** sortedIndices semantics now match the other 6 algorithms ("yên vị cuối"); stats are consistent and testable.
+
+### ADR-21: Codelab CRUD Backend + Real Judge (Piston) — Thay thế MockJudgeService
+- **Date:** 2026-08-01
+- **Status:** Accepted
+- **Context:** Tính năng Codelab practice dạng LeetCode cần CRUD backend thật và hệ thống chấm bài. MockCodeJudgeService chỉ phù hợp demo; chấm bài giả sẽ làm mất giá trị học tập.
+- **Decision:**
+  - CRUD thật tại `/api/v1/codelabs` (GET list có filter tag/difficulty/search/language + phân trang, GET {id}, POST/PUT/DELETE + CRUD testcases/templates/hints) với `[Authorize(Roles="Teacher,Admin")]` cho thao tác ghi.
+  - Thay `MockCodeJudgeService` bằng `PistonCodeJudgeService` (engine-man/piston): chạy từng test case trong sandbox Isolate, map compile/TLE/MLE/runtime/WRONG ANSWER, chuẩn hóa output (CRLF→LF, trim 2 đầu), semaphore MaxConcurrency=3, cache runtime version 1h, cấu hình qua section `Judge` trong appsettings (hỗ trợ AuthToken cho self-host).
+  - Khi judge không khả dụng (network/HTTP error/401 whitelist) → trả `SubmissionStatus.JudgeUnavailable` kèm message rõ ràng, TUYỆT ĐỐI không fake kết quả chấm.
+  - `SubmissionStatus` thêm `JudgeUnavailable = 7`; `Codelab.Hints` chuyển từ string sang bảng `CodelabHints` (entity `CodelabHint`); `User.DeductXP(int)` cho reveal-hint.
+- **Consequences:** (+). Toàn bộ 40 backend tests pass. (+) E2E CRUD smoke test đã xác minh qua HTTP. (±) Public Piston API (emkc.org) là whitelist-only từ 15/02/2026 → trả 401 → cần self-host Piston (Docker) + set `Judge:PistonApiUrl`/`Judge:AuthToken` khi deploy. (-) Migration `20260801073413_Sprint4_CodelabHintsAndJudge` phải áp dụng trước khi chạy.
+
+### ADR-22: JWT Role Claim Fix — MapInboundClaims + ClaimTypes.Role
+- **Date:** 2026-08-01
+- **Status:** Accepted
+- **Context:** Mọi endpoint `[Authorize(Roles="Teacher,Admin")]` trả 403 dù token hợp lệ có claim `"role":"Teacher"`. Nguyên nhân: .NET 8+ JwtBearer mặc định `MapInboundClaims=true` rename claim "role" → ClaimTypes.Role (URI dài), trong khi `RoleClaimType="role"` không match claim đã bị rename.
+- **Decision:** Giữ `MapInboundClaims=true` (toàn app đọc `ClaimTypes.NameIdentifier` sau khi map "sub"), đổi `RoleClaimType = ClaimTypes.Role` và `NameClaimType = ClaimTypes.NameIdentifier` trong `TokenValidationParameters` (Program.cs).
+- **Consequences:** (+) `[Authorize(Roles)]` hoạt động đúng với token từ AuthService. (+) `User.FindFirst(ClaimTypes.NameIdentifier)` vẫn hoạt động như cũ. (-) Không ảnh hưởng JwtHelper (stateless auth ký secret riêng, parse thủ công).

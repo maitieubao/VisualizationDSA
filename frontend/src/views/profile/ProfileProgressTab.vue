@@ -46,7 +46,7 @@
       </div>
 
       <div v-else class="empty-state-box">
-        <BaseIcon name="medal" class="w-10 h-10 text-slate-500 mb-2" />
+        <BaseIcon name="medal" class="w-10 h-10 text-text-muted mb-2" />
         <p class="empty-title">Chưa nhận được huy hiệu nào</p>
         <p class="empty-desc">Hoàn thành bài tập trắc nghiệm và bài học DSA để nhận huy hiệu đầu tiên.</p>
       </div>

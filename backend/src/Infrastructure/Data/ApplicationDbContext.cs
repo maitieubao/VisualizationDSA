@@ -46,6 +46,7 @@ namespace VisualizationDSA.Infrastructure.Data
         public DbSet<Codelab> Codelabs { get; set; }
         public DbSet<CodelabTestCase> CodelabTestCases { get; set; }
         public DbSet<CodelabTemplate> CodelabTemplates { get; set; }
+        public DbSet<CodelabHint> CodelabHints { get; set; }
         public DbSet<CodelabSubmission> CodelabSubmissions { get; set; }
 
 
@@ -224,6 +225,14 @@ namespace VisualizationDSA.Infrastructure.Data
                 entity.HasKey(e => e.Id);
                 entity.HasOne(e => e.Codelab)
                     .WithMany(c => c.Templates)
+                    .HasForeignKey(e => e.CodelabId)
+                    .OnDelete(DeleteBehavior.Restrict); 
+            });
+
+            modelBuilder.Entity<CodelabHint>(entity => {
+                entity.HasKey(e => e.Id);
+                entity.HasOne(e => e.Codelab)
+                    .WithMany(c => c.Hints)
                     .HasForeignKey(e => e.CodelabId)
                     .OnDelete(DeleteBehavior.Restrict); 
             });

@@ -10,7 +10,7 @@
     </div>
 
     <div v-else-if="quizHistory.length === 0" class="empty-state-box">
-      <BaseIcon name="clipboard-list" class="w-10 h-10 text-slate-500 mb-2" />
+      <BaseIcon name="clipboard-list" class="w-10 h-10 text-text-muted mb-2" />
       <p class="empty-title">Chưa có lịch sử ngắt mạch quiz</p>
       <p class="empty-desc">Bạn chưa thực hiện bài trắc nghiệm nào. Hãy bắt đầu học để đánh giá năng lực!</p>
     </div>

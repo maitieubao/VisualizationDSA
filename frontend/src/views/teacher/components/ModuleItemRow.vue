@@ -37,7 +37,7 @@
         v-if="item.isSequential && item.prerequisiteItemId" 
         class="prerequisite-indicator"
       >
-        â†’ sau #{{ getPrerequisiteIndex(item.prerequisiteItemId) }}
+        → sau #{{ getPrerequisiteIndex(item.prerequisiteItemId) }}
       </span>
     </div>
 
@@ -46,8 +46,8 @@
         <h4 class="item-title">{{ displayTitle }}</h4>
         
         <div class="item-badges">
-          <span v-if="item.isRequired" class="badge badge-primary text-[10px]">Báº¯t buá»™c</span>
-          <span v-if="item.isHidden" class="badge badge-warning text-[10px]">áº¨n</span>
+          <span v-if="item.isRequired" class="badge badge-primary text-[10px]">Bắt buộc</span>
+          <span v-if="item.isHidden" class="badge badge-warning text-[10px]">Ẩn</span>
           <span v-if="item.unlockAt" class="badge badge-info text-[10px]">
             <BaseIcon name="clock" class="w-3 h-3 inline mr-0.5" />
             {{ formatDate(item.unlockAt) }}
@@ -58,7 +58,7 @@
           </span>
           <span v-if="item.maxAttempts" class="badge badge-purple text-[10px]">
             <BaseIcon name="refresh-cw" class="w-3 h-3 inline mr-0.5" />
-            {{ item.maxAttempts }} láº§n
+            {{ item.maxAttempts }} lần
           </span>
         </div>
       </div>
@@ -83,7 +83,7 @@
         type="button" 
         class="action-btn"
         @click.stop="$emit('edit', item)"
-        title="Chá»‰nh sá»­a"
+        title="Chỉnh sửa"
       >
         <BaseIcon name="edit-2" class="w-4 h-4" />
       </button>
@@ -92,7 +92,7 @@
         type="button" 
         class="action-btn"
         @click.stop="$emit('duplicate', item)"
-        title="NhÃ¢n báº£n"
+        title="Nhân bản"
       >
         <BaseIcon name="copy" class="w-4 h-4" />
       </button>
@@ -101,7 +101,7 @@
         type="button" 
         class="action-btn"
         @click.stop="$emit('toggle-hidden', item)"
-        :title="item.isHidden ? 'Hiá»‡n cho há»c viÃªn' : 'áº¨n khá»i há»c viÃªn'"
+        :title="item.isHidden ? 'Hiện cho học viên' : 'Ẩn khỏi học viên'"
         :class="{ 'active': item.isHidden }"
       >
         <BaseIcon 
@@ -114,7 +114,7 @@
         type="button" 
         class="action-btn"
         @click.stop="$emit('toggle-required', item)"
-        :title="item.isRequired ? 'Äáº·t lÃ  tÃ¹y chá»n' : 'Äáº·t lÃ  báº¯t buá»™c'"
+        :title="item.isRequired ? 'Đặt là tùy chọn' : 'Đặt là bắt buộc'"
         :class="{ 'active': item.isRequired }"
       >
         <BaseIcon 
@@ -125,18 +125,18 @@
       
       <button 
         type="button" 
-        class="action-btn text-slate-400 hover:text-indigo-400"
+        class="action-btn text-text-muted hover:text-accent"
         @click.stop="$emit('override-settings', item)"
-        title="CÃ i Ä‘áº·t nÃ¢ng cao"
+        title="Cài đặt nâng cao"
       >
         <BaseIcon name="settings" class="w-4 h-4" />
       </button>
       
       <button 
         type="button" 
-        class="action-btn text-slate-400 hover:text-rose-400"
+        class="action-btn text-text-muted hover:text-accent-red"
         @click.stop="$emit('delete', item)"
-        title="XÃ³a"
+        title="Xóa"
       >
         <BaseIcon name="trash-2" class="w-4 h-4" />
       </button>
@@ -431,11 +431,11 @@ function onDrop(e: DragEvent) {
   background: rgba(245, 158, 11, 0.15);
 }
 
-.action-btn.text-slate-400:hover {
+.action-btn.text-text-muted:hover {
   color: #6366f1;
 }
 
-.action-btn.text-rose-400:hover {
+.action-btn.text-accent-red:hover {
   color: #f43f5e;
   background: rgba(244, 63, 94, 0.15);
 }

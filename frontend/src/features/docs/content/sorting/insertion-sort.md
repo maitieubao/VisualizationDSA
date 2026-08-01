@@ -48,9 +48,12 @@ flowchart TD
     B1 --> B2 --> B3
 ```
 
-## Cài đặt bằng C# (Code Example) {#code-example}
+## Cài đặt (Code Example) {#code-example}
 
-```csharp
+```playground:insertion-sort
+```
+
+```dual:insertion-sort
 public void InsertionSort(int[] arr)
 {
     int n = arr.Length;

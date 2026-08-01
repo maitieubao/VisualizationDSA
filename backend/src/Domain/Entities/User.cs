@@ -67,6 +67,15 @@ namespace VisualizationDSA.Domain.Entities
             _checkLevelUp();
         }
 
+        public bool DeductXP(int amount)
+        {
+            if (amount <= 0) return true;
+            if (TotalXP < amount) return false;
+            TotalXP -= amount;
+            _checkLevelUp();
+            return true;
+        }
+
         public void CompleteModule(string moduleId)
         {
             var progress = new LearningProgress(Id, moduleId);

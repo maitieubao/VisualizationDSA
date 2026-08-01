@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using VisualizationDSA.Application.DTOs;
+using VisualizationDSA.Application.Interfaces;
 using VisualizationDSA.Application.Services;
 using VisualizationDSA.Domain.Entities;
 using VisualizationDSA.Domain.Interfaces;
@@ -17,6 +18,8 @@ namespace VisualizationDSA.UnitTests.Services
         private readonly Mock<IUnitOfWork> _mockUow;
         private readonly Mock<IQuizRepository> _mockQuizRepo;
         private readonly Mock<IGamificationService> _mockGamification;
+        private readonly Mock<IApplicationDbContext> _mockDbContext;
+        private readonly Mock<IProgressRuleEngine> _mockProgressEngine;
         private readonly QuizService _service;
 
         public QuizServiceTests()
@@ -24,9 +27,11 @@ namespace VisualizationDSA.UnitTests.Services
             _mockUow = new Mock<IUnitOfWork>();
             _mockQuizRepo = new Mock<IQuizRepository>();
             _mockGamification = new Mock<IGamificationService>();
+            _mockDbContext = new Mock<IApplicationDbContext>();
+            _mockProgressEngine = new Mock<IProgressRuleEngine>();
 
             _mockUow.Setup(u => u.Quizzes).Returns(_mockQuizRepo.Object);
-            _service = new QuizService(_mockUow.Object, _mockGamification.Object);
+            _service = new QuizService(_mockUow.Object, _mockGamification.Object, _mockDbContext.Object, _mockProgressEngine.Object);
         }
 
         [Fact]

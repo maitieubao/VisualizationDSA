@@ -70,15 +70,15 @@
         <div class="course-stats-container p-6 space-y-4">
           <div v-for="course in dashboardData.popularCourses" :key="course.courseId" class="space-y-1.5">
             <div class="flex items-center justify-between text-xs">
-              <span class="font-bold text-slate-200">{{ course.title }}</span>
-              <span class="text-purple-400 font-semibold">{{ course.enrollmentsCount }} lượt học</span>
+              <span class="font-bold text-text-primary">{{ course.title }}</span>
+              <span class="text-accent-purple font-semibold">{{ course.enrollmentsCount }} lượt học</span>
             </div>
-            <div class="w-full bg-slate-950/80 rounded-full h-3 overflow-hidden border border-white/5">
-              <div class="bg-gradient-to-r from-purple-500 to-indigo-500 h-full rounded-full transition-all duration-1000"
+            <div class="w-full bg-bg-secondary rounded-full h-3 overflow-hidden border border-border-subtle">
+              <div class="bg-gradient-to-r from-accent-purple to-accent h-full rounded-full transition-all duration-1000"
                 :style="{ width: getCoursePercentage(course.enrollmentsCount) + '%' }"></div>
             </div>
           </div>
-          <div v-if="!dashboardData.popularCourses || dashboardData.popularCourses.length === 0" class="text-center text-xs text-slate-500 py-8">
+          <div v-if="!dashboardData.popularCourses || dashboardData.popularCourses.length === 0" class="text-center text-xs text-text-muted py-8">
             Chưa có dữ liệu khóa học tương tác.
           </div>
         </div>

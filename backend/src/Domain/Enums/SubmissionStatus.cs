@@ -8,6 +8,7 @@ namespace VisualizationDSA.Domain.Enums
         TimeLimitExceeded = 3, 
         MemoryLimitExceeded = 4, 
         CompilationError = 5,  
-        RuntimeError = 6       
+        RuntimeError = 6,       
+        JudgeUnavailable = 7   
     }
 }

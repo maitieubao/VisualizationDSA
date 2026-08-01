@@ -78,7 +78,15 @@ const displayFrame = computed<SortFrame | null>(() => {
 const arraySize = ref(6);
 const activePreset = ref<string | null>(null);
 
-function generateArray(length: number, type: "random" | "sorted" | "reversed" | "nearly"): number[] {
+type PresetKey = "random" | "sorted" | "reversed" | "nearly";
+
+function resolvePreset(): PresetKey {
+  const key = activePreset.value;
+  if (key === "sorted" || key === "reversed" || key === "nearly") return key;
+  return "random";
+}
+
+function generateArray(length: number, type: PresetKey): number[] {
   if (type === "random") return Array.from({ length }, () => Math.floor(Math.random() * 85) + 10);
   const base = Array.from({ length }, (_, i) => Math.floor((i + 1) * (85 / length)));
   if (type === "sorted") return base;
@@ -104,7 +112,7 @@ const presets = [
 function onSizeChange(e: Event): void {
   const val = parseInt((e.target as HTMLInputElement).value, 10);
   arraySize.value = val;
-  const arr = generateArray(val, (activePreset.value as any) || "random");
+  const arr = generateArray(val, resolvePreset());
   applyArray(arr, activePreset.value || "random");
 }
 </script>

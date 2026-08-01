@@ -1,10 +1,11 @@
 import { watch, type WatchStopHandle } from 'vue';
+import type * as monaco from 'monaco-editor';
 import { MonacoGutterClickInterceptor } from './MonacoGutterClickInterceptor';
 import { PseudocodeSyncer, type MonacoEditorForHighlight } from './PseudocodeSyncer';
 import type { VcrBaseFrame } from '../../vcr-player';
 
 interface MonacoEditorFull extends MonacoEditorForHighlight {
-  onMouseDown(cb: (e: { target: { type: number; position?: { lineNumber: number } } }) => void): { dispose(): void };
+  onMouseDown(cb: (e: monaco.editor.IEditorMouseEvent) => void): { dispose(): void };
 }
 
 interface VcrStoreForSync {

@@ -1,17 +1,17 @@
 <template>
-  <div class="student-classroom-view min-h-screen bg-slate-950">
+  <div class="student-classroom-view min-h-screen bg-bg-secondary">
     
     <div v-if="loading" class="flex items-center justify-center h-screen">
       <div class="text-center">
-        <div class="w-12 h-12 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-        <p class="text-slate-400">Äang táº£i lá»›p há»c...</p>
+        <div class="w-12 h-12 border-4 border-accent border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+        <p class="text-text-muted">Đang tải lớp học...</p>
       </div>
     </div>
 
     
     <div v-else class="flex h-screen">
       
-      <aside class="w-80 shrink-0 p-4 overflow-y-auto border-r border-white/10">
+      <aside class="w-80 shrink-0 p-4 overflow-y-auto border-r border-border-subtle">
         <StudentCurriculumSidebar
           :classroom-id="classroomId"
           :curriculum="curriculum"
@@ -24,10 +24,10 @@
       <main class="flex-1 p-6 overflow-y-auto">
         
         <div v-if="!currentItem" class="flex flex-col items-center justify-center h-full text-center">
-          <BaseIcon name="book-open" class="w-16 h-16 text-slate-600 mb-4" />
-          <h2 class="text-2xl font-bold text-white mb-2">ChÃ o má»«ng Ä‘áº¿n vá»›i lá»›p há»c!</h2>
-          <p class="text-slate-400 max-w-md">
-            Chá»n má»™t bÃ i há»c tá»« sidebar Ä‘á»ƒ báº¯t Ä‘áº§u. Tiáº¿n Ä‘á»™ cá»§a báº¡n sáº½ Ä‘Æ°á»£c tá»± Ä‘á»™ng lÆ°u láº¡i.
+          <BaseIcon name="book-open" class="w-16 h-16 text-text-disabled mb-4" />
+          <h2 class="text-2xl font-bold text-white mb-2">Chào mừng đến với lớp học!</h2>
+          <p class="text-text-muted max-w-md">
+            Chọn một bài học từ sidebar để bắt đầu. Tiến độ của bạn sẽ được tự động lưu lại.
           </p>
         </div>
 
@@ -228,4 +228,3 @@ watch(() => route.query.itemId, (newId) => {
   background: #020617;
 }
 </style>
-</script>

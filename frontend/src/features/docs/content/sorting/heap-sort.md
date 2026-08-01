@@ -58,9 +58,12 @@ Biến mảng lộn xộn ban đầu thành một cấu trúc Max Heap. Quá tr�
 | **Không gian bộ nhớ** | **O(1)** - Mọi thao tác tráo đổi diễn ra trực tiếp trên mảng gốc, không cần mảng phụ. |
 | **Tính ổn định (Stable)** | **Không** - Quá trình kéo thả trong cây có thể phá vỡ thứ tự ban đầu của các số bằng nhau. |
 
-## Cài đặt bằng C# (Code Example) {#code-example}
+## Cài đặt (Code Example) {#code-example}
 
-```csharp
+```playground:heap-sort
+```
+
+```dual:heap-sort
 public void HeapSort(int[] array)
 {
     int n = array.Length;

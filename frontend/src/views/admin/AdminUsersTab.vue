@@ -108,11 +108,11 @@
             <button class="user-modal-close" @click="closeCreateUserModal">&times;</button>
           </div>
           <form @submit.prevent="submitCreateUser" class="modal-form mt-4">
-            <div class="form-group mb-4"><label class="block text-xs font-bold text-slate-400 mb-1.5 uppercase">Username</label><input v-model="createUserForm.username" type="text" class="form-control w-full" placeholder="Nhập username..." required /></div>
-            <div class="form-group mb-4"><label class="block text-xs font-bold text-slate-400 mb-1.5 uppercase">Email</label><input v-model="createUserForm.email" type="email" class="form-control w-full" placeholder="example@visualizationdsa.dev" required /></div>
-            <div class="form-group mb-4"><label class="block text-xs font-bold text-slate-400 mb-1.5 uppercase">Mật khẩu ban đầu</label><input v-model="createUserForm.password" type="password" class="form-control w-full" placeholder="Tối thiểu 8 ký tự..." required /></div>
-            <div class="form-group mb-4"><label class="block text-xs font-bold text-slate-400 mb-1.5 uppercase">Vai trò (Role)</label><select v-model="createUserForm.role" class="form-control w-full"><option value="Student">Học viên</option><option value="Teacher">Giảng viên</option><option value="Admin">Quản trị viên</option></select></div>
-            <div class="form-group mb-6 flex items-center gap-2"><input v-model="createUserForm.isPremium" type="checkbox" class="w-4 h-4 rounded border-slate-700 bg-slate-950/40 text-indigo-500 focus:ring-indigo-500" /><label class="text-xs font-bold text-slate-300 select-none cursor-pointer">Kích hoạt tài khoản Premium</label></div>
+            <div class="form-group mb-4"><label class="block text-xs font-bold text-text-muted mb-1.5 uppercase">Username</label><input v-model="createUserForm.username" type="text" class="form-control w-full" placeholder="Nhập username..." required /></div>
+            <div class="form-group mb-4"><label class="block text-xs font-bold text-text-muted mb-1.5 uppercase">Email</label><input v-model="createUserForm.email" type="email" class="form-control w-full" placeholder="example@visualizationdsa.dev" required /></div>
+            <div class="form-group mb-4"><label class="block text-xs font-bold text-text-muted mb-1.5 uppercase">Mật khẩu ban đầu</label><input v-model="createUserForm.password" type="password" class="form-control w-full" placeholder="Tối thiểu 8 ký tự..." required /></div>
+            <div class="form-group mb-4"><label class="block text-xs font-bold text-text-muted mb-1.5 uppercase">Vai trò (Role)</label><select v-model="createUserForm.role" class="form-control w-full"><option value="Student">Học viên</option><option value="Teacher">Giảng viên</option><option value="Admin">Quản trị viên</option></select></div>
+            <div class="form-group mb-6 flex items-center gap-2"><input v-model="createUserForm.isPremium" type="checkbox" class="w-4 h-4 rounded border-border-default bg-bg-secondary/40 text-accent focus:ring-accent" /><label class="text-xs font-bold text-text-secondary select-none cursor-pointer">Kích hoạt tài khoản Premium</label></div>
             <div class="user-modal-footer"><button type="button" class="btn-modal-close-secondary mr-2" @click="closeCreateUserModal">Hủy bỏ</button><button type="submit" class="submit-btn" :disabled="submittingUser">{{ submittingUser ? 'Đang tạo...' : 'Tạo tài khoản' }}</button></div>
           </form>
         </div>
@@ -126,11 +126,11 @@
       <div v-if="showResetPasswordModal" class="user-modal-backdrop" @click.self="closeResetPasswordModal">
         <div class="user-modal-card">
           <div class="user-modal-header">
-            <div><h2 class="user-modal-name text-white">Đặt lại mật khẩu</h2><p class="text-xs text-slate-400 mt-1">Đổi mật khẩu cho: {{ targetUserForReset?.username }}</p></div>
+            <div><h2 class="user-modal-name text-white">Đặt lại mật khẩu</h2><p class="text-xs text-text-muted mt-1">Đổi mật khẩu cho: {{ targetUserForReset?.username }}</p></div>
             <button class="user-modal-close" @click="closeResetPasswordModal">&times;</button>
           </div>
           <form @submit.prevent="submitResetPassword" class="modal-form mt-4">
-            <div class="form-group mb-6"><label class="block text-xs font-bold text-slate-400 mb-1.5 uppercase">Mật khẩu mới</label><input v-model="resetPasswordForm.password" type="password" class="form-control w-full" placeholder="Tối thiểu 8 ký tự..." required /></div>
+            <div class="form-group mb-6"><label class="block text-xs font-bold text-text-muted mb-1.5 uppercase">Mật khẩu mới</label><input v-model="resetPasswordForm.password" type="password" class="form-control w-full" placeholder="Tối thiểu 8 ký tự..." required /></div>
             <div class="user-modal-footer"><button type="button" class="btn-modal-close-secondary mr-2" @click="closeResetPasswordModal">Hủy</button><button type="submit" class="submit-btn" :disabled="submittingUser">{{ submittingUser ? 'Đang cập nhật...' : 'Xác nhận đổi' }}</button></div>
           </form>
         </div>

@@ -23,6 +23,26 @@ export function enrichFramesWithIds(frames: SortFrame[]): void {
     const currFrame = frames[k];
     const currArr = currFrame.arrayState;
     const prevItems = [...prevFrame.arrayStateWithIds!];
+
+    // Sự kiện hoán vị (bubble/quick/heap): hoán đổi identity theo đúng vị trí đã swap
+    // → giữ nguyên identity chính xác ngay cả khi phần tử trùng giá trị
+    const swap = currFrame.swappedIndices;
+    if (
+      swap &&
+      currFrame.algorithm !== 'merge' &&
+      swap[0] !== swap[1] &&
+      swap[0] >= 0 && swap[0] < prevItems.length &&
+      swap[1] >= 0 && swap[1] < prevItems.length
+    ) {
+      const next = [...prevItems];
+      const temp = next[swap[0]];
+      next[swap[0]] = next[swap[1]];
+      next[swap[1]] = temp;
+      currFrame.arrayStateWithIds = next;
+      continue;
+    }
+
+    // Greedy nearest-value matching (ghi đè kiểu merge, các frame không swap)
     const currIds: number[] = [];
 
     for (let i = 0; i < currArr.length; i++) {

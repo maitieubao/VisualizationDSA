@@ -8,6 +8,8 @@ interface TrackedElement {
 export function generateBucketSortFrames(arr: number[]): SortFrame[] {
   const frames: SortFrame[] = [];
   let stepIndex = 0;
+  let comparisons = 0;
+  let swaps = 0;
 
   const n = arr.length;
   const initialElements: TrackedElement[] = arr.map((val, idx) => ({
@@ -36,8 +38,25 @@ export function generateBucketSortFrames(arr: number[]): SortFrame[] {
   const outputArrayWithIds: (TrackedElement | null)[] = Array.from({ length: n }, () => null);
 
   const baseVars = (overrides: Record<string, string | number>): Record<string, string | number> => ({
-    i: "-", bucketIdx: "-", b: "-", j: "-", outputCount: "-", ...overrides,
+    i: "-", bucketIdx: "-", b: "-", j: "-", outputCount: "-", comparisons, swaps, ...overrides,
   });
+
+  // Góc nhìn chính: phần tử đã thu hồi vào output chiếm vị trí ổn định,
+  // phần chưa thu hồi được "nén" giữ nguyên thứ tự — đảm bảo id luôn duy nhất
+  const mergedArrayState = (): { arrayState: number[]; arrayStateWithIds: Array<{ id: number; value: number }> } => {
+    const placed: Array<{ id: number; value: number }> = [];
+    for (const item of outputArrayWithIds) {
+      if (item) placed.push(item);
+    }
+    const placedIds = new Set(placed.map((e) => e.id));
+    const remaining = initialElements.filter((e) => !placedIds.has(e.id));
+
+    const result: Array<{ id: number; value: number }> = [];
+    for (let i = 0; i < n; i++) {
+      result.push(i < placed.length ? placed[i] : remaining[i - placed.length]);
+    }
+    return { arrayState: result.map((e) => e.value), arrayStateWithIds: result };
+  };
 
   frames.push({
     stepIndex: ++stepIndex,
@@ -130,6 +149,7 @@ export function generateBucketSortFrames(arr: number[]): SortFrame[] {
       for (let i = 1; i < bucket.length; i++) {
         let j = i;
         while (j > 0) {
+          comparisons++;
           frames.push({
             stepIndex: ++stepIndex,
             arrayState: initialElements.map((e) => e.value),
@@ -153,6 +173,7 @@ export function generateBucketSortFrames(arr: number[]): SortFrame[] {
             const temp = bucket[j];
             bucket[j] = bucket[j - 1];
             bucket[j - 1] = temp;
+            swaps++;
 
             frames.push({
               stepIndex: ++stepIndex,
@@ -251,8 +272,8 @@ export function generateBucketSortFrames(arr: number[]): SortFrame[] {
 
       frames.push({
         stepIndex: ++stepIndex,
-        arrayState: initialElements.map((e) => e.value),
-        arrayStateWithIds: initialElements.map((e) => ({ id: e.id, value: e.value })),
+        arrayState: mergedArrayState().arrayState,
+        arrayStateWithIds: mergedArrayState().arrayStateWithIds,
         comparingIndices: [outputCount, outputCount] as [number, number],
         pivotIndex: null,
         swappedIndices: null,

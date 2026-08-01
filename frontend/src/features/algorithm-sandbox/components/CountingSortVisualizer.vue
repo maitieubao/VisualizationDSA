@@ -99,7 +99,7 @@
     </div>
 
     
-    <div class="flex-1 min-h-0 flex flex-col justify-around py-1 gap-2 z-20">
+    <div class="flex-1 min-h-0 flex flex-col justify-around py-1 gap-2 z-20 overflow-y-auto overflow-x-hidden">
       
       
       <div 
@@ -149,7 +149,7 @@
 
               
               <div 
-                class="text-[8px] font-mono font-bold text-cyan-400 animate-pulse select-none leading-none mt-0.5"
+                class="text-[8px] font-mono font-bold text-accent-cyan animate-pulse select-none leading-none mt-0.5"
                 v-if="isInputBarActive(idx)"
               >
                 ↑
@@ -160,7 +160,7 @@
             <div
               v-if="frame?.inputArray && frame.inputArray.length <= 12"
               class="mt-1 font-mono text-[9px] font-bold shrink-0 transition-all duration-300"
-              :class="isInputBarActive(idx) ? 'text-cyan-400 scale-105' : 'index-label'"
+              :class="isInputBarActive(idx) ? 'text-accent-cyan scale-105' : 'index-label'"
             >
               [{{ idx }}]
             </div>
@@ -178,7 +178,7 @@
             2. Bảng Tần Suất Đếm (Counting Grid)
           </span>
           <span class="tier-subtitle text-[9px] font-mono">
-            Duyệt & Đếm theo hàng đơn vị
+            Duyệt & Đếm theo hàng {{ placeLabel }}
           </span>
         </div>
 
@@ -198,7 +198,7 @@
             
             <div
               class="py-1.5 text-xs font-mono font-bold transition-all duration-300"
-              :class="isCountCellHighlighted(val - 1) ? 'text-cyan-400 font-extrabold' : 'count-cell-value'"
+              :class="isCountCellHighlighted(val - 1) ? 'text-accent-cyan font-extrabold' : 'count-cell-value'"
             >
               {{ frame?.countArray?.[val - 1] ?? 0 }}
             </div>
@@ -263,7 +263,7 @@
             <div
               v-if="frame?.inputArray && frame.inputArray.length <= 12"
               class="mt-1 font-mono text-[9px] font-bold shrink-0 transition-all duration-300"
-              :class="isOutputSlotActive(idx) ? 'text-emerald-400 scale-105' : 'index-label'"
+              :class="isOutputSlotActive(idx) ? 'text-accent-green scale-105' : 'index-label'"
             >
               [{{ idx }}]
             </div>
@@ -335,6 +335,28 @@ function barHeightPct(value: number): number {
   return Math.round(25 + ratio * 65);
 }
 
+// Hỗ trợ Counting Sort đa pass (LSD): chữ số được tính trên giá trị đã offset theo hàng chữ số đang xét
+const countOffset = computed(() => {
+  const arr = props.frame?.inputArray;
+  if (!arr || arr.length === 0) return 0;
+  const min = Math.min(...arr);
+  return min < 0 ? -min : 0;
+});
+
+const activePlace = computed(() => props.frame?.activeDigitPlace ?? 1);
+
+function digitOf(value: number): number {
+  return Math.floor((value + countOffset.value) / activePlace.value) % 10;
+}
+
+const placeLabel = computed(() => {
+  const p = activePlace.value;
+  if (p === 1) return 'đơn vị';
+  if (p === 10) return 'chục';
+  if (p === 100) return 'trăm';
+  return `10^${Math.log10(p)}`;
+});
+
 function getPhaseStepClass(phase: string): string {
   const current = props.frame?.countingStep;
   let isActive = false;
@@ -389,7 +411,7 @@ function isCountCellHighlighted(val: number): boolean {
   if (step === 'output' && comparing) {
     const inputIdx = comparing[0];
     const itemVal = props.frame.inputArray?.[inputIdx];
-    return itemVal !== undefined && (itemVal % 10) === val;
+    return itemVal !== undefined && digitOf(itemVal) === val;
   }
   return false;
 }
@@ -507,7 +529,7 @@ function updateConnectorLines() {
     const val = props.frame.inputArray?.[inputIdx];
 
     if (val !== undefined) {
-      const digit = Math.max(0, Math.min(Math.floor(val % 10), 9));
+      const digit = digitOf(val);
       const inputEl = inputBars.value[inputIdx];
       const countEl = countCells.value[digit];
       const outputEl = outputSlots.value[outputIdx];

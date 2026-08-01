@@ -2,39 +2,39 @@
   <section class="theory-library-section">
     <div class="flex justify-between items-center mb-6 flex-wrap gap-3">
       <div>
-        <h2 class="section-heading m-0">ThÆ° viá»‡n BÃ i viáº¿t LÃ½ thuyáº¿t</h2>
-        <p class="text-slate-400 text-sm mt-1">Quáº£n lÃ½ vÃ  soáº¡n tháº£o bÃ i viáº¿t kiáº¿n thá»©c ná»n táº£ng cho há»c viÃªn</p>
+        <h2 class="section-heading m-0">Thư viện Bài viết Lý thuyết</h2>
+        <p class="text-text-muted text-sm mt-1">Quản lý và soạn thảo bài viết kiến thức nền tảng cho học viên</p>
       </div>
       <div class="flex gap-2 flex-wrap">
         <button type="button" class="btn-secondary" @click="showFilters = !showFilters">
           <BaseIcon name="filter" class="w-4 h-4 inline mr-1" />
-          {{ showFilters ? 'áº¨n' : 'Hiá»‡n' }} bá»™ lá»c
+          {{ showFilters ? 'Ẩn' : 'Hiện' }} bộ lọc
         </button>
         <button type="button" class="btn-primary" @click="createNewArticle">
           <BaseIcon name="plus" class="w-4 h-4 inline mr-1" />
-          Táº¡o bÃ i viáº¿t má»›i
+          Tạo bài viết mới
         </button>
       </div>
     </div>
 
     
-    <div v-if="showFilters" class="filters-panel mb-6 p-4 bg-slate-900/60 border border-white/5 rounded-xl animate-slide-down">
+    <div v-if="showFilters" class="filters-panel mb-6 p-4 bg-bg-secondary border border-border-subtle rounded-xl animate-slide-down">
       <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
         <div>
-          <label class="form-label">TÃ¬m kiáº¿m</label>
-          <input v-model="filters.search" type="text" class="form-input" placeholder="TiÃªu Ä‘á», ná»™i dung, tags..." @keyup.enter="loadArticles" />
+          <label class="form-label">Tìm kiếm</label>
+          <input v-model="filters.search" type="text" class="form-input" placeholder="Tiêu đề, nội dung, tags..." @keyup.enter="loadArticles" />
         </div>
         <div>
-          <label class="form-label">Danh má»¥c</label>
+          <label class="form-label">Danh mục</label>
           <select v-model="filters.category" class="form-select" @change="loadArticles">
-            <option value="">Táº¥t cáº£</option>
+            <option value="">Tất cả</option>
             <option v-for="cat in categories" :key="cat" :value="cat">{{ cat }}</option>
           </select>
         </div>
         <div>
-          <label class="form-label">Äá»™ khÃ³</label>
+          <label class="form-label">Độ khó</label>
           <select v-model="filters.difficulty" class="form-select" @change="loadArticles">
-            <option value="">Táº¥t cáº£</option>
+            <option value="">Tất cả</option>
             <option value="Beginner">Beginner</option>
             <option value="Intermediate">Intermediate</option>
             <option value="Advanced">Advanced</option>
@@ -43,18 +43,18 @@
         <div>
           <label class="form-label flex items-center gap-2 cursor-pointer">
             <input type="checkbox" v-model="filters.onlyPublished" class="form-checkbox" @change="loadArticles" />
-            <span>Chá»‰ bÃ i Ä‘Ã£ xuáº¥t báº£n</span>
+            <span>Chỉ bài đã xuất bản</span>
           </label>
         </div>
       </div>
       <div class="flex gap-2 mt-4">
         <button type="button" class="btn-secondary" @click="resetFilters">
           <BaseIcon name="rotate-ccw" class="w-4 h-4 inline mr-1" />
-          Äáº·t láº¡i
+          Đặt lại
         </button>
         <button type="button" class="btn-primary" @click="loadArticles">
           <BaseIcon name="search" class="w-4 h-4 inline mr-1" />
-          Lá»c
+          Lọc
         </button>
       </div>
     </div>
@@ -62,49 +62,49 @@
     
     <div v-if="loading" class="loading-state">
       <div class="spinner"></div>
-      <span>Äang táº£i bÃ i viáº¿t...</span>
+      <span>Đang tải bài viết...</span>
     </div>
 
     <div v-else-if="articles.length === 0" class="empty-state">
-      <div class="text-5xl mb-4">ðŸ“š</div>
-      <h3 class="text-xl font-bold text-white">ChÆ°a cÃ³ bÃ i viáº¿t nÃ o</h3>
-      <p class="text-slate-400 mt-2 max-w-md">HÃ£y táº¡o bÃ i viáº¿t Ä‘áº§u tiÃªn Ä‘á»ƒ báº¯t Ä‘áº§u xÃ¢y dá»±ng thÆ° viá»‡n kiáº¿n thá»©c</p>
+      <div class="text-5xl mb-4">📚</div>
+      <h3 class="text-xl font-bold text-white">Chưa có bài viết nào</h3>
+      <p class="text-text-muted mt-2 max-w-md">Hãy tạo bài viết đầu tiên để bắt đầu xây dựng thư viện kiến thức</p>
       <button class="btn-primary mt-6" @click="createNewArticle">
-        <BaseIcon name="plus" class="w-4 h-4 inline mr-1" /> Táº¡o bÃ i viáº¿t Ä‘áº§u tiÃªn
+        <BaseIcon name="plus" class="w-4 h-4 inline mr-1" /> Tạo bài viết đầu tiên
       </button>
     </div>
 
     <div v-else class="space-y-3">
-      <div v-for="article in articles" :key="article.id" class="article-card bg-slate-900/60 border border-white/5 rounded-xl p-5 hover:border-indigo-500/30 transition-colors">
+      <div v-for="article in articles" :key="article.id" class="article-card bg-bg-secondary border border-border-subtle rounded-xl p-5 hover:border-accent/30 transition-colors">
         <div class="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
           <div class="flex-1 min-w-0">
             <div class="flex items-center gap-2 flex-wrap mb-2">
               <h3 class="font-bold text-white truncate">{{ article.title }}</h3>
-              <span v-if="article.isPublished" class="badge badge-emerald text-xs">ÄÃ£ xuáº¥t báº£n</span>
-              <span v-else class="badge badge-warning text-xs">NhÃ¡p</span>
+              <span v-if="article.isPublished" class="badge badge-emerald text-xs">Đã xuất bản</span>
+              <span v-else class="badge badge-warning text-xs">Nháp</span>
               <span class="badge badge-indigo text-xs">{{ article.category }}</span>
               <span class="badge badge-slate text-xs">{{ article.difficulty }}</span>
             </div>
-            <p class="text-slate-400 text-sm line-clamp-2 mb-3">{{ article.slug }}</p>
-            <div class="flex items-center gap-4 text-xs text-slate-500 flex-wrap">
-              <span><BaseIcon name="eye" class="w-3 h-3 inline mr-1" /> {{ article.viewCount }} lÆ°á»£t xem</span>
-              <span><BaseIcon name="clock" class="w-3 h-3 inline mr-1" /> {{ article.readTimeMinutes }} phÃºt Ä‘á»c</span>
+            <p class="text-text-muted text-sm line-clamp-2 mb-3">{{ article.slug }}</p>
+            <div class="flex items-center gap-4 text-xs text-text-muted flex-wrap">
+              <span><BaseIcon name="eye" class="w-3 h-3 inline mr-1" /> {{ article.viewCount }} lượt xem</span>
+              <span><BaseIcon name="clock" class="w-3 h-3 inline mr-1" /> {{ article.readTimeMinutes }} phút đọc</span>
               <span v-if="article.tags"><BaseIcon name="tag" class="w-3 h-3 inline mr-1" /> {{ article.tags }}</span>
               <span><BaseIcon name="calendar" class="w-3 h-3 inline mr-1" /> {{ formatDate(article.updatedAt) }}</span>
               <span v-if="article.authorName"><BaseIcon name="user" class="w-3 h-3 inline mr-1" /> {{ article.authorName }}</span>
             </div>
           </div>
           <div class="flex items-center gap-2 shrink-0">
-            <button type="button" class="btn-action-icon" @click="editArticle(article)" title="Chá»‰nh sá»­a">
+            <button type="button" class="btn-action-icon" @click="editArticle(article)" title="Chỉnh sửa">
               <BaseIcon name="edit-2" class="w-4 h-4" />
             </button>
-            <button type="button" class="btn-action-icon" :class="article.isPublished ? 'text-amber-400 hover:text-amber-300' : 'text-emerald-400 hover:text-emerald-300'" @click="togglePublish(article)" :title="article.isPublished ? 'Gá»¡ xuáº¥t báº£n' : 'Xuáº¥t báº£n'">
+            <button type="button" class="btn-action-icon" :class="article.isPublished ? 'text-accent-yellow hover:text-accent-yellow' : 'text-accent-green hover:text-accent-green'" @click="togglePublish(article)" :title="article.isPublished ? 'Gỡ xuất bản' : 'Xuất bản'">
               <BaseIcon :name="article.isPublished ? 'eye-off' : 'eye'" class="w-4 h-4" />
             </button>
-            <button type="button" class="btn-action-icon text-rose-400 hover:text-rose-300" @click="confirmDeleteArticle(article)" title="XÃ³a">
+            <button type="button" class="btn-action-icon text-accent-red hover:text-accent-red" @click="confirmDeleteArticle(article)" title="Xóa">
               <BaseIcon name="trash-2" class="w-4 h-4" />
             </button>
-            <button type="button" class="btn-action-icon text-indigo-400 hover:text-indigo-300" @click="viewVersions(article)" title="Xem lá»‹ch sá»­ phiÃªn báº£n">
+            <button type="button" class="btn-action-icon text-accent hover:text-accent" @click="viewVersions(article)" title="Xem lịch sử phiên bản">
               <BaseIcon name="git-branch" class="w-4 h-4" />
             </button>
           </div>
@@ -114,8 +114,8 @@
 
     
     <div v-if="totalPages > 1" class="flex justify-center gap-2 mt-6">
-      <button class="btn-secondary px-3" @click="changePage(page - 1)" :disabled="page <= 1">TrÆ°á»›c</button>
-      <span class="flex items-center px-3 text-sm text-slate-400">Trang {{ page }} / {{ totalPages }}</span>
+      <button class="btn-secondary px-3" @click="changePage(page - 1)" :disabled="page <= 1">Trước</button>
+      <span class="flex items-center px-3 text-sm text-text-muted">Trang {{ page }} / {{ totalPages }}</span>
       <button class="btn-secondary px-3" @click="changePage(page + 1)" :disabled="page >= totalPages">Sau</button>
     </div>
 
@@ -130,8 +130,8 @@
     
     <ConfirmModal
       v-model:show="showConfirmDelete"
-      title="XÃ³a bÃ i viáº¿t"
-      :message="`Báº¡n cÃ³ cháº¯c cháº¯n muá»‘n xÃ³a bÃ i viáº¿t &quot;${articleToDelete?.title || ''}&quot;? HÃ nh Ä‘á»™ng nÃ y khÃ´ng thá»ƒ hoÃ n tÃ¡c.`"
+      title="Xóa bài viết"
+      :message="`Bạn có chắc chắn muốn xóa bài viết &quot;${articleToDelete?.title || ''}&quot;? Hành động này không thể hoàn tác.`"
       variant="danger"
       @confirm="deleteArticle"
     />
@@ -289,11 +289,11 @@ async function togglePublish(article: TheoryArticle) {
       article.publishedAt = article.isPublished ? new Date().toISOString() : null;
     } else {
       const err = await res.json();
-      alert(err.message || 'Lá»—i khi thay Ä‘á»•i tráº¡ng thÃ¡i xuáº¥t báº£n');
+      alert(err.message || 'Lỗi khi thay đổi trạng thái xuất bản');
     }
   } catch (err) {
     console.error('Toggle publish failed:', err);
-    alert('KhÃ´ng thá»ƒ káº¿t ná»‘i mÃ¡y chá»§');
+    alert('Không thể kết nối máy chủ');
   }
 }
 
@@ -316,11 +316,11 @@ async function deleteArticle() {
       articleToDelete.value = null;
     } else {
       const err = await res.json();
-      alert(err.message || 'XÃ³a tháº¥t báº¡i');
+      alert(err.message || 'Xóa thất bại');
     }
   } catch (err) {
     console.error('Delete failed:', err);
-    alert('KhÃ´ng thá»ƒ káº¿t ná»‘i mÃ¡y chá»§');
+    alert('Không thể kết nối máy chủ');
   }
 }
 
@@ -356,11 +356,11 @@ async function saveArticle(data: any) {
       loadArticles();
     } else {
       const err = await res.json();
-      alert(err.message || 'LÆ°u tháº¥t báº¡i');
+      alert(err.message || 'Lưu thất bại');
     }
   } catch (err) {
     console.error('Save article failed:', err);
-    alert('KhÃ´ng thá»ƒ káº¿t ná»‘i mÃ¡y chá»§');
+    alert('Không thể kết nối máy chủ');
   }
 }
 

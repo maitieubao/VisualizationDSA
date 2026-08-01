@@ -5,7 +5,7 @@
         <div class="modal-header">
           <h3 class="modal-title">
             <BaseIcon :name="editingArticle ? 'edit' : 'plus'" class="w-5 h-5 inline mr-2" />
-            {{ editingArticle ? 'Chá»‰nh sá»­a bÃ i viáº¿t' : 'Táº¡o bÃ i viáº¿t má»›i' }}
+            {{ editingArticle ? 'Chỉnh sửa bài viết' : 'Tạo bài viết mới' }}
           </h3>
           <button type="button" class="modal-close" @click="$emit('update:show', false)">
             <BaseIcon name="x" class="w-5 h-5" />
@@ -14,27 +14,27 @@
 
         <form @submit.prevent="handleSubmit" class="modal-body">
           <div class="form-field">
-            <label class="form-label">TiÃªu Ä‘á» <span class="text-rose-400">*</span></label>
-            <input v-model="form.title" type="text" class="form-input" placeholder="VD: Giá»›i thiá»‡u vá» thuáº­t toÃ¡n Quick Sort" required maxlength="200" />
-            <p class="form-hint">{{ form.title.length }}/200 kÃ½ tá»±</p>
+            <label class="form-label">Tiêu đề <span class="text-accent-red">*</span></label>
+            <input v-model="form.title" type="text" class="form-input" placeholder="VD: Giới thiệu về thuật toán Quick Sort" required maxlength="200" />
+            <p class="form-hint">{{ form.title.length }}/200 ký tự</p>
           </div>
 
           <div class="form-field">
-            <label class="form-label">Slug (URL thÃ¢n thiá»‡n) <span class="text-rose-400">*</span></label>
+            <label class="form-label">Slug (URL thân thiện) <span class="text-accent-red">*</span></label>
             <input v-model="form.slug" type="text" class="form-input" placeholder="gioi-thieu-thuat-toan-quick-sort" required maxlength="250" />
-            <p class="form-hint">Chá»‰ chá»¯ cÃ¡i, sá»‘, dáº¥u gáº¡ch ngang. Tá»± Ä‘á»™ng táº¡o tá»« tiÃªu Ä‘á» náº¿u Ä‘á»ƒ trá»‘ng.</p>
+            <p class="form-hint">Chỉ chữ cái, số, dấu gạch ngang. Tự động tạo từ tiêu đề nếu để trống.</p>
           </div>
 
           <div class="form-row">
             <div class="form-field">
-              <label class="form-label">Danh má»¥c</label>
+              <label class="form-label">Danh mục</label>
               <select v-model="form.category" class="form-select">
-                <option value="">Chá»n danh má»¥c</option>
+                <option value="">Chọn danh mục</option>
                 <option v-for="cat in categories" :key="cat" :value="cat">{{ cat }}</option>
               </select>
             </div>
             <div class="form-field">
-              <label class="form-label">Äá»™ khÃ³</label>
+              <label class="form-label">Độ khó</label>
               <select v-model="form.difficulty" class="form-select">
                 <option value="Beginner">Beginner</option>
                 <option value="Intermediate">Intermediate</option>
@@ -44,37 +44,37 @@
           </div>
 
           <div class="form-field">
-            <label class="form-label">Tags (cÃ¡ch nhau bá»Ÿi dáº¥u pháº©y)</label>
+            <label class="form-label">Tags (cách nhau bởi dấu phẩy)</label>
             <input v-model="form.tags" type="text" class="form-input" placeholder="quick-sort, sorting, algorithm, divide-conquer" />
           </div>
 
           <div class="form-field">
-            <label class="form-label">Thá»i gian Ä‘á»c Æ°á»›c tÃ­nh (phÃºt)</label>
+            <label class="form-label">Thời gian đọc ước tính (phút)</label>
             <input v-model.number="form.readTimeMinutes" type="number" class="form-input" min="1" max="120" />
           </div>
 
           <div class="form-field">
-            <label class="form-label">Ná»™i dung Markdown <span class="text-rose-400">*</span></label>
-            <CustomMarkdownEditor v-model="form.contentMd" :placeholder="'Viáº¿t ná»™i dung bÃ i viáº¿t báº±ng Markdown...'" />
+            <label class="form-label">Nội dung Markdown <span class="text-accent-red">*</span></label>
+            <CustomMarkdownEditor v-model="form.contentMd" :placeholder="'Viết nội dung bài viết bằng Markdown...'" />
           </div>
 
           <div class="form-field">
             <label class="form-label flex items-center gap-2 cursor-pointer">
               <input v-model="form.isPublished" type="checkbox" class="form-checkbox" />
-              <span>Xuáº¥t báº£n ngay sau khi lÆ°u</span>
+              <span>Xuất bản ngay sau khi lưu</span>
             </label>
           </div>
 
           <div class="modal-footer">
             <button type="button" class="btn-secondary" @click="$emit('update:show', false)">
-              Há»§y
+              Hủy
             </button>
             <button type="submit" class="btn-primary" :disabled="saving">
               <span v-if="saving" class="flex items-center gap-2">
                 <span class="spinner-sm"></span>
-                Äang lÆ°u...
+                Đang lưu...
               </span>
-              <span v-else>{{ editingArticle ? 'Cáº­p nháº­t' : 'Táº¡o bÃ i viáº¿t' }}</span>
+              <span v-else>{{ editingArticle ? 'Cập nhật' : 'Tạo bài viết' }}</span>
             </button>
           </div>
         </form>
@@ -119,13 +119,13 @@ function generateSlug(title: string): string {
   return title
     .toLowerCase()
     .trim()
-    .replace(/[Ã Ã¡áº¡áº£Ã£Ã¢áº§áº¥áº­áº©áº«Äƒáº±áº¯áº·áº³áºµ]/g, 'a')
-    .replace(/[Ã¨Ã©áº¹áº»áº½Ãªá»áº¿á»‡á»ƒá»…]/g, 'e')
-    .replace(/[Ã¬Ã­á»‹á»‰Ä©]/g, 'i')
-    .replace(/[Ã²Ã³á»á»ÃµÃ´á»“á»‘á»™á»•á»—Æ¡á»á»›á»£á»Ÿá»¡]/g, 'o')
-    .replace(/[Ã¹Ãºá»¥á»§Å©Æ°á»«á»©á»±á»­á»¯]/g, 'u')
-    .replace(/[á»³Ã½á»µá»·á»¹]/g, 'y')
-    .replace(/Ä‘/g, 'd')
+    .replace(/[àáạảãâầấậẩẫăằắặẳẵ]/g, 'a')
+    .replace(/[èéẹẻẽêềếệểễ]/g, 'e')
+    .replace(/[ìíịỉĩ]/g, 'i')
+    .replace(/[òóọỏõôồốộổỗơờớợởỡ]/g, 'o')
+    .replace(/[ùúụủũưừứựửữ]/g, 'u')
+    .replace(/[ỳýỵỷỹ]/g, 'y')
+    .replace(/đ/g, 'd')
     .replace(/[^a-z0-9\s-]/g, '')
     .replace(/\s+/g, '-')
     .replace(/-+/g, '-')
@@ -175,7 +175,7 @@ watch(() => form.title, (newTitle) => {
 
 async function handleSubmit() {
   if (!form.title.trim() || !form.contentMd.trim()) {
-    alert('TiÃªu Ä‘á» vÃ  ná»™i dung khÃ´ng Ä‘Æ°á»£c Ä‘á»ƒ trá»‘ng');
+    alert('Tiêu đề và nội dung không được để trống');
     return;
   }
   if (!form.slug.trim()) {

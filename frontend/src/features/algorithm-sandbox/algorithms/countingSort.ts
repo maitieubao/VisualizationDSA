@@ -5,163 +5,188 @@ export function generateCountingSortFrames(arr: number[]): SortFrame[] {
   let stepIndex = 0;
 
   const currentArray = [...arr];
-
   const arrayStateWithIds = currentArray.map((val, idx) => ({
     id: idx,
     value: val,
   }));
 
-  const count = Array(10).fill(0);
+  // Miền đếm: dịch chuyển toàn bộ giá trị về >= 0 để chữ số luôn hợp lệ [0..9]
+  const minVal = currentArray.length ? Math.min(...currentArray) : 0;
+  const offset = minVal < 0 ? -minVal : 0;
+  const maxVal = currentArray.length ? Math.max(...currentArray) : 0;
+  const shiftedMax = maxVal + offset;
 
   const output: Array<number | null> = Array(currentArray.length).fill(null);
   const outputIds: Array<{ id: number; value: number } | null> = Array(currentArray.length).fill(null);
 
+  const count = Array(10).fill(0);
+
+  // Góc nhìn chính: phần tử đã đặt vào output chiếm vị trí ổn định,
+  // phần chưa đặt được "nén" giữ nguyên thứ tự — đảm bảo id luôn duy nhất
+  const mergedView = (): { arrayState: number[]; arrayStateWithIds: Array<{ id: number; value: number }> } => {
+    const placed: Array<{ id: number; value: number }> = [];
+    for (const item of outputIds) {
+      if (item) placed.push(item);
+    }
+    const placedIds = new Set(placed.map((e) => e.id));
+    const remaining = arrayStateWithIds.filter((e) => !placedIds.has(e.id));
+
+    const result: Array<{ id: number; value: number }> = [];
+    for (let i = 0; i < currentArray.length; i++) {
+      result.push(i < placed.length ? placed[i] : remaining[i - placed.length]);
+    }
+    return { arrayState: result.map((e) => e.value), arrayStateWithIds: result };
+  };
+
+  const emit = (
+    desc: string,
+    step: "count" | "accumulate" | "output",
+    place: number,
+    comp: [number, number] | null,
+    useMerged: boolean,
+    vars: Record<string, string | number>
+  ) => {
+    frames.push({
+      stepIndex: stepIndex++,
+      arrayState: useMerged ? mergedView().arrayState : [...currentArray],
+      arrayStateWithIds: useMerged ? mergedView().arrayStateWithIds : [...arrayStateWithIds],
+      comparingIndices: comp,
+      pivotIndex: null,
+      swappedIndices: null,
+      sortedIndices: [],
+      description: desc,
+      algorithm: "counting",
+      countArray: [...count],
+      countingStep: step,
+      activeDigitPlace: place,
+      inputArray: [...currentArray],
+      outputArray: [...output],
+      outputArrayWithIds: [...outputIds],
+      variables: vars,
+    });
+  };
+
   frames.push({
-    stepIndex: ++stepIndex,
+    stepIndex: stepIndex++,
     arrayState: [...currentArray],
     arrayStateWithIds: [...arrayStateWithIds],
     comparingIndices: null,
     pivotIndex: null,
     swappedIndices: null,
     sortedIndices: [],
-    description: "Khởi tạo giải thuật Counting Sort. Ánh xạ các phần tử mảng đầu vào theo chữ số hàng đơn vị (% 10) và dựng mảng tần suất Count [0..9].",
+    description: "Khởi tạo Counting Sort. Sắp xếp ổn định theo từng hàng chữ số (LSD): Count → Prefix Sum → Output cho từng hàng, từ hàng đơn vị đến hàng cao nhất.",
     algorithm: "counting",
-    countArray: [...count],
+    countArray: Array(10).fill(0),
     countingStep: "count",
+    activeDigitPlace: 1,
     inputArray: [...currentArray],
     outputArray: [...output],
     outputArrayWithIds: [...outputIds],
-    variables: { phase: "count", i: "-", digit: "-", countVal: 0, outputIdx: "-" },
+    variables: { phase: "init", i: "-", digit: "-", countVal: 0, outputIdx: "-", place: 1 },
   });
 
-  for (let i = 0; i < currentArray.length; i++) {
-    const val = currentArray[i];
-    const digit = Math.max(0, Math.min(Math.floor(val % 10), 9));
-    count[digit]++;
+  for (let exp = 1; Math.floor(shiftedMax / exp) > 0; exp *= 10) {
+    count.fill(0);
+    const placeLabel = exp === 1 ? "đơn vị" : exp === 10 ? "chục" : exp === 100 ? "trăm" : `10^${Math.log10(exp)}`;
 
-    frames.push({
-      stepIndex: ++stepIndex,
-      arrayState: [...currentArray],
-      arrayStateWithIds: [...arrayStateWithIds],
-      comparingIndices: [i, digit] as [number, number],
-      pivotIndex: null,
-      swappedIndices: null,
-      sortedIndices: [],
-      description: `Đếm phần tử A[${i}] = ${val}. Chữ số hàng đơn vị là ${digit}. Tăng Count[${digit}] lên thành ${count[digit]}.`,
-      algorithm: "counting",
-      countArray: [...count],
-      countingStep: "count",
-      inputArray: [...currentArray],
-      outputArray: [...output],
-      outputArrayWithIds: [...outputIds],
-      variables: { phase: "count", i, digit, countVal: count[digit], outputIdx: "-" },
-    });
-  }
+    const digitOf = (val: number): number => Math.floor((val + offset) / exp) % 10;
 
-  frames.push({
-    stepIndex: ++stepIndex,
-    arrayState: [...currentArray],
-    arrayStateWithIds: [...arrayStateWithIds],
-    comparingIndices: null,
-    pivotIndex: null,
-    swappedIndices: null,
-    sortedIndices: [],
-    description: "Bắt đầu pha tính tổng cộng dồn (Prefix Sum). Cộng lũy kế từ trái sang phải để tìm vị trí kết thúc của từng nhóm chữ số.",
-    algorithm: "counting",
-    countArray: [...count],
-    countingStep: "accumulate",
-    inputArray: [...currentArray],
-    outputArray: [...output],
-    outputArrayWithIds: [...outputIds],
-    variables: { phase: "accumulate", i: "-", digit: "-", countVal: "-", outputIdx: "-" },
-  });
+    // ── Pass 1: Đếm tần suất ──
+    for (let i = 0; i < currentArray.length; i++) {
+      const val = currentArray[i];
+      const digit = digitOf(val);
+      count[digit]++;
 
-  for (let j = 1; j < count.length; j++) {
-    const prev = count[j - 1];
-    count[j] += prev;
+      emit(
+        `Đếm phần tử A[${i}] = ${val} (hàng ${placeLabel}: chữ số ${digit}). Tăng Count[${digit}] lên ${count[digit]}.`,
+        "count",
+        exp,
+        [i, digit],
+        false,
+        { phase: "count", i, digit, countVal: count[digit], outputIdx: "-", place: exp }
+      );
+    }
 
-    frames.push({
-      stepIndex: ++stepIndex,
-      arrayState: [...currentArray],
-      arrayStateWithIds: [...arrayStateWithIds],
-      comparingIndices: [j - 1, j] as [number, number],
-      pivotIndex: null,
-      swappedIndices: null,
-      sortedIndices: [],
-      description: `Cộng dồn tần suất: Count[${j}] += Count[${j - 1}] → Vị trí kết thúc của nhóm hàng đơn vị ${j} là ${count[j]}.`,
-      algorithm: "counting",
-      countArray: [...count],
-      countingStep: "accumulate",
-      inputArray: [...currentArray],
-      outputArray: [...output],
-      outputArrayWithIds: [...outputIds],
-      variables: { phase: "accumulate", i: j, digit: "-", countVal: count[j], outputIdx: "-" },
-    });
-  }
+    // ── Pass 2: Cộng dồn (Prefix Sum) ──
+    emit(
+      `Bắt đầu pha Prefix Sum cho hàng ${placeLabel}. Cộng lũy kế trái → phải để tìm vị trí kết thúc của từng nhóm chữ số.`,
+      "accumulate",
+      exp,
+      null,
+      false,
+      { phase: "accumulate", i: "-", digit: "-", countVal: "-", outputIdx: "-", place: exp }
+    );
 
-  frames.push({
-    stepIndex: ++stepIndex,
-    arrayState: [...currentArray],
-    arrayStateWithIds: [...arrayStateWithIds],
-    comparingIndices: null,
-    pivotIndex: null,
-    swappedIndices: null,
-    sortedIndices: [],
-    description: "Bắt đầu dựng mảng kết quả. Duyệt mảng Input từ PHẢI qua TRÁI (right-to-left) để giữ nguyên thứ tự xuất hiện của các phần tử trùng (Stable Sort).",
-    algorithm: "counting",
-    countArray: [...count],
-    countingStep: "output",
-    inputArray: [...currentArray],
-    outputArray: [...output],
-    outputArrayWithIds: [...outputIds],
-    variables: { phase: "output", i: "-", digit: "-", countVal: "-", outputIdx: "-" },
-  });
+    for (let j = 1; j < count.length; j++) {
+      const prev = count[j - 1];
+      count[j] += prev;
 
-  for (let i = currentArray.length - 1; i >= 0; i--) {
-    const val = currentArray[i];
-    const digit = Math.max(0, Math.min(Math.floor(val % 10), 9));
-    count[digit]--;
-    const outputIdx = count[digit];
+      emit(
+        `Cộng dồn: Count[${j}] += Count[${j - 1}] → nhóm chữ số ${j} kết thúc tại vị trí ${count[j]}.`,
+        "accumulate",
+        exp,
+        [j - 1, j],
+        false,
+        { phase: "accumulate", i: j, digit: "-", countVal: count[j], outputIdx: "-", place: exp }
+      );
+    }
 
-    output[outputIdx] = val;
-    outputIds[outputIdx] = arrayStateWithIds[i];
+    // ── Pass 3: Dựng output (duyệt phải → trái giữ Stable) ──
+    emit(
+      `Bắt đầu dựng mảng kết quả hàng ${placeLabel}. Duyệt Input từ PHẢI qua TRÁI để giữ nguyên thứ tự phần tử trùng (Stable Sort).`,
+      "output",
+      exp,
+      null,
+      false,
+      { phase: "output", i: "-", digit: "-", countVal: "-", outputIdx: "-", place: exp }
+    );
 
-    frames.push({
-      stepIndex: ++stepIndex,
-      arrayState: [...currentArray],
-      arrayStateWithIds: [...arrayStateWithIds],
-      comparingIndices: [i, outputIdx] as [number, number],
-      pivotIndex: null,
-      swappedIndices: null,
-      sortedIndices: [],
-      description: `Duyệt A[${i}] = ${val} (Hàng đơn vị là ${digit}). Vị trí chèn là Count[${digit}] - 1 = ${outputIdx}. Đưa vào Output[${outputIdx}] và giảm Count[${digit}].`,
-      algorithm: "counting",
-      countArray: [...count],
-      countingStep: "output",
-      inputArray: [...currentArray],
-      outputArray: [...output],
-      outputArrayWithIds: [...outputIds],
-      variables: { phase: "output", i, digit, countVal: count[digit], outputIdx },
-    });
+    for (let i = currentArray.length - 1; i >= 0; i--) {
+      const val = currentArray[i];
+      const digit = digitOf(val);
+      count[digit]--;
+      const outputIdx = count[digit];
+
+      output[outputIdx] = val;
+      outputIds[outputIdx] = arrayStateWithIds[i];
+
+      emit(
+        `Đưa A[${i}] = ${val} vào Output[${outputIdx}] (chữ số ${digit}). Giảm Count[${digit}] xuống ${count[digit]}.`,
+        "output",
+        exp,
+        [i, outputIdx],
+        true,
+        { phase: "output", i, digit, countVal: count[digit], outputIdx, place: exp }
+      );
+    }
+
+    // Kết thúc pass: mảng hiện tại = output vừa dựng, chuẩn bị pass hàng tiếp theo
+    for (let i = 0; i < currentArray.length; i++) {
+      currentArray[i] = output[i] ?? currentArray[i];
+      arrayStateWithIds[i] = outputIds[i] ?? arrayStateWithIds[i];
+      output[i] = null;
+      outputIds[i] = null;
+    }
   }
 
   const finalSortedIndices = Array.from({ length: currentArray.length }, (_, k) => k);
   frames.push({
-    stepIndex: ++stepIndex,
-    arrayState: output.map((v) => v ?? 0),
-    arrayStateWithIds: outputIds.map((item, idx) => item ?? { id: idx, value: 0 }),
+    stepIndex: stepIndex++,
+    arrayState: [...currentArray],
+    arrayStateWithIds: [...arrayStateWithIds],
     comparingIndices: null,
     pivotIndex: null,
     swappedIndices: null,
     sortedIndices: finalSortedIndices,
-    description: "Giải thuật Counting Sort hoàn tất! Mảng đã được sắp xếp tăng dần ổn định dựa trên hàng đơn vị.",
+    description: "Counting Sort hoàn tất! Mảng đã được sắp xếp tăng dần ổn định qua tất cả các hàng chữ số.",
     algorithm: "counting",
-    countArray: [...count],
+    countArray: Array(10).fill(0),
     countingStep: "output",
+    activeDigitPlace: 1,
     inputArray: [...currentArray],
-    outputArray: output.map((v) => v ?? 0),
-    outputArrayWithIds: outputIds.map((item, idx) => item ?? { id: idx, value: 0 }),
-    variables: { phase: "done", i: "-", digit: "-", countVal: "-", outputIdx: "-" },
+    outputArray: [...currentArray],
+    outputArrayWithIds: [...arrayStateWithIds],
+    variables: { phase: "done", i: "-", digit: "-", countVal: "-", outputIdx: "-", place: "-" },
   });
 
   return frames;

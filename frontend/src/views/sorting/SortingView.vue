@@ -18,7 +18,7 @@
 
       <div class="flex items-center gap-3 font-mono text-[10px] uppercase tracking-wider text-text-secondary select-none">
         <span class="flex items-center gap-1.5 text-accent font-bold">
-          <span class="w-2 h-2 rounded-full bg-indigo-500 animate-pulse"></span>
+          <span class="w-2 h-2 rounded-full bg-accent animate-pulse"></span>
           VISUALGO-MODE 60FPS
         </span>
         <span class="text-text-muted text-[9px]">Space: Play/Pause | ← →: Step</span>
@@ -41,12 +41,12 @@
       </KeepAlive>
 
       <template v-if="activeTab === 'sorting'">
-        <div class="absolute bottom-3 left-0 right-0 z-30 px-4 flex items-center justify-center pointer-events-none gap-3">
-          <div class="pointer-events-auto w-full max-w-2xl">
+        <div class="absolute bottom-3 left-0 right-0 z-30 px-4 flex items-center justify-center pointer-events-none gap-2">
+          <div class="pointer-events-auto flex-1 min-w-0 flex justify-center max-w-2xl">
             <VcrDockBar />
           </div>
 
-          <div class="pointer-events-auto shrink-0 absolute right-4">
+          <div class="pointer-events-auto shrink-0">
             <SortingDrawerTrace />
           </div>
         </div>
@@ -72,7 +72,7 @@ const vcrStore = useVcrStore();
 
 function handleKeydown(e: KeyboardEvent) {
   const tag = (e.target as HTMLElement)?.tagName;
-  if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return;
+  if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT' || tag === 'BUTTON') return;
 
   if (activeTab.value !== 'sorting') return;
 

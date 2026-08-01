@@ -15,7 +15,6 @@ namespace VisualizationDSA.Domain.Entities
         
         public string Constraints { get; private set; } = string.Empty;
         public string Examples { get; private set; } = string.Empty; 
-        public string Hints { get; private set; } = string.Empty; 
         public string Tags { get; private set; } = string.Empty;
         
         
@@ -26,12 +25,13 @@ namespace VisualizationDSA.Domain.Entities
         public virtual ICollection<CodelabSubmission> Submissions { get; private set; } = new List<CodelabSubmission>();
         public virtual ICollection<CodelabTestCase> TestCases { get; private set; } = new List<CodelabTestCase>();
         public virtual ICollection<CodelabTemplate> Templates { get; private set; } = new List<CodelabTemplate>();
+        public virtual ICollection<CodelabHint> Hints { get; private set; } = new List<CodelabHint>();
 
         private Codelab() { }
 
         public Codelab(string title, string description, string initialCode, int difficulty, int xpReward, 
             int maxRuntimeMs = 2000, int maxMemoryBytes = 128000000, string allowedLanguages = "csharp,python,java,javascript",
-            string constraints = "", string examples = "", string hints = "", string tags = "")
+            string constraints = "", string examples = "", string tags = "")
         {
             Id = Guid.NewGuid();
             Title = title;
@@ -44,14 +44,13 @@ namespace VisualizationDSA.Domain.Entities
             AllowedLanguages = allowedLanguages;
             Constraints = constraints;
             Examples = examples;
-            Hints = hints;
             Tags = tags;
             IsDeleted = false;
         }
 
         public void Update(string title, string description, string initialCode, int difficulty, int xpReward, 
             int maxRuntimeMs, int maxMemoryBytes, string allowedLanguages,
-            string constraints, string examples, string hints, string tags)
+            string constraints, string examples, string tags)
         {
             Title = title;
             Description = description;
@@ -63,7 +62,6 @@ namespace VisualizationDSA.Domain.Entities
             AllowedLanguages = allowedLanguages;
             Constraints = constraints;
             Examples = examples;
-            Hints = hints;
             Tags = tags;
         }
 

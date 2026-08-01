@@ -105,7 +105,7 @@
           type="button" 
           class="toolbar-btn" 
           @click="insertTheoryArticle"
-          title="ChÃ¨n bÃ i viáº¿t lÃ½ thuyáº¿t"
+          title="Chèn bài viết lý thuyết"
         >
           <BaseIcon name="book-open" class="w-4 h-4" />
         </button>
@@ -113,7 +113,7 @@
           type="button" 
           class="toolbar-btn" 
           @click="insertQuiz"
-          title="ChÃ¨n Quiz"
+          title="Chèn Quiz"
         >
           <BaseIcon name="help-circle" class="w-4 h-4" />
         </button>
@@ -121,7 +121,7 @@
           type="button" 
           class="toolbar-btn" 
           @click="insertCodelab"
-          title="ChÃ¨n Codelab"
+          title="Chèn Codelab"
         >
           <BaseIcon name="code" class="w-4 h-4" />
         </button>
@@ -180,13 +180,13 @@
           Markdown
         </span>
         <span class="status-item">
-          {{ charCount }} kÃ½ tá»±
+          {{ charCount }} ký tự
         </span>
         <span class="status-item">
-          {{ lineCount }} dÃ²ng
+          {{ lineCount }} dòng
         </span>
         <span class="status-item" v-if="wordCount > 0">
-          {{ wordCount }} tá»«
+          {{ wordCount }} từ
         </span>
       </div>
       <div class="status-right">
@@ -234,11 +234,11 @@ const charCount = computed(() => content.value.length);
 const lineCount = computed(() => content.value.split('\n').length);
 const wordCount = computed(() => content.value.trim() ? content.value.trim().split(/\s+/).length : 0);
 
-const placeholder = props.placeholder || 'Viáº¿t ná»™i dung bÃ i há»c báº±ng Markdown...';
+const placeholder = props.placeholder || 'Viết nội dung bài học bằng Markdown...';
 
 
 function renderMarkdown(md: string): string {
-  if (!md) return '<p class="text-slate-500 italic">Ná»™i dung trá»‘ng...</p>';
+  if (!md) return '<p class="text-text-muted italic">Nội dung trống...</p>';
   
   return md
     

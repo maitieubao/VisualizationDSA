@@ -1,4 +1,4 @@
-import apiClient from './apiClient';
+import { api } from './apiClient';
 
 export interface CreateCourseDto {
   title: string;
@@ -27,7 +27,7 @@ export interface AddModuleItemDto {
 }
 
 export const courseApi = {
-  createCourse: (data: CreateCourseDto) => apiClient.post('/concepts/courses', data),
-  addModule: (courseId: string, data: AddModuleDto) => apiClient.post(`/concepts/courses/${courseId}/modules`, data),
-  addModuleItem: (moduleId: string, data: AddModuleItemDto) => apiClient.post(`/concepts/modules/${moduleId}/items`, data),
+  createCourse: (data: CreateCourseDto) => api.post<{ courseId: string; message: string }>('/concepts/courses', data),
+  addModule: (courseId: string, data: AddModuleDto) => api.post<{ moduleId: string; message: string }>(`/concepts/courses/${courseId}/modules`, data),
+  addModuleItem: (moduleId: string, data: AddModuleItemDto) => api.post<{ message: string }>(`/concepts/modules/${moduleId}/items`, data),
 };

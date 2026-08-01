@@ -1,6 +1,6 @@
 <template>
   <button
-    class="help-button fixed bottom-6 right-6 z-[99] flex items-center justify-center w-10 h-10 rounded-full border border-white/10 hover:border-accent-cyan/50 hover:bg-accent-cyan/10 text-text-secondary hover:text-accent-cyan transition-all duration-300 shadow-lg cursor-pointer"
+    class="help-button fixed bottom-6 right-6 z-[99] flex items-center justify-center w-10 h-10 rounded-full border border-border-subtle hover:border-accent-cyan/50 hover:bg-accent-cyan/10 text-text-secondary hover:text-accent-cyan transition-all duration-300 shadow-lg cursor-pointer"
     style="background: rgba(15, 23, 42, 0.60); backdrop-filter: blur(8px);"
     title="Hướng dẫn sử dụng giao diện"
     @click="triggerTour"

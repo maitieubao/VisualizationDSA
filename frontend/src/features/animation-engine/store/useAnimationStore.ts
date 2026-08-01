@@ -23,12 +23,7 @@ export const useAnimationStore = defineStore('animation', () => {
   const isPlaying = ref<boolean>(false);
   const playbackSpeed = ref<number>(1.0);
   let timerId: number | null = null;
-  
-  const timeline = shallowRef<OOPAnimationTimeline | null>(null);
-  const currentTime = ref(0);
-  const speed = ref(1);
 
-  
   const interactionLocked = ref<boolean>(false);
 
 
@@ -43,14 +38,6 @@ export const useAnimationStore = defineStore('animation', () => {
 
 
 
-
-  function loadTimeline(tl: OOPAnimationTimeline) {
-    timeline.value = tl;
-    currentTime.value = 0;
-    
-    frames.value = [];
-    currentIndex.value = 0;
-  }
 
   let playUntilTarget: number | null = null;
   let playUntilResolver: (() => void) | null = null;

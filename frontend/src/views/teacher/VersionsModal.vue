@@ -5,7 +5,7 @@
         <div class="modal-header">
           <h3 class="modal-title">
             <BaseIcon name="git-branch" class="w-5 h-5 inline mr-2" />
-            Lá»‹ch sá»­ phiÃªn báº£n: {{ article?.title }}
+            Lịch sử phiên bản: {{ article?.title }}
           </h3>
           <button type="button" class="modal-close" @click="$emit('update:show', false)">
             <BaseIcon name="x" class="w-5 h-5" />
@@ -14,55 +14,55 @@
         
         <div class="modal-body versions-list">
           <div v-if="!article?.versions?.length" class="empty-versions">
-            <BaseIcon name="git-branch" class="w-12 h-12 text-slate-500 mx-auto mb-3" />
-            <p class="text-slate-400 text-center">ChÆ°a cÃ³ phiÃªn báº£n nÃ o</p>
-            <p class="text-slate-500 text-sm text-center mt-1">CÃ¡c phiÃªn báº£n sáº½ xuáº¥t hiá»‡n khi báº¡n chá»‰nh sá»­a bÃ i viáº¿t</p>
+            <BaseIcon name="git-branch" class="w-12 h-12 text-text-muted mx-auto mb-3" />
+            <p class="text-text-muted text-center">Chưa có phiên bản nào</p>
+            <p class="text-text-muted text-sm text-center mt-1">Các phiên bản sẽ xuất hiện khi bạn chỉnh sửa bài viết</p>
           </div>
           
           <div v-else class="space-y-3">
             <div 
               v-for="(version, index) in article.versions" 
               :key="version.id"
-              class="version-item p-4 rounded-xl border border-white/5 bg-slate-950/40 hover:border-indigo-500/20 transition-colors"
+              class="version-item p-4 rounded-xl border border-border-subtle bg-bg-secondary/40 hover:border-accent/20 transition-colors"
             >
               <div class="version-header flex items-center justify-between gap-4 mb-3 flex-wrap">
                 <div class="flex items-center gap-3">
-                  <span class="version-badge text-[10px] font-bold px-2.5 py-1 rounded-full bg-indigo-500/20 text-indigo-400 border border-indigo-500/30">
+                  <span class="version-badge text-[10px] font-bold px-2.5 py-1 rounded-full bg-accent/20 text-accent border border-accent/30">
                     v{{ getVersionNumber(article.versions, index) }}
                   </span>
-                  <span class="version-date text-xs text-slate-500">
+                  <span class="version-date text-xs text-text-muted">
                     {{ formatDate(version.createdAt) }}
                   </span>
-                  <span class="version-author text-xs text-slate-500">
-                    bá»Ÿi {{ version.changedByName }}
+                  <span class="version-author text-xs text-text-muted">
+                    bởi {{ version.changedByName }}
                   </span>
                 </div>
                 
-                <span v-if="version.changeSummary" class="version-summary text-xs text-slate-400 italic max-w-xs truncate">
+                <span v-if="version.changeSummary" class="version-summary text-xs text-text-muted italic max-w-xs truncate">
                   {{ version.changeSummary }}
                 </span>
               </div>
               
               <div class="version-preview">
-                <div class="preview-content text-xs text-slate-400 line-clamp-3 font-mono bg-slate-950/50 p-3 rounded-lg border border-white/5">
+                <div class="preview-content text-xs text-text-muted line-clamp-3 font-mono bg-bg-secondary p-3 rounded-lg border border-border-subtle">
                   {{ stripHtml(version.contentMd).substring(0, 200) }}...
                 </div>
               </div>
               
-              <div class="version-actions flex items-center justify-end gap-2 mt-3 pt-3 border-t border-white/5">
+              <div class="version-actions flex items-center justify-end gap-2 mt-3 pt-3 border-t border-border-subtle">
                 <button 
                   type="button" 
                   class="btn-secondary text-xs px-3 py-1.5"
                   @click="$emit('restore', version)"
                 >
                   <BaseIcon name="rotate-ccw" class="w-3 h-3 inline mr-1" />
-                  KhÃ´i phá»¥c
+                  Khôi phục
                 </button>
                 <button 
                   type="button" 
-                  class="btn-action-icon text-slate-400 hover:text-indigo-400 p-1.5"
+                  class="btn-action-icon text-text-muted hover:text-accent p-1.5"
                   @click="viewFullVersion(version)"
-                  title="Xem Ä‘áº§y Ä‘á»§"
+                  title="Xem đầy đủ"
                 >
                   <BaseIcon name="eye" class="w-4 h-4" />
                 </button>
@@ -73,7 +73,7 @@
         
         <div class="modal-footer">
           <button type="button" class="btn-secondary" @click="$emit('update:show', false)">
-            ÄÃ³ng
+            Đóng
           </button>
         </div>
       </div>

@@ -7,6 +7,7 @@ export function generateHeapSortFrames(inputArray: number[]): SortFrame[] {
   const sortedIndices: number[] = [];
   let step = 0;
   let swaps = 0;
+  let comparisons = 0;
 
   function emit(
     desc: string,
@@ -36,38 +37,42 @@ export function generateHeapSortFrames(inputArray: number[]): SortFrame[] {
     const right = 2 * i + 2;
 
     if (left < heapSize) {
-      emit(`So sánh node[${largest}]=${arr[largest]} với left[${left}]=${arr[left]}`, [largest, left], i, null, heapSize, { heapSize, i, largest, swaps });
+      comparisons++;
+      emit(`So sánh node[${largest}]=${arr[largest]} với left[${left}]=${arr[left]}`, [largest, left], i, null, heapSize, { heapSize, i, largest, swaps, comparisons });
       if (arr[left] > arr[largest]) largest = left;
     }
     if (right < heapSize) {
-      emit(`So sánh node[${largest}]=${arr[largest]} với right[${right}]=${arr[right]}`, [largest, right], i, null, heapSize, { heapSize, i, largest, swaps });
+      comparisons++;
+      emit(`So sánh node[${largest}]=${arr[largest]} với right[${right}]=${arr[right]}`, [largest, right], i, null, heapSize, { heapSize, i, largest, swaps, comparisons });
       if (arr[right] > arr[largest]) largest = right;
     }
 
     if (largest !== i) {
       [arr[i], arr[largest]] = [arr[largest], arr[i]];
       swaps++;
-      emit(`Hoán vị node[${i}] ↔ node[${largest}]`, null, i, [i, largest], heapSize, { heapSize, i, largest, swaps });
+      emit(`Hoán vị node[${i}] ↔ node[${largest}]`, null, i, [i, largest], heapSize, { heapSize, i, largest, swaps, comparisons });
       heapify(heapSize, largest);
     }
   }
 
-  emit('Xây dựng Max-Heap ban đầu', null, null, null, n, { heapSize: n, i: '-', largest: '-', swaps });
+  emit('Xây dựng Max-Heap ban đầu', null, null, null, n, { heapSize: n, i: '-', largest: '-', swaps, comparisons });
   for (let i = Math.floor(n / 2) - 1; i >= 0; i--) {
     heapify(n, i);
   }
 
-  emit(`Max-Heap hoàn thành! Root = ${arr[0]}`, null, 0, null, n, { heapSize: n, i: '-', largest: '-', swaps });
+  if (n > 0) {
+    emit(`Max-Heap hoàn thành! Root = ${arr[0]}`, null, 0, null, n, { heapSize: n, i: '-', largest: '-', swaps, comparisons });
+  }
   for (let i = n - 1; i > 0; i--) {
     [arr[0], arr[i]] = [arr[i], arr[0]];
     sortedIndices.push(i);
     swaps++;
-    emit(`Đưa phần tử lớn nhất ${arr[i]} về vị trí [${i}]`, null, null, [0, i], i, { heapSize: i, i, largest: '-', swaps });
+    emit(`Đưa phần tử lớn nhất ${arr[i]} về vị trí [${i}]`, null, null, [0, i], i, { heapSize: i, i, largest: '-', swaps, comparisons });
     heapify(i, 0);
   }
 
-  sortedIndices.push(0);
-  emit('✅ Heap Sort hoàn thành!', null, null, null, 0, { heapSize: 0, i: '-', largest: '-', swaps });
+  if (n > 0) sortedIndices.push(0);
+  emit('✅ Heap Sort hoàn thành!', null, null, null, 0, { heapSize: 0, i: '-', largest: '-', swaps, comparisons });
 
   return frames;
 }

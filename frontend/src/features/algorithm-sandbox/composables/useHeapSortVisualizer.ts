@@ -13,13 +13,13 @@ export function useHeapSortVisualizer(frame: () => SortFrame | null) {
   });
 
   
+  // Phân biệt giai đoạn BUILD vs SORT dựa trên heapSize thay vì keyword mô tả
+  // (keyword 'hoán đổi' không bao giờ khớp vì generator emit "Hoán vị")
   const currentPhase = computed(() => {
     if (!frame()) return 'BUILD';
-    const desc = frame()!.description.toLowerCase();
-    if (desc.includes('đưa phần tử lớn nhất') || desc.includes('hoán đổi') || desc.includes('vun đống lại') || desc.includes('hoàn thành')) {
-      return 'SORT';
-    }
-    return 'BUILD';
+    const total = frame()!.arrayState.length;
+    const heapSize = frame()!.heapSize ?? total;
+    return heapSize < total ? 'SORT' : 'BUILD';
   });
 
   
@@ -44,8 +44,11 @@ export function useHeapSortVisualizer(frame: () => SortFrame | null) {
     if (desc.includes('đưa phần tử lớn nhất') || desc.includes('trích xuất')) {
       return 'Giai đoạn Sort: Rút phần tử lớn nhất ở root (index 0) đưa về cuối mảng để chốt vị trí đã sắp xếp (emerald), giảm kích thước Heap và vun đống lại.';
     }
-    if (desc.includes('hoàn thành')) {
+    if (desc.includes('heap sort hoàn thành')) {
       return 'Thuật toán hoàn tất! Toàn bộ mảng đã được vun đống và sắp xếp tăng dần thành công.';
+    }
+    if (desc.includes('max-heap hoàn thành')) {
+      return 'Giai đoạn Build Heap hoàn tất: root chứa giá trị lớn nhất toàn mảng, sẵn sàng bước vào giai đoạn trích xuất.';
     }
     return frame()!.description;
   });
@@ -175,13 +178,13 @@ export function useHeapSortVisualizer(frame: () => SortFrame | null) {
   
   function getLeftChildLabel(idx: number): string {
     const left = idx * 2 + 1;
-    if (left >= n.value) return 'Không có';
+    if (left >= currentHeapSize.value) return 'Không có';
     return `Index ${left} (Value: ${frame()?.arrayState[left] ?? '—'})`;
   }
 
   function getRightChildLabel(idx: number): string {
     const right = idx * 2 + 2;
-    if (right >= n.value) return 'Không có';
+    if (right >= currentHeapSize.value) return 'Không có';
     return `Index ${right} (Value: ${frame()?.arrayState[right] ?? '—'})`;
   }
 

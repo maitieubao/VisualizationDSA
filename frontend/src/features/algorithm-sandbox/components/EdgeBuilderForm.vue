@@ -1,7 +1,7 @@
 <template>
   <div class="edge-builder-form grid grid-cols-12 gap-3 min-h-0">
     
-    <div class="col-span-5 form-container p-3 rounded-xl border border-white/5 bg-black/10 flex flex-col gap-2">
+    <div class="col-span-5 form-container p-3 rounded-xl border border-border-subtle bg-black/10 flex flex-col gap-2">
       <div class="text-[10px] font-bold text-text-secondary uppercase tracking-wider select-none">
         Thêm cạnh
       </div>
@@ -71,7 +71,7 @@
         <span>Liên kết ({{ edges.length }})</span>
       </div>
 
-      <div v-if="edges.length === 0" class="text-[10px] text-text-muted italic text-center py-6 border border-dashed border-white/5 rounded-xl flex-1 flex items-center justify-center">
+      <div v-if="edges.length === 0" class="text-[10px] text-text-muted italic text-center py-6 border border-dashed border-border-subtle rounded-xl flex-1 flex items-center justify-center">
         Chưa có cạnh.
       </div>
 
@@ -88,14 +88,14 @@
               ? 'bg-accent-emerald/10 border-accent-emerald/30 shadow-[0_0_8px_rgba(16,185,129,0.15)]'
               : isHovered(edge.id)
                 ? 'bg-accent-yellow/5 border-accent-yellow/30'
-                : 'bg-white/5 border-white/5 hover:bg-white/10 hover:border-white/10'
+                : 'bg-bg-hover border-border-subtle hover:bg-bg-hover hover:border-border-subtle'
           ]"
         >
           <div class="flex items-center gap-1 font-mono text-[11px]">
             <span class="font-bold text-text-primary">{{ getNodeLabel(edge.from) }}</span>
             <span class="text-text-muted">➔</span>
             <span class="font-bold text-text-primary">{{ getNodeLabel(edge.to) }}</span>
-            <span class="px-1 py-0.2 bg-white/5 border border-white/5 text-accent-yellow rounded font-semibold text-[9px] ml-1">
+            <span class="px-1 py-0.2 bg-bg-hover border border-border-subtle text-accent-yellow rounded font-semibold text-[9px] ml-1">
               w={{ edge.weight }}
             </span>
           </div>

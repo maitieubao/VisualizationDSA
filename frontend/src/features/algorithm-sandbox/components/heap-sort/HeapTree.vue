@@ -1,23 +1,23 @@
 <template>
-  <div class="tree-container w-full h-full flex-1 relative rounded-md border border-white/10 bg-slate-950 overflow-hidden shrink-0 select-none">
+  <div class="tree-container w-full h-full flex-1 relative rounded-md border border-border-subtle overflow-hidden shrink-0 select-none">
     
     
-    <div class="legend-overlay absolute top-2.5 left-2.5 border border-white/10 rounded-md px-2.5 py-1.5 text-[10px] font-mono flex items-center gap-3.5 z-10 bg-slate-900/90 backdrop-blur-md shadow-md">
+    <div class="legend-overlay absolute top-2.5 left-2.5 rounded-md px-2.5 py-1.5 text-[10px] font-mono flex items-center gap-3.5 z-10 backdrop-blur-md shadow-md">
       <div class="flex items-center gap-1.5">
-        <span class="w-2 h-2 rounded-full bg-amber-400"></span>
-        <span class="text-slate-300">Đang xét</span>
+        <span class="legend-dot legend-yellow"></span>
+        <span class="text-text-secondary">Đang xét</span>
       </div>
       <div class="flex items-center gap-1.5">
-        <span class="w-2 h-2 rounded-full bg-indigo-400"></span>
-        <span class="text-slate-300">Trong Heap</span>
+        <span class="legend-dot legend-cyan"></span>
+        <span class="text-text-secondary">Trong Heap</span>
       </div>
       <div class="flex items-center gap-1.5">
-        <span class="w-2 h-2 rounded-full bg-rose-500 animate-pulse"></span>
-        <span class="text-rose-300 font-bold">Vi phạm Max-Heap</span>
+        <span class="legend-dot legend-rose animate-pulse"></span>
+        <span class="rose-text font-bold">Vi phạm Max-Heap</span>
       </div>
       <div class="flex items-center gap-1.5">
-        <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
-        <span class="text-slate-300">Đã chốt</span>
+        <span class="legend-dot legend-emerald"></span>
+        <span class="text-text-secondary">Đã chốt</span>
       </div>
     </div>
 
@@ -84,8 +84,8 @@
         </div>
         <div>Giá trị: <span class="tooltip-value font-bold">{{ item.value }}</span></div>
         <div class="tooltip-children border-t pt-1 mt-1 flex flex-col gap-0.5">
-          <div>Con trái: <span class="text-muted">{{ getLeftChildLabel(idx) }}</span></div>
-          <div>Con phải: <span class="text-muted">{{ getRightChildLabel(idx) }}</span></div>
+          <div>Con trái: <span class="text-text-muted">{{ getLeftChildLabel(idx) }}</span></div>
+          <div>Con phải: <span class="text-text-muted">{{ getRightChildLabel(idx) }}</span></div>
         </div>
       </div>
     </div>

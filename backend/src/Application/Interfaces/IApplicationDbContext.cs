@@ -18,6 +18,7 @@ namespace VisualizationDSA.Application.Interfaces
         DbSet<Codelab> Codelabs { get; }
         DbSet<CodelabTestCase> CodelabTestCases { get; }
         DbSet<CodelabTemplate> CodelabTemplates { get; }
+        DbSet<CodelabHint> CodelabHints { get; }
         DbSet<CodelabSubmission> CodelabSubmissions { get; }
         DbSet<ClassroomModule> ClassroomModules { get; }
         DbSet<ClassroomModuleItem> ClassroomModuleItems { get; }

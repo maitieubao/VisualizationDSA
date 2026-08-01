@@ -88,11 +88,14 @@ flowchart TD
 
 ---
 
-## 3. Cài đặt chi tiết bằng C# {#code-example}
+## 3. Cài đặt chi tiết {#code-example}
 
 Phần phức tạp nhất của mã nguồn không nằm ở việc gọi đệ quy chẻ mảng (rất dễ), mà nằm ở cái hàm `Merge` (Trộn) thực thi thao tác rút bài.
 
-```csharp
+```playground:merge-sort
+```
+
+```dual:merge-sort
 public class MergeSortEngine
 {
     public void Sort(int[] arr)

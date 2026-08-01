@@ -1,12 +1,7 @@
-interface MonacoMouseEvent {
-  target: {
-    type: number;
-    position?: { lineNumber: number };
-  };
-}
+import type * as monaco from 'monaco-editor';
 
 interface MonacoEditorInstance {
-  onMouseDown(cb: (e: MonacoMouseEvent) => void): { dispose(): void };
+  onMouseDown(cb: (e: monaco.editor.IEditorMouseEvent) => void): { dispose(): void };
 }
 
 export class MonacoGutterClickInterceptor {
@@ -23,7 +18,7 @@ export class MonacoGutterClickInterceptor {
   private setupListeners(): void {
     if (!this.editorInstance) return;
 
-    this.mouseDownListener = this.editorInstance.onMouseDown((e: MonacoMouseEvent) => {
+    this.mouseDownListener = this.editorInstance.onMouseDown((e: monaco.editor.IEditorMouseEvent) => {
       
       if (e.target.type === 3 || e.target.type === 4) {
         const lineNumber = e.target.position?.lineNumber;

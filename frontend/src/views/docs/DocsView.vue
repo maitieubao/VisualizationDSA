@@ -12,7 +12,7 @@
         
         
         <div v-else-if="!loading" class="flex flex-col items-center justify-center py-20 text-center">
-          <div class="w-24 h-24 mb-6 text-gray-600">
+          <div class="w-24 h-24 mb-6 text-text-disabled">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
               <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
               <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
@@ -51,7 +51,7 @@ const headings = ref<{id: string; title: string; level: number}[]>([]);
 
 
 
-const markdownFiles = import.meta.glob('../../features/docs/content/**/*.md', { as: 'raw' });
+const markdownFiles = import.meta.glob('../../features/docs/content/**/*.md', { query: '?raw', import: 'default' });
 
 const getFirstSectionOfTopic = (pathSegments: string[]) => {
   

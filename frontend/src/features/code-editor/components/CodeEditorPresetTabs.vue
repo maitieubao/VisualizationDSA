@@ -2,11 +2,11 @@
   <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 pb-3 border-b border-border-subtle">
     <div class="flex items-center gap-1.5 shrink-0">
       <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24"
-        fill="none" stroke="currentColor" stroke-width="2.5" class="text-indigo-400">
+        fill="none" stroke="currentColor" stroke-width="2.5" class="text-accent">
         <polyline points="16 18 22 12 16 6" />
         <polyline points="8 6 2 12 8 18" />
       </svg>
-      <span class="text-xs font-bold uppercase tracking-wider text-slate-300">Mã Thuật Toán</span>
+      <span class="text-xs font-bold uppercase tracking-wider text-text-secondary">Mã Thuật Toán</span>
     </div>
     <div class="flex gap-1.5 flex-wrap">
       <button
@@ -16,8 +16,8 @@
         class="px-2.5 py-1 rounded-lg text-[11px] font-semibold border transition-all cursor-pointer"
         :class="
           activePreset === key
-            ? 'bg-indigo-600 text-white border-indigo-400 shadow-sm'
-            : 'bg-slate-950 text-slate-400 border-white/10 hover:text-white hover:bg-slate-800'
+            ? 'bg-accent text-white border-accent shadow-sm'
+            : 'bg-bg-secondary text-text-muted border-border-subtle hover:text-white hover:bg-bg-surface'
         "
       >
         {{ tpl.name.split(' (')[0] }}

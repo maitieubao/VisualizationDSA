@@ -38,7 +38,7 @@
           
           <button
             @click="isPanelCollapsed = !isPanelCollapsed"
-            class="absolute left-[-20px] top-1/2 -translate-y-1/2 z-[1006] w-5 h-12 bg-bg-secondary/95 hover:bg-bg-hover border border-white/10 border-r-0 rounded-l-xl flex items-center justify-center cursor-pointer text-text-muted hover:text-text-primary transition-all shadow-2xl select-none pointer-events-auto"
+            class="absolute left-[-20px] top-1/2 -translate-y-1/2 z-[1006] w-5 h-12 bg-bg-secondary/95 hover:bg-bg-hover border border-border-subtle border-r-0 rounded-l-xl flex items-center justify-center cursor-pointer text-text-muted hover:text-text-primary transition-all shadow-2xl select-none pointer-events-auto"
             :title="isPanelCollapsed ? 'Mở bảng dữ liệu (P)' : 'Thu gọn bảng dữ liệu (P)'"
           >
             <svg

@@ -3,7 +3,7 @@
     <div>
       <div class="flex items-center gap-2 mb-6">
         <BaseIcon name="diamond" class="w-8 h-8 text-accent animate-pulse" />
-        <span class="text-xl font-bold tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-purple-400">VDSA PREMIUM</span>
+        <span class="text-xl font-bold tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-accent-cyan to-accent-purple">VDSA PREMIUM</span>
       </div>
       
       <h2 class="text-2xl font-bold mb-4 leading-tight">Mở Khóa Toàn Bộ Sức Mạnh DSA</h2>

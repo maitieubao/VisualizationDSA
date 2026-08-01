@@ -1,13 +1,13 @@
 <template>
-  <div class="lesson-study-view flex flex-col min-h-[calc(100vh-64px)] w-full overflow-auto bg-slate-950 font-sans">
+  <div class="lesson-study-view flex flex-col min-h-[calc(100vh-64px)] w-full overflow-auto bg-bg-secondary font-sans">
     
-    <header class="px-6 py-3 border-b border-white/10 bg-slate-900/90 backdrop-blur-md flex items-center justify-between shrink-0 shadow-lg z-20">
+    <header class="px-6 py-3 border-b border-border-subtle bg-bg-secondary backdrop-blur-md flex items-center justify-between shrink-0 shadow-lg z-20">
       
       <div class="flex items-center gap-3">
-        <router-link :to="courseId ? `/courses/${courseId}` : '/courses'" class="text-xs font-semibold text-slate-400 hover:text-white transition-colors flex items-center gap-1">
+        <router-link :to="courseId ? `/courses/${courseId}` : '/courses'" class="text-xs font-semibold text-text-muted hover:text-white transition-colors flex items-center gap-1">
           <span>←</span> Quay lại
         </router-link>
-        <span class="text-slate-600">|</span>
+        <span class="text-text-disabled">|</span>
         <h2 class="text-sm font-extrabold text-white line-clamp-1" v-if="lesson">
           {{ lesson.title }}
         </h2>
@@ -21,10 +21,10 @@
           @click="activeStep = step.number"
           class="flex items-center gap-2 px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer"
           :class="activeStep === step.number
-            ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/30'
-            : 'bg-slate-950/60 text-slate-400 hover:text-slate-200 border border-white/5'"
+            ? 'bg-accent text-white shadow-md shadow-accent/30'
+            : 'bg-bg-secondary text-text-muted hover:text-text-primary border border-border-subtle'"
         >
-          <span class="w-4 h-4 rounded-full flex items-center justify-center text-[10px]" :class="activeStep === step.number ? 'bg-white/20 text-white' : 'bg-slate-800 text-slate-400'">
+          <span class="w-4 h-4 rounded-full flex items-center justify-center text-[10px]" :class="activeStep === step.number ? 'bg-bg-hover text-white' : 'bg-bg-surface text-text-muted'">
             {{ step.number }}
           </span>
           <span>{{ step.label }}</span>
@@ -33,8 +33,8 @@
 
       
       <div class="flex items-center gap-2 font-mono text-xs">
-        <span class="px-2.5 py-1 rounded-lg bg-amber-950/50 text-amber-400 border border-amber-500/30 font-bold flex items-center gap-1.5">
-          <svg class="w-3.5 h-3.5 text-amber-400" fill="currentColor" viewBox="0 0 24 24">
+        <span class="px-2.5 py-1 rounded-lg bg-accent-yellow/50 text-accent-yellow border border-accent-yellow/30 font-bold flex items-center gap-1.5">
+          <svg class="w-3.5 h-3.5 text-accent-yellow" fill="currentColor" viewBox="0 0 24 24">
             <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" />
           </svg>
           <span>+{{ lesson?.xpReward ?? 50 }} XP</span>
