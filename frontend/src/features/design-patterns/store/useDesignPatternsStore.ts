@@ -8,7 +8,7 @@
 import { defineStore } from 'pinia';
 import { ref, computed } from 'vue';
 import { DESIGN_PATTERN_SCENARIOS, type DPScenario, type DPScenarioStep, type DPAnimationType, type DPAnimationTarget, type DPClassNode, type DPLink } from '../scenarios/designPatternsScenarios';
-import { parseEmojiToSvg } from '../../../utils/emojiParser';
+import { parseEmojiToSvg } from '@/utils/emojiParser';
 
 export const useDesignPatternsStore = defineStore('designPatterns', () => {
   // ==========================================

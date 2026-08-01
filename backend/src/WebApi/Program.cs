@@ -15,6 +15,7 @@ using System.IO.Compression;
 using System.Text;
 using System.Text.Json;
 using System.Threading.RateLimiting;
+using VisualizationDSA.Application.Common.Interfaces;
 using VisualizationDSA.Application.Services;
 using VisualizationDSA.Domain.Interfaces;
 using VisualizationDSA.Infrastructure.Data;
@@ -23,6 +24,7 @@ using VisualizationDSA.Infrastructure.Interceptors;
 using VisualizationDSA.Infrastructure.Repositories;
 using VisualizationDSA.Infrastructure.Services;
 using VisualizationDSA.WebApi.Middlewares;
+using VisualizationDSA.Application.Common.Interfaces;
 
 // ── Bootstrap logger (vọ ngay khi start, trước khi DI sẵn sàng) ──────────
 Log.Logger = new LoggerConfiguration()
@@ -155,10 +157,10 @@ builder.Services.AddCors(options =>
     });
 });
 
-// Configure Database (SQLite)
+// Configure Database (PostgreSQL)
 builder.Services.AddDbContextPool<ApplicationDbContext>(options =>
     options
-        .UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection"))
+        .UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"))
         // Bảo vệ tính bất biến của Event Sourcing Ledger (chặn UPDATE/DELETE).
         .AddInterceptors(new ImmutableAuditInterceptor()));
 
@@ -167,13 +169,43 @@ builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 
 // Register Application Services
 builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddScoped<IGemsShopService, GemsShopService>();
 builder.Services.AddScoped<IQuizService, QuizService>();
+builder.Services.AddScoped<IUploadService, CloudinaryUploadService>();
 builder.Services.AddScoped<IGamificationService, GamificationService>();
 builder.Services.AddScoped<ILeaderboardService, LeaderboardService>();
+builder.Services.AddScoped<IDailyQuestService, DailyQuestService>();
+
+// Register Background Service
+builder.Services.AddHostedService<CoreBackgroundJobsService>();
 builder.Services.AddScoped<IAnalyticsService, AnalyticsService>();
 builder.Services.AddScoped<IPaymentService, PaymentService>();
 builder.Services.AddScoped<ISemanticGraphService, SemanticGraphService>();
 builder.Services.AddScoped<IAuditEventService, AuditEventService>();
+builder.Services.AddScoped<ITeacherStudioService, TeacherStudioService>();
+builder.Services.AddScoped<INotificationService, NotificationService>();
+builder.Services.AddScoped<IAiQuotaService, AiQuotaService>();
+builder.Services.AddHttpClient<IAiAssistantService, AiAssistantService>();
+builder.Services.AddScoped<IRoadmapAuditService, RoadmapAuditService>();
+builder.Services.AddScoped<IContentModerationService, ContentModerationService>();
+builder.Services.AddScoped<ISessionService, SessionService>();
+builder.Services.AddScoped<IRoadmapLanguageService, RoadmapLanguageService>();
+builder.Services.AddScoped<IClassroomService, ClassroomService>();
+builder.Services.AddScoped<ICheatSheetService, CheatSheetService>();
+builder.Services.AddScoped<IUploadService, CloudinaryUploadService>();
+builder.Services.AddScoped<IHeartService, HeartService>();
+builder.Services.AddHttpClient<IJudge0Service, Judge0Service>();
+builder.Services.AddScoped<IPracticeLadderService, PracticeLadderService>();
+builder.Services.AddHttpClient<ISandboxService, SandboxService>();
+builder.Services.AddScoped<ITeacherApplicationService, TeacherApplicationService>();
+// Register Background Jobs
+builder.Services.AddHostedService<VisualizationDSA.Infrastructure.Jobs.PremiumExpiryJob>();
+builder.Services.AddHostedService<VisualizationDSA.Infrastructure.Jobs.ClassroomInactiveAlertJob>();
+builder.Services.AddHostedService<VisualizationDSA.Infrastructure.Jobs.StreakReminderJob>();
+builder.Services.AddHostedService<VisualizationDSA.Infrastructure.Jobs.PremiumExpiryWarningJob>();
+builder.Services.AddHostedService<VisualizationDSA.Infrastructure.Jobs.TeacherAppReminderJob>();
+builder.Services.AddHostedService<VisualizationDSA.Infrastructure.Jobs.ClassroomWeeklyBXHJob>();
+builder.Services.AddHostedService<VisualizationDSA.Infrastructure.Jobs.StreakCheckJob>();
 
 // Register Algorithm Strategies (Reflection-based auto-scan)
 builder.Services.AddAlgorithmStrategies();
@@ -345,8 +377,8 @@ try
     using (var scope = app.Services.CreateScope())
     {
         var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-        // Sử dụng EnsureCreated() cho SQLite
-        context.Database.EnsureCreated();
+        // Dùng EnsureCreatedAsync() để auto-tạo schema cho PostgreSQL mà không cần qua Migrations (tránh lỗi xung đột SQLite)
+        await context.Database.EnsureCreatedAsync();
         
         var seeder = new DbSeeder(context);
         await seeder.SeedAsync();

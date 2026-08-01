@@ -102,10 +102,10 @@
 import { onMounted, onUnmounted, computed } from 'vue';
 import { useDesignPatternsStore } from '../store/useDesignPatternsStore';
 import { DESIGN_PATTERN_SCENARIOS } from '../scenarios/designPatternsScenarios';
-import VcrControls from '../../../components/VcrControls.vue';
-import SvgIcon from '../../../components/icons/SvgIcon.vue';
+import VcrControls from '@/components/VcrControls.vue';
+import SvgIcon from '@/components/icons/SvgIcon.vue';
 import DesignPatternsCanvas from './DesignPatternsCanvas.vue';
-import { parseEmojiToSvg } from '../../../utils/emojiParser';
+import { parseEmojiToSvg } from '@/utils/emojiParser';
 
 const store = useDesignPatternsStore();
 

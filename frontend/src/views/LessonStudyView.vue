@@ -1,75 +1,37 @@
 <template>
   <div class="lesson-study-view flex flex-col h-[calc(100vh-64px)] w-full bg-slate-950 overflow-hidden relative lg:flex-row">
     
-    <!-- Mobile Tab Toggle (Show only on screens < 768px) -->
-    <div v-if="isMobile" class="flex border-b border-white/10 bg-slate-900/90 backdrop-blur-md flex-shrink-0 z-10 w-full">
-      <button 
-        @click="mobileView = 'theory'"
-        :class="['flex-1 py-3 text-center text-xs font-bold uppercase tracking-wider transition-colors', mobileView === 'theory' ? 'bg-slate-950 text-indigo-400 border-b-2 border-indigo-500' : 'text-slate-400']"
-      >
-        Lý Thuyết
-      </button>
-      <button 
-        @click="mobileView = 'sandbox'"
-        :class="['flex-1 py-3 text-center text-xs font-bold uppercase tracking-wider transition-colors', mobileView === 'sandbox' ? 'bg-slate-950 text-indigo-400 border-b-2 border-indigo-500' : 'text-slate-400']"
-      >
-        Mục lục / Thực hành
-      </button>
-    </div>
-
     <!-- ==================== DEFAULT MODE ==================== -->
     <!-- Main Content Area (Scrollable Vertically) -->
     <div 
       v-if="!isDevMode"
-      v-show="!isMobile || mobileView === 'theory'"
-      class="flex-1 flex flex-col h-full overflow-y-auto custom-scrollbar relative" 
-      ref="theoryContainerRef" 
-      @scroll="handleScroll"
+      class="flex-1 flex flex-col h-full relative" 
     >
       
-      <!-- Top Half: Sandbox (Fixed Height) -->
-      <section class="w-full h-[75vh] min-h-[600px] border-b border-white/10 bg-slate-950 relative flex-shrink-0">
-        <div class="absolute top-0 left-0 w-full px-4 py-2 bg-slate-900/80 text-xs text-slate-400 flex items-center justify-between z-10 border-b border-white/10 backdrop-blur-sm">
-          <span>KHÔNG GIAN TƯƠNG TÁC (SANDBOX)</span>
-          <div class="flex items-center gap-4">
-            <span v-if="lesson?.sandboxType" class="text-indigo-400 font-bold uppercase tracking-widest text-[10px]">
-              {{ lesson.sandboxType }}
-            </span>
-            <button @click="isDevMode = true" class="px-3 py-1 bg-indigo-600/20 hover:bg-indigo-600/40 text-indigo-300 rounded border border-indigo-500/30 font-bold flex items-center gap-1 transition">
-              <span>🚀 Dev Mode</span>
-            </button>
-          </div>
-        </div>
-        <div class="w-full h-full pt-8">
-          <component
-            v-if="sandboxComponent"
-            :is="sandboxComponent"
-            class="w-full h-full"
-          />
-          <div v-else class="w-full h-full flex flex-col items-center justify-center text-slate-500 p-8 text-center pt-12">
-            <div class="text-4xl mb-2">⚡</div>
-            <h4 class="text-slate-400 font-bold text-sm">Sân chơi DSA Tự Do</h4>
-            <p class="text-xs mt-1 text-slate-600 max-w-xs">Không có sandbox đặc trưng cho bài này.</p>
-          </div>
-        </div>
-      </section>
-
       <!-- Loading State for Content -->
       <div v-if="loading" class="flex-1 flex flex-col items-center justify-center p-12 bg-slate-900/40">
         <div class="inline-block w-8 h-8 border-4 border-indigo-500/20 border-t-indigo-500 rounded-full animate-spin"></div>
-        <p class="text-slate-400 mt-4 text-sm">Đang tải bài giảng...</p>
+        <p class="text-slate-400 mt-4 text-sm">Đang tải dữ liệu chặng...</p>
       </div>
 
-      <!-- Bottom Half: Theory & Discussion -->
-      <section v-else-if="lesson" class="w-full bg-slate-900/40 flex-1 flex flex-col items-center">
-        <div class="w-full max-w-5xl">
+      <!-- Main Lesson Content -->
+      <section v-else-if="lesson" class="w-full h-full bg-slate-900/40 flex flex-col items-center">
+        <div class="w-full flex-1 flex flex-col max-w-7xl relative">
+          
+          <!-- Playlist Drawer Backdrop -->
+          <div 
+            v-if="isPlaylistOpen" 
+            class="fixed inset-0 bg-black/60 backdrop-blur-sm z-[1999] transition-opacity"
+            @click="isPlaylistOpen = false"
+          ></div>
+          
           <!-- Lesson Header -->
-          <header class="px-6 lg:px-12 py-8 border-b border-white/10 flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <header class="px-6 lg:px-12 py-6 border-b border-white/10 flex flex-col md:flex-row md:items-center justify-between gap-4 bg-slate-950 flex-shrink-0">
             <div>
-              <router-link :to="courseId ? `/courses/${courseId}` : '/courses'" class="text-sm font-semibold text-indigo-400 hover:text-indigo-300 transition-colors flex items-center gap-1 mb-3">
-                <span>←</span> Quay lại khóa học
+              <router-link :to="courseId ? `/courses/${courseId}` : '/courses'" class="text-sm font-semibold text-indigo-400 hover:text-indigo-300 transition-colors flex items-center gap-1 mb-2">
+                <span>←</span> Quay lại Lộ trình
               </router-link>
-              <h1 class="text-3xl font-black text-white">
+              <h1 class="text-2xl lg:text-3xl font-black text-white">
                 {{ lesson.title }}
               </h1>
             </div>
@@ -78,40 +40,159 @@
             </div>
           </header>
 
-          <!-- Tabs Header -->
-          <div class="flex border-b border-white/10 px-6 lg:px-12">
-            <button 
-              @click="activeTab = 'theory'"
-              :class="['py-4 px-6 text-sm font-black uppercase tracking-wider border-b-2 transition-all', activeTab === 'theory' ? 'border-indigo-500 text-indigo-400 bg-indigo-500/5' : 'border-transparent text-slate-400 hover:text-slate-200']"
-            >
-              📖 Lý Thuyết
-            </button>
-            <button 
-              @click="activeTab = 'discussion'"
-              :class="['py-4 px-6 text-sm font-black uppercase tracking-wider border-b-2 transition-all flex items-center gap-2', activeTab === 'discussion' ? 'border-indigo-500 text-indigo-400 bg-indigo-500/5' : 'border-transparent text-slate-400 hover:text-slate-200']"
-            >
-              💬 Thảo Luận
+          <!-- Modern Stepper Header -->
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between border-b border-white/10 px-6 lg:px-12 py-4 bg-slate-900/80 backdrop-blur-md flex-shrink-0 z-10 shadow-sm relative">
+            <div class="flex items-center gap-1 sm:gap-3 overflow-x-auto custom-scrollbar pb-2 sm:pb-0 w-full">
+              <!-- Step 1: Lý Thuyết -->
+              <button 
+                @click="activeTab = 'theory'"
+                :class="['flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold transition-all whitespace-nowrap', activeTab === 'theory' ? 'bg-indigo-500 text-white shadow-[0_0_15px_rgba(79,70,229,0.4)]' : 'bg-slate-800 text-slate-400 hover:bg-slate-700 hover:text-slate-200']"
+              >
+                <div :class="['w-6 h-6 rounded-full flex items-center justify-center text-xs', activeTab === 'theory' ? 'bg-white/20 text-white' : 'bg-slate-900 text-slate-500']">1</div>
+                📖 Lý Thuyết
+              </button>
+              
+              <!-- Connector -->
+              <div v-if="lesson?.sandboxType" class="h-[2px] w-4 sm:w-8 bg-slate-800 rounded-full flex-shrink-0">
+                <div class="h-full bg-indigo-500 transition-all duration-500 rounded-full" :style="{ width: activeTab !== 'theory' ? '100%' : '0%' }"></div>
+              </div>
+
+              <!-- Step 2: Mô phỏng -->
+              <button 
+                v-if="lesson?.sandboxType"
+                @click="activeTab = 'visualizer'"
+                :class="['flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold transition-all whitespace-nowrap', activeTab === 'visualizer' ? 'bg-amber-500 text-white shadow-[0_0_15px_rgba(245,158,11,0.4)]' : 'bg-slate-800 text-slate-400 hover:bg-slate-700 hover:text-slate-200']"
+              >
+                <div :class="['w-6 h-6 rounded-full flex items-center justify-center text-xs', activeTab === 'visualizer' ? 'bg-white/20 text-white' : 'bg-slate-900 text-slate-500']">2</div>
+                ⚡ Mô phỏng
+              </button>
+
+              <!-- Connector -->
+              <div class="h-[2px] w-4 sm:w-8 bg-slate-800 rounded-full flex-shrink-0">
+                <div class="h-full bg-emerald-500 transition-all duration-500 rounded-full" :style="{ width: (activeTab === 'practice' || activeTab === 'discussion') ? '100%' : '0%' }"></div>
+              </div>
+
+              <!-- Step 3: Thực hành -->
+              <button 
+                @click="activeTab = 'practice'"
+                :class="['flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold transition-all whitespace-nowrap', activeTab === 'practice' ? 'bg-emerald-500 text-white shadow-[0_0_15px_rgba(16,185,129,0.4)]' : 'bg-slate-800 text-slate-400 hover:bg-slate-700 hover:text-slate-200']"
+              >
+                <div :class="['w-6 h-6 rounded-full flex items-center justify-center text-xs', activeTab === 'practice' ? 'bg-white/20 text-white' : 'bg-slate-900 text-slate-500']">{{ lesson?.sandboxType ? '3' : '2' }}</div>
+                🎯 Thực Hành
+              </button>
+
+              <!-- Connector -->
+              <div class="h-[2px] w-4 sm:w-8 bg-slate-800 rounded-full flex-shrink-0">
+                <div class="h-full bg-cyan-500 transition-all duration-500 rounded-full" :style="{ width: activeTab === 'discussion' ? '100%' : '0%' }"></div>
+              </div>
+
+              <!-- Step 4: Kết Quả & BXH -->
+              <button 
+                @click="activeTab = 'result'"
+                :class="['flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold transition-all whitespace-nowrap', activeTab === 'result' ? 'bg-cyan-500 text-white shadow-[0_0_15px_rgba(6,182,212,0.4)]' : 'bg-slate-800 text-slate-400 hover:bg-slate-700 hover:text-slate-200']"
+              >
+                <div :class="['w-6 h-6 rounded-full flex items-center justify-center text-xs', activeTab === 'result' ? 'bg-white/20 text-white' : 'bg-slate-900 text-slate-500']">{{ lesson?.sandboxType ? '4' : '3' }}</div>
+                🏆 Kết Quả & BXH
+              </button>
+            </div>
+            
+            <!-- Dev Mode toggle for Visualizer (moved here) -->
+            <button v-if="activeTab === 'visualizer'" @click="isDevMode = true" class="hidden sm:flex px-3 py-1.5 ml-4 bg-indigo-600/20 hover:bg-indigo-600/40 text-indigo-300 rounded-lg border border-indigo-500/30 font-bold items-center gap-1 transition-colors whitespace-nowrap text-xs">
+              <span>🚀 Dev Mode</span>
             </button>
           </div>
 
-          <!-- Theory Content -->
-          <div v-show="activeTab === 'theory'" class="px-6 lg:px-12 py-10 pb-24">
-            <article class="prose prose-invert max-w-none text-slate-300 leading-relaxed text-base md:text-lg" v-html="renderedContent" @click="handleTheoryClick" @mouseover="handleTheoryMouseOver"></article>
-            <!-- Actions Footer -->
-            <div class="mt-16 pt-8 border-t border-white/10 flex flex-col sm:flex-row gap-6 justify-between items-center">
-              <div class="text-sm text-slate-400 flex flex-col gap-2">
-                <span>Hãy chắc chắn bạn đã đọc kỹ lý thuyết và thực hành thử.</span>
-                <span v-if="!isAntiCheatSatisfied && lesson?.sandboxType" class="text-amber-500 font-semibold flex items-center gap-2">⚠️ Xem giải thuật chạy để mở khóa (Đã xem: {{ viewedPercent }}%)</span>
-                <span v-else-if="lesson?.sandboxType" class="text-emerald-400 font-semibold flex items-center gap-2">✓ Đã đạt đủ điều kiện hoàn thành (Đã xem: {{ viewedPercent }}%)</span>
+          <!-- Content Area -->
+          <div class="flex-1 overflow-y-auto custom-scrollbar relative overflow-x-hidden" ref="theoryContainerRef" @scroll="handleScroll">
+            
+            <transition name="slide-fade" mode="out-in">
+              <!-- Step 1: Theory Content -->
+              <div v-if="activeTab === 'theory'" key="theory" class="px-6 lg:px-12 py-10 pb-32 max-w-5xl mx-auto w-full">
+              <RichTheoryViewer 
+                v-if="lesson" 
+                :lesson="lesson" 
+                @seek-visualizer="handleVisualizerSeek" 
+              />
+              
+              <!-- Next Step CTA -->
+              <div class="mt-16 pt-8 border-t border-white/10 flex flex-col items-center text-center">
+                <h3 class="text-xl font-bold text-white mb-2">Đã nắm rõ lý thuyết?</h3>
+                <p class="text-slate-400 text-sm mb-6 max-w-md">Hãy chuyển sang bước tiếp theo để xem thuật toán chạy thực tế hoặc thực hành với bài tập.</p>
+                <button 
+                  v-if="lesson?.sandboxType"
+                  @click="activeTab = 'visualizer'" 
+                  class="px-8 py-4 bg-indigo-600 hover:bg-indigo-500 text-white font-bold rounded-2xl transition-all duration-300 shadow-[0_0_20px_rgba(79,70,229,0.4)] hover:scale-105"
+                >
+                  Tiếp tục: Xem Mô phỏng Thuật toán ➔
+                </button>
+                <button 
+                  v-else
+                  @click="activeTab = 'practice'" 
+                  class="px-8 py-4 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-2xl transition-all duration-300 shadow-[0_0_20px_rgba(5,150,105,0.4)] hover:scale-105"
+                >
+                  Tiếp tục: Thực hành ngay ➔
+                </button>
               </div>
-              <button @click="completeCurrentLesson" :disabled="completing || !isAntiCheatSatisfied" class="px-8 py-4 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-2xl transition-all duration-300 shadow-[0_0_20px_rgba(5,150,105,0.3)] disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none text-base whitespace-nowrap">
-                {{ completing ? 'Đang gửi...' : 'Đánh dấu hoàn thành ✓' }}
-              </button>
             </div>
-          </div>
-          <!-- Discussion Pane -->
-          <div v-if="activeTab === 'discussion'" class="px-6 lg:px-12 py-10 pb-24">
-            <LessonDiscussionPanel :lesson-id="lesson.id" />
+
+            <!-- Step 2: Visualizer Sandbox Content -->
+            <div v-else-if="activeTab === 'visualizer' && lesson?.sandboxType" key="visualizer" class="w-full h-full min-h-[600px] flex flex-col bg-slate-950">
+              <!-- Removed Redundant Visualizer Header -->
+              
+              <div class="flex-1 w-full relative">
+                <component
+                  v-if="sandboxComponent"
+                  :is="sandboxComponent"
+                  class="w-full h-full absolute inset-0"
+                />
+              </div>
+
+              <!-- Next Step CTA from Visualizer -->
+              <div class="p-4 bg-slate-950/80 backdrop-blur-md border-t border-white/10 flex justify-between items-center z-10 flex-shrink-0">
+                <button @click="activeTab = 'theory'" class="text-slate-400 hover:text-white text-sm font-bold px-4 py-2 transition-colors flex items-center gap-2">
+                  <span class="text-lg">←</span> Xem lại lý thuyết
+                </button>
+                <button @click="activeTab = 'practice'" class="px-6 py-3 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 text-white font-bold rounded-xl transition-all shadow-[0_0_20px_rgba(5,150,105,0.4)] hover:shadow-[0_0_25px_rgba(5,150,105,0.6)] hover:scale-105 text-sm flex items-center gap-2">
+                  Tiếp tục: Chuyển sang Thực hành ➔
+                </button>
+              </div>
+            </div>
+
+            <!-- Step 3: Practice Ladder Content -->
+            <div v-else-if="activeTab === 'practice'" key="practice" class="px-6 lg:px-12 py-10 pb-24 h-full max-w-5xl mx-auto flex flex-col w-full">
+              <PracticeLadder 
+                :node-id="(route.params.id as string) || lesson?.id || ''" 
+                :session-id="currentSessionId || ''" 
+                @completed="handlePracticeCompleted"
+                class="flex-1"
+              />
+              
+              <!-- Completion Logic (moved from theory tab) -->
+              <div class="mt-8 pt-8 border-t border-white/10 flex flex-col sm:flex-row gap-6 justify-between items-center flex-shrink-0">
+                <div class="text-sm text-slate-400 flex flex-col gap-2">
+                  <span>Hoàn thành bài tập để nắm vững kiến thức.</span>
+                  <span v-if="!isAntiCheatSatisfied && lesson?.sandboxType" class="text-amber-500 font-semibold flex items-center gap-2">⚠️ Vui lòng xem mô phỏng thuật toán để mở khóa hoàn thành (Đã xem: {{ viewedPercent }}%)</span>
+                  <span v-else-if="lesson?.sandboxType" class="text-emerald-400 font-semibold flex items-center gap-2">✓ Đã đạt đủ điều kiện hoàn thành (Đã xem: {{ viewedPercent }}%)</span>
+                </div>
+                <button @click="completeCurrentLesson" :disabled="completing || !isAntiCheatSatisfied" class="px-8 py-4 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-2xl transition-all duration-300 shadow-[0_0_20px_rgba(5,150,105,0.3)] disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none text-base whitespace-nowrap">
+                  {{ completing ? 'Đang gửi...' : 'Đánh dấu hoàn thành ✓' }}
+                </button>
+              </div>
+            </div>
+
+            <!-- Step 4: Result & Leaderboard Pane -->
+            <div v-else-if="activeTab === 'result'" key="result" class="px-6 lg:px-12 py-10 pb-24 h-full max-w-5xl mx-auto w-full flex flex-col gap-6">
+              <div class="bg-gradient-to-r from-emerald-900/40 to-teal-900/40 border border-emerald-500/30 rounded-2xl p-8 text-center shadow-lg backdrop-blur-sm">
+                <div class="text-5xl mb-4">🎉</div>
+                <h2 class="text-2xl font-black text-white mb-2">Chúc mừng bạn đã hoàn thành bài học!</h2>
+                <p class="text-slate-300">Hãy tiếp tục giữ vững phong độ và theo dõi thứ hạng của mình trên Bảng Xếp Hạng nhé.</p>
+                <button @click="goToLesson(nextLessonId || '')" v-if="nextLessonId" class="mt-6 px-8 py-3 bg-white text-emerald-900 hover:bg-slate-200 font-bold rounded-xl transition shadow-lg">
+                  Học bài tiếp theo ➔
+                </button>
+              </div>
+              <WeeklyLeaderboard :entries="gamificationStore.leaderboardData" />
+            </div>
+            </transition>
           </div>
         </div>
       </section>
@@ -128,8 +209,7 @@
     <aside 
       :class="[
         'absolute top-0 right-0 h-full z-[2000] flex flex-col bg-[#0f1423] border-l border-white/10 shadow-[0_0_40px_rgba(0,0,0,0.5)] transition-transform duration-300 ease-in-out',
-        isPlaylistOpen ? 'translate-x-0 w-80 lg:w-96' : 'translate-x-full w-80 lg:w-96',
-        {'hidden': isMobile && mobileView !== 'sandbox'}
+        isPlaylistOpen ? 'translate-x-0 w-80 lg:w-96' : 'translate-x-full w-80 lg:w-96'
       ]"
     >
       <div class="px-6 py-5 border-b border-white/10 bg-slate-900 shadow-sm z-10 flex justify-between items-center">
@@ -145,19 +225,19 @@
       <div class="flex-1 overflow-y-auto custom-scrollbar p-4 space-y-2 bg-[#090b14]">
         <div v-if="!courseDetails" class="text-center text-slate-500 text-sm mt-10">Đang tải danh sách...</div>
         <template v-else>
-          <button v-for="(item, index) in courseDetails.lessons" :key="item.id" @click="goToLesson(item.id)" :class="['w-full text-left p-4 rounded-xl border transition-all duration-300 flex gap-4 group', item.id === lesson?.id ? 'bg-indigo-600/20 border-indigo-500/50 shadow-[0_0_20px_rgba(99,102,241,0.15)] relative overflow-hidden' : 'bg-slate-800/40 border-transparent hover:bg-slate-800 hover:border-white/10']">
-            <div v-if="item.id === lesson?.id" class="absolute left-0 top-0 bottom-0 w-1 bg-indigo-500 rounded-l-xl shadow-[0_0_10px_rgba(99,102,241,1)]"></div>
+          <button v-for="(item, index) in courseDetails.lessons" :key="item.id" @click="goToLesson(item.id)" :class="['w-full text-left p-4 rounded-xl border transition-all duration-300 flex gap-4 group', item.id === lesson?.id || '' ? 'bg-indigo-600/20 border-indigo-500/50 shadow-[0_0_20px_rgba(99,102,241,0.15)] relative overflow-hidden' : 'bg-slate-800/40 border-transparent hover:bg-slate-800 hover:border-white/10']">
+            <div v-if="item.id === lesson?.id || ''" class="absolute left-0 top-0 bottom-0 w-1 bg-indigo-500 rounded-l-xl shadow-[0_0_10px_rgba(99,102,241,1)]"></div>
             <div class="mt-0.5 z-10 relative">
               <div v-if="item.status === 'Completed'" class="w-5 h-5 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center border border-emerald-500/30">
                 <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
               </div>
-              <div v-else-if="item.id === lesson?.id" class="w-5 h-5 rounded-full bg-indigo-500/20 text-indigo-400 flex items-center justify-center border border-indigo-500/30 relative">
+              <div v-else-if="item.id === lesson?.id || ''" class="w-5 h-5 rounded-full bg-indigo-500/20 text-indigo-400 flex items-center justify-center border border-indigo-500/30 relative">
                 <div class="w-2 h-2 bg-indigo-400 rounded-full animate-pulse"></div>
               </div>
               <div v-else class="w-5 h-5 rounded-full bg-slate-800 border border-slate-600 text-slate-500 flex items-center justify-center text-[10px] font-bold">{{ Number(index) + 1 }}</div>
             </div>
             <div class="flex-1 z-10 relative">
-              <h4 :class="['text-sm font-bold leading-snug', item.id === lesson?.id ? 'text-indigo-200' : 'text-slate-300 group-hover:text-white']">{{ item.title }}</h4>
+              <h4 :class="['text-sm font-bold leading-snug', item.id === lesson?.id || '' ? 'text-indigo-200' : 'text-slate-300 group-hover:text-white']">{{ item.title }}</h4>
               <div class="flex items-center gap-3 mt-1.5 text-[11px] font-semibold text-slate-500">
                 <span class="flex items-center gap-1 text-emerald-500/80">⚡ {{ item.xpReward }} XP</span>
                 <span v-if="item.quizId" class="flex items-center gap-1 text-amber-500/70">📝 Có Quiz</span>
@@ -204,13 +284,17 @@
                   <h1 class="text-lg font-black text-white line-clamp-1" v-if="lesson" :title="lesson?.title">{{ lesson?.title }}</h1>
                   <div class="flex gap-4">
                     <button @click="activeTab = 'theory'" :class="['text-xs font-bold uppercase tracking-wider', activeTab === 'theory' ? 'text-indigo-400' : 'text-slate-500 hover:text-slate-300']">Lý Thuyết</button>
-                    <button @click="activeTab = 'discussion'" :class="['text-xs font-bold uppercase tracking-wider', activeTab === 'discussion' ? 'text-indigo-400' : 'text-slate-500 hover:text-slate-300']">Thảo Luận</button>
+                    <button @click="activeTab = 'result'" :class="['text-xs font-bold uppercase tracking-wider', activeTab === 'result' ? 'text-indigo-400' : 'text-slate-500 hover:text-slate-300']">Kết Quả</button>
                   </div>
                 </header>
 
                 <div class="flex-1 overflow-y-auto custom-scrollbar px-6 py-5 relative" ref="theoryContainerRef" @scroll="handleScroll">
                   <div v-show="activeTab === 'theory'">
-                    <article class="prose prose-invert prose-sm max-w-none text-slate-300 leading-relaxed" v-html="renderedContent" @click="handleTheoryClick" @mouseover="handleTheoryMouseOver"></article>
+                    <RichTheoryViewer 
+                      v-if="lesson" 
+                      :lesson="lesson" 
+                      @seek-visualizer="handleVisualizerSeek" 
+                    />
                     <div class="mt-8 pt-6 border-t border-white/10 flex flex-col gap-4 items-start">
                       <span v-if="!isAntiCheatSatisfied && lesson?.sandboxType" class="text-amber-500 text-xs font-semibold">⚠️ Cần xem giải thuật chạy (Đã xem: {{ viewedPercent }}%)</span>
                       <button @click="completeCurrentLesson" :disabled="completing || !isAntiCheatSatisfied" class="w-full py-3 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-xl transition-all shadow-lg disabled:opacity-50 disabled:cursor-not-allowed">
@@ -218,8 +302,8 @@
                       </button>
                     </div>
                   </div>
-                  <div v-if="activeTab === 'discussion'">
-                    <LessonDiscussionPanel :lesson-id="lesson.id" />
+                  <div v-if="activeTab === 'result'">
+                    <WeeklyLeaderboard :entries="gamificationStore.leaderboardData" />
                   </div>
                 </div>
               </div>
@@ -290,6 +374,9 @@
         </button>
       </div>
     </div>
+    
+    <!-- Language Selector Modal (Force Select on first entry) -->
+    <LanguageSelectorModal />
   </div>
 </template>
 
@@ -297,18 +384,30 @@
 import { ref, computed, onMounted, onUnmounted, watch, nextTick } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useAuthStore } from '../features/auth/store/useAuthStore';
-import { useQuizStore } from '../features/quiz-system/store/useQuizStore';
-import { useConfetti } from '../composables/useConfetti';
-import { useAnimationStore } from '../features/animation-engine/store/useAnimationStore';
-import LessonDiscussionPanel from './LessonDiscussionPanel.vue';
+import { useQuizStore } from '../features/core-learning/quiz-system/store/useQuizStore';
+import { useConfetti } from '@/composables/useConfetti';
+import { useAnimationStore } from '../features/core-learning/animation-engine/store/useAnimationStore';
+import { useGamificationStore } from '@/features/gamification/gamification-engine/store/useGamificationStore';
+import WeeklyLeaderboard from '@/features/gamification/gamification-engine/components/WeeklyLeaderboard.vue';
+import PracticeLadder from '@/components/practice/PracticeLadder.vue';
+import RichTheoryViewer from '@/components/theory/RichTheoryViewer.vue';
+import { useTheoryProgress } from '@/composables/useTheoryProgress';
+import { useLanguageStore } from '@/features/dsa/dsa-modules/store/languageStore';
+import LanguageSelectorModal from '@/features/dsa/dsa-modules/components/LanguageSelectorModal.vue';
+import LanguageBadge from '@/features/dsa/dsa-modules/components/LanguageBadge.vue';
 
 // Import các sandbox views có sẵn làm dynamic components
 import SortingView from './SortingView.vue';
 import GraphView from './GraphView.vue';
-import OOPVisualizationView from './OOPVisualizationView.vue';
-import SOLIDVisualizationView from './SOLIDVisualizationView.vue';
-import PatternsView from './PatternsView.vue';
-import SystemDesignVizView from './SystemDesignVizView.vue';
+import CodeToVisualSandbox from '@/components/sandbox/CodeToVisualSandbox.vue';
+
+// Fallback empty component for deleted views
+const EmptyPlaceholder = { template: '<div>Module is deprecated</div>' };
+
+const OOPVisualizationView = EmptyPlaceholder;
+const SOLIDVisualizationView = EmptyPlaceholder;
+const PatternsView = EmptyPlaceholder;
+const SystemDesignVizView = EmptyPlaceholder;
 
 interface LessonDetailDto {
   id: string;
@@ -316,6 +415,9 @@ interface LessonDetailDto {
   courseTitle: string;
   title: string;
   contentMd: string;
+  contentBlocksJson?: string;
+  videoUrl?: string;
+  theoryImagesJson?: string;
   sandboxType: string;
   sandboxConfig: string;
   quizId: string | null;
@@ -336,6 +438,8 @@ declare global {
 const authStore = useAuthStore();
 const quizStore = useQuizStore();
 const animStore = useAnimationStore();
+const languageStore = useLanguageStore();
+const gamificationStore = useGamificationStore();
 const route = useRoute();
 const router = useRouter();
 const { fireQuizPass } = useConfetti();
@@ -344,14 +448,14 @@ const BASE_URL = import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:5055';
 const loading = ref(true);
 const completing = ref(false);
 const lesson = ref<LessonDetailDto | null>(null);
+const currentSessionId = ref<string | null>(null);
 const showSuccessModal = ref(false);
 
-const activeTab = ref<'theory' | 'discussion'>('theory');
+const activeTab = ref('theory');
 const theoryContainerRef = ref<HTMLElement | null>(null);
 
 // ── Mobile Responsive State ──
 const isMobile = ref(false);
-const mobileView = ref<'theory' | 'sandbox'>('theory');
 
 // ── Anti-cheat State ──
 const visitedFrames = ref<Set<number>>(new Set());
@@ -384,6 +488,7 @@ const sandboxComponent = computed(() => {
     case 'sorting': return SortingView;
     case 'graph': return GraphView;
     case 'oop': return OOPVisualizationView;
+    case 'code-sandbox': return CodeToVisualSandbox;
     case 'solid': return SOLIDVisualizationView;
     case 'patterns': return PatternsView;
     case 'system': return SystemDesignVizView;
@@ -391,36 +496,20 @@ const sandboxComponent = computed(() => {
   }
 });
 
-// Custom Markdown to HTML simple parser supporting data-frame-index and LaTeX/Mermaid elements
-const renderedContent = computed(() => {
-  if (!lesson.value?.contentMd) return '';
-  let md = lesson.value.contentMd;
+const handleVisualizerSeek = (frameIndex: number) => {
+  if (animStore && typeof animStore.goToFrame === 'function') {
+    animStore.goToFrame(frameIndex);
+    if (lesson.value?.sandboxType) {
+      activeTab.value = 'visualizer';
+    }
+  }
+};
 
-  // Replace ```mermaid codeblocks with <pre class="mermaid">
-  md = md.replace(/```mermaid\n([\s\S]*?)```/g, '<pre class="mermaid">$1</pre>');
-
-  // Headers
-  md = md.replace(/^### (.*$)/gim, '<h3 class="text-lg font-bold text-white mt-6 mb-2">$1</h3>');
-  md = md.replace(/^## (.*$)/gim, '<h2 class="text-xl font-bold text-white mt-8 mb-3">$1</h2>');
-  md = md.replace(/^# (.*$)/gim, '<h1 class="text-2xl font-black text-white mt-4 mb-4">$1</h1>');
-
-  // Bullet points
-  md = md.replace(/^\- (.*$)/gim, '<li class="ml-4 list-disc text-slate-300 my-1">$1</li>');
-
-  // Two-way highlight syntax: [Text description](frame:X)
-  md = md.replace(/\[([^\]]+)\]\(frame:(\d+)\)/g, '<span class="theory-step cursor-pointer hover:text-indigo-300 border-b border-indigo-500/20 hover:border-indigo-400 transition-all font-bold text-indigo-400" data-frame-index="$2">$1</span>');
-
-  // Bold text
-  md = md.replace(/\*\*(.*?)\*\*/g, '<strong class="text-white font-bold">$1</strong>');
-
-  // Inline code
-  md = md.replace(/`(.*?)`/g, '<code class="bg-white/5 border border-white/10 px-1.5 py-0.5 rounded text-indigo-300 font-mono text-xs">$1</code>');
-
-  // Line breaks
-  md = md.replace(/\n/g, '<br />');
-
-  return md;
-});
+const theoryProgress = useTheoryProgress(
+  route.params.id as string || '',
+  animStore.totalSteps || 0,
+  0
+);
 
 const viewedPercent = computed(() => {
   if (animStore.totalSteps <= 1) return 100;
@@ -574,7 +663,7 @@ function handleScroll() {
 let frameDwellTimer: ReturnType<typeof setTimeout> | null = null;
 
 watch(() => animStore.currentIndex, (newIndex) => {
-  if (!lesson.value || activeTab.value !== 'theory') return;
+  if (!lesson.value || (activeTab.value !== 'theory' && activeTab.value !== 'visualizer')) return;
   
   // Track visited frames for anti-cheat:
   // If visualizer is playing, trust it and add instantly.
@@ -613,11 +702,7 @@ watch(() => animStore.currentIndex, (newIndex) => {
   }
 });
 
-// Re-render LaTeX / diagrams on content updates
-watch(renderedContent, () => {
-  triggerMathJaxRender();
-  triggerMermaidRender();
-});
+  // Re-render LaTeX / diagrams on content updates (handled in RichTheoryViewer now)
 
 async function loadLessonDetail() {
   loading.value = true;
@@ -638,6 +723,9 @@ async function loadLessonDetail() {
 
         // Load course details for the sidebar playlist
         loadCourseDetail(data.courseId);
+        
+        // Init Session
+        initSession(data.id);
 
         // Show toast to confirm resuming position and frame index (Cross-device Sync)
         if (data.lastActiveFrameIndex > 0 || data.lastScrollPercent > 0) {
@@ -662,6 +750,22 @@ async function loadLessonDetail() {
     }
 }
 
+async function initSession(nodeId: string) {
+  try {
+    const token = authStore.getAccessToken();
+    const res = await fetch(`${BASE_URL}/api/v1/nodes/${nodeId}/enter`, {
+      method: 'POST',
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
+    if (res.ok) {
+      const data = await res.json();
+      currentSessionId.value = data.sessionId;
+    }
+  } catch (err) {
+    console.error("Lỗi khi init session", err);
+  }
+}
+
 async function loadCourseDetail(cId: string) {
   try {
     const headers: Record<string, string> = { 'Content-Type': 'application/json' };
@@ -671,9 +775,18 @@ async function loadCourseDetail(cId: string) {
     const res = await fetch(`${BASE_URL}/api/v1/concepts/courses/${cId}`, { headers });
     if (res.ok) {
       courseDetails.value = await res.json();
+      
+      // Load language preference for this course (roadmap)
+      await languageStore.setRoadmap(cId);
     }
   } catch (err) {
     console.error('Failed to load course details', err);
+  }
+}
+
+function handlePracticeCompleted() {
+  if (isAntiCheatSatisfied.value) {
+    completeCurrentLesson();
   }
 }
 
@@ -769,6 +882,11 @@ onMounted(() => {
   updateIsMobile();
   window.addEventListener('beforeunload', handleBeforeUnload);
   window.addEventListener('resize', updateIsMobile);
+  
+  // Lấy dữ liệu BXH
+  if (gamificationStore.fetchLeaderboardFromServer) {
+    gamificationStore.fetchLeaderboardFromServer();
+  }
 });
 
 onUnmounted(() => {
@@ -815,5 +933,23 @@ onUnmounted(() => {
     opacity: 1;
     transform: scale(1);
   }
+}
+</style>
+
+<style>
+/* Slide Fade Transition */
+.slide-fade-enter-active {
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.slide-fade-leave-active {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.slide-fade-enter-from {
+  opacity: 0;
+  transform: translateX(30px);
+}
+.slide-fade-leave-to {
+  opacity: 0;
+  transform: translateX(-30px);
 }
 </style>

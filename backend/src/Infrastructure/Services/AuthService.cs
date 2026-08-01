@@ -226,7 +226,14 @@ namespace VisualizationDSA.Infrastructure.Services
             StreakDays = user.StreakDays,
             CreatedAt  = user.CreatedAt,
             Badges     = new List<BadgeDto>(),
-            IsPremium  = user.IsPremium
+            IsPremium  = user.IsPremium,
+            Role       = user.Role,
+            Hearts     = user.Hearts,
+            MaxHearts  = user.MaxHearts,
+            GemsCount  = user.GemsCount,
+            TeacherAppStatus = user.TeacherAppStatus.ToString(),
+            AvatarFrameType = user.AvatarFrameType,
+            XpBoostExpiresAt = user.XpBoostExpiresAt
         };
     }
 }

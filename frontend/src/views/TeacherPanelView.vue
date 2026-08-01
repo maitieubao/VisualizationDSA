@@ -840,7 +840,7 @@
 <script setup lang="ts">
 import { ref, reactive, computed, onMounted } from 'vue';
 import { useAuthStore } from '../features/auth/store/useAuthStore';
-import ExcelQuizImporter from '../features/quiz/components/ExcelQuizImporter.vue';
+import ExcelQuizImporter from '../features/core-learning/quiz/components/ExcelQuizImporter.vue';
 
 const BASE_URL = import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:5055';
 const authStore = useAuthStore();

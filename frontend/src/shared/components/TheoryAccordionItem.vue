@@ -81,9 +81,9 @@
 
 <script setup lang="ts">
 import { ref, computed } from 'vue';
-import type { TheorySection } from '../types/theory.types';
-import { renderMarkdown } from '../utils/markdown';
-import SvgIcon from '../../components/icons/SvgIcon.vue';
+import type { TheorySection } from '@/shared/types/theory.types';
+import { renderMarkdown } from '@/shared/utils/markdown';
+import SvgIcon from '@/components/icons/SvgIcon.vue';
 
 const props = defineProps<{
   sec: TheorySection;

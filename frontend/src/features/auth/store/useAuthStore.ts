@@ -10,10 +10,11 @@
 
 import { defineStore } from 'pinia';
 import { ref, computed } from 'vue';
-import * as authApi from '../services/authApi';
+import * as authApi from '@/features/auth/services/authApi';
 import { setSession, clearSession, getSavedRefreshToken } from './authSessionHelpers';
-import { statelessAuthApi } from '../services/statelessAuthApi';
-import type { StatelessUserDto, StatelessAuthResponse } from '../services/statelessAuthApi';
+import { statelessAuthApi } from '@/features/auth/services/statelessAuthApi';
+import type { StatelessUserDto, StatelessAuthResponse } from '@/features/auth/services/statelessAuthApi';
+import { useGamificationStore } from '@/features/gamification/gamification-engine/store/useGamificationStore';
 
 export const useAuthStore = defineStore('auth', () => {
   // ── State ──────────────────────────────────────────────────────────────────
@@ -33,6 +34,14 @@ export const useAuthStore = defineStore('auth', () => {
   const userRole        = computed(() => currentUser.value?.role ?? 'Student');
   const isTeacher       = computed(() => userRole.value === 'Teacher');
   const isAdmin         = computed(() => userRole.value === 'Admin');
+  
+  const userHearts      = computed(() => currentUser.value?.hearts ?? 10);
+  const userMaxHearts   = computed(() => currentUser.value?.maxHearts ?? 10);
+  const userGems        = computed(() => currentUser.value?.gemsCount ?? 0);
+  const teacherAppStatus= computed(() => currentUser.value?.teacherAppStatus ?? 'None');
+
+  const recoveryCountdown = ref<number | null>(null);
+  let heartTimer: ReturnType<typeof setInterval> | null = null;
 
   // ── Private helpers ────────────────────────────────────────────────────────
   function _scheduleRefresh(expiresInSeconds: number): void {
@@ -54,12 +63,14 @@ export const useAuthStore = defineStore('auth', () => {
     if (savedUserId) {
       await statelessInit();
       await loadStatelessProfile();
+      await syncGamificationProfile();
       return;
     }
     const saved = getSavedRefreshToken();
     if (!saved) return;
     try { setSession(await authApi.refreshAccessToken(saved), accessToken, currentUser, _scheduleRefresh); }
     catch { clearSession(accessToken, currentUser, refreshTimer); }
+    await syncGamificationProfile();
   }
 
   async function register(email: string, username: string, password: string): Promise<void> {
@@ -67,6 +78,7 @@ export const useAuthStore = defineStore('auth', () => {
     try { setSession(await authApi.register({ email, username, password }), accessToken, currentUser, _scheduleRefresh); }
     catch (err) { authError.value = err instanceof Error ? err.message : 'Đăng ký thất bại.'; throw err; }
     finally { isLoading.value = false; }
+    await syncGamificationProfile();
   }
 
   async function logIn(email: string, password: string): Promise<void> {
@@ -74,12 +86,37 @@ export const useAuthStore = defineStore('auth', () => {
     try { setSession(await authApi.login({ email, password }), accessToken, currentUser, _scheduleRefresh); }
     catch (err) { authError.value = err instanceof Error ? err.message : 'Đăng nhập thất bại.'; throw err; }
     finally { isLoading.value = false; }
+    await syncGamificationProfile();
   }
 
   async function logOut(): Promise<void> {
     const savedRefresh = getSavedRefreshToken();
     if (accessToken.value && savedRefresh) await authApi.logout(accessToken.value, savedRefresh);
     clearSession(accessToken, currentUser, refreshTimer);
+    stopHeartTimer();
+  }
+
+  function startHeartTimer(seconds: number) {
+    stopHeartTimer();
+    recoveryCountdown.value = seconds;
+    if (seconds <= 0) return;
+    
+    heartTimer = setInterval(() => {
+      if (recoveryCountdown.value && recoveryCountdown.value > 0) {
+        recoveryCountdown.value--;
+      } else {
+        stopHeartTimer();
+        // Optionally fetch new user state to reflect the recovered heart
+      }
+    }, 1000);
+  }
+
+  function stopHeartTimer() {
+    if (heartTimer) {
+      clearInterval(heartTimer);
+      heartTimer = null;
+    }
+    recoveryCountdown.value = null;
   }
 
   /** Lấy access token hiện tại — gọi trước mỗi API call cần auth */
@@ -156,6 +193,10 @@ export const useAuthStore = defineStore('auth', () => {
       nickname: response.user.nickname,
       bio: response.user.bio,
       university: response.user.university,
+      hearts: response.user.hearts,
+      maxHearts: response.user.maxHearts,
+      gemsCount: response.user.gemsCount,
+      teacherAppStatus: response.user.teacherAppStatus,
     };
     localStorage.setItem('vdsa_refresh_token', response.refreshToken);
     localStorage.setItem('vdsa_access_expires', String(Date.now() + response.expiresIn * 1000));
@@ -171,6 +212,7 @@ export const useAuthStore = defineStore('auth', () => {
       authError.value = err instanceof Error ? err.message : 'Đăng nhập thất bại.';
       throw err;
     } finally { isLoading.value = false; }
+    await syncGamificationProfile();
   }
 
   async function statelessRegister(email: string, username: string, password: string): Promise<void> {
@@ -182,6 +224,7 @@ export const useAuthStore = defineStore('auth', () => {
       authError.value = err instanceof Error ? err.message : 'Đăng ký thất bại.';
       throw err;
     } finally { isLoading.value = false; }
+    await syncGamificationProfile();
   }
 
   async function statelessLogout(): Promise<void> {
@@ -210,6 +253,7 @@ export const useAuthStore = defineStore('auth', () => {
       localStorage.removeItem('vdsa_access_expires');
       localStorage.removeItem('vdsa_stateless_user_id');
     }
+    await syncGamificationProfile();
   }
 
   async function loadStatelessProfile(): Promise<void> {
@@ -226,6 +270,7 @@ export const useAuthStore = defineStore('auth', () => {
         currentUser.value.university = statelessUser.value.university;
       }
     } catch { /* silent — profile load is optional */ }
+    await syncGamificationProfile();
   }
 
   async function updateProfile(username: string, nickname?: string, bio?: string, university?: string): Promise<void> {
@@ -260,6 +305,17 @@ export const useAuthStore = defineStore('auth', () => {
       throw err;
     } finally {
       isLoading.value = false;
+    }
+  }
+
+  // ── Gamification Sync ──────────────────────────────────────────
+
+  async function syncGamificationProfile(): Promise<void> {
+    const gamificationStore = useGamificationStore();
+    try {
+      await gamificationStore.syncProgressFromServer();
+    } catch {
+      // Gamification sync is non-critical for auth flow
     }
   }
 
@@ -337,11 +393,25 @@ export const useAuthStore = defineStore('auth', () => {
   return {
     accessToken, currentUser, isLoading, authError,
     isAuthenticated, userName, userLevel, userXP, isPremium, userRole, isTeacher, isAdmin,
-    init, register, logIn, logOut, getAccessToken, refreshAccessToken,
+    userHearts, userMaxHearts, userGems, teacherAppStatus,
+    init, register, logIn, logOut, getAccessToken,     refreshAccessToken, syncGamificationProfile,
     // Stateless backend
-    statelessUser, isStatelessMode,
-    statelessLogin, statelessRegister, statelessLogout, statelessInit, loadStatelessProfile, updateProfile, changePassword,
+    statelessUser,
+    isStatelessMode,
+    statelessLogin,
+    statelessRegister,
+    statelessLogout,
+    statelessInit,
+    loadStatelessProfile,
+    updateProfile,
+    changePassword,
+    recoveryCountdown,
+    startHeartTimer,
+    stopHeartTimer,
     // Impersonation
-    isImpersonating, impersonate, startImpersonating, stopImpersonating
+    isImpersonating,
+    impersonate,
+    startImpersonating,
+    stopImpersonating
   };
 });

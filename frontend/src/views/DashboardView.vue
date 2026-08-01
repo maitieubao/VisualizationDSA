@@ -65,7 +65,9 @@
         </button>
       </div>
 
-      <!-- XP Progress Wheel -->
+      <DailyQuestsWidget />
+
+      <!-- User Progress Header -->
       <div class="dash-card xp-card">
         <h3 class="dash-card__title">Tiến trình XP</h3>
         <div class="xp-wheel">
@@ -118,7 +120,7 @@
         <div class="quicklinks">
           <router-link to="/courses" class="quicklink">
             <BaseIcon name="learning-path" class="quicklink__icon" />
-            <span>Khóa học</span>
+            <span>Bản đồ Lộ trình</span>
           </router-link>
           <router-link to="/sorting" class="quicklink">
             <BaseIcon name="sorting" class="quicklink__icon" />
@@ -132,9 +134,17 @@
             <BaseIcon name="gamification" class="quicklink__icon" />
             <span>Bảng xếp hạng</span>
           </router-link>
+          <router-link to="/gems-shop" class="quicklink">
+            <BaseIcon name="shopping-bag" class="quicklink__icon" />
+            <span>Cửa hàng Gems</span>
+          </router-link>
           <router-link v-if="authStore.isTeacher" to="/teacher" class="quicklink quicklink--teacher">
             <BaseIcon name="academic" class="quicklink__icon" />
             <span>Quản lý Giảng viên</span>
+          </router-link>
+          <router-link v-if="authStore.isTeacher" to="/teacher-studio" class="quicklink quicklink--teacher">
+            <BaseIcon name="presentation-chart-line" class="quicklink__icon" />
+            <span>Teacher Studio</span>
           </router-link>
         </div>
       </div>
@@ -146,11 +156,11 @@
 import { computed } from 'vue';
 import { useRouter } from 'vue-router';
 import { useAuthStore } from '../features/auth/store/useAuthStore';
-import { useGuidedTourStore } from '../features/guided-tour/store/useGuidedTourStore';
-import SkillRadarChart from '../features/user-progress/components/SkillRadarChart.vue';
+
+import SkillRadarChart from '../features/gamification/user-progress/components/SkillRadarChart.vue';
+import DailyQuestsWidget from '../components/widgets/DailyQuestsWidget.vue';
 
 const authStore = useAuthStore();
-const tourStore = useGuidedTourStore();
 const router = useRouter();
 
 const levelThresholds = [0, 100, 300, 600, 1000, 1500, 2200, 3000];
@@ -210,7 +220,7 @@ function getBadgeIconName(emojiIcon: string): string {
 
 async function startSortingTour() {
   await router.push('/sorting');
-  tourStore.startPageTour('/sorting', true);
+  // tourStore.startPageTour('/sorting', true);
 }
 </script>
 

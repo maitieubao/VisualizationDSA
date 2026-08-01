@@ -12,31 +12,52 @@ namespace VisualizationDSA.Domain.Entities
         public DateTime  CreatedAt      { get; private set; }
         public DateTime? LastLoginAt    { get; private set; }
 
-        // ── Gamification ─────────────────────────────────────────────────────
-        public int       TotalXP        { get; private set; }
-        public int       CurrentLevel   { get; private set; }
-        public int       StreakDays     { get; private set; }
-        public bool      IsPremium      { get; private set; }
-        public string    Role           { get; private set; } = "Student";
+        // ── Gamification & v4.0 Features ─────────────────────────────────────
+        public int       TotalXP            { get; private set; }
+        public int       CurrentLevel       { get; private set; }
+        public int       StreakDays         { get; private set; }
+        public bool      IsPremium          { get; private set; }
+        public string    Role               { get; private set; } = "Student";
+        public bool      IsActive           { get; private set; } = true;
+        public DateTime? LastActivityDate   { get; private set; }
 
-        /// <summary>
-        /// Trạng thái hoạt động của tài khoản. false = bị khóa, không thể đăng nhập.
-        /// ✅ Task 4.2 - Ban/Unban feature
-        /// </summary>
-        public bool      IsActive       { get; private set; } = true;
+        // ── Hearts System (v4.0 Epic 2) ──────────────────────────────────────
+        public int       Hearts             { get; private set; } = 10;
+        public int       MaxHearts          { get; private set; } = 10;
+        public DateTime? LastHeartUsedAt    { get; private set; }
 
-        /// <summary>
-        /// Ngày cuối cùng user có hoạt động học tập (xem lecture, làm quiz, v.v.)
-        /// Dùng để tính streak chính xác thay vì chỉ dựa vào LastLoginAt.
-        /// ✅ FIX 3.4: Thêm LastActivityDate — tránh streak reset sai khi chỉ login.
-        /// </summary>
-        public DateTime? LastActivityDate { get; private set; }
+        // ── Gems & Shop (v4.0 Epic 9) ─────────────────────────────────────────
+        public int       GemsCount          { get; private set; } = 0;
+        public int       StreakFreezeCount  { get; private set; } = 0;
+        public string?   AvatarUrl          { get; private set; }
+        public string?   AvatarFrameType    { get; private set; }
+
+        // ── Teacher Application (v4.0 Epic 1) ─────────────────────────────────
+        public string    TeacherAppStatus   { get; private set; } = "None"; // None/Pending/Approved/Rejected
+
+        // ── Premium Expiration ────────────────────────────────────────────────
+        public DateTime? PremiumExpiresAt   { get; private set; }
+
+        // ── Ad Watch Tracking (v4.0 Epic 2) ──────────────────────────────────
+        public int       AdWatchCount       { get; private set; } = 0;
+        public DateTime? FirstAdAt          { get; private set; }  // sliding window 24h start
+
+        // ── AI Quota & Hint Tracking (v4.0 Decisions D1 & Epic 3) ────────────
+        public DateTime? AiQuotaResetAt     { get; private set; }  // rolling 24h window start
+        public int       AiGlobalUsed       { get; private set; } = 0;  // max 50/day (Premium)
+        public int       AiLessonUsed       { get; private set; } = 0;  // max 30/day (Premium, subset of global)
+        public DateTime? LastHintAt         { get; private set; }  // cooldown 10s giữa 2 hint requests
+
+        // ── XP Boost (v4.0 Epic 9) ────────────────────────────────────────────
+        public DateTime? XpBoostExpiresAt   { get; private set; }
 
         // ── Navigation properties ──────────────────────────────────────────
-        public virtual ICollection<UserBadge>         UserBadges         { get; private set; }
-        public virtual ICollection<QuizAttempt>       QuizAttempts       { get; private set; }
-        public virtual ICollection<LearningProgress>  LearningProgresses { get; private set; }
-        public virtual ICollection<UserLessonProgress> UserLessonProgresses { get; private set; }
+        public virtual ICollection<UserBadge>           UserBadges           { get; private set; }
+        public virtual ICollection<QuizAttempt>         QuizAttempts         { get; private set; }
+        public virtual ICollection<LearningProgress>    LearningProgresses   { get; private set; }
+        public virtual ICollection<LearningSession>     LearningSessions     { get; private set; } = new List<LearningSession>();
+        public virtual ICollection<UserRoadmapLanguage> UserRoadmapLanguages { get; private set; } = new List<UserRoadmapLanguage>();
+        public virtual ICollection<UserLessonProgress>   UserLessonProgresses { get; private set; }
 
         private User() { } // EF Core protected constructor
 
@@ -54,9 +75,15 @@ namespace VisualizationDSA.Domain.Entities
             Role         = "Student";
             IsActive     = true;
 
-            UserBadges         = new List<UserBadge>();
-            QuizAttempts       = new List<QuizAttempt>();
-            LearningProgresses = new List<LearningProgress>();
+            Hearts            = 10;
+            MaxHearts         = 10;
+            GemsCount         = 0;
+            StreakFreezeCount = 0;
+            TeacherAppStatus  = "None";
+
+            UserBadges           = new List<UserBadge>();
+            QuizAttempts         = new List<QuizAttempt>();
+            LearningProgresses   = new List<LearningProgress>();
             UserLessonProgresses = new List<UserLessonProgress>();
         }
 
@@ -88,15 +115,87 @@ namespace VisualizationDSA.Domain.Entities
             LastActivityDate = DateTime.UtcNow;
         }
 
+        [Obsolete("Use SetPremium(expiresAt) or DowngradeFromPremium() instead.")]
         public void SetPremiumStatus(bool isPremium)
         {
             IsPremium = isPremium;
         }
 
+        public void SetPremium(DateTime? expiresAt)
+        {
+            IsPremium = true;
+            PremiumExpiresAt = expiresAt;
+            MaxHearts = 30;
+            Hearts = 30; // Nâng lên 30 tim khi kích hoạt Premium
+        }
+
+        public void DowngradeFromPremium()
+        {
+            IsPremium = false;
+            PremiumExpiresAt = null;
+            MaxHearts = 10;
+            // KHÔNG clamp Hearts — giữ nguyên Hearts hiện tại, tim không hồi cho đến khi xuống < MaxHearts (Decision D5)
+        }
+
+        public void SetXpBoostExpiry(DateTime? expiresAt) => XpBoostExpiresAt = expiresAt;
+        public void SetAvatarFrameType(string? frameType) => AvatarFrameType = frameType;
+
+        public void RecordHintUsed() => LastHintAt = DateTime.UtcNow;
+
+        public void RecordAdWatch()
+        {
+            if (FirstAdAt == null || (DateTime.UtcNow - FirstAdAt.Value).TotalSeconds > 86400)
+            {
+                FirstAdAt = DateTime.UtcNow;
+                AdWatchCount = 1;
+            }
+            else
+            {
+                AdWatchCount++;
+            }
+        }
+
+        public void SetTeacherAppStatus(string status) => TeacherAppStatus = status;
+
+        public void AddGems(int amount)
+        {
+            if (amount > 0) GemsCount += amount;
+        }
+
+        public void DeductGems(int amount)
+        {
+            if (amount > 0 && GemsCount >= amount) GemsCount -= amount;
+        }
+
+        public void AddStreakFreeze(int amount)
+        {
+            if (amount > 0) StreakFreezeCount += amount;
+        }
+
+        public bool UseStreakFreeze()
+        {
+            if (StreakFreezeCount > 0)
+            {
+                StreakFreezeCount--;
+                return true;
+            }
+            return false;
+        }
+
         public void SetRole(string role)
         {
             if (role == "Student" || role == "Teacher" || role == "Admin")
+            {
                 Role = role;
+                
+                // Teacher & Admin automatically get Premium privileges
+                if (role == "Teacher" || role == "Admin")
+                {
+                    IsPremium = true;
+                    MaxHearts = 30;
+                    if (Hearts < 30) Hearts = 30;
+                }
+            }
         }
 
         /// <summary>
@@ -113,6 +212,28 @@ namespace VisualizationDSA.Domain.Entities
         {
             if (!string.IsNullOrWhiteSpace(newPasswordHash))
                 PasswordHash = newPasswordHash;
+        }
+
+        public void ResetStreak()
+        {
+            StreakDays = 0;
+        }
+
+        public void ResetAiQuota()
+        {
+            AiGlobalUsed = 0;
+            AiLessonUsed = 0;
+            AiQuotaResetAt = DateTime.UtcNow;
+        }
+
+        public void IncrementAiGlobal()
+        {
+            AiGlobalUsed++;
+        }
+
+        public void IncrementAiLesson()
+        {
+            AiLessonUsed++;
         }
 
         // ── Private ───────────────────────────────────────────────────────────

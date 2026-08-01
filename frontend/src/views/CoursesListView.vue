@@ -4,10 +4,10 @@
     <header class="mb-10 text-center md:text-left flex flex-col md:flex-row md:items-end justify-between gap-6">
       <div>
         <h1 class="text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 via-purple-400 to-pink-400 m-0 tracking-tight">
-          Học Viện DSA & Thiết Kế
+          Bản đồ Lộ trình DSA
         </h1>
         <p class="text-slate-400 mt-2 text-lg">
-          Khám phá các khóa học trực quan sinh động giúp bạn làm chủ cấu trúc dữ liệu, giải thuật và thiết kế hệ thống.
+          Khám phá các lộ trình trực quan sinh động giúp bạn làm chủ cấu trúc dữ liệu, giải thuật và thiết kế hệ thống.
         </p>
       </div>
       <div v-if="authStore.currentUser" class="stats-glass px-6 py-3 rounded-2xl border border-white/10 flex items-center gap-4 bg-slate-900/40 backdrop-blur">
@@ -63,7 +63,7 @@
 
     <div v-else-if="filteredCourses.length === 0" class="empty-state text-center py-20 bg-slate-900/40 rounded-3xl border border-white/5">
       <div class="text-5xl mb-4">🔍</div>
-      <h3 class="text-xl font-bold text-slate-300">Không tìm thấy khóa học phù hợp</h3>
+      <h3 class="text-xl font-bold text-slate-300">Không tìm thấy lộ trình phù hợp</h3>
       <p class="text-slate-500 mt-2">Vui lòng thay đổi bộ lọc hoặc quay lại sau.</p>
     </div>
 
@@ -101,7 +101,7 @@
           </div>
 
           <span class="absolute bottom-4 right-4 text-xs font-semibold text-slate-400">
-            {{ course.totalLessons }} bài giảng
+            {{ course.totalLessons }} trạm
           </span>
         </div>
 

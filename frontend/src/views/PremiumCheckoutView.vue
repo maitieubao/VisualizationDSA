@@ -88,7 +88,7 @@ import QrPaymentPanel from '../features/payment/components/QrPaymentPanel.vue';
 import CheckoutIdleScreen from '../features/payment/components/CheckoutIdleScreen.vue';
 import CheckoutSuccessScreen from '../features/payment/components/CheckoutSuccessScreen.vue';
 import { usePaymentTimer } from '../features/payment/composables/usePaymentTimer';
-import { useConfetti } from '../composables/useConfetti';
+import { useConfetti } from '@/composables/useConfetti';
 
 const emit = defineEmits<{ openLogin: [] }>();
 

@@ -1,5 +1,6 @@
 import type { Ref } from 'vue';
-import * as authApi from '../services/authApi';
+import * as authApi from '@/features/auth/services/authApi';
+import { useGamificationStore } from '@/features/gamification/gamification-engine/store/useGamificationStore';
 
 const REFRESH_TOKEN_KEY  = 'vdsa_refresh_token';
 const ACCESS_EXPIRES_KEY = 'vdsa_access_expires'; // epoch ms
@@ -38,4 +39,13 @@ export function clearSession(
 /** Lấy refresh token đã lưu trong localStorage. */
 export function getSavedRefreshToken(): string | null {
   return localStorage.getItem(REFRESH_TOKEN_KEY);
+}
+
+export async function syncGamificationProfile(): Promise<void> {
+  const gamificationStore = useGamificationStore();
+  try {
+    await gamificationStore.syncProgressFromServer();
+  } catch {
+    // Gamification sync is non-critical for auth flow
+  }
 }

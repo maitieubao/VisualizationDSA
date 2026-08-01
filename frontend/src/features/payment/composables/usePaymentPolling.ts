@@ -1,5 +1,5 @@
 import { ref } from 'vue';
-import { getOrderStatus } from '../services/paymentApi';
+import { getOrderStatus } from '@/features/payment/services/paymentApi';
 
 export function usePaymentPolling() {
   const isPolling = ref(false);

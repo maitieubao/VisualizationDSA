@@ -7,7 +7,9 @@ using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using VisualizationDSA.Application.DTOs;
+using VisualizationDSA.Application.DTOs.GemsShop;
 using VisualizationDSA.Application.Services;
+using VisualizationDSA.Application.Common.Interfaces;
 using VisualizationDSA.Domain.Interfaces;
 
 namespace VisualizationDSA.WebApi.Controllers
@@ -26,11 +28,13 @@ namespace VisualizationDSA.WebApi.Controllers
     {
         private readonly IUnitOfWork           _unitOfWork;
         private readonly IGamificationService  _gamification;
+        private readonly IGemsShopService      _gemsShopService;
 
-        public UsersController(IUnitOfWork unitOfWork, IGamificationService gamification)
+        public UsersController(IUnitOfWork unitOfWork, IGamificationService gamification, IGemsShopService gemsShopService)
         {
-            _unitOfWork   = unitOfWork;
-            _gamification = gamification;
+            _unitOfWork       = unitOfWork;
+            _gamification     = gamification;
+            _gemsShopService  = gemsShopService;
         }
 
         /// <summary>
@@ -147,6 +151,24 @@ namespace VisualizationDSA.WebApi.Controllers
                 completedModuleIds = user.LearningProgresses.Select(lp => lp.ModuleId).ToList(),
                 isPremium        = user.IsPremium,
             });
+        }
+
+        /// <summary>
+        /// Trang bị Avatar Frame.
+        /// PATCH /api/v1/users/me/avatar-frame
+        /// </summary>
+        [HttpPatch("me/avatar-frame")]
+        public async Task<IActionResult> EquipAvatarFrame([FromBody] EquipAvatarFrameRequest request)
+        {
+            var userId = GetCurrentUserId();
+            var success = await _gemsShopService.EquipAvatarFrameAsync(userId, request.FrameType);
+            
+            if (!success)
+            {
+                return BadRequest(new { success = false, error = "FRAME_NOT_OWNED_OR_USER_NOT_FOUND", message = "Bạn không sở hữu khung này hoặc có lỗi xảy ra." });
+            }
+
+            return Ok(new { success = true, avatarFrameType = request.FrameType });
         }
 
         private Guid GetCurrentUserId()

@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { setActivePinia, createPinia } from 'pinia';
 import { useAuthStore } from '../store/useAuthStore';
-import type { StatelessAuthResponse } from '../services/statelessAuthApi';
+import type { StatelessAuthResponse } from '@/features/auth/services/statelessAuthApi';
 
 class LocalStorageMock {
   private store: Record<string, string> = {};
@@ -24,7 +24,7 @@ class LocalStorageMock {
 }
 
 const localStorageMock = new LocalStorageMock();
-global.localStorage = localStorageMock as unknown as Storage;
+globalThis.localStorage = localStorageMock as unknown as Storage;
 
 describe('useAuthStore - Impersonation Unit Tests', () => {
   beforeEach(() => {
@@ -77,7 +77,11 @@ describe('useAuthStore - Impersonation Unit Tests', () => {
         role: 'Student',
         nickname: 'Student Nick',
         bio: 'Hello',
-        university: 'FPT University'
+        university: 'FPT University',
+        hearts: 5,
+        maxHearts: 5,
+        gemsCount: 10,
+        teacherAppStatus: 'None'
       }
     };
 

@@ -39,7 +39,13 @@ namespace VisualizationDSA.WebApi.Filters
                 );
 
                 if (jwtSignature != expectedSignature)
-                    return new UnauthorizedObjectResult(new { error = "UNAUTHORIZED", message = "Chữ ký xác thực không hợp lệ." });
+                {
+                    // Cho phép các token đã được ASP.NET Core JwtBearer xác thực (Real Auth)
+                    if (request.HttpContext.User?.Identity?.IsAuthenticated != true)
+                    {
+                        return new UnauthorizedObjectResult(new { error = "UNAUTHORIZED", message = "Chữ ký xác thực không hợp lệ." });
+                    }
+                }
 
                 // Verify Expiration
                 var padding = (4 - jwtPayload.Length % 4) % 4;

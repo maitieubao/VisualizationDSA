@@ -36,7 +36,7 @@
 </template>
 
 <script setup lang="ts">
-import { useToastStore } from '../composables/useToast';
+import { useToastStore } from '@/composables/useToast';
 
 const toastStore = useToastStore();
 </script>

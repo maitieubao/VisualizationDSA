@@ -36,9 +36,9 @@
 
 <script setup lang="ts">
 import { computed } from 'vue';
-import type { TheoryDocument } from '../types/theory.types';
-import { renderMarkdown } from '../utils/markdown';
-import SvgIcon from '../../components/icons/SvgIcon.vue';
+import type { TheoryDocument } from '@/shared/types/theory.types';
+import { renderMarkdown } from '@/shared/utils/markdown';
+import SvgIcon from '@/components/icons/SvgIcon.vue';
 
 const props = defineProps<{
   document: TheoryDocument;

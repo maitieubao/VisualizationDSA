@@ -9,6 +9,8 @@ services:
       POSTGRES_DB: visualization_dsa_dev
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: password123
+      POSTGRES_INITDB_ARGS: --auth-host=md5
+      POSTGRES_HOST_AUTH_METHOD: md5
     ports:
       - "5433:5432"
     volumes:
@@ -30,12 +32,9 @@ services:
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
       - ASPNETCORE_URLS=http://+:5055
-      - ConnectionStrings__DefaultConnection=Host=database;Database=visualization_dsa_dev;Username=postgres;Password=password123
+      - ConnectionStrings__DefaultConnection=Host=database;Port=5432;Database=visualization_dsa_dev;Username=postgres;Password=password123;
     ports:
       - "5055:5055"
-    depends_on:
-      database:
-        condition: service_healthy
     restart: unless-stopped
 
   # ── Vue 3 Frontend (nginx) ──────────────────────────────
@@ -50,6 +49,55 @@ services:
       - "5173:80"
     depends_on:
       - backend
+    restart: unless-stopped
+
+  # ── Redis (For Judge0) ──────────────────────────────────
+  redis:
+    image: redis:6.0
+    container_name: vdsa-redis
+    ports:
+      - "6379:6379"
+    restart: unless-stopped
+
+  # ── Judge0 API ──────────────────────────────────────────
+  judge0-leetcode:
+    image: judge0/judge0:1.13.0
+    container_name: vdsa-judge0-api
+    ports:
+      - "2358:2358"
+    environment:
+      - POSTGRES_HOST=database
+      - POSTGRES_PORT=5432
+      - POSTGRES_DB=visualization_dsa_dev
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=password123
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - MAX_CPU_TIME_LIMIT=5
+      - MAX_MEMORY_LIMIT=262144
+      - ENABLE_NETWORK=false
+    depends_on:
+      - redis
+      - database
+      - judge0-leetcode-worker
+    restart: unless-stopped
+
+  # ── Judge0 Worker ───────────────────────────────────────
+  judge0-leetcode-worker:
+    image: judge0/judge0:1.13.0
+    container_name: vdsa-judge0-worker
+    command: ["./scripts/workers"]
+    environment:
+      - POSTGRES_HOST=database
+      - POSTGRES_PORT=5432
+      - POSTGRES_DB=visualization_dsa_dev
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=password123
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+    depends_on:
+      - redis
+      - database
     restart: unless-stopped
 
 volumes:

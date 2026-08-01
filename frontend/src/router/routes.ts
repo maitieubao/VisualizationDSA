@@ -11,39 +11,21 @@ export const routes: RouteRecordRaw[] = [
   { path: '/teacher',       name: 'teacher',       component: () => import('../views/TeacherPanelView.vue'),      meta: { title: 'Quản lý Giảng viên', requiresAuth: true, requiresRole: 'Teacher' } },
 
   // ── Core Algorithm Sandboxes ─────────────────────────────────────
-  { path: '/sorting',       name: 'sorting',       component: () => import('../views/SortingView.vue'),          meta: { title: 'Sắp xếp',         icon: 'sorting' } },
-  // { path: '/animation',     name: 'animation',     component: () => import('../views/AnimationView.vue'),        meta: { title: 'Animation',       icon: 'animation' } },
-  // { path: '/dsa',           name: 'dsa',           component: () => import('../views/DSAModulesView.vue'),       meta: { title: 'DSA Modules',     icon: 'dsa' } },
-  { path: '/code-ide',      name: 'code-ide',      component: () => import('../views/CodeIDEView.vue'),          meta: { title: 'Gỡ lỗi Code',     icon: 'code-ide' } },
-  // { path: '/compare',       name: 'compare',       component: () => import('../views/CompareView.vue'),          meta: { title: 'So sánh thuật toán', icon: 'compare' } },
-  // { path: '/concurrency',   name: 'concurrency',   component: () => import('../views/ConcurrencyView.vue'),      meta: { title: 'Đa luồng',        icon: 'concurrency' } },
-  // { path: '/debug',         name: 'debug',         component: () => import('../views/DebugView.vue'),            meta: { title: 'Debug',           icon: 'debug' } },
-  { path: '/graph',         name: 'graph',         component: () => import('../views/GraphView.vue'),            meta: { title: 'Đồ thị',          icon: 'graph' } },
-  // { path: '/playground',    name: 'playground',    component: () => import('../views/PlaygroundView.vue'),       meta: { title: 'Sandbox',         icon: 'playground' } },
-  { path: '/di',            name: 'di',            component: () => import('../views/DIView.vue'),               meta: { title: 'DI/IoC',          icon: 'di' } },
-  { path: '/patterns',      name: 'patterns',      component: () => import('../views/PatternsView.vue'),         meta: { title: 'Mẫu thiết kế',    icon: 'patterns' } },
-  // { path: '/leaderboard',   name: 'leaderboard',   component: () => import('../views/LeaderboardView.vue'),      meta: { title: 'Leaderboard',     icon: 'leaderboard' } },
+  // ── Core Features (Phase 1 legacy kept as hidden or migrated) ─────────────────────────────────────
   { path: '/checkout',      name: 'checkout',      component: () => import('../views/PremiumCheckoutView.vue'),  meta: { title: 'Nâng cấp Premium', icon: 'checkout' } },
 
-  // --- Phase 2 Upgraded Sandboxes ---
-  { path: '/oop',           name: 'oop',           component: () => import('../views/OOPVisualizationView.vue'), meta: { title: 'Trực quan OOP',    icon: 'oop' } },
-  { path: '/solid',         name: 'solid',         component: () => import('../views/SOLIDVisualizationView.vue'),meta: { title: 'Trực quan SOLID',  icon: 'solid' } },
-  // { path: '/state',         name: 'state',         component: () => import('../views/StateInspectorView.vue'),   meta: { title: 'State Inspector', icon: 'state' } },
-  { path: '/system',        name: 'system',        component: () => import('../views/SystemDesignVizView.vue'),  meta: { title: 'Thiết kế HT',     icon: 'system' } },
-  { path: '/quiz',          name: 'quiz',          component: () => import('../views/BackendQuizView.vue'),      meta: { title: 'Trắc nghiệm',     icon: 'quiz' } },
-  { path: '/gamification',  name: 'gamification',  component: () => import('../views/GamificationEngineView.vue'),meta: { title: 'Bảng xếp hạng',   icon: 'gamification' } },
-
   // --- Completely New Phase 2 Routes ---
-  { path: '/embed',         name: 'embed',         component: () => import('../views/EmbedWidgetView.vue'),      meta: { title: 'Embed',           icon: 'embed' } },
-  { path: '/export-share',  name: 'export-share',  component: () => import('../views/ExportShareView.vue'),      meta: { title: 'Export/Share',    icon: 'export-share' } },
-  // { path: '/learning-path', name: 'learning-path', component: () => import('../views/LearningPathView.vue'),     meta: { title: 'Learning Path',   icon: 'learning-path' } },
-  // { path: '/multi-view',    name: 'multi-view',    component: () => import('../views/MultiViewView.vue'),        meta: { title: 'Multi-View',      icon: 'multi-view' } },
-  // { path: '/state',         name: 'state',         component: () => import('../views/StateInspectorView.vue'),   meta: { title: 'State Inspector', icon: 'state' } },
-  // { path: '/timeline',      name: 'timeline',      component: () => import('../views/TimelinePlaybackView.vue'), meta: { title: 'Timeline',        icon: 'timeline' } },
+  { path: '/cheatsheet',    name: 'cheatsheet',    component: () => import('../views/CheatSheetView.vue'),      meta: { title: 'DSA CheatSheet',  icon: 'cheatsheet' } },
+  { path: '/ai-assistant',  name: 'ai-assistant',  component: () => import('../views/AIAssistantView.vue'),     meta: { title: 'AI Assistant',    icon: 'ai-assistant', requiresAuth: true } },
   { path: '/profile',       name: 'profile',       component: () => import('../views/ProfileView.vue'),          meta: { title: 'Hồ sơ cá nhân',   requiresAuth: true } },
-  { path: '/courses',       name: 'courses',       component: () => import('../views/CoursesListView.vue'),      meta: { title: 'Khóa học',        icon: 'learning-path', public: true } },
-  { path: '/courses/:id',   name: 'course-detail', component: () => import('../views/CourseDetailView.vue'),    meta: { title: 'Chi tiết Khóa học', requiresAuth: true } },
+  { path: '/courses',       name: 'courses',       component: () => import('../views/CoursesListView.vue'),      meta: { title: 'Bản đồ Lộ trình',        icon: 'learning-path', public: true } },
+  { path: '/courses/:id',   name: 'course-detail', component: () => import('../views/CourseDetailView.vue'),    meta: { title: 'Chi tiết Lộ trình', requiresAuth: true } },
   { path: '/lessons/:id',   name: 'lesson-study',  component: () => import('../views/LessonStudyView.vue'),     meta: { title: 'Học Bài giảng',    requiresAuth: true } },
+  { path: '/classrooms',    name: 'classrooms',    component: () => import('../views/ClassroomDashboard.vue'),  meta: { title: 'Lớp học',          requiresAuth: true } },
+  { path: '/classrooms/:id', name: 'classroom-detail', component: () => import('../views/ClassroomDetailView.vue'), meta: { title: 'Chi tiết Lớp học', requiresAuth: true } },
+  { path: '/gems-shop',     name: 'gems-shop',     component: () => import('../views/GemsShopView.vue'),        meta: { title: 'Cửa hàng Gems',    requiresAuth: true } },
+  { path: '/teacher-studio', name: 'teacher-studio', component: () => import('../views/TeacherStudioView.vue'), meta: { title: 'Teacher Studio', requiresAuth: true, requiresRole: 'Teacher' } },
+  { path: '/teacher-studio/:id', name: 'teacher-studio-editor', component: () => import('../views/TeacherStudioRoadmapEditor.vue'), meta: { title: 'Chỉnh sửa Lộ trình', requiresAuth: true, requiresRole: 'Teacher' } },
 
   // ── Admin Panel ───────────────────────────────────────────────────────
   { path: '/admin',         name: 'admin',         component: () => import('../views/AdminPanelView.vue'),       meta: { title: 'Quản trị Admin',  requiresAuth: true, requiresRole: 'Admin' } },

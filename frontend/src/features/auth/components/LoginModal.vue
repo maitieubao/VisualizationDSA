@@ -80,9 +80,9 @@ function toggleMode(): void {
 async function handleSubmit(): Promise<void> {
   try {
     if (isRegisterMode.value) {
-      await authStore.statelessRegister(email.value, username.value, password.value);
+      await authStore.register(email.value, username.value, password.value);
     } else {
-      await authStore.statelessLogin(email.value, password.value);
+      await authStore.logIn(email.value, password.value);
     }
     emit('close');
   } catch {

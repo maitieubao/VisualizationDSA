@@ -70,23 +70,22 @@
     </div>
 
     <!-- Nút Trợ giúp Guided Tour -->
-    <HelpButton tour-key="/graph" />
+    
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted } from 'vue';
-import { CustomInputPanel } from '../features/algorithm-sandbox';
-import { InteractivePlayground } from '../features/interactive-playground';
-import { DSAPlayer } from '../features/dsa-modules';
-import BaseIcon from '../shared/components/BaseIcon.vue';
-import HelpButton from '../features/guided-tour/components/HelpButton.vue';
-import { useGuidedTourStore } from '../features/guided-tour/store/useGuidedTourStore';
-import { usePlaygroundStore } from '../features/interactive-playground/store/usePlaygroundStore';
+import { CustomInputPanel } from '../features/core-learning/algorithm-sandbox';
+import { InteractivePlayground } from '../features/core-learning/interactive-playground';
+import { DSAPlayer } from '../features/dsa/dsa-modules';
+import BaseIcon from '@/shared/components/BaseIcon.vue';
+
+
+import { usePlaygroundStore } from '../features/core-learning/interactive-playground/store/usePlaygroundStore';
 
 const activeTab = ref('graph');
 const isPanelCollapsed = ref(false);
-const tourStore = useGuidedTourStore();
 const playgroundStore = usePlaygroundStore();
 
 const tabs = [
@@ -114,7 +113,7 @@ function handleKeydown(e: KeyboardEvent) {
 
 onMounted(() => {
   window.addEventListener('keydown', handleKeydown);
-  tourStore.startPageTour('/graph', false);
+  // tourStore.startPageTour('/graph', false);
 });
 
 onUnmounted(() => {

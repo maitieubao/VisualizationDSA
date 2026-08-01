@@ -51,6 +51,6 @@ export const quizApi = {
   submitAttempt: (request: QuizAttemptRequest) =>
     api.post<QuizAttemptResult>('/quizzes/attempt', request),
 
-  getHistory: () =>
-    api.get<QuizHistoryEntry[]>('/quizzes/history'),
+  getHistory: (page: number = 1, pageSize: number = 10) =>
+    api.get<QuizHistoryEntry[]>(`/quizzes/history?pageNumber=${page}&pageSize=${pageSize}`),
 };

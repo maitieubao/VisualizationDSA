@@ -3,9 +3,10 @@ using Microsoft.AspNetCore.Mvc;
 using Asp.Versioning;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
+using VisualizationDSA.Application.DTOs;
 using VisualizationDSA.Application.Services;
-using VisualizationDSA.Domain.Entities;
 using VisualizationDSA.Domain.Interfaces;
 
 namespace VisualizationDSA.WebApi.Controllers
@@ -27,39 +28,57 @@ namespace VisualizationDSA.WebApi.Controllers
 
         [HttpGet]
         [AllowAnonymous]
-        public async Task<ActionResult<IEnumerable<Badge>>> GetAll()
+        public async Task<ActionResult<IEnumerable<BadgeDto>>> GetAll()
         {
             var badges = await _unitOfWork.Badges.GetAllAsync();
-            return Ok(badges);
+            var result = badges.Select(b => new BadgeDto
+            {
+                Id          = b.Id,
+                Name        = b.Name,
+                Description = b.Description,
+                Icon        = b.Icon,
+                Color       = b.Color,
+                EarnedAt    = DateTime.MinValue,
+            });
+            return Ok(result);
         }
 
         [HttpGet("my")]
-        public async Task<ActionResult<IEnumerable<Badge>>> GetMyBadges()
+        public async Task<ActionResult<IEnumerable<BadgeDto>>> GetMyBadges()
         {
             var userId = GetCurrentUserId();
             var user = await _unitOfWork.Users.GetByIdAsync(userId);
             
             if (user == null) return NotFound();
 
-            var badges = new List<Badge>();
-            foreach (var userBadge in user.UserBadges)
+            var badges = user.UserBadges.Select(ub => new BadgeDto
             {
-                var badge = await _unitOfWork.Badges.GetByIdAsync(userBadge.BadgeId);
-                if (badge != null)
-                {
-                    badges.Add(badge);
-                }
-            }
+                Id          = ub.BadgeId,
+                Name        = ub.Badge?.Name        ?? string.Empty,
+                Description = ub.Badge?.Description ?? string.Empty,
+                Icon        = ub.Badge?.Icon        ?? string.Empty,
+                Color       = ub.Badge?.Color       ?? string.Empty,
+                EarnedAt    = ub.EarnedAt,
+            });
 
             return Ok(badges);
         }
 
         [HttpPost("check")]
-        public async Task<ActionResult<IEnumerable<Badge>>> CheckNewBadges()
+        public async Task<ActionResult<IEnumerable<BadgeDto>>> CheckNewBadges()
         {
             var userId = GetCurrentUserId();
             var newBadges = await _gamificationService.CheckAndAwardBadgesAsync(userId);
-            return Ok(newBadges);
+            var result = newBadges.Select(b => new BadgeDto
+            {
+                Id          = b.Id,
+                Name        = b.Name,
+                Description = b.Description,
+                Icon        = b.Icon,
+                Color       = b.Color,
+                EarnedAt    = DateTime.MinValue,
+            });
+            return Ok(result);
         }
 
         private Guid GetCurrentUserId()

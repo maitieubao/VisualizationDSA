@@ -5,14 +5,14 @@
 
 import { defineStore } from 'pinia';
 import { ref, computed } from 'vue';
-import { useAuthStore } from '../../auth/store/useAuthStore';
-import { statelessPaymentApi } from '../services/statelessPaymentApi';
-import * as paymentApi from '../services/paymentApi';
+import { useAuthStore } from '@/features/auth/store/useAuthStore';
+import { statelessPaymentApi } from '@/features/payment/services/statelessPaymentApi';
+import * as paymentApi from '@/features/payment/services/paymentApi';
 import type {
   StatelessOrderDto,
   StatelessPaymentConfig,
   StatelessPremiumStatus,
-} from '../services/statelessPaymentApi';
+} from '@/features/payment/services/statelessPaymentApi';
 
 export const usePaymentStore = defineStore('payment', () => {
   const authStore = useAuthStore();

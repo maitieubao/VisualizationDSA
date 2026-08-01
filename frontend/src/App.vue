@@ -37,18 +37,38 @@
 
           <!-- Authenticated user badge -->
           <template v-if="authStore.isAuthenticated">
+            <!-- Heart Display -->
+            <HeartDisplay />
             <!-- Notification Bell -->
-            <NotificationBell />
-            <!-- Premium Crown Badge -->
-            <span v-if="authStore.isPremium" class="premium-crown" title="Thành viên Premium">👑</span>
-            <div class="user-badge" :class="{ 'user-badge--premium': authStore.isPremium }" @click="router.push('/profile')" title="Xem hồ sơ cá nhân">
-              <div class="user-badge__avatar" :class="{ 'user-badge__avatar--premium': authStore.isPremium }">
+            <!-- NotificationBell removed -->
+            <!-- Role Badges — emoji kept for warmth; chip wraps with semantic accent tint -->
+            <span v-if="authStore.isAdmin" class="role-badge role-badge--admin" title="Quản trị viên">
+              <span class="role-badge__emoji" aria-hidden="true">🛡️</span>
+              <BaseIcon name="shield" class="role-badge__icon" aria-hidden="true" />
+            </span>
+            <span v-else-if="authStore.isTeacher" class="role-badge role-badge--teacher" title="Giảng viên">
+              <span class="role-badge__emoji" aria-hidden="true">👩‍🏫</span>
+              <BaseIcon name="teacher" class="role-badge__icon" aria-hidden="true" />
+            </span>
+            <span v-else-if="authStore.isPremium" class="role-badge role-badge--premium" title="Thành viên Premium">
+              <span class="role-badge__emoji" aria-hidden="true">👑</span>
+              <BaseIcon name="gem" class="role-badge__icon" aria-hidden="true" />
+            </span>
+            <span v-else class="role-badge role-badge--free" title="Thành viên Miễn phí">
+              <span class="role-badge__emoji" aria-hidden="true">🌱</span>
+              <BaseIcon name="check-circle" class="role-badge__icon" aria-hidden="true" />
+            </span>
+
+            <div class="user-badge" :class="{ 'user-badge--premium': authStore.isPremium }" @click="router.push('/profile')" title="Xem hồ sơ cá nhân" role="button" tabindex="0" @keydown.enter="router.push('/profile')">
+              <div class="user-badge__avatar" :class="[
+                { 'user-badge__avatar--premium': authStore.isPremium },
+                authStore.currentUser?.avatarFrameType ? `avatar-frame--${authStore.currentUser.avatarFrameType.toLowerCase()}` : ''
+              ]">
                 {{ authStore.userName.charAt(0).toUpperCase() }}
               </div>
               <div class="user-badge__info">
                 <span class="user-badge__name">
                   {{ authStore.userName }}
-                  <span v-if="authStore.isPremium" class="premium-tag">PRO</span>
                 </span>
                 <span class="user-badge__meta">
                   Lv.{{ authStore.userLevel }}&nbsp;&middot;&nbsp;{{ authStore.userXP }} XP
@@ -61,7 +81,7 @@
               aria-label="Đăng xuất"
               @click="handleLogout"
             >
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
                 <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
                 <polyline points="16 17 21 12 16 7"/>
                 <line x1="21" y1="12" x2="9" y2="12"/>
@@ -83,9 +103,8 @@
             class="btn-icon btn-icon--ghost"
             title="Xem hướng dẫn nhanh"
             aria-label="Xem hướng dẫn nhanh"
-            @click="tourStore.startTour()"
           >
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
               <circle cx="12" cy="12" r="10"/>
               <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/>
               <line x1="12" y1="17" x2="12.01" y2="17"/>
@@ -100,7 +119,7 @@
             class="btn-icon btn-icon--ghost"
             aria-label="GitHub Repository"
           >
-            <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24">
+            <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
               <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/>
             </svg>
           </a>
@@ -172,10 +191,10 @@
   </div>
 
   <!-- Impersonation Banner (Phase C) -->
-  <div v-if="authStore.isImpersonating" class="impersonate-banner">
+  <div v-if="authStore.isImpersonating" class="impersonate-banner" role="alert">
     <div class="impersonate-banner__pulse"></div>
     <div class="impersonate-banner__text">
-      <span class="impersonate-banner__icon">🎭</span>
+      <span class="impersonate-banner__icon" aria-hidden="true">🎭</span>
       <span>Đang đóng vai: <strong>{{ authStore.userName }}</strong></span>
     </div>
     <button class="impersonate-banner__btn" @click="handleStopImpersonating">
@@ -184,10 +203,10 @@
   </div>
 
   <!-- Sync Error Banner -->
-  <div v-if="progressStore.isSyncError" class="sync-error-banner">
+  <div v-if="progressStore.isSyncError" class="sync-error-banner" role="alert">
     <div class="sync-error-banner__pulse"></div>
     <div class="sync-error-banner__text">
-      <span class="sync-error-banner__icon">⚠️</span>
+      <span class="sync-error-banner__icon" aria-hidden="true">⚠️</span>
       <span>Đồng bộ tiến trình thất bại.</span>
     </div>
     <button class="sync-error-banner__btn" :disabled="isSyncingProgress" @click="handleRetrySync">
@@ -204,6 +223,20 @@
   <!-- Interactive Guided Tour Overlay -->
   <GuidedTourOverlay />
 
+  <!-- Epic 2 Gamification Modals -->
+  <OutOfHeartsModal 
+    :show="sessionStore.showOutOfHeartsModal"
+    :recoveryInfo="sessionStore.outOfHeartsRecoveryInfo"
+    @close="sessionStore.closeOutOfHearts()"
+    @watch-ad="handleWatchAd"
+  />
+
+  <SessionResumePrompt 
+    :show="sessionStore.showResumePromptModal"
+    :currentStep="sessionStore.pendingSessionInfo?.currentStep || 'Theory'"
+    @resume="sessionStore.handleResumePromptDecision(true)"
+    @restart="sessionStore.handleResumePromptDecision(false)"
+  />
 </template>
 
 <script setup lang="ts">
@@ -215,14 +248,20 @@ import type { TabGroup, TabItem } from './appTabs';
 import BaseIcon from './shared/components/BaseIcon.vue';
 import LoginModal from './features/auth/components/LoginModal.vue';
 import ToastContainer from './components/ToastContainer.vue';
-import GuidedTourOverlay from './features/guided-tour/components/GuidedTourOverlay.vue';
-import { useGuidedTourStore } from './features/guided-tour/store/useGuidedTourStore';
-import { useUserProgressStore } from './features/user-progress/store/useUserProgressStore';
-import NotificationBell from './features/e-lecture/components/NotificationBell.vue';
+
+
+import { useUserProgressStore } from './features/gamification/user-progress/store/useUserProgressStore';
+// NotificationBell removed
+import HeartDisplay from './components/common/HeartDisplay.vue';
+
+// Epic 2 Session
+import { useSessionStore } from './features/gamification/gamification-engine/store/useSessionStore';
+import OutOfHeartsModal from './features/gamification/components/OutOfHeartsModal.vue';
+import SessionResumePrompt from './features/gamification/components/SessionResumePrompt.vue';
 
 const authStore      = useAuthStore();
-const tourStore      = useGuidedTourStore();
 const progressStore  = useUserProgressStore();
+const sessionStore   = useSessionStore();
 const route          = useRoute();
 const router         = useRouter();
 const showLoginModal = ref(false);
@@ -299,9 +338,21 @@ function handleStopImpersonating(): void {
 }
 
 onMounted(() => {
-  authStore.statelessInit();
-  tourStore.initTour();
+  authStore.init();
+  // tourStore.initTour();
 });
+
+async function handleWatchAd() {
+  // Call watch-ad API logic here, then close modal
+  // Example placeholder for watch-ad
+  try {
+    // await gamificationApi.watchAd();
+    sessionStore.closeOutOfHearts();
+    // authStore.startHeartTimer(0); // reset if needed
+  } catch (error) {
+    console.error(error);
+  }
+}
 </script>
 
 <style scoped>
@@ -641,6 +692,36 @@ onMounted(() => {
   flex-shrink: 0;
 }
 
+/* Role Badges */
+.role-badge {
+  font-size: 1.1rem;
+  padding: 2px 4px;
+  background: var(--color-bg-surface);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-md);
+  cursor: help;
+  user-select: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.role-badge--admin {
+  background: linear-gradient(135deg, rgba(239, 68, 68, 0.1), rgba(185, 28, 28, 0.2));
+  border-color: rgba(239, 68, 68, 0.3);
+}
+.role-badge--teacher {
+  background: linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(29, 78, 216, 0.2));
+  border-color: rgba(59, 130, 246, 0.3);
+}
+.role-badge--premium {
+  background: linear-gradient(135deg, rgba(245, 158, 11, 0.1), rgba(180, 83, 9, 0.2));
+  border-color: rgba(245, 158, 11, 0.3);
+}
+.role-badge--free {
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.1), rgba(4, 120, 87, 0.2));
+  border-color: rgba(16, 185, 129, 0.3);
+}
+
 /* User badge */
 .user-badge {
   display: flex;
@@ -690,6 +771,19 @@ onMounted(() => {
   font-size: var(--text-xs);
   font-weight: var(--font-semibold);
   color: var(--color-text-primary);
+}
+
+.avatar-frame--neon {
+  border: 2px solid #00f3ff;
+  box-shadow: 0 0 10px rgba(0, 243, 255, 0.6), inset 0 0 5px rgba(0, 243, 255, 0.4);
+}
+.avatar-frame--gold {
+  border: 2px solid #ffd700;
+  box-shadow: 0 0 10px rgba(255, 215, 0, 0.6), inset 0 0 5px rgba(255, 215, 0, 0.4);
+}
+.avatar-frame--diamond {
+  border: 2px solid #b9f2ff;
+  box-shadow: 0 0 15px rgba(185, 242, 255, 0.8), inset 0 0 8px rgba(185, 242, 255, 0.5);
 }
 
 .user-badge__meta {

@@ -21,11 +21,7 @@
       <div class="flex items-center gap-2 font-mono text-[10px] uppercase tracking-wider text-text-muted select-none">
         <span class="w-1.5 h-1.5 rounded-full bg-accent-cyan animate-pulse"></span>
         <span>Sorting & Linear DSA</span>
-        <button
-          class="ml-1 w-6 h-6 flex items-center justify-center rounded-md text-text-muted hover:text-accent-cyan hover:bg-accent-cyan/10 transition-all duration-200 cursor-pointer border border-transparent hover:border-accent-cyan/30"
-          title="Xem lai huong dan"
-          @click="tourStore.startPageTour('/sorting', true)"
-        >&#10067;</button>
+
       </div>
     </div>
 
@@ -44,24 +40,23 @@
         </component>
       </KeepAlive>
     </div>
-    <HelpButton tourKey="/sorting" />
+    
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, computed, defineComponent, h, onMounted } from 'vue';
-import { ArrayBarVisualizer, SortingDetailPanel } from '../features/algorithm-sandbox';
-import { DSAPlayer } from '../features/dsa-modules';
-import BaseIcon from '../shared/components/BaseIcon.vue';
-import HelpButton from '../features/guided-tour/components/HelpButton.vue';
-import { useGuidedTourStore } from '../features/guided-tour/store/useGuidedTourStore';
+import { ArrayBarVisualizer, SortingDetailPanel } from '../features/core-learning/algorithm-sandbox';
+import { DSAPlayer } from '../features/dsa/dsa-modules';
+import BaseIcon from '@/shared/components/BaseIcon.vue';
+
+
 
 const activeTab = ref('sorting');
-const tourStore = useGuidedTourStore();
 
 onMounted(() => {
   // Kích hoạt page tour cho /sorting (chỉ lần đầu; force=false)
-  tourStore.startPageTour('/sorting');
+  // tourStore.startPageTour('/sorting');
 });
 
 const tabs = [

@@ -9,6 +9,9 @@ namespace VisualizationDSA.Domain.Entities
         public Guid CourseId { get; private set; }
         public string Title { get; private set; } = string.Empty;
         public string ContentMd { get; private set; } = string.Empty;
+        public string? ContentBlocksJson { get; private set; } // JSON array of blocks
+        public string? VideoUrl { get; private set; } // YouTube embed or HLS url
+        public string? TheoryImagesJson { get; private set; } // JSON array of image URLs
         public string SandboxType { get; private set; } = string.Empty; // sorting, graph, oop, solid, patterns, system
         public string SandboxConfig { get; private set; } = "{}"; // JSON string
         public Guid? QuizId { get; private set; } // Linked quiz
@@ -45,6 +48,21 @@ namespace VisualizationDSA.Domain.Entities
             QuizId = quizId;
             XPReward = xpReward;
             OrderIndex = orderIndex;
+        }
+
+        public void UpdateContentBlocks(string? blocksJson)
+        {
+            ContentBlocksJson = blocksJson;
+        }
+
+        public void SetVideoUrl(string? url)
+        {
+            VideoUrl = url;
+        }
+
+        public void UpdateTheoryImages(string? imagesJson)
+        {
+            TheoryImagesJson = imagesJson;
         }
     }
 }

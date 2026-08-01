@@ -13,44 +13,29 @@ export interface TabGroup {
 
 export const APP_TABS: readonly (TabGroup | TabItem)[] = [
   {
-    groupName: 'Học tập',
+    groupName: 'Học tập & Tra cứu',
     items: [
-      { id: 'learning-path', path: '/courses', name: 'Khóa học' }
+      { id: 'roadmap',      path: '/courses',      name: 'Visual / Roadmap' },
+      { id: 'cheatsheet',   path: '/cheatsheet',   name: 'DSA CheatSheet' },
     ]
   },
   {
-    groupName: 'Giải thuật',
+    groupName: 'Cộng đồng & Mở rộng',
     items: [
-      { id: 'sorting',     path: '/sorting',     name: 'Sắp xếp' },
-      { id: 'graph',       path: '/graph',       name: 'Đồ thị' },
-      { id: 'code-ide',    path: '/code-ide',    name: 'Gỡ lỗi Code' }
+      { id: 'classrooms',   path: '/classrooms',   name: 'Lớp Học', requiresAuth: true },
+      { id: 'gamification', path: '/gamification', name: 'Xếp Hạng' },
+      { id: 'ai-assistant', path: '/ai-assistant', name: 'AI Assistant', requiresAuth: true },
+      { id: 'gems-shop',    path: '/gems-shop',    name: 'Cửa Hàng Gems', requiresAuth: true }
     ]
   },
   {
-    groupName: 'Khái niệm',
+    groupName: 'Cá nhân & Quản lý',
     items: [
-      { id: 'oop',      path: '/oop',      name: 'OOP' },
-      { id: 'solid',    path: '/solid',    name: 'SOLID' },
-      { id: 'patterns', path: '/patterns', name: 'Design Patterns' },
-      { id: 'di',       path: '/di',       name: 'DI/IoC' },
-      { id: 'system',   path: '/system',   name: 'Thiết kế HT' }
+      { id: 'dashboard',    path: '/dashboard',    name: 'Bảng điều khiển', requiresAuth: true },
+      { id: 'profile',      path: '/profile',      name: 'Hồ sơ', requiresAuth: true },
+      { id: 'teacher-studio', path: '/teacher-studio', name: 'Teacher Studio', requiresAuth: true, requiresRole: 'Teacher' },
+      { id: 'admin',        path: '/admin',        name: 'Quản trị Admin', requiresAuth: true, requiresRole: 'Admin' },
     ]
-  },
-  {
-    groupName: 'Tương tác',
-    items: [
-      { id: 'quiz',          path: '/quiz',          name: 'Trắc nghiệm' },
-      { id: 'gamification',  path: '/gamification',  name: 'Bảng xếp hạng' }
-    ]
-  },
-  {
-    groupName: 'Tài khoản',
-    items: [
-      { id: 'dashboard', path: '/dashboard', name: 'Bảng điều khiển', requiresAuth: true },
-      { id: 'profile',   path: '/profile',   name: 'Hồ sơ cá nhân', requiresAuth: true },
-      { id: 'checkout',  path: '/checkout',  name: 'Nâng cấp Premium' },
-      { id: 'teacher',   path: '/teacher',   name: 'Quản lý Giảng viên', requiresAuth: true, requiresRole: 'Teacher' },
-      { id: 'admin',     path: '/admin',     name: 'Quản trị Admin', requiresAuth: true, requiresRole: 'Admin' },
-    ]
-  },
+  }
 ] as const;
+

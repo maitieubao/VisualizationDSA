@@ -8,6 +8,7 @@ using VisualizationDSA.Domain.Strategies;
 using VisualizationDSA.Domain.Entities;
 using VisualizationDSA.Infrastructure.Data;
 using VisualizationDSA.WebApi.Filters;
+using VisualizationDSA.Application.Common.Interfaces;
 
 namespace VisualizationDSA.WebApi.Controllers
 {
@@ -25,15 +26,21 @@ namespace VisualizationDSA.WebApi.Controllers
         private readonly ApplicationDbContext _dbContext;
         private readonly StatelessAuthStrategy _authStrategy;
         private readonly QuizBankStrategy _quizBank;
+        private readonly IRoadmapAuditService _auditService;
+        private readonly IContentModerationService _moderationService;
 
         public AdminController(
             ApplicationDbContext dbContext,
             StatelessAuthStrategy authStrategy,
-            QuizBankStrategy quizBank)
+            QuizBankStrategy quizBank,
+            IRoadmapAuditService auditService,
+            IContentModerationService moderationService)
         {
             _dbContext = dbContext;
             _authStrategy = authStrategy;
             _quizBank = quizBank;
+            _auditService = auditService;
+            _moderationService = moderationService;
         }
 
 
@@ -275,7 +282,12 @@ namespace VisualizationDSA.WebApi.Controllers
                 return NotFound(new { error = "USER_NOT_FOUND" });
 
             var oldStatus = user.IsPremium;
-            user.SetPremiumStatus(request.IsPremium);
+
+            if (request.IsPremium)
+                user.SetPremium(DateTime.UtcNow.AddDays(30)); // Default 30 days
+            else
+                user.DowngradeFromPremium();
+                
             await _dbContext.SaveChangesAsync();
 
             // Đồng bộ sang in-memory cache
@@ -313,7 +325,8 @@ namespace VisualizationDSA.WebApi.Controllers
             var newUser = new User(request.Email, request.Username, passwordHash);
             
             newUser.SetRole(request.Role);
-            newUser.SetPremiumStatus(request.IsPremium);
+            if (request.IsPremium)
+                newUser.SetPremium(DateTime.UtcNow.AddDays(30));
 
             _dbContext.Users.Add(newUser);
             await _dbContext.SaveChangesAsync();
@@ -633,6 +646,46 @@ namespace VisualizationDSA.WebApi.Controllers
             return $"{header}.{payload}.{signature}";
         }
 
+        // ── Roadmaps (D3) ────────────────────────────────────────────────────
+
+        [HttpGet("roadmaps/{id}/edit-history")]
+        public async Task<IActionResult> GetRoadmapEditHistory(Guid id)
+        {
+            var history = await _auditService.GetEditHistoryAsync(id);
+            return Ok(history.Select(h => new {
+                h.Id,
+                h.EditorId,
+                EditorName = h.Editor?.Username,
+                h.ChangeType,
+                h.Note,
+                h.ChangedAt
+            }));
+        }
+
+        [HttpPost("roadmaps/{id}/unpublish")]
+        public async Task<IActionResult> UnpublishRoadmap(Guid id, [FromBody] JsonElement payload)
+        {
+            var roadmap = await _dbContext.CustomRoadmaps.FindAsync(id);
+            if (roadmap == null) return NotFound("Roadmap not found");
+
+            if (roadmap.Status != "Published")
+                return BadRequest("Roadmap is not currently published");
+
+            roadmap.Publish("Private");
+            
+            string reason = payload.TryGetProperty("reason", out var p) ? p.GetString() ?? "No reason provided" : "No reason provided";
+            
+            // Log this edit
+            var adminIdStr = JwtHelper.ExtractSubFromToken(Request);
+            var adminId = Guid.TryParse(adminIdStr, out var aid) ? aid : Guid.Empty;
+            await _auditService.LogEditAsync(roadmap.Id, adminId, "Unpublish", $"Admin unpublished. Reason: {reason}");
+            await LogAdminAction("UNPUBLISH_ROADMAP", id, reason);
+            
+            await _dbContext.SaveChangesAsync();
+
+            return Ok(new { message = "Đã gỡ roadmap thành Private" });
+        }
+
         /// <summary>
         /// Lấy danh sách nhật ký quản trị (Audit Logs).
         /// GET /api/v1/concepts/admin/audit-logs
@@ -649,6 +702,78 @@ namespace VisualizationDSA.WebApi.Controllers
                 .ToListAsync();
 
             return Ok(new { total, page, pageSize, logs });
+        }
+
+        // ── Content Moderation (D6) ──────────────────────────────────────────
+
+        [HttpGet("reports")]
+        public async Task<IActionResult> GetPendingReports()
+        {
+            var reports = await _moderationService.GetPendingReportsAsync();
+            return Ok(reports.Select(r => new {
+                r.Id,
+                r.NodeId,
+                r.Reason,
+                r.Detail,
+                r.Status,
+                ReporterName = r.Reporter?.Username,
+                r.CreatedAt
+            }));
+        }
+
+        [HttpPatch("reports/{id}/resolve")]
+        public async Task<IActionResult> ResolveReport(Guid id, [FromBody] JsonElement payload)
+        {
+            var action = payload.TryGetProperty("action", out var p) ? p.GetString() : null;
+            if (string.IsNullOrEmpty(action)) return BadRequest("Action is required (dismiss, remove, warn_teacher)");
+
+            await _moderationService.ResolveReportAsync(id, action);
+            await LogAdminAction("RESOLVE_REPORT", id, $"Action: {action}");
+
+            return Ok(new { message = "Báo cáo đã được xử lý" });
+        }
+
+        [HttpGet("blacklist")]
+        public async Task<IActionResult> GetBlacklist([FromQuery] string? category)
+        {
+            var query = _dbContext.KeywordBlacklists.AsQueryable();
+            if (!string.IsNullOrEmpty(category))
+                query = query.Where(b => b.Category == category);
+
+            var list = await query.ToListAsync();
+            return Ok(list);
+        }
+
+        [HttpPost("blacklist")]
+        public async Task<IActionResult> AddBlacklistKeyword([FromBody] JsonElement payload)
+        {
+            var keyword = payload.TryGetProperty("keyword", out var p) ? p.GetString() : null;
+            var category = payload.TryGetProperty("category", out var c) ? c.GetString() : "general";
+
+            if (string.IsNullOrWhiteSpace(keyword)) return BadRequest("Keyword is required");
+
+            var adminIdStr = JwtHelper.ExtractSubFromToken(Request);
+            var adminId = Guid.TryParse(adminIdStr, out var aid) ? aid : Guid.Empty;
+
+            var entry = new KeywordBlacklist(keyword, category!, adminId);
+            _dbContext.KeywordBlacklists.Add(entry);
+            await _dbContext.SaveChangesAsync();
+
+            await LogAdminAction("ADD_BLACKLIST", entry.Id, $"Keyword: {keyword}");
+            return Ok(entry);
+        }
+
+        [HttpDelete("blacklist/{id}")]
+        public async Task<IActionResult> RemoveBlacklistKeyword(Guid id)
+        {
+            var entry = await _dbContext.KeywordBlacklists.FindAsync(id);
+            if (entry == null) return NotFound();
+
+            _dbContext.KeywordBlacklists.Remove(entry);
+            await _dbContext.SaveChangesAsync();
+
+            await LogAdminAction("REMOVE_BLACKLIST", id, $"Keyword: {entry.Keyword}");
+            return Ok(new { message = "Đã xóa từ khóa khỏi blacklist" });
         }
 
         private async Task LogAdminAction(string action, Guid? targetId, string details)

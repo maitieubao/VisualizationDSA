@@ -25,6 +25,7 @@ namespace VisualizationDSA.Infrastructure.Data
             await SeedQuizzesAsync();
             await SeedSemanticGraphAsync();
             await SeedCoursesAsync();
+            await SeedCheatSheetAsync();
         }
 
         private async Task SeedBadgesAsync()
@@ -48,6 +49,22 @@ namespace VisualizationDSA.Infrastructure.Data
                 await _context.Badges.AddAsync(badge);
             }
 
+            await _context.SaveChangesAsync();
+        }
+
+        private async Task SeedCheatSheetAsync()
+        {
+            if (_context.CheatSheetSnippets.Any()) return;
+
+            var snippets = new List<CheatSheetSnippet>
+            {
+                new CheatSheetSnippet("javascript", "array", "const arr = [1, 2, 3, 4, 5];\n// Truy cập phần tử: arr[0]\n// Độ dài: arr.length", "Khai báo mảng trong JavaScript"),
+                new CheatSheetSnippet("python", "array", "arr = [1, 2, 3, 4, 5]\n# Truy cập phần tử: arr[0]\n# Độ dài: len(arr)", "Khai báo mảng trong Python (List)"),
+                new CheatSheetSnippet("java", "array", "int[] arr = {1, 2, 3, 4, 5};\n// Truy cập: arr[0]\n// Độ dài: arr.length", "Khai báo mảng trong Java tĩnh"),
+                new CheatSheetSnippet("cpp", "array", "vector<int> arr = {1, 2, 3, 4, 5};\n// Truy cập: arr[0]\n// Độ dài: arr.size()", "Khai báo Vector trong C++")
+            };
+
+            await _context.CheatSheetSnippets.AddRangeAsync(snippets);
             await _context.SaveChangesAsync();
         }
 

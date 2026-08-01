@@ -10,5 +10,7 @@ export interface LeaderboardEntryDto {
 
 export const leaderboardApi = {
   getTopPlayers: (top: number = 10) =>
-    api.get<LeaderboardEntryDto[]>(`/leaderboard?top=${top}`),
+    api.get<LeaderboardEntryDto[]>(`/leaderboard/top?limit=${top}`),
+  getClassroomWeeklyLeaderboard: (classroomId: string, limit: number = 20) =>
+    api.get<LeaderboardEntryDto[]>(`/leaderboard/classroom/${classroomId}?limit=${limit}`),
 };

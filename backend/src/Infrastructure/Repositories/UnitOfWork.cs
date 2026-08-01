@@ -18,6 +18,8 @@ namespace VisualizationDSA.Infrastructure.Repositories
         public IRepository<LearningProgress> LearningProgresses { get; }
         public IRepository<RefreshToken>     RefreshTokens      { get; }
         public IRepository<Order>            Orders             { get; }
+        public IRepository<UserDailyQuest>   UserDailyQuests    { get; }
+        public IRepository<QuestTemplate>    QuestTemplates     { get; }
  
         public UnitOfWork(ApplicationDbContext context)
         {
@@ -29,6 +31,8 @@ namespace VisualizationDSA.Infrastructure.Repositories
             LearningProgresses = new Repository<LearningProgress>(context);
             RefreshTokens      = new Repository<RefreshToken>(context);
             Orders             = new Repository<Order>(context);
+            UserDailyQuests    = new Repository<UserDailyQuest>(context);
+            QuestTemplates     = new Repository<QuestTemplate>(context);
         }
 
         public async Task<int> CommitAsync()

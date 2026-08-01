@@ -380,7 +380,11 @@ namespace VisualizationDSA.Domain.Strategies
             Role = user.Role,
             Nickname = user.Nickname,
             Bio = user.Bio,
-            University = user.University
+            University = user.University,
+            Hearts = user.Hearts,
+            MaxHearts = user.MaxHearts,
+            GemsCount = user.GemsCount,
+            TeacherAppStatus = user.TeacherAppStatus
         };
 
         private static StatelessBadgeInfoDto MapToBadgeDto(InMemoryBadge b) => new()
@@ -409,6 +413,10 @@ namespace VisualizationDSA.Domain.Strategies
             public string? Nickname { get; set; }
             public string? Bio { get; set; }
             public string? University { get; set; }
+            public int Hearts { get; set; } = 10;
+            public int MaxHearts { get; set; } = 10;
+            public int GemsCount { get; set; } = 0;
+            public string TeacherAppStatus { get; set; } = "None";
         }
 
         private class InMemoryBadge

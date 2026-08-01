@@ -5,7 +5,7 @@ import router from './router'
 import './style.css'
 import App from './App.vue'
 import { useAuthStore } from './features/auth/store/useAuthStore'
-import { useUserProgressStore } from './features/user-progress/store/useUserProgressStore'
+import { useUserProgressStore } from './features/gamification/user-progress/store/useUserProgressStore'
 
 import BaseIcon from './shared/components/BaseIcon.vue'
 

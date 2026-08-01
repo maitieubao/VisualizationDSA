@@ -11,6 +11,9 @@ namespace VisualizationDSA.Application.Services
 
         /// <summary>Xếp hạng của một user cụ thể trong leaderboard.</summary>
         Task<UserRankDto> GetUserRankAsync(Guid userId);
+
+        /// <summary>Top N user theo Weekly XP trong một Lớp học (hiện tại).</summary>
+        Task<IEnumerable<LeaderboardEntryDto>> GetClassroomWeeklyLeaderboardAsync(string classroomId, int limit = 20);
     }
 
     public class LeaderboardEntryDto

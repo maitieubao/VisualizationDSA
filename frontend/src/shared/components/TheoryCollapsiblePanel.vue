@@ -90,10 +90,10 @@
 </template>
 <script setup lang="ts">
 import { ref, computed, watch, onMounted, onUnmounted, nextTick } from 'vue';
-import type { TheoryDocument } from '../types/theory.types';
+import type { TheoryDocument } from '@/shared/types/theory.types';
 import TheorySummaryView from './TheorySummaryView.vue';
 import TheoryAccordionItem from './TheoryAccordionItem.vue';
-import SvgIcon from '../../components/icons/SvgIcon.vue';
+import SvgIcon from '@/components/icons/SvgIcon.vue';
 
 const props = defineProps<{
   isOpen: boolean;

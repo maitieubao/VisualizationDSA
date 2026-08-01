@@ -15,6 +15,13 @@ namespace VisualizationDSA.Application.DTOs
         public DateTime         CreatedAt    { get; set; }
         public List<BadgeDto>   Badges       { get; set; } = new();
         public bool             IsPremium    { get; set; }
+        public string           Role         { get; set; } = string.Empty;
+        public int              Hearts       { get; set; }
+        public int              MaxHearts    { get; set; }
+        public int              GemsCount    { get; set; }
+        public string           TeacherAppStatus { get; set; } = string.Empty;
+        public string?          AvatarFrameType { get; set; }
+        public DateTime?        XpBoostExpiresAt { get; set; }
     }
 
     public class BadgeDto

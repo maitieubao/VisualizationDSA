@@ -232,6 +232,9 @@ namespace VisualizationDSA.WebApi.Controllers
                 courseTitle = lesson.Course.Title,
                 lesson.Title,
                 lesson.ContentMd,
+                lesson.ContentBlocksJson,
+                lesson.VideoUrl,
+                lesson.TheoryImagesJson,
                 lesson.SandboxType,
                 lesson.SandboxConfig,
                 lesson.QuizId,
@@ -741,6 +744,9 @@ namespace VisualizationDSA.WebApi.Controllers
     {
         public string Title { get; set; } = string.Empty;
         public string ContentMd { get; set; } = string.Empty;
+        public string? ContentBlocksJson { get; set; }
+        public string? VideoUrl { get; set; }
+        public string? TheoryImagesJson { get; set; }
         public string SandboxType { get; set; } = string.Empty;
         public string SandboxConfig { get; set; } = "{}";
         public Guid? QuizId { get; set; }
