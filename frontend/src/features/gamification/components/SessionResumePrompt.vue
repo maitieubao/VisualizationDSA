@@ -24,8 +24,8 @@ const stepName = computed(() => {
 
 <template>
   <div v-if="show" class="modal-overlay">
-    <div class="modal-content">
-      <h2>Tiếp tục phiên học? 📚</h2>
+    <div class="modal-content glass-panel">
+      <h2><BaseIcon name="book" class="w-5 h-5 inline-block mr-1 align-text-bottom" /> Tiếp tục phiên học?</h2>
       <p>Bạn đang có một phiên học dang dở. Bạn muốn tiếp tục hay bắt đầu lại từ đầu?</p>
       
       <div class="info-box">
@@ -33,7 +33,7 @@ const stepName = computed(() => {
       </div>
 
       <div class="actions">
-        <button class="btn-cancel" @click="emit('restart')">Bắt đầu lại (Trừ 1 ❤️)</button>
+        <button class="btn-cancel" @click="emit('restart')"><BaseIcon name="heart" class="w-3.5 h-3.5 inline-block mr-1 align-text-bottom text-accent-red" />Bắt đầu lại (Trừ 1)</button>
         <button class="btn-primary" @click="emit('resume')">Tiếp tục (Miễn phí)</button>
       </div>
     </div>
@@ -51,7 +51,6 @@ const stepName = computed(() => {
   z-index: 1000;
 }
 .modal-content {
-  background: var(--color-surface);
   padding: 24px;
   border-radius: 12px;
   max-width: 450px;

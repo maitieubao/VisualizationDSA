@@ -23,34 +23,33 @@ import {
 } from 'chart.js';
 import { useAuthStore } from '@/features/auth/store/useAuthStore';
 
+import { api } from '@/services/apiClient';
 
 ChartJS.register(RadialLinearScale, PointElement, LineElement, Filler, Tooltip, Legend);
 
-const authStore = useAuthStore();
 const isMounted = ref(false);
+const skillLabels = ref<string[]>(['Sắp xếp', 'Đồ thị', 'OOP', 'SOLID', 'Design Patterns']);
+const skillValues = ref<number[]>([20, 20, 20, 20, 20]);
 
-onMounted(() => {
+const fetchSkillData = async () => {
+  try {
+    const res = await api.get<{ subject: string; value: number }[]>('/gamification/skills');
+    if (res && res.length > 0) {
+      skillLabels.value = res.map(s => s.subject);
+      skillValues.value = res.map(s => s.value);
+    }
+  } catch (error) {
+    console.error('Failed to load skill stats:', error);
+  }
+};
+
+onMounted(async () => {
+  await fetchSkillData();
   isMounted.value = true;
 });
 
-
-const distribution = computed(() => {
-  const level = authStore.userLevel || 1;
-  const base = Math.min(100, 30 + level * 5);
-  
-  const hash = (authStore.userName || 'Guest').length;
-  
-  return [
-    Math.min(100, base + (hash % 5) * 5),           
-    Math.min(100, base - 10 + (hash % 3) * 5),      
-    Math.min(100, base - 5 + (hash % 4) * 5),       
-    Math.min(100, base + 10 - (hash % 2) * 5),      
-    Math.min(100, base - 15 + (hash % 6) * 5)       
-  ];
-});
-
 const chartData = computed(() => ({
-  labels: ['Sắp xếp', 'Đồ thị', 'OOP', 'SOLID', 'Design Patterns'],
+  labels: skillLabels.value,
   datasets: [
     {
       label: 'Độ thông thạo',
@@ -63,7 +62,7 @@ const chartData = computed(() => ({
       pointRadius: 4,
       pointHoverRadius: 6,
       borderWidth: 2,
-      data: distribution.value,
+      data: skillValues.value,
     }
   ]
 }));

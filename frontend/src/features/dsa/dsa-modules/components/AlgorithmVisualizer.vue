@@ -9,7 +9,7 @@
     
     <div
       v-if="currentFrame"
-      class="absolute top-3 left-4 max-w-[360px] pointer-events-auto hover:opacity-10 transition-opacity duration-200 rounded-xl p-3 border border-white/5 shadow-2xl select-none"
+      class="absolute top-3 left-4 max-w-[360px] pointer-events-auto hover:opacity-10 transition-opacity duration-200 rounded-xl p-3 border border-border-default shadow-2xl select-none"
       style="background: rgba(15, 23, 42, 0.75); backdrop-filter: blur(12px);"
     >
       <span class="text-[10px] font-bold uppercase tracking-[0.08em] text-accent">
@@ -33,7 +33,7 @@
     
     <div class="absolute bottom-0 left-0 right-0 h-[3px] bg-bg-surface/60">
       <div
-        class="h-full bg-gradient-to-r from-cyan-500 to-blue-600 rounded-r-sm transition-[width] duration-100 ease-out shadow-[0_0_8px_rgba(6,182,212,0.6)]"
+        class="h-full bg-gradient-to-r from-accent-cyan to-blue-600 rounded-r-sm transition-[width] duration-100 ease-out shadow-[0_0_8px_rgba(6,182,212,0.6)]"
         :style="{ width: progressPercent + '%' }"
       />
     </div>

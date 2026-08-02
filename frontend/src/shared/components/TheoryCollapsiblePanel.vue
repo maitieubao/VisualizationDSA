@@ -81,7 +81,7 @@
 
           
           <button class="back-to-summary-footer-btn mt-4" @click="showFullDocs = false">
-            ◀ Quay lại Tóm tắt Khái niệm
+            <BaseIcon name="chevron-left" class="w-4 h-4 inline-block mr-1 align-text-bottom" /> Quay lại Tóm tắt Khái niệm
           </button>
         </div>
       </div>

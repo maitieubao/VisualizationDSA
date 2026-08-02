@@ -1,11 +1,11 @@
 <template>
-  <div class="item-player bg-slate-900/60 border border-white/10 rounded-2xl overflow-hidden">
+  <div class="item-player bg-bg-secondary/60 border border-border-default rounded-2xl overflow-hidden">
     
-    <header class="player-header px-6 py-4 border-b border-white/10 flex items-center justify-between flex-wrap gap-3">
+    <header class="player-header px-6 py-4 border-b border-border-default flex items-center justify-between flex-wrap gap-3">
       <div class="flex items-center gap-3">
         <button 
           type="button" 
-          class="text-slate-400 hover:text-white transition-colors" 
+          class="text-text-secondary hover:text-text-primary transition-colors" 
           @click="$emit('back')"
         >
           <BaseIcon name="arrow-left" class="w-5 h-5" />
@@ -20,20 +20,20 @@
             />
           </div>
           <div>
-            <h2 class="font-bold text-white truncate">{{ item.overrideTitle || item.lessonTitle || item.quizTitle || item.codelabTitle }}</h2>
-            <div class="flex items-center gap-2 text-xs text-slate-400 mt-1">
+            <h2 class="font-bold text-text-primary truncate">{{ item.overrideTitle || item.lessonTitle || item.quizTitle || item.codelabTitle }}</h2>
+            <div class="flex items-center gap-2 text-xs text-text-secondary mt-1">
               <span class="badge" :class="getTypeBadgeClass(item.itemType)">{{ item.itemType }}</span>
-              <span v-if="item.isRequired" class="badge badge-rose text-[10px]">Báº¯t buá»™c</span>
-              <span v-if="item.xpReward" class="text-amber-400 font-mono">+{{ item.xpReward }} XP</span>
+              <span v-if="item.isRequired" class="badge badge-rose text-[10px]">Bắt buộc</span>
+              <span v-if="item.xpReward" class="text-accent-warm font-mono">+{{ item.xpReward }} XP</span>
             </div>
           </div>
         </div>
       </div>
 
       <div class="flex items-center gap-3 ml-auto">
-          <div class="hidden sm:flex items-center gap-2 bg-slate-800/50 px-3 py-1.5 rounded-lg">
-            <BaseIcon name="zap" class="w-4 h-4 text-amber-400" />
-            <span class="text-sm font-bold text-amber-300">{{ item.xpReward || 0 }} XP</span>
+          <div class="hidden sm:flex items-center gap-2 bg-bg-surface px-3 py-1.5 rounded-lg">
+            <BaseIcon name="zap" class="w-4 h-4 text-accent-warm" />
+            <span class="text-sm font-bold text-accent-warm">{{ item.xpReward || 0 }} XP</span>
           </div>
         </div>
       </header>
@@ -67,16 +67,16 @@
         />
 
         
-        <div v-else class="text-center py-12 text-slate-400">
-          <BaseIcon name="alert-circle" class="w-12 h-12 mx-auto mb-4 text-slate-600" />
-          <p>Loáº¡i bÃ i há»c khÃ´ng Ä‘Æ°á»£c há»— trá»£: {{ item.itemType }}</p>
+        <div v-else class="text-center py-12 text-text-secondary">
+          <BaseIcon name="alert-circle" class="w-12 h-12 mx-auto mb-4 text-text-muted" />
+          <p>Loại bài học không được hỗ trợ: {{ item.itemType }}</p>
         </div>
       </main>
 
       
-      <footer class="player-footer px-6 py-4 border-t border-white/10 flex items-center justify-between">
+      <footer class="player-footer px-6 py-4 border-t border-border-default flex items-center justify-between">
         <div class="flex items-center gap-3">
-          <span class="text-xs text-slate-400">
+          <span class="text-xs text-text-secondary">
             {{ getProgressText() }}
           </span>
         </div>
@@ -89,7 +89,7 @@
             @click="$emit('complete')"
           >
             <BaseIcon name="check" class="w-4 h-4 inline mr-1" />
-            ÄÃ¡nh dáº¥u hoÃ n thÃ nh
+            Đánh dấu hoàn thành
           </button>
           
           <button 
@@ -98,12 +98,12 @@
             class="btn-primary" 
             @click="$emit('next')"
           >
-            <span>BÃ i tiáº¿p theo</span>
+            <span>Bài tiếp theo</span>
             <BaseIcon name="arrow-right" class="w-4 h-4 inline ml-1" />
           </button>
           
-          <span v-else class="text-sm text-emerald-400 font-bold">
-            ÄÃ£ hoÃ n thÃ nh module!
+          <span v-else class="text-sm text-accent-green font-bold">
+            Đã hoàn thành module!
           </span>
         </div>
       </footer>
@@ -145,19 +145,19 @@ function getTypeIcon(type: string) {
 
 function getTypeBgClass(type: string) {
   switch (type) {
-    case 'Lesson': return 'bg-indigo-500/20';
-    case 'Quiz': return 'bg-purple-500/20';
-    case 'Codelab': return 'bg-emerald-500/20';
+    case 'Lesson': return 'bg-accent/20';
+    case 'Quiz': return 'bg-accent-purple/20';
+    case 'Codelab': return 'bg-accent-green/20';
     default: return 'bg-slate-500/20';
   }
 }
 
 function getTypeTextClass(type: string) {
   switch (type) {
-    case 'Lesson': return 'text-indigo-400';
-    case 'Quiz': return 'text-purple-400';
-    case 'Codelab': return 'text-emerald-400';
-    default: return 'text-slate-400';
+    case 'Lesson': return 'text-accent';
+    case 'Quiz': return 'text-accent-purple';
+    case 'Codelab': return 'text-accent-green';
+    default: return 'text-text-secondary';
   }
 }
 
@@ -171,7 +171,7 @@ function getTypeBadgeClass(type: string) {
 }
 
 function getProgressText() {
-  return 'Tiáº¿n Ä‘á»™: Äang há»c';
+  return 'Tiến độ: Đang học';
 }
 </script>
 

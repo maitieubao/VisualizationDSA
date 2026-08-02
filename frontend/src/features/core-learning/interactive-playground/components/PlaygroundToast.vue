@@ -13,8 +13,8 @@ const props = defineProps<{
 }>();
 
 const typeClass = computed(() => {
-  if (props.type === 'error') return 'bg-red-500/90 text-white shadow-lg shadow-red-950/20';
-  if (props.type === 'success') return 'bg-emerald-500/90 text-white shadow-lg shadow-emerald-950/20';
-  return 'bg-sky-500/90 text-white shadow-lg shadow-sky-950/20';
+  if (props.type === 'error') return 'bg-red-500/90 text-text-primary shadow-lg shadow-red-950/20';
+  if (props.type === 'success') return 'bg-emerald-500/90 text-text-primary shadow-lg shadow-emerald-950/20';
+  return 'bg-sky-500/90 text-text-primary shadow-lg shadow-sky-950/20';
 });
 </script>

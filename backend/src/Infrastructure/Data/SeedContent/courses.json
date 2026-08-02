@@ -1,0 +1,241 @@
+[
+  {
+    "Title": "Khóa học 1: Cơ bản về Mảng & Giải thuật",
+    "Description": "Làm quen với khái niệm Độ phức tạp thuật toán (Big O) và cấu trúc dữ liệu mảng.",
+    "Category": "DataStructure",
+    "Difficulty": "Beginner",
+    "ImageUrl": "https://images.unsplash.com/photo-1518770660439-4636190af475?w=500&q=80",
+    "Lessons": [
+      {
+        "Title": "Big O & Mảng 1 Chiều",
+        "ContentFile": "beginner_lesson1.md",
+        "SandboxType": "dsa",
+        "SandboxConfig": "{\"array\":[5,12,8,25,3], \"leetCodeId\": \"two-sum\"}",
+        "XpReward": 30,
+        "Quiz": {
+          "Title": "Ôn tập: Độ phức tạp thuật toán",
+          "PassingScore": 80,
+          "Questions": [
+            {
+              "Content": "Độ phức tạp thời gian khi truy cập một phần tử trong mảng bằng chỉ số (index) là bao nhiêu?",
+              "Options": [
+                { "Text": "O(1)", "IsCorrect": true, "Explanation": "Mảng lưu trữ liên tiếp trong bộ nhớ, có thể tính trực tiếp địa chỉ." },
+                { "Text": "O(N)", "IsCorrect": false, "Explanation": "Không cần duyệt qua toàn bộ mảng." },
+                { "Text": "O(log N)", "IsCorrect": false, "Explanation": "Chỉ dùng trong tìm kiếm nhị phân." },
+                { "Text": "O(N^2)", "IsCorrect": false, "Explanation": "Quá chậm." }
+              ]
+            },
+            {
+              "Content": "Nhược điểm lớn nhất của Mảng tĩnh (Static Array) là gì?",
+              "Options": [
+                { "Text": "Truy cập phần tử rất chậm.", "IsCorrect": false, "Explanation": "Mảng truy cập phần tử rất nhanh O(1)." },
+                { "Text": "Kích thước cố định, không thể thay đổi sau khi khởi tạo.", "IsCorrect": true, "Explanation": "Bạn phải cấp phát một vùng nhớ liên tục cố định từ đầu." },
+                { "Text": "Không thể lưu trữ kiểu dữ liệu phức tạp.", "IsCorrect": false, "Explanation": "Mảng có thể lưu bất kỳ kiểu dữ liệu nào." },
+                { "Text": "Chỉ hỗ trợ kiểu số nguyên.", "IsCorrect": false, "Explanation": "Sai, mảng lưu được object, string, v.v." }
+              ]
+            },
+            {
+              "Content": "Thuật toán tìm kiếm tuyến tính (Linear Search) có độ phức tạp thời gian tồi tệ nhất là?",
+              "Options": [
+                { "Text": "O(1)", "IsCorrect": false, "Explanation": "Trừ khi phần tử nằm ở vị trí đầu tiên." },
+                { "Text": "O(N)", "IsCorrect": true, "Explanation": "Phải duyệt qua từng phần tử một cho đến cuối mảng." },
+                { "Text": "O(log N)", "IsCorrect": false, "Explanation": "Đây là độ phức tạp của tìm kiếm nhị phân." },
+                { "Text": "O(N log N)", "IsCorrect": false, "Explanation": "Đây là độ phức tạp của Merge Sort." }
+              ]
+            },
+            {
+              "Content": "Làm thế nào để thêm một phần tử vào đầu mảng (Insert at index 0)?",
+              "Options": [
+                { "Text": "Chỉ cần gán arr[0] = value.", "IsCorrect": false, "Explanation": "Như vậy sẽ ghi đè mất phần tử cũ." },
+                { "Text": "Phải dịch chuyển tất cả các phần tử hiện tại sang phải 1 vị trí, mất O(N).", "IsCorrect": true, "Explanation": "Vì mảng liên tục nên việc chèn ở đầu rất tốn kém." },
+                { "Text": "Mảng tự động chèn mà không mất chi phí nào.", "IsCorrect": false, "Explanation": "Sai, Linked List mới có thể chèn đầu với O(1)." },
+                { "Text": "Gọi hàm push().", "IsCorrect": false, "Explanation": "push() thường thêm vào cuối mảng." }
+              ]
+            },
+            {
+              "Content": "Nếu bạn cần một CTDL truy xuất ngẫu nhiên cực nhanh (Random Access) và ít khi chèn/xóa ở giữa, bạn chọn gì?",
+              "Options": [
+                { "Text": "Linked List (Danh sách liên kết)", "IsCorrect": false, "Explanation": "Linked list không hỗ trợ random access." },
+                { "Text": "Array (Mảng)", "IsCorrect": true, "Explanation": "Mảng sinh ra để truy cập ngẫu nhiên với tốc độ O(1)." },
+                { "Text": "Stack (Ngăn xếp)", "IsCorrect": false, "Explanation": "Chỉ lấy phần tử trên cùng." },
+                { "Text": "Queue (Hàng đợi)", "IsCorrect": false, "Explanation": "Chỉ lấy phần tử đầu tiên." }
+              ]
+            }
+          ]
+        },
+        "Codelab": {
+          "Title": "Two Sum (Tìm 2 số có tổng bằng Target)",
+          "Description": "Cho một mảng các số nguyên `nums` và một số nguyên `target`. Hãy trả về chỉ số (indices) của 2 số sao cho tổng của chúng bằng `target`.\n\nGiả định rằng mỗi test case chỉ có đúng một kết quả, và bạn không được sử dụng cùng một phần tử hai lần.\nBạn có thể trả về kết quả theo bất kỳ thứ tự nào.\n\n### Ví dụ 1:\n- **Input:** nums = [2,7,11,15], target = 9\n- **Output:** [0,1]\n- **Giải thích:** Vì nums[0] + nums[1] == 9, trả về [0, 1].\n\n### Ràng buộc:\n- 2 <= nums.length <= 10^4\n- -10^9 <= nums[i] <= 10^9\n- -10^9 <= target <= 10^9\n\n*(Gợi ý: Cố gắng giải bài toán với độ phức tạp thời gian nhỏ hơn O(n^2))*",
+          "InitialCode": "using System;\nusing System.Collections.Generic;\n\npublic class Solution {\n    public int[] TwoSum(int[] nums, int target) {\n        // Viết code của bạn ở đây\n        \n        return new int[0];\n    }\n}",
+          "TestCases": [
+            { "Input": "[2,7,11,15]\n9", "ExpectedOutput": "[0,1]", "IsHidden": false },
+            { "Input": "[3,2,4]\n6", "ExpectedOutput": "[1,2]", "IsHidden": false },
+            { "Input": "[3,3]\n6", "ExpectedOutput": "[0,1]", "IsHidden": false },
+            { "Input": "[2,5,5,11]\n10", "ExpectedOutput": "[1,2]", "IsHidden": true },
+            { "Input": "[1,2,3,4,5,6,7,8,9,10]\n19", "ExpectedOutput": "[8,9]", "IsHidden": true }
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "Title": "Khóa học 2: Trung cấp về Ngăn xếp & Hàng đợi",
+    "Description": "Khám phá cấu trúc dữ liệu Stack (LIFO) và Queue (FIFO) qua các bài toán thực tế.",
+    "Category": "DataStructure",
+    "Difficulty": "Intermediate",
+    "ImageUrl": "https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?w=500&q=80",
+    "Lessons": [
+      {
+        "Title": "Stack (Ngăn xếp) & Ứng dụng",
+        "ContentFile": "intermediate_lesson1.md",
+        "SandboxType": "dsa",
+        "SandboxConfig": "{\"stack\":[], \"leetCodeId\": \"valid-parentheses\"}",
+        "XpReward": 40,
+        "Quiz": {
+          "Title": "Kiểm tra kiến thức Ngăn Xếp",
+          "PassingScore": 80,
+          "Questions": [
+            {
+              "Content": "Nguyên lý hoạt động của Stack là gì?",
+              "Options": [
+                { "Text": "FIFO (First In First Out)", "IsCorrect": false, "Explanation": "Đó là Queue." },
+                { "Text": "LIFO (Last In First Out)", "IsCorrect": true, "Explanation": "Vào sau thì ra trước, giống như xếp đĩa." },
+                { "Text": "LILO (Last In Last Out)", "IsCorrect": false, "Explanation": "Giống với FIFO." },
+                { "Text": "Random Access", "IsCorrect": false, "Explanation": "Đó là Array." }
+              ]
+            },
+            {
+              "Content": "Thao tác đưa một phần tử vào Stack gọi là gì?",
+              "Options": [
+                { "Text": "Pop", "IsCorrect": false, "Explanation": "Pop là lấy ra." },
+                { "Text": "Push", "IsCorrect": true, "Explanation": "Đẩy phần tử vào đỉnh Stack." },
+                { "Text": "Enqueue", "IsCorrect": false, "Explanation": "Dùng cho Queue." },
+                { "Text": "Insert", "IsCorrect": false, "Explanation": "Từ ngữ chung, không chuyên cho Stack." }
+              ]
+            },
+            {
+              "Content": "Độ phức tạp của các thao tác Push và Pop trên Stack chuẩn là bao nhiêu?",
+              "Options": [
+                { "Text": "O(1)", "IsCorrect": true, "Explanation": "Chỉ thao tác với phần tử trên cùng nên mất O(1)." },
+                { "Text": "O(N)", "IsCorrect": false, "Explanation": "Sai." },
+                { "Text": "O(log N)", "IsCorrect": false, "Explanation": "Sai." },
+                { "Text": "O(N^2)", "IsCorrect": false, "Explanation": "Sai." }
+              ]
+            },
+            {
+              "Content": "Ứng dụng nào sau đây KHÔNG phù hợp sử dụng Stack?",
+              "Options": [
+                { "Text": "Undo / Redo trong trình soạn thảo văn bản.", "IsCorrect": false, "Explanation": "Phù hợp với Stack." },
+                { "Text": "Kiểm tra dấu ngoặc hợp lệ (Valid Parentheses).", "IsCorrect": false, "Explanation": "Đây là ứng dụng kinh điển của Stack." },
+                { "Text": "Quản lý lượt khám bệnh tại bệnh viện (Ai đến trước khám trước).", "IsCorrect": true, "Explanation": "Phải dùng Queue (Hàng đợi) cho việc này." },
+                { "Text": "Quản lý History của trình duyệt Web (Back/Forward).", "IsCorrect": false, "Explanation": "Dùng Stack rất tốt." }
+              ]
+            },
+            {
+              "Content": "Đọc phần tử trên cùng của Stack nhưng KHÔNG xóa nó gọi là thao tác gì?",
+              "Options": [
+                { "Text": "Pop", "IsCorrect": false, "Explanation": "Xóa luôn phần tử." },
+                { "Text": "Peek / Top", "IsCorrect": true, "Explanation": "Chỉ xem, không xóa." },
+                { "Text": "Read", "IsCorrect": false, "Explanation": "Chưa chính xác." },
+                { "Text": "Scan", "IsCorrect": false, "Explanation": "Sai." }
+              ]
+            }
+          ]
+        },
+        "Codelab": {
+          "Title": "Dấu ngoặc hợp lệ (Valid Parentheses)",
+          "Description": "Cho một chuỗi `s` chỉ chứa các ký tự `'('`, `')'`, `'{'`, `'}'`, `'['` và `']'`, hãy xác định xem chuỗi đầu vào có hợp lệ hay không.\n\nChuỗi hợp lệ nếu:\n1. Các dấu ngoặc mở phải được đóng bằng dấu ngoặc cùng loại.\n2. Các dấu ngoặc mở phải được đóng theo đúng thứ tự.\n3. Mỗi dấu ngoặc đóng có một dấu ngoặc mở tương ứng cùng loại.\n\n### Ví dụ 1:\n- **Input:** s = \"()\"\n- **Output:** true\n\n### Ví dụ 2:\n- **Input:** s = \"()[]{}\"\n- **Output:** true\n\n### Ví dụ 3:\n- **Input:** s = \"(]\"\n- **Output:** false",
+          "InitialCode": "using System;\nusing System.Collections.Generic;\n\npublic class Solution {\n    public bool IsValid(string s) {\n        // Viết code của bạn ở đây\n        \n        return false;\n    }\n}",
+          "TestCases": [
+            { "Input": "()", "ExpectedOutput": "True", "IsHidden": false },
+            { "Input": "()[]{}", "ExpectedOutput": "True", "IsHidden": false },
+            { "Input": "(]", "ExpectedOutput": "False", "IsHidden": false },
+            { "Input": "([)]", "ExpectedOutput": "False", "IsHidden": true },
+            { "Input": "{[]}", "ExpectedOutput": "True", "IsHidden": true },
+            { "Input": "]", "ExpectedOutput": "False", "IsHidden": true },
+            { "Input": "((", "ExpectedOutput": "False", "IsHidden": true }
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "Title": "Khóa học 3: Nâng cao về Thuật toán Đồ thị",
+    "Description": "Duyệt đồ thị với BFS, DFS và thuật toán tìm đường đi ngắn nhất Dijkstra.",
+    "Category": "Algorithm",
+    "Difficulty": "Advanced",
+    "ImageUrl": "https://images.unsplash.com/photo-1516116216624-53e697fedbea?w=500&q=80",
+    "Lessons": [
+      {
+        "Title": "Duyệt đồ thị theo chiều sâu (DFS)",
+        "ContentFile": "advanced_lesson1.md",
+        "SandboxType": "dsa",
+        "SandboxConfig": "{\"graph\":{\"nodes\":[{\"id\":\"A\"},{\"id\":\"B\"},{\"id\":\"C\"},{\"id\":\"D\"}],\"edges\":[{\"source\":\"A\",\"target\":\"B\"},{\"source\":\"A\",\"target\":\"C\"},{\"source\":\"B\",\"target\":\"D\"}]}, \"leetCodeId\": \"number-of-islands\"}",
+        "XpReward": 50,
+        "Quiz": {
+          "Title": "Hiểu về thuật toán DFS",
+          "PassingScore": 80,
+          "Questions": [
+            {
+              "Content": "DFS (Depth First Search) thường sử dụng cấu trúc dữ liệu nào để cài đặt (dạng lặp)?",
+              "Options": [
+                { "Text": "Queue", "IsCorrect": false, "Explanation": "Queue dành cho BFS." },
+                { "Text": "Stack", "IsCorrect": true, "Explanation": "Đệ quy dùng call stack, dạng lặp dùng Stack thủ công." },
+                { "Text": "Priority Queue", "IsCorrect": false, "Explanation": "Dành cho Dijkstra." },
+                { "Text": "Linked List", "IsCorrect": false, "Explanation": "Chỉ là CTDL thông thường." }
+              ]
+            },
+            {
+              "Content": "Nếu bạn muốn tìm đường đi ngắn nhất (ít số cạnh nhất) trong đồ thị không trọng số, bạn nên dùng:",
+              "Options": [
+                { "Text": "DFS", "IsCorrect": false, "Explanation": "DFS không đảm bảo đường đi ngắn nhất." },
+                { "Text": "BFS", "IsCorrect": true, "Explanation": "BFS duyệt theo tầng, ai ở tầng thấp sẽ có đường ngắn nhất." },
+                { "Text": "Dijkstra", "IsCorrect": false, "Explanation": "Quá mạnh, đồ thị không trọng số thì BFS là đủ." },
+                { "Text": "Kruskal", "IsCorrect": false, "Explanation": "Dùng cho cây khung nhỏ nhất." }
+              ]
+            },
+            {
+              "Content": "Trạng thái 'Visited' trong đồ thị dùng để làm gì?",
+              "Options": [
+                { "Text": "Làm đồ thị đẹp hơn.", "IsCorrect": false, "Explanation": "Sai." },
+                { "Text": "Tránh việc duyệt lại một đỉnh và rơi vào vòng lặp vô hạn.", "IsCorrect": true, "Explanation": "Đồ thị thường có chu trình, nếu không đánh dấu sẽ lặp vô hạn." },
+                { "Text": "Tăng tốc độ bằng cách xóa đỉnh.", "IsCorrect": false, "Explanation": "Sai." },
+                { "Text": "DFS không cần trạng thái Visited.", "IsCorrect": false, "Explanation": "Sai, DFS bắt buộc phải có Visited." }
+              ]
+            },
+            {
+              "Content": "Độ phức tạp thời gian của DFS trên đồ thị biểu diễn bằng danh sách kề (Adjacency List) là?",
+              "Options": [
+                { "Text": "O(V)", "IsCorrect": false, "Explanation": "Thiếu E (Edges)." },
+                { "Text": "O(E)", "IsCorrect": false, "Explanation": "Thiếu V (Vertices)." },
+                { "Text": "O(V + E)", "IsCorrect": true, "Explanation": "Duyệt qua tất cả V đỉnh và E cạnh." },
+                { "Text": "O(V^2)", "IsCorrect": false, "Explanation": "Đây là độ phức tạp nếu dùng Ma trận kề." }
+              ]
+            },
+            {
+              "Content": "DFS có thể ứng dụng trong trường hợp nào sau đây?",
+              "Options": [
+                { "Text": "Tìm đường ngắn nhất trên Google Maps.", "IsCorrect": false, "Explanation": "Dùng A* hoặc Dijkstra." },
+                { "Text": "Tìm các thành phần liên thông trong đồ thị (Connected Components).", "IsCorrect": true, "Explanation": "DFS rất phù hợp để lan truyền và đánh dấu connected components." },
+                { "Text": "Tìm cây khung nhỏ nhất.", "IsCorrect": false, "Explanation": "Dùng Prim hoặc Kruskal." },
+                { "Text": "Không có ứng dụng thực tế.", "IsCorrect": false, "Explanation": "Sai." }
+              ]
+            }
+          ]
+        },
+        "Codelab": {
+          "Title": "Số lượng hòn đảo (Number of Islands)",
+          "Description": "Cho một lưới 2D kích thước `m x n` biểu diễn bản đồ. Các ô '1' đại diện cho Đất, ô '0' đại diện cho Nước.\nHãy đếm số lượng hòn đảo trên bản đồ. Một hòn đảo được bao quanh bởi Nước và được hình thành bằng cách kết nối các phần Đất liền kề theo chiều ngang hoặc chiều dọc.\n\n### Ví dụ 1:\n- **Input:** grid = \n[\n  ['1','1','1','1','0'],\n  ['1','1','0','1','0'],\n  ['1','1','0','0','0'],\n  ['0','0','0','0','0']\n]\n- **Output:** 1\n\n### Ví dụ 2:\n- **Input:** grid = \n[\n  ['1','1','0','0','0'],\n  ['1','1','0','0','0'],\n  ['0','0','1','0','0'],\n  ['0','0','0','1','1']\n]\n- **Output:** 3",
+          "InitialCode": "using System;\nusing System.Collections.Generic;\n\npublic class Solution {\n    public int NumIslands(char[][] grid) {\n        // Viết code của bạn ở đây\n        \n        return 0;\n    }\n}",
+          "TestCases": [
+            { "Input": "1,1,1,1,0|1,1,0,1,0|1,1,0,0,0|0,0,0,0,0", "ExpectedOutput": "1", "IsHidden": false },
+            { "Input": "1,1,0,0,0|1,1,0,0,0|0,0,1,0,0|0,0,0,1,1", "ExpectedOutput": "3", "IsHidden": false },
+            { "Input": "1", "ExpectedOutput": "1", "IsHidden": true },
+            { "Input": "0", "ExpectedOutput": "0", "IsHidden": true },
+            { "Input": "1,0,1|0,1,0|1,0,1", "ExpectedOutput": "5", "IsHidden": true }
+          ]
+        }
+      }
+    ]
+  }
+]

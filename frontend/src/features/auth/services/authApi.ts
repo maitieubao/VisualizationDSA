@@ -32,6 +32,7 @@ export interface AuthUserDto {
   gemsCount?:   number;
   teacherAppStatus?: string;
   avatarFrameType?: string;
+  avatarUrl?:      string;
   xpBoostExpiresAt?: string;
 }
 

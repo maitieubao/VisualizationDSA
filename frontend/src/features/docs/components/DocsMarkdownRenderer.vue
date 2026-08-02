@@ -192,7 +192,7 @@ const renderMarkdown = async () => {
         
         return `<div class="language-${validLang} relative group">
           <div class="absolute top-3 right-3 z-10 flex items-center">
-            <button class="copy-code-btn opacity-0 group-hover:opacity-100 transition-all flex items-center justify-center w-8 h-8 rounded-md bg-transparent hover:bg-white/10 text-gray-400 hover:text-white" onclick="navigator.clipboard.writeText(decodeURIComponent('${encodeURIComponent(code)}'))" title="Copy code">
+            <button class="copy-code-btn opacity-0 group-hover:opacity-100 transition-all flex items-center justify-center w-8 h-8 rounded-md bg-transparent hover:bg-bg-surface text-text-secondary hover:text-text-primary" onclick="navigator.clipboard.writeText(decodeURIComponent('${encodeURIComponent(code)}'))" title="Copy code">
               ${svgIcon}
             </button>
           </div>
@@ -287,7 +287,7 @@ const renderMarkdown = async () => {
     }
   } catch (error) {
     console.error("Lỗi khi render markdown:", error);
-    htmlContent.value = `<div class="text-red-500">Lỗi khi phân giải tài liệu: ${error}</div>`;
+    htmlContent.value = `<div class="text-accent-red">Lỗi khi phân giải tài liệu: ${error}</div>`;
     loading.value = false;
   }
 };

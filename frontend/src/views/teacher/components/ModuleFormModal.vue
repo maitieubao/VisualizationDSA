@@ -5,7 +5,7 @@
         <div class="modal-header">
           <h3 class="modal-title">
             <BaseIcon :name="editingModule ? 'edit' : 'plus'" class="w-5 h-5 inline mr-2" />
-            {{ editingModule ? 'Chá»‰nh sá»­a Module' : 'Táº¡o Module má»›i' }}
+            {{ editingModule ? 'Chỉnh sửa Module' : 'Tạo Module mới' }}
           </h3>
           <button type="button" class="modal-close" @click="$emit('update:show', false)">
             <BaseIcon name="x" class="w-5 h-5" />
@@ -14,33 +14,33 @@
         
         <form @submit.prevent="handleSubmit" class="modal-body">
           <div class="form-field">
-            <label class="form-label">TiÃªu Ä‘á» Module <span class="text-rose-400">*</span></label>
+            <label class="form-label">Tiêu đề Module <span class="text-accent-red">*</span></label>
             <input 
               v-model="form.title" 
               type="text" 
               class="form-input" 
-              placeholder="VD: Pháº§n 1 - CÆ¡ báº£n vá» Sáº¯p xáº¿p"
+              placeholder="VD: Phần 1 - Cơ bản về Sắp xếp"
               required
               maxlength="200"
             />
-            <p class="form-hint">{{ form.title.length }}/200 kÃ½ tá»±</p>
+            <p class="form-hint">{{ form.title.length }}/200 ký tự</p>
           </div>
           
           <div class="form-field">
-            <label class="form-label">MÃ´ táº£</label>
+            <label class="form-label">Mô tả</label>
             <textarea 
               v-model="form.description" 
               class="form-input form-textarea" 
-              placeholder="MÃ´ táº£ ngáº¯n gá»n vá» ná»™i dung module..."
+              placeholder="Mô tả ngắn gọn về nội dung module..."
               rows="3"
               maxlength="2000"
             ></textarea>
-            <p class="form-hint">{{ form.description.length }}/2000 kÃ½ tá»±</p>
+            <p class="form-hint">{{ form.description.length }}/2000 ký tự</p>
           </div>
           
           <div class="form-row">
             <div class="form-field">
-              <label class="form-label">Thá»© tá»± <span class="text-rose-400">*</span></label>
+              <label class="form-label">Thứ tự <span class="text-accent-red">*</span></label>
               <input 
                 v-model.number="form.orderIndex" 
                 type="number" 
@@ -51,13 +51,13 @@
             </div>
             
             <div class="form-field">
-              <label class="form-label">Má»Ÿ khÃ³a vÃ o (tÃ¹y chá»n)</label>
+              <label class="form-label">Mở khóa vào (tùy chọn)</label>
               <input 
                 v-model="form.unlockAt" 
                 type="datetime-local" 
                 class="form-input"
               />
-              <p class="form-hint">Äá»ƒ trá»‘ng Ä‘á»ƒ má»Ÿ ngay láº­p tá»©c</p>
+              <p class="form-hint">Để trống để mở ngay lập tức</p>
             </div>
           </div>
           
@@ -68,20 +68,20 @@
                 type="checkbox" 
                 class="form-checkbox"
               />
-              <span>áº¨n module nÃ y khá»i há»c viÃªn (chá»‰ giÃ¡o viÃªn tháº¥y)</span>
+              <span>Ẩn module này khỏi học viên (chỉ giáo viên thấy)</span>
             </label>
           </div>
           
           <div class="modal-footer">
             <button type="button" class="btn-secondary" @click="$emit('update:show', false)">
-              Há»§y
+              Hủy
             </button>
             <button type="submit" class="btn-primary" :disabled="saving">
               <span v-if="saving" class="flex items-center gap-2">
                 <span class="spinner-sm"></span>
-                Äang lÆ°u...
+                Đang lưu...
               </span>
-              <span v-else>{{ editingModule ? 'Cáº­p nháº­t' : 'Táº¡o Module' }}</span>
+              <span v-else>{{ editingModule ? 'Cập nhật' : 'Tạo Module' }}</span>
             </button>
           </div>
         </form>

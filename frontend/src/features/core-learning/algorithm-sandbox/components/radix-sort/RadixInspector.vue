@@ -1,7 +1,7 @@
 <template>
   <div class="r-inspector">
     <div class="r-insp-header">
-      <span>🔍 Giải thích bước hiện tại</span>
+      <BaseIcon name="search" class="w-3.5 h-3.5 inline-block mr-1 align-text-bottom" /><span>Giải thích bước hiện tại</span>
       <span class="r-insp-badge" :class="isDistributePhase ? 'r-ib--dist' : 'r-ib--coll'">
         {{ isDistributePhase ? 'DISTRIBUTE' : 'COLLECT' }}
       </span>

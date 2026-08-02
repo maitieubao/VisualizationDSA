@@ -4,7 +4,7 @@
     <button
       @click="isOpen = !isOpen"
       class="drawer-toggle-btn flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-bold transition-all duration-200 shadow-xl cursor-pointer"
-      :class="isOpen ? 'bg-accent text-white border border-accent/50' : 'bg-bg-surface hover:bg-bg-hover text-text-secondary border border-border-default hover:border-border-strong backdrop-blur-md'"
+      :class="isOpen ? 'bg-accent text-text-primary border border-accent/50' : 'bg-bg-surface hover:bg-bg-hover text-text-secondary border border-border-default hover:border-border-strong backdrop-blur-md'"
     >
       <svg class="w-4 h-4 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
         <path stroke-linecap="round" stroke-linejoin="round" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" />
@@ -26,7 +26,7 @@
             </svg>
             Tạo & Khởi Tạo Mảng (Create Array)
           </span>
-          <button @click="isOpen = false" class="text-text-muted hover:text-text-primary text-xs cursor-pointer p-1">✕</button>
+          <button @click="isOpen = false" class="text-text-muted hover:text-text-primary text-xs cursor-pointer p-1"><BaseIcon name="close" class="w-3 h-3" /></button>
         </div>
 
         
@@ -35,25 +35,25 @@
           <div class="grid grid-cols-2 sm:grid-cols-4 gap-1.5">
             <button
               @click="generateRandom"
-              class="px-2.5 py-1.5 rounded-lg bg-bg-active hover:bg-accent hover:text-white text-text-secondary text-xs font-semibold border border-border-subtle transition-colors cursor-pointer text-center"
+              class="px-2.5 py-1.5 rounded-lg bg-bg-active hover:bg-accent hover:text-text-primary text-text-secondary text-xs font-semibold border border-border-subtle transition-colors cursor-pointer text-center"
             >
               Ngẫu nhiên
             </button>
             <button
               @click="generateSorted"
-              class="px-2.5 py-1.5 rounded-lg bg-bg-active hover:bg-accent hover:text-white text-text-secondary text-xs font-semibold border border-border-subtle transition-colors cursor-pointer text-center"
+              class="px-2.5 py-1.5 rounded-lg bg-bg-active hover:bg-accent hover:text-text-primary text-text-secondary text-xs font-semibold border border-border-subtle transition-colors cursor-pointer text-center"
             >
               Đã sắp xếp
             </button>
             <button
               @click="generateReversed"
-              class="px-2.5 py-1.5 rounded-lg bg-bg-active hover:bg-accent hover:text-white text-text-secondary text-xs font-semibold border border-border-subtle transition-colors cursor-pointer text-center"
+              class="px-2.5 py-1.5 rounded-lg bg-bg-active hover:bg-accent hover:text-text-primary text-text-secondary text-xs font-semibold border border-border-subtle transition-colors cursor-pointer text-center"
             >
               Sắp xếp ngược
             </button>
             <button
               @click="generateNearlySorted"
-              class="px-2.5 py-1.5 rounded-lg bg-bg-active hover:bg-accent hover:text-white text-text-secondary text-xs font-semibold border border-border-subtle transition-colors cursor-pointer text-center"
+              class="px-2.5 py-1.5 rounded-lg bg-bg-active hover:bg-accent hover:text-text-primary text-text-secondary text-xs font-semibold border border-border-subtle transition-colors cursor-pointer text-center"
             >
               Gần sắp xếp
             </button>
@@ -63,7 +63,7 @@
         
         <div class="space-y-1.5">
           <div class="flex items-center justify-between text-xs">
-            <span class="font-semibold text-slate-400 uppercase tracking-wide">Số lượng phần tử (N):</span>
+            <span class="font-semibold text-text-secondary uppercase tracking-wide">Số lượng phần tử (N):</span>
             <span class="font-mono font-bold text-accent">{{ arraySize }}</span>
           </div>
           <input

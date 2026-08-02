@@ -4,7 +4,7 @@
       <div v-for="(block, index) in blocks" :key="index" class="mb-4">
         
         <!-- Text (Markdown) -->
-        <div v-if="block.type === 'text'" class="prose prose-invert prose-indigo max-w-none text-slate-300" v-html="renderMarkdown(block.content)"></div>
+        <div v-if="block.type === 'text'" class="prose prose-invert prose-indigo max-w-none text-text-secondary" v-html="renderMarkdown(block.content)"></div>
         
         <!-- MathJax -->
         <MathJaxRenderer v-else-if="block.type === 'mathjax'" :content="block.content" />
@@ -25,7 +25,7 @@
     </div>
 
     <!-- Fallback if no blocks (Old Markdown format) -->
-    <div v-else class="prose prose-invert prose-indigo max-w-none text-slate-300 px-4 pt-4 pb-12" v-html="renderMarkdown(fallbackMd || '')"></div>
+    <div v-else class="prose prose-invert prose-indigo max-w-none text-text-secondary px-4 pt-4 pb-12" v-html="renderMarkdown(fallbackMd || '')"></div>
   </div>
 </template>
 

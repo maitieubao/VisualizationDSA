@@ -23,7 +23,7 @@
   box-shadow: 0 4px 6px -1px var(--color-border-subtle);
   height: var(--header-height);
   position: relative;
-  z-index: 99999 !important;
+  z-index: var(--z-raised) !important;
 }
 
 .app-header__inner {
@@ -332,18 +332,18 @@
 
 
 
-:global(.page-fade-enter-active) {
+.page-fade-enter-active {
   transition: opacity 0.2s ease, transform 0.2s ease;
 }
-:global(.page-fade-leave-active) {
+.page-fade-leave-active {
   transition: opacity 0.12s ease, transform 0.12s ease;
 }
 
-:global(.page-fade-enter-from) {
+.page-fade-enter-from {
   opacity: 0;
   transform: translateY(8px);
 }
-:global(.page-fade-leave-to) {
+.page-fade-leave-to {
   opacity: 0;
   transform: translateY(-4px);
 }

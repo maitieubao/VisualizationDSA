@@ -32,7 +32,7 @@ services:
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
       - ASPNETCORE_URLS=http://+:5055
-      - ConnectionStrings__DefaultConnection=Host=database;Port=5432;Database=visualization_dsa_dev;Username=postgres;Password=password123;
+      - ConnectionStrings__DefaultConnection=${DB_CONNECTION_STRING:?Set DB_CONNECTION_STRING in .env (docker-compose file at repo root)}
     ports:
       - "5055:5055"
     restart: unless-stopped

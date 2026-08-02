@@ -5,7 +5,7 @@
       <span v-for="i in 12" :key="i" class="particle" :style="particleStyle(i)" />
     </div>
 
-    <div class="not-found-card glass">
+    <div class="not-found-card glass-panel">
       
       <div class="error-code" data-text="404" aria-hidden="true">404</div>
 
@@ -43,10 +43,10 @@
       <div class="quick-nav">
         <p class="quick-nav-label">Truy cập nhanh:</p>
         <div class="quick-nav-links">
-          <router-link to="/sorting" class="quick-link">Sắp xếp</router-link>
-          <router-link to="/graph" class="quick-link">Đồ thị</router-link>
-          <router-link to="/oop" class="quick-link">OOP</router-link>
+          <router-link to="/courses" class="quick-link">Lộ trình học</router-link>
+          <router-link to="/dashboard" class="quick-link">Bảng điều khiển</router-link>
           <router-link to="/gamification" class="quick-link">Bảng xếp hạng</router-link>
+          <router-link to="/classrooms" class="quick-link">Lớp học</router-link>
         </div>
       </div>
     </div>
@@ -60,7 +60,13 @@ import { useRouter, useRoute } from 'vue-router';
 const router = useRouter();
 const route  = useRoute();
 
-const currentPath = computed(() => route.path);
+const currentPath = computed(() => {
+  const p = route.path;
+  if (p.length > 35) {
+    return p.substring(0, 20) + '...' + p.substring(p.length - 10);
+  }
+  return p;
+});
 
 function goHome(): void {
   router.push('/');

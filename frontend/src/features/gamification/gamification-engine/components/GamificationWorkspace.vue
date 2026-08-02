@@ -3,7 +3,7 @@
     
     <div class="flex items-center justify-between">
       <div class="flex items-center gap-3">
-        <div class="w-8 h-8 rounded-lg bg-accent flex items-center justify-center"><span class="text-text-primary font-bold text-sm">🏆</span></div>
+        <div class="w-8 h-8 rounded-lg bg-accent flex items-center justify-center"><BaseIcon name="trophy" class="w-4 h-4 text-text-primary" /></div>
         <div>
           <h2 class="text-base font-bold text-text-primary">Gamification Engine</h2>
           <p class="text-[10px] text-text-secondary">Streak • Badges • Leaderboard</p>
@@ -25,79 +25,87 @@
           class="px-3 py-1.5 rounded-lg text-xs font-medium transition-colors"
           :class="store.streakFreezesCount > 0 ? 'bg-accent-cyan/20 text-accent border border-accent-cyan/30 hover:bg-accent-cyan/30' : 'bg-bg-surface/50 text-text-disabled border border-border-default cursor-not-allowed'"
         >
-          ❄️ Freeze ({{ store.streakFreezesCount }})
+          <BaseIcon name="snowflake" class="w-3.5 h-3.5 inline-block mr-1 align-text-bottom" />Freeze ({{ store.streakFreezesCount }})
         </button>
         <button @click="handleAwardXp()" class="px-3 py-1.5 rounded-lg text-xs font-medium bg-accent-green/20 text-accent-green border border-accent-green/30 hover:bg-accent-green/30 transition-colors">+50 XP Demo</button>
       </div>
     </div>
 
     
-    <div class="rounded-xl bg-bg-secondary/45 border border-white/5 backdrop-blur-xl p-4">
-      <div class="flex items-center justify-between mb-2">
-        <span class="text-xs text-text-secondary">Tiến độ huy hiệu tiếp theo</span>
-        <span class="text-xs text-accent">{{ store.xpProgressPercent }}%</span>
-      </div>
-      <div class="h-2 rounded-full bg-bg-surface overflow-hidden">
-        <div class="h-full rounded-full bg-gradient-to-r from-cyan-500 to-emerald-500 transition-all duration-500" :style="{ width: `${store.xpProgressPercent}%` }" />
-      </div>
-      <div class="flex items-center justify-between mt-1">
-        <span class="text-[10px] text-text-disabled">{{ store.currentXP }} XP</span>
-        <span class="text-[10px] text-text-disabled">{{ store.nextBadgeXPThreshold }} XP</span>
-      </div>
-    </div>
-
-    
-    <div v-if="store.isBackendLoading" class="text-center py-2">
-      <span class="text-xs text-text-secondary">Đang tải dữ liệu từ server...</span>
-    </div>
-    <div v-if="store.backendError" class="text-center py-2">
-      <span class="text-xs text-accent-red">{{ store.backendError }}</span>
-    </div>
-
-    
-    <div class="flex-1 grid grid-cols-2 gap-4 min-h-0">
-      <div class="flex flex-col gap-4 overflow-auto">
-        <StreakFire :streak-count="store.backendProfile?.streakDays ?? store.activeStreak" />
-        <BadgesCabinet :all-badges="store.allBadges" :unlocked-badges="store.unlockedBadges" />
-
-        
-        <div v-if="store.backendBadges.length > 0" class="rounded-xl bg-bg-secondary/45 border border-white/5 p-3">
-          <h3 class="text-xs font-semibold text-text-primary mb-2">Huy hiệu từ Server</h3>
-          <div class="space-y-1.5">
-            <div v-for="badge in store.backendBadges" :key="badge.id"
-              class="flex items-center gap-2 px-2 py-1 rounded-lg"
-              :class="badge.earnedAt ? 'bg-accent-green/10' : 'bg-bg-surface/50 opacity-50'">
-              <span class="text-sm">{{ badge.icon }}</span>
-              <div class="flex-1 min-w-0">
-                <div class="text-[11px] font-medium text-text-primary truncate">{{ badge.name }}</div>
-                <div class="text-[9px] text-text-secondary truncate">{{ badge.description }}</div>
+    <div class="flex-1 grid grid-cols-1 lg:grid-cols-12 gap-6 min-h-0 pb-4 auto-rows-auto">
+      
+      <!-- Cột 1: Thông tin User, Level, Thanh XP và Streak -->
+      <div class="lg:col-span-8 flex flex-col gap-6">
+        <!-- Thẻ Profile & Progress (Bento Item 1) -->
+        <div class="rounded-3xl bg-gradient-to-br from-accent-dark/40 to-bg-secondary/60 border border-border-default backdrop-blur-md p-6 shadow-2xl transition-all duration-300 hover:border-accent/40 relative overflow-hidden group">
+          <div class="absolute -top-24 -right-24 w-48 h-48 bg-accent/20 rounded-full blur-[60px] group-hover:bg-accent/30 transition-colors"></div>
+          <h3 class="text-base font-black text-text-primary mb-6 flex items-center gap-2">
+            <span class="w-2.5 h-2.5 rounded-full bg-accent animate-pulse shadow-[0_0_8px_var(--color-accent)]"></span> 
+            Tiến trình học tập
+          </h3>
+          
+          <div class="flex items-end justify-between mb-3">
+            <div>
+              <div class="text-xs text-text-secondary font-medium uppercase tracking-wider mb-1">Tiến độ level tiếp theo</div>
+              <div class="text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-accent-cyan to-accent-light">
+                {{ store.xpProgressPercent }}%
               </div>
-              <span v-if="badge.earnedAt" class="text-[9px] text-accent-green">Đạt</span>
+            </div>
+            <div class="text-right">
+              <span class="text-sm font-bold text-text-primary">{{ store.currentXP }}</span>
+              <span class="text-xs text-text-muted ml-1">/ {{ store.nextBadgeXPThreshold }} XP</span>
+            </div>
+          </div>
+          <div class="h-4 rounded-full bg-bg-primary overflow-hidden shadow-inner border border-border-default relative">
+            <div class="h-full rounded-full bg-gradient-to-r from-accent-cyan via-accent to-accent-purple transition-all duration-1000 ease-out relative" :style="{ width: `${store.xpProgressPercent}%` }">
+              <div class="absolute inset-0 bg-bg-surface animate-[shimmer_2s_infinite]"></div>
             </div>
           </div>
         </div>
+
+        <!-- Tủ trưng bày huy hiệu (Bento Item 2) -->
+        <BadgesCabinet :all-badges="store.allBadges" :unlocked-badges="store.unlockedBadges" class="flex-1 rounded-3xl shadow-2xl border border-border-default bg-bg-surface backdrop-blur-md" />
       </div>
-      <div class="overflow-auto">
-        
-        <div v-if="store.backendLeaderboard.length > 0" class="rounded-xl bg-bg-secondary/45 border border-white/5 p-3 mb-4">
-          <h3 class="text-xs font-semibold text-text-primary mb-2">Bảng xếp hạng (Server)</h3>
-          <div class="space-y-1">
+
+      <!-- Cột 2: Leaderboard và Streak -->
+      <div class="lg:col-span-4 flex flex-col gap-6">
+        <!-- Streak (Bento Item 3) -->
+        <StreakFire :streak-count="store.backendProfile?.streakDays ?? store.activeStreak" class="rounded-3xl shadow-2xl border border-border-default bg-bg-surface backdrop-blur-md hover:border-accent-warm/30 transition-colors" />
+
+        <!-- Bảng xếp hạng (Bento Item 4) -->
+        <div v-if="store.backendLeaderboard.length > 0" class="flex-1 rounded-3xl bg-bg-surface border border-border-default p-6 shadow-2xl backdrop-blur-md flex flex-col">
+          <h3 class="text-base font-black text-text-primary mb-5 flex items-center gap-2">
+            <BaseIcon name="trophy" class="w-4 h-4 mr-2 text-accent-warm" /> Bảng xếp hạng
+          </h3>
+          <div class="space-y-3 flex-1 overflow-y-auto custom-scrollbar pr-2">
             <div v-for="entry in store.backendLeaderboard" :key="entry.rank"
-              class="flex items-center gap-2 px-2 py-1.5 rounded-lg"
-              :class="entry.username === 'VisualizationDSA Student' ? 'bg-accent/10 border border-accent/20' : 'bg-bg-surface/30'">
-              <span class="text-sm font-bold text-text-secondary w-5 text-center">{{ entry.rank }}</span>
+              class="flex items-center gap-3 px-4 py-3 rounded-2xl transition-all hover:-translate-y-0.5"
+              :class="{
+                'bg-gradient-to-r from-yellow-500/20 to-transparent border border-yellow-500/30 shadow-[0_4px_12px_rgba(234,179,8,0.1)]': entry.rank === 1,
+                'bg-gradient-to-r from-slate-400/20 to-transparent border border-slate-400/30': entry.rank === 2,
+                'bg-gradient-to-r from-amber-700/20 to-transparent border border-amber-700/30': entry.rank === 3,
+                'bg-bg-surface border border-border-default': entry.rank > 3,
+                'border-accent/50 bg-accent/10': entry.username === 'VisualizationDSA Student'
+              }">
+              <div class="w-8 text-center font-black text-lg"
+                   :class="entry.rank === 1 ? 'text-accent-warm drop-shadow-[0_0_5px_rgba(234,179,8,0.8)]' : entry.rank === 2 ? 'text-text-secondary' : entry.rank === 3 ? 'text-accent-warm' : 'text-text-disabled'">
+                {{ entry.rank }}
+              </div>
               <div class="flex-1 min-w-0">
-                <div class="text-[11px] font-medium text-text-primary truncate">{{ entry.username }}</div>
-                <div class="text-[9px] text-text-secondary">Lv.{{ entry.level }} {{ entry.levelName }}</div>
+                <div class="text-sm font-bold text-text-primary truncate">{{ entry.username }}</div>
+                <div class="text-[10px] text-text-secondary mt-0.5 uppercase tracking-wide">Lv.{{ entry.level }} {{ entry.levelName }}</div>
               </div>
               <div class="text-right">
-                <div class="text-[11px] font-bold text-accent">{{ entry.totalXp.toLocaleString() }} XP</div>
-                <div class="text-[9px] text-text-disabled">{{ entry.badgeCount }} badge</div>
+                <div class="text-xs font-black font-mono"
+                     :class="entry.rank <= 3 ? 'text-text-primary' : 'text-accent'">
+                  {{ entry.totalXp.toLocaleString() }}
+                </div>
+                <div class="text-[9px] text-text-muted">XP</div>
               </div>
             </div>
           </div>
         </div>
-        <WeeklyLeaderboard :entries="store.leaderboardData" />
+        <WeeklyLeaderboard v-else :entries="store.leaderboardData" class="flex-1 rounded-3xl shadow-2xl border border-border-default bg-bg-surface backdrop-blur-md" />
       </div>
     </div>
 

@@ -1,153 +1,145 @@
 <template>
-  <div class="course-detail-view h-full w-full bg-slate-950 overflow-y-auto custom-scrollbar relative animate-fade-in text-white pb-20">
+  <div class="course-detail-view h-[calc(100vh-64px)] w-full overflow-hidden relative animate-fade-in text-text-primary pb-0">
     
     <!-- Hero Banner Background -->
-    <div class="absolute top-0 left-0 w-full h-[40vh] z-0 overflow-hidden">
-      <img
-        :src="course?.coverImageUrl || 'https://images.unsplash.com/photo-1618401471353-b98aedd07871?w=1000&q=80'"
-        alt="Course Cover"
-        class="w-full h-full object-cover opacity-20"
-      />
-      <div class="absolute inset-0 bg-gradient-to-b from-transparent via-slate-950/80 to-slate-950"></div>
+    <div class="absolute top-0 left-0 w-full h-[40vh] z-0 overflow-hidden" :class="getCategoryGradient(course?.category || '')">
+      <div class="absolute inset-0 flex items-center justify-center opacity-30">
+        <BaseIcon :name="getCategoryIcon(course?.category || '')" class="w-48 h-48" />
+      </div>
+      <div class="absolute inset-0 bg-gradient-to-b from-transparent via-bg-primary/80 to-bg-primary"></div>
+      <!-- Grid pattern -->
+      <div class="absolute inset-0" style="background-image: linear-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(255, 255, 255, 0.05) 1px, transparent 1px); background-size: 30px 30px; mask-image: linear-gradient(to bottom, white 30%, transparent 90%);"></div>
     </div>
 
     <!-- Main Content Container -->
-    <div class="container mx-auto px-6 py-12 max-w-5xl relative z-10">
+    <div class="container mx-auto px-6 py-6 lg:py-12 max-w-5xl relative z-10 flex flex-col h-full">
       
       <!-- Top Navigation -->
-      <router-link to="/courses" class="inline-flex items-center gap-2 text-sm font-bold text-indigo-400 hover:text-indigo-300 transition-colors mb-8 bg-indigo-950/40 px-4 py-2 rounded-xl backdrop-blur-md border border-indigo-500/20">
-        <span>←</span> Quay lại bản đồ Lộ trình
+      <router-link to="/courses" class="inline-flex items-center gap-2 text-sm font-bold text-accent hover:text-accent transition-colors mb-8 bg-bg-surface px-4 py-2 rounded-xl backdrop-blur-md border border-border-accent">
+        <BaseIcon name="chevron-left" class="w-4 h-4" /> Quay lại bản đồ Lộ trình
       </router-link>
 
       <!-- Loading State -->
       <div v-if="loading" class="text-center py-32">
-        <div class="inline-block w-12 h-12 border-4 border-indigo-500/20 border-t-indigo-500 rounded-full animate-spin"></div>
-        <p class="text-slate-400 mt-6 font-medium">Đang thiết lập Roadmap...</p>
+        <div class="inline-block w-12 h-12 border-4 border-border-accent border-t-indigo-500 rounded-full animate-spin"></div>
+        <p class="text-text-secondary mt-6 font-medium">Đang thiết lập Roadmap...</p>
       </div>
-      <div v-else-if="error" class="text-center py-32 bg-slate-900/40 rounded-3xl border border-rose-500/10 backdrop-blur-md">
-        <div class="text-6xl mb-6">⚠️</div>
-        <h3 class="text-2xl font-bold text-slate-200">{{ error }}</h3>
-        <p class="text-slate-500 mt-3">Vui lòng thử lại sau hoặc liên hệ hỗ trợ.</p>
+      <div v-else-if="error" class="text-center py-32 glass-panel rounded-3xl">
+        <BaseIcon name="warning" class="w-14 h-14 mx-auto mb-6 text-accent-warm" />
+        <h3 class="text-2xl font-bold text-text-primary">{{ error }}</h3>
+        <p class="text-text-muted mt-3">Vui lòng thử lại sau hoặc liên hệ hỗ trợ.</p>
       </div>
 
       <!-- Course Content -->
-      <div v-else-if="course" class="grid grid-cols-1 lg:grid-cols-12 gap-10">
+      <div v-else-if="course" class="grid grid-cols-1 lg:grid-cols-12 gap-10 h-full">
         
         <!-- Left Column: Info & Timeline (Takes 8 columns on large screens) -->
-        <div class="lg:col-span-8 flex flex-col gap-8">
+        <div class="lg:col-span-8 flex flex-col gap-8 h-full overflow-y-auto custom-scrollbar pr-2 md:pr-4 pb-32">
           
           <!-- Hero Info -->
           <section class="flex flex-col gap-4">
             <div class="flex items-center gap-3">
-              <span class="px-3 py-1 rounded-lg text-xs font-black uppercase tracking-wider bg-indigo-500 text-white shadow-[0_0_15px_rgba(99,102,241,0.5)] border border-indigo-400">
-                {{ course.category }}
+              <span class="px-3 py-1 rounded-lg text-xs font-black uppercase tracking-wider bg-accent text-text-primary shadow-[0_0_15px_rgba(99,102,241,0.5)] border border-border-accent">
+                {{ getCategoryLabel(course.category) }}
               </span>
-              <span class="px-3 py-1 rounded-lg text-xs font-black uppercase tracking-wider bg-slate-800 text-slate-300 border border-slate-700">
-                {{ course.difficulty }}
+              <span class="px-3 py-1 rounded-lg text-xs font-black uppercase tracking-wider bg-bg-hover text-text-secondary border border-border-default">
+                {{ getDifficultyLabel(course.difficulty) }}
               </span>
             </div>
 
-            <h1 class="text-4xl md:text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-indigo-300 via-white to-purple-300 mt-2 leading-tight">
+            <h1 class="text-4xl md:text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-accent-light via-bg-surface to-accent-purple mt-2 leading-tight">
               {{ course.title }}
             </h1>
             
-            <p class="text-slate-300 text-lg leading-relaxed mt-2 opacity-90">
+            <p class="text-text-secondary text-lg leading-relaxed mt-2 opacity-90">
               {{ course.description }}
             </p>
           </section>
 
-          <!-- Timeline Section -->
-          <section class="mt-8">
-            <h2 class="text-2xl font-black text-white mb-10 flex items-center gap-3">
-              <span class="w-8 h-8 rounded-lg bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center shadow-lg shadow-indigo-500/20">📍</span>
-              Bản đồ Lộ trình (Roadmap)
-            </h2>
+          <!-- Header removed per redesign plan -->
+        <section class="p-8 rounded-3xl glass-panel">
+          <h2 class="text-2xl font-bold text-text-primary mb-6">Nội dung bài học</h2>
 
-          </section>
-        <section class="p-8 rounded-3xl border border-white/10 bg-slate-900/60 backdrop-blur-md">
-          <h2 class="text-2xl font-bold text-white mb-6">Nội dung bài học</h2>
-
-          <div class="lessons-timeline flex flex-col gap-4">
+          <div class="lessons-timeline relative flex flex-col gap-6 ml-4 md:ml-6 pl-6 md:pl-8 border-l-2 border-border-default">
             <div
               v-for="(lesson, idx) in course.lessons"
               :key="lesson.id"
-              class="lesson-item p-5 rounded-2xl border transition-all duration-300 flex items-center justify-between gap-4"
-              :class="lesson.status === 'Completed'
-                ? 'border-emerald-500/20 bg-emerald-500/5 hover:border-emerald-500/40'
-                : 'border-white/5 bg-white/5 hover:border-white/20'"
+              class="lesson-item relative transition-all duration-300 animate-fade-in group w-full"
+              :style="{ animationDelay: `${idx * 0.1}s` }"
             >
-              <div class="flex items-center gap-4">
-                
-                <div class="flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm">
-                  <span v-if="lesson.status === 'Completed'" class="text-emerald-400 text-lg">✓</span>
-                  <span v-else class="text-slate-400">{{ idx + 1 }}</span>
-                </div>
+              <!-- Timeline Dot -->
+              <div class="absolute -left-[33px] md:-left-[41px] top-6 w-4 h-4 rounded-full border-4 border-border-default z-20 shadow-[0_0_10px_rgba(0,0,0,0.5)] transition-all duration-300 group-hover:scale-125"
+                :class="[
+                  getLessonState(lesson, idx, course) === 'completed' ? 'bg-accent-green shadow-emerald-500/50' : '',
+                  getLessonState(lesson, idx, course) === 'active' ? 'bg-accent-warm shadow-amber-400/50 animate-pulse' : '',
+                  getLessonState(lesson, idx, course) === 'available' ? 'bg-bg-hover' : '',
+                  getLessonState(lesson, idx, course) === 'locked' ? 'bg-bg-hover border-border-default' : ''
+                ]"
+              ></div>
 
-                <!-- Lesson Card -->
-                <div 
-                  class="p-5 md:p-6 rounded-2xl border backdrop-blur-xl transition-all duration-300 cursor-pointer flex flex-col md:flex-row md:items-center justify-between gap-5 relative overflow-hidden"
-                  :class="[
-                    lesson.status === 'Completed'
-                      ? 'border-emerald-500/30 bg-emerald-950/20 hover:bg-emerald-900/30 hover:-translate-y-1 hover:shadow-[0_8px_30px_rgba(16,185,129,0.15)]'
-                      : (lesson.status === 'InProgress' || (idx === 0 && lesson.status === 'NotStarted'))
-                        ? 'border-amber-500/50 bg-amber-950/20 hover:bg-amber-900/30 hover:-translate-y-1 hover:shadow-[0_8px_30px_rgba(245,158,11,0.15)]'
-                        : 'border-white/5 bg-slate-900/40 hover:bg-slate-800/60 hover:-translate-y-1 hover:border-white/20'
-                  ]"
-                  @click="startLesson(lesson)"
-                >
+              <!-- Lesson Card -->
+              <div 
+                class="group relative flex flex-col md:flex-row items-start md:items-center p-6 md:p-8 rounded-[2rem] border transition-all duration-500 cursor-pointer overflow-hidden backdrop-blur-md"
+                :class="[
+                  getLessonState(lesson, idx, course) === 'completed' ? 'bg-emerald-900/10 border-accent-green/20 hover:border-accent-green/40 hover:bg-emerald-900/20' : '',
+                  getLessonState(lesson, idx, course) === 'active' ? 'bg-accent-dark/20 border-border-accent shadow-[0_0_30px_rgba(99,102,241,0.15)] hover:bg-accent-dark/30' : '',
+                  getLessonState(lesson, idx, course) === 'available' ? 'bg-bg-surface border-border-default/50 hover:bg-bg-surface hover:border-border-default' : '',
+                  ['locked', 'locked_sequence'].includes(getLessonState(lesson, idx, course)) ? 'bg-bg-secondary/20 border-border-default opacity-60' : ''
+                ]"
+                @click="!['locked', 'locked_sequence'].includes(getLessonState(lesson, idx, course)) && startLesson(lesson, idx, course)"
+              >
                   <!-- Glassmorphism shine effect -->
-                  <div class="absolute top-0 left-0 w-full h-full bg-gradient-to-b from-white/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none"></div>
+                  <div v-if="!['locked', 'locked_sequence'].includes(getLessonState(lesson, idx, course))" class="absolute top-0 left-0 w-full h-full bg-gradient-to-b from-bg-surface/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none"></div>
 
                   <div class="flex-1 z-10">
                     <div class="flex items-center gap-3 mb-2">
-                      <span class="text-xs font-black text-slate-500 tracking-wider">TRẠM {{ idx + 1 }}</span>
-                      <span v-if="lesson.sandboxType" class="px-2 py-0.5 rounded text-[9px] font-black uppercase tracking-widest bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">
+                      <span class="text-xs font-black text-text-muted tracking-wider">TRẠM {{ idx + 1 }}</span>
+                      <span v-if="lesson.sandboxType" class="px-2 py-0.5 rounded text-[9px] font-black uppercase tracking-widest bg-accent/20 text-accent border border-border-accent">
                         {{ lesson.sandboxType }}
                       </span>
-                      <span v-if="lesson.quizId" class="px-2 py-0.5 rounded text-[9px] font-black uppercase tracking-widest bg-purple-500/20 text-purple-300 border border-purple-500/30">
+                      <span v-if="lesson.quizId" class="px-2 py-0.5 rounded text-[9px] font-black uppercase tracking-widest bg-accent-purple/20 text-accent-purple border border-accent-purple/30">
                         Quiz
                       </span>
                     </div>
-                    <h3 class="text-lg font-bold text-white group-hover:text-indigo-200 transition-colors">
+                    <h3 class="text-lg font-bold text-text-primary transition-colors"
+                        :class="!['locked', 'locked_sequence'].includes(getLessonState(lesson, idx, course)) ? 'group-hover:text-accent-light' : 'text-text-secondary'">
+                      <BaseIcon v-if="['locked', 'locked_sequence'].includes(getLessonState(lesson, idx, course))" name="lock" class="w-4 h-4 inline-block mr-2 align-text-bottom text-accent-warm" />
                       {{ lesson.title }}
                     </h3>
                   </div>
 
-                  <div class="flex items-center justify-between md:justify-end gap-4 z-10 w-full md:w-auto mt-2 md:mt-0 pt-4 md:pt-0 border-t md:border-none border-white/5">
+                  <div class="flex items-center justify-between md:justify-end gap-4 z-10 w-full md:w-auto mt-2 md:mt-0 pt-4 md:pt-0 border-t md:border-none border-border-default">
                     <div class="flex flex-col md:items-end">
-                      <span class="text-[10px] text-slate-400 font-medium uppercase tracking-wider">Phần thưởng</span>
-                      <span class="text-emerald-400 font-bold text-sm">⚡ +{{ lesson.xpReward }} XP</span>
+                      <span class="text-[10px] text-text-secondary font-medium uppercase tracking-wider">Phần thưởng</span>
+                      <span class="text-accent-green font-bold text-sm"><BaseIcon name="zap" class="w-3.5 h-3.5 inline-block mr-0.5 align-text-bottom" /> +{{ lesson.xpReward }} XP</span>
                     </div>
                     
                     <button
-                      class="px-5 py-2.5 rounded-xl text-sm font-bold transition-all duration-300 flex items-center gap-2 shadow-lg"
+                      class="px-5 py-2.5 rounded-xl text-sm font-bold transition-all duration-300 flex items-center gap-2"
                       :class="[
-                        lesson.status === 'Completed'
-                          ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 hover:bg-emerald-500/20 hover:shadow-emerald-500/20'
-                          : (lesson.status === 'InProgress' || (idx === 0 && lesson.status === 'NotStarted'))
-                            ? 'bg-indigo-600 text-white hover:bg-indigo-500 shadow-indigo-600/30'
-                            : 'bg-slate-800 text-slate-300 hover:bg-slate-700'
+                        getLessonState(lesson, idx, course) === 'completed' ? 'bg-accent-green/10 text-accent-green border border-accent-green/20 hover:bg-accent-green/20 shadow-lg hover:shadow-emerald-500/20' : '',
+                        getLessonState(lesson, idx, course) === 'active' ? 'bg-accent text-text-primary hover:bg-accent shadow-lg shadow-indigo-600/30' : '',
+                        getLessonState(lesson, idx, course) === 'available' ? 'bg-bg-hover text-text-secondary hover:bg-bg-hover shadow-lg' : '',
+                        getLessonState(lesson, idx, course) === 'locked' ? 'bg-bg-surface text-text-muted cursor-not-allowed border border-border-default' : '',
+                        getLessonState(lesson, idx, course) === 'locked_sequence' ? 'bg-bg-secondary text-text-muted cursor-not-allowed border border-border-default' : ''
                       ]"
+                      :disabled="['locked', 'locked_sequence'].includes(getLessonState(lesson, idx, course))"
+                      @click.stop="startLesson(lesson, idx, course)"
                     >
-                      {{ lesson.status === 'Completed' ? 'Học lại' : (lesson.status === 'InProgress' ? 'Tiếp tục' : 'Bắt đầu') }}
-                      <svg v-if="lesson.status !== 'Completed'" xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                      {{ getLessonState(lesson, idx, course) === 'completed' ? 'Học lại' : 
+                         getLessonState(lesson, idx, course) === 'active' ? 'Tiếp tục' : 
+                         getLessonState(lesson, idx, course) === 'locked' ? 'Premium' : 
+                         getLessonState(lesson, idx, course) === 'locked_sequence' ? 'Chưa mở khóa' : 'Bắt đầu' }}
+                      
+                      <svg v-if="!['completed', 'locked', 'locked_sequence'].includes(getLessonState(lesson, idx, course))" xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
                         <path fill-rule="evenodd" d="M10.293 3.293a1 1 0 011.414 0l6 6a1 1 0 010 1.414l-6 6a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-4.293-4.293a1 1 0 010-1.414z" clip-rule="evenodd" />
+                      </svg>
+                      <svg v-if="['locked', 'locked_sequence'].includes(getLessonState(lesson, idx, course))" xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
                       </svg>
                     </button>
                   </div>
-                </div>
               </div>
-
-              
-              <button
-                @click="startLesson(lesson)"
-                class="px-4 py-2 rounded-xl text-sm font-semibold transition-all duration-200"
-                :class="lesson.status === 'Completed'
-                  ? 'bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20'
-                  : 'bg-indigo-600 text-white hover:bg-indigo-500'"
-              >
-                {{ lesson.status === 'Completed' ? 'Học lại' : 'Bắt đầu' }}
-              </button>
             </div>
           </div>
         </section>
@@ -155,27 +147,27 @@
         </div>
 
         <!-- Right Column: Sidebar (Takes 4 columns) -->
-        <div class="lg:col-span-4 flex flex-col gap-6 relative">
+        <div class="lg:col-span-4 h-full overflow-y-auto custom-scrollbar pb-32 hidden lg:block">
           <!-- Sticky Wrapper -->
-          <div class="sticky top-8 flex flex-col gap-6">
+          <div class="flex flex-col gap-6 pt-0">
             
             <!-- Premium Gate Card -->
             <div
               v-if="course.isPremium && !authStore.currentUser?.isPremium"
-              class="p-6 rounded-3xl border border-amber-500/40 bg-gradient-to-br from-slate-900 via-amber-950/20 to-slate-900 backdrop-blur-xl relative overflow-hidden group"
+              class="p-6 rounded-3xl border border-accent-warm/40 bg-gradient-to-br from-accent-warm/20 to-bg-secondary backdrop-blur-xl relative overflow-hidden group"
             >
-              <div class="absolute top-0 right-0 w-32 h-32 bg-amber-500/10 rounded-full blur-3xl group-hover:bg-amber-500/20 transition-all"></div>
+              <div class="absolute top-0 right-0 w-32 h-32 bg-accent-warm/10 rounded-full blur-3xl group-hover:bg-accent-warm/20 transition-all"></div>
               
-              <div class="text-4xl mb-4 drop-shadow-[0_0_15px_rgba(245,158,11,0.5)]">👑</div>
-              <h3 class="text-xl font-black text-transparent bg-clip-text bg-gradient-to-r from-amber-300 to-yellow-500 uppercase tracking-widest mb-2">
+              <BaseIcon name="crown" class="w-10 h-10 mb-4 text-accent-warm drop-shadow-[0_0_15px_rgba(245,158,11,0.5)]" />
+              <h3 class="text-xl font-black text-transparent bg-clip-text bg-gradient-to-r from-accent-warm-light to-accent-warm uppercase tracking-widest mb-2">
                 Lộ Trình VIP
               </h3>
-              <p class="text-slate-300 text-sm leading-relaxed mb-6">
+              <p class="text-text-secondary text-sm leading-relaxed mb-6">
                 Mở khóa giới hạn! Đăng ký Premium để truy cập toàn bộ lộ trình nâng cao và nhận chứng chỉ hoàn thành.
               </p>
               <router-link
                 to="/checkout"
-                class="w-full flex items-center justify-center gap-2 py-3.5 bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-amber-400 hover:to-yellow-400 text-slate-950 font-black rounded-xl transition-all duration-300 shadow-[0_0_20px_rgba(245,158,11,0.3)] hover:shadow-[0_0_30px_rgba(245,158,11,0.5)]"
+                class="w-full flex items-center justify-center gap-2 py-3.5 bg-gradient-to-r from-accent-warm to-accent-warm hover:from-accent-warm-light hover:to-accent-warm text-text-primary font-black rounded-xl transition-all duration-300 shadow-accent hover:shadow-accent"
               >
                 Nâng cấp Premium
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
@@ -185,97 +177,50 @@
             </div>
 
             <!-- Stats Card -->
-            <div class="p-6 rounded-3xl border border-white/10 bg-slate-900/60 backdrop-blur-xl shadow-xl flex flex-col gap-5">
-              <h3 class="text-sm font-bold text-slate-400 uppercase tracking-wider mb-2 border-b border-white/10 pb-4">
+            <div class="p-6 rounded-3xl glass-panel flex flex-col gap-5">
+              <h3 class="text-sm font-bold text-text-secondary uppercase tracking-wider mb-2 border-b border-border-default pb-4">
                 Tổng quan Lộ trình
               </h3>
               
               <div class="flex items-center gap-4">
-                <div class="w-10 h-10 rounded-xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center">
-                  <span class="text-indigo-400 text-lg">📚</span>
+                <div class="w-10 h-10 rounded-xl bg-accent/10 border border-border-accent flex items-center justify-center">
+                  <BaseIcon name="book" class="w-5 h-5 text-accent" />
                 </div>
                 <div>
-                  <div class="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Số chặng (Nodes)</div>
-                  <div class="text-lg font-black text-white">{{ course.lessons.length }} Trạm</div>
+                  <div class="text-[10px] font-bold text-text-muted uppercase tracking-wider">Số chặng (Nodes)</div>
+                  <div class="text-lg font-black text-text-primary">{{ course.lessons.length }} Trạm</div>
                 </div>
               </div>
 
               <div class="flex items-center gap-4">
-                <div class="w-10 h-10 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center">
-                  <span class="text-emerald-400 text-lg">⚡</span>
+                <div class="w-10 h-10 rounded-xl bg-accent-green/10 border border-accent-green/20 flex items-center justify-center">
+                  <BaseIcon name="zap" class="w-5 h-5 text-accent-green" />
                 </div>
                 <div>
-                  <div class="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Tổng phần thưởng</div>
-                  <div class="text-lg font-black text-emerald-400">{{ totalXp }} XP</div>
+                  <div class="text-[10px] font-bold text-text-muted uppercase tracking-wider">Tổng phần thưởng</div>
+                  <div class="text-lg font-black text-accent-green">{{ totalXp }} XP</div>
                 </div>
               </div>
 
               <div class="flex items-center gap-4">
-                <div class="w-10 h-10 rounded-xl bg-purple-500/10 border border-purple-500/20 flex items-center justify-center">
-                  <span class="text-purple-400 text-lg">🎯</span>
+                <div class="w-10 h-10 rounded-xl bg-accent-purple/10 border border-accent-purple/20 flex items-center justify-center">
+                  <BaseIcon name="target" class="w-5 h-5 text-accent-purple" />
                 </div>
                 <div>
-                  <div class="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Tiến độ của bạn</div>
-                  <div class="text-lg font-black text-white">
+                  <div class="text-[10px] font-bold text-text-muted uppercase tracking-wider">Tiến độ của bạn</div>
+                  <div class="text-lg font-black text-text-primary">
                     {{ course.lessons.filter(l => l.status === 'Completed').length }} / {{ course.lessons.length }}
                   </div>
                 </div>
               </div>
-
-</div>
-
-        </div>
-      
-      <div class="lg:col-span-1 flex flex-col gap-6">
-        
-        <div
-          v-if="course.isPremium && !authStore.currentUser?.isPremium"
-          class="p-6 rounded-3xl border border-amber-500/30 bg-gradient-to-br from-amber-500/10 via-yellow-500/5 to-transparent backdrop-blur"
-        >
-          <div class="text-3xl mb-2">👑</div>
-          <h3 class="text-lg font-black text-amber-300 uppercase tracking-wider">Mở khóa Premium</h3>
-          <p class="text-slate-300 text-sm mt-2 leading-relaxed">
-            Đây là khóa học Premium nâng cao. Vui lòng đăng ký gói Premium để xem đầy đủ các bài giảng và làm bài trắc nghiệm chứng nhận.
-          </p>
-          <router-link
-            to="/checkout"
-            class="mt-6 w-full block text-center py-3 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-bold rounded-2xl transition-all duration-300 shadow-lg shadow-amber-500/20"
-          >
-            Nâng cấp ngay
-          </router-link>
-        </div>
-
-        
-        <div class="p-6 rounded-3xl border border-white/10 bg-slate-900/60 backdrop-blur-md flex flex-col gap-4">
-          <div class="flex items-center gap-3">
-            <img
-              :src="course.coverImageUrl || 'https://images.unsplash.com/photo-1618401471353-b98aedd07871?w=500&q=80'"
-              :alt="course.title"
-              class="w-full h-40 object-cover rounded-2xl border border-white/10"
-            />
-          </div>
-          <div class="w-full h-[1px] bg-white/10 my-2"></div>
-          <div class="flex justify-between items-center text-sm">
-            <span class="text-slate-400">Số bài giảng:</span>
-            <span class="font-bold text-white">{{ course.lessons.length }}</span>
-          </div>
-          <div class="flex justify-between items-center text-sm">
-            <span class="text-slate-400">Tổng điểm thưởng:</span>
-            <span class="font-bold text-indigo-400">{{ totalXp }} XP</span>
-          </div>
-          <div class="flex justify-between items-center text-sm">
-            <span class="text-slate-400">Yêu cầu:</span>
-            <span class="font-bold text-amber-400">{{ course.isPremium ? 'Tài khoản Premium' : 'Tài khoản thường' }}</span>
+            </div>
           </div>
         </div>
-
       </div>
     </div>
   </div>
-</div>
-</div>
-</template>
 
+</template>
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
@@ -334,10 +279,52 @@ const difficultyMap: Record<string, string> = {
 function getCategoryLabel(val: string) { return categoryMap[val] || val; }
 function getDifficultyLabel(val: string) { return difficultyMap[val] || val; }
 
+function getCategoryGradient(category: string) {
+  const map: Record<string, string> = {
+    DataStructure: 'bg-gradient-to-br from-accent to-blue-800',
+    Algorithm: 'bg-gradient-to-br from-emerald-600 to-teal-800',
+    OOP: 'bg-gradient-to-br from-accent-purple to-violet-800',
+    SystemDesign: 'bg-gradient-to-br from-accent-warm to-red-800'
+  };
+  return map[category] || 'bg-gradient-to-br from-slate-600 to-slate-800';
+}
+
+function getCategoryIcon(category: string) {
+  const map: Record<string, string> = {
+    DataStructure: 'link',
+    Algorithm: 'zap',
+    OOP: 'oop',
+    SystemDesign: 'system-architect'
+  };
+  return map[category] || 'book';
+}
+
+function getLessonState(lesson: LessonDto, idx: number, courseRef: CourseDetailDto | null) {
+  // Check if course is premium and user is not premium
+  if (courseRef?.isPremium && !authStore.currentUser?.isPremium) {
+    return 'locked';
+  }
+  
+  if (lesson.status === 'Completed') return 'completed';
+  if (lesson.status === 'InProgress') return 'active';
+  
+  // Sequential locking: NotStarted lessons are locked unless they are the first or the previous one is completed.
+  if (lesson.status === 'NotStarted') {
+    if (idx === 0) return 'active';
+    const prevLesson = courseRef?.lessons[idx - 1];
+    if (prevLesson?.status === 'Completed') return 'active';
+    return 'locked_sequence';
+  }
+  
+  return 'available';
+}
+
+
+
 async function loadCourseDetail() {
   loading.value = true;
   error.value = null;
-  const courseId = route.params.id;
+  const courseId = route.params.id as string;
 
   try {
     const headers: Record<string, string> = { 'Content-Type': 'application/json' };
@@ -361,11 +348,16 @@ async function loadCourseDetail() {
   }
 }
 
-function startLesson(lesson: LessonDto) {
-  if (course.value?.isPremium && !authStore.currentUser?.isPremium && authStore.currentUser?.role === 'Student') {
-    router.push({ name: 'checkout' });
+
+function startLesson(lesson: LessonDto, idx: number, courseRef: CourseDetailDto | null) {
+  const state = getLessonState(lesson, idx, courseRef);
+  if (state === 'locked' || state === 'locked_sequence') {
+    if (state === 'locked') {
+      router.push({ name: 'checkout' });
+    }
     return;
   }
+  // Sửa URL cho ngắn gọn, chỉ dùng /lessons/:id theo cấu hình router
   router.push({ name: 'lesson-study', params: { id: lesson.id } });
 }
 

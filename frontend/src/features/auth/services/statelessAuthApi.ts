@@ -31,6 +31,7 @@ export interface StatelessUserDto {
   hearts:       number;
   maxHearts:    number;
   gemsCount:    number;
+  avatarUrl?:   string;
   teacherAppStatus: string;
 }
 

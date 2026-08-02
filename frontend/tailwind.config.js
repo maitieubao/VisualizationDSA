@@ -19,6 +19,7 @@ export default {
       /* ── FONT FAMILIES ── */
       fontFamily: {
         display: ['var(--font-display)'],
+        heading: ['var(--font-display)'],
         sans:    ['var(--font-sans)'],
         mono:    ['var(--font-mono)'],
       },
@@ -42,6 +43,8 @@ export default {
         'accent':         'var(--color-accent-primary)',
         'accent-light':   'var(--color-accent-primary-light)',
         'accent-dark':    'var(--color-accent-primary-dark)',
+        'accent-warm':    'var(--color-accent-warm)',
+        'accent-warm-light': 'var(--color-accent-warm-light)',
         'accent-green':   'var(--color-accent-green)',
         'accent-blue':    'var(--color-accent-blue)',
         'accent-red':     'var(--color-accent-red)',

@@ -139,6 +139,7 @@ namespace VisualizationDSA.Domain.Entities
 
         public void SetXpBoostExpiry(DateTime? expiresAt) => XpBoostExpiresAt = expiresAt;
         public void SetAvatarFrameType(string? frameType) => AvatarFrameType = frameType;
+        public void SetAvatarUrl(string? avatarUrl) => AvatarUrl = avatarUrl;
 
         public void RecordHintUsed() => LastHintAt = DateTime.UtcNow;
 

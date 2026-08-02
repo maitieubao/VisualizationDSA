@@ -5,7 +5,7 @@
         <div class="modal-header">
           <h3 class="modal-title">
             <BaseIcon name="book-open" class="w-5 h-5 inline mr-2" />
-            Chá»n bÃ i viáº¿t lÃ½ thuyáº¿t
+            Chọn bài viết lý thuyết
           </h3>
           <button type="button" class="modal-close" @click="$emit('update:show', false)">
             <BaseIcon name="x" class="w-5 h-5" />
@@ -18,23 +18,23 @@
             <div class="picker-toolbar mb-4">
               <div class="search-box flex-1">
                 <div class="relative">
-                  <BaseIcon name="search" class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
+                  <BaseIcon name="search" class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted" />
                   <input 
                     v-model="searchQuery" 
                     type="text" 
                     class="form-input pl-10" 
-                    placeholder="TÃ¬m kiáº¿m theo tiÃªu Ä‘á», danh má»¥c, tags..."
+                    placeholder="Tìm kiếm theo tiêu đề, danh mục, tags..."
                     @input="debouncedSearch"
                   />
                 </div>
               </div>
               <div class="flex items-center gap-3">
                 <select v-model="filterCategory" class="form-select w-40" @change="loadArticles">
-                  <option value="">Táº¥t cáº£ danh má»¥c</option>
+                  <option value="">Tất cả danh mục</option>
                   <option v-for="cat in categories" :key="cat" :value="cat">{{ cat }}</option>
                 </select>
                 <select v-model="filterDifficulty" class="form-select w-32" @change="loadArticles">
-                  <option value="">Táº¥t cáº£ Ä‘á»™ khÃ³</option>
+                  <option value="">Tất cả độ khó</option>
                   <option value="Beginner">Beginner</option>
                   <option value="Intermediate">Intermediate</option>
                   <option value="Advanced">Advanced</option>
@@ -45,32 +45,32 @@
             
             <div v-if="loading" class="loading-state">
               <div class="spinner"></div>
-              <span>Äang táº£i...</span>
+              <span>Đang tải...</span>
             </div>
             
             <div v-else-if="articles.length === 0" class="empty-state text-center py-8">
-              <BaseIcon name="book-open" class="w-12 h-12 text-slate-500 mx-auto mb-3" />
-              <p class="text-slate-400">KhÃ´ng tÃ¬m tháº¥y bÃ i viáº¿t phÃ¹ há»£p</p>
+              <BaseIcon name="book-open" class="w-12 h-12 text-text-muted mx-auto mb-3" />
+              <p class="text-text-secondary">Không tìm thấy bài viết phù hợp</p>
             </div>
             
             <div v-else class="articles-table overflow-hidden">
               <table class="w-full">
                 <thead>
-                  <tr class="border-b border-white/10">
-                    <th class="text-left p-3 text-xs font-semibold text-slate-400 uppercase tracking-wider w-10"></th>
-                    <th class="text-left p-3 text-xs font-semibold text-slate-400 uppercase tracking-wider">BÃ i viáº¿t</th>
-                    <th class="text-left p-3 text-xs font-semibold text-slate-400 uppercase tracking-wider w-32">Danh má»¥c</th>
-                    <th class="text-left p-3 text-xs font-semibold text-slate-400 uppercase tracking-wider w-24">Äá»™ khÃ³</th>
-                    <th class="text-left p-3 text-xs font-semibold text-slate-400 uppercase tracking-wider w-20">Äá»c</th>
-                    <th class="text-left p-3 text-xs font-semibold text-slate-400 uppercase tracking-wider w-20">LÆ°á»£t xem</th>
-                    <th class="text-left p-3 text-xs font-semibold text-slate-400 uppercase tracking-wider w-10"></th>
+                  <tr class="border-b border-border-default">
+                    <th class="text-left p-3 text-xs font-semibold text-text-secondary uppercase tracking-wider w-10"></th>
+                    <th class="text-left p-3 text-xs font-semibold text-text-secondary uppercase tracking-wider">Bài viết</th>
+                    <th class="text-left p-3 text-xs font-semibold text-text-secondary uppercase tracking-wider w-32">Danh mục</th>
+                    <th class="text-left p-3 text-xs font-semibold text-text-secondary uppercase tracking-wider w-24">Độ khó</th>
+                    <th class="text-left p-3 text-xs font-semibold text-text-secondary uppercase tracking-wider w-20">Đọc</th>
+                    <th class="text-left p-3 text-xs font-semibold text-text-secondary uppercase tracking-wider w-20">Lượt xem</th>
+                    <th class="text-left p-3 text-xs font-semibold text-text-secondary uppercase tracking-wider w-10"></th>
                   </tr>
                 </thead>
                 <tbody>
                   <tr 
                     v-for="article in articles" 
                     :key="article.id"
-                    class="border-b border-white/5 hover:bg-white/5 transition-colors"
+                    class="border-b border-border-default hover:bg-bg-surface transition-colors"
                     @click="toggleSelect(article)"
                   >
                     <td class="p-3">
@@ -82,23 +82,23 @@
                       >
                     </td>
                     <td class="p-3">
-                      <div class="font-medium text-white truncate max-w-xs">{{ article.title }}</div>
-                      <div class="text-xs text-slate-500 truncate max-w-xs mt-0.5">{{ article.slug }}</div>
+                      <div class="font-medium text-text-primary truncate max-w-xs">{{ article.title }}</div>
+                      <div class="text-xs text-text-muted truncate max-w-xs mt-0.5">{{ article.slug }}</div>
                     </td>
-                    <td class="p-3 text-xs text-slate-400">{{ article.category }}</td>
+                    <td class="p-3 text-xs text-text-secondary">{{ article.category }}</td>
                     <td class="p-3">
                       <span class="badge" :class="difficultyBadgeClass(article.difficulty)">
                         {{ article.difficulty }}
                       </span>
                     </td>
-                    <td class="p-3 text-xs text-slate-400">{{ article.readTimeMinutes }} phÃºt</td>
-                    <td class="p-3 text-xs text-slate-400">{{ article.viewCount }}</td>
+                    <td class="p-3 text-xs text-text-secondary">{{ article.readTimeMinutes }} phút</td>
+                    <td class="p-3 text-xs text-text-secondary">{{ article.viewCount }}</td>
                     <td class="p-3">
                       <button 
                         type="button" 
-                        class="btn-action-icon text-slate-400 hover:text-indigo-400"
+                        class="btn-action-icon text-text-secondary hover:text-accent"
                         @click.stop="previewArticle(article)"
-                        title="Xem trÆ°á»›c"
+                        title="Xem trước"
                       >
                         <BaseIcon name="eye" class="w-4 h-4" />
                       </button>
@@ -109,20 +109,20 @@
             </div>
             
             
-            <div v-if="totalPages > 1" class="flex justify-center items-center gap-2 mt-4 pt-4 border-t border-white/10">
-              <button class="btn-secondary px-3 text-xs" @click="changePage(page - 1)" :disabled="page <= 1">TrÆ°á»›c</button>
-              <span class="text-sm text-slate-400 px-2">Trang {{ page }} / {{ totalPages }}</span>
+            <div v-if="totalPages > 1" class="flex justify-center items-center gap-2 mt-4 pt-4 border-t border-border-default">
+              <button class="btn-secondary px-3 text-xs" @click="changePage(page - 1)" :disabled="page <= 1">Trước</button>
+              <span class="text-sm text-text-secondary px-2">Trang {{ page }} / {{ totalPages }}</span>
               <button class="btn-secondary px-3 text-xs" @click="changePage(page + 1)" :disabled="page >= totalPages">Sau</button>
             </div>
             
             
-            <div v-if="selectedArticles.length > 0" class="mt-4 p-4 bg-indigo-500/10 border border-indigo-500/20 rounded-xl">
+            <div v-if="selectedArticles.length > 0" class="mt-4 p-4 bg-accent/10 border border-border-accent rounded-xl">
               <div class="flex items-center justify-between mb-2">
-                <span class="text-sm font-medium text-indigo-300">
-                  ÄÃ£ chá»n {{ selectedArticles.length }} bÃ i viáº¿t
+                <span class="text-sm font-medium text-accent">
+                  Đã chọn {{ selectedArticles.length }} bài viết
                 </span>
-                <button type="button" class="text-slate-400 hover:text-white text-xs" @click="clearSelection">
-                  XÃ³a táº¥t cáº£
+                <button type="button" class="text-text-secondary hover:text-text-primary text-xs" @click="clearSelection">
+                  Xóa tất cả
                 </button>
               </div>
               <div class="flex flex-wrap gap-2">
@@ -139,14 +139,14 @@
           
           <div class="modal-footer">
             <button type="button" class="btn-secondary" @click="$emit('update:show', false)">
-              Há»§y
+              Hủy
             </button>
             <button type="submit" class="btn-primary" :disabled="selectedArticles.length === 0">
               <span v-if="multiple">
-                Chá»n {{ selectedArticles.length }} bÃ i viáº¿t
+                Chọn {{ selectedArticles.length }} bài viết
               </span>
               <span v-else>
-                Chá»n bÃ i viáº¿t nÃ y
+                Chọn bài viết này
               </span>
             </button>
           </div>

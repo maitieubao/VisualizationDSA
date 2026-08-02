@@ -1,0 +1,30 @@
+{
+  "monthlyActiveUsers": 15000,
+  "dailyActiveUsers": 4500,
+  "courseCompletionRate": 68.5,
+  "totalRevenue": 25400,
+  "topCoursesByRevenue": [
+    { "id": "course-1", "title": "Cấu trúc dữ liệu nâng cao", "revenue": 12000 },
+    { "id": "course-2", "title": "System Design Phỏng vấn", "revenue": 8500 }
+  ],
+  "userRetentionRates": {
+    "day1": 85.2,
+    "day7": 62.4,
+    "day30": 45.1
+  },
+  "platformHealth": {
+    "uptime": 99.99,
+    "avgResponseTimeMs": 124,
+    "errorRate": 0.015
+  },
+  "geographics": [
+    { "country": "Vietnam", "users": 12000 },
+    { "country": "United States", "users": 1500 },
+    { "country": "Japan", "users": 800 }
+  ],
+  "deviceUsage": {
+    "desktop": 65,
+    "mobile": 30,
+    "tablet": 5
+  }
+}

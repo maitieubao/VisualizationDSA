@@ -5,7 +5,7 @@
         <div class="modal-header">
           <h3 class="modal-title">
             <BaseIcon :name="editingQuestion ? 'edit' : 'plus'" class="w-5 h-5 inline mr-2" />
-            {{ editingQuestion ? 'Chá»‰nh sá»­a CÃ¢u há»i' : 'ThÃªm CÃ¢u há»i má»›i' }}
+            {{ editingQuestion ? 'Chỉnh sửa Câu hỏi' : 'Thêm Câu hỏi mới' }}
           </h3>
           <button type="button" class="modal-close" @click="$emit('update:show', false)">
             <BaseIcon name="x" class="w-5 h-5" />
@@ -14,36 +14,36 @@
         
         <form @submit.prevent="handleSubmit" class="modal-body">
           <div class="form-field">
-            <label class="form-label">CÃ¢u há»i <span class="text-rose-400">*</span></label>
-            <textarea v-model="form.question" class="form-input form-textarea" placeholder="Nháº­p cÃ¢u há»i..." rows="3" required maxlength="500"></textarea>
-            <p class="form-hint">{{ form.question.length }}/500 kÃ½ tá»±</p>
+            <label class="form-label">Câu hỏi <span class="text-accent-red">*</span></label>
+            <textarea v-model="form.question" class="form-input form-textarea" placeholder="Nhập câu hỏi..." rows="3" required maxlength="500"></textarea>
+            <p class="form-hint">{{ form.question.length }}/500 ký tự</p>
           </div>
           
           <div class="form-field">
-            <label class="form-label">ÄÃ¡p Ã¡n (tá»‘i thiá»ƒu 2, tá»‘i Ä‘a 6) <span class="text-rose-400">*</span></label>
+            <label class="form-label">Đáp án (tối thiểu 2, tối đa 6) <span class="text-accent-red">*</span></label>
             <div class="options-list space-y-3">
               <div v-for="(opt, idx) in form.options" :key="idx" class="flex items-center gap-3">
-                <span class="text-sm text-slate-400 font-mono w-6">{{ idx + 1 }}.</span>
+                <span class="text-sm text-text-secondary font-mono w-6">{{ idx + 1 }}.</span>
                 <input 
                   v-model="form.options[idx]" 
                   type="text" 
                   class="form-input flex-1" 
-                  :placeholder="'ÄÃ¡p Ã¡n ' + (idx + 1)" 
+                  :placeholder="'Đáp án ' + (idx + 1)" 
                   required 
                   maxlength="200"
                 />
-                <button type="button" class="btn-action-icon text-slate-400 hover:text-rose-400" @click="removeOption(idx)" :disabled="form.options.length <= 2" title="XÃ³a Ä‘Ã¡p Ã¡n">
+                <button type="button" class="btn-action-icon text-text-secondary hover:text-accent-red" @click="removeOption(idx)" :disabled="form.options.length <= 2" title="Xóa đáp án">
                   <BaseIcon name="trash-2" class="w-4 h-4" />
                 </button>
               </div>
             </div>
             <button type="button" class="btn-secondary text-sm mt-2" @click="addOption" :disabled="form.options.length >= 6">
-              <BaseIcon name="plus" class="w-4 h-4 inline mr-1" /> ThÃªm Ä‘Ã¡p Ã¡n
+              <BaseIcon name="plus" class="w-4 h-4 inline mr-1" /> Thêm đáp án
             </button>
           </div>
           
           <div class="form-field">
-            <label class="form-label">ÄÃ¡p Ã¡n Ä‘Ãºng <span class="text-rose-400">*</span></label>
+            <label class="form-label">Đáp án đúng <span class="text-accent-red">*</span></label>
             <select v-model.number="form.correctIndex" class="form-select" required>
               <option v-for="(opt, idx) in form.options" :key="idx" :value="idx">
                 {{ idx + 1 }}. {{ opt }}
@@ -52,21 +52,21 @@
           </div>
           
           <div class="form-field">
-            <label class="form-label">Giáº£i thÃ­ch</label>
-            <textarea v-model="form.explanation" class="form-input form-textarea" placeholder="Giáº£i thÃ­ch táº¡i sao Ä‘Ã¡p Ã¡n nÃ y Ä‘Ãºng..." rows="3" maxlength="1000"></textarea>
-            <p class="form-hint">{{ form.explanation.length }}/1000 kÃ½ tá»±</p>
+            <label class="form-label">Giải thích</label>
+            <textarea v-model="form.explanation" class="form-input form-textarea" placeholder="Giải thích tại sao đáp án này đúng..." rows="3" maxlength="1000"></textarea>
+            <p class="form-hint">{{ form.explanation.length }}/1000 ký tự</p>
           </div>
           
           <div class="modal-footer">
             <button type="button" class="btn-secondary" @click="$emit('update:show', false)">
-              Há»§y
+              Hủy
             </button>
             <button type="submit" class="btn-primary" :disabled="saving">
               <span v-if="saving" class="flex items-center gap-2">
                 <span class="spinner-sm"></span>
-                Äang lÆ°u...
+                Đang lưu...
               </span>
-              <span v-else>{{ editingQuestion ? 'Cáº­p nháº­t CÃ¢u há»i' : 'ThÃªm CÃ¢u há»i' }}</span>
+              <span v-else>{{ editingQuestion ? 'Cập nhật Câu hỏi' : 'Thêm Câu hỏi' }}</span>
             </button>
           </div>
         </form>
@@ -134,11 +134,11 @@ watch(() => props.show, (newShow) => {
 
 async function handleSubmit() {
   if (!form.question.trim()) {
-    alert('CÃ¢u há»i khÃ´ng Ä‘Æ°á»£c Ä‘á»ƒ trá»‘ng');
+    alert('Câu hỏi không được để trống');
     return;
   }
   if (form.options.some((opt: string) => !opt.trim())) {
-    alert('Táº¥t cáº£ Ä‘Ã¡p Ã¡n pháº£i Ä‘Æ°á»£c Ä‘iá»n');
+    alert('Tất cả đáp án phải được điền');
     return;
   }
   

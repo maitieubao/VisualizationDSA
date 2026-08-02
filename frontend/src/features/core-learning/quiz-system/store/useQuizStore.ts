@@ -13,7 +13,7 @@ import { gamificationApi } from '@/services/gamificationApi';
 import type { StatelessQuizSummary, StatelessQuizDetail, StatelessAttemptResult } from '../service/statelessQuizApi';
 
 export const useQuizStore = defineStore('quizSystem', () => {
-  const lectureStore = null as any; // removed
+  // useLectureStore removed
   const animStore = useAnimationStore();
   const authStore = useAuthStore();
 
@@ -49,7 +49,6 @@ export const useQuizStore = defineStore('quizSystem', () => {
     isSubmitted.value = false; isCorrect.value = false;
     feedbackExplanation.value = ''; matchedNodeId.value = null;
     isCanvasTargetMode.value = question.type === 'CANVAS_TARGET';
-    lectureStore.lockLectureInteraction();
     if (!completedCheckpointIndexes.value.includes(frameIndex)) completedCheckpointIndexes.value.push(frameIndex);
   }
 
@@ -75,7 +74,6 @@ export const useQuizStore = defineStore('quizSystem', () => {
 
   const dismissQuestionAndContinue = (): void => {
     resetActiveQuestionState(activeQuestion, selectedAnswerIndex, isSubmitted, isCorrect, feedbackExplanation, matchedNodeId, isCanvasTargetMode);
-    lectureStore.unlockLectureInteraction();
   };
 
   const resetQuizStore = (): void => {

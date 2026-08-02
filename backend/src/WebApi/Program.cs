@@ -159,18 +159,15 @@ builder.Services.AddCors(options =>
     });
 });
 
-// Configure Database (PostgreSQL / SQLite)
+// Configure Database (PostgreSQL)
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+if (string.IsNullOrWhiteSpace(connectionString))
+{
+    throw new InvalidOperationException("Connection string 'DefaultConnection' chưa được cấu hình. Set biến môi trường ConnectionStrings__DefaultConnection (đầy đủ kèm Password) trước khi khởi động.");
+}
 builder.Services.AddDbContextPool<ApplicationDbContext>(options =>
 {
-    if (connectionString != null && connectionString.Contains("Host="))
-    {
-        options.UseNpgsql(connectionString);
-    }
-    else
-    {
-        options.UseSqlite(connectionString);
-    }
+    options.UseNpgsql(connectionString);
     
     // Bảo vệ tính bất biến của Event Sourcing Ledger (chặn UPDATE/DELETE).
     options.AddInterceptors(new ImmutableAuditInterceptor());
@@ -223,10 +220,25 @@ builder.Services.AddScoped<VisualizationDSA.Application.Services.IProgressRuleEn
 
 builder.Services.AddScoped<VisualizationDSA.Application.Services.IClassroomProgressService, VisualizationDSA.Infrastructure.Services.ClassroomProgressService>();
 builder.Services.AddScoped<VisualizationDSA.Application.Services.IClassroomUnlockRuleEngine, VisualizationDSA.Infrastructure.Services.ClassroomUnlockRuleEngine>();
+builder.Services.AddScoped<VisualizationDSA.Application.Services.IClassroomGradingService, VisualizationDSA.Infrastructure.Services.ClassroomGradingService>();
 
 
 builder.Services.AddAlgorithmStrategies();
 
+
+var jwtKey = builder.Configuration["Jwt:Key"];
+if (string.IsNullOrWhiteSpace(jwtKey))
+{
+    if (builder.Environment.IsDevelopment())
+    {
+        jwtKey = Convert.ToBase64String(System.Security.Cryptography.RandomNumberGenerator.GetBytes(32));
+        Console.WriteLine("[WARN] Jwt:Key chưa cấu hình - đã sinh key ngẫu nhiên cho Development (token sẽ hết hạn khi restart). Để token ổn định, set Jwt__Key.");
+    }
+    else
+    {
+        throw new InvalidOperationException("Jwt:Key chưa được cấu hình. Set biến môi trường Jwt__Key (>= 32 ký tự) trước khi khởi động.");
+    }
+}
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
@@ -239,7 +251,7 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             ValidateIssuerSigningKey = true,
             ValidIssuer              = builder.Configuration["Jwt:Issuer"],
             ValidAudience            = builder.Configuration["Jwt:Audience"],
-            IssuerSigningKey         = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]!)),
+            IssuerSigningKey         = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey)),
 
             
             

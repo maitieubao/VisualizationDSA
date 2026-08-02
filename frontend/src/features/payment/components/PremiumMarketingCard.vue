@@ -3,7 +3,7 @@
     <div>
       <div class="flex items-center gap-2 mb-6">
         <BaseIcon name="diamond" class="w-8 h-8 text-accent animate-pulse" />
-        <span class="text-xl font-bold tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-purple-400">VDSA PREMIUM</span>
+        <span class="text-xl font-bold tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-accent-cyan to-accent-purple">VDSA PREMIUM</span>
       </div>
       
       <h2 class="text-2xl font-bold mb-4 leading-tight">Mở Khóa Toàn Bộ Sức Mạnh DSA</h2>
@@ -34,7 +34,7 @@
         <span class="text-3xl font-extrabold text-[var(--color-gold)] font-mono">199.000đ</span>
         <span class="text-xs text-[var(--text-muted)] line-through">499.000đ</span>
       </div>
-      <p class="text-[10px] text-accent-green/80 mt-2 font-medium">★ Thanh toán một lần duy nhất, sở hữu mãi mãi.</p>
+      <p class="text-[10px] text-accent-green/80 mt-2 font-medium"><BaseIcon name="star" class="w-3 h-3 inline-block mr-1 align-text-bottom" />Thanh toán một lần duy nhất, sở hữu mãi mãi.</p>
     </div>
   </div>
 </template>

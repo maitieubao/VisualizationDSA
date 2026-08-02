@@ -4,7 +4,7 @@
     <div class="flex items-center justify-between">
       <div class="flex items-center gap-3">
         <div class="w-8 h-8 rounded-lg bg-accent flex items-center justify-center">
-          <span class="text-text-primary font-bold text-sm">📝</span>
+          <BaseIcon name="clipboard-list" class="w-4 h-4 text-text-primary font-bold" />
         </div>
         <div>
           <h2 class="text-base font-bold text-text-primary">Ngân Hàng Trắc Nghiệm</h2>
@@ -41,8 +41,8 @@
 
     
     <div v-else-if="store.backendResult" class="flex-1 flex flex-col items-center justify-center gap-4">
-      <div class="rounded-2xl bg-bg-secondary/45 border border-white/5 backdrop-blur-xl p-8 max-w-lg w-full text-center">
-        <div class="text-4xl mb-4">{{ store.backendResult.passed ? '🎉' : '😔' }}</div>
+      <div class="rounded-2xl bg-bg-secondary/45 border border-border-default backdrop-blur-xl p-8 max-w-lg w-full text-center">
+        <BaseIcon :name="store.backendResult.passed ? 'party-popper' : 'close'" class="w-12 h-12 mx-auto mb-4" :class="store.backendResult.passed ? 'text-accent-green' : 'text-accent-red'" />
         <h3 class="text-xl font-bold text-text-primary mb-2">
           {{ store.backendResult.passed ? 'Xuất sắc!' : 'Cần cải thiện' }}
         </h3>
@@ -52,16 +52,16 @@
         <div v-if="store.backendResult.xpAwarded > 0" class="text-sm text-accent mb-4">
           +{{ store.backendResult.xpAwarded }} XP
         </div>
-        <div v-else-if="store.backendResult.passed" class="text-xs text-text-secondary mb-4 bg-white/5 border border-white/10 rounded-lg p-2.5">
-          💡 Bạn đã nhận XP tối đa cho bài quiz này. Làm lại để ôn tập sẽ không nhận thêm XP.
-        </div>
+          <div class="text-xs text-text-secondary mb-4 bg-bg-surface border border-border-default rounded-lg p-2.5">
+            <BaseIcon name="bulb" class="w-3.5 h-3.5 inline-block mr-1 align-text-bottom text-accent-warm" /> Bạn đã nhận XP tối đa cho bài quiz này. Làm lại để ôn tập sẽ không nhận thêm XP.
+          </div>
 
         
         <div class="text-left mt-4 space-y-2">
           <div v-for="(qr, i) in store.backendResult.questionResults" :key="qr.questionId"
             class="p-3 rounded-lg" :class="qr.isCorrect ? 'bg-accent-green/10' : 'bg-accent-red/10'">
             <div class="flex items-center gap-2 mb-1">
-              <span class="text-sm">{{ qr.isCorrect ? '✓' : '✗' }}</span>
+              <BaseIcon :name="qr.isCorrect ? 'check' : 'close'" class="w-3.5 h-3.5" :class="qr.isCorrect ? 'text-accent-green' : 'text-accent-red'" />
               <span class="text-xs font-medium text-text-primary">Câu {{ i + 1 }}</span>
             </div>
             <p class="text-[11px] text-text-secondary">{{ qr.explanation }}</p>
@@ -83,7 +83,7 @@
 
     
     <div v-else-if="store.isBackendQuizMode && store.currentBackendQuestion" class="flex-1 flex flex-col gap-4">
-      <div class="rounded-2xl bg-bg-secondary/45 border border-white/5 backdrop-blur-xl p-6 flex-1">
+      <div class="rounded-2xl bg-bg-secondary/45 border border-border-default backdrop-blur-xl p-6 flex-1">
         
         <div class="mb-6">
           <span class="text-[10px] text-text-disabled uppercase tracking-wider">Câu hỏi {{ store.backendQuizIndex + 1 }}</span>
@@ -109,13 +109,13 @@
         <button @click="store.prevBackendQuestion()" :disabled="store.backendQuizIndex <= 0"
           class="px-4 py-2 rounded-lg text-xs font-medium transition-colors"
           :class="store.backendQuizIndex > 0 ? 'bg-bg-surface text-text-primary border border-border-default hover:bg-bg-surface/80' : 'bg-bg-surface/30 text-text-disabled cursor-not-allowed'">
-          ← Câu trước
+          <BaseIcon name="chevron-left" class="w-3.5 h-3.5 inline-block mr-1 align-text-bottom" /> Câu trước
         </button>
         <span class="text-xs text-text-secondary">{{ store.backendQuizProgress }}</span>
         <button v-if="store.activeBackendQuiz && store.backendQuizIndex < store.activeBackendQuiz.questions.length - 1"
           @click="store.nextBackendQuestion()"
           class="px-4 py-2 rounded-lg text-xs font-medium bg-accent/20 text-accent border border-accent/30 hover:bg-accent/30 transition-colors">
-          Câu tiếp →
+          Câu tiếp <BaseIcon name="chevron-right" class="w-3.5 h-3.5 inline-block ml-1 align-text-bottom" />
         </button>
         <button v-else @click="store.submitBackendQuiz()"
           :disabled="store.backendAnswers.some(a => a === null)"
@@ -123,7 +123,7 @@
           :class="store.backendAnswers.every(a => a !== null)
             ? 'bg-accent-green/20 text-accent-green border border-accent-green/30 hover:bg-accent-green/30'
             : 'bg-bg-surface/30 text-text-disabled cursor-not-allowed'">
-          Nộp bài ✓
+          Nộp bài <BaseIcon name="check" class="w-3.5 h-3.5 inline-block ml-1 align-text-bottom" />
         </button>
       </div>
     </div>
@@ -141,7 +141,7 @@
           :class="{ 'topic-tab--active': selectedTopic === topic }"
           @click="selectedTopic = topic"
         >
-          <span class="topic-tab__icon">{{ topicIcon(topic) }}</span>
+          <BaseIcon :name="topicIcon(topic)" class="w-3.5 h-3.5" />
           <span class="topic-tab__label">{{ topic }}</span>
           <span class="topic-tab__count">{{ countByTopic(topic) }}</span>
         </button>
@@ -162,14 +162,14 @@
 
       
       <div v-if="isUsingFallback" class="fallback-notice">
-        ⚠ Đang hiển thị quiz mẫu. Kết nối server để tải quiz đầy đủ.
+        <BaseIcon name="warning" class="w-3.5 h-3.5 inline-block mr-1 align-text-bottom text-accent-warm" /> Đang hiển thị quiz mẫu. Kết nối server để tải quiz đầy đủ.
         <button @click="store.loadQuizCatalog()" class="fallback-notice__retry">Thử kết nối lại</button>
       </div>
 
       
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         <div v-for="quiz in displayedQuizzes" :key="quiz.id"
-          class="rounded-2xl bg-bg-secondary/45 border border-white/5 backdrop-blur-xl p-5 cursor-pointer hover:border-accent/30 transition-all duration-200 quiz-card"
+          class="rounded-2xl bg-bg-secondary/45 border border-border-default backdrop-blur-xl p-5 cursor-pointer hover:border-accent/30 transition-all duration-200 quiz-card"
           @click="handleQuizClick(quiz)">
           <div class="flex items-center justify-between mb-3">
             <span class="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider"
@@ -241,14 +241,14 @@ function countByTopic(topic: string): number {
 
 function topicIcon(topic: string): string {
   const icons: Record<string, string> = {
-    'Tất cả': '📋',
-    'DSA': '📊',
-    'OOP': '🧱',
-    'SOLID': '🏗️',
-    'Patterns': '🎨',
-    'DI': '🔌',
+    'Tất cả': 'clipboard-list',
+    'DSA': 'sorting',
+    'OOP': 'oop',
+    'SOLID': 'solid',
+    'Patterns': 'patterns',
+    'DI': 'di',
   };
-  return icons[topic] ?? '📝';
+  return icons[topic] ?? 'clipboard-list';
 }
 
 const displayedQuizzes = computed(() => {

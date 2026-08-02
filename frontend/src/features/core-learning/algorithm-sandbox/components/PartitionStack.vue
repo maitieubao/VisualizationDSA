@@ -43,7 +43,7 @@
                 'waiting': !part.isSorted && !part.isActive
               }"
             >
-              <span v-if="(part.low + vIdx) === frame?.pivotIndex" class="star-icon">★</span>
+              <BaseIcon v-if="(part.low + vIdx) === frame?.pivotIndex" name="star" class="w-3 h-3 star-icon text-accent-warm" />
               {{ val }}
             </span>
           </div>

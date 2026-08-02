@@ -4,7 +4,7 @@
       
       <div v-if="isPremiumBlocked" class="embed-premium-overlay">
         <div class="embed-premium-card">
-          <div class="embed-premium-icon">🔒</div>
+          <div class="embed-premium-icon"><BaseIcon name="lock" class="w-8 h-8" /></div>
           <h2>Nội dung Premium</h2>
           <p>Nội dung này yêu cầu tài khoản Premium để truy cập.</p>
           <a :href="loginUrl" class="embed-premium-btn">Đăng nhập / Nâng cấp</a>
@@ -13,7 +13,7 @@
       
       <div v-else-if="isInvalidAlgo" class="embed-error-overlay">
         <div class="embed-error-card">
-          <div class="embed-error-icon">⚠️</div>
+          <div class="embed-error-icon"><BaseIcon name="warning" class="w-8 h-8" /></div>
           <h2>Thuật toán không hợp lệ</h2>
           <p>Tham số <code>algo={{ algoParam }}</code> không được hỗ trợ.</p>
           <p class="embed-error-hint">Các giá trị hợp lệ: bubble-sort, selection-sort, insertion-sort, quick-sort, merge-sort, heap-sort, bst, graph-bfs, graph-dfs, dijkstra, oop, solid, di, design-patterns, system-design</p>

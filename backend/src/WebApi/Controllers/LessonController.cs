@@ -64,6 +64,29 @@ namespace VisualizationDSA.WebApi.Controllers
                 }
             }
 
+            var nextItems = await _dbContext.ModuleItems
+                .Include(i => i.Codelab)
+                .ThenInclude(c => c.TestCases)
+                .Where(i => i.ModuleId == moduleItem.ModuleId && i.OrderIndex > moduleItem.OrderIndex && i.OrderIndex < moduleItem.OrderIndex + 1000)
+                .ToListAsync();
+
+            var quizItem = nextItems.FirstOrDefault(i => i.ItemType == VisualizationDSA.Domain.Enums.ModuleItemType.Quiz);
+            var codelabItem = nextItems.FirstOrDefault(i => i.ItemType == VisualizationDSA.Domain.Enums.ModuleItemType.Codelab);
+
+            string? leetCodeId = null;
+            try {
+                if (!string.IsNullOrEmpty(lesson.SandboxConfig)) {
+                    var configObj = System.Text.Json.JsonSerializer.Deserialize<System.Text.Json.Nodes.JsonObject>(lesson.SandboxConfig);
+                    if (configObj != null && configObj.ContainsKey("leetCodeId")) {
+                        leetCodeId = configObj["leetCodeId"]?.ToString();
+                    }
+                }
+            } catch { }
+            
+            if (string.IsNullOrEmpty(leetCodeId)) {
+                leetCodeId = "two-sum"; // Default fallback for demo
+            }
+
             return Ok(new
             {
                 lesson.Id,
@@ -73,7 +96,22 @@ namespace VisualizationDSA.WebApi.Controllers
                 lesson.ContentMd,
                 lesson.SandboxType,
                 lesson.SandboxConfig,
-                moduleItem.QuizId,
+                QuizId = quizItem?.QuizId,
+                Codelab = codelabItem?.Codelab == null ? null : new {
+                    codelabItem.Codelab.Id,
+                    codelabItem.Codelab.Title,
+                    codelabItem.Codelab.Description,
+                    codelabItem.Codelab.InitialCode,
+                    codelabItem.Codelab.AllowedLanguages,
+                    TestCases = codelabItem.Codelab.TestCases.OrderBy(tc => tc.OrderIndex).Select(tc => new {
+                        tc.Id,
+                        tc.Input,
+                        tc.ExpectedOutput,
+                        tc.IsHidden,
+                        tc.OrderIndex
+                    })
+                },
+                leetCodeId = leetCodeId,
                 lesson.XPReward,
                 moduleItem.OrderIndex,
                 status,

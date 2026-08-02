@@ -3,58 +3,61 @@
     <!-- Left Column: Identity & Badges -->
     <div class="space-y-8">
       <!-- Profile Card -->
-      <div class="bg-surface-dark/80 backdrop-blur-xl border border-white/10 rounded-3xl p-6 text-center shadow-xl relative overflow-hidden group">
-        <div class="absolute inset-0 bg-gradient-to-b from-purple-500/10 to-transparent pointer-events-none"></div>
+      <div class="bg-surface-dark/80 backdrop-blur-xl border border-border-default rounded-3xl p-6 text-center shadow-xl relative overflow-hidden group">
+        <div class="absolute inset-0 bg-gradient-to-b from-accent-purple/10 to-transparent pointer-events-none"></div>
         
         <div class="relative w-32 h-32 mx-auto mb-4 group cursor-pointer" @click="triggerAvatarUpload">
-          <div class="w-full h-full rounded-full p-1 bg-gradient-to-tr from-indigo-500 via-purple-500 to-pink-500" :class="{'animate-spin-slow': uploadingAvatar}">
-            <div class="w-full h-full bg-surface-dark rounded-full overflow-hidden flex items-center justify-center relative">
-              <img v-if="avatarUrl" :src="avatarUrl" class="w-full h-full object-cover" />
-              <span v-else class="text-4xl font-bold">{{ initials }}</span>
-              
-              <div class="absolute inset-0 bg-black/60 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <AvatarDisplay 
+            :avatar-url="avatarUrl" 
+            :initials="initials" 
+            :frame-type="authStore.currentUser?.avatarFrameType" 
+            size="w-32 h-32" 
+          >
+            <template #overlay>
+              <div class="absolute inset-0 bg-black/60 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity rounded-full z-30">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
                 </svg>
               </div>
-            </div>
-          </div>
+            </template>
+          </AvatarDisplay>
+          
           <input type="file" ref="avatarInput" class="hidden" accept="image/*" @change="handleAvatarUpload" />
-          <div v-if="authStore.isPremium" class="absolute -bottom-2 -right-2 bg-gradient-to-r from-yellow-400 to-yellow-600 text-black text-xs font-bold px-3 py-1 rounded-full shadow-lg border-2 border-surface-dark">
+          <div v-if="authStore.isPremium" class="absolute -bottom-2 -right-2 bg-gradient-to-r from-accent-warm to-accent-warm text-black text-xs font-bold px-3 py-1 rounded-full shadow-lg border-2 border-border-strong z-40">
             PRO
           </div>
         </div>
 
         <h2 class="text-2xl font-bold">{{ currentNickname || authStore.userName }}</h2>
         <p class="text-text-muted">@{{ authStore.userName }}</p>
-        <div class="mt-2 inline-block px-3 py-1 rounded-full text-sm font-semibold bg-white/10 text-indigo-300">
+        <div class="mt-2 inline-block px-3 py-1 rounded-full text-sm font-semibold bg-bg-surface text-accent">
           {{ roleLabel }}
         </div>
 
         <!-- Level Progress -->
         <div class="mt-6 text-left">
           <div class="flex justify-between text-sm font-bold mb-2">
-            <span class="text-purple-300">Cấp độ {{ authStore.userLevel }}</span>
+            <span class="text-accent-purple">Cấp độ {{ authStore.userLevel }}</span>
             <span class="text-pink-300">{{ authStore.userXP }} XP</span>
           </div>
-          <div class="h-2 w-full bg-white/10 rounded-full overflow-hidden">
-            <div class="h-full bg-gradient-to-r from-indigo-500 to-pink-500" :style="{ width: progressPercent + '%' }"></div>
+          <div class="h-2 w-full bg-bg-surface rounded-full overflow-hidden">
+            <div class="h-full bg-gradient-to-r from-accent to-accent-purple" :style="{ width: progressPercent + '%' }"></div>
           </div>
         </div>
       </div>
 
       <!-- Badges -->
-      <div class="bg-surface-dark/80 backdrop-blur-xl border border-white/10 rounded-3xl p-6 shadow-xl">
+      <div class="bg-surface-dark/80 backdrop-blur-xl border border-border-default rounded-3xl p-6 shadow-xl">
         <h3 class="text-lg font-bold mb-4 flex items-center gap-2">
-          <span>🏅</span> Huy hiệu của bạn
+          <BaseIcon name="medal" class="w-5 h-5 text-accent-warm" /> Huy hiệu của bạn
         </h3>
         <div class="grid grid-cols-4 gap-3" v-if="badgesList.length > 0">
-          <div v-for="badge in badgesList" :key="badge.id" class="aspect-square rounded-2xl bg-white/5 flex flex-col items-center justify-center p-2 hover:bg-white/10 transition-colors group relative cursor-help">
+          <div v-for="badge in badgesList" :key="badge.id" class="aspect-square rounded-2xl bg-bg-surface flex flex-col items-center justify-center p-2 hover:bg-bg-surface transition-colors group relative cursor-help">
             <span class="text-2xl group-hover:scale-110 transition-transform">{{ badge.icon }}</span>
             <div class="absolute bottom-full mb-2 bg-black/90 p-2 rounded text-xs w-32 text-center opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10">
               <div class="font-bold">{{ badge.name }}</div>
-              <div class="text-gray-400">{{ badge.description }}</div>
+              <div class="text-text-secondary">{{ badge.description }}</div>
             </div>
           </div>
         </div>
@@ -67,27 +70,27 @@
     <!-- Right Column: Settings -->
     <div class="lg:col-span-2 space-y-8">
       <!-- Settings Form -->
-      <div class="bg-surface-dark/80 backdrop-blur-xl border border-white/10 rounded-3xl p-6 shadow-xl">
+      <div class="bg-surface-dark/80 backdrop-blur-xl border border-border-default rounded-3xl p-6 shadow-xl">
         <h3 class="text-lg font-bold mb-6 flex items-center gap-2">
-          <span>⚙️</span> Cài đặt chung
+          <BaseIcon name="cog" class="w-5 h-5 text-accent" /> Cài đặt chung
         </h3>
         <form @submit.prevent="handleSaveProfile" class="space-y-5">
           <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
             <div class="space-y-1">
               <label class="text-sm font-medium text-text-muted">Tên người dùng</label>
-              <input v-model="form.username" type="text" class="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-2.5 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 outline-none transition-all" />
+              <input v-model="form.username" type="text" class="w-full bg-black/40 border border-border-default rounded-xl px-4 py-2.5 focus:border-border-accent focus:ring-1 focus:ring-accent outline-none transition-all" />
             </div>
             <div class="space-y-1">
               <label class="text-sm font-medium text-text-muted">Biệt danh hiển thị</label>
-              <input v-model="form.nickname" type="text" class="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-2.5 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 outline-none transition-all" />
+              <input v-model="form.nickname" type="text" class="w-full bg-black/40 border border-border-default rounded-xl px-4 py-2.5 focus:border-border-accent focus:ring-1 focus:ring-accent outline-none transition-all" />
             </div>
           </div>
           <div class="space-y-1">
             <label class="text-sm font-medium text-text-muted">Tiểu sử (Bio)</label>
-            <textarea v-model="form.bio" rows="3" class="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-2.5 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 outline-none transition-all resize-none" placeholder="Chia sẻ đôi điều về bạn..."></textarea>
+            <textarea v-model="form.bio" rows="3" class="w-full bg-black/40 border border-border-default rounded-xl px-4 py-2.5 focus:border-border-accent focus:ring-1 focus:ring-accent outline-none transition-all resize-none" placeholder="Chia sẻ đôi điều về bạn..."></textarea>
           </div>
           <div class="flex justify-end pt-4">
-            <button type="submit" :disabled="isSaving" class="bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white font-bold py-2.5 px-6 rounded-xl transition-all">
+            <button type="submit" :disabled="isSaving" class="bg-gradient-to-r from-accent to-accent-purple hover:from-accent hover:to-accent-purple text-text-primary font-bold py-2.5 px-6 rounded-xl transition-all">
               {{ isSaving ? 'Đang lưu...' : 'Lưu Thay Đổi' }}
             </button>
           </div>
@@ -99,7 +102,9 @@
 
 <script setup lang="ts">
 import { ref, computed, reactive, onMounted } from 'vue';
-import { useAuthStore } from '@/features/auth/store/useAuthStore';
+import BaseIcon from '@/shared/components/BaseIcon.vue';
+import AvatarDisplay from '@/shared/components/AvatarDisplay.vue';
+import { useAuthStore } from '../../auth/store/useAuthStore';
 import { useToastStore } from '@/composables/useToast';
 import { api } from '@/services/apiClient';
 

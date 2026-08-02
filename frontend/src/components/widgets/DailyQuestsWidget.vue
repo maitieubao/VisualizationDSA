@@ -1,7 +1,7 @@
 <template>
   <div class="daily-quests-widget">
     <div class="quests-header">
-      <div class="header-icon">🎯</div>
+      <div class="header-icon"><BaseIcon name="target" class="w-4 h-4" /></div>
       <div class="header-text">
         <h3 class="quests-title">Nhiệm vụ hàng ngày</h3>
         <p class="quests-subtitle">Hoàn thành để nhận XP và Gems</p>
@@ -40,7 +40,7 @@
         <div class="quest-actions">
           <div class="quest-rewards">
             <span v-if="quest.xpReward > 0" class="reward reward-xp">+{{ quest.xpReward }} XP</span>
-            <span v-if="quest.gemsReward > 0" class="reward reward-gems">+{{ quest.gemsReward }} 💎</span>
+            <span v-if="quest.gemsReward > 0" class="reward reward-gems">+{{ quest.gemsReward }} <BaseIcon name="diamond" class="w-3 h-3 inline-block align-text-bottom" /></span>
           </div>
           <button 
             v-if="quest.isCompleted && !quest.isRewardClaimed"
@@ -165,7 +165,7 @@ onMounted(() => {
   margin: 0;
   font-size: 1.25rem;
   font-weight: 600;
-  color: var(--text-primary, #fff);
+  color: var(--color-text-primary, #fff);
 }
 
 .quests-subtitle {
@@ -223,7 +223,7 @@ onMounted(() => {
   margin: 0 0 0.25rem;
   font-weight: 600;
   font-size: 1rem;
-  color: var(--text-primary, #fff);
+  color: var(--color-text-primary, #fff);
 }
 
 .quest-desc {

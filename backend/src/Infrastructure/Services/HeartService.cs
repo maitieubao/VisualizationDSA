@@ -87,6 +87,9 @@ namespace VisualizationDSA.Infrastructure.Services
             if (user == null)
                 throw new KeyNotFoundException("Không tìm thấy người dùng.");
 
+            if (user.Hearts >= user.MaxHearts)
+                throw new InvalidOperationException("Bạn đã có đủ số tim tối đa, không cần xem thêm quảng cáo.");
+
             // Check & reset 24h sliding window
             var now = DateTime.UtcNow;
             if (user.FirstAdAt == null || (now - user.FirstAdAt.Value).TotalSeconds >= 86400)

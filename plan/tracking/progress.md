@@ -16,7 +16,7 @@ TÃƒÂ i liÃ¡Â»â€¡u nÃƒÂ y theo dÃƒÂµi chi tiÃ¡ÂºÂ¿t ti�
 | **Sprint Ã„â€˜ang triÃ¡Â»Æ’n khai CODE** | HoÃƒÂ n tÃ¡ÂºÂ¥t! Ã°Å¸Å½â€°                                                       |
 | **Backend .NET C#**             | 100% Ã¢â‚¬â€ Clean Architecture + BCrypt Auth + Serilog + RateLimiting + IMemoryCache + Pagination + SignalR Real-time |
 | **TÃ¡Â»â€¢ng file thÃ¡Â»Â±c tÃ¡ÂºÂ¿**           | ~120 files (87 frontend + 35 backend `.cs`)                        |
-| **Unit tests**                  | 1549 frontend + 212 backend C# Ã¢â‚¬â€ Ã¢Å“â€¦ 100% PASS                      |
+| **Unit tests**                  | 611 frontend (46 files) - PASS 611/611 (sau B1) + 212 backend C# (can xac minh lai bang `dotnet test`) |
 
 ---
 
@@ -1365,24 +1365,24 @@ TÃ¡ÂºÂ¥t cÃ¡ÂºÂ£ cÃƒÂ¡c mÃ¡Â»Â¥c tiÃƒÂªu Sprint 5 Ã�
 
 ### Hotfix Classroom/Teacher/Courses - Payment & Difficulty Fixes (30/07/2026)
 *   **Ph?m vi:** Fix 2 l?i production leak + difficulty mismatch trong Teacher panel.
-*   **Tr?ng th�i:** ? CODE DONE � vue-tsc --noEmit exit 0, dotnet build 0 errors.
+*   **Tr?ng th�i:** ? CODE DONE � vue-tsc --noEmit exit 0, dotnet build 0 errors.
 *   **Chi ti?t:**
-    - **M?c 1 (Simulate payment button prod leak):** C?p nh?t isDev = import.meta.env.DEV && !import.meta.env.PROD trong PremiumCheckoutView.vue d? ch?c ch?n n�t "?? M� ph?ng: X�c nh?n d� thanh to�n" ch? hi?n th? trong m�i tru?ng development ho�n to�n, kh�ng b? leak sang production build.
-    - **M?c 2 (Difficulty mismatch TeacherCourseTab):** C?p nh?t 3 d?a di?m trong TeacherCourseTab.vue: dropdown options (Easy/Medium/Hard ? Beginner/Intermediate/Advanced), courseForm reactive default (Medium ? Beginner), v� cancelCourseEdit reset (Medium ? Beginner). �?ng b? v?i backend enum CourseDifficulty v� c�c view kh�c (CoursesListView, CourseDetailView).
+    - **M?c 1 (Simulate payment button prod leak):** C?p nh?t isDev = import.meta.env.DEV && !import.meta.env.PROD trong PremiumCheckoutView.vue d? ch?c ch?n n�t "?? M� ph?ng: X�c nh?n d� thanh to�n" ch? hi?n th? trong m�i tru?ng development ho�n to�n, kh�ng b? leak sang production build.
+    - **M?c 2 (Difficulty mismatch TeacherCourseTab):** C?p nh?t 3 d?a di?m trong TeacherCourseTab.vue: dropdown options (Easy/Medium/Hard ? Beginner/Intermediate/Advanced), courseForm reactive default (Medium ? Beginner), v� cancelCourseEdit reset (Medium ? Beginner). �?ng b? v?i backend enum CourseDifficulty v� c�c view kh�c (CoursesListView, CourseDetailView).
 *   **Files changed:** 2 edited (PremiumCheckoutView.vue, TeacherCourseTab.vue).
 
 ### D?n d?p Dead Code & Chuy?n d?i System Design (30/07/2026)
-*   **Ph?m vi:** D?n d?p to�n b? dead code (views, features) kh�ng c�n s? d?ng + chuy?n d?i System Design Visualization th�nh t�i li?u l� thuy?t.
-*   **Tr?ng th�i:** ? CODE DONE � vue-tsc --noEmit exit 0, frontend tests 688/688 PASS, find-missing-imports.cjs OK, dotnet build 0 errors.
+*   **Ph?m vi:** D?n d?p to�n b? dead code (views, features) kh�ng c�n s? d?ng + chuy?n d?i System Design Visualization th�nh t�i li?u l� thuy?t.
+*   **Tr?ng th�i:** ? CODE DONE � vue-tsc --noEmit exit 0, frontend tests 688/688 PASS, find-missing-imports.cjs OK, dotnet build 0 errors.
 *   **Chi ti?t:**
-    - **X�a 15 dead views:** AnimationView.vue, CompareView.vue, ConcurrencyView.vue, DebugView.vue, DSAModulesView.vue, LeaderboardView.vue, LearningPathView.vue, MultiViewView.vue, PlaygroundView.vue, StateInspectorView.vue, TimelinePlaybackView.vue, di/, oop/, patterns/, solid/ directories.
-    - **X�a dead feature:** smart-quiz (kh�ng c� b?t k? import n�o trong to�n b? codebase).
-    - **Luu �:** animation-engine du?c gi? l?i v� dang du?c s? d?ng b?i 8 features ho?t d?ng (custom-input, code-to-visualization, dsa-modules, e-lecture, interactive-playground, lesson, quiz-system, pseudocode-sync).
-    - **Chuy?n d?i System Design Visualization sang t�i li?u:** T?o 6 file markdown trong frontend/src/features/docs/content/system-design/ (system-design-intro.md, load-balancer.md, server-health.md, packet-routing.md, replication-lag.md, failure-handling.md). Th�m nh�m "THI?T K? H? TH?NG" v�o docsNavigation.ts v?i 6 m?c.
-    - **X�a System Design Visualization:** X�a frontend/src/features/system-design-viz/, frontend/src/views/system-design/, route /system trong routes.ts, entry trong appTabs.ts.
+    - **X�a 15 dead views:** AnimationView.vue, CompareView.vue, ConcurrencyView.vue, DebugView.vue, DSAModulesView.vue, LeaderboardView.vue, LearningPathView.vue, MultiViewView.vue, PlaygroundView.vue, StateInspectorView.vue, TimelinePlaybackView.vue, di/, oop/, patterns/, solid/ directories.
+    - **X�a dead feature:** smart-quiz (kh�ng c� b?t k? import n�o trong to�n b? codebase).
+    - **Luu �:** animation-engine du?c gi? l?i v� dang du?c s? d?ng b?i 8 features ho?t d?ng (custom-input, code-to-visualization, dsa-modules, e-lecture, interactive-playground, lesson, quiz-system, pseudocode-sync).
+    - **Chuy?n d?i System Design Visualization sang t�i li?u:** T?o 6 file markdown trong frontend/src/features/docs/content/system-design/ (system-design-intro.md, load-balancer.md, server-health.md, packet-routing.md, replication-lag.md, failure-handling.md). Th�m nh�m "THI?T K? H? TH?NG" v�o docsNavigation.ts v?i 6 m?c.
+    - **X�a System Design Visualization:** X�a frontend/src/features/system-design-viz/, frontend/src/views/system-design/, route /system trong routes.ts, entry trong appTabs.ts.
     - **C?p nh?t visualizerMap.ts:** Chuy?n hu?ng OOP/SOLID/Patterns/DI/SystemDesign t?i DocsView.vue.
     - **C?p nh?t LessonStepViz.vue:** Chuy?n hu?ng OOP/SOLID t?i DocsView.vue.
-    - **D?n routes.ts:** X�a 13 d�ng route comment d� b? v� hi?u h�a.
+    - **D?n routes.ts:** X�a 13 d�ng route comment d� b? v� hi?u h�a.
 *   **Files changed:** +6 created (system design docs), 4 edited (routes.ts, appTabs.ts, visualizerMap.ts, LessonStepViz.vue, docsNavigation.ts), 16 deleted (15 views + smart-quiz feature), 2 directories deleted (system-design-viz, system-design views).
 
 
@@ -1412,3 +1412,31 @@ TÃ¡ÂºÂ¥t cÃ¡ÂºÂ£ cÃƒÂ¡c mÃ¡Â»Â¥c tiÃƒÂªu Sprint 5 Ã�
 **Files Created:** SortingVisualizerDispatcher.vue
 
 **Verification:** All 688 tests pass (51 files)
+
+---
+
+## C7. Emoji -> BaseIcon (UI chrome) - DONE
+
+**Status:** `✅ CODE DONE` (build + 611/611 tests pass)
+
+**Scope:** Replace emoji UI chrome (buttons, headers, badges, empty states) with `<BaseIcon>` in ~60+ `.vue` files. Kept emojis that are data strings (algorithm trace/description/status text), mojibake'd files, DashboardView badge mapping keys, marketing copy, tooltips.
+
+**Files edited (representative):** BaseIcon.vue (+`snowflake`, `heart`, `menu`), AppHeader.vue, App.vue, LandingView.vue, LessonDiscussionPanel.vue, CodeToVisualSandbox.vue, ExcelQuizImporter.vue, InteractiveQuizSection.vue, QuizComponent.vue, CodelabPlayer.vue, GamificationWorkspace.vue, DailyQuestsWidget.vue, ProfileGeneralTab/HistoryTab/PersonalTab.vue, MyClassroomsView.vue, CheatSheetView.vue, PremiumCheckoutView.vue, EmbedWidgetView.vue, BottomMobileNav.vue, OutOfHeartsModal.vue, NotificationBell.vue, HintModal/TemplateModal/TestCaseModal.vue, ClassroomDetailView.vue, DSAHeader.vue, LessonStep*.vue, TeacherAnalyticsTab.vue, TheoryArticleLibraryTab.vue, AdminAuditTab/SystemTab.vue, GuidedTourOverlay.vue, CustomInputPanel.vue, RadixInspector.vue, SortingDrawerInput.vue, LectureSlidesSection.vue, TheoryPanel.vue, VisualizerPanel.vue, VcrControls.vue, InteractiveLab.vue, CodeEditor.vue, MonacoEditorPanel.vue, LessonTabs.vue, CodeLabPanel.vue, QuizPanel.vue, SessionResumePrompt.vue, LessonResumeToast.vue, LessonListItem.vue, EdgeBuilderForm.vue, PartitionStack.vue, SortingDrawerTrace.vue, ProfileTeacherTab.vue, TheoryAccordionItem.vue, PremiumMarketingCard.vue, RadixBanner.vue, TeacherStudioRoadmapEditor.vue, ClassroomModuleAccordion.vue, BottomMobileNav.vue, AuthView.vue (removed stale BaseIcon import).
+
+**Bonus fix:** AuthView.vue had stale import `../../components/common/BaseIcon.vue` (nonexistent path) causing `[UNRESOLVED_IMPORT]` on build; removed the import (BaseIcon is globally registered via main.ts).
+
+**Verification:** `npm run build` PASS (2.80s); `npx vitest run` 611/611 PASS.
+
+---
+
+## D1-D4 REVIEW (Backend) - reviewed, no code change (2026-08-02)
+
+**Status:** `🔍 REVIEWED` - user chose review only, no fixes.
+
+**Findings:**
+- **D1:** Duplicate controllers per domain. Stub: `CodelabController` (api/v1/codelabs, 7 endpoints "implement"), `QuizController` (api/v1/quizzes, 6 endpoints "implement"). Real: `CodelabsController` (api/Codelabs, GetCodelabDetails/Submit/Run via MediatR), `QuizzesController` (api/v1/Quizzes, GetAll/GetById/topic/attempt/history via IQuizService). Frontend teacher CRUD (`useQuizBuilder.ts`, `CodelabBuilderTab.vue`, `CodelabPickerModal.vue`) hits the STUB routes -> broken. `LessonStepCodeLab.vue` posts `/api/v1/codelabs/{id}/run` which does not exist on CodelabController -> 404. `codelabApi.ts` uses axios relative paths without baseURL (port 5173, no proxy) -> 404. Route conflict risk: `QuizController` (api/v1/quizzes) vs `QuizzesController` (api/v1/[controller] case-insensitive) may cause AmbiguousMatchException at runtime.
+- **D2:** `AiAssistantService` falls back to maintenance message when `Gemini:ApiKey` is null/MOCK_KEY/YOUR_GEMINI_API_KEY. Needs explicit UI warning.
+- **D3:** 9 empty `catch {}` remain (`usePaymentStore` x2, `TeacherPanelView`, `TeacherQuizTab`, `CodelabPlayer`, `useCourseStore`, `useNotificationStore` x2, `useSpeedPreferences`). The 4 previously-listed spots (AdminAuditTab, AdminQuizzesTab x2, ProfileProgressTab) no longer have empty catches - verify before touching.
+- **D4:** `ClassroomController` (api/Classroom) reuses the same v1 MediatR handlers (Features.Classrooms.*), plus statistics/export-excel via ClassroomGradingService. Route duplication only; need to check if frontend still calls /api/Classroom.
+
+**Files touched (tracking only):** REVIEW_FIX_PLAN.md

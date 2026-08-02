@@ -51,9 +51,9 @@ function variantHeight(v: string): string {
   background: linear-gradient(
     90deg,
     transparent 0%,
-    rgba(255, 255, 255, 0.06) 40%,
-    rgba(255, 255, 255, 0.1) 50%,
-    rgba(255, 255, 255, 0.06) 60%,
+    rgba(79, 70, 229, 0.1) 40%,
+    rgba(79, 70, 229, 0.25) 50%,
+    rgba(79, 70, 229, 0.1) 60%,
     transparent 100%
   );
   animation: shimmer 1.8s ease-in-out infinite;

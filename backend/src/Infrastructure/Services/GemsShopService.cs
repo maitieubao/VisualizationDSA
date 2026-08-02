@@ -14,17 +14,25 @@ namespace VisualizationDSA.Infrastructure.Services
     {
         private readonly ApplicationDbContext _db;
 
-        // Static catalog based on spec
         private static readonly List<ShopItemDto> Catalog = new()
         {
             new ShopItemDto { Id = "ai_hint_token", Name = "💡 AI Hint Token", Price = 30, Type = "Consumable", MaxStack = 10, Notes = "Dùng 1 token = thêm 1 hint trong bài" },
             new ShopItemDto { Id = "streak_freeze", Name = "🧊 Streak Freeze", Price = 100, Type = "Consumable", MaxStack = 2, Notes = "Tự động dùng khi streak sắp mất" },
-            new ShopItemDto { Id = "frame_neon", Name = "👑 Khung Neon", Price = 300, Type = "Permanent", MaxStack = 1, Notes = "Equip 1 tại 1 thời điểm" },
-            new ShopItemDto { Id = "frame_gold", Name = "👑 Khung Vàng", Price = 500, Type = "Permanent", MaxStack = 1, Notes = "" },
-            new ShopItemDto { Id = "frame_diamond", Name = "👑 Khung Kim Cương", Price = 1000, Type = "Permanent", MaxStack = 1, Notes = "" },
+            new ShopItemDto { Id = "xp_boost_2x", Name = "⚡ XP Boost 2x", Price = 300, Type = "XPBoost", MaxStack = 9999, Notes = "Mua thêm = cộng dồn giờ (24h/lần)" },
             new ShopItemDto { Id = "theme_dark", Name = "🎨 Theme Dark", Price = 150, Type = "Permanent", MaxStack = 1, Notes = "" },
             new ShopItemDto { Id = "theme_dracula", Name = "🎨 Theme Dracula", Price = 150, Type = "Permanent", MaxStack = 1, Notes = "" },
-            new ShopItemDto { Id = "xp_boost_2x", Name = "⚡ XP Boost 2x", Price = 300, Type = "XPBoost", MaxStack = 9999, Notes = "Mua thêm = cộng dồn giờ (24h/lần)" }
+            // Khung Avatar
+            new ShopItemDto { Id = "frame_neon", Name = "Khung Neon", Price = 300, Type = "Permanent", MaxStack = 1, Notes = "Khung viền Neon tỏa sáng trong bóng tối." },
+            new ShopItemDto { Id = "frame_gold", Name = "Khung Vàng Hoàng Gia", Price = 500, Type = "Permanent", MaxStack = 1, Notes = "Khung hoàng gia mạ vàng quyền lực." },
+            new ShopItemDto { Id = "frame_cyber", Name = "Khung Cyberpunk", Price = 400, Type = "Permanent", MaxStack = 1, Notes = "Khung viền công nghệ tương lai." },
+            new ShopItemDto { Id = "frame_fire", Name = "Khung Hellfire", Price = 600, Type = "Permanent", MaxStack = 1, Notes = "Khung viền bốc lửa rực cháy." },
+            new ShopItemDto { Id = "frame_ice", Name = "Khung Frostbite", Price = 350, Type = "Permanent", MaxStack = 1, Notes = "Khung băng giá buốt lạnh." },
+            // Avatars
+            new ShopItemDto { Id = "avatar_cyber_hacker", Name = "Avatar Cyber Hacker", Price = 100, Type = "Permanent", MaxStack = 1, Notes = "Avatar phong cách Cyberpunk, bóng mờ xanh neon." },
+            new ShopItemDto { Id = "avatar_gold_knight", Name = "Avatar Golden Knight", Price = 200, Type = "Permanent", MaxStack = 1, Notes = "Hiệp sĩ hoàng kim sáng chói." },
+            new ShopItemDto { Id = "avatar_neon_ninja", Name = "Avatar Neon Ninja", Price = 150, Type = "Permanent", MaxStack = 1, Notes = "Ninja ẩn mình trong bóng tối với viền neon hồng." },
+            new ShopItemDto { Id = "avatar_wizard", Name = "Avatar Code Wizard", Price = 250, Type = "Permanent", MaxStack = 1, Notes = "Pháp sư code có khả năng debug thần sầu." },
+            new ShopItemDto { Id = "avatar_ai_bot", Name = "Avatar AI Companion", Price = 50, Type = "Permanent", MaxStack = 1, Notes = "Trợ lý AI siêu cấp dễ thương." }
         };
 
         public GemsShopService(ApplicationDbContext db)
@@ -126,6 +134,32 @@ namespace VisualizationDSA.Infrastructure.Services
             }
 
             user.SetAvatarFrameType(frameType);
+            await _db.SaveChangesAsync();
+            return true;
+        }
+
+        public async Task<bool> EquipAvatarAsync(Guid userId, string? avatarId)
+        {
+            var user = await _db.Users.FindAsync(userId);
+            if (user == null) return false;
+
+            if (string.IsNullOrEmpty(avatarId))
+            {
+                // Unequip
+                user.SetAvatarUrl(null);
+                await _db.SaveChangesAsync();
+                return true;
+            }
+
+            // Verify ownership
+            var ownsAvatar = await _db.UserInventory.AnyAsync(i => i.UserId == userId && i.ItemId == avatarId);
+            if (!ownsAvatar)
+            {
+                return false;
+            }
+
+            var avatarName = avatarId.Replace("avatar_", "").Replace("_", "-");
+            user.SetAvatarUrl($"/assets/avatars/{avatarName}.png");
             await _db.SaveChangesAsync();
             return true;
         }

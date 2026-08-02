@@ -6,7 +6,7 @@ using VisualizationDSA.Application.Common.Interfaces;
 namespace VisualizationDSA.WebApi.Controllers
 {
     [ApiController]
-    [Route("api/v{version:apiVersion}/[controller]")]
+    [Route("api/v{version:apiVersion}/gems-shop")]
     public class GemsShopController : ControllerBase
     {
         private readonly IGemsShopService _gemsShopService;
@@ -67,10 +67,32 @@ namespace VisualizationDSA.WebApi.Controllers
 
             return Ok(new { success = true, message = "Cập nhật vật phẩm thành công." });
         }
+
+        [Authorize]
+        [HttpPost("equip-avatar")]
+        public async Task<IActionResult> EquipAvatar([FromBody] EquipAvatarRequest request)
+        {
+            var userIdStr = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (!Guid.TryParse(userIdStr, out var userId))
+                return Unauthorized();
+
+            var success = await _gemsShopService.EquipAvatarAsync(userId, request.AvatarId);
+            if (!success)
+            {
+                return BadRequest(new { message = "Bạn không sở hữu avatar này hoặc avatar không tồn tại." });
+            }
+
+            return Ok(new { success = true, message = "Cập nhật avatar thành công." });
+        }
     }
 
     public class EquipAvatarFrameRequest
     {
         public string? FrameType { get; set; }
+    }
+
+    public class EquipAvatarRequest
+    {
+        public string? AvatarId { get; set; }
     }
 }

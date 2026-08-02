@@ -5,7 +5,7 @@
         <div class="modal-header">
           <h3 class="modal-title">
             <BaseIcon name="help-circle" class="w-5 h-5 inline mr-2" />
-            Chá»n Quiz
+            Chọn Quiz
           </h3>
           <button type="button" class="modal-close" @click="$emit('update:show', false)">
             <BaseIcon name="x" class="w-5 h-5" />
@@ -17,23 +17,23 @@
           <div class="picker-toolbar mb-4 flex flex-wrap gap-3">
             <div class="search-box flex-1 min-w-[200px]">
               <div class="relative">
-                <BaseIcon name="search" class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
+                <BaseIcon name="search" class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted" />
                 <input 
                   v-model="searchQuery" 
                   type="text" 
                   class="form-input pl-10" 
-                  placeholder="TÃ¬m kiáº¿m quiz..."
+                  placeholder="Tìm kiếm quiz..."
                   @input="debouncedSearch"
                 />
               </div>
             </div>
             <div class="flex items-center gap-3 flex-wrap">
               <select v-model="filterTopic" class="form-select w-40" @change="loadQuizzes">
-                <option value="">Táº¥t cáº£ chá»§ Ä‘á»</option>
+                <option value="">Tất cả chủ đề</option>
                 <option v-for="t in topics" :key="t" :value="t">{{ t }}</option>
               </select>
               <select v-model="filterDifficulty" class="form-select w-24" @change="loadQuizzes">
-                <option value="">Táº¥t cáº£ Ä‘á»™ khÃ³</option>
+                <option value="">Tất cả độ khó</option>
                 <option value="1">1</option>
                 <option value="2">2</option>
                 <option value="3">3</option>
@@ -46,31 +46,31 @@
           
           <div v-if="loading" class="loading-state">
             <div class="spinner"></div>
-            <span>Äang táº£i...</span>
+            <span>Đang tải...</span>
           </div>
           
           <div v-else-if="quizzes.length === 0" class="empty-state text-center py-8">
-            <BaseIcon name="help-circle" class="w-12 h-12 text-slate-500 mx-auto mb-3" />
-            <p class="text-slate-400">KhÃ´ng tÃ¬m tháº¥y quiz phÃ¹ há»£p</p>
+            <BaseIcon name="help-circle" class="w-12 h-12 text-text-muted mx-auto mb-3" />
+            <p class="text-text-secondary">Không tìm thấy quiz phù hợp</p>
           </div>
           
           <div v-else class="quizzes-table-container">
             <table class="w-full">
               <thead>
-                <tr class="border-b border-white/10">
-                  <th class="text-left p-3 text-xs font-semibold text-slate-400 uppercase tracking-wider w-10"></th>
-                  <th class="text-left p-3 text-xs font-semibold text-slate-400 uppercase tracking-wider">Quiz</th>
-                  <th class="text-left p-3 text-xs font-semibold text-slate-400 uppercase tracking-wider w-32">Chá»§ Ä‘á»</th>
-                  <th class="text-left p-3 text-xs font-semibold text-slate-400 uppercase tracking-wider w-20">Äá»™ khÃ³</th>
-                  <th class="text-left p-3 text-xs font-semibold text-slate-400 uppercase tracking-wider w-20">Sá»‘ cÃ¢u</th>
-                  <th class="text-left p-3 text-xs font-semibold text-slate-400 uppercase tracking-wider w-10"></th>
+                <tr class="border-b border-border-default">
+                  <th class="text-left p-3 text-xs font-semibold text-text-secondary uppercase tracking-wider w-10"></th>
+                  <th class="text-left p-3 text-xs font-semibold text-text-secondary uppercase tracking-wider">Quiz</th>
+                  <th class="text-left p-3 text-xs font-semibold text-text-secondary uppercase tracking-wider w-32">Chủ đề</th>
+                  <th class="text-left p-3 text-xs font-semibold text-text-secondary uppercase tracking-wider w-20">Độ khó</th>
+                  <th class="text-left p-3 text-xs font-semibold text-text-secondary uppercase tracking-wider w-20">Số câu</th>
+                  <th class="text-left p-3 text-xs font-semibold text-text-secondary uppercase tracking-wider w-10"></th>
                 </tr>
               </thead>
               <tbody>
                 <tr 
                   v-for="q in quizzes" 
                   :key="q.id"
-                  class="border-b border-white/5 hover:bg-white/5 transition-colors"
+                  class="border-b border-border-default hover:bg-bg-surface transition-colors"
                   @click="selectQuiz(q)"
                 >
                   <td class="p-3">
@@ -82,20 +82,20 @@
                     >
                   </td>
                   <td class="p-3">
-                      <div class="font-medium text-white truncate max-w-xs">{{ q.title }}</div></td>
+                      <div class="font-medium text-text-primary truncate max-w-xs">{{ q.title }}</div></td>
                     <td class="p-3">
                       <span class="badge" :class="topicBadgeClass(q.topic)">{{ q.topic }}</span>
                     </td>
                     <td class="p-3">
                       <span class="badge" :class="difficultyBadgeClass(q.difficulty)">{{ q.difficulty }}</span>
                     </td>
-                    <td class="p-3 text-sm text-slate-400 font-mono">{{ q.questionCount }} cÃ¢u</td>
+                    <td class="p-3 text-sm text-text-secondary font-mono">{{ q.questionCount }} câu</td>
                     <td class="p-3">
                       <button 
                         type="button" 
-                        class="btn-action-icon text-slate-400 hover:text-indigo-400"
+                        class="btn-action-icon text-text-secondary hover:text-accent"
                         @click.stop="previewQuiz(q)"
-                        title="Xem trÆ°á»›c"
+                        title="Xem trước"
                       >
                         <BaseIcon name="eye" class="w-4 h-4" />
                       </button>
@@ -106,19 +106,19 @@
           </div>
           
           
-          <div v-if="totalPages > 1" class="flex justify-center items-center gap-2 mt-4 pt-4 border-t border-white/10">
-            <button class="btn-secondary px-3 text-xs" @click="changePage(page - 1)" :disabled="page <= 1">TrÆ°á»›c</button>
-            <span class="text-sm text-slate-400 px-2">Trang {{ page }} / {{ totalPages }}</span>
+          <div v-if="totalPages > 1" class="flex justify-center items-center gap-2 mt-4 pt-4 border-t border-border-default">
+            <button class="btn-secondary px-3 text-xs" @click="changePage(page - 1)" :disabled="page <= 1">Trước</button>
+            <span class="text-sm text-text-secondary px-2">Trang {{ page }} / {{ totalPages }}</span>
             <button class="btn-secondary px-3 text-xs" @click="changePage(page + 1)" :disabled="page >= totalPages">Sau</button>
           </div>
         </div>
         
         <div class="modal-footer">
           <button type="button" class="btn-secondary" @click="$emit('update:show', false)">
-            Há»§y
+            Hủy
           </button>
           <button type="button" class="btn-primary" :disabled="!selectedQuizId" @click="confirmSelect">
-            <BaseIcon name="check" class="w-4 h-4 inline mr-1" /> Chá»n Quiz nÃ y
+            <BaseIcon name="check" class="w-4 h-4 inline mr-1" /> Chọn Quiz này
           </button>
         </div>
       </div>

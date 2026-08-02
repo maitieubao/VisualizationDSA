@@ -313,6 +313,12 @@
     <g v-else-if="name === 'chevron-right'">
       <polyline points="9 18 15 12 9 6" />
     </g>
+    <g v-else-if="name === 'chevron-up'">
+      <polyline points="18 15 12 9 6 15" />
+    </g>
+    <g v-else-if="name === 'chevron-down'">
+      <polyline points="6 9 12 15 18 9" />
+    </g>
     <g v-else-if="name === 'check-circle'">
       <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
       <polyline points="22 4 12 14.01 9 11.01" />
@@ -412,6 +418,67 @@
       <rect x="14" y="3" width="7" height="5" />
       <rect x="14" y="12" width="7" height="9" />
       <rect x="3" y="16" width="7" height="5" />
+    </g>
+    <g v-else-if="name === 'book'">
+      <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
+      <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
+    </g>
+    <g v-else-if="name === 'target'">
+      <circle cx="12" cy="12" r="10" />
+      <circle cx="12" cy="12" r="6" />
+      <circle cx="12" cy="12" r="2" />
+    </g>
+    <g v-else-if="name === 'message-circle' || name === 'chat'">
+      <path d="m3 21 1.9-5.7a8.5 8.5 0 1 1 3.8 3.8z" />
+    </g>
+    <g v-else-if="name === 'crown'">
+      <path d="M2 5l5 3 5-6 5 6 5-3-2 14H4z" />
+      <line x1="4" y1="19" x2="20" y2="19" />
+    </g>
+    <g v-else-if="name === 'party-popper'">
+      <path d="M5.8 11.3 2 22l10.7-3.79" />
+      <path d="M4 3h.01" />
+      <path d="M22 8h.01" />
+      <path d="M15 2h.01" />
+      <path d="M22 20h.01" />
+      <path d="m22 2-2.24.75a2.9 2.9 0 0 0-1.96 3.12v.01c.09.6-.032 1.2-.377 1.712l-.148.208a1.5 1.5 0 0 1-2.078.36l-.208-.148A2.894 2.894 0 0 0 13.234 7.5h-.01c-1.099-.09-2.099.6-2.399 1.7L5.8 11.3" />
+    </g>
+    <g v-else-if="name === 'rocket'">
+      <path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z" />
+      <path d="m12 15-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2z" />
+      <path d="M9 12H4s.55-3.03 2-4c1.62-1.08 5 0 5 0" />
+      <path d="M12 15v5s3.03-.55 4-2c1.08-1.62 0-5 0-5" />
+    </g>
+    <g v-else-if="name === 'bell'">
+      <path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9" />
+      <path d="M10.3 21a1.94 1.94 0 0 0 3.4 0" />
+    </g>
+    <g v-else-if="name === 'sparkles'">
+      <path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z" />
+      <path d="M5 3v4" />
+      <path d="M19 17v4" />
+      <path d="M3 5h4" />
+      <path d="M17 19h4" />
+    </g>
+    <g v-else-if="name === 'link'">
+      <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
+      <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
+    </g>
+    <g v-else-if="name === 'snowflake'">
+      <line x1="2" y1="12" x2="22" y2="12" />
+      <line x1="12" y1="2" x2="12" y2="22" />
+      <path d="m20 16-4-4 4-4" />
+      <path d="m4 8 4 4-4 4" />
+      <path d="m16 4-4 4-4-4" />
+      <path d="m8 20 4-4 4 4" />
+    </g>
+    <g v-else-if="name === 'heart'">
+      <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+    </g>
+    <g v-else-if="name === 'menu'">
+      <line x1="4" y1="6" x2="20" y2="6" />
+      <line x1="4" y1="12" x2="20" y2="12" />
+      <line x1="4" y1="18" x2="20" y2="18" />
     </g>
 
     

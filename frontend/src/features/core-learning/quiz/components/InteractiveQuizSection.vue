@@ -45,8 +45,8 @@
           <span>Kiểm duyệt cú pháp (Linter Check)</span>
         </button>
         <div v-if="complianceResult !== null" class="text-xs font-mono flex items-center gap-1.5">
-          <span v-if="complianceResult" class="text-accent-green font-bold">🟢 Cú pháp hợp lệ (Compliant) <span class="text-[10px] text-text-muted">(RAM &lt; 22MB, Latency &lt; 2ms)</span></span>
-          <span v-else class="text-accent-red font-bold">🔴 Thiếu từ khóa bắt buộc!</span>
+          <span v-if="complianceResult" class="text-accent-green font-bold"><BaseIcon name="check-circle" class="w-3.5 h-3.5 inline-block mr-1 align-text-bottom" />Cú pháp hợp lệ (Compliant) <span class="text-[10px] text-text-muted">(RAM &lt; 22MB, Latency &lt; 2ms)</span></span>
+          <span v-else class="text-accent-red font-bold"><BaseIcon name="close" class="w-3.5 h-3.5 inline-block mr-1 align-text-bottom" />Thiếu từ khóa bắt buộc!</span>
         </div>
       </div>
     </div>
@@ -62,7 +62,10 @@
         class="score-result-panel"
         :class="scoreResult.passed ? 'passed' : 'failed'"
       >
-        <div class="passed-badge-circle" :class="scoreResult.passed ? 'passed' : 'failed'">{{ scoreResult.passed ? '✓' : '!' }}</div>
+        <div class="passed-badge-circle" :class="scoreResult.passed ? 'passed' : 'failed'">
+          <BaseIcon v-if="scoreResult.passed" name="check" class="w-4 h-4" />
+          <span v-else class="font-bold">!</span>
+        </div>
         <div class="flex-1">
           <h5 class="passed-title" :class="scoreResult.passed ? 'passed' : 'failed'">Kết quả: {{ scoreResult.passed ? 'ĐẠT (PASSED)' : 'CHƯA ĐẠT (FAILED)' }}</h5>
           <p class="text-xs text-text-secondary mt-1 mb-0 leading-normal font-medium font-['Outfit']">Điểm số trắc nghiệm: <strong class="text-text-primary">{{ scoreResult.totalScore }} / 30</strong>. Kiểm duyệt mã nguồn: <strong class="text-text-primary">{{ complianceResult ? 'Đạt' : 'Chưa Đạt' }}</strong>. <span v-if="scoreResult.passed">Chúc mừng! Bạn đã nắm vững kiến thức sắp xếp nổi bọt.</span><span v-else>Cần đạt tối thiểu 80% điểm số (24/30 điểm) và vượt qua kiểm duyệt linter để được tính là hoàn thành. Hãy xem lại slide lý thuyết!</span></p>

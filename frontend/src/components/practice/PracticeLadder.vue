@@ -1,9 +1,9 @@
 <template>
   <div class="practice-ladder w-full h-full flex flex-col gap-6">
     <!-- Header / Stepper -->
-    <div class="flex flex-col md:flex-row gap-4 p-4 bg-slate-900 border border-slate-700 rounded-2xl flex-shrink-0 relative overflow-hidden">
+    <div class="flex flex-col md:flex-row gap-4 p-4 bg-bg-secondary border border-border-default rounded-2xl flex-shrink-0 relative overflow-hidden">
       <!-- Background Effect -->
-      <div class="absolute inset-0 bg-gradient-to-r from-indigo-500/5 to-emerald-500/5 pointer-events-none"></div>
+      <div class="absolute inset-0 bg-gradient-to-r from-accent/5 to-accent-green/5 pointer-events-none"></div>
 
       <!-- Step 1: Quiz -->
       <LadderStep 
@@ -18,7 +18,7 @@
       />
 
       <!-- Arrow 1 -->
-      <div class="hidden md:flex items-center justify-center text-slate-600">
+      <div class="hidden md:flex items-center justify-center text-text-muted">
         <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
       </div>
 
@@ -35,7 +35,7 @@
       />
 
       <!-- Arrow 2 -->
-      <div class="hidden md:flex items-center justify-center text-slate-600">
+      <div class="hidden md:flex items-center justify-center text-text-muted">
         <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
       </div>
 
@@ -82,7 +82,7 @@
             @continue="$emit('completed')"
           />
           
-          <div v-else class="text-center py-20 text-slate-500">
+          <div v-else class="text-center py-20 text-text-muted">
             Bạn cần hoàn thành bước trước đó để mở khóa nội dung này.
           </div>
         </div>

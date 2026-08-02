@@ -1,15 +1,20 @@
 <template>
-  <div class="dashboard">
+  <div class="dashboard stagger-enter">
     
-    <div class="greeting-banner">
-      <h1 class="greeting-banner__title">
-        Chào mừng <span class="greeting-banner__name">{{ authStore.userName }}</span> quay trở lại!
-      </h1>
-      <p class="greeting-banner__sub">
-        Level {{ authStore.userLevel }} · {{ authStore.userXP }} XP ·
-        <span v-if="authStore.isTeacher" class="role-tag role-tag--teacher">Giảng viên</span>
-        <span v-else class="role-tag role-tag--student">Sinh viên</span>
-      </p>
+    <div class="greeting-banner glass-panel spring-hover" data-aos="fade-down">
+      <div class="greeting-banner__content">
+        <h1 class="greeting-banner__title font-display text-2xl mb-2">
+          Chào mừng <span class="greeting-banner__name text-gradient">{{ authStore.userName }}</span> quay trở lại!
+        </h1>
+        <p class="greeting-banner__sub text-secondary">
+          Level <span class="text-accent font-bold">{{ authStore.userLevel }}</span> · <span class="text-accent-warm font-bold">{{ authStore.userXP }} XP</span> ·
+          <span v-if="authStore.isTeacher" class="role-tag role-tag--teacher">Giảng viên</span>
+          <span v-else class="role-tag role-tag--student">Sinh viên</span>
+        </p>
+      </div>
+      <div class="greeting-banner__graphic ambient-float">
+        <BaseIcon name="gamification" class="w-16 h-16 text-accent opacity-20" />
+      </div>
     </div>
 
     
@@ -19,57 +24,39 @@
       
 
 
-      <div class="dash-card quickstart-card">
+      <div class="dash-card quickstart-card glass-panel spring-hover" data-aos="fade-up" data-aos-delay="100">
         <h3 class="dash-card__title">
           <BaseIcon name="playground" class="w-4 h-4 text-accent inline-block mr-1 align-text-bottom" />
-          Bắt Đầu Nhanh
+          Khám phá Lộ trình học
         </h3>
-        <p class="quickstart-intro">Bạn mới đến? Hãy bắt đầu từ đây:</p>
+        <p class="quickstart-intro">Bắt đầu hành trình chinh phục Thuật toán bằng cách đi theo lộ trình được thiết kế sẵn:</p>
         <div class="quickstart-steps">
-          <router-link to="/sorting" class="quickstart-item">
-            <span class="quickstart-item__number">1</span>
+          <router-link to="/courses" class="quickstart-item" style="border-color: rgba(99, 102, 241, 0.4); background: rgba(99, 102, 241, 0.05);">
             <div class="quickstart-item__content">
-              <span class="quickstart-item__title">Xem mô phỏng Bubble Sort</span>
-              <span class="quickstart-item__desc">Hiểu cách sắp xếp nổi bọt hoạt động qua hoạt ảnh trực quan</span>
+              <span class="quickstart-item__title text-accent">Xem Bản đồ Lộ trình</span>
+              <span class="quickstart-item__desc">Học qua từng bài học, mô phỏng trực quan và bài tập thực hành.</span>
             </div>
-            <span class="quickstart-item__arrow">→</span>
+            <BaseIcon name="arrow-right" class="quickstart-item__arrow text-accent" />
           </router-link>
-          <router-link to="/quiz" class="quickstart-item">
-            <span class="quickstart-item__number">2</span>
+          
+          <router-link to="/classrooms" class="quickstart-item mt-3">
             <div class="quickstart-item__content">
-              <span class="quickstart-item__title">Thử quiz DSA cơ bản</span>
-              <span class="quickstart-item__desc">Kiểm tra kiến thức thuật toán qua trắc nghiệm tương tác</span>
+              <span class="quickstart-item__title">Tham gia Lớp học</span>
+              <span class="quickstart-item__desc">Nhập mã từ Giảng viên để theo dõi tiến độ cùng lớp.</span>
             </div>
-            <span class="quickstart-item__arrow">→</span>
-          </router-link>
-          <router-link to="/graph" class="quickstart-item">
-            <span class="quickstart-item__number">3</span>
-            <div class="quickstart-item__content">
-              <span class="quickstart-item__title">Khám phá cấu trúc Đồ thị</span>
-              <span class="quickstart-item__desc">Vẽ đồ thị, chạy BFS/DFS và Dijkstra trực tiếp trên canvas</span>
-            </div>
-            <span class="quickstart-item__arrow">→</span>
-          </router-link>
-          <router-link to="/oop" class="quickstart-item">
-            <span class="quickstart-item__number">4</span>
-            <div class="quickstart-item__content">
-              <span class="quickstart-item__title">Tìm hiểu OOP trực quan</span>
-              <span class="quickstart-item__desc">Xem VTable, Heap và tính kế thừa hoạt động bên trong</span>
-            </div>
-            <span class="quickstart-item__arrow">→</span>
+            <BaseIcon name="arrow-right" class="quickstart-item__arrow" />
           </router-link>
         </div>
-        <button class="quickstart-tour-btn" @click="startSortingTour">
-          <BaseIcon name="quiz" class="w-4 h-4 text-accent inline-block mr-1 align-text-bottom" />
-          Xem hướng dẫn đầy đủ
-        </button>
+        <router-link to="/courses" class="quickstart-tour-btn text-center block mt-4">
+          Bắt đầu ngay
+        </router-link>
       </div>
 
       
 
       <!-- User Progress Header -->
       
-      <div class="dash-card xp-card">
+      <div class="dash-card xp-card glass-panel spring-hover" data-aos="fade-up" data-aos-delay="150">
         <h3 class="dash-card__title">Tiến trình XP</h3>
         <div class="xp-wheel">
           <svg viewBox="0 0 120 120" class="xp-wheel__svg">
@@ -92,44 +79,60 @@
           </svg>
           <div class="xp-wheel__center">
             <span class="xp-wheel__level">Lv.{{ authStore.userLevel }}</span>
-            <span class="xp-wheel__xp">{{ authStore.userXP }} XP</span>
+            <span class="xp-wheel__xp"><span class="xp-num">{{ authStore.userXP }}</span> XP</span>
           </div>
         </div>
         <p class="xp-card__hint">{{ xpToNext }} XP để lên level tiếp theo</p>
       </div>
 
-      
-      <SkillRadarChart />
+      <div class="dash-card streak-card glass-panel spring-hover" data-aos="fade-up" data-aos-delay="200">
+        <h3 class="dash-card__title">Chuỗi ngày học</h3>
+        <div class="flex items-center justify-center gap-4 py-2">
+          <BaseIcon name="fire" class="w-10 h-10 text-accent-warm animate-pulse" />
+          <div>
+            <div class="text-2xl font-bold text-accent-warm"><span class="streak-num">3</span> Ngày</div>
+            <div class="text-xs text-text-tertiary">Giữ lửa học tập!</div>
+          </div>
+        </div>
+        <div class="flex justify-between mt-4">
+          <div v-for="d in ['T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'CN']" :key="d" 
+            class="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold transition-colors duration-200" 
+            :class="d === 'T2' || d === 'T3' || d === 'T4' ? 'bg-accent-warm/20 text-accent-warm border border-accent-warm/50' : 'bg-bg-surface text-text-disabled border border-border-default'">
+            {{ d }}
+          </div>
+        </div>
+      </div>
+
+      <div class="dash-card glass-panel spring-hover" style="padding: 0; overflow: hidden;" data-aos="fade-up" data-aos-delay="250">
+        <DailyQuestsCard />
+      </div>
+
+      <div class="dash-card glass-panel spring-hover" style="padding: 0; overflow: hidden;" data-aos="fade-up" data-aos-delay="300">
+        <SkillRadarChart />
+      </div>
 
       
-      <div class="dash-card badges-card">
+      <div class="dash-card badges-card glass-panel spring-hover" data-aos="zoom-in" data-aos-delay="350">
         <h3 class="dash-card__title">Huy hiệu đã mở</h3>
         <div class="badges-grid">
           <div v-for="badge in topBadges" :key="badge.id" class="badge-item">
             <BaseIcon :name="getBadgeIconName(badge.icon)" class="badge-item__icon" />
             <span class="badge-item__name">{{ badge.name }}</span>
           </div>
-          <div v-if="topBadges.length === 0" class="badges-empty">
-            Chưa có huy hiệu nào. Hãy bắt đầu học!
+          <div v-if="topBadges.length === 0" class="badges-empty flex flex-col items-center">
+            <LottiePlayer path="https://lottie.host/8c067882-abcf-4d92-bf3f-bdff6a24683d/v2p60HlPib.json" size="80px" />
+            <span class="mt-2 text-sm">Chưa có huy hiệu nào. Hãy bắt đầu học!</span>
           </div>
         </div>
       </div>
 
       
-      <div class="dash-card quicklinks-card">
+      <div class="dash-card quicklinks-card glass-panel spring-hover" data-aos="fade-up" data-aos-delay="400">
         <h3 class="dash-card__title">Truy cập nhanh</h3>
         <div class="quicklinks">
           <router-link to="/courses" class="quicklink">
             <BaseIcon name="learning-path" class="quicklink__icon" />
             <span>Bản đồ Lộ trình</span>
-          </router-link>
-          <router-link to="/sorting" class="quicklink">
-            <BaseIcon name="sorting" class="quicklink__icon" />
-            <span>Sắp xếp</span>
-          </router-link>
-          <router-link to="/quiz" class="quicklink">
-            <BaseIcon name="quiz" class="quicklink__icon" />
-            <span>Trắc nghiệm</span>
           </router-link>
           <router-link to="/gamification" class="quicklink">
             <BaseIcon name="gamification" class="quicklink__icon" />
@@ -158,8 +161,12 @@ import { computed } from 'vue';
 import { useRouter } from 'vue-router';
 import { useAuthStore } from '@/features/auth/store/useAuthStore';
 import SkillRadarChart from '@/features/gamification/user-progress/components/SkillRadarChart.vue';
+import DailyQuestsCard from '@/features/gamification/components/DailyQuestsCard.vue';
+import LottiePlayer from '@/shared/components/LottiePlayer.vue';
 
 import { useGuidedTourStore } from '@/features/guided-tour/store/useGuidedTourStore';
+import { onMounted, onUnmounted, watch } from 'vue';
+import gsap from 'gsap';
 
 const authStore = useAuthStore();
 const router = useRouter();
@@ -175,7 +182,8 @@ const xpToNext = computed(() => {
 
 const progressPercent = computed(() => {
   const lvl = authStore.userLevel;
-  if (lvl <= 0 || lvl >= levelThresholds.length) return 100;
+  if (lvl <= 0) return 0;
+  if (lvl >= levelThresholds.length) return 100;
   const prev = levelThresholds[lvl - 1];
   const next = levelThresholds[lvl];
   const range = next - prev;
@@ -195,7 +203,7 @@ interface BadgeDisplay {
 
 const topBadges = computed<BadgeDisplay[]>(() => {
   const badges = authStore.currentUser?.badges ?? [];
-  return badges.slice(0, 3).map((badge) => {
+  return [...badges].reverse().slice(0, 3).map((badge) => {
     const b = badge as Record<string, unknown>;
     return {
       id: String(b.id ?? ''),
@@ -223,10 +231,56 @@ async function startSortingTour() {
   await router.push('/sorting');
   // tourStore.startPageTour('/sorting', true);
 }
+
+let ctx: gsap.Context;
+
+onMounted(() => {
+  ctx = gsap.context(() => {
+    // XP Number Counter
+    gsap.fromTo('.xp-num',
+      { innerHTML: 0 },
+      {
+        innerHTML: authStore.userXP,
+        duration: 2,
+        ease: 'power2.out',
+        snap: { innerHTML: 1 }
+      }
+    );
+
+    // Streak Number Counter
+    gsap.fromTo('.streak-num',
+      { innerHTML: 0 },
+      {
+        innerHTML: 3,
+        duration: 1.5,
+        ease: 'power2.out',
+        snap: { innerHTML: 1 }
+      }
+    );
+  });
+});
+
+watch(() => authStore.userXP, (newVal) => {
+  if (ctx) {
+    gsap.to('.xp-num', {
+      innerHTML: newVal,
+      duration: 1,
+      ease: 'power2.out',
+      snap: { innerHTML: 1 }
+    });
+  }
+});
+
+onUnmounted(() => {
+  if (ctx) ctx.revert();
+});
 </script>
 
 <style scoped>
 .dashboard {
+  max-width: 1280px;
+  margin: 0 auto;
+  width: 100%;
   padding: 2rem;
   min-height: 100%;
   overflow-y: auto;
@@ -250,7 +304,7 @@ async function startSortingTour() {
 .greeting-banner__title {
   font-size: 1.5rem;
   font-weight: 600;
-  color: var(--text-primary, #e2e8f0);
+  color: var(--color-text-primary, #e2e8f0);
 }
 
 .greeting-banner__name {
@@ -366,7 +420,7 @@ async function startSortingTour() {
 .quickstart-item__title {
   font-size: 0.8rem;
   font-weight: 600;
-  color: var(--text-primary, #e2e8f0);
+  color: var(--color-text-primary, #e2e8f0);
 }
 
 .quickstart-item__desc {
@@ -438,7 +492,7 @@ async function startSortingTour() {
   display: block;
   font-size: 1.2rem;
   font-weight: 700;
-  color: var(--text-primary, #e2e8f0);
+  color: var(--color-text-primary, #e2e8f0);
 }
 
 .xp-wheel__xp {
@@ -477,7 +531,7 @@ async function startSortingTour() {
 
 .badge-item__name {
   font-size: 0.8rem;
-  color: var(--text-primary, #e2e8f0);
+  color: var(--color-text-primary, #e2e8f0);
 }
 
 .badges-empty {
@@ -499,7 +553,7 @@ async function startSortingTour() {
   gap: 0.75rem;
   padding: 0.625rem 0.75rem;
   border-radius: 8px;
-  color: var(--text-primary, #e2e8f0);
+  color: var(--color-text-primary, #e2e8f0);
   text-decoration: none;
   font-size: 0.9rem;
   transition: background 0.15s ease;

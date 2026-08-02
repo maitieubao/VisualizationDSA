@@ -2,6 +2,13 @@ import type { NavItem } from '../types/docs.types';
 
 export const docsNavigation: NavItem[] = [
   {
+    id: 'cheatsheet-group',
+    title: 'TÀI LIỆU NHANH',
+    children: [
+      { id: 'cheatsheet-main', title: 'DSA CheatSheet', path: '/docs/cheatsheet' }
+    ]
+  },
+  {
     id: 'intro-group',
     title: 'GIỚI THIỆU & NỀN TẢNG',
     children: [

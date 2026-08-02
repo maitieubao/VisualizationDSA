@@ -8,19 +8,19 @@
       class="flex items-center gap-2 px-3 py-1.5 rounded-xl text-xs font-bold transition-all"
       :class="[
         activeStep === step.number
-          ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/30 cursor-default'
+          ? 'bg-accent text-text-primary shadow-md shadow-indigo-600/30 cursor-default'
           : canAccessStep(step.number) 
-            ? 'bg-slate-950/60 text-slate-400 hover:text-slate-200 border border-white/5 cursor-pointer hover:bg-slate-800'
-            : 'bg-slate-950/40 text-slate-600 border border-transparent cursor-not-allowed opacity-50'
+            ? 'bg-bg-primary/60 text-text-secondary hover:text-text-primary border border-border-default cursor-pointer hover:bg-bg-hover'
+            : 'bg-bg-primary/40 text-text-muted border border-transparent cursor-not-allowed opacity-50'
       ]"
     >
       <span class="w-4 h-4 rounded-full flex items-center justify-center text-[10px]" 
-            :class="activeStep === step.number ? 'bg-white/20 text-white' : (canAccessStep(step.number) ? 'bg-slate-800 text-slate-400' : 'bg-slate-900 text-slate-700')">
-        <template v-if="isStepCompleted(step.number)">✓</template>
+            :class="activeStep === step.number ? 'bg-bg-surface text-text-primary' : (canAccessStep(step.number) ? 'bg-bg-hover text-text-secondary' : 'bg-bg-secondary text-text-muted')">
+        <template v-if="isStepCompleted(step.number)"><BaseIcon name="check" class="w-3 h-3" /></template>
         <template v-else>{{ step.number }}</template>
       </span>
       <span>{{ step.label }}</span>
-      <span v-if="!canAccessStep(step.number)" class="ml-1">🔒</span>
+      <span v-if="!canAccessStep(step.number)" class="ml-1"><BaseIcon name="lock" class="w-3 h-3" /></span>
     </button>
   </div>
 </template>

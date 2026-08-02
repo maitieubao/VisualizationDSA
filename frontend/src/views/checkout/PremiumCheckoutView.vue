@@ -13,7 +13,7 @@
         
         <div v-if="!authStore.isAuthenticated" class="text-center py-12 flex flex-col items-center gap-6">
           <div class="w-16 h-16 rounded-full bg-accent/10 border border-accent/20 flex items-center justify-center text-accent text-2xl">
-            👑
+            <BaseIcon name="crown" class="w-8 h-8 text-accent-warm" />
           </div>
           <div>
             <h3 class="text-lg font-bold text-text-primary mb-2">Yêu cầu Đăng nhập</h3>
@@ -69,7 +69,7 @@
               class="px-4 py-2 text-xs bg-accent-green/20 border border-accent-green/40 rounded-lg hover:bg-accent-green/30 transition"
               @click="handleSimulatePayment"
             >
-              🧪 Mô phỏng: Xác nhận đã thanh toán
+              <BaseIcon name="sparkles" class="w-3.5 h-3.5 inline-block mr-1 align-text-bottom" /> Mô phỏng: Xác nhận đã thanh toán
             </button>
           </div>
         </template>
@@ -137,7 +137,7 @@ onUnmounted(() => {
 </script>
 
 <style scoped>
-.checkout-container { background: radial-gradient(circle at center, var(--color-bg-secondary) 0%, var(--color-bg-primary) 100%); min-height: 100vh; }
+.checkout-container { min-height: 100vh; }
 .main-card { border-color: var(--border-color); box-shadow: 0 0 50px -15px rgba(6,182,212,0.15); }
 .spinner-lg { width: 2rem; height: 2rem; border: 3px solid rgba(255,255,255,0.2); border-radius: 50%; border-top-color: var(--color-accent-primary); animation: spin 0.8s linear infinite; }
 @keyframes spin { to { transform: rotate(360deg); } }

@@ -1,5 +1,5 @@
 <template>
-  <div class="mermaid-block overflow-x-auto py-4 bg-slate-900/50 rounded-xl flex justify-center">
+  <div class="mermaid-block overflow-x-auto py-4 bg-bg-secondary/50 rounded-xl flex justify-center">
     <div ref="mermaidEl" />
   </div>
 </template>
@@ -22,7 +22,7 @@ const renderDiagram = async () => {
   } catch (err) {
     console.error("Mermaid syntax error", err);
     if (mermaidEl.value) {
-      mermaidEl.value.innerHTML = `<div class="text-red-400">Biểu đồ không hợp lệ</div>`;
+      mermaidEl.value.innerHTML = `<div class="text-accent-red">Biểu đồ không hợp lệ</div>`;
     }
   }
 };

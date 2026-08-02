@@ -1,9 +1,7 @@
 <template>
   <div class="graph-view-root flex flex-col h-full w-full gap-4 p-4 overflow-hidden">
     
-    <div class="tabs-header-bar flex items-center justify-between px-4 py-2 border rounded-xl relative z-50" data-tour-id="algo-tab-switch"
-      style="background: rgba(15, 23, 42, 0.45); backdrop-filter: blur(12px); border-color: rgba(255, 255, 255, 0.05);"
-    >
+    <div class="tabs-header-bar glass-panel flex items-center justify-between px-4 py-2 rounded-xl relative z-50" data-tour-id="algo-tab-switch">
       <div class="flex gap-2">
         <button
           v-for="tab in tabs"
@@ -27,18 +25,18 @@
     
     <div class="flex-1 min-h-0 relative">
       
-      <div v-show="activeTab === 'graph'" class="absolute inset-0 w-full h-full relative">
+      <div v-show="activeTab === 'graph'" class="absolute inset-0 w-full h-full">
         <InteractivePlayground class="w-full h-full" />
         
         <div
           v-show="!playgroundStore.isAlgorithmMode"
-          class="absolute right-4 top-[72px] bottom-4 z-[1005] flex flex-col transition-all duration-300 ease-in-out pointer-events-none"
+          class="absolute right-4 top-4 bottom-4 z-[1005] flex flex-col transition-all duration-300 ease-in-out pointer-events-none"
           :style="{ width: isPanelCollapsed ? '0px' : '360px' }"
         >
           
           <button
             @click="isPanelCollapsed = !isPanelCollapsed"
-            class="absolute left-[-20px] top-1/2 -translate-y-1/2 z-[1006] w-5 h-12 bg-bg-secondary/95 hover:bg-bg-hover border border-white/10 border-r-0 rounded-l-xl flex items-center justify-center cursor-pointer text-text-muted hover:text-text-primary transition-all shadow-2xl select-none pointer-events-auto"
+            class="absolute left-[-20px] top-1/2 -translate-y-1/2 z-[1006] w-5 h-12 bg-bg-secondary/95 hover:bg-bg-hover border border-border-default border-r-0 rounded-l-xl flex items-center justify-center cursor-pointer text-text-muted hover:text-text-primary transition-all shadow-2xl select-none pointer-events-auto"
             :title="isPanelCollapsed ? 'Mở bảng dữ liệu (P)' : 'Thu gọn bảng dữ liệu (P)'"
           >
             <svg
@@ -125,7 +123,7 @@ onUnmounted(() => {
 
 <style scoped>
 .graph-view-root {
-  background-color: var(--color-bg-primary);
+  background-image: linear-gradient(to bottom, var(--color-bg-gradient-start), var(--color-bg-gradient-end));
 }
 
 .sub-tab-btn--inactive {

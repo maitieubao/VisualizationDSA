@@ -11,10 +11,10 @@
           @click="toastStore.removeToast(toast.id)"
         >
           <div class="toast-icon">
-            <span v-if="toast.type === 'success'">✓</span>
-            <span v-else-if="toast.type === 'error'">✕</span>
-            <span v-else-if="toast.type === 'warning'">⚠</span>
-            <span v-else>ℹ</span>
+            <BaseIcon v-if="toast.type === 'success'" name="check" class="w-4 h-4" />
+            <BaseIcon v-else-if="toast.type === 'error'" name="close" class="w-4 h-4" />
+            <BaseIcon v-else-if="toast.type === 'warning'" name="warning" class="w-4 h-4" />
+            <BaseIcon v-else name="info" class="w-4 h-4" />
           </div>
           <div class="toast-body">
             <div class="toast-title">{{ toast.title }}</div>

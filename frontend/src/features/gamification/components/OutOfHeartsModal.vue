@@ -26,8 +26,8 @@ const adsRemaining = computed(() => {
 
 <template>
   <div v-if="show" class="modal-overlay">
-    <div class="modal-content">
-      <h2>Hết Trái Tim 💔</h2>
+    <div class="modal-content glass-panel">
+      <h2><BaseIcon name="heart" class="w-5 h-5 inline-block mr-1 align-text-bottom" style="color:var(--color-error)" />Hết Trái Tim</h2>
       <p>Bạn đã sử dụng hết trái tim. Hãy đợi tim hồi phục hoặc xem quảng cáo để nhận thêm.</p>
       
       <div v-if="recoveryInfo" class="info-box">
@@ -38,7 +38,7 @@ const adsRemaining = computed(() => {
       <div class="actions">
         <button class="btn-cancel" @click="emit('close')">Đóng</button>
         <button class="btn-primary" :disabled="adsRemaining <= 0" @click="emit('watch-ad')">
-          Xem Quảng Cáo (+1 ❤️)
+          Xem Quảng Cáo (+1 <BaseIcon name="heart" class="w-3.5 h-3.5 inline-block align-text-bottom" />)
         </button>
       </div>
     </div>
@@ -56,7 +56,6 @@ const adsRemaining = computed(() => {
   z-index: 1000;
 }
 .modal-content {
-  background: var(--color-surface);
   padding: 24px;
   border-radius: 12px;
   max-width: 400px;

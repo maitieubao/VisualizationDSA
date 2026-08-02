@@ -11,13 +11,13 @@
 
     
     <div class="flex flex-col gap-1.5">
-      <label class="text-[11px] text-text-secondary">Nhập mảng số nguyên (cách nhau bằng dấu phẩy):</label>
+      <label class="text-[11px] text-text-secondary">Nháº­p máº£ng sá»‘ nguyÃªn (cÃ¡ch nhau báº±ng dáº¥u pháº©y):</label>
       <textarea v-model="inputStore.rawText" :readonly="inputStore.isLoading"
-        :placeholder="'Ví dụ: 14, 25, 38, 9, 4'" rows="3"
-        class="w-full rounded-lg px-3 py-2 text-sm font-mono text-text-primary placeholder-slate-600 outline-none resize-none transition-all duration-200"
+        :placeholder="'VÃ­ dá»¥: 14, 25, 38, 9, 4'" rows="3"
+        class="w-full rounded-lg px-3 py-2 text-sm font-mono text-text-primary placeholder:text-text-muted outline-none resize-none transition-all duration-200"
         :class="textareaClasses" @keydown="onKeydown"></textarea>
       <div class="flex items-center justify-between text-[11px]">
-        <span :class="counterClasses">{{ inputStore.elementCount }} / {{ inputStore.maxLimit }} phần tử</span>
+        <span :class="counterClasses">{{ inputStore.elementCount }} / {{ inputStore.maxLimit }} pháº§n tá»­</span>
         <span v-if="statusText" :class="statusClasses">{{ statusText }}</span>
       </div>
       <div v-if="errorText" class="text-[11px] font-mono" :class="formState === 'limit-error' ? 'text-accent-yellow' : 'text-accent-red'">{{ errorText }}</div>
@@ -28,10 +28,10 @@
     <div class="flex items-center gap-2 flex-wrap">
       
       <div class="relative" ref="dropdownRef">
-        <button class="px-3 py-1.5 rounded-lg text-[11px] font-bold bg-bg-surface border border-border-default text-text-secondary hover:text-white hover:border-border-strong transition-colors flex items-center gap-1.5"
+        <button class="px-3 py-1.5 rounded-lg text-[11px] font-bold bg-bg-surface border border-border-default text-text-secondary hover:text-text-primary hover:border-border-strong transition-colors flex items-center gap-1.5"
           @click="showDropdown = !showDropdown">
           <span class="text-base leading-none">&#x1F3B2;</span>
-          <span>Sinh Ngẫu Nhiên</span>
+          <span>Sinh Ngáº«u NhiÃªn</span>
           <svg class="w-3 h-3 transition-transform" :class="{ 'rotate-180': showDropdown }" viewBox="0 0 20 20" fill="currentColor">
             <path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clip-rule="evenodd" />
           </svg>
@@ -39,14 +39,14 @@
         <Transition name="dropdown">
           <div v-if="showDropdown" class="absolute left-0 top-full mt-1 w-52 bg-bg-surface border border-border-default rounded-lg shadow-xl z-50 overflow-hidden">
             <button v-for="opt in generationOptions" :key="opt.type"
-              class="w-full text-left px-3 py-2 text-[11px] text-text-secondary hover:bg-bg-active hover:text-white transition-colors"
+              class="w-full text-left px-3 py-2 text-[11px] text-text-secondary hover:bg-bg-active hover:text-text-primary transition-colors"
               @click="onGenerate(opt.type)">{{ opt.label }}</button>
           </div>
         </Transition>
       </div>
 
-      <button class="px-3 py-1.5 rounded-lg text-[11px] font-bold bg-bg-surface border border-border-default text-text-secondary hover:text-white hover:border-border-strong transition-colors"
-        @click="inputStore.clear()">Xóa Trắng</button>
+      <button class="px-3 py-1.5 rounded-lg text-[11px] font-bold bg-bg-surface border border-border-default text-text-secondary hover:text-text-primary hover:border-border-strong transition-colors"
+        @click="inputStore.clear()">XÃ³a Tráº¯ng</button>
 
       <button :disabled="!inputStore.canExecute"
         class="ml-auto px-4 py-1.5 rounded-lg text-[11px] font-bold transition-all flex items-center gap-1.5"
@@ -55,7 +55,7 @@
           <circle cx="12" cy="12" r="10" class="opacity-25" /><path d="M4 12a8 8 0 018-8" class="opacity-75" />
         </svg>
         <span v-else class="text-base leading-none">&#x26A1;</span>
-        <span>{{ inputStore.isLoading ? 'Đang xử lý...' : 'Chạy Trực Quan' }}</span>
+        <span>{{ inputStore.isLoading ? 'Äang xá»­ lÃ½...' : 'Cháº¡y Trá»±c Quan' }}</span>
       </button>
     </div>
   </div>

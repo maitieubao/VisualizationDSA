@@ -1,5 +1,5 @@
 <template>
-  <div class="my-6 w-full max-w-3xl mx-auto rounded-xl overflow-hidden shadow-lg border border-slate-700/50 bg-slate-900">
+  <div class="my-6 w-full max-w-3xl mx-auto rounded-xl overflow-hidden shadow-lg border border-border-default/50 bg-bg-secondary">
     <div class="aspect-video relative">
       <iframe 
         v-if="isYouTube"
@@ -16,7 +16,7 @@
         controls
       ></video>
     </div>
-    <div v-if="title" class="p-3 bg-slate-900 text-sm font-semibold text-slate-300">
+    <div v-if="title" class="p-3 bg-bg-secondary text-sm font-semibold text-text-secondary">
       {{ title }}
     </div>
   </div>

@@ -18,7 +18,7 @@
 
     
     <div v-if="editorLoadError" class="flex-1 flex flex-col items-center justify-center p-6 text-center bg-bg-surface/30 border border-border-default/20 rounded-xl min-h-[300px]">
-      <span class="text-2xl mb-2">⚠️</span>
+      <BaseIcon name="warning" class="w-6 h-6 mb-2" />
       <p class="text-xs font-semibold text-text-primary mb-1">Không thể tải Monaco Editor</p>
       <p class="text-[10px] text-text-secondary mb-4 max-w-xs leading-normal">
         Lỗi do xung đột tối ưu hóa module hoặc kết nối. Hãy reload lại trang.

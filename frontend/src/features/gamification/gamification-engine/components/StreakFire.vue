@@ -1,5 +1,5 @@
 <template>
-  <div class="flex items-center gap-3 p-4 rounded-2xl bg-bg-secondary/45 border border-white/5 backdrop-blur-xl">
+  <div class="flex items-center gap-3 p-4 rounded-2xl bg-bg-secondary/45 border border-border-default backdrop-blur-xl">
     <div class="relative">
       <svg
         class="streak-fire-icon"

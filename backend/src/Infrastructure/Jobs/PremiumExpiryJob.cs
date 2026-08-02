@@ -66,7 +66,7 @@ namespace VisualizationDSA.Infrastructure.Jobs
                     // Create notification
                     var notification = new Domain.Entities.Notification(
                         user.Id,
-                        "Gói Premium của bạn đã hết hạn. Trái tim của bạn sẽ không hồi cho đến khi số tim xuống dưới 10.",
+                        "Gói Premium của bạn đã hết hạn. Trái tim của bạn sẽ không hồi cho đến khi số tim xuống dưới mức tối đa (5 tim).",
                         "/checkout"
                     );
                     dbContext.Notifications.Add(notification);

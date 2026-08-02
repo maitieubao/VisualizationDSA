@@ -4,6 +4,10 @@ import { MotionPlugin } from '@vueuse/motion'
 import router from './router'
 import './style.css'
 import App from './App.vue'
+import AOS from 'aos'
+import 'aos/dist/aos.css'
+import Particles from '@tsparticles/vue3'
+import { loadSlim } from '@tsparticles/slim'
 import { useAuthStore } from './features/auth/store/useAuthStore'
 import { useUserProgressStore } from './features/gamification/user-progress/store/useUserProgressStore'
 
@@ -14,6 +18,11 @@ const pinia = createPinia()
 
 app.use(pinia)
 app.use(MotionPlugin)
+app.use(Particles, {
+  init: async engine => {
+    await loadSlim(engine)
+  },
+})
 app.component('BaseIcon', BaseIcon)
 
 
@@ -80,5 +89,12 @@ authStore.init().then(() => {
   app.use(router)
   router.isReady().then(() => {
     app.mount('#app')
+    AOS.init({
+      duration: 700,
+      easing: 'ease-out-cubic',
+      once: true,
+      offset: 80,
+      disable: 'mobile'
+    })
   })
 })

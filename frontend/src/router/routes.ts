@@ -8,7 +8,11 @@ export const routes: RouteRecordRaw[] = [
   
   { path: '/',              name: 'landing',       component: () => import('../views/landing/LandingView.vue'),           meta: { title: 'Chào mừng',        public: true } },
   { path: '/dashboard',     name: 'dashboard',     component: () => import('../views/dashboard/DashboardView.vue'),         meta: { title: 'Bảng điều khiển',   requiresAuth: true } },
-  { path: '/teacher',       name: 'teacher',       component: () => import('../views/teacher/TeacherPanelView.vue'),      meta: { title: 'Quản lý Giảng viên', requiresAuth: true, requiresRole: 'Teacher' } },
+  { path: '/teacher',       name: 'teacher',       component: () => import('../views/teacher/TeacherPanelView.vue'),      meta: { title: 'Bảng điều khiển Giảng viên', requiresAuth: true, requiresRole: 'Teacher' } },
+  
+  // ── Auth ─────────────────────────────────────
+  { path: '/login',         name: 'login',         component: () => import('../views/auth/AuthView.vue'), meta: { title: 'Đăng nhập', public: true } },
+  { path: '/register',      name: 'register',      component: () => import('../views/auth/AuthView.vue'), meta: { title: 'Đăng ký', public: true } },
 
   // ── Core Algorithm Sandboxes ─────────────────────────────────────
   // ── Core Features (Phase 1 legacy kept as hidden or migrated) ─────────────────────────────────────
@@ -22,7 +26,29 @@ export const routes: RouteRecordRaw[] = [
   { path: '/solid', redirect: '/docs/solid' },
   { path: '/di', redirect: '/docs/di' },
   { path: '/patterns', redirect: '/docs/patterns' },
-  { path: '/gamification',  name: 'gamification',  component: () => import('../views/gamification/GamificationEngineView.vue'),meta: { title: 'Bảng xếp hạng',   icon: 'gamification' } },
+  {
+    path: '/gamification',
+    name: 'gamification',
+    component: () => import('../views/gamification/GamificationEngineView.vue'),
+    meta: { title: 'Bảng xếp hạng' },
+  },
+  {
+    path: '/cheatsheet',
+    redirect: '/docs/cheatsheet'
+  },
+  {
+    path: '/ai-assistant',
+    name: 'ai-assistant',
+    component: () => import('../views/AIAssistantView.vue'),
+    meta: { title: 'AI Assistant', requiresAuth: true },
+  },
+  {
+    path: '/teacher-studio',
+    name: 'teacher-studio',
+    component: () => import('../views/TeacherStudioView.vue'),
+    meta: { title: 'Teacher Studio', requiresAuth: true, requiresRole: 'Teacher' },
+  },
+  { path: '/gems-shop',     name: 'gems-shop',     component: () => import('../views/GemsShopView.vue'),meta: { title: 'Cửa hàng Gems',   icon: 'shopping-bag' } },
 
   
   { path: '/embed',         name: 'embed',         component: () => import('../views/embed/EmbedWidgetView.vue'),      meta: { title: 'Embed',           icon: 'embed' } },

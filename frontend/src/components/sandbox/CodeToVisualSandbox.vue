@@ -1,22 +1,24 @@
 <template>
-  <div class="code-to-visual-sandbox bg-slate-900 border border-slate-700 rounded-2xl overflow-hidden shadow-2xl flex flex-col mt-8">
-    <div class="px-6 py-4 bg-slate-800 border-b border-slate-700 flex justify-between items-center flex-wrap gap-4">
+  <div class="code-to-visual-sandbox bg-bg-secondary border border-border-default rounded-2xl overflow-hidden shadow-2xl flex flex-col mt-8">
+    <div class="px-6 py-4 bg-bg-hover border-b border-border-default flex justify-between items-center flex-wrap gap-4">
       <div>
-        <h3 class="text-xl font-bold text-white flex items-center">
-          <span class="mr-2">⚡</span> Code-to-Visual Sandbox
+        <h3 class="text-xl font-bold text-text-primary flex items-center">
+          <BaseIcon name="zap" class="w-5 h-5 mr-2" /> Code-to-Visual Sandbox
         </h3>
-        <p class="text-slate-400 text-sm mt-1">Viết code của bạn và xem Animation minh họa từng bước.</p>
+        <p class="text-text-secondary text-sm mt-1">Viết code của bạn và xem Animation minh họa từng bước.</p>
       </div>
       
       <div class="flex items-center space-x-4">
         <!-- Animation Controls (only visible if trace exists) -->
-        <div v-if="executionTrace" class="flex items-center space-x-2 bg-slate-900 px-3 py-1.5 rounded-lg border border-slate-700">
-          <button @click="canvasRef?.reset()" class="px-3 py-1 bg-slate-700 hover:bg-slate-600 rounded text-xs text-white">🔄 Reset</button>
-          <button @click="canvasRef?.togglePlay()" class="px-3 py-1 bg-blue-600 hover:bg-blue-500 rounded font-bold text-xs text-white">
-            {{ canvasRef?.isPlaying ? '⏸ Pause' : '▶ Play' }}
+        <div v-if="executionTrace" class="flex items-center space-x-2 bg-bg-secondary px-3 py-1.5 rounded-lg border border-border-default">
+          <button @click="canvasRef?.reset()" class="px-3 py-1 bg-bg-hover hover:bg-bg-hover rounded text-xs text-text-primary"><BaseIcon name="refresh" class="w-3.5 h-3.5 inline-block mr-1 align-text-bottom" />Reset</button>
+          <button @click="canvasRef?.togglePlay()" class="px-3 py-1 bg-blue-600 hover:bg-blue-500 rounded font-bold text-xs text-text-primary">
+            <BaseIcon v-if="canvasRef?.isPlaying" name="pause" class="w-3.5 h-3.5 inline-block mr-1 align-text-bottom" />
+            <BaseIcon v-else name="play" class="w-3.5 h-3.5 inline-block mr-1 align-text-bottom" />
+            {{ canvasRef?.isPlaying ? 'Pause' : 'Play' }}
           </button>
-          <button @click="canvasRef?.stepForward()" class="px-3 py-1 bg-slate-700 hover:bg-slate-600 rounded text-xs text-white" :disabled="canvasRef?.isPlaying || (canvasRef?.currentStepIndex >= canvasRef?.totalSteps - 1)">⏭ Step</button>
-          <div class="text-xs font-mono text-slate-300 ml-2 border-l border-slate-600 pl-2">
+          <button @click="canvasRef?.stepForward()" class="px-3 py-1 bg-bg-hover hover:bg-bg-hover rounded text-xs text-text-primary" :disabled="canvasRef?.isPlaying || (canvasRef?.currentStepIndex >= canvasRef?.totalSteps - 1)"><BaseIcon name="step-forward" class="w-3.5 h-3.5 inline-block mr-1 align-text-bottom" />Step</button>
+          <div class="text-xs font-mono text-text-secondary ml-2 border-l border-border-default pl-2">
             Step: {{ (canvasRef?.currentStepIndex ?? 0) + 1 }} / {{ canvasRef?.totalSteps ?? 0 }}
           </div>
         </div>
@@ -24,10 +26,10 @@
         <button 
           @click="runVisualize" 
           :disabled="isRunning" 
-          class="px-6 py-2 bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 text-white font-bold rounded-lg transition-colors flex items-center shadow-lg shadow-indigo-500/20"
+          class="px-6 py-2 bg-accent hover:bg-accent disabled:opacity-50 text-text-primary font-bold rounded-lg transition-colors flex items-center shadow-lg shadow-indigo-500/20"
         >
-          <span v-if="isRunning" class="mr-2">⏳</span>
-          <span v-else class="mr-2">▶</span>
+          <BaseIcon v-if="isRunning" name="hourglass" class="w-4 h-4 mr-2" />
+          <BaseIcon v-else name="play" class="w-4 h-4 mr-2" />
           {{ isRunning ? 'Đang chạy...' : 'Visualize' }}
         </button>
       </div>
@@ -35,11 +37,11 @@
 
     <div class="flex flex-col lg:flex-row h-[600px]">
       <!-- Left: Code Editor -->
-      <div class="w-full lg:w-1/2 flex flex-col border-r border-slate-700 relative">
-        <div class="flex justify-between items-center px-4 py-2 bg-slate-800/50 border-b border-slate-700">
-          <div class="flex items-center space-x-2 bg-slate-700/50 px-3 py-1.5 rounded-lg border border-slate-600">
-            <span class="text-xs text-slate-400 font-bold uppercase tracking-wider">Ngôn ngữ:</span>
-            <span class="text-sm text-indigo-300 font-semibold">{{ languageStore.currentLanguage }}</span>
+      <div class="w-full lg:w-1/2 flex flex-col border-r border-border-default relative">
+        <div class="flex justify-between items-center px-4 py-2 bg-bg-surface border-b border-border-default">
+          <div class="flex items-center space-x-2 bg-bg-hover/50 px-3 py-1.5 rounded-lg border border-border-default">
+            <span class="text-xs text-text-secondary font-bold uppercase tracking-wider">Ngôn ngữ:</span>
+            <span class="text-sm text-accent font-semibold">{{ languageStore.currentLanguage }}</span>
           </div>
         </div>
         
@@ -49,10 +51,10 @@
       </div>
 
       <!-- Right: Animation Canvas / Result -->
-      <div class="w-full lg:w-1/2 flex flex-col bg-slate-900">
-        <div v-if="error" class="m-4 p-4 bg-rose-500/10 border border-rose-500/30 rounded-xl text-rose-400">
+      <div class="w-full lg:w-1/2 flex flex-col bg-bg-secondary">
+        <div v-if="error" class="m-4 p-4 bg-accent-red/10 border border-accent-red/30 rounded-xl text-accent-red">
           <h4 class="font-bold flex items-center mb-1">
-            <span class="mr-2">❌</span> {{ error.error || 'Lỗi' }}
+            <BaseIcon name="close" class="w-4 h-4 mr-2" /> {{ error.error || 'Lỗi' }}
           </h4>
           <p class="text-sm whitespace-pre-wrap">{{ error.message }}</p>
         </div>
@@ -61,8 +63,8 @@
           <TraceAnimationCanvas ref="canvasRef" :trace="executionTrace" @line-change="highlightLine" />
         </div>
 
-        <div v-else class="flex-1 flex flex-col items-center justify-center text-slate-500 p-8 text-center">
-          <div class="text-4xl mb-4 opacity-50">✨</div>
+        <div v-else class="flex-1 flex flex-col items-center justify-center text-text-muted p-8 text-center">
+          <BaseIcon name="sparkles" class="w-12 h-12 mb-4 opacity-50" />
           <p>Nhấn <strong>Visualize</strong> để chạy code của bạn qua hệ thống Sandbox an toàn.<br/>Hệ thống sẽ tự động phân tích và tạo animation thuật toán.</p>
         </div>
       </div>
@@ -178,7 +180,7 @@ const highlightLine = (line: number) => {
     range: new monacoRef.value.Range(line, 1, line, 1),
     options: {
       isWholeLine: true,
-      className: 'bg-indigo-500/30 border-l-4 border-indigo-400',
+      className: 'bg-accent/30 border-l-4 border-border-accent',
     }
   }]);
   
@@ -194,10 +196,10 @@ const clearHighlight = () => {
 
 <style>
 /* Style for monaco line highlight */
-.bg-indigo-500\/30 {
+.bg-accent\/30 {
   background-color: rgba(99, 102, 241, 0.3) !important;
 }
-.border-indigo-400 {
+.border-border-accent {
   border-left-color: rgba(129, 140, 248, 1) !important;
 }
 </style>

@@ -5,7 +5,7 @@
         <div class="modal-header">
           <h3 class="modal-title">
             <BaseIcon name="download" class="w-5 h-5 inline mr-2" />
-            Import KhÃ³a há»c vÃ o Lá»›p
+            Import Khóa học vào Lớp
           </h3>
           <button type="button" class="modal-close" @click="$emit('update:show', false)">
             <BaseIcon name="x" class="w-5 h-5" />
@@ -18,32 +18,32 @@
             <div class="step-header">
               <div class="step-indicator">
                 <span class="step-number active">1</span>
-                <span class="step-label">Chá»n KhÃ³a há»c</span>
+                <span class="step-label">Chọn Khóa học</span>
               </div>
               <div class="step-indicator">
                 <span class="step-number">2</span>
-                <span class="step-label">TÃ¹y chá»‰nh</span>
+                <span class="step-label">Tùy chỉnh</span>
               </div>
               <div class="step-indicator">
                 <span class="step-number">3</span>
-                <span class="step-label">XÃ¡c nháº­n</span>
+                <span class="step-label">Xác nhận</span>
               </div>
             </div>
             
             <div class="form-field">
-              <label class="form-label">KhÃ³a há»c <span class="text-rose-400">*</span></label>
+              <label class="form-label">Khóa học <span class="text-accent-red">*</span></label>
               <select 
                 v-model="form.courseId" 
                 class="form-input"
                 @change="onCourseSelect"
               >
-                <option value="">-- Chá»n khÃ³a há»c --</option>
+                <option value="">-- Chọn khóa học --</option>
                 <option 
                   v-for="course in courses" 
                   :key="course.id" 
                   :value="course.id"
                 >
-                  {{ course.title }} ({{ course.category }}, {{ course.difficulty }}) {{ course.totalLessons }} bÃ i
+                  {{ course.title }} ({{ course.category }}, {{ course.difficulty }}) {{ course.totalLessons }} bài
                 </option>
               </select>
             </div>
@@ -66,7 +66,7 @@
                 </span>
                 <span class="meta-item">
                   <BaseIcon name="layers" class="w-3 h-3" />
-                  {{ selectedCourse.totalLessons }} bÃ i há»c
+                  {{ selectedCourse.totalLessons }} bài học
                 </span>
               </div>
             </div>
@@ -78,18 +78,18 @@
                   type="checkbox" 
                   class="form-checkbox"
                 >
-                <span>Ghi Ä‘Ã¨ chÆ°Æ¡ng trÃ¬nh há»c hiá»‡n táº¡i (xÃ³a modules/bÃ i há»c cÅ©)</span>
+                <span>Ghi đè chương trình học hiện tại (xóa modules/bài học cũ)</span>
               </label>
-              <p class="form-hint text-amber-400">âš ï¸ HÃ nh Ä‘á»™ng nÃ y khÃ´ng thá»ƒ hoÃ n tÃ¡c!</p>
+              <p class="form-hint text-accent-warm">⚠️ Hành động này không thể hoàn tác!</p>
             </div>
             
             <div class="modal-footer">
               <button type="button" class="btn-secondary" @click="$emit('update:show', false)">
-                Há»§y
+                Hủy
               </button>
               <button type="button" class="btn-primary" :disabled="!form.courseId" @click="step = 2">
                 <BaseIcon name="arrow-right" class="w-4 h-4" />
-                Tiáº¿p theo
+                Tiếp theo
               </button>
             </div>
           </div>
@@ -99,20 +99,20 @@
             <div class="step-header">
               <div class="step-indicator">
                 <span class="step-number done">1</span>
-                <span class="step-label">Chá»n KhÃ³a há»c</span>
+                <span class="step-label">Chọn Khóa học</span>
               </div>
               <div class="step-indicator">
                 <span class="step-number active">2</span>
-                <span class="step-label">TÃ¹y chá»‰nh Module</span>
+                <span class="step-label">Tùy chỉnh Module</span>
               </div>
               <div class="step-indicator">
                 <span class="step-number">3</span>
-                <span class="step-label">XÃ¡c nháº­n</span>
+                <span class="step-label">Xác nhận</span>
               </div>
             </div>
             
             <p class="step-description">
-              Chá»n cÃ¡c module báº¡n muá»‘n import. CÃ¡c module khÃ´ng chá»n sáº½ khÃ´ng Ä‘Æ°á»£c Ä‘Æ°a vÃ o lá»›p há»c.
+              Chọn các module bạn muốn import. Các module không chọn sẽ không được đưa vào lớp học.
             </p>
             
             <div class="modules-selection">
@@ -129,24 +129,24 @@
                 >
                 <div class="module-info">
                   <span class="module-title">{{ module.title }}</span>
-                  <span class="module-meta">{{ module.itemsCount }} bÃ i há»c</span>
+                  <span class="module-meta">{{ module.itemsCount }} bài học</span>
                 </div>
               </label>
             </div>
             
             <div v-if="selectedCourseModules.length === 0" class="empty-modules">
-              <BaseIcon name="info" class="w-6 h-6 text-slate-500" />
-              <p>KhÃ³a há»c nÃ y chÆ°a cÃ³ module nÃ o.</p>
+              <BaseIcon name="info" class="w-6 h-6 text-text-muted" />
+              <p>Khóa học này chưa có module nào.</p>
             </div>
             
             <div class="modal-footer">
               <button type="button" class="btn-secondary" @click="step = 1">
                 <BaseIcon name="arrow-left" class="w-4 h-4" />
-                Quay láº¡i
+                Quay lại
               </button>
               <button type="button" class="btn-primary" :disabled="form.selectedModuleIds.length === 0" @click="step = 3">
                 <BaseIcon name="arrow-right" class="w-4 h-4" />
-                Tiáº¿p theo
+                Tiếp theo
               </button>
             </div>
           </div>
@@ -156,52 +156,52 @@
             <div class="step-header">
               <div class="step-indicator">
                 <span class="step-number done">1</span>
-                <span class="step-label">Chá»n KhÃ³a há»c</span>
+                <span class="step-label">Chọn Khóa học</span>
               </div>
               <div class="step-indicator">
                 <span class="step-number done">2</span>
-                <span class="step-label">TÃ¹y chá»‰nh Module</span>
+                <span class="step-label">Tùy chỉnh Module</span>
               </div>
               <div class="step-indicator">
                 <span class="step-number active">3</span>
-                <span class="step-label">XÃ¡c nháº­n</span>
+                <span class="step-label">Xác nhận</span>
               </div>
             </div>
             
             <div class="confirm-summary">
-              <h4 class="confirm-title">TÃ³m táº¯t Import</h4>
+              <h4 class="confirm-title">Tóm tắt Import</h4>
               <div class="summary-grid">
                 <div class="summary-item">
-                  <span class="summary-label">KhÃ³a há»c</span>
+                  <span class="summary-label">Khóa học</span>
                   <span class="summary-value">{{ selectedCourse?.title }}</span>
                 </div>
                 <div class="summary-item">
-                  <span class="summary-label">Sá»‘ Module sáº½ import</span>
+                  <span class="summary-label">Số Module sẽ import</span>
                   <span class="summary-value">{{ form.selectedModuleIds.length }}</span>
                 </div>
                 <div class="summary-item">
-                  <span class="summary-label">Ghi Ä‘Ã¨ hiá»‡n táº¡i</span>
-                  <span class="summary-value" :class="form.overrideExisting ? 'text-amber-400' : 'text-emerald-400'">
-                    {{ form.overrideExisting ? 'CÃ³' : 'KhÃ´ng' }}
+                  <span class="summary-label">Ghi đè hiện tại</span>
+                  <span class="summary-value" :class="form.overrideExisting ? 'text-accent-warm' : 'text-accent-green'">
+                    {{ form.overrideExisting ? 'Có' : 'Không' }}
                   </span>
                 </div>
               </div>
               
               <div class="warning-box" v-if="form.overrideExisting">
                 <BaseIcon name="alert-triangle" class="w-5 h-5" />
-                <span>ChÆ°Æ¡ng trÃ¬nh há»c hiá»‡n táº¡i cá»§a lá»›p sáº½ bá»‹ xÃ³a vÃ  thay tháº¿ báº±ng ná»™i dung má»›i.</span>
+                <span>Chương trình học hiện tại của lớp sẽ bị xóa và thay thế bằng nội dung mới.</span>
               </div>
             </div>
             
             <div class="modal-footer">
               <button type="button" class="btn-secondary" @click="step = 2">
                 <BaseIcon name="arrow-left" class="w-4 h-4" />
-                Quay láº¡i
+                Quay lại
               </button>
               <button type="submit" class="btn-primary btn-danger" :disabled="importing">
                 <span v-if="importing" class="flex items-center gap-2">
                   <span class="spinner-sm"></span>
-                  Äang import...
+                  Đang import...
                 </span>
                 <span v-else>
                   <BaseIcon name="download" class="w-4 h-4" />
@@ -316,11 +316,11 @@ async function handleImport() {
       emit('imported');
     } else {
       const err = await res.json();
-      alert(err.message || 'Import tháº¥t báº¡i');
+      alert(err.message || 'Import thất bại');
     }
   } catch (err) {
     console.error('Import failed:', err);
-    alert('KhÃ´ng thá»ƒ káº¿t ná»‘i mÃ¡y chá»§');
+    alert('Không thể kết nối máy chủ');
   } finally {
     importing.value = false;
   }

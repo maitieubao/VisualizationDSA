@@ -7,9 +7,9 @@
           <BaseIcon name="chevron-left" class="w-5 h-5" />
         </button>
         <div>
-          <h1 class="text-2xl font-bold text-white flex items-center">
-            {{ roadmap?.name || 'Đang tải...' }}
-            <span v-if="roadmap" class="ml-3 px-2 py-1 text-xs rounded bg-slate-700 text-slate-300">
+          <h1 class="text-2xl font-bold text-text-primary flex items-center">
+            {{ roadmap?.name || 'Äang táº£i...' }}
+            <span v-if="roadmap" class="ml-3 px-2 py-1 text-xs rounded bg-bg-hover text-text-secondary">
               {{ roadmap.status }}
             </span>
           </h1>
@@ -17,10 +17,10 @@
       </div>
       <div class="flex space-x-3">
         <button class="btn btn-primary" @click="showAddNodeModal = true" :disabled="!roadmap">
-          Thêm Node mới
+          ThÃªm Node má»›i
         </button>
-        <button class="btn btn-secondary bg-indigo-600/20 text-indigo-400 hover:bg-indigo-600/40" @click="publishRoadmap" :disabled="!canPublish">
-          Xuất bản Lộ trình
+        <button class="btn btn-secondary bg-accent/20 text-accent hover:bg-accent/40" @click="publishRoadmap" :disabled="!canPublish">
+          Xuáº¥t báº£n Lá»™ trÃ¬nh
         </button>
       </div>
     </div>
@@ -28,134 +28,138 @@
     <!-- Main Content -->
     <div class="flex flex-1 gap-6 min-h-0">
       <!-- Sidebar (Nodes List) -->
-      <div class="w-1/3 bg-slate-800 rounded-xl border border-slate-700 flex flex-col overflow-hidden">
-        <div class="p-4 border-b border-slate-700 font-bold text-white flex justify-between items-center">
-          <span>Danh sách Bài giảng (Nodes)</span>
-          <span class="text-xs bg-slate-700 px-2 py-1 rounded">{{ roadmap?.nodes?.length || 0 }}</span>
+      <div class="w-1/3 glass-panel rounded-xl flex flex-col overflow-hidden">
+        <div class="p-4 border-b border-border-default font-bold text-text-primary flex justify-between items-center">
+          <span>Danh sÃ¡ch BÃ i giáº£ng (Nodes)</span>
+          <span class="text-xs bg-bg-hover px-2 py-1 rounded">{{ roadmap?.nodes?.length || 0 }}</span>
         </div>
         
         <div class="flex-1 overflow-y-auto p-4 space-y-3">
-          <div v-if="!roadmap?.nodes?.length" class="text-center text-slate-500 py-8 text-sm">
-            Chưa có Node nào. Nhấn "Thêm Node mới" để bắt đầu.
+          <div v-if="!roadmap?.nodes?.length" class="text-center text-text-muted py-8 text-sm">
+            ChÆ°a cÃ³ Node nÃ o. Nháº¥n "ThÃªm Node má»›i" Ä‘á»ƒ báº¯t Ä‘áº§u.
           </div>
           
           <div 
             v-for="(node, index) in sortedNodes" 
             :key="node.id"
             class="p-3 rounded-lg border cursor-pointer transition-colors"
-            :class="selectedNode?.id === node.id ? 'bg-indigo-900/40 border-indigo-500' : 'bg-slate-900 border-slate-700 hover:border-slate-500'"
+            :class="selectedNode?.id === node.id ? 'bg-accent-dark/40 border-border-accent' : 'bg-bg-secondary border-border-default hover:border-border-default'"
             @click="selectNode(node)"
           >
             <div class="flex justify-between items-start mb-1">
-              <h4 class="font-bold text-white text-sm">
+              <h4 class="font-bold text-text-primary text-sm">
                 {{ index + 1 }}. {{ node.name }}
               </h4>
-              <span class="text-xs px-1.5 py-0.5 rounded" :class="node.isComplete ? 'bg-green-900/50 text-green-400' : 'bg-red-900/50 text-red-400'">
-                {{ node.isComplete ? 'Hoàn tất' : 'Thiếu Practice' }}
+              <span class="text-xs px-1.5 py-0.5 rounded" :class="node.isComplete ? 'bg-green-900/50 text-green-400' : 'bg-red-900/50 text-accent-red'">
+                {{ node.isComplete ? 'HoÃ n táº¥t' : 'Thiáº¿u Practice' }}
               </span>
             </div>
-            <p class="text-xs text-slate-400 line-clamp-1 mb-2">{{ node.description }}</p>
-            <div class="flex gap-2 text-xs text-slate-500">
-              <span v-if="node.quizId" class="text-indigo-400">✓ Quiz</span>
-              <span v-if="node.labId" class="text-green-400">✓ Lab</span>
-              <span v-if="node.leetCodeId" class="text-orange-400">✓ LC</span>
+            <p class="text-xs text-text-secondary line-clamp-1 mb-2">{{ node.description }}</p>
+            <div class="flex gap-2 text-xs text-text-muted">
+              <span v-if="node.quizId" class="text-accent"><BaseIcon name="quiz" class="w-3 h-3 inline-block mr-0.5 align-text-bottom" />Quiz</span>
+              <span v-if="node.labId" class="text-green-400"><BaseIcon name="code-ide" class="w-3 h-3 inline-block mr-0.5 align-text-bottom" />Lab</span>
+              <span v-if="node.leetCodeId" class="text-accent-warm"><BaseIcon name="code-ide" class="w-3 h-3 inline-block mr-0.5 align-text-bottom" />LC</span>
             </div>
           </div>
         </div>
       </div>
 
       <!-- Editor Panel -->
-      <div class="w-2/3 bg-slate-800 rounded-xl border border-slate-700 overflow-y-auto p-6">
-        <div v-if="!selectedNode" class="h-full flex flex-col items-center justify-center text-slate-500">
+      <div class="w-2/3 glass-panel rounded-xl overflow-y-auto p-6">
+        <div v-if="!selectedNode" class="h-full flex flex-col items-center justify-center text-text-muted">
           <BaseIcon name="hand-click" class="w-16 h-16 mb-4 opacity-50" />
-          <p>Chọn một Node bên trái để chỉnh sửa chi tiết</p>
+          <p>Chá»n má»™t Node bÃªn trÃ¡i Ä‘á»ƒ chá»‰nh sá»­a chi tiáº¿t</p>
         </div>
         
         <div v-else>
           <div class="flex justify-between items-center mb-6">
-            <h2 class="text-xl font-bold text-white">Chỉnh sửa: {{ selectedNode.name }}</h2>
-            <button class="btn btn-secondary !py-1 !px-2 text-red-400 hover:bg-red-900/30 border-red-900/50" @click="deleteSelectedNode">
-              Xóa Node
+            <h2 class="text-xl font-bold text-text-primary">Chá»‰nh sá»­a: {{ selectedNode.name }}</h2>
+            <button class="btn btn-secondary !py-1 !px-2 text-accent-red hover:bg-accent-red/20 border-accent-red/50" @click="deleteSelectedNode">
+              XÃ³a Node
             </button>
           </div>
           
           <div class="space-y-8">
             <!-- Section 1: Content -->
-            <div class="bg-slate-900 p-5 rounded-lg border border-slate-700">
-              <h3 class="font-bold text-white mb-4 border-b border-slate-700 pb-2">1. Nội dung (Content)</h3>
+            <div class="glass-panel p-5 rounded-lg border border-border-default">
+              <h3 class="font-bold text-text-primary mb-4 border-b border-border-default pb-2">1. Ná»™i dung (Content)</h3>
               
-              <div class="mb-4">
-                <label class="block text-sm font-medium text-slate-300 mb-1">Nội dung văn bản (Rich Text / Markdown)</label>
+              <div class="mb-5">
+                <label class="block text-xs font-semibold text-text-secondary mb-1.5 uppercase tracking-wider">Ná»™i dung vÄƒn báº£n (Rich Text / Markdown)</label>
                 <textarea 
                   v-model="editorForm.contentJson"
-                  rows="4"
-                  class="w-full bg-slate-800 border border-slate-600 rounded-lg px-4 py-2 text-white"
+                  rows="5"
+                  class="w-full bg-bg-secondary/50 border border-border-default/80 rounded-xl px-4 py-3 text-text-primary placeholder:text-text-muted focus:outline-none focus:border-border-accent focus:ring-4 focus:ring-accent/10 transition-all resize-y"
+                  placeholder="Nháº­p ná»™i dung bÃ i giáº£ng táº¡i Ä‘Ã¢y..."
                 ></textarea>
               </div>
               
-              <div class="mb-4">
-                <label class="block text-sm font-medium text-slate-300 mb-1">Video URL (Tùy chọn)</label>
+              <div class="mb-5">
+                <label class="block text-xs font-semibold text-text-secondary mb-1.5 uppercase tracking-wider">Video URL (TÃ¹y chá»n)</label>
                 <input 
                   v-model="editorForm.videoUrl"
                   type="url"
-                  class="w-full bg-slate-800 border border-slate-600 rounded-lg px-4 py-2 text-white"
+                  class="w-full bg-bg-secondary/50 border border-border-default/80 rounded-xl px-4 py-3 text-text-primary placeholder:text-text-muted focus:outline-none focus:border-border-accent focus:ring-4 focus:ring-accent/10 transition-all"
                   placeholder="https://youtube.com/..."
                 />
               </div>
 
-              <div class="mb-4">
-                <label class="block text-sm font-medium text-slate-300 mb-1">Visualizer ID (Thuật toán minh họa)</label>
+              <div class="mb-5">
+                <label class="block text-xs font-semibold text-text-secondary mb-1.5 uppercase tracking-wider">Visualizer ID (Thuáº­t toÃ¡n minh há»a)</label>
                 <input 
                   v-model="editorForm.visualizerId"
                   type="text"
-                  class="w-full bg-slate-800 border border-slate-600 rounded-lg px-4 py-2 text-white"
-                  placeholder="Nhập ID của Visualizer (nếu có)"
+                  class="w-full bg-bg-secondary/50 border border-border-default/80 rounded-xl px-4 py-3 text-text-primary placeholder:text-text-muted focus:outline-none focus:border-border-accent focus:ring-4 focus:ring-accent/10 transition-all"
+                  placeholder="Nháº­p ID cá»§a Visualizer (náº¿u cÃ³)"
                 />
               </div>
               
               <div class="flex justify-end">
                 <button class="btn btn-primary btn-sm" @click="saveNodeContent" :disabled="isSaving">
-                  Lưu Nội dung
+                  LÆ°u Ná»™i dung
                 </button>
               </div>
             </div>
             
             <!-- Section 2: Practice -->
-            <div class="bg-slate-900 p-5 rounded-lg border border-slate-700">
-              <h3 class="font-bold text-white mb-4 border-b border-slate-700 pb-2">
-                2. Bài tập thực hành (Cần ít nhất 1 bài tập)
+            <div class="glass-panel p-5 rounded-lg border border-border-default">
+              <h3 class="font-bold text-text-primary mb-4 border-b border-border-default pb-2">
+                2. BÃ i táº­p thá»±c hÃ nh (Cáº§n Ã­t nháº¥t 1 bÃ i táº­p)
               </h3>
               
-              <div class="grid grid-cols-2 gap-4 mb-4">
+              <div class="grid grid-cols-2 gap-5 mb-5">
                 <div>
-                  <label class="block text-sm font-medium text-slate-300 mb-1">Quiz ID</label>
+                  <label class="block text-xs font-semibold text-text-secondary mb-1.5 uppercase tracking-wider">Quiz ID</label>
                   <input 
                     v-model="editorForm.quizId"
                     type="text"
-                    class="w-full bg-slate-800 border border-slate-600 rounded-lg px-4 py-2 text-white"
+                    class="w-full bg-bg-secondary/50 border border-border-default/80 rounded-xl px-4 py-3 text-text-primary placeholder:text-text-muted focus:outline-none focus:border-border-accent focus:ring-4 focus:ring-accent/10 transition-all"
+                    placeholder="ID bÃ i Quiz"
                   />
                 </div>
                 <div>
-                  <label class="block text-sm font-medium text-slate-300 mb-1">Lab ID</label>
+                  <label class="block text-xs font-semibold text-text-secondary mb-1.5 uppercase tracking-wider">Lab ID</label>
                   <input 
                     v-model="editorForm.labId"
                     type="text"
-                    class="w-full bg-slate-800 border border-slate-600 rounded-lg px-4 py-2 text-white"
+                    class="w-full bg-bg-secondary/50 border border-border-default/80 rounded-xl px-4 py-3 text-text-primary placeholder:text-text-muted focus:outline-none focus:border-border-accent focus:ring-4 focus:ring-accent/10 transition-all"
+                    placeholder="ID bÃ i Lab"
                   />
                 </div>
                 <div class="col-span-2">
-                  <label class="block text-sm font-medium text-slate-300 mb-1">LeetCode Problem ID</label>
+                  <label class="block text-xs font-semibold text-text-secondary mb-1.5 uppercase tracking-wider">LeetCode Problem ID</label>
                   <input 
                     v-model="editorForm.leetCodeId"
                     type="text"
-                    class="w-full bg-slate-800 border border-slate-600 rounded-lg px-4 py-2 text-white"
+                    class="w-full bg-bg-secondary/50 border border-border-default/80 rounded-xl px-4 py-3 text-text-primary placeholder:text-text-muted focus:outline-none focus:border-border-accent focus:ring-4 focus:ring-accent/10 transition-all"
+                    placeholder="Nháº­p mÃ£ bÃ i toÃ¡n LeetCode"
                   />
                 </div>
               </div>
               
               <div class="flex justify-end">
                 <button class="btn btn-primary btn-sm" @click="saveNodePractice" :disabled="isSaving">
-                  Lưu Bài tập
+                  LÆ°u BÃ i táº­p
                 </button>
               </div>
             </div>
@@ -166,53 +170,53 @@
 
     <!-- Add Node Modal -->
     <div v-if="showAddNodeModal" class="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
-      <div class="bg-slate-800 rounded-xl max-w-lg w-full border border-slate-700 shadow-2xl overflow-hidden">
-        <div class="px-6 py-4 border-b border-slate-700 flex justify-between items-center">
-          <h3 class="text-lg font-bold text-white">Thêm Node mới</h3>
-          <button class="text-slate-400 hover:text-white" @click="showAddNodeModal = false">
+      <div class="glass-panel rounded-xl max-w-lg w-full shadow-2xl overflow-hidden">
+        <div class="px-6 py-4 border-b border-border-default flex justify-between items-center">
+          <h3 class="text-lg font-bold text-text-primary">ThÃªm Node má»›i</h3>
+          <button class="text-text-secondary hover:text-text-primary" @click="showAddNodeModal = false">
             <BaseIcon name="x" class="w-5 h-5" />
           </button>
         </div>
         
         <form @submit.prevent="handleAddNode" class="p-6">
           <div class="mb-4">
-            <label class="block text-sm font-medium text-slate-300 mb-1">Tên Node</label>
+            <label class="block text-sm font-medium text-text-secondary mb-1">TÃªn Node</label>
             <input 
               v-model="newNodeForm.name" 
               type="text" 
               required 
-              class="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-2 text-white"
+              class="w-full bg-bg-secondary border border-border-default rounded-lg px-4 py-2 text-text-primary"
             />
           </div>
           
           <div class="mb-4">
-            <label class="block text-sm font-medium text-slate-300 mb-1">Mô tả ngắn</label>
+            <label class="block text-sm font-medium text-text-secondary mb-1">MÃ´ táº£ ngáº¯n</label>
             <input 
               v-model="newNodeForm.description" 
               type="text" 
               required 
-              class="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-2 text-white"
+              class="w-full bg-bg-secondary border border-border-default rounded-lg px-4 py-2 text-text-primary"
             />
           </div>
           
           <div class="flex gap-4 mb-6">
             <div class="flex-1">
-              <label class="block text-sm font-medium text-slate-300 mb-1">Độ khó</label>
-              <select v-model="newNodeForm.difficulty" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-2 text-white">
-                <option value="Easy">Dễ</option>
-                <option value="Medium">Trung bình</option>
-                <option value="Hard">Khó</option>
+              <label class="block text-sm font-medium text-text-secondary mb-1">Äá»™ khÃ³</label>
+              <select v-model="newNodeForm.difficulty" class="w-full bg-bg-secondary border border-border-default rounded-lg px-4 py-2 text-text-primary">
+                <option value="Easy">Dá»…</option>
+                <option value="Medium">Trung bÃ¬nh</option>
+                <option value="Hard">KhÃ³</option>
               </select>
             </div>
             <div class="w-24">
-              <label class="block text-sm font-medium text-slate-300 mb-1">Thứ tự</label>
-              <input v-model.number="newNodeForm.sortOrder" type="number" min="0" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-2 text-white" />
+              <label class="block text-sm font-medium text-text-secondary mb-1">Thá»© tá»±</label>
+              <input v-model.number="newNodeForm.sortOrder" type="number" min="0" class="w-full bg-bg-secondary border border-border-default rounded-lg px-4 py-2 text-text-primary" />
             </div>
           </div>
           
           <div class="flex justify-end space-x-3">
-            <button type="button" class="btn btn-secondary" @click="showAddNodeModal = false">Hủy</button>
-            <button type="submit" class="btn btn-primary" :disabled="isSubmitting">Thêm</button>
+            <button type="button" class="btn btn-secondary" @click="showAddNodeModal = false">Há»§y</button>
+            <button type="submit" class="btn btn-primary" :disabled="isSubmitting">ThÃªm</button>
           </div>
         </form>
       </div>
@@ -279,7 +283,7 @@ const loadRoadmap = async () => {
       newNodeForm.value.sortOrder = sortedNodes.value.length;
     }
   } catch (err) {
-    toastStore.error('Lỗi khi tải thông tin Lộ trình');
+    toastStore.error('Lá»—i khi táº£i thÃ´ng tin Lá»™ trÃ¬nh');
   }
 };
 
@@ -303,13 +307,13 @@ const handleAddNode = async () => {
       roadmap.value.nodes.push(res);
     }
     showAddNodeModal.value = false;
-    toastStore.success('Thêm Node thành công');
+    toastStore.success('ThÃªm Node thÃ nh cÃ´ng');
     selectNode(res);
     newNodeForm.value.name = '';
     newNodeForm.value.description = '';
     newNodeForm.value.sortOrder += 1;
   } catch (err: any) {
-    toastStore.error(err.response?.data?.message || 'Lỗi khi thêm Node');
+    toastStore.error(err.response?.data?.message || 'Lá»—i khi thÃªm Node');
   } finally {
     isSubmitting.value = false;
   }
@@ -327,9 +331,9 @@ const saveNodeContent = async () => {
     
     const res = await teacherStudioService.updateNodeContent(roadmapId.value, selectedNode.value.id, payload);
     updateNodeInList(res);
-    toastStore.success('Lưu nội dung thành công');
+    toastStore.success('LÆ°u ná»™i dung thÃ nh cÃ´ng');
   } catch (err: any) {
-    toastStore.error('Lỗi khi lưu nội dung');
+    toastStore.error('Lá»—i khi lÆ°u ná»™i dung');
   } finally {
     isSaving.value = false;
   }
@@ -353,9 +357,9 @@ const saveNodePractice = async () => {
     
     const res = await teacherStudioService.updateNodePractice(roadmapId.value, selectedNode.value.id, cleanPayload);
     updateNodeInList(res);
-    toastStore.success('Lưu bài tập thành công');
+    toastStore.success('LÆ°u bÃ i táº­p thÃ nh cÃ´ng');
   } catch (err: any) {
-    toastStore.error(err.response?.data?.message || 'Lỗi khi lưu bài tập');
+    toastStore.error(err.response?.data?.message || 'Lá»—i khi lÆ°u bÃ i táº­p');
   } finally {
     isSaving.value = false;
   }
@@ -363,7 +367,7 @@ const saveNodePractice = async () => {
 
 const deleteSelectedNode = async () => {
   if (!selectedNode.value) return;
-  if (!confirm('Bạn có chắc muốn xóa Node này?')) return;
+  if (!confirm('Báº¡n cÃ³ cháº¯c muá»‘n xÃ³a Node nÃ y?')) return;
   
   try {
     await teacherStudioService.deleteNode(roadmapId.value, selectedNode.value.id);
@@ -371,9 +375,9 @@ const deleteSelectedNode = async () => {
       roadmap.value.nodes = roadmap.value.nodes.filter(n => n.id !== selectedNode.value!.id);
     }
     selectedNode.value = null;
-    toastStore.success('Xóa Node thành công');
+    toastStore.success('XÃ³a Node thÃ nh cÃ´ng');
   } catch (err) {
-    toastStore.error('Lỗi khi xóa Node');
+    toastStore.error('Lá»—i khi xÃ³a Node');
   }
 };
 
@@ -390,14 +394,14 @@ const updateNodeInList = (updatedNode: CustomNodeDto) => {
 
 const publishRoadmap = async () => {
   if (!roadmap.value) return;
-  if (!confirm(`Bạn có chắc muốn xuất bản lộ trình này dưới dạng ${roadmap.value.visibility}?`)) return;
+  if (!confirm(`Báº¡n cÃ³ cháº¯c muá»‘n xuáº¥t báº£n lá»™ trÃ¬nh nÃ y dÆ°á»›i dáº¡ng ${roadmap.value.visibility}?`)) return;
   
   try {
     const res = await teacherStudioService.publishRoadmap(roadmapId.value, roadmap.value.visibility);
     roadmap.value = res;
-    toastStore.success('Lộ trình đã được gửi phê duyệt (hoặc xuất bản)');
+    toastStore.success('Lá»™ trÃ¬nh Ä‘Ã£ Ä‘Æ°á»£c gá»­i phÃª duyá»‡t (hoáº·c xuáº¥t báº£n)');
   } catch (err: any) {
-    const msg = err.response?.data?.message || 'Lỗi khi xuất bản';
+    const msg = err.response?.data?.message || 'Lá»—i khi xuáº¥t báº£n';
     toastStore.error(msg);
   }
 };

@@ -17,7 +17,7 @@
 @import "./styles/theme.css";
 
 
-@import url("https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,300;0,400;0,700;1,300&display=swap");
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap');
 
 
 @import "./styles/design-tokens.css";
@@ -27,6 +27,7 @@
 
 
 @import "tailwindcss";
+@config "../tailwind.config.js";
 
 
 
@@ -46,6 +47,8 @@ body {
   margin: 0;
   padding: 0;
   background-color: var(--color-bg-primary);
+  background-image: linear-gradient(135deg, var(--color-bg-gradient-start), var(--color-bg-gradient-end));
+  background-attachment: fixed;
   color: var(--color-text-primary);
   font-family: var(--font-sans);
   font-size: var(--text-base);
@@ -105,8 +108,8 @@ body {
 
 .glass-panel {
   background: var(--glass-bg);
-  -webkit-backdrop-filter: blur(var(--glass-blur));
-  backdrop-filter: blur(var(--glass-blur));
+  -webkit-backdrop-filter: var(--glass-blur);
+  backdrop-filter: var(--glass-blur);
   border: 1px solid var(--glass-border);
   border-radius: var(--radius-xl);
   box-shadow: var(--glass-shadow);
@@ -126,6 +129,30 @@ body {
   box-shadow: var(--card-shadow);
   overflow: hidden;
 }
+
+/* UI/UX Pro Max Claymorphism styles */
+.clay-card {
+  background: var(--clay-bg, rgba(255, 255, 255, 0.05));
+  border: 1px solid var(--clay-border, rgba(255, 255, 255, 0.1));
+  border-radius: var(--clay-radius, 24px);
+  box-shadow: var(--clay-shadow);
+  transition: var(--transition-smooth);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  position: relative;
+  overflow: hidden;
+}
+
+.clay-card:hover {
+  box-shadow: var(--clay-shadow-hover);
+  transform: translateY(-2px);
+}
+
+.clay-card:active {
+  box-shadow: var(--clay-shadow-active);
+  transform: scale(0.98);
+}
+
 
 .terminal-card-header {
   display: flex;

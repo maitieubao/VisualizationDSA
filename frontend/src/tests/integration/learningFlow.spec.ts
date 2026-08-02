@@ -6,7 +6,7 @@ import { useAuthStore } from '@/features/auth/store/useAuthStore';
 import * as api from '@/features/gamification/user-progress/service/userProgressApi';
 
 
-vi.mock('../../features/user-progress/service/userProgressApi', () => {
+vi.mock('@/features/gamification/user-progress/service/userProgressApi', () => {
   return {
     fetchUserProgress: vi.fn(),
     syncXPToServer: vi.fn(),

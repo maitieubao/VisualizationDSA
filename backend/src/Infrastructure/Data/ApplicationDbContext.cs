@@ -293,13 +293,10 @@ namespace VisualizationDSA.Infrastructure.Data
                 
                 entity.Property(e => e.LastActivityDate).IsRequired(false);
                 entity.Property(e => e.Role).IsRequired().HasMaxLength(20).HasDefaultValue("Student");
-                if (!Database.IsSqlite())
-                {
-                    entity.Property<uint>("xmin")
-                        .HasColumnType("xid")
-                        .ValueGeneratedOnAddOrUpdate()
-                        .IsRowVersion();
-                }
+                entity.Property<uint>("xmin")
+                    .HasColumnType("xid")
+                    .ValueGeneratedOnAddOrUpdate()
+                    .IsRowVersion();
             });
 
             
@@ -396,17 +393,7 @@ namespace VisualizationDSA.Infrastructure.Data
                 entity.Property(e => e.Description).HasMaxLength(2000);
                 
                 var embeddingProp = entity.Property(e => e.Embedding);
-                if (Database.IsSqlite())
-                {
-                    embeddingProp.HasConversion(
-                        v => v == null ? null : string.Join(",", v),
-                        v => string.IsNullOrEmpty(v) ? Array.Empty<double>() : v.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries).Select(double.Parse).ToArray()
-                    );
-                }
-                else
-                {
-                    embeddingProp.HasColumnType("double precision[]");
-                }
+                embeddingProp.HasColumnType("double precision[]");
                 entity.Property(e => e.Importance).HasDefaultValue(0.0);
             });
 
@@ -446,10 +433,7 @@ namespace VisualizationDSA.Infrastructure.Data
                 entity.Property(e => e.Path).HasMaxLength(500);
                 
                 var payloadProp = entity.Property(e => e.Payload);
-                if (!Database.IsSqlite())
-                {
-                    payloadProp.HasColumnType("jsonb");
-                }
+                payloadProp.HasColumnType("jsonb");
             });
 
             
@@ -597,10 +581,7 @@ namespace VisualizationDSA.Infrastructure.Data
                 entity.HasIndex(e => e.ClassroomId);
                 entity.HasIndex(e => e.WeekStart);
                 entity.Property(e => e.ClassroomId).IsRequired().HasMaxLength(36);
-                if (!Database.IsSqlite())
-                {
-                    entity.Property(e => e.RankingsJson).HasColumnType("jsonb");
-                }
+                entity.Property(e => e.RankingsJson).HasColumnType("jsonb");
             });
 
             // RoadmapEditLog configuration

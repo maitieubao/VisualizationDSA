@@ -21,9 +21,9 @@ namespace VisualizationDSA.Application.Services
             _gamificationService = gamificationService;
         }
 
-        public async Task<List<DailyQuestDto>> GetDailyQuestsAsync(Guid userId)
+        public async Task<List<DailyQuestDto>> GetDailyQuestsAsync(Guid userId, int tzOffset = 0)
         {
-            var today = DateTime.UtcNow.Date;
+            var today = DateTime.UtcNow.AddMinutes(-tzOffset).Date;
             var questsEnum = await _unitOfWork.UserDailyQuests.FindAsync(q => q.UserId == userId && q.Date == today);
             var quests = questsEnum.ToList();
 
@@ -51,10 +51,11 @@ namespace VisualizationDSA.Application.Services
             }).ToList();
         }
 
-        public async Task<DailyQuestDto?> ClaimQuestRewardAsync(Guid userId, Guid questId)
+        public async Task<DailyQuestDto?> ClaimQuestRewardAsync(Guid userId, Guid questId, int tzOffset = 0)
         {
+            var today = DateTime.UtcNow.AddMinutes(-tzOffset).Date;
             var quest = await _unitOfWork.UserDailyQuests.GetByIdAsync(questId);
-            if (quest == null || quest.UserId != userId || quest.Date != DateTime.UtcNow.Date)
+            if (quest == null || quest.UserId != userId || quest.Date != today)
             {
                 return null;
             }
@@ -90,9 +91,9 @@ namespace VisualizationDSA.Application.Services
             };
         }
 
-        public async Task UpdateQuestProgressAsync(Guid userId, string questType, int amount = 1)
+        public async Task UpdateQuestProgressAsync(Guid userId, string questType, int amount = 1, int tzOffset = 0)
         {
-            var today = DateTime.UtcNow.Date;
+            var today = DateTime.UtcNow.AddMinutes(-tzOffset).Date;
             var questsEnum = await _unitOfWork.UserDailyQuests
                 .FindAsync(q => q.UserId == userId && q.Date == today && q.QuestType == questType && q.CurrentValue < q.TargetValue);
             var quests = questsEnum.ToList();

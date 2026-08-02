@@ -1,49 +1,26 @@
 
-.settings-modal-overlay {
-  position: fixed;
-  inset: 0;
-  z-index: 9999;
-  background-color: var(--color-bg-overlay, rgba(0, 0, 0, 0.75));
-  backdrop-filter: var(--glass-blur-light, blur(6px));
+.profile-page-wrapper {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: center;
   padding: 1.5rem;
   font-family: var(--font-sans, Inter, sans-serif);
-  animation: fadeInOverlay 0.15s ease-out;
-}
-
-@keyframes fadeInOverlay {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
-
-
-.settings-modal-dialog {
   width: 100%;
-  max-width: 900px;
-  height: 640px;
-  max-height: 85vh;
-  background-color: var(--color-bg-surface, #18181b);
-  border: 1px solid var(--color-border-subtle, #27272a);
-  border-radius: var(--radius-md, 8px);
-  box-shadow: var(--shadow-elevated, 0 24px 48px -12px rgba(0, 0, 0, 0.7));
+  min-height: 100%;
+}
+
+.profile-page-container {
+  width: 100%;
+  max-width: 1600px;
+  min-height: 700px;
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  animation: scaleInDialog 0.18s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-@keyframes scaleInDialog {
-  from { transform: scale(0.97); opacity: 0; }
-  to { transform: scale(1); opacity: 1; }
+  animation: fadeIn 0.18s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 
 .settings-modal-header {
-  height: 48px;
-  background-color: var(--color-bg-secondary, #121316);
-  border-bottom: 1px solid var(--color-border-subtle, #27272a);
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -111,12 +88,12 @@
 
 .settings-modal-body {
   flex: 1;
-  min-height: 0;
+  min-height: 500px;
   display: grid;
-  grid-template-columns: 230px 1fr;
+  grid-template-columns: 260px 1fr;
 }
 
-@media (max-width: 640px) {
+@media (max-width: 800px) {
   .settings-modal-body {
     grid-template-columns: 1fr;
   }
@@ -124,8 +101,7 @@
 
 
 .modal-sidebar {
-  background-color: var(--color-bg-secondary, #121316);
-  border-right: 1px solid var(--color-border-subtle, #27272a);
+  border-right: 1px solid var(--glass-border);
   padding: 1rem 0.75rem;
   display: flex;
   flex-direction: column;
@@ -265,7 +241,6 @@
 
 
 .modal-content-panel {
-  background-color: var(--color-bg-primary, #0f1013);
   padding: 1.5rem 1.75rem;
   overflow-y: auto;
   height: 100%;

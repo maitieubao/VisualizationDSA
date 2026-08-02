@@ -1,12 +1,12 @@
 <template>
-  <div class="interactive-lab bg-slate-900 border border-slate-700 p-6 rounded-2xl w-full">
+  <div class="interactive-lab bg-bg-secondary border border-border-default p-6 rounded-2xl w-full">
     <div class="flex flex-col lg:flex-row gap-8">
       
       <!-- Visual Canvas Area (Mock) -->
-      <div class="flex-1 bg-slate-950 rounded-xl border border-slate-800 flex items-center justify-center min-h-[300px] relative">
-        <span class="text-slate-600 font-mono">Visual Stack Representation</span>
+      <div class="flex-1 bg-bg-primary rounded-xl border border-border-default flex items-center justify-center min-h-[300px] relative">
+        <span class="text-text-muted font-mono">Visual Stack Representation</span>
         <div class="absolute bottom-4 left-4 right-4 flex flex-col-reverse gap-2 items-center">
-          <div v-for="(item, i) in currentStack" :key="i" class="w-24 h-10 bg-indigo-500/20 border border-indigo-400 rounded flex items-center justify-center text-indigo-200 font-bold">
+          <div v-for="(item, i) in currentStack" :key="i" class="w-24 h-10 bg-accent/20 border border-border-accent rounded flex items-center justify-center text-accent-light font-bold">
             {{ item }}
           </div>
         </div>
@@ -15,14 +15,14 @@
       <!-- Operations Area -->
       <div class="w-full lg:w-[350px] flex flex-col gap-6">
         <div>
-          <h3 class="text-slate-300 font-bold mb-2">Thao tác khả dụng</h3>
-          <p class="text-xs text-slate-500 mb-3">Nhấp để thêm vào danh sách thực thi</p>
+          <h3 class="text-text-secondary font-bold mb-2">Thao tác khả dụng</h3>
+          <p class="text-xs text-text-muted mb-3">Nhấp để thêm vào danh sách thực thi</p>
           <div class="flex flex-wrap gap-2">
             <button 
               v-for="op in availableOps" 
               :key="op"
               @click="addOperation(op)"
-              class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 border border-slate-600 text-slate-300 rounded text-sm font-mono transition"
+              class="px-3 py-1.5 bg-bg-hover hover:bg-bg-hover border border-border-default text-text-secondary rounded text-sm font-mono transition"
             >
               {{ op }}
             </button>
@@ -30,21 +30,21 @@
         </div>
 
         <div>
-          <h3 class="text-slate-300 font-bold mb-2 flex justify-between">
+          <h3 class="text-text-secondary font-bold mb-2 flex justify-between">
             <span>Dãy lệnh của bạn</span>
-            <button @click="reset" class="text-xs text-rose-400 hover:text-rose-300">Xóa hết</button>
+            <button @click="reset" class="text-xs text-accent-red hover:text-accent-red">Xóa hết</button>
           </h3>
           
-          <div class="min-h-[150px] bg-slate-950 rounded-lg p-3 border border-slate-800 space-y-2">
+          <div class="min-h-[150px] bg-bg-primary rounded-lg p-3 border border-border-default space-y-2">
             <div 
               v-for="(op, index) in sequence" 
               :key="index"
-              class="bg-indigo-900/40 border border-indigo-500/30 text-indigo-200 px-3 py-2 rounded text-sm font-mono flex justify-between items-center"
+              class="bg-accent-dark/40 border border-border-accent text-accent-light px-3 py-2 rounded text-sm font-mono flex justify-between items-center"
             >
               <span>{{ index + 1 }}. {{ op }}</span>
-              <button @click="removeOperation(index)" class="text-slate-500 hover:text-rose-400">✕</button>
+              <button @click="removeOperation(index)" class="text-text-muted hover:text-accent-red"><BaseIcon name="close" class="w-3 h-3" /></button>
             </div>
-            <div v-if="sequence.length === 0" class="text-slate-600 text-sm text-center py-4 italic">
+            <div v-if="sequence.length === 0" class="text-text-muted text-sm text-center py-4 italic">
               Trống
             </div>
           </div>
@@ -55,20 +55,20 @@
           <button 
             @click="submit"
             :disabled="sequence.length === 0 || submitting"
-            class="w-full py-3 bg-indigo-600 hover:bg-indigo-500 text-white font-bold rounded-xl disabled:opacity-50 transition"
+            class="w-full py-3 bg-accent hover:bg-accent text-text-primary font-bold rounded-xl disabled:opacity-50 transition"
           >
             {{ submitting ? 'Đang chấm...' : 'Thực thi & Nộp bài' }}
           </button>
           
-          <div v-if="result" class="mt-4 p-4 rounded-xl text-sm" :class="result.passed ? 'bg-emerald-900/30 border border-emerald-500/50' : 'bg-rose-900/30 border border-rose-500/50'">
-            <div v-if="result.passed" class="text-emerald-400 font-bold flex flex-col items-center">
-              <span>✅ Chính xác! Lab Completed.</span>
-              <button @click="$emit('continue')" class="mt-3 px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg w-full">Tiếp tục đến LeetCode</button>
+          <div v-if="result" class="mt-4 p-4 rounded-xl text-sm" :class="result.passed ? 'bg-emerald-900/30 border border-accent-green/50' : 'bg-rose-900/30 border border-accent-red/50'">
+            <div v-if="result.passed" class="text-accent-green font-bold flex flex-col items-center">
+              <span><BaseIcon name="check-circle" class="w-4 h-4 inline-block mr-1 align-text-bottom" />Chính xác! Lab Completed.</span>
+              <button @click="$emit('continue')" class="mt-3 px-4 py-2 bg-accent-green hover:bg-accent-green text-text-primary rounded-lg w-full">Tiếp tục đến LeetCode</button>
             </div>
-            <div v-else class="text-rose-400">
-              <span class="font-bold">❌ Lỗi ở bước {{ result.wrongAt }}:</span>
-              <p class="mt-1">Kỳ vọng: <code class="bg-rose-950 px-1 rounded">{{ result.expectedOperation }}</code></p>
-              <p>Thực tế: <code class="bg-rose-950 px-1 rounded">{{ result.yourOperation }}</code></p>
+            <div v-else class="text-accent-red">
+              <span class="font-bold"><BaseIcon name="close" class="w-4 h-4 inline-block mr-1 align-text-bottom" />Lỗi ở bước {{ result.wrongAt }}:</span>
+              <p class="mt-1">Kỳ vọng: <code class="bg-accent-red/20 px-1 rounded">{{ result.expectedOperation }}</code></p>
+              <p>Thực tế: <code class="bg-accent-red/20 px-1 rounded">{{ result.yourOperation }}</code></p>
             </div>
           </div>
         </div>

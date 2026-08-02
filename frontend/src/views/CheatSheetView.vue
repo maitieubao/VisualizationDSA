@@ -56,22 +56,22 @@ const dsData: Record<string, any> = {
 </script>
 
 <template>
-  <div class="h-full w-full bg-slate-950 p-6 overflow-y-auto custom-scrollbar relative animate-fade-in text-white">
+  <div class="h-full w-full p-6 overflow-y-auto custom-scrollbar relative animate-fade-in text-text-primary">
     <!-- Header -->
-    <div class="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4 border-b border-white/10 pb-6">
+    <div class="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4 border-b border-border-default pb-6">
       <div>
-        <h1 class="text-3xl font-black bg-gradient-to-r from-indigo-400 to-purple-400 bg-clip-text text-transparent mb-2">
+        <h1 class="text-3xl font-black bg-gradient-to-r from-accent-light to-accent-purple bg-clip-text text-transparent mb-2">
           DSA CheatSheet
         </h1>
-        <p class="text-slate-400 text-sm">Bảng tra cứu độ phức tạp và Code Snippets theo ngôn ngữ yêu thích của bạn.</p>
+        <p class="text-text-secondary text-sm">Bảng tra cứu độ phức tạp và Code Snippets theo ngôn ngữ yêu thích của bạn.</p>
       </div>
       <button 
         @click="openLanguageModal"
-        class="flex items-center gap-2 px-4 py-2 bg-slate-800 hover:bg-slate-700 border border-slate-600 rounded-lg transition-colors shadow-sm whitespace-nowrap"
+        class="flex items-center gap-2 px-4 py-2 bg-bg-hover hover:bg-bg-hover border border-border-default rounded-lg transition-colors shadow-sm whitespace-nowrap"
       >
-        <BaseIcon name="code-ide" class="w-4 h-4 text-indigo-400" />
+        <BaseIcon name="code-ide" class="w-4 h-4 text-accent" />
         <span class="font-bold text-sm">Ngôn ngữ: {{ currentLang }}</span>
-        <span class="text-xs text-slate-500 ml-1">▼</span>
+        <BaseIcon name="chevron-down" class="w-4 h-4 text-text-muted" />
       </button>
     </div>
 
@@ -79,14 +79,14 @@ const dsData: Record<string, any> = {
     <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
       
       <!-- Left Sidebar: DS Tabs -->
-      <div class="lg:col-span-1 bg-slate-900/60 border border-white/10 rounded-xl p-4 h-fit">
-        <h3 class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-3 px-2">Cấu trúc dữ liệu</h3>
+      <div class="lg:col-span-1 glass-panel rounded-xl p-4 h-fit">
+        <h3 class="text-xs font-bold text-text-muted uppercase tracking-wider mb-3 px-2">Cấu trúc dữ liệu</h3>
         <div class="flex flex-col gap-1">
           <button 
             v-for="(data, key) in dsData" 
             :key="key"
             @click="activeTab = key"
-            :class="['text-left px-4 py-3 rounded-lg text-sm font-medium transition-all', activeTab === key ? 'bg-indigo-500/20 text-indigo-300 border-l-2 border-indigo-500' : 'text-slate-300 hover:bg-slate-800 border-l-2 border-transparent']"
+            :class="['text-left px-4 py-3 rounded-lg text-sm font-medium transition-all', activeTab === key ? 'bg-accent/20 text-accent border-l-2 border-border-accent' : 'text-text-secondary hover:bg-bg-hover border-l-2 border-transparent']"
           >
             {{ data.title }}
           </button>
@@ -97,37 +97,37 @@ const dsData: Record<string, any> = {
       <div class="lg:col-span-3 flex flex-col gap-6">
         
         <!-- Big-O Table -->
-        <div class="bg-slate-900/60 border border-white/10 rounded-xl p-6">
-          <h2 class="text-xl font-bold text-white mb-4 flex items-center gap-2">
-            <span class="text-emerald-400">⚡</span> Độ phức tạp thời gian (Big-O)
+        <div class="glass-panel rounded-xl p-6">
+          <h2 class="text-xl font-bold text-text-primary mb-4 flex items-center gap-2">
+            <BaseIcon name="zap" class="w-5 h-5 text-accent-green" /> Độ phức tạp thời gian (Big-O)
           </h2>
           <div class="overflow-x-auto">
             <table class="w-full text-left border-collapse">
               <thead>
-                <tr class="bg-slate-800 text-slate-300 text-sm">
+                <tr class="bg-bg-hover text-text-secondary text-sm">
                   <th class="py-3 px-4 rounded-tl-lg font-semibold">Thao tác</th>
-                  <th class="py-3 px-4 font-semibold text-emerald-400">Trường hợp TB</th>
-                  <th class="py-3 px-4 rounded-tr-lg font-semibold text-rose-400">Trường hợp Xấu nhất</th>
+                  <th class="py-3 px-4 font-semibold text-accent-green">Trường hợp TB</th>
+                  <th class="py-3 px-4 rounded-tr-lg font-semibold text-accent-red">Trường hợp Xấu nhất</th>
                 </tr>
               </thead>
-              <tbody class="text-sm border-t border-slate-700/50">
-                <tr class="border-b border-slate-700/50 hover:bg-slate-800/50 transition">
-                  <td class="py-3 px-4 text-slate-300">Truy cập (Access)</td>
+              <tbody class="text-sm border-t border-border-default/50">
+                <tr class="border-b border-border-default/50 hover:bg-bg-surface transition">
+                  <td class="py-3 px-4 text-text-secondary">Truy cập (Access)</td>
                   <td class="py-3 px-4 font-mono font-bold">{{ dsData[activeTab].timeComplexity.access }}</td>
                   <td class="py-3 px-4 font-mono font-bold">{{ dsData[activeTab].timeComplexity.access }}</td>
                 </tr>
-                <tr class="border-b border-slate-700/50 hover:bg-slate-800/50 transition">
-                  <td class="py-3 px-4 text-slate-300">Tìm kiếm (Search)</td>
+                <tr class="border-b border-border-default/50 hover:bg-bg-surface transition">
+                  <td class="py-3 px-4 text-text-secondary">Tìm kiếm (Search)</td>
                   <td class="py-3 px-4 font-mono font-bold">{{ dsData[activeTab].timeComplexity.search }}</td>
                   <td class="py-3 px-4 font-mono font-bold">{{ dsData[activeTab].timeComplexity.search }}</td>
                 </tr>
-                <tr class="border-b border-slate-700/50 hover:bg-slate-800/50 transition">
-                  <td class="py-3 px-4 text-slate-300">Chèn (Insertion)</td>
+                <tr class="border-b border-border-default/50 hover:bg-bg-surface transition">
+                  <td class="py-3 px-4 text-text-secondary">Chèn (Insertion)</td>
                   <td class="py-3 px-4 font-mono font-bold">{{ dsData[activeTab].timeComplexity.insertion }}</td>
                   <td class="py-3 px-4 font-mono font-bold">{{ dsData[activeTab].timeComplexity.insertion }}</td>
                 </tr>
-                <tr class="hover:bg-slate-800/50 transition">
-                  <td class="py-3 px-4 text-slate-300 rounded-bl-lg">Xóa (Deletion)</td>
+                <tr class="hover:bg-bg-surface transition">
+                  <td class="py-3 px-4 text-text-secondary rounded-bl-lg">Xóa (Deletion)</td>
                   <td class="py-3 px-4 font-mono font-bold">{{ dsData[activeTab].timeComplexity.deletion }}</td>
                   <td class="py-3 px-4 font-mono font-bold rounded-br-lg">{{ dsData[activeTab].timeComplexity.deletion }}</td>
                 </tr>
@@ -137,16 +137,16 @@ const dsData: Record<string, any> = {
         </div>
 
         <!-- Code Snippet -->
-        <div class="bg-slate-900/60 border border-white/10 rounded-xl overflow-hidden flex flex-col">
-          <div class="bg-slate-950 px-4 py-3 border-b border-white/10 flex justify-between items-center">
-            <span class="text-sm font-bold text-slate-300 flex items-center gap-2">
-              <BaseIcon name="code-ide" class="w-4 h-4 text-slate-400" />
+        <div class="glass-panel rounded-xl overflow-hidden flex flex-col">
+          <div class="bg-bg-primary px-4 py-3 border-b border-border-default flex justify-between items-center">
+            <span class="text-sm font-bold text-text-secondary flex items-center gap-2">
+              <BaseIcon name="code-ide" class="w-4 h-4 text-text-secondary" />
               Mẫu Code: {{ currentLang }}
             </span>
-            <span class="text-xs text-slate-500 font-mono">snippet_{{ activeTab }}.{{ languageStore.currentLanguage }}</span>
+            <span class="text-xs text-text-muted font-mono">snippet_{{ activeTab }}.{{ languageStore.currentLanguage }}</span>
           </div>
           <div class="p-6 overflow-x-auto">
-            <pre class="text-sm font-mono text-indigo-200 leading-relaxed"><code v-text="dsData[activeTab].code[languageStore.currentLanguage || 'javascript'] || dsData[activeTab].code['javascript']"></code></pre>
+            <pre class="text-sm font-mono text-accent-light leading-relaxed"><code v-text="dsData[activeTab].code[languageStore.currentLanguage || 'javascript'] || dsData[activeTab].code['javascript']"></code></pre>
           </div>
         </div>
 

@@ -1,20 +1,20 @@
 <template>
   <div class="teacher-application-form">
-    <div v-if="loading" class="text-slate-400">Đang tải thông tin...</div>
+    <div v-if="loading" class="text-text-secondary">Đang tải thông tin...</div>
     
-    <div v-else-if="application && application.status === 'Pending'" class="bg-indigo-900/40 p-4 rounded-lg border border-indigo-700">
-      <h4 class="text-indigo-400 font-bold mb-2">Đơn đăng ký đang được xử lý</h4>
-      <p class="text-sm text-slate-300">
+    <div v-else-if="application && application.status === 'Pending'" class="bg-accent-dark/40 p-4 rounded-lg border border-accent-dark">
+      <h4 class="text-accent font-bold mb-2">Đơn đăng ký đang được xử lý</h4>
+      <p class="text-sm text-text-secondary">
         Bạn đã gửi yêu cầu nâng cấp tài khoản Giáo viên vào ngày {{ formatDate(application.createdAt) }}. Vui lòng chờ Admin phê duyệt.
       </p>
     </div>
 
-    <div v-else-if="application && application.status === 'Rejected'" class="bg-red-900/40 p-4 rounded-lg border border-red-700">
-      <h4 class="text-red-400 font-bold mb-2">Đơn đăng ký bị từ chối</h4>
-      <p class="text-sm text-slate-300 mb-2">
+    <div v-else-if="application && application.status === 'Rejected'" class="bg-accent-red/20 p-4 rounded-lg border border-accent-red/40">
+      <h4 class="text-accent-red font-bold mb-2">Đơn đăng ký bị từ chối</h4>
+      <p class="text-sm text-text-secondary mb-2">
         <strong>Lý do:</strong> {{ application.rejectReason }}
       </p>
-      <p class="text-xs text-slate-400 mb-4">Ngày từ chối: {{ formatDate(application.updatedAt || application.createdAt) }}</p>
+      <p class="text-xs text-text-secondary mb-4">Ngày từ chối: {{ formatDate(application.updatedAt || application.createdAt) }}</p>
       
       <!-- Only allow re-apply if > 30 days (logic handled by backend, but we can show form if allowed) -->
       <button @click="showForm = true" class="btn btn-secondary btn-sm" v-if="!showForm">
@@ -23,7 +23,7 @@
     </div>
 
     <form v-if="!application || showForm" @submit.prevent="submitApplication" class="profile-form mt-4">
-      <p class="text-sm text-slate-300 mb-4">
+      <p class="text-sm text-text-secondary mb-4">
         Hãy đăng ký để trở thành Giáo viên! Bạn sẽ có quyền tạo Lộ trình học thuật riêng, tạo phòng học (Classroom) và theo dõi tiến độ của học sinh.
       </p>
 
@@ -64,12 +64,12 @@
           minlength="50"
           maxlength="1000"
         ></textarea>
-        <div class="text-xs text-right mt-1" :class="form.reason.length < 50 ? 'text-red-400' : 'text-slate-400'">
+        <div class="text-xs text-right mt-1" :class="form.reason.length < 50 ? 'text-accent-red' : 'text-text-secondary'">
           {{ form.reason.length }} / 1000 ký tự (Tối thiểu 50)
         </div>
       </div>
 
-      <div v-if="error" class="text-red-400 text-sm mb-3">
+      <div v-if="error" class="text-accent-red text-sm mb-3">
         {{ error }}
       </div>
       

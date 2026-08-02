@@ -43,9 +43,9 @@
 
           
           <div v-if="store.showVcrControls" class="sim-vcr">
-            <div class="sim-vcr-btn">⏮</div>
-            <div class="sim-vcr-btn sim-vcr-play">▶</div>
-            <div class="sim-vcr-btn">⏭</div>
+            <div class="sim-vcr-btn"><BaseIcon name="step-backward" class="w-3 h-3" /></div>
+            <div class="sim-vcr-btn sim-vcr-play"><BaseIcon name="play" class="w-3 h-3" /></div>
+            <div class="sim-vcr-btn"><BaseIcon name="step-forward" class="w-3 h-3" /></div>
             <div class="sim-vcr-slider" />
           </div>
 

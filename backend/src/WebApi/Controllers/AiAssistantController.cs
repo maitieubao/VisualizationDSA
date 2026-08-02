@@ -49,6 +49,21 @@ namespace VisualizationDSA.WebApi.Controllers
             var responseText = await _aiAssistantService.GenerateContentAsync(request.Prompt);
             return Ok(new { content = responseText });
         }
+
+        [HttpGet("quota")]
+        public async Task<IActionResult> GetQuota()
+        {
+            var userId = GetCurrentUserId();
+            var status = await _aiQuotaService.GetQuotaStatusAsync(userId);
+            return Ok(new
+            {
+                globalUsed = status.globalUsed,
+                globalMax = status.globalMax,
+                lessonUsed = status.lessonUsed,
+                lessonMax = status.lessonMax,
+                remaining = status.globalMax - status.globalUsed
+            });
+        }
     }
 
     public class ChatRequest

@@ -14,9 +14,9 @@
 
     
     <div v-if="frame?.graphNodes?.length" class="absolute top-3 right-3 flex flex-col gap-1 z-10">
-      <button @click="zoomIn" class="w-8 h-8 rounded-lg flex items-center justify-center text-sm font-bold text-text-primary hover:bg-white/10 transition" style="background:rgba(15,23,42,0.8);backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,0.05)" title="Phóng to">+</button>
-      <button @click="zoomOut" class="w-8 h-8 rounded-lg flex items-center justify-center text-sm font-bold text-text-primary hover:bg-white/10 transition" style="background:rgba(15,23,42,0.8);backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,0.05)" title="Thu nhỏ">−</button>
-      <button @click="resetView" class="w-8 h-8 rounded-lg flex items-center justify-center text-xs font-bold text-text-primary hover:bg-white/10 transition" style="background:rgba(15,23,42,0.8);backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,0.05)" title="Đặt lại">⟳</button>
+      <button @click="zoomIn" class="w-8 h-8 rounded-lg flex items-center justify-center text-sm font-bold text-text-primary hover:bg-bg-surface transition" style="background:rgba(15,23,42,0.8);backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,0.05)" title="Phóng to">+</button>
+      <button @click="zoomOut" class="w-8 h-8 rounded-lg flex items-center justify-center text-sm font-bold text-text-primary hover:bg-bg-surface transition" style="background:rgba(15,23,42,0.8);backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,0.05)" title="Thu nhỏ">−</button>
+      <button @click="resetView" class="w-8 h-8 rounded-lg flex items-center justify-center text-xs font-bold text-text-primary hover:bg-bg-surface transition" style="background:rgba(15,23,42,0.8);backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,0.05)" title="Đặt lại">⟳</button>
     </div>
 
     
@@ -31,7 +31,7 @@
         <span class="w-2.5 h-2.5 rounded-full" style="background:#06B6D4"></span> Frontier
       </span>
       <span v-if="hasDistances" class="flex items-center gap-1 px-2 py-1 rounded-md" style="background:rgba(15,23,42,0.8);backdrop-filter:blur(8px)">
-        <span class="text-cyan-400 font-mono">dist</span> Labels
+        <span class="text-accent-cyan font-mono">dist</span> Labels
       </span>
     </div>
 
@@ -40,7 +40,7 @@
       <div class="font-bold text-accent mb-1">Distances</div>
       <div v-for="([nodeId, d]) in sortedDistances" :key="nodeId" class="flex justify-between gap-2">
         <span class="node-label">{{ getName(Number(nodeId)) }}</span>
-        <span class="font-mono" :class="d === Infinity ? 'text-text-muted' : 'text-cyan-400'">{{ d === Infinity ? '∞' : d }}</span>
+        <span class="font-mono" :class="d === Infinity ? 'text-text-muted' : 'text-accent-cyan'">{{ d === Infinity ? '∞' : d }}</span>
       </div>
     </div>
   </div>

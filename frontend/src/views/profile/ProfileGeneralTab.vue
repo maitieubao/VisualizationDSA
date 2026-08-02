@@ -21,7 +21,7 @@
         <div class="summary-stats-bar">
           <span class="stat-pill">Cấp độ {{ authStore.userLevel }}</span>
           <span class="stat-pill stat-pill--xp">{{ authStore.userXP }} XP</span>
-          <span class="stat-pill stat-pill--fire">🔥 {{ authStore.currentUser?.streakDays || 0 }} ngày streak</span>
+          <span class="stat-pill stat-pill--fire"><BaseIcon name="fire" class="w-3.5 h-3.5 inline-block mr-1 align-text-bottom" />{{ authStore.currentUser?.streakDays || 0 }} ngày streak</span>
         </div>
       </div>
     </div>
@@ -64,6 +64,27 @@
         </div>
         <div class="setting-control">
           <textarea id="bio" v-model="form.bio" placeholder="Chia sẻ về đam mê lập trình của bạn..." class="pm-input pm-textarea" rows="3"></textarea>
+        </div>
+      </div>
+
+      <div class="pm-setting-item pm-setting-item--top">
+        <div class="setting-info">
+          <label class="setting-label">Tùy chỉnh Diện mạo</label>
+          <p class="setting-desc">Trang bị Avatar và Khung viền (Frame) từ kho đồ của bạn để làm nổi bật hồ sơ.</p>
+        </div>
+        <div class="setting-control flex items-start gap-5">
+          <div class="relative w-16 h-16 rounded-full border-2 border-dashed border-border-accent/50 flex items-center justify-center bg-bg-secondary/50 text-accent cursor-pointer hover:bg-bg-hover transition-colors" @click="toastStore.info('Tính năng Kho đồ & Avatar sẽ có mặt trong bản cập nhật tới!')">
+            <span class="text-2xl font-bold">{{ initials }}</span>
+            <div class="absolute -bottom-1 -right-1 w-6 h-6 bg-accent rounded-full flex items-center justify-center border-2 border-border-default">
+              <svg width="12" height="12" fill="white" viewBox="0 0 24 24"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04a.996.996 0 0 0 0-1.41l-2.34-2.34a.996.996 0 0 0-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg>
+            </div>
+          </div>
+          <div class="flex flex-col gap-2 pt-1">
+            <button type="button" class="px-4 py-1.5 rounded border border-border-accent text-xs font-semibold text-accent hover:bg-accent/10 transition-colors text-left w-fit" @click="toastStore.info('Đang mở Kho đồ...')">
+              Tủ đồ (Inventory)
+            </button>
+            <span class="text-xs text-text-muted">Mua thêm Avatar & Khung viền tại Cửa hàng Gems.</span>
+          </div>
         </div>
       </div>
 

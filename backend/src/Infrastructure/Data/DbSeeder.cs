@@ -5,6 +5,8 @@ using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
+using System.IO;
+using System.Text.Json;
 using VisualizationDSA.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 
@@ -21,17 +23,77 @@ namespace VisualizationDSA.Infrastructure.Data
 
         public async Task SeedAsync()
         {
-            await SeedBadgesAsync();
-            await SeedLeaderboardUsersAsync();
-            await SeedQuizzesAsync();
-            await SeedSemanticGraphAsync();
-            await SeedCoursesAsync();
-            await SeedCheatSheetAsync();
             try { await SeedBadgesAsync(); } catch (Exception ex) { Console.WriteLine($"[SeedBadges Error]: {ex.Message}"); }
             try { await SeedLeaderboardUsersAsync(); } catch (Exception ex) { Console.WriteLine($"[SeedUsers Error]: {ex.Message}"); }
             try { await SeedQuizzesAsync(); } catch (Exception ex) { Console.WriteLine($"[SeedQuizzes Error]: {ex.Message}"); }
-            try { await SeedCoursesAsync(); } catch (Exception ex) { Console.WriteLine($"[SeedCourses Error]: {ex}"); }
             try { await SeedSemanticGraphAsync(); } catch (Exception ex) { Console.WriteLine($"[SeedGraph Error]: {ex.Message}"); }
+            try { await SeedCheatSheetAsync(); } catch (Exception ex) { Console.WriteLine($"[SeedCheatSheet Error]: {ex.Message}"); }
+            try { await SeedCoursesAsync(); } catch (Exception ex) { Console.WriteLine($"[SeedCourses Error]: {ex}"); }
+            try { await SeedTeacherRoadmapsAsync(); } catch (Exception ex) { Console.WriteLine($"[SeedRoadmaps Error]: {ex.Message}"); }
+        }
+
+        private async Task SeedTeacherRoadmapsAsync()
+        {
+            if (_context.CustomRoadmaps.Any()) return;
+
+            var teacher = await _context.Users.FirstOrDefaultAsync(u => u.Role == "Teacher" || u.Role == "Admin");
+            if (teacher == null) return;
+
+            string baseDir = AppDomain.CurrentDomain.BaseDirectory;
+            string seedContentPath = Path.Combine(baseDir, "Data", "SeedContent");
+            if (!Directory.Exists(seedContentPath)) 
+            {
+                seedContentPath = Path.Combine(baseDir, "..", "..", "..", "Infrastructure", "Data", "SeedContent");
+            }
+
+            string roadmapsPath = Path.Combine(seedContentPath, "teacher_roadmaps.json");
+            if (!File.Exists(roadmapsPath)) return;
+
+            var jsonContent = await File.ReadAllTextAsync(roadmapsPath);
+            var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
+            var roadmaps = JsonSerializer.Deserialize<List<SeedRoadmapModel>>(jsonContent, options);
+
+            if (roadmaps == null) return;
+
+            foreach (var r in roadmaps)
+            {
+                var visibility = r.IsPublic ? "Public" : "Private";
+                var roadmap = new CustomRoadmap(teacher.Id, r.Title, r.Description, "[]", null, visibility);
+                roadmap.Approve(); // Auto approve for seed data
+                
+                await _context.CustomRoadmaps.AddAsync(roadmap);
+                await _context.SaveChangesAsync();
+
+                foreach (var n in r.Nodes)
+                {
+                    var node = new CustomNode(roadmap.Id, n.Name, n.Description, n.Difficulty ?? "Medium", n.SortOrder);
+                    node.UpdateContent(n.ContentJson ?? "[]", null, null);
+                    if (!string.IsNullOrEmpty(n.OfficialApproach))
+                    {
+                        node.SetApproach(n.OfficialApproach, "", "");
+                    }
+                    await _context.CustomNodes.AddAsync(node);
+                }
+            }
+            await _context.SaveChangesAsync();
+        }
+
+        private class SeedRoadmapModel
+        {
+            public string Title { get; set; } = string.Empty;
+            public string Description { get; set; } = string.Empty;
+            public bool IsPublic { get; set; }
+            public List<SeedNodeModel> Nodes { get; set; } = new();
+        }
+
+        private class SeedNodeModel
+        {
+            public string Name { get; set; } = string.Empty;
+            public string Description { get; set; } = string.Empty;
+            public string? Difficulty { get; set; }
+            public int SortOrder { get; set; }
+            public string? ContentJson { get; set; }
+            public string? OfficialApproach { get; set; }
         }
 
         private async Task SeedBadgesAsync()
@@ -216,12 +278,17 @@ namespace VisualizationDSA.Infrastructure.Data
 
         private async Task SeedCoursesAsync()
         {
-            if (_context.Courses.Count() < 11)
-            {
-                _context.Lessons.RemoveRange(_context.Lessons);
-                _context.Courses.RemoveRange(_context.Courses);
-                await _context.SaveChangesAsync();
-            }
+            // Forced re-seeding to apply new courses.json data
+            // We will always reseed for this demo/dev phase
+            
+            _context.ModuleItems.RemoveRange(_context.ModuleItems);
+            _context.CourseModules.RemoveRange(_context.CourseModules);
+            _context.Lessons.RemoveRange(_context.Lessons);
+            _context.Courses.RemoveRange(_context.Courses);
+            _context.CodelabTestCases.RemoveRange(_context.CodelabTestCases);
+            _context.Codelabs.RemoveRange(_context.Codelabs);
+            _context.Quizzes.RemoveRange(_context.Quizzes);
+            await _context.SaveChangesAsync();
 
             var teacher = await _context.Users.FirstOrDefaultAsync(u => u.Role == "Teacher" || u.Role == "Admin")
                           ?? await _context.Users.FirstOrDefaultAsync();
@@ -233,643 +300,145 @@ namespace VisualizationDSA.Infrastructure.Data
                 await _context.SaveChangesAsync();
             }
 
-            var bubbleSortQuiz = await _context.Quizzes.FirstOrDefaultAsync(q => q.Title.Contains("Bubble"));
-            var quickSortQuiz = await _context.Quizzes.FirstOrDefaultAsync(q => q.Title.Contains("Quick"));
-            var oopQuiz = await _context.Quizzes.FirstOrDefaultAsync(q => q.Title.Contains("OOP"));
-            var solidQuiz = await _context.Quizzes.FirstOrDefaultAsync(q => q.Title.Contains("SOLID"));
-            var patternsQuiz = await _context.Quizzes.FirstOrDefaultAsync(q => q.Title.Contains("Patterns"));
-            var dsaBasicsQuiz = await _context.Quizzes.FirstOrDefaultAsync(q => q.Title.Contains("Nền tảng DSA"));
-            var linkedListQuiz = await _context.Quizzes.FirstOrDefaultAsync(q => q.Title.Contains("Danh sách liên kết"));
-            var stackQueueQuiz = await _context.Quizzes.FirstOrDefaultAsync(q => q.Title.Contains("Ngăn xếp"));
-            var treeQuiz = await _context.Quizzes.FirstOrDefaultAsync(q => q.Title.Contains("Duyệt cây"));
-            var graphQuiz = await _context.Quizzes.FirstOrDefaultAsync(q => q.Title.Contains("Đồ thị"));
-            var dpQuiz = await _context.Quizzes.FirstOrDefaultAsync(q => q.Title.Contains("Quy hoạch động"));
-            var systemQuiz = await _context.Quizzes.FirstOrDefaultAsync(q => q.Title.Contains("System Design"));
+            string baseDir = AppDomain.CurrentDomain.BaseDirectory;
+            string seedContentPath = Path.Combine(baseDir, "Data", "SeedContent");
+            if (!Directory.Exists(seedContentPath)) 
+            {
+                seedContentPath = Path.Combine(baseDir, "..", "..", "..", "Infrastructure", "Data", "SeedContent");
+            }
 
-            
-            
-            
+            string coursesJsonPath = Path.Combine(seedContentPath, "courses.json");
+            if (!File.Exists(coursesJsonPath))
+            {
+                Console.WriteLine($"[SeedCourses] Seed file not found at {coursesJsonPath}");
+                return;
+            }
 
-            
-            var c1 = new Course(teacher.Id, "Nhập môn Cấu trúc dữ liệu & Giải thuật",
-                "Làm quen với giao diện AlgoLens, hiểu bản chất Big-O, thao tác mảng, đệ quy và xử lý chuỗi cơ bản.",
-                CourseCategory.DataStructure, CourseDifficulty.Beginner, true,
-                "https://images.unsplash.com/photo-1516116211223-48a122638c59?w=500&q=80");
-            AddLessonToCourse(c1, "Độ phức tạp thuật toán (Big O) & Mảng",
-                @"# 📖 Đánh Giá Độ Phức Tạp Big O
-Big O mô tả xu hướng tăng thời gian/bộ nhớ khi kích thước đầu vào N tăng dần.
+            string jsonContent = await File.ReadAllTextAsync(coursesJsonPath);
+            var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
+            var seedCourses = JsonSerializer.Deserialize<List<SeedCourseModel>>(jsonContent, options);
 
-### Mảng (Array)
-- Lưu trữ các phần tử liên tiếp trên RAM.
-- Truy cập ngẫu nhiên qua index `O(1)`.
-- Chèn/xóa phần tử trung gian `O(N)`.
+            if (seedCourses == null) return;
 
-### Phân tích một số hàm phổ biến:
-- `O(1)`: truy cập phần tử mảng.
-- `O(log N)`: tìm kiếm nhị phân.
-- `O(N)`: duyệt mảng tuyến tính.
-- `O(N log N)`: sắp xếp nhanh.
-- `O(N²)`: hai vòng lặp lồng nhau.",
-                "dsa", "{\"array\":[5,12,8,25,3]}", dsaBasicsQuiz?.Id, 30, 1);
+            foreach (var sc in seedCourses)
+            {
+                var diff = Enum.TryParse<CourseDifficulty>(sc.Difficulty, out var parsedDiff) ? parsedDiff : CourseDifficulty.Beginner;
+                var cat = Enum.TryParse<CourseCategory>(sc.Category, out var parsedCat) ? parsedCat : CourseCategory.DataStructure;
+                
+                var course = new Course(teacher.Id, sc.Title, sc.Description, cat, diff, true, sc.ImageUrl);
+                await _context.Courses.AddAsync(course);
+                await _context.SaveChangesAsync(); 
 
-            AddLessonToCourse(c1, "Đệ quy & phân tích độ phức tạp không gian",
-                @"# 🔁 Đệ Quy (Recursion)
-Một hàm gọi lại chính nó với đầu vào nhỏ hơn cho đến khi đạt điều kiện dừng (base case).
+                var module = new CourseModule(course.Id, "Chương 1", "Nội dung chính", 1000);
+                await _context.CourseModules.AddAsync(module);
+                await _context.SaveChangesAsync();
 
-### Ví dụ tính giai thừa
-```csharp
-int Factorial(int n) {
-    if (n <= 1) return 1;          // base case
-    return n * Factorial(n - 1);   // recursive case
-}
-```
+                int lessonIndex = 1;
+                foreach (var sl in sc.Lessons)
+                {
+                    string markdownContent = "";
+                    string mdPath = Path.Combine(seedContentPath, sl.ContentFile);
+                    if (File.Exists(mdPath)) markdownContent = await File.ReadAllTextAsync(mdPath);
 
-### Ngăn xếp gọi đệ quy (Call Stack)
-Mỗi lần gọi đệ quy, một stack frame được đẩy vào. Tổng số frame chiếm `O(N)` bộ nhớ, có thể gây StackOverflow với N lớn.
+                    var lesson = new Lesson(sl.Title, markdownContent, sl.SandboxType, sl.SandboxConfig, sl.XpReward, teacher.Id);
+                    await _context.Lessons.AddAsync(lesson);
+                    await _context.SaveChangesAsync();
 
-### So sánh với vòng lặp
-- Đệ quy: code gọn, trực quan với bài toán chia để trị.
-- Vòng lặp: tiết kiệm bộ nhớ hơn trong đa số trường hợp.",
-                "dsa", "{}", null, 25, 2);
+                    int itemOrder = lessonIndex * 1000;
+                    var lessonItem = new ModuleItem(module.Id, null, VisualizationDSA.Domain.Enums.ModuleItemType.Lesson, lesson.Id, null, null, sl.Title, itemOrder, true);
+                    await _context.ModuleItems.AddAsync(lessonItem);
 
-            AddLessonToCourse(c1, "Xử lý chuỗi cơ bản",
-                @"# 🔤 Xử Lý Chuỗi
-Chuỗi là mảng ký tự, thường là immutable trong C#.
+                    if (sl.Quiz != null)
+                    {
+                        var quiz = new Quiz(sl.Quiz.Title, "Trắc nghiệm ôn tập", "general", sl.Quiz.Questions.Count, sl.XpReward + 10);
+                        foreach (var sq in sl.Quiz.Questions)
+                        {
+                            quiz.AddQuestion(sq.Content, sq.Options.Select(o => o.Text).ToArray(), sq.Options.FindIndex(o => o.IsCorrect), sq.Options.FirstOrDefault(o => o.IsCorrect)?.Explanation ?? "");
+                        }
+                        await _context.Quizzes.AddAsync(quiz);
+                        await _context.SaveChangesAsync();
 
-### Các thao tác hay dùng
-- `Length`: lấy độ dài.
-- `Substring(start, length)`: lấy chuỗi con.
-- `IndexOf(char)`: tìm vị trí ký tự.
-- Duyệt bằng `foreach` hoặc `for`.
+                        var quizItem = new ModuleItem(module.Id, null, VisualizationDSA.Domain.Enums.ModuleItemType.Quiz, null, quiz.Id, null, "Quiz: " + sl.Title, itemOrder + 500, true);
+                        module.Items.Add(quizItem);
+                    }
 
-### Bài toán mẫu: đảo ngược chuỗi
-```csharp
-string Reverse(string s) {
-    char[] arr = s.ToCharArray();
-    Array.Reverse(arr);
-    return new string(arr);
-}
-```
-### Palindrome kiểm tra
-```csharp
-bool IsPalindrome(string s) {
-    int left = 0, right = s.Length - 1;
-    while (left < right) {
-        if (s[left] != s[right]) return false;
-        left++; right--;
-    }
-    return true;
-}
-```
-Độ phức tạp `O(N)` thời gian, `O(1)` không gian.",
-                "dsa", "{}", null, 25, 3);
+                    if (sl.Codelab != null)
+                    {
+                        var codelab = new Codelab(
+                            sl.Codelab.Title, sl.Codelab.Description, sl.Codelab.InitialCode,
+                            1, 50, 5000, 128000000, "csharp", "Vui lòng xem mô tả", "Xem ví dụ trong mô tả", "", "general"
+                        );
+                        
+                        int caseIndex = 1;
+                        foreach (var tc in sl.Codelab.TestCases)
+                        {
+                            codelab.TestCases.Add(new CodelabTestCase(codelab.Id, tc.Input, tc.ExpectedOutput, tc.IsHidden, 10, caseIndex++));
+                        }
+                        await _context.Codelabs.AddAsync(codelab);
+                        await _context.SaveChangesAsync();
 
-            
-            var c2 = new Course(teacher.Id, "Làm chủ Danh sách liên kết (Linked List)",
-                "Nắm vững con trỏ, Node, Singly vs Doubly Linked List, kỹ thuật cắt nối, quản lý bộ nhớ và ứng dụng LRU Cache.",
-                CourseCategory.DataStructure, CourseDifficulty.Beginner, true,
-                "https://images.unsplash.com/photo-1544383835-bda2bc66a55d?w=500&q=80");
-            AddLessonToCourse(c2, "Con trỏ & Cắt nối Node trong Linked List",
-                @"# 📖 Cấu Trúc Danh Sách Liên Kết
-Mỗi Node chứa giá trị `Data` và con trỏ `Next` trỏ tới phần tử tiếp theo.
-
-### Thao tác cắt nối
-- **Thêm vào đầu**: tạo node mới → trỏ `next` vào head cũ → gán head = node mới.
-- **Xóa node giữa**: cập nhật `prev.next = curr.next` (cần con trỏ prev).
-- **Đảo ngược**: dùng 3 con trỏ `prev, curr, next`.
-
-### Bẫy thường gặp: Memory Leak
-Khi gán `head = head.next` mà không giải phóng node cũ (trong ngôn ngữ không có GC như C++). Trong C#/.NET, GC sẽ dọn, nhưng vẫn cần cẩn thận với các tham chiếu vòng.",
-                "dsa", "{\"nodes\":[10,20,30]}", linkedListQuiz?.Id, 35, 1);
-
-            AddLessonToCourse(c2, "Doubly Linked List & Sentinel Nodes",
-                @"# 🔗 Doubly Linked List
-Mỗi node có thêm con trỏ `Prev` trỏ về node trước.
-
-### Ưu điểm
-- Duyệt hai chiều, xóa node khi chỉ có con trỏ đến chính node đó trong O(1).
-- Sentinel (node giả đầu/cuối) giúp đơn giản code thêm/xóa tại biên.
-
-### Cài đặt Sentinel đơn giản
-```csharp
-class LinkedList {
-    Node head = new Node(0); // sentinel
-    Node tail = new Node(0);
-    // head.next = tail; tail.prev = head;
-}
-```
-Mọi node thật nằm giữa hai sentinel, tránh phải kiểm tra null liên tục.",
-                "dsa", "{}", null, 30, 2);
-
-            AddLessonToCourse(c2, "Ứng dụng: LRU Cache",
-                @"# 💾 LRU Cache (Least Recently Used)
-Kết hợp **Hash Map** (truy cập O(1)) và **Doubly Linked List** (duy trì thứ tự truy cập).
-
-### Ý tưởng
-- Mỗi khi truy cập một key, di chuyển node tương ứng lên đầu danh sách.
-- Khi cache đầy, xóa node ở cuối danh sách (ít được dùng nhất).
-
-### Độ phức tạp
-- `Get(key)`: O(1) – tìm trong map và di chuyển node.
-- `Put(key, value)`: O(1) – thêm mới hoặc cập nhật.
-
-Đây là bài phỏng vấn kinh điển, minh họa rõ cách kết hợp hai cấu trúc dữ liệu.",
-                "dsa", "{}", null, 30, 3);
-
-            
-            var c3 = new Course(teacher.Id, "Ngăn xếp & Hàng đợi (Stack & Queue)",
-                "Hiểu rõ nguyên lý LIFO vs FIFO, ứng dụng Stack trong Undo/Redo, tính toán biểu thức và Queue trong xử lý hàng chờ.",
-                CourseCategory.DataStructure, CourseDifficulty.Beginner, true,
-                "https://images.unsplash.com/photo-1555066931-4365d14bab8c?w=500&q=80");
-            AddLessonToCourse(c3, "Nguyên lý LIFO vs FIFO & Valid Parentheses",
-                @"# 📖 Ngăn Xếp (Stack) & Hàng Đợi (Queue)
-- **Stack**: Vào sau Ra trước (LIFO). Thao tác `Push` / `Pop` / `Peek`.
-- **Queue**: Vào trước Ra trước (FIFO). Thao tác `Enqueue` / `Dequeue`.
-
-### Ứng dụng Stack: Valid Parentheses
-Kiểm tra chuỗi ngoặc hợp lệ:
-- Gặp `(`, `[`, `{` → push vào stack.
-- Gặp `)`, `]`, `}` → pop stack và kiểm tra khớp.
-- Cuối cùng stack phải rỗng.
-
-```csharp
-bool IsValid(string s) {
-    var stack = new Stack<char>();
-    foreach (char c in s) {
-        if (c == '(') stack.Push(')');
-        else if (c == '[') stack.Push(']');
-        else if (c == '{') stack.Push('}');
-        else if (stack.Count == 0 || stack.Pop() != c) return false;
-    }
-    return stack.Count == 0;
-}
-```",
-                "dsa", "{\"stack\":[\"(\",\"[\"]}", stackQueueQuiz?.Id, 35, 1);
-
-            AddLessonToCourse(c3, "Stack & tính toán biểu thức (Infix ↔ Postfix)",
-                @"# 📊 Stack với biểu thức số học
-- **Infix** (toán tử giữa hai toán hạng): `A + B * C`
-- **Postfix** (RPN - ký pháp nghịch đảo Ba Lan): `A B C * +`
-
-### Chuyển Infix sang Postfix
-Sử dụng stack toán tử, quy tắc ưu tiên:
-1. Toán hạng → xuất thẳng.
-2. Toán tử → pop các toán tử có độ ưu tiên cao hơn hoặc bằng khỏi stack trước khi push.
-3. Dấu ngoặc `(` push, `)` pop đến khi gặp `(`.
-
-### Tính Postfix
-Duyệt trái sang phải: gặp toán hạng push vào stack, gặp toán tử pop 2 toán hạng, tính rồi push kết quả. Kết quả cuối cùng nằm ở đỉnh stack.",
-                "dsa", "{}", null, 30, 2);
-
-            AddLessonToCourse(c3, "Circular Queue & Deque",
-                @"# 🔄 Hàng đợi vòng (Circular Queue)
-Dùng mảng cố định, hai con trỏ `front` và `rear` di chuyển vòng quanh.
-
-### Ưu điểm
-- Tránh lãng phí bộ nhớ so với hàng đợi tuyến tính khi dequeue.
-- Thường dùng trong scheduler, buffer.
-
-### Deque (Double-ended Queue)
-Hàng đợi hai đầu, cho phép thêm/xóa ở cả front và rear. Có thể cài bằng doubly linked list hoặc mảng vòng. Ứng dụng: lưu lịch sử undo/redo hai chiều.",
-                "dsa", "{}", null, 25, 3);
-
-            
-            
-            
-
-            
-            var c4 = new Course(teacher.Id, "Sắp xếp & Tìm kiếm hiệu quả",
-                "Làm chủ tư duy Divide & Conquer, so sánh side-by-side tốc độ Bubble vs Quick vs Merge Sort và tìm kiếm nhị phân nâng cao.",
-                CourseCategory.Sorting, CourseDifficulty.Intermediate, true,
-                "https://images.unsplash.com/photo-1618401471353-b98aedd07871?w=500&q=80");
-            AddLessonToCourse(c4, "So sánh Sắp xếp Nổi bọt & Quick Sort",
-                @"# 📖 Thuật Toán Sắp Xếp Kinh Điển
-- **Bubble Sort**: O(n²), so sánh cặp kề nhau.
-- **Quick Sort**: O(n log n) trung bình, chia mảng dựa trên Pivot.
-
-### Bubble Sort code
-```csharp
-void BubbleSort(int[] arr) {
-    for (int i = 0; i < arr.Length - 1; i++)
-        for (int j = 0; j < arr.Length - i - 1; j++)
-            if (arr[j] > arr[j + 1])
-                (arr[j], arr[j + 1]) = (arr[j + 1], arr[j]);
-}
-```
-### Quick Sort: chọn pivot & phân đoạn
-```csharp
-int Partition(int[] arr, int low, int high) {
-    int pivot = arr[high];
-    int i = low - 1;
-    for (int j = low; j < high; j++) {
-        if (arr[j] <= pivot) {
-            i++;
-            (arr[i], arr[j]) = (arr[j], arr[i]);
+                        var codelabItem = new ModuleItem(module.Id, null, VisualizationDSA.Domain.Enums.ModuleItemType.Codelab, null, null, codelab.Id, "Codelab: " + sl.Title, itemOrder + 750, true);
+                        module.Items.Add(codelabItem);
+                    }
+                    lessonIndex++;
+                }
+            }
         }
-    }
-    (arr[i+1], arr[high]) = (arr[high], arr[i+1]);
-    return i + 1;
-}
-```
-Pivot quyết định hiệu năng: nếu chọn pivot xấu nhất → O(n²).",
-                "sorting", "{\"array\":[29,10,14,37,13]}", bubbleSortQuiz?.Id, 45, 1);
 
-            AddLessonToCourse(c4, "Quick Sort – chi tiết Pivot & phân vùng",
-                @"# ⚡ Quick Sort In-Depth
-### Chiến lược chọn Pivot
-- Đầu/cuối mảng: đơn giản nhưng dễ gặp worst-case (mảng đã sắp xếp).
-- Ngẫu nhiên: tránh worst-case (Las Vegas).
-- Median-of-three: chọn median của first, middle, last.
-
-### Phân vùng Lomuto vs Hoare
-- **Lomuto**: chọn pivot cuối, đơn giản, thường chậm hơn.
-- **Hoare**: hai con trỏ từ hai đầu, hiệu quả hơn nhưng khó cài đặt đúng.
-
-Quick Sort là **unstable** nhưng có thể cài đặt **in-place** (O(log n) stack).",
-                "sorting", null, quickSortQuiz?.Id, 50, 2);
-
-            AddLessonToCourse(c4, "Merge Sort & Tìm kiếm nhị phân",
-                @"# 🔀 Merge Sort – Chia để trị
-- Đệ quy chia mảng làm đôi cho đến khi mỗi phần chỉ còn 1 phần tử.
-- Hợp nhất (merge) hai mảng con đã sắp xếp thành mảng lớn hơn.
-- Luôn đạt O(n log n), **ổn định** (stable), nhưng cần O(n) bộ nhớ phụ.
-
-### Tìm kiếm nhị phân (Binary Search)
-Áp dụng trên mảng đã sắp xếp.
-- So sánh phần tử giữa: nếu bằng → tìm thấy.
-- Nhỏ hơn → tìm nửa trái, lớn hơn → tìm nửa phải.
-- Độ phức tạp O(log n).
-
-Biến thể: tìm kiếm nhị phân trên mảng xoay (Rotated Sorted Array).",
-                "sorting", "{}", null, 40, 3);
-
-            
-            var c5 = new Course(teacher.Id, "Cây nhị phân & Duyệt cây (Binary Trees)",
-                "Khảo sát tư duy đệ quy, duyệt cây DFS (Pre/In/Post order), BFS theo tầng và cây tìm kiếm nhị phân.",
-                CourseCategory.DataStructure, CourseDifficulty.Intermediate, true,
-                "https://images.unsplash.com/photo-1518770660439-4636190af475?w=500&q=80");
-            AddLessonToCourse(c5, "Duyệt Cây DFS & BFS Quay Lui",
-                @"# 📖 Cấu Trúc Cây Nhị Phân & Traversal
-### DFS (Depth-First Search)
-- **Pre-order**: Nốt → trái → phải.
-- **In-order**: trái → nốt → phải.
-- **Post-order**: trái → phải → nốt.
-Dùng đệ quy hoặc stack (tường minh).
-
-### BFS (Breadth-First Search)
-Duyệt theo tầng (Level Order), dùng queue:
-```csharp
-void BFS(TreeNode root) {
-    var q = new Queue<TreeNode>();
-    q.Enqueue(root);
-    while (q.Count > 0) {
-        var node = q.Dequeue();
-        Process(node);
-        if (node.left != null) q.Enqueue(node.left);
-        if (node.right != null) q.Enqueue(node.right);
-    }
-}
-```",
-                "dsa", "{\"tree\":[1,2,3,4,5]}", treeQuiz?.Id, 45, 1);
-
-            AddLessonToCourse(c5, "Cây tìm kiếm nhị phân (BST) & thao tác",
-                @"# 🌳 Binary Search Tree
-- Mọi nốt con trái < nốt cha < mọi nốt con phải.
-- Thao tác tìm kiếm, thêm, xóa trung bình O(log n), worst-case O(n) nếu cây suy biến thành danh sách liên kết.
-
-### Xóa node trong BST
-1. Nốt lá: xóa trực tiếp.
-2. Một con: thay bằng con.
-3. Hai con: tìm node nhỏ nhất bên phải (in-order successor), copy giá trị, xóa successor.
-
-### Duyệt In-order trên BST cho dãy tăng dần
-Đây là tính chất quan trọng để kiểm tra tính hợp lệ của BST.",
-                "dsa", "{}", null, 45, 2);
-
-            AddLessonToCourse(c5, "Cây AVL & cân bằng cây",
-                @"# ⚖️ Cây AVL (Adelson-Velsky Landis)
-BST tự cân bằng, đảm bảo chiều cao O(log n) bằng cách giữ độ lệch ≤ 1.
-
-### Hệ số cân bằng
-`balance = height(left) - height(right)` nằm trong {-1, 0, 1}.
-
-### Các phép xoay
-- Xoay trái (Left Rotation)
-- Xoay phải (Right Rotation)
-- Xoay kép (Left-Right, Right-Left)
-
-Nhờ cân bằng, AVL duy trì hiệu năng O(log n) cho mọi thao tác, thích hợp cho ứng dụng cần tìm kiếm nhanh.",
-                "dsa", "{}", null, 40, 3);
-
-            
-            var c6 = new Course(teacher.Id, "Tư duy Hướng đối tượng (OOP Mastery)",
-                "Visual hóa 4 trụ cột OOP, bảng VTable, Composition vs Inheritance và các loại interface.",
-                CourseCategory.OOP, CourseDifficulty.Intermediate, true,
-                "https://images.unsplash.com/photo-1517694712202-14dd9538aa97?w=500&q=80");
-            AddLessonToCourse(c6, "Đóng gói & Đa hình qua VTable",
-                @"# 🔐 4 Trụ Cột OOP & VTable
-### Encapsulation (Đóng gói)
-Ẩn chi tiết bên trong, chỉ phơi bày những gì cần thiết qua public methods. Sử dụng `private`, `protected`.
-
-### Polymorphism (Đa hình)
-Phương thức ảo (virtual) cho phép lớp con override. Khi gọi qua tham chiếu lớp cha, runtime tra cứu VTable để gọi đúng phương thức của lớp thực tế.
-
-VTable: mỗi lớp có bảng chứa địa chỉ các phương thức ảo. Cơ chế Dynamic Dispatch chọn đúng hàm lúc runtime.",
-                "oop", "{}", oopQuiz?.Id, 50, 1);
-
-            AddLessonToCourse(c6, "Kế thừa sâu & Composition vs Inheritance",
-                @"# 🧬 Kế thừa vs Composition
-### Vấn đề kế thừa sâu
-- Lớp con phụ thuộc chặt vào lớp cha, khó thay đổi.
-- Dễ vi phạm Liskov Substitution Principle.
-- Kế thừa đa cấp tạo ra cây phức tạp.
-
-### Ưu tiên Composition
-`""Favor composition over inheritance""` – sử dụng field/object bên trong thay vì kế thừa, tạo sự linh hoạt, dễ mở rộng.
-
-### Ví dụ
-```csharp
-class Car {
-    Engine engine;  // composition
-    void Start() { engine.Ignite(); }
-}
-```
-Thay đổi `Engine` không ảnh hưởng đến `Car`.",
-                "oop", "{}", null, 45, 2);
-
-            AddLessonToCourse(c6, "Abstract Class, Interface & Default Implementation",
-                @"# 📜 Abstract Class vs Interface
-- **Abstract class**: có thể chứa method thường, constructor, state. Dùng khi các lớp có mối quan hệ ""is-a"" và chia sẻ code.
-- **Interface**: khai báo hợp đồng, hỗ trợ đa kế thừa. Từ C# 8.0 có default implementation.
-
-### Khi nào dùng?
-- Dùng interface cho khả năng (can-do), abstract class cho bản chất (is-a).
-- Ví dụ: `IFlyable`, `ISwimmable` là interface; `Animal` là abstract class.
-
-### Dependency Inversion
-Code hướng interface giúp giảm coupling, dễ test và bảo trì.",
-                "oop", "{}", null, 40, 3);
-
-            
-            var c7 = new Course(teacher.Id, "Design Patterns cơ bản",
-                "Học cách thiết kế phần mềm linh hoạt bằng Singleton, Factory, Observer, Strategy, Decorator, Proxy.",
-                CourseCategory.Patterns, CourseDifficulty.Intermediate, true,
-                "https://images.unsplash.com/photo-1504639725590-34d0984388bd?w=500&q=80");
-            AddLessonToCourse(c7, "Observer & Strategy Pattern",
-                @"# 👀 Observer Pattern
-Định nghĩa phụ thuộc 1-nhiều: khi một đối tượng (Subject) thay đổi trạng thái, tất cả Observer được thông báo tự động.
-- Subject giữ danh sách Observer, cung cấp Attach/Detach/Notify.
-- Sử dụng trong event handling, MVC.
-
-### 🧠 Strategy Pattern
-Đóng gói các thuật toán vào từng lớp riêng, cho phép hoán đổi linh hoạt lúc runtime.
-- Ví dụ: `ICompressionStrategy` với `ZipCompression`, `RarCompression`.
-- Context chỉ cần tham chiếu đến strategy interface.",
-                "patterns", "{}", patternsQuiz?.Id, 50, 1);
-
-            AddLessonToCourse(c7, "Singleton & Factory Method",
-                @"# 🔒 Singleton Pattern
-Đảm bảo chỉ một instance duy nhất, cung cấp global access point.
-```csharp
-public class Logger {
-    private static Logger instance;
-    private Logger() {}
-    public static Logger Instance {
-        get {
-            if (instance == null) instance = new Logger();
-            return instance;
-        }
-    }
-}
-```
-### 🏭 Factory Method
-Định nghĩa interface để tạo đối tượng, nhưng để subclass quyết định class cụ thể.
-- Giảm sự phụ thuộc vào `new`, dễ mở rộng thêm loại mới.
-- Ví dụ: `Document` với `CreatePage()` factory method, các subclass `Resume`, `Report` override.",
-                "patterns", "{}", null, 45, 2);
-
-            AddLessonToCourse(c7, "Decorator & Proxy Pattern",
-                @"# 🎀 Decorator Pattern
-Gán thêm trách nhiệm cho object một cách động mà không sửa code gốc. Các decorator wrap object gốc.
-- Ví dụ: `ICoffee` → `SimpleCoffee` → `MilkDecorator` → `SugarDecorator`.
-- Mỗi decorator thêm hành vi trước/sau khi gọi đối tượng gốc.
-
-### 🛡️ Proxy Pattern
-Cung cấp đối tượng thay thế để kiểm soát truy cập đến object thật.
-- Virtual Proxy: lazy loading.
-- Protection Proxy: kiểm tra quyền truy cập.
-- Remote Proxy: giao tiếp qua mạng.",
-                "patterns", "{}", null, 40, 3);
-
-            
-            
-            
-
-            
-            var c8 = new Course(teacher.Id, "Đồ thị & Bài toán tối ưu đường đi",
-                "Khảo sát biểu diễn đồ thị, Dijkstra, Bellman-Ford, duyệt đồ thị và Topological Sort.",
-                CourseCategory.Graph, CourseDifficulty.Advanced, true,
-                "https://images.unsplash.com/photo-1558494949-ef010cbdcc31?w=500&q=80");
-            AddLessonToCourse(c8, "Thuật toán Dijkstra & Cạnh trọng số âm",
-                @"# 📈 Dijkstra – Đường đi ngắn nhất
-Sử dụng hàng đợi ưu tiên (Min-Heap) chọn đỉnh có khoảng cách nhỏ nhất chưa xét.
-- Bắt đầu từ nguồn: dist[src]=0, còn lại ∞.
-- Vòng lặp: lấy đỉnh u có dist nhỏ nhất → cập nhật các đỉnh v kề nếu `dist[u] + w < dist[v]`.
-
-### Lưu ý quan trọng
-**Không dùng được với cạnh trọng số âm** vì khi cố định khoảng cách một đỉnh, ta không thể giảm thêm nếu có đường đi qua cạnh âm chưa xét. Khi đó dùng Bellman-Ford.",
-                "graph", "{}", graphQuiz?.Id, 60, 1);
-
-            AddLessonToCourse(c8, "Bellman-Ford & Phát hiện chu trình âm",
-                @"# 🔄 Bellman-Ford
-- Khởi tạo dist[src]=0, còn lại ∞.
-- Lặp |V|-1 lần: relax tất cả các cạnh (`if dist[u] + w < dist[v] then update`).
-- Sau |V|-1 lần, nếu vẫn còn cạnh có thể relax → đồ thị chứa chu trình âm.
-
-### So sánh với Dijkstra
-- Bellman-Ford chậm hơn O(VE) nhưng xử lý được cạnh âm.
-- Thường dùng trong các bài toán tài chính, mạng máy tính phát hiện arbitrage.",
-                "graph", "{}", null, 55, 2);
-
-            AddLessonToCourse(c8, "Duyệt đồ thị (BFS/DFS) & Topological Sort",
-                @"# 🌐 Duyệt đồ thị
-- **BFS**: Duyệt theo chiều rộng, dùng queue. Tìm đường ngắn nhất trên đồ thị không trọng số.
-- **DFS**: Duyệt theo chiều sâu, dùng stack/đệ quy. Phát hiện chu trình, topological sort.
-
-### Topological Sort (Sắp xếp topo)
-Chỉ áp dụng cho DAG (Directed Acyclic Graph). Dùng DFS: khi duyệt xong một đỉnh, đẩy vào stack. Thứ tự pop ra cho ta thứ tự topo.
-- Ứng dụng: lập lịch công việc, phân giải phụ thuộc.",
-                "graph", "{}", null, 50, 3);
-
-            
-            var c9 = new Course(teacher.Id, "Nguyên lý SOLID & Tái cấu trúc code",
-                "Tối ưu kiến trúc phần mềm với 5 nguyên lý SOLID, chỉ số LCOM4, kỹ thuật Refactoring God Class và Dependency Injection.",
-                CourseCategory.SOLID, CourseDifficulty.Advanced, true,
-                "https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=500&q=80");
-            AddLessonToCourse(c9, "Đo lường LCOM4 & Nguyên lý SOLID",
-                @"# 🔨 SOLID & Code Metrics
-### LCOM4 (Lack of Cohesion of Methods)
-Đo lường sự thiếu gắn kết giữa các phương thức trong một lớp. LCOM4 cao → lớp làm quá nhiều việc, vi phạm SRP.
-- Cách tính: đếm số thành phần liên thông trong đồ thị gọi phương thức.
-- Mục tiêu: LCOM4 = 1 (tất cả phương thức liên quan chặt chẽ).
-
-### Nguyên lý SOLID
-- **S**ingle Responsibility
-- **O**pen/Closed
-- **L**iskov Substitution
-- **I**nterface Segregation
-- **D**ependency Inversion",
-                "solid", "{}", solidQuiz?.Id, 60, 1);
-
-            AddLessonToCourse(c9, "Refactoring God Class & Feature Envy",
-                @"# 🧹 Refactoring Code Smells
-### God Class (Lớp thần thánh)
-Một lớp tập trung quá nhiều trách nhiệm, hàng nghìn dòng code.
-- Giải pháp: tách thành các lớp nhỏ hơn, mỗi lớp một nhiệm vụ.
-- Dùng Extract Class, Extract Method.
-
-### Feature Envy (Ghen tị chức năng)
-Một phương thức gọi quá nhiều phương thức của lớp khác hơn là của chính nó.
-- Di chuyển phương thức đó sang lớp mà nó ""ghen tị"".
-
-### Data Clumps, Long Parameter List...
-Nhận diện qua công cụ phân tích tĩnh (SonarQube) và refactor dần.",
-                "solid", "{}", null, 50, 2);
-
-            AddLessonToCourse(c9, "Dependency Injection & Inversion of Control",
-                @"# 🔄 IoC & DI
-### Inversion of Control (IoC)
-Nhường quyền kiểm soát việc tạo đối tượng cho framework/container, thay vì tự `new` trong code.
-
-### Dependency Injection (DI)
-- Constructor Injection: truyền dependency qua constructor.
-- Method/Property Injection.
-- DI Container (Unity, Autofac, .NET Core DI) quản lý vòng đời (Singleton, Scoped, Transient).
-
-Lợi ích: giảm coupling, dễ unit test với mock, tuân thủ DIP.",
-                "solid", "{}", null, 45, 3);
-
-            
-            var c10 = new Course(teacher.Id, "Quy hoạch động (Dynamic Programming)",
-                "Bản chất Memoization vs Tabulation, bài toán Knapsack 0/1, LCS, Edit Distance và tối ưu không gian.",
-                CourseCategory.DataStructure, CourseDifficulty.Advanced, true,
-                "https://images.unsplash.com/photo-1509228468518-180dd4864904?w=500&q=80");
-            AddLessonToCourse(c10, "Bảng Tabulation & Bài toán Cái túi (Knapsack)",
-                @"# 🎒 Dynamic Programming cơ bản
-### Hai cách tiếp cận
-- **Memoization (Top-down)**: đệ quy có lưu trữ kết quả con.
-- **Tabulation (Bottom-up)**: điền bảng từ bài toán nhỏ nhất.
-
-### Knapsack 0/1
-Cho N đồ vật, trọng lượng w[i], giá trị v[i]. Túi chứa tối đa W. Chọn đồ vật (0/1) để tổng giá trị max.
-- DP[i][j]: giá trị max với i đồ vật đầu và trọng lượng j.
-- `dp[i][j] = max(dp[i-1][j], v[i] + dp[i-1][j-w[i]])` nếu `j >= w[i]`.
-- Độ phức tạp O(N*W).",
-                "dsa", "{}", dpQuiz?.Id, 65, 1);
-
-            AddLessonToCourse(c10, "Longest Common Subsequence (LCS) & Edit Distance",
-                @"# 📏 LCS – Dãy con chung dài nhất
-- Cho hai chuỗi X, Y. Tìm độ dài dãy con chung dài nhất (không cần liên tiếp).
-- `dp[i][j] = dp[i-1][j-1] + 1` nếu `X[i]==Y[j]`, ngược lại `max(dp[i-1][j], dp[i][j-1])`.
-
-### Edit Distance (Levenshtein)
-Số thao tác ít nhất (insert, delete, replace) để biến chuỗi A thành B.
-- `dp[i][j]` với i ký tự đầu của A, j ký tự đầu của B.
-- Nếu `A[i]==B[j]`: `dp[i][j] = dp[i-1][j-1]`
-- Ngược lại: `1 + min(dp[i-1][j], dp[i][j-1], dp[i-1][j-1])`.
-
-Cả hai đều là DP 2D kinh điển, nền tảng cho so sánh văn bản, diff tool.",
-                "dsa", "{}", null, 55, 2);
-
-            AddLessonToCourse(c10, "State Machine DP & Tối ưu không gian",
-                @"# 🔄 DP nâng cao
-### DP với máy trạng thái
-Một số bài toán yêu cầu lưu trạng thái (ví dụ: mua bán cổ phiếu với số lần giao dịch giới hạn). DP[ngày][trạng thái] lưu lợi nhuận tối đa.
-
-### Tối ưu không gian
-Nhiều bài DP 2D có thể giảm xuống 1D hoặc O(1) bằng cách chỉ lưu hàng trước đó (rolling array).
-- Ví dụ: Knapsack 0/1 có thể dùng mảng 1D duyệt ngược:
-```csharp
-int[] dp = new int[W+1];
-for (int i = 0; i < N; i++)
-    for (int j = W; j >= w[i]; j--)
-        dp[j] = Math.Max(dp[j], v[i] + dp[j - w[i]]);
-```
-Giảm không gian từ O(N*W) xuống O(W).",
-                "dsa", "{}", null, 50, 3);
-
-            
-            var c11 = new Course(teacher.Id, "System Design nhập môn & Concurrency",
-                "Mô phỏng Packet Routing, Load Balancing, Race Condition, Lock & Thread-safe Singleton, Caching và Consistent Hashing.",
-                CourseCategory.SystemDesign, CourseDifficulty.Advanced, true,
-                "https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?w=500&q=80");
-            AddLessonToCourse(c11, "Race Condition & Load Balancer Router",
-                @"# 🧵 Concurrency & Load Balancing
-### Race Condition
-Nhiều thread cùng đọc/ghi tài nguyên dùng chung mà không đồng bộ → kết quả không đoán trước.
-- Giải pháp: lock (`Monitor.Enter`/`Exit`), Mutex, Semaphore, `Concurrent` collections.
-
-### Load Balancer
-Phân phối request đến nhiều server backend.
-- **Round Robin**: lần lượt từng server.
-- **Least Connections**: chọn server có ít kết nối nhất.
-- **IP Hash**: hash client IP để chọn server, giúp session stickiness.",
-                "system", "{}", systemQuiz?.Id, 70, 1);
-
-            AddLessonToCourse(c11, "Microservices vs Monolith & Communication",
-                @"# 🏗️ Kiến trúc hệ thống
-### Monolith
-- Toàn bộ ứng dụng đóng gói cùng nhau. Dễ phát triển ban đầu, khó scale và bảo trì khi lớn.
-
-### Microservices
-- Chia thành các service nhỏ, độc lập, giao tiếp qua API (REST/gRPC) hoặc message broker (RabbitMQ, Kafka).
-- Ưu: scale từng phần, triển khai độc lập.
-- Nhược: độ phức tạp quản lý, distributed transactions.
-
-### Communication patterns
-- Synchronous (HTTP/REST, gRPC)
-- Asynchronous (Event-driven, message queue)",
-                "system", "{}", null, 55, 2);
-
-            AddLessonToCourse(c11, "Caching Strategies & Consistent Hashing",
-                @"# 💨 Caching & Consistent Hashing
-### Caching Strategies
-- **Cache-Aside**: App kiểm tra cache, nếu miss thì lấy từ DB rồi ghi vào cache.
-- **Write-Through**: Ghi DB + cache đồng thời.
-- **Write-Behind**: Ghi cache trước, async ghi DB sau.
-
-### Consistent Hashing
-Dùng trong hệ thống cache phân tán (Memcached, Redis cluster).
-- Hash cả key và server lên một vòng tròn.
-- Key được gán cho server gần nhất theo chiều kim đồng hồ.
-- Khi thêm/bớt server, chỉ 1/N key bị ảnh hưởng (thay vì tất cả như hash modulo).",
-                "system", "{}", null, 50, 3);
-
-            await _context.Courses.AddRangeAsync(c1, c2, c3, c4, c5, c6, c7, c8, c9, c10, c11);
-            await _context.SaveChangesAsync();
-        }
-    
-        private void AddLessonToCourse(Course course, string title, string contentMd, string sandboxType, string sandboxConfig, Guid? quizId, int xpReward, int index)
+        private class SeedCourseModel
         {
-            var module = course.Modules.FirstOrDefault();
-            if (module == null)
-            {
-                module = new CourseModule(course.Id, "Chương Mặc Định", "Nội dung khóa học", 1000);
-                course.Modules.Add(module);
-            }
-
-            var lesson = new Lesson(title, contentMd, sandboxType, sandboxConfig, xpReward, course.TeacherId);
-            _context.Lessons.Add(lesson);
-
-            var itemOrder = (module.Items.Count + 1) * 1000;
-            var lessonItem = new ModuleItem(module.Id, null, VisualizationDSA.Domain.Enums.ModuleItemType.Lesson, lesson.Id, null, null, title, itemOrder, true);
-            module.Items.Add(lessonItem);
-
-            if (quizId.HasValue)
-            {
-                var quizItem = new ModuleItem(module.Id, null, VisualizationDSA.Domain.Enums.ModuleItemType.Quiz, null, quizId.Value, null, "Quiz: " + title, itemOrder + 500, true);
-                module.Items.Add(quizItem);
-            }
+            public string Title { get; set; } = string.Empty;
+            public string Description { get; set; } = string.Empty;
+            public string Category { get; set; } = string.Empty;
+            public string Difficulty { get; set; } = string.Empty;
+            public string ImageUrl { get; set; } = string.Empty;
+            public List<SeedLessonModel> Lessons { get; set; } = new();
         }
-}
+
+        private class SeedLessonModel
+        {
+            public string Title { get; set; } = string.Empty;
+            public string ContentFile { get; set; } = string.Empty;
+            public string SandboxType { get; set; } = string.Empty;
+            public string SandboxConfig { get; set; } = string.Empty;
+            public int XpReward { get; set; }
+            public SeedQuizModel? Quiz { get; set; }
+            public SeedCodelabModel? Codelab { get; set; }
+        }
+
+        private class SeedQuizModel
+        {
+            public string Title { get; set; } = string.Empty;
+            public int PassingScore { get; set; }
+            public List<SeedQuestionModel> Questions { get; set; } = new();
+        }
+
+        private class SeedQuestionModel
+        {
+            public string Content { get; set; } = string.Empty;
+            public List<SeedOptionModel> Options { get; set; } = new();
+        }
+
+        private class SeedOptionModel
+        {
+            public string Text { get; set; } = string.Empty;
+            public bool IsCorrect { get; set; }
+            public string Explanation { get; set; } = string.Empty;
+        }
+
+        private class SeedCodelabModel
+        {
+            public string Title { get; set; } = string.Empty;
+            public string Description { get; set; } = string.Empty;
+            public string InitialCode { get; set; } = string.Empty;
+            public List<SeedTestCaseModel> TestCases { get; set; } = new();
+        }
+
+        private class SeedTestCaseModel
+        {
+            public string Input { get; set; } = string.Empty;
+            public string ExpectedOutput { get; set; } = string.Empty;
+            public bool IsHidden { get; set; }
+        }
+    }
 }

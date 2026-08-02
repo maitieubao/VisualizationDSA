@@ -1,5 +1,5 @@
 <template>
-  <div class="admin-panel">
+  <div class="admin-panel max-w-[1280px] mx-auto">
     
     <header class="panel-header">
       <div class="header-main">
@@ -31,8 +31,6 @@
       <AdminDashboardTab v-if="activeTab === 'dashboard'" ref="dashboardTabRef" />
       <AdminUsersTab v-else-if="activeTab === 'users'" @refresh-dashboard="refreshDashboard" />
       <AdminQuizzesTab v-else-if="activeTab === 'quizzes'" @refresh-dashboard="refreshDashboard" />
-      <AdminSystemTab v-else-if="activeTab === 'system'" />
-      <AdminAuditTab v-else-if="activeTab === 'audit'" />
     </div>
   </div>
 </template>
@@ -42,8 +40,6 @@ import { ref } from 'vue';
 import AdminDashboardTab from './AdminDashboardTab.vue';
 import AdminUsersTab from './AdminUsersTab.vue';
 import AdminQuizzesTab from './AdminQuizzesTab.vue';
-import AdminSystemTab from './AdminSystemTab.vue';
-import AdminAuditTab from './AdminAuditTab.vue';
 
 interface Tab {
   id: string;
@@ -53,10 +49,8 @@ interface Tab {
 
 const tabs: Tab[] = [
   { id: 'dashboard', name: 'Tổng quan', icon: 'chart-bar' },
-  { id: 'users', name: 'Người dùng', icon: 'users' },
-  { id: 'quizzes', name: 'Quản lý Quiz', icon: 'clipboard-list' },
-  { id: 'system', name: 'Hệ thống', icon: 'cog' },
-  { id: 'audit', name: 'Nhật ký Quản trị', icon: 'shield' },
+  { id: 'users', name: 'Người dùng & Giảng viên', icon: 'users' },
+  { id: 'quizzes', name: 'Ngân hàng Quiz', icon: 'clipboard-list' }
 ];
 
 const activeTab = ref('dashboard');

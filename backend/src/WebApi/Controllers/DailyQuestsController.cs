@@ -24,18 +24,18 @@ namespace VisualizationDSA.WebApi.Controllers
         }
 
         [HttpGet("me")]
-        public async Task<ActionResult<IEnumerable<DailyQuestDto>>> GetMyDailyQuests()
+        public async Task<ActionResult<IEnumerable<DailyQuestDto>>> GetMyDailyQuests([FromQuery] int tzOffset = 0)
         {
             var userId = GetCurrentUserId();
-            var quests = await _dailyQuestService.GetDailyQuestsAsync(userId);
+            var quests = await _dailyQuestService.GetDailyQuestsAsync(userId, tzOffset);
             return Ok(quests);
         }
 
         [HttpPost("{questId}/claim")]
-        public async Task<ActionResult<DailyQuestDto>> ClaimQuestReward(Guid questId)
+        public async Task<ActionResult<DailyQuestDto>> ClaimQuestReward(Guid questId, [FromQuery] int tzOffset = 0)
         {
             var userId = GetCurrentUserId();
-            var result = await _dailyQuestService.ClaimQuestRewardAsync(userId, questId);
+            var result = await _dailyQuestService.ClaimQuestRewardAsync(userId, questId, tzOffset);
             
             if (result == null)
             {

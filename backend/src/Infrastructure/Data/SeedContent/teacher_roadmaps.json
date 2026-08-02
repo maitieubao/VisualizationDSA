@@ -1,0 +1,63 @@
+[
+  {
+    "title": "Roadmap: System Design Phỏng Vấn (Google & Meta)",
+    "description": "Lộ trình thiết kế hệ thống phân tán nâng cao cho kỹ sư phần mềm chuẩn bị phỏng vấn Big Tech.",
+    "isPublic": true,
+    "nodes": [
+      {
+        "name": "Chương 1: Căn bản về Hệ Thống",
+        "description": "Hiểu rõ về DNS, Load Balancing, Caching, Databases (SQL vs NoSQL).",
+        "difficulty": "Easy",
+        "sortOrder": 1,
+        "contentJson": "[{\"type\":\"text\",\"content\":\"Hãy bắt đầu với các khái niệm cơ bản về hệ thống phân tán...\"}]",
+        "officialApproach": "Đọc kĩ các bài viết về kiến trúc cơ bản trên blog của Tech Companies.",
+        "quizId": null,
+        "labId": null,
+        "leetCodeId": null
+      },
+      {
+        "name": "Chương 2: Thiết kế Rate Limiter",
+        "description": "Học cách giới hạn lưu lượng bằng thuật toán Token Bucket và Leaky Bucket.",
+        "difficulty": "Medium",
+        "sortOrder": 2,
+        "contentJson": "[{\"type\":\"text\",\"content\":\"Rate Limiting rất quan trọng để chống DDoS và bảo vệ API...\"}]",
+        "quizId": null,
+        "labId": null,
+        "leetCodeId": "logger-rate-limiter"
+      },
+      {
+        "name": "Chương 3: Thiết kế Web Crawler",
+        "description": "Hệ thống lấy dữ liệu song song (parallel scraping) và quản lý hàng đợi URL (URL Frontier).",
+        "difficulty": "Hard",
+        "sortOrder": 3,
+        "contentJson": "[{\"type\":\"text\",\"content\":\"Web Crawler yêu cầu khả năng mở rộng cực cao...\"}]",
+        "quizId": null,
+        "labId": null,
+        "leetCodeId": "web-crawler-multithreaded"
+      }
+    ]
+  },
+  {
+    "title": "Roadmap: Thuật Toán Thi Đấu (Competitive Programming)",
+    "description": "Tổng hợp các kỹ thuật thuật toán nâng cao: Segment Tree, Fenwick Tree, DP on Trees.",
+    "isPublic": true,
+    "nodes": [
+      {
+        "name": "Segment Tree Cơ Bản",
+        "description": "Cấu trúc dữ liệu cây phân đoạn dùng để truy vấn tổng và cập nhật mảng trong O(log N).",
+        "difficulty": "Medium",
+        "sortOrder": 1,
+        "contentJson": "[]",
+        "leetCodeId": "range-sum-query-mutable"
+      },
+      {
+        "name": "Quy hoạch động trên cây (DP on Tree)",
+        "description": "Sử dụng đệ quy để tính toán giá trị quy hoạch động từ lá lên gốc.",
+        "difficulty": "Hard",
+        "sortOrder": 2,
+        "contentJson": "[]",
+        "leetCodeId": "binary-tree-maximum-path-sum"
+      }
+    ]
+  }
+]

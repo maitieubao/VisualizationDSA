@@ -29,6 +29,10 @@ export const gemsShopService = {
   },
 
   equipAvatarFrame(frameType: string | null): Promise<{ success: boolean; avatarFrameType: string | null }> {
-    return api.patch(`/users/me/avatar-frame`, { frameType });
+    return api.post(`/gems-shop/equip`, { frameType });
+  },
+
+  equipAvatar(avatarId: string | null): Promise<{ success: boolean }> {
+    return api.post(`/gems-shop/equip-avatar`, { avatarId });
   }
 };

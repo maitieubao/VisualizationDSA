@@ -6,7 +6,7 @@
       @click.self="close"
     >
       <div class="bg-bg-secondary rounded-xl border border-border-subtle shadow-2xl max-w-md w-full p-6">
-        <h2 class="text-xl font-bold text-text-primary mb-2">🚧 {{ title }}</h2>
+        <h2 class="text-xl font-bold text-text-primary mb-2"><BaseIcon name="tool" class="w-4 h-4 inline-block mr-1 align-text-bottom" />{{ title }}</h2>
         <p class="text-text-secondary text-sm mb-4">{{ message }}</p>
         <div class="flex justify-end gap-2">
           <button
@@ -18,7 +18,7 @@
           </button>
           <button
             type="button"
-            class="px-4 py-2 rounded-lg bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 hover:bg-indigo-500/30 transition-colors"
+            class="px-4 py-2 rounded-lg bg-accent/20 text-accent border border-border-accent hover:bg-accent/30 transition-colors"
             @click="onSaveStub"
           >
             Lưu (Stub)

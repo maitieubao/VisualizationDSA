@@ -1,10 +1,9 @@
 <template>
-  <div class="settings-modal-overlay" @click.self="closeModal">
-    <div class="settings-modal-dialog">
-      
+  <div class="profile-page-wrapper">
+    <div class="profile-page-container glass-panel">
       <div class="settings-modal-header">
         <div class="header-title-box">
-          <BaseIcon name="admin" class="w-4 h-4 text-indigo-400 mr-2" />
+          <BaseIcon name="admin" class="w-4 h-4 text-accent mr-2" />
           <h1 class="header-title">Settings</h1>
         </div>
 
@@ -13,9 +12,6 @@
             <BaseIcon :name="authStore.isPremium ? 'diamond' : 'badge'" class="w-3.5 h-3.5 mr-1" />
             <span>{{ authStore.isPremium ? 'PRO' : 'Standard' }}</span>
           </div>
-          <button class="modal-close-btn" @click="closeModal" title="Đóng Cài Đặt (Esc)">
-            ✕
-          </button>
         </div>
       </div>
 
@@ -24,8 +20,10 @@
         
         <aside class="modal-sidebar">
           <div class="sidebar-user-card">
-            <div class="user-avatar" :class="{ 'user-avatar--pro': authStore.isPremium }">
-              {{ initials }}
+            <div class="user-avatar relative" :class="{ 'user-avatar--pro': authStore.isPremium }">
+              <img v-if="authStore.currentUser?.avatarUrl" :src="authStore.currentUser.avatarUrl" alt="Avatar" class="w-full h-full object-cover rounded-full" />
+              <span v-else>{{ initials }}</span>
+              <div v-if="authStore.currentUser?.avatarFrameType" class="absolute -inset-2 pointer-events-none" :class="getFrameClass(authStore.currentUser.avatarFrameType)"></div>
             </div>
             <div class="user-meta">
               <span class="user-display-name">{{ currentNickname || authStore.userName }}</span>
@@ -98,21 +96,8 @@ const router = useRouter();
 const authStore = useAuthStore();
 const activeTab = ref<'general' | 'progress' | 'history' | 'security' | 'preferences' | 'about'>('general');
 
-function closeModal() {
-  if (window.history.length > 1) { router.back(); } else { router.push('/dashboard'); }
-}
-
-function handleKeydown(e: KeyboardEvent) {
-  if (e.key === 'Escape') closeModal();
-}
-
 onMounted(async () => {
-  window.addEventListener('keydown', handleKeydown);
   await authStore.loadStatelessProfile();
-});
-
-onUnmounted(() => {
-  window.removeEventListener('keydown', handleKeydown);
 });
 
 const initials = computed(() => {
@@ -122,6 +107,19 @@ const initials = computed(() => {
 
 const currentNickname = computed(() => authStore.currentUser?.nickname);
 const badgesCount = computed(() => authStore.currentUser?.badges?.length || 0);
+
+const getFrameClass = (frameType: string) => {
+  const type = frameType.toLowerCase();
+  switch (type) {
+    case 'neon': return 'ring-4 ring-fuchsia-500 shadow-[0_0_15px_rgba(217,70,239,0.8)] rounded-full';
+    case 'gold': return 'ring-4 ring-yellow-400 shadow-[0_0_15px_rgba(250,204,21,0.8)] rounded-full';
+    case 'cyber': return 'ring-4 ring-cyan-400 shadow-[0_0_15px_rgba(34,211,238,0.8)] rounded-full';
+    case 'fire': return 'ring-4 ring-rose-500 shadow-[0_0_15px_rgba(244,63,94,0.8)] rounded-full';
+    case 'ice': return 'ring-4 ring-sky-300 shadow-[0_0_15px_rgba(125,211,252,0.8)] rounded-full';
+    case 'diamond': return 'ring-4 ring-blue-400 shadow-[0_0_15px_rgba(96,165,250,0.8)] rounded-full';
+    default: return 'ring-2 ring-accent rounded-full';
+  }
+};
 </script>
 
 <style>

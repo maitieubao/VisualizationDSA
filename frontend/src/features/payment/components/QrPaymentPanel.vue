@@ -2,10 +2,10 @@
   <div class="grid grid-cols-1 sm:grid-cols-12 gap-6 items-center">
     
     <div class="sm:col-span-5 flex flex-col items-center">
-      <div class="qr-wrapper p-2 bg-white rounded-lg shadow-lg relative border border-border-strong">
+      <div class="qr-wrapper p-2 bg-bg-surface rounded-lg shadow-lg relative border border-border-strong">
         <img :src="order?.qrUrl" alt="VietQR Pay Code" class="w-40 h-40 object-contain" />
         
-        <div v-if="isExpired" class="absolute inset-0 bg-bg-primary/90 rounded-lg flex flex-col items-center justify-center p-2 text-center">
+        <div v-if="isExpired" class="absolute inset-0 bg-black/90 rounded-lg flex flex-col items-center justify-center p-2 text-center">
           <BaseIcon name="clock" class="w-6 h-6 text-accent-red mb-2" />
           <span class="text-xs font-semibold text-accent-red">Mã hết hạn</span>
           <button @click="$emit('retry')" class="mt-2 text-[10px] px-2 py-1 bg-accent text-text-primary rounded hover:bg-accent-light transition">Thử lại</button>
@@ -27,15 +27,15 @@
       <div class="space-y-2 text-xs bg-bg-secondary/50 p-4 rounded-[var(--radius-lg)] border border-[var(--border-color)]">
         <div class="flex justify-between">
           <span class="text-[var(--text-muted)]">Ngân hàng:</span>
-          <span class="font-bold text-[var(--text-primary)]">{{ order?.bankId }}</span>
+          <span class="font-bold text-[var(--color-text-primary)]">{{ order?.bankId }}</span>
         </div>
         <div class="flex justify-between">
           <span class="text-[var(--text-muted)]">Số tài khoản:</span>
-          <span class="font-bold text-[var(--text-primary)] font-mono">{{ order?.bankAccount }}</span>
+          <span class="font-bold text-[var(--color-text-primary)] font-mono">{{ order?.bankAccount }}</span>
         </div>
         <div class="flex justify-between">
           <span class="text-[var(--text-muted)]">Chủ tài khoản:</span>
-          <span class="font-bold text-[var(--text-primary)]">{{ order?.accountName }}</span>
+          <span class="font-bold text-[var(--color-text-primary)]">{{ order?.accountName }}</span>
         </div>
         <div class="flex justify-between">
           <span class="text-[var(--text-muted)]">Số tiền:</span>

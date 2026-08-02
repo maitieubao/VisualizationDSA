@@ -89,7 +89,7 @@
             :class="[
               `input-bar-${idx}`,
               'relative w-9 rounded-t-md transition-all duration-300 flex flex-col justify-end items-center border',
-              isInputBarActive(idx) ? 'active-input-bar border-cyan-400' : 'inactive-input-bar border-cyan-500/20'
+              isInputBarActive(idx) ? 'active-input-bar border-cyan-400' : 'inactive-input-bar border-accent-cyan/20'
             ]"
             :style="{
               height: `${Math.max(item.value * 0.75, 18)}px`,
@@ -106,7 +106,7 @@
             <span class="absolute -top-5 text-[9px] font-bold text-sky-400 select-none">
               {{ item.value }}
             </span>
-            <span v-if="(props.frame?.arrayStateWithIds?.length ?? 0) <= 12" class="text-[8px] font-mono text-slate-500 select-none pb-0.5">
+            <span v-if="(props.frame?.arrayStateWithIds?.length ?? 0) <= 12" class="text-[8px] font-mono text-text-muted select-none pb-0.5">
               A[{{ idx }}]
             </span>
           </div>
@@ -202,7 +202,7 @@
             </div>
 
             {{ item ? item.value : '_' }}
-            <span v-if="(props.frame?.bucketSortOutputWithIds?.length ?? 0) <= 12" class="absolute -top-4 text-[7.5px] font-mono text-slate-600 select-none">
+            <span v-if="(props.frame?.bucketSortOutputWithIds?.length ?? 0) <= 12" class="absolute -top-4 text-[7.5px] font-mono text-text-muted select-none">
               O[{{ idx }}]
             </span>
           </div>

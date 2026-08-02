@@ -1,25 +1,25 @@
 <template>
-  <div class="trace-animation-canvas flex flex-col h-full bg-slate-900 rounded-xl p-4 text-white">
+  <div class="trace-animation-canvas flex flex-col h-full bg-bg-secondary rounded-xl p-4 text-text-primary">
     <!-- Main Canvas Area -->
     <div class="flex flex-1 gap-4 overflow-hidden">
       <!-- Left: Variables & CallStack -->
-      <div class="w-1/4 bg-slate-800 rounded p-3 overflow-y-auto font-mono text-sm border border-slate-700 shadow-inner">
-        <h4 class="text-blue-400 font-bold mb-2 uppercase text-xs tracking-wider border-b border-slate-700 pb-1">Call Stack</h4>
+      <div class="w-1/4 bg-bg-hover rounded p-3 overflow-y-auto font-mono text-sm border border-border-default shadow-inner">
+        <h4 class="text-blue-400 font-bold mb-2 uppercase text-xs tracking-wider border-b border-border-default pb-1">Call Stack</h4>
         <div class="mb-4">
-          <div v-for="(func, idx) in currentFrame?.callStack || []" :key="idx" class="text-slate-300">
+          <div v-for="(func, idx) in currentFrame?.callStack || []" :key="idx" class="text-text-secondary">
             {{ func }}()
           </div>
         </div>
 
-        <h4 class="text-green-400 font-bold mb-2 uppercase text-xs tracking-wider border-b border-slate-700 pb-1">Local Variables</h4>
-        <div v-for="(val, key) in currentFrame?.variables || {}" :key="key" class="flex justify-between py-1 border-b border-slate-700/50">
-          <span class="text-purple-300">{{ key }}</span>
-          <span class="text-slate-100 truncate ml-2">{{ formatValue(val) }}</span>
+        <h4 class="text-green-400 font-bold mb-2 uppercase text-xs tracking-wider border-b border-border-default pb-1">Local Variables</h4>
+        <div v-for="(val, key) in currentFrame?.variables || {}" :key="key" class="flex justify-between py-1 border-b border-border-default/50">
+          <span class="text-accent-purple">{{ key }}</span>
+          <span class="text-text-primary truncate ml-2">{{ formatValue(val) }}</span>
         </div>
       </div>
 
       <!-- Right: Array Visualizer -->
-      <div class="flex-1 bg-slate-800 rounded p-4 flex items-end justify-center relative border border-slate-700 shadow-inner">
+      <div class="flex-1 bg-bg-hover rounded p-4 flex items-end justify-center relative border border-border-default shadow-inner">
         <transition-group
           name="sort-list"
           tag="div"
@@ -41,12 +41,12 @@
                 minHeight: '32px'
               }"
             >
-              <span class="text-white drop-shadow-md z-10">{{ val }}</span>
+              <span class="text-text-primary drop-shadow-md z-10">{{ val }}</span>
             </div>
           </div>
         </transition-group>
 
-        <div v-if="!currentFrame?.arrayState?.length" class="absolute inset-0 flex items-center justify-center text-slate-500 italic">
+        <div v-if="!currentFrame?.arrayState?.length" class="absolute inset-0 flex items-center justify-center text-text-muted italic">
           No array data in trace
         </div>
       </div>
@@ -91,17 +91,17 @@ watch(currentFrame, (newFrame) => {
 
 const getBarClass = (idx: number) => {
   const frame = currentFrame.value;
-  if (!frame) return 'bg-slate-600 border-slate-500';
+  if (!frame) return 'bg-slate-600 border-border-default';
 
   if (frame.highlightIndices?.includes(idx)) {
-    return 'bg-amber-500 border-amber-400 text-slate-900 scale-105 z-20';
+    return 'bg-accent-warm border-amber-400 text-slate-900 scale-105 z-20';
   }
   
   if (frame.swapEvent?.from === idx || frame.swapEvent?.to === idx) {
-    return 'bg-rose-500 border-rose-400 text-white scale-110 z-30 shadow-[0_0_15px_rgba(244,63,94,0.6)]';
+    return 'bg-accent-red border-accent-red text-text-primary scale-110 z-30 shadow-[0_0_15px_rgba(244,63,94,0.6)]';
   }
 
-  return 'bg-blue-600 border-blue-500 text-white';
+  return 'bg-blue-600 border-accent text-text-primary';
 };
 
 const formatValue = (val: any) => {

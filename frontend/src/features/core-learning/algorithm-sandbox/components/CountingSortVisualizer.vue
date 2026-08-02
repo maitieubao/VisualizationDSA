@@ -149,7 +149,7 @@
 
               
               <div 
-                class="text-[8px] font-mono font-bold text-cyan-400 animate-pulse select-none leading-none mt-0.5"
+                class="text-[8px] font-mono font-bold text-accent-cyan animate-pulse select-none leading-none mt-0.5"
                 v-if="isInputBarActive(idx)"
               >
                 ↑
@@ -160,7 +160,7 @@
             <div
               v-if="frame?.inputArray && frame.inputArray.length <= 12"
               class="mt-1 font-mono text-[9px] font-bold shrink-0 transition-all duration-300"
-              :class="isInputBarActive(idx) ? 'text-cyan-400 scale-105' : 'index-label'"
+              :class="isInputBarActive(idx) ? 'text-accent-cyan scale-105' : 'index-label'"
             >
               [{{ idx }}]
             </div>
@@ -198,7 +198,7 @@
             
             <div
               class="py-1.5 text-xs font-mono font-bold transition-all duration-300"
-              :class="isCountCellHighlighted(val - 1) ? 'text-cyan-400 font-extrabold' : 'count-cell-value'"
+              :class="isCountCellHighlighted(val - 1) ? 'text-accent-cyan font-extrabold' : 'count-cell-value'"
             >
               {{ frame?.countArray?.[val - 1] ?? 0 }}
             </div>
@@ -263,7 +263,7 @@
             <div
               v-if="frame?.inputArray && frame.inputArray.length <= 12"
               class="mt-1 font-mono text-[9px] font-bold shrink-0 transition-all duration-300"
-              :class="isOutputSlotActive(idx) ? 'text-emerald-400 scale-105' : 'index-label'"
+              :class="isOutputSlotActive(idx) ? 'text-accent-green scale-105' : 'index-label'"
             >
               [{{ idx }}]
             </div>

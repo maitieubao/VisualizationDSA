@@ -1,5 +1,5 @@
 <template>
-  <div ref="mathContainer" class="mathjax-block text-slate-300 overflow-x-auto py-2" v-html="content" />
+  <div ref="mathContainer" class="mathjax-block text-text-secondary overflow-x-auto py-2" v-html="content" />
 </template>
 
 <script setup lang="ts">

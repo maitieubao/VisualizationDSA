@@ -14,9 +14,9 @@
       <div class="r-row" style="gap:5px;flex-wrap:wrap">
         <span class="r-lbl">Chữ số:</span>
         <span class="r-chip" :class="activeDigitPlace === 1 ? 'r-chip--on' : ''">Đơn vị (1s)</span>
-        <span class="r-arrow">➔</span>
+        <span class="r-arrow"><BaseIcon name="arrow-right" class="w-3 h-3" /></span>
         <span class="r-chip" :class="activeDigitPlace === 10 ? 'r-chip--on' : ''">Chục (10s)</span>
-        <span class="r-arrow">➔</span>
+        <span class="r-arrow"><BaseIcon name="arrow-right" class="w-3 h-3" /></span>
         <span class="r-chip" :class="activeDigitPlace === 100 ? 'r-chip--on' : ''">Trăm (100s)</span>
       </div>
       <div class="r-row" style="gap:5px;flex-wrap:wrap">

@@ -1,7 +1,7 @@
 <template>
   <div class="excel-importer-card">
     <div class="card-header">
-      <h3 class="card-title">📂 Nhập trắc nghiệm từ file Excel</h3>
+      <h3 class="card-title"><BaseIcon name="clipboard-list" class="w-4 h-4 inline-block mr-1 align-text-bottom" /> Nhập trắc nghiệm từ file Excel</h3>
       <p class="card-subtitle">
         Tải file mẫu Excel, điền thông tin các câu hỏi và tải lên để nhập hàng loạt câu hỏi vào hệ thống.
       </p>
@@ -10,11 +10,11 @@
     
     <div class="controls-row">
       <button class="btn-secondary" @click="downloadTemplate">
-        📥 Tải File Mẫu Excel
+        <BaseIcon name="save" class="w-4 h-4 inline-block mr-1 align-text-bottom" /> Tải File Mẫu Excel
       </button>
 
       <label class="btn-primary file-input-label">
-        📤 Chọn File Excel...
+        <BaseIcon name="export-share" class="w-4 h-4 inline-block mr-1 align-text-bottom" /> Chọn File Excel...
         <input
           type="file"
           accept=".xlsx, .xls"
@@ -26,7 +26,7 @@
 
     
     <div v-if="parsedQuizzes.length > 0" class="preview-section">
-      <h4 class="preview-heading">👀 Xem trước dữ liệu (Tìm thấy {{ parsedQuizzes.length }} bài trắc nghiệm)</h4>
+      <h4 class="preview-heading"><BaseIcon name="eye" class="w-4 h-4 inline-block mr-1 align-text-bottom" /> Xem trước dữ liệu (Tìm thấy {{ parsedQuizzes.length }} bài trắc nghiệm)</h4>
       
       <div class="quizzes-preview-list">
         <div 
@@ -50,7 +50,7 @@
               Lỗi ({{ quiz.validationErrors.length }})
             </span>
             <span v-else-if="quiz.imported" class="status-badge status-badge--success">
-              Đã nhập xong ✅
+              Đã nhập xong <BaseIcon name="check" class="w-3 h-3 inline-block ml-0.5 align-text-bottom" />
             </span>
             <span v-else class="status-badge status-badge--ready">
               Sẵn sàng
@@ -60,7 +60,7 @@
           
           <ul v-if="quiz.validationErrors.length > 0" class="errors-list">
             <li v-for="(err, ei) in quiz.validationErrors" :key="ei">
-              ⚠️ {{ err }}
+              <BaseIcon name="warning" class="w-3.5 h-3.5 inline-block mr-1 align-text-bottom text-accent-warm" /> {{ err }}
             </li>
           </ul>
 
@@ -86,7 +86,7 @@
                   </div>
                 </div>
                 <p v-if="q.explanation" class="q-explanation">
-                  💡 <em>Giải thích:</em> {{ q.explanation }}
+                  <BaseIcon name="bulb" class="w-3.5 h-3.5 inline-block mr-1 align-text-bottom text-accent-warm" /> <em>Giải thích:</em> {{ q.explanation }}
                 </p>
               </div>
             </div>
@@ -100,7 +100,7 @@
           :disabled="hasInvalidQuizzes || importing" 
           @click="submitAllQuizzes"
         >
-          {{ importing ? 'Đang tải lên...' : '🚀 Xác nhận nhập tất cả các bài trắc nghiệm hợp lệ' }}
+          {{ importing ? 'Đang tải lên...' : 'Xác nhận nhập tất cả các bài trắc nghiệm hợp lệ' }} <BaseIcon v-if="!importing" name="rocket" class="w-4 h-4 inline-block ml-1 align-text-bottom" />
         </button>
         <span v-if="hasInvalidQuizzes" class="warning-text">
           * Vui lòng chỉnh sửa các ô bị lỗi trong file Excel trước khi tiến hành import.

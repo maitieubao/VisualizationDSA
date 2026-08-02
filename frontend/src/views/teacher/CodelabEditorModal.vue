@@ -5,7 +5,7 @@
         <div class="modal-header">
           <h3 class="modal-title">
             <BaseIcon :name="editingCodelab ? 'edit' : 'plus'" class="w-5 h-5 inline mr-2" />
-            {{ editingCodelab ? 'Chá»‰nh sá»­a Codelab' : 'Táº¡o Codelab má»›i' }}
+            {{ editingCodelab ? 'Chỉnh sửa Codelab' : 'Tạo Codelab mới' }}
           </h3>
           <button type="button" class="modal-close" @click="$emit('update:show', false)">
             <BaseIcon name="x" class="w-5 h-5" />
@@ -15,60 +15,60 @@
         <form @submit.prevent="handleSubmit" class="modal-body">
           
           <div class="form-field">
-            <label class="form-label">TiÃªu Ä‘á» <span class="text-rose-400">*</span></label>
-            <input v-model="form.title" type="text" class="form-input" placeholder="VD: CÃ i Ä‘áº·t Bubble Sort" required maxlength="200" />
-            <p class="form-hint">{{ form.title.length }}/200 kÃ½ tá»±</p>
+            <label class="form-label">Tiêu đề <span class="text-accent-red">*</span></label>
+            <input v-model="form.title" type="text" class="form-input" placeholder="VD: Cài đặt Bubble Sort" required maxlength="200" />
+            <p class="form-hint">{{ form.title.length }}/200 ký tự</p>
           </div>
           
           <div class="form-field">
-            <label class="form-label">MÃ´ táº£ <span class="text-rose-400">*</span></label>
-            <textarea v-model="form.description" class="form-input form-textarea" placeholder="MÃ´ táº£ chi tiáº¿t bÃ i toÃ¡n..." rows="3" required maxlength="2000"></textarea>
-            <p class="form-hint">{{ form.description.length }}/2000 kÃ½ tá»±</p>
+            <label class="form-label">Mô tả <span class="text-accent-red">*</span></label>
+            <textarea v-model="form.description" class="form-input form-textarea" placeholder="Mô tả chi tiết bài toán..." rows="3" required maxlength="2000"></textarea>
+            <p class="form-hint">{{ form.description.length }}/2000 ký tự</p>
           </div>
           
           <div class="form-row">
             <div class="form-field">
-              <label class="form-label">Äá»™ khÃ³ <span class="text-rose-400">*</span></label>
+              <label class="form-label">Độ khó <span class="text-accent-red">*</span></label>
               <select v-model.number="form.difficulty" class="form-select" required>
-                <option value="1">1 - Dá»…</option>
-                <option value="2">2 - Dá»…</option>
-                <option value="3">3 - Trung bÃ¬nh</option>
-                <option value="4">4 - KhÃ³</option>
-                <option value="5">5 - Ráº¥t khÃ³</option>
+                <option value="1">1 - Dễ</option>
+                <option value="2">2 - Dễ</option>
+                <option value="3">3 - Trung bình</option>
+                <option value="4">4 - Khó</option>
+                <option value="5">5 - Rất khó</option>
               </select>
             </div>
             <div class="form-field">
-              <label class="form-label">XP ThÆ°á»Ÿng <span class="text-rose-400">*</span></label>
+              <label class="form-label">XP Thưởng <span class="text-accent-red">*</span></label>
               <input v-model.number="form.xpReward" type="number" class="form-input" min="10" max="500" required />
             </div>
           </div>
           
           <div class="form-row">
             <div class="form-field">
-              <label class="form-label">Giá»›i háº¡n thá»i gian (ms)</label>
+              <label class="form-label">Giới hạn thời gian (ms)</label>
               <input v-model.number="form.maxRuntimeMs" type="number" class="form-input" min="100" max="10000" />
             </div>
             <div class="form-field">
-              <label class="form-label">Giá»›i háº¡n bá»™ nhá»› (bytes)</label>
+              <label class="form-label">Giới hạn bộ nhớ (bytes)</label>
               <input v-model.number="form.maxMemoryBytes" type="number" class="form-input" min="1000000" max="536870912" />
             </div>
           </div>
           
           <div class="form-field">
-            <label class="form-label">NgÃ´n ngá»¯ cho phÃ©p</label>
+            <label class="form-label">Ngôn ngữ cho phép</label>
             <input v-model="form.allowedLanguages" type="text" class="form-input" placeholder="csharp,python,java,javascript,cpp,go" />
-            <p class="form-hint">CÃ¡ch nhau bá»Ÿi dáº¥u pháº©y. Máº·c Ä‘á»‹nh: csharp,python,java,javascript</p>
+            <p class="form-hint">Cách nhau bởi dấu phẩy. Mặc định: csharp,python,java,javascript</p>
           </div>
           
           
           <div class="form-section">
             <h4 class="form-section-title">
               <BaseIcon name="code" class="w-4 h-4 inline mr-1" />
-              Code máº«u (Initial Code)
+              Code mẫu (Initial Code)
             </h4>
             <CustomMarkdownEditor 
               v-model="form.initialCode" 
-              :placeholder="'Code máº«u cho há»c viÃªn...'"
+              :placeholder="'Code mẫu cho học viên...'"
               :height="200"
             />
           </div>
@@ -76,13 +76,13 @@
           
           <div class="form-row">
             <div class="form-field">
-              <label class="form-label">RÃ ng buá»™c (Constraints)</label>
-              <textarea v-model="form.constraints" class="form-input form-textarea" placeholder="N â‰¤ 1000&#10;Time Limit: 1s&#10;Memory Limit: 128MB" rows="4"></textarea>
+              <label class="form-label">Ràng buộc (Constraints)</label>
+              <textarea v-model="form.constraints" class="form-input form-textarea" placeholder="N ≤ 1000&#10;Time Limit: 1s&#10;Memory Limit: 128MB" rows="4"></textarea>
             </div>
             <div class="form-field">
-              <label class="form-label">VÃ­ dá»¥ (Examples - JSON)</label>
-              <textarea v-model="form.examples" class="form-input form-textarea" placeholder='[{"input": "[5,2,9,1,5,6]", "output": "[1,2,5,5,6,9]", "explanation": "Sáº¯p xáº¿p tÄƒng dáº§n"}]' rows="4"></textarea>
-              <p class="form-hint">Äá»‹nh dáº¡ng JSON: [{"input": "...", "output": "...", "explanation": "..."}]</p>
+              <label class="form-label">Ví dụ (Examples - JSON)</label>
+              <textarea v-model="form.examples" class="form-input form-textarea" placeholder='[{"input": "[5,2,9,1,5,6]", "output": "[1,2,5,5,6,9]", "explanation": "Sắp xếp tăng dần"}]' rows="4"></textarea>
+              <p class="form-hint">Định dạng JSON: [{"input": "...", "output": "...", "explanation": "..."}]</p>
             </div>
           </div>
           
@@ -90,47 +90,47 @@
           <div class="form-section">
             <h4 class="form-section-title">
               <BaseIcon name="lightbulb" class="w-4 h-4 inline mr-1" />
-              Gá»£i Ã½ (Hints - cÃ³ thá»ƒ tiered vá»›i XP cost)
+              Gợi ý (Hints - có thể tiered với XP cost)
             </h4>
-            <div v-if="form.hints.length === 0" class="text-center py-4 text-slate-500">
-              ChÆ°a cÃ³ gá»£i Ã½ nÃ o. <button type="button" class="text-indigo-400 hover:underline" @click="addHint">ThÃªm gá»£i Ã½ Ä‘áº§u tiÃªn</button>
+            <div v-if="form.hints.length === 0" class="text-center py-4 text-text-muted">
+              Chưa có gợi ý nào. <button type="button" class="text-accent hover:underline" @click="addHint">Thêm gợi ý đầu tiên</button>
             </div>
             <div v-else class="space-y-3">
-              <div v-for="(hint, idx) in form.hints" :key="idx" class="hint-row p-3 rounded-lg border border-white/5 bg-slate-950/50 flex items-start gap-3">
-                <span class="text-sm text-slate-400 font-mono w-6">{{ idx + 1 }}.</span>
+              <div v-for="(hint, idx) in form.hints" :key="idx" class="hint-row p-3 rounded-lg border border-border-default bg-bg-primary/50 flex items-start gap-3">
+                <span class="text-sm text-text-secondary font-mono w-6">{{ idx + 1 }}.</span>
                 <div class="flex-1 min-w-0 space-y-2">
-                  <input v-model="hint.content" type="text" class="form-input" :placeholder="`Gá»£i Ã½ ${idx + 1}...`" required />
+                  <input v-model="hint.content" type="text" class="form-input" :placeholder="`Gợi ý ${idx + 1}...`" required />
                   <div class="flex items-center gap-3">
-                    <label class="flex items-center gap-2 cursor-pointer text-slate-300 hover:text-white">
+                    <label class="flex items-center gap-2 cursor-pointer text-text-secondary hover:text-text-primary">
                       <input type="checkbox" v-model="hint.isTiered" class="form-checkbox" />
-                      <span>Gá»£i Ã½ tiered (tá»‘n XP)</span>
+                      <span>Gợi ý tiered (tốn XP)</span>
                     </label>
                     <div v-if="hint.isTiered" class="flex items-center gap-2">
-                      <label class="text-xs text-slate-400">XP cost:</label>
+                      <label class="text-xs text-text-secondary">XP cost:</label>
                       <input v-model.number="hint.xpCost" type="number" class="form-input w-20" min="1" max="50" required />
                     </div>
                   </div>
                 </div>
-                <button type="button" class="btn-action-icon text-rose-400 hover:text-rose-300 p-1.5" @click="removeHint(idx)" title="XÃ³a gá»£i Ã½">
+                <button type="button" class="btn-action-icon text-accent-red hover:text-accent-red p-1.5" @click="removeHint(idx)" title="Xóa gợi ý">
                   <BaseIcon name="trash-2" class="w-4 h-4" />
                 </button>
               </div>
             </div>
             <button type="button" class="btn-secondary text-sm mt-2" @click="addHint">
-              <BaseIcon name="plus" class="w-4 h-4 inline mr-1" /> ThÃªm gá»£i Ã½
+              <BaseIcon name="plus" class="w-4 h-4 inline mr-1" /> Thêm gợi ý
             </button>
           </div>
           
           <div class="modal-footer">
             <button type="button" class="btn-secondary" @click="$emit('update:show', false)">
-              Há»§y
+              Hủy
             </button>
             <button type="submit" class="btn-primary" :disabled="saving">
               <span v-if="saving" class="flex items-center gap-2">
                 <span class="spinner-sm"></span>
-                Äang lÆ°u...
+                Đang lưu...
               </span>
-              <span v-else>{{ editingCodelab ? 'Cáº­p nháº­t Codelab' : 'Táº¡o Codelab' }}</span>
+              <span v-else>{{ editingCodelab ? 'Cập nhật Codelab' : 'Tạo Codelab' }}</span>
             </button>
           </div>
         </form>
@@ -216,11 +216,11 @@ function removeHint(idx: number) {
 
 async function handleSubmit() {
   if (!form.title.trim() || !form.description.trim()) {
-    alert('TiÃªu Ä‘á» vÃ  mÃ´ táº£ khÃ´ng Ä‘Æ°á»£c Ä‘á»ƒ trá»‘ng');
+    alert('Tiêu đề và mô tả không được để trống');
     return;
   }
   if (form.hints.some(h => !h.content.trim())) {
-    alert('Táº¥t cáº£ gá»£i Ã½ pháº£i cÃ³ ná»™i dung');
+    alert('Tất cả gợi ý phải có nội dung');
     return;
   }
   

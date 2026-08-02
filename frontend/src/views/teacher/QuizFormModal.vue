@@ -5,7 +5,7 @@
         <div class="modal-header">
           <h3 class="modal-title">
             <BaseIcon :name="editingQuiz ? 'edit' : 'plus'" class="w-5 h-5 inline mr-2" />
-            {{ editingQuiz ? 'Chá»‰nh sá»­a Quiz' : 'Táº¡o Quiz má»›i' }}
+            {{ editingQuiz ? 'Chỉnh sửa Quiz' : 'Tạo Quiz mới' }}
           </h3>
           <button type="button" class="modal-close" @click="$emit('update:show', false)">
             <BaseIcon name="x" class="w-5 h-5" />
@@ -14,53 +14,53 @@
         
         <form @submit.prevent="handleSubmit" class="modal-body">
           <div class="form-field">
-            <label class="form-label">TiÃªu Ä‘á» Quiz <span class="text-rose-400">*</span></label>
-            <input v-model="form.title" type="text" class="form-input" placeholder="VD: Kiá»ƒm tra kiáº¿n thá»©c Bubble Sort" required maxlength="200" />
-            <p class="form-hint">{{ form.title.length }}/200 kÃ½ tá»±</p>
+            <label class="form-label">Tiêu đề Quiz <span class="text-accent-red">*</span></label>
+            <input v-model="form.title" type="text" class="form-input" placeholder="VD: Kiểm tra kiến thức Bubble Sort" required maxlength="200" />
+            <p class="form-hint">{{ form.title.length }}/200 ký tự</p>
           </div>
           
           <div class="form-field">
-            <label class="form-label">MÃ´ táº£</label>
-            <textarea v-model="form.description" class="form-input form-textarea" placeholder="MÃ´ táº£ ngáº¯n gá»n vá» quiz..." rows="3" maxlength="1000"></textarea>
-            <p class="form-hint">{{ form.description.length }}/1000 kÃ½ tá»±</p>
+            <label class="form-label">Mô tả</label>
+            <textarea v-model="form.description" class="form-input form-textarea" placeholder="Mô tả ngắn gọn về quiz..." rows="3" maxlength="1000"></textarea>
+            <p class="form-hint">{{ form.description.length }}/1000 ký tự</p>
           </div>
           
           <div class="form-row">
             <div class="form-field">
-              <label class="form-label">Chá»§ Ä‘á» <span class="text-rose-400">*</span></label>
+              <label class="form-label">Chủ đề <span class="text-accent-red">*</span></label>
               <select v-model="form.topic" class="form-select" required>
-                <option value="">Chá»n chá»§ Ä‘á»</option>
+                <option value="">Chọn chủ đề</option>
                 <option v-for="t in topics" :key="t" :value="t">{{ t }}</option>
               </select>
             </div>
             <div class="form-field">
-              <label class="form-label">Äá»™ khÃ³ <span class="text-rose-400">*</span></label>
+              <label class="form-label">Độ khó <span class="text-accent-red">*</span></label>
               <select v-model.number="form.difficulty" class="form-select" required>
-                <option value="1">1 - Dá»…</option>
-                <option value="2">2 - Dá»…</option>
-                <option value="3">3 - Trung bÃ¬nh</option>
-                <option value="4">4 - KhÃ³</option>
-                <option value="5">5 - Ráº¥t khÃ³</option>
+                <option value="1">1 - Dễ</option>
+                <option value="2">2 - Dễ</option>
+                <option value="3">3 - Trung bình</option>
+                <option value="4">4 - Khó</option>
+                <option value="5">5 - Rất khó</option>
               </select>
             </div>
           </div>
           
           <div class="form-field">
-            <label class="form-label">XP ThÆ°á»Ÿng <span class="text-rose-400">*</span></label>
+            <label class="form-label">XP Thưởng <span class="text-accent-red">*</span></label>
             <input v-model.number="form.xpReward" type="number" class="form-input" min="10" max="500" required />
-            <p class="form-hint">Äiá»ƒm kinh nghiá»‡m há»c viÃªn nháº­n Ä‘Æ°á»£c khi hoÃ n thÃ nh</p>
+            <p class="form-hint">Điểm kinh nghiệm học viên nhận được khi hoàn thành</p>
           </div>
           
           <div class="modal-footer">
             <button type="button" class="btn-secondary" @click="$emit('update:show', false)">
-              Há»§y
+              Hủy
             </button>
             <button type="submit" class="btn-primary" :disabled="saving">
               <span v-if="saving" class="flex items-center gap-2">
                 <span class="spinner-sm"></span>
-                Äang lÆ°u...
+                Đang lưu...
               </span>
-              <span v-else>{{ editingQuiz ? 'Cáº­p nháº­t Quiz' : 'Táº¡o Quiz' }}</span>
+              <span v-else>{{ editingQuiz ? 'Cập nhật Quiz' : 'Tạo Quiz' }}</span>
             </button>
           </div>
         </form>
@@ -116,7 +116,7 @@ watch(() => props.show, (newShow) => {
 
 async function handleSubmit() {
   if (!form.title.trim() || !form.topic) {
-    alert('TiÃªu Ä‘á» vÃ  chá»§ Ä‘á» khÃ´ng Ä‘Æ°á»£c Ä‘á»ƒ trá»‘ng');
+    alert('Tiêu đề và chủ đề không được để trống');
     return;
   }
   

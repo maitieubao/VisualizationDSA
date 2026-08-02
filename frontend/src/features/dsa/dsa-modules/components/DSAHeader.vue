@@ -1,10 +1,10 @@
 <template>
   <div class="flex items-center gap-3 px-3 py-2 bg-bg-surface/50 rounded-lg border border-border-default">
     <button
-      class="text-xs text-text-secondary hover:text-white px-2 py-1 rounded hover:bg-bg-active transition-colors"
+      class="text-xs text-text-secondary hover:text-text-primary px-2 py-1 rounded hover:bg-bg-active transition-colors"
       @click="$emit('back')"
     >
-      ← Quay lại
+      <BaseIcon name="chevron-left" class="w-3.5 h-3.5 inline-block mr-0.5 align-text-bottom" /> Quay lại
     </button>
     <div class="flex-1 flex items-center gap-3">
       <span class="text-sm font-bold text-text-primary">{{ algorithm.name }}</span>
@@ -22,7 +22,7 @@
       :class="{ 'bg-accent-primary-dim text-accent-primary border-accent-primary': isTheoryOpen }"
       @click="$emit('toggleTheory')"
     >
-      📚 Lý thuyết
+      <BaseIcon name="book" class="w-3.5 h-3.5 inline-block mr-1 align-text-bottom" /> Lý thuyết
     </button>
     <button
       class="text-xs bg-accent hover:bg-accent-light text-text-primary px-3 py-1.5 rounded-lg font-medium transition-colors"

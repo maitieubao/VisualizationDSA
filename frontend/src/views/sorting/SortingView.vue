@@ -1,13 +1,13 @@
 <template>
   <div class="sorting-view-root flex flex-col h-full w-full p-1.5 max-w-[1920px] mx-auto overflow-hidden relative font-sans">
-    <div class="top-control-bar flex items-center justify-between px-3 py-1 bg-bg-surface border border-border-default rounded-lg backdrop-blur-xl shrink-0 shadow-md z-20 mb-1">
+    <div class="top-control-bar glass-panel flex items-center justify-between px-4 py-2 shrink-0 z-20 mb-2 rounded-xl">
       <div class="flex items-center gap-1.5">
         <button
           v-for="tab in tabs"
           :key="tab.id"
           class="sub-tab-pill flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-bold transition-all duration-200 cursor-pointer"
           :class="activeTab === tab.id
-            ? 'bg-accent text-white shadow-sm'
+            ? 'bg-accent text-text-primary shadow-sm'
             : 'text-text-secondary hover:text-text-primary hover:bg-bg-hover'"
           @click="activeTab = tab.id"
         >
@@ -18,7 +18,7 @@
 
       <div class="flex items-center gap-3 font-mono text-[10px] uppercase tracking-wider text-text-secondary select-none">
         <span class="flex items-center gap-1.5 text-accent font-bold">
-          <span class="w-2 h-2 rounded-full bg-indigo-500 animate-pulse"></span>
+          <span class="w-2 h-2 rounded-full bg-accent animate-pulse"></span>
           VISUALGO-MODE 60FPS
         </span>
         <span class="text-text-muted text-[9px]">Space: Play/Pause | ← →: Step</span>
@@ -132,6 +132,6 @@ const activeProps = computed(() => {
 
 <style scoped>
 .sorting-view-root {
-  background-color: var(--color-bg-primary);
+  background-image: linear-gradient(to bottom, var(--color-bg-gradient-start), var(--color-bg-gradient-end));
 }
 </style>
