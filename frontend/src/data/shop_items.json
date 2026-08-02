@@ -1,0 +1,87 @@
+[
+  {
+    "id": "avatar-cyber-hacker",
+    "type": "avatar",
+    "name": "Cyber Hacker",
+    "description": "Avatar phong cách Cyberpunk, bóng mờ xanh neon.",
+    "price": 100,
+    "imageUrl": "/assets/avatars/cyber-hacker.png"
+  },
+  {
+    "id": "avatar-gold-knight",
+    "type": "avatar",
+    "name": "Golden Knight",
+    "description": "Hiệp sĩ hoàng kim sáng chói.",
+    "price": 200,
+    "imageUrl": "/assets/avatars/gold-knight.png"
+  },
+  {
+    "id": "avatar-neon-ninja",
+    "type": "avatar",
+    "name": "Neon Ninja",
+    "description": "Ninja ẩn mình trong bóng tối với viền neon hồng.",
+    "price": 150,
+    "imageUrl": "/assets/avatars/neon-ninja.png"
+  },
+  {
+    "id": "avatar-wizard",
+    "type": "avatar",
+    "name": "Code Wizard",
+    "description": "Pháp sư code có khả năng debug thần sầu.",
+    "price": 250,
+    "imageUrl": "/assets/avatars/wizard.png"
+  },
+  {
+    "id": "avatar-ai-bot",
+    "type": "avatar",
+    "name": "AI Companion",
+    "description": "Trợ lý AI siêu cấp dễ thương.",
+    "price": 50,
+    "imageUrl": "/assets/avatars/ai-bot.png"
+  },
+  {
+    "id": "frame-neon",
+    "type": "frame",
+    "name": "Neon Border",
+    "description": "Khung viền Neon tỏa sáng trong bóng tối.",
+    "price": 300,
+    "imageUrl": "/assets/frames/neon-border.png",
+    "cssClass": "ring-4 ring-pink-500 shadow-[0_0_15px_rgba(236,72,153,0.8)]"
+  },
+  {
+    "id": "frame-gold",
+    "type": "frame",
+    "name": "Royal Gold",
+    "description": "Khung hoàng gia mạ vàng quyền lực.",
+    "price": 500,
+    "imageUrl": "/assets/frames/gold-border.png",
+    "cssClass": "ring-4 ring-yellow-400 shadow-[0_0_20px_rgba(250,204,21,0.9)]"
+  },
+  {
+    "id": "frame-cyber",
+    "type": "frame",
+    "name": "Cyberpunk Frame",
+    "description": "Khung viền công nghệ tương lai.",
+    "price": 400,
+    "imageUrl": "/assets/frames/cyber-border.png",
+    "cssClass": "ring-4 ring-cyan-400 border-2 border-dashed border-indigo-500 shadow-[0_0_20px_rgba(34,211,238,0.8)]"
+  },
+  {
+    "id": "frame-fire",
+    "type": "frame",
+    "name": "Hellfire",
+    "description": "Khung viền bốc lửa rực cháy.",
+    "price": 600,
+    "imageUrl": "/assets/frames/fire-border.png",
+    "cssClass": "ring-4 ring-red-500 shadow-[0_0_25px_rgba(239,68,68,1)]"
+  },
+  {
+    "id": "frame-ice",
+    "type": "frame",
+    "name": "Frostbite",
+    "description": "Khung băng giá buốt lạnh.",
+    "price": 350,
+    "imageUrl": "/assets/frames/ice-border.png",
+    "cssClass": "ring-4 ring-sky-300 shadow-[0_0_20px_rgba(125,211,252,0.9)]"
+  }
+]

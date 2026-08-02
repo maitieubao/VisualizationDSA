@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
 using VisualizationDSA.Application.DTOs;
+using System.IdentityModel.Tokens.Jwt;
 using VisualizationDSA.Domain.Entities;
 using VisualizationDSA.Domain.Interfaces;
 using VisualizationDSA.Infrastructure.Services;
@@ -117,6 +118,33 @@ namespace VisualizationDSA.UnitTests.Services
 
             
             await Assert.ThrowsAsync<UnauthorizedAccessException>(() => _service.LoginAsync(request));
+        }
+
+        [Fact]
+        public async Task LoginAsync_ShouldReturnTokenWithCorrectRoleClaim()
+        {
+            // Arrange
+            var request = new LoginRequest
+            {
+                Email = "teacher@user.com",
+                Password = "Password123"
+            };
+
+            var passHash = BCrypt.Net.BCrypt.HashPassword("Password123", workFactor: 12);
+            var user = new User("teacher@user.com", "teacheruser", passHash);
+            user.SetRole("Teacher"); // Assume SetRole exists or using Reflection if private setter
+
+            _mockUserRepo.Setup(r => r.FindAsync(It.IsAny<Expression<Func<User, bool>>>()))
+                .ReturnsAsync(new List<User> { user });
+
+            // Act
+            var response = await _service.LoginAsync(request);
+
+            // Assert
+            var handler = new JwtSecurityTokenHandler();
+            var jwtToken = handler.ReadJwtToken(response.AccessToken);
+
+            jwtToken.Claims.Should().Contain(c => c.Type == "role" && c.Value == "Teacher");
         }
     }
 }

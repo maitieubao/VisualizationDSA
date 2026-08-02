@@ -13,8 +13,8 @@ export interface CompleteModuleResponse {
 
 export const learningProgressApi = {
   getMyProgress: () =>
-    api.get<LearningProgressDto[]>('/learning-progress'),
+    api.get<LearningProgressDto[]>('/users/me/progress'),
 
   completeModule: (moduleId: string) =>
-    api.post<CompleteModuleResponse>('/learning-progress/complete', { moduleId }),
+    api.post<CompleteModuleResponse>('/users/me/modules/' + moduleId),
 };

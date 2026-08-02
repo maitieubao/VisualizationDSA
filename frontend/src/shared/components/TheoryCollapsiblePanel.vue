@@ -81,7 +81,7 @@
 
           
           <button class="back-to-summary-footer-btn mt-4" @click="showFullDocs = false">
-            ◀ Quay lại Tóm tắt Khái niệm
+            <BaseIcon name="chevron-left" class="w-4 h-4 inline-block mr-1 align-text-bottom" /> Quay lại Tóm tắt Khái niệm
           </button>
         </div>
       </div>
@@ -90,10 +90,10 @@
 </template>
 <script setup lang="ts">
 import { ref, computed, watch, onMounted, onUnmounted, nextTick } from 'vue';
-import type { TheoryDocument } from '../types/theory.types';
+import type { TheoryDocument } from '@/shared/types/theory.types';
 import TheorySummaryView from './TheorySummaryView.vue';
 import TheoryAccordionItem from './TheoryAccordionItem.vue';
-import SvgIcon from '../../components/icons/SvgIcon.vue';
+import SvgIcon from '@/components/icons/SvgIcon.vue';
 
 const props = defineProps<{
   isOpen: boolean;

@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <div class="courses-list-view container mx-auto px-4 py-8 max-w-7xl animate-fade-in">
     
     <header class="mb-10 text-left flex flex-col md:flex-row md:items-end justify-between gap-6">
@@ -10,45 +10,49 @@
           Khám phá các khóa học trực quan sinh động giúp bạn làm chủ cấu trúc dữ liệu, giải thuật và thiết kế hệ thống.
         </p>
       </div>
-      <div v-if="authStore.currentUser" class="stats-glass px-6 py-3 rounded-lg border border-border-default flex items-center gap-4 bg-bg-surface backdrop-blur">
+      <div v-if="authStore.currentUser" class="stats-glass px-6 py-3 rounded-xl flex items-center gap-4 glass-panel">
         <div class="text-left">
           <div class="text-xs text-text-muted uppercase font-semibold tracking-wider">Cấp độ của bạn</div>
-          <div class="text-xl font-bold text-text-primary">Cấp {{ authStore.currentUser.currentLevel ?? 1 }}</div>
+          <div class="text-xl font-bold text-accent">Cấp {{ authStore.currentUser.currentLevel ?? 1 }}</div>
         </div>
-        <div class="w-[1px] h-8 bg-border-default"></div>
+        <div class="w-[1px] h-8 bg-bg-surface"></div>
         <div class="text-left">
           <div class="text-xs text-text-muted uppercase font-semibold tracking-wider">Tích lũy</div>
-          <div class="text-xl font-bold text-text-primary">{{ authStore.currentUser.totalXP ?? 0 }} XP</div>
+          <div class="text-xl font-bold text-accent-warm">{{ authStore.currentUser.totalXP ?? 0 }} XP</div>
         </div>
       </div>
     </header>
 
     
     <section class="filters-bar mb-8 flex flex-col sm:flex-row items-center gap-4 w-full">
-      
-      <div class="relative w-full sm:w-64">
-        <select 
-          v-model="selectedCategory"
-          class="appearance-none w-full bg-bg-surface text-text-primary border border-border-strong rounded-full pl-4 pr-10 py-2.5 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-accent/30 focus:border-accent transition-all cursor-pointer"
+      <div class="flex flex-wrap gap-2">
+        <button 
+          v-for="cat in categories" 
+          :key="cat.value" 
+          @click="selectedCategory = cat.value"
+          class="px-4 py-2 rounded-full text-sm font-semibold transition-all duration-300 border"
+          :class="selectedCategory === cat.value 
+            ? 'bg-accent text-text-primary border-border-accent shadow-[0_0_15px_rgba(99,102,241,0.4)]' 
+            : 'bg-bg-surface text-text-secondary border-border-default hover:bg-bg-hover/50 hover:border-border-default'"
         >
-          <option v-for="cat in categories" :key="cat.value" :value="cat.value">{{ cat.label }}</option>
-        </select>
-        <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-4 text-text-secondary">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg>
-        </div>
+          {{ cat.label }}
+        </button>
       </div>
 
-      
-      <div class="relative w-full sm:w-48">
-        <select 
-          v-model="selectedDifficulty"
-          class="appearance-none w-full bg-bg-surface text-text-primary border border-border-strong rounded-full pl-4 pr-10 py-2.5 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-accent/30 focus:border-accent transition-all cursor-pointer"
+      <div class="w-px h-8 bg-bg-surface mx-2 hidden sm:block"></div>
+
+      <div class="flex flex-wrap gap-2">
+        <button 
+          v-for="diff in difficulties" 
+          :key="diff.value" 
+          @click="selectedDifficulty = diff.value"
+          class="px-4 py-2 rounded-full text-sm font-semibold transition-all duration-300 border"
+          :class="selectedDifficulty === diff.value 
+            ? 'bg-accent-green text-text-primary border-accent-green shadow-[0_0_15px_rgba(16,185,129,0.4)]' 
+            : 'bg-bg-surface text-text-secondary border-border-default hover:bg-bg-hover/50 hover:border-border-default'"
         >
-          <option v-for="diff in difficulties" :key="diff.value" :value="diff.value">{{ diff.label }}</option>
-        </select>
-        <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-4 text-text-secondary">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg>
-        </div>
+          {{ diff.label }}
+        </button>
       </div>
     </section>
 
@@ -58,7 +62,7 @@
     </div>
 
     <div v-else-if="filteredCourses.length === 0" class="empty-state text-center py-20 bg-bg-surface rounded-lg border border-border-default">
-      <div class="text-5xl mb-4">🔍</div>
+      <LottiePlayer path="https://lottie.host/8c067882-abcf-4d92-bf3f-bdff6a24683d/v2p60HlPib.json" size="150px" />
       <h3 class="text-xl font-bold text-text-primary">Không tìm thấy khóa học phù hợp</h3>
       <p class="text-text-secondary mt-2">Vui lòng thay đổi bộ lọc hoặc quay lại sau.</p>
     </div>
@@ -68,15 +72,24 @@
         v-for="course in filteredCourses"
         :key="course.id"
         :to="{ name: 'course-detail', params: { id: course.id } }"
-        class="course-card group flex flex-col bg-bg-surface rounded-lg overflow-hidden border border-border-default hover:shadow-lg transition-all duration-300 cursor-pointer h-full"
+        class="course-card glass-panel spring-hover flex flex-col rounded-2xl overflow-hidden cursor-pointer h-full relative"
+        data-aos="fade-up"
       >
-        
-        <div class="relative w-full aspect-video overflow-hidden border-b border-border-subtle">
-          <img
-            :src="course.coverImageUrl || 'https://images.unsplash.com/photo-1618401471353-b98aedd07871?w=500&q=80'"
-            :alt="course.title"
-            class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-          />
+        <!-- Premium lock overlay (Blur effect) -->
+        <div v-if="course.isPremium && !authStore.currentUser?.isPremium" class="absolute inset-0 z-20 backdrop-blur-[2px] bg-black/40 flex items-center justify-center transition-all group-hover:backdrop-blur-sm">
+          <div class="bg-accent-warm/20 border border-accent-warm/50 text-accent-warm w-12 h-12 rounded-full flex items-center justify-center shadow-[0_0_20px_rgba(245,158,11,0.3)]">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>
+          </div>
+        </div>
+
+        <div class="relative w-full aspect-video overflow-hidden border-b border-border-default flex items-center justify-center transition-all duration-500"
+             :class="getCategoryGradient(course.category)">
+          <!-- Icon instead of image -->
+          <div class="text-6xl drop-shadow-[0_0_15px_rgba(255,255,255,0.3)] group-hover:scale-125 transition-transform duration-500 z-10">
+            {{ getCategoryIcon(course.category) }}
+          </div>
+          <!-- Dark mesh overlay -->
+          <div class="absolute inset-0 bg-gradient-to-t from-bg-primary to-transparent z-0 opacity-80 group-hover:opacity-60 transition-opacity"></div>
           
           <div class="absolute top-2 left-2 flex gap-1.5">
             <span
@@ -85,30 +98,40 @@
             >
               Premium
             </span>
+            <span class="px-2 py-1 rounded-md text-[9px] font-black uppercase tracking-wider shadow-md backdrop-blur border"
+                  :class="getDifficultyStyle(course.difficulty)">
+              {{ course.difficulty }}
+            </span>
           </div>
         </div>
 
-        
-        <div class="p-4 flex flex-col flex-1">
-          <h3 class="text-base font-bold text-text-primary group-hover:text-accent transition-colors line-clamp-2 leading-tight">
+        <div class="p-5 flex flex-col flex-1 relative z-10">
+          <h3 class="text-lg font-bold text-text-primary group-hover:text-accent transition-colors line-clamp-2 leading-tight mb-2">
             {{ course.title }}
           </h3>
-          <p class="text-xs text-text-muted mt-1.5 font-medium uppercase tracking-wide">
+          <p class="text-[11px] text-text-secondary font-medium uppercase tracking-wider mb-4">
             {{ categories.find(c => c.value === course.category)?.label || course.category }}
           </p>
           
           <div class="flex-1"></div>
 
-          
-          <div v-if="authStore.currentUser" class="mt-4">
-            <div class="w-full h-1 bg-bg-active rounded-full overflow-hidden">
-              <div
-                class="h-full bg-accent transition-all duration-500"
-                :style="{ width: course.progressPercent + '%' }"
-              ></div>
+          <div class="flex justify-between items-center text-xs text-text-secondary font-medium mb-4">
+            <span class="flex items-center gap-1"><svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-accent" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" /></svg> {{ course.totalLessons || 12 }} Trạm</span>
+            <span class="flex items-center gap-1"><svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-accent-green" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg> ~{{ (course.totalLessons || 12) * 15 }}m</span>
+          </div>
+
+          <div v-if="authStore.currentUser" class="mt-auto border-t border-border-default pt-4">
+            <div class="flex justify-between items-end mb-1">
+              <span class="text-[10px] font-semibold text-text-muted uppercase tracking-wider">Tiến độ</span>
+              <span class="text-xs font-bold text-accent">{{ course.progressPercent }}%</span>
             </div>
-            <div class="text-[10px] font-semibold text-text-muted mt-1">
-              Đã học {{ course.progressPercent }}%
+            <div class="w-full h-1.5 bg-bg-hover rounded-full overflow-hidden border border-border-default">
+              <div
+                class="h-full bg-gradient-to-r from-accent to-accent-purple transition-all duration-700 shadow-[0_0_10px_rgba(99,102,241,0.5)] relative"
+                :style="{ width: course.progressPercent + '%' }"
+              >
+                <div class="absolute inset-0 bg-bg-surface animate-pulse"></div>
+              </div>
             </div>
           </div>
         </div>
@@ -120,6 +143,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue';
 import { useAuthStore } from '../../features/auth/store/useAuthStore';
+import LottiePlayer from '@/shared/components/LottiePlayer.vue';
 
 interface CourseDto {
   id: string;
@@ -168,6 +192,35 @@ const filteredCourses = computed(() => {
   });
 });
 
+const getCategoryGradient = (category: string) => {
+  const map: Record<string, string> = {
+    DataStructure: 'bg-gradient-to-br from-accent to-blue-800',
+    Algorithm: 'bg-gradient-to-br from-emerald-600 to-teal-800',
+    OOP: 'bg-gradient-to-br from-accent-purple to-violet-800',
+    SystemDesign: 'bg-gradient-to-br from-accent-warm to-red-800'
+  };
+  return map[category] || 'bg-gradient-to-br from-slate-600 to-slate-800';
+};
+
+const getCategoryIcon = (category: string) => {
+  const map: Record<string, string> = {
+    DataStructure: '🔗',
+    Algorithm: '⚡',
+    OOP: '🧱',
+    SystemDesign: '🏗️'
+  };
+  return map[category] || '📚';
+};
+
+const getDifficultyStyle = (difficulty: string) => {
+  const map: Record<string, string> = {
+    Beginner: 'bg-accent-green/20 text-accent-green border-accent-green/30',
+    Intermediate: 'bg-accent-warm/20 text-accent-warm border-accent-warm/30',
+    Advanced: 'bg-accent-red/20 text-accent-red border-accent-red/30'
+  };
+  return map[difficulty] || 'bg-slate-500/20 text-text-secondary border-slate-500/30';
+};
+
 async function loadCourses() {
   loading.value = true;
   try {
@@ -180,180 +233,19 @@ async function loadCourses() {
     const res = await fetch(`${BASE_URL}/api/v1/concepts/courses`, { headers });
     if (res.ok) {
       const data = await res.json();
-      if (Array.isArray(data) && data.length > 0) {
+      if (Array.isArray(data)) {
         courses.value = data;
-        return;
       }
+    } else {
+      console.error('API failed:', await res.text());
     }
-    
-    courses.value = MOCK_COURSES;
   } catch (err) {
     console.error('Failed to load courses:', err);
-    courses.value = MOCK_COURSES;
   } finally {
     loading.value = false;
   }
 }
 
-const MOCK_COURSES: CourseDto[] = [
-  
-  {
-    id: 'c1',
-    title: 'Nhập môn Cấu trúc dữ liệu & Giải thuật',
-    description: 'Làm quen với giao diện AlgoLens, hiểu bản chất chỉ số Big-O, thao tác mảng và chuỗi cơ bản.',
-    category: 'DataStructure',
-    difficulty: 'Beginner',
-    isPremium: false,
-    coverImageUrl: 'https://images.unsplash.com/photo-1516116211223-48a122638c59?w=500&q=80',
-    isPublished: true,
-    createdAt: new Date().toISOString(),
-    totalLessons: 1,
-    completedLessons: 0,
-    progressPercent: 0
-  },
-  {
-    id: 'c2',
-    title: 'Làm chủ Danh sách liên kết (Linked List)',
-    description: 'Nắm vững con trỏ, Node, Singly vs Doubly Linked List, cơ chế quản lý bộ nhớ và cắt nối con trỏ.',
-    category: 'DataStructure',
-    difficulty: 'Beginner',
-    isPremium: false,
-    coverImageUrl: 'https://images.unsplash.com/photo-1544383835-bda2bc66a55d?w=500&q=80',
-    isPublished: true,
-    createdAt: new Date().toISOString(),
-    totalLessons: 1,
-    completedLessons: 0,
-    progressPercent: 0
-  },
-  {
-    id: 'c3',
-    title: 'Ngăn xếp & Hàng đợi (Stack & Queue)',
-    description: 'Hiểu rõ nguyên lý LIFO vs FIFO, ứng dụng Stack trong Undo/Redo và Queue trong xử lý hàng chờ.',
-    category: 'DataStructure',
-    difficulty: 'Beginner',
-    isPremium: false,
-    coverImageUrl: 'https://images.unsplash.com/photo-1555066931-4365d14bab8c?w=500&q=80',
-    isPublished: true,
-    createdAt: new Date().toISOString(),
-    totalLessons: 1,
-    completedLessons: 0,
-    progressPercent: 0
-  },
-  
-  {
-    id: 'c4',
-    title: 'Sắp xếp & Tìm kiếm hiệu quả',
-    description: 'Làm chủ tư duy Divide & Conquer, so sánh side-by-side tốc độ Bubble vs Quick vs Merge Sort.',
-    category: 'Algorithm',
-    difficulty: 'Intermediate',
-    isPremium: false,
-    coverImageUrl: 'https://images.unsplash.com/photo-1618401471353-b98aedd07871?w=500&q=80',
-    isPublished: true,
-    createdAt: new Date().toISOString(),
-    totalLessons: 2,
-    completedLessons: 0,
-    progressPercent: 0
-  },
-  {
-    id: 'c5',
-    title: 'Cây nhị phân & Duyệt cây (Binary Trees)',
-    description: 'Khảo sát tư duy đệ quy, duyệt cây DFS (Pre/In/Post order) và duyệt BFS theo tầng (Level Order).',
-    category: 'DataStructure',
-    difficulty: 'Intermediate',
-    isPremium: false,
-    coverImageUrl: 'https://images.unsplash.com/photo-1518770660439-4636190af475?w=500&q=80',
-    isPublished: true,
-    createdAt: new Date().toISOString(),
-    totalLessons: 1,
-    completedLessons: 0,
-    progressPercent: 0
-  },
-  {
-    id: 'c6',
-    title: 'Tư duy Hướng đối tượng (OOP Mastery)',
-    description: 'Visual hóa 4 trụ cột OOP, bảng VTable, cơ chế Dynamic Binding và Access Control dưới bộ nhớ.',
-    category: 'OOP',
-    difficulty: 'Intermediate',
-    isPremium: false,
-    coverImageUrl: 'https://images.unsplash.com/photo-1517694712202-14dd9538aa97?w=500&q=80',
-    isPublished: true,
-    createdAt: new Date().toISOString(),
-    totalLessons: 1,
-    completedLessons: 0,
-    progressPercent: 0
-  },
-  {
-    id: 'c7',
-    title: 'Design Patterns cơ bản',
-    description: 'Học cách thiết kế phần mềm linh hoạt bằng Singleton, Factory, Observer và Strategy Pattern.',
-    category: 'OOP',
-    difficulty: 'Intermediate',
-    isPremium: false,
-    coverImageUrl: 'https://images.unsplash.com/photo-1504639725590-34d0984388bd?w=500&q=80',
-    isPublished: true,
-    createdAt: new Date().toISOString(),
-    totalLessons: 1,
-    completedLessons: 0,
-    progressPercent: 0
-  },
-  
-  {
-    id: 'c8',
-    title: 'Đồ thị & Bài toán tối ưu đường đi',
-    description: 'Khảo sát biểu diễn đồ thị, Dijkstra tô màu node realtime, Topological Sort và TSP.',
-    category: 'Algorithm',
-    difficulty: 'Advanced',
-    isPremium: true,
-    coverImageUrl: 'https://images.unsplash.com/photo-1558494949-ef010cbdcc31?w=500&q=80',
-    isPublished: true,
-    createdAt: new Date().toISOString(),
-    totalLessons: 1,
-    completedLessons: 0,
-    progressPercent: 0
-  },
-  {
-    id: 'c9',
-    title: 'Nguyên lý SOLID & Tái cấu trúc code',
-    description: 'Tối ưu kiến trúc phần mềm với 5 nguyên lý SOLID, chỉ số LCOM4 và kỹ thuật Refactoring God Class.',
-    category: 'OOP',
-    difficulty: 'Advanced',
-    isPremium: true,
-    coverImageUrl: 'https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=500&q=80',
-    isPublished: true,
-    createdAt: new Date().toISOString(),
-    totalLessons: 1,
-    completedLessons: 0,
-    progressPercent: 0
-  },
-  {
-    id: 'c10',
-    title: 'Quy hoạch động (Dynamic Programming)',
-    description: 'Bản chất Memoization vs Tabulation, bài toán Knapsack 0/1, LIS và kỹ thuật Traceback.',
-    category: 'Algorithm',
-    difficulty: 'Advanced',
-    isPremium: true,
-    coverImageUrl: 'https://images.unsplash.com/photo-1509228468518-180dd4864904?w=500&q=80',
-    isPublished: true,
-    createdAt: new Date().toISOString(),
-    totalLessons: 1,
-    completedLessons: 0,
-    progressPercent: 0
-  },
-  {
-    id: 'c11',
-    title: 'System Design nhập môn & Concurrency',
-    description: 'Mô phỏng Packet Routing, Load Balancing bốc khói, Race Condition, Lock & Thread-safe Singleton.',
-    category: 'SystemDesign',
-    difficulty: 'Advanced',
-    isPremium: true,
-    coverImageUrl: 'https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?w=500&q=80',
-    isPublished: true,
-    createdAt: new Date().toISOString(),
-    totalLessons: 1,
-    completedLessons: 0,
-    progressPercent: 0
-  }
-];
 
 onMounted(() => {
   loadCourses();
@@ -391,6 +283,7 @@ onMounted(() => {
 .line-clamp-3 {
   display: -webkit-box;
   -webkit-line-clamp: 3;
+  line-clamp: 3;
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
@@ -398,6 +291,7 @@ onMounted(() => {
 .line-clamp-1 {
   display: -webkit-box;
   -webkit-line-clamp: 1;
+  line-clamp: 1;
   -webkit-box-orient: vertical;
   overflow: hidden;
 }

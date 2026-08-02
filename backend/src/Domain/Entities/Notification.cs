@@ -11,19 +11,26 @@ namespace VisualizationDSA.Domain.Entities
         public string LinkUrl { get; private set; } = string.Empty;
         public DateTime CreatedAt { get; private set; }
 
-        
+        public string Type { get; private set; } = "General";
+        public Guid? RefId { get; private set; }
+        public string? DeepLink { get; private set; }
+
+        // Navigation property
         public User? User { get; private set; }
 
-        
+        // EF Constructor
         private Notification() { }
 
-        public Notification(Guid userId, string content, string linkUrl)
+        public Notification(Guid userId, string content, string linkUrl, string type = "General", Guid? refId = null)
         {
             Id = Guid.NewGuid();
             UserId = userId;
             Content = content;
             IsRead = false;
             LinkUrl = linkUrl;
+            DeepLink = linkUrl;
+            Type = type;
+            RefId = refId;
             CreatedAt = DateTime.UtcNow;
         }
 

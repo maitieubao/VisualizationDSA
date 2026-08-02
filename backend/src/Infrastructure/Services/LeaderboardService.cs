@@ -3,8 +3,10 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
 using VisualizationDSA.Application.Services;
 using VisualizationDSA.Domain.Interfaces;
+using VisualizationDSA.Infrastructure.Data;
 
 namespace VisualizationDSA.Infrastructure.Services
 {
@@ -15,12 +17,14 @@ namespace VisualizationDSA.Infrastructure.Services
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMemoryCache _cache;
+        private readonly ApplicationDbContext _dbContext;
         private static readonly string LeaderboardCacheKey = "Leaderboard_TopUsers";
 
-        public LeaderboardService(IUnitOfWork unitOfWork, IMemoryCache cache)
+        public LeaderboardService(IUnitOfWork unitOfWork, IMemoryCache cache, ApplicationDbContext dbContext)
         {
             _unitOfWork = unitOfWork;
             _cache = cache;
+            _dbContext = dbContext;
         }
 
         public async Task<IEnumerable<LeaderboardEntryDto>> GetTopUsersAsync(int limit = 20)
@@ -71,5 +75,14 @@ namespace VisualizationDSA.Infrastructure.Services
                 IsInTop = rank <= 20,
             };
         }
+
+        public async Task<IEnumerable<LeaderboardEntryDto>> GetClassroomLeaderboardAsync(string classroomId, int limit = 10)
+        {
+            // Gamification Classroom dropped in favor of LMS Classroom. 
+            // Classroom Leaderboards will be re-implemented later.
+            return await Task.FromResult(Enumerable.Empty<LeaderboardEntryDto>());
+        }
+
+        public async Task<IEnumerable<LeaderboardEntryDto>> GetClassroomWeeklyLeaderboardAsync(string classroomId, int limit = 20) { return await Task.FromResult(Enumerable.Empty<LeaderboardEntryDto>()); }
     }
 }

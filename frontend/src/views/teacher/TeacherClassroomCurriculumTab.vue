@@ -226,6 +226,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, nextTick } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
+// @ts-ignore
 import { DndContext, closestCenter } from '@dnd-kit/core';
 import SortableContextWrapper from '@/components/ui/SortableContextWrapper.vue';
 import { useClassroomCurriculumStore } from '@/stores/classroomCurriculum';
@@ -456,5 +457,5 @@ watch(() => classroomId.value, (newId) => {
 </script>
 
 <style scoped>
-@import "./TeacherClassroomCurriculumTab.css";
+
 </style>

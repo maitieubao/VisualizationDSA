@@ -57,7 +57,8 @@
             class="code-line-show-btn"
             @click="showFullCode = !showFullCode"
           >
-            {{ showFullCode ? '▲ Thu gọn mã nguồn' : '▼ Xem mã nguồn đầy đủ' }}
+            <BaseIcon :name="showFullCode ? 'chevron-up' : 'chevron-down'" class="w-3 h-3 inline-block mr-0.5 align-text-bottom" />
+            {{ showFullCode ? 'Thu gọn mã nguồn' : 'Xem mã nguồn đầy đủ' }}
           </button>
         </div>
 
@@ -70,7 +71,7 @@
             <span class="completion-text">Bạn đã sẵn sàng học tiếp?</span>
           </div>
           <button class="next-pillar-btn mt-2" @click="$emit('nextPillar')">
-            Học tiếp: {{ nextPillarName }} ➔
+            Học tiếp: {{ nextPillarName }} <BaseIcon name="arrow-right" class="w-3.5 h-3.5 inline-block ml-0.5 align-text-bottom" />
           </button>
         </div>
 
@@ -81,9 +82,9 @@
 
 <script setup lang="ts">
 import { ref, computed } from 'vue';
-import type { TheorySection } from '../types/theory.types';
-import { renderMarkdown } from '../utils/markdown';
-import SvgIcon from '../../components/icons/SvgIcon.vue';
+import type { TheorySection } from '@/shared/types/theory.types';
+import { renderMarkdown } from '@/shared/utils/markdown';
+import SvgIcon from '@/components/icons/SvgIcon.vue';
 
 const props = defineProps<{
   sec: TheorySection;

@@ -102,18 +102,21 @@
 
     
     <div v-if="activeFormType === 'excel'" class="mb-8 animate-fade-in">
-      <ExcelQuizImporter @import-success="onImportSuccess" />
+      
     </div>
 
     
-    <div class="quizzes-list-container">
-      <h3 class="subsection-heading mb-4">Danh sách bài trắc nghiệm đang hoạt động</h3>
+    <div class="quizzes-list-container !bg-transparent !border-none !p-0 !shadow-none mt-8">
+      <h3 class="subsection-heading mb-4 text-text-primary font-bold text-lg">Danh sách bài trắc nghiệm đang hoạt động</h3>
       <div v-if="loadingQuizzes" class="loading-state">
         <div class="spinner"></div>
         <span>Đang tải danh sách bài trắc nghiệm...</span>
       </div>
       <div v-else-if="quizzesList.length === 0" class="empty-state">
-        Chưa có bài trắc nghiệm nào trong hệ thống. Hãy tạo mới!
+        <BaseIcon name="quiz" class="w-16 h-16 text-text-muted mb-2" />
+        <h3 class="text-text-primary text-xl font-bold">Chưa có bài trắc nghiệm</h3>
+        <p class="text-text-secondary">Tạo bài trắc nghiệm để học viên có thể ôn tập kiến thức.</p>
+        <button class="btn-submit mt-4" @click="toggleForm('manual')">Tạo thủ công</button>
       </div>
       <div v-else class="table-responsive">
         <table class="quizzes-table">
@@ -230,7 +233,7 @@
             </thead>
             <tbody>
               <tr v-for="stat in quizPerformanceStats" :key="stat.quizId">
-                <td class="font-bold text-white">{{ stat.title }}</td>
+                <td class="font-bold text-text-primary">{{ stat.title }}</td>
                 <td><span class="topic-badge" :class="'topic-' + stat.topic">{{ formatTopic(stat.topic) }}</span></td>
                 <td class="text-center font-mono font-bold text-text-secondary">{{ stat.totalAttempts }} lượt</td>
                 <td class="text-center font-mono text-accent-green">{{ stat.passedCount }} lượt</td>
@@ -255,7 +258,7 @@
 <script setup lang="ts">
 import { ref, reactive } from 'vue';
 import { useTeacherApi } from './useTeacherApi';
-import ExcelQuizImporter from '../../features/quiz/components/ExcelQuizImporter.vue';
+
 
 const { BASE_URL, getAuthHeaders, formatTopic, formatDifficulty } = useTeacherApi();
 

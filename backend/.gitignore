@@ -1,0 +1,13 @@
+# .NET build artifacts
+bin/
+obj/
+*.user
+
+# Secrets & environment-specific config — NEVER commit
+appsettings.Development.json
+appsettings.Production.json
+.env
+.env.*
+
+# Test results
+TestResults/

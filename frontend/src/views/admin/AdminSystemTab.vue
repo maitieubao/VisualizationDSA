@@ -6,7 +6,7 @@
         <div class="system-info-grid">
           <div class="info-item"><span class="info-label">API Base URL:</span><span class="info-val"><code>{{ BASE_URL }}</code></span></div>
           <div class="info-item"><span class="info-label">Phương thức xác thực:</span><span class="info-val">Stateless JWT JWT (Header + Payload)</span></div>
-          <div class="info-item"><span class="info-label">Trạng thái kết nối CSDL:</span><span class="info-val text-success">Đang kết nối (PostgreSQL) ✓</span></div>
+          <div class="info-item"><span class="info-label">Trạng thái kết nối CSDL:</span><span class="info-val text-success">Đang kết nối (PostgreSQL) <BaseIcon name="check" class="w-3 h-3 inline-block align-text-bottom" /></span></div>
           <div class="info-item"><span class="info-label">Môi trường hoạt động:</span><span class="info-val"><code>Production-safe mode</code></span></div>
         </div>
         <div class="system-actions">

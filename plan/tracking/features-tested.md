@@ -5,11 +5,12 @@ Tài liệu này ghi nhận trạng thái kiểm thử đơn vị tự động (
 ---
 
 ## 📌 Trạng Thái Bao Phủ Kiểm Thử (Test Coverage Status)
-*   **Tổng số tính năng hạt nhân:** 23/23 Tính năng + Phase 1 Animation Engine (23 tests) + Phase 1 Custom Input (38 tests) + Phase 1 DSA Modules (40 tests mới) + Phase 1 E-Lecture Mode (28 tests mới) + Phase 1 Execution Control (23 tests mới) + Phase 1 Interactive Playground (31 tests mới) + Phase 1 Pseudocode Sync (37 tests mới) + Phase 1 Quiz System (54 tests mới) + Phase 2 Code-to-Visualization (32 tests mới) + Phase 2 Compare Algorithms (33 tests mới) + Phase 2 Concurrency Visualizer (35 tests mới) + Phase 2 Debug Mode (49 tests mới) + Phase 2 Design Patterns (50 tests mới) + Phase 2 Embed Widget (76 tests mới) + Phase 2 Export & Share (85 tests mới) + Phase 2 Gamification Engine (88 tests mới) + Phase 2 Learning Path (98 tests mới) + Phase 2 Multi-View Sync (102 tests mới) + Phase 2 OOP Visualization (59 tests) + Phase 2 Smart Quiz (90 tests mới) + Phase 2 SOLID Visualization (105 tests mới) + Phase 2 State Inspector (90 tests mới) + Phase 2 System Design Viz (64 tests mới) + Guided Tour (8 tests mới).
-*   **Trạng thái Vitest Suite (Frontend):** 🟢 100% PASSED (1549/1549 - all tests pass).
-*   **Trạng thái xUnit Suite (Backend C#):** 🟢 100% PASSED (212/212 — 88 Domain + 46 Application + 78 Infrastructure).
+*   **Số test thực tế (kiểm chứng 2026-08-02, sau B1):** 611 tests / 46 spec files — **🟢 611/611 PASSED** (`cd frontend && npm run test`, môi trường jsdom).
+*   ⚠️ **LƯU Ý QUAN TRỌNG:** Các bảng dài phía dưới là ma trận test mô tả (test matrix) các phase — ĐA SỐ dòng không tương ứng file spec hiện tại. Con số "1549/1549" trước đây là **SAI** (đếm theo ma trận, không theo lần chạy thật). **Nguồn duy nhất có giá trị: chạy `npm run test`.** Trước khi thêm dòng mới vào bảng, phải có file `.spec.ts` thật tương ứng.
+*   **Trạng thái Vitest Suite (Frontend):** 🟢 100% PASSED (**611/611**) — đạt được sau B1: đổi `environment: "node"` → `"jsdom"` trong `vite.config.ts`, sửa dead code `lectureStore` trong `useQuizStore.ts`, sửa mock path sai trong `learningFlow.spec.ts`.
+*   **Trạng thái xUnit Suite (Backend C#):** 🟡 CHƯA XÁC MINH LẠI — tracking cũ khai 212/212, cần chạy lại `dotnet test` để xác thực.
 *   **Công cụ chạy kiểm thử:** Vitest Core (Frontend), xUnit 2.6.6 + FluentAssertions 6.12.0 + Moq 4.20.70 (Backend).
-*   **Thời gian phản hồi test suite:** Frontend ~180ms, Backend ~10s.
+*   **Thời gian phản hồi test suite:** Frontend ~9s (jsdom), Backend ~10s.
 
 ---
 
@@ -2183,7 +2184,7 @@ Tài liệu này ghi nhận trạng thái kiểm thử đơn vị tự động (
 | 1883 | **Guided Tour** | should support action scripts and run simulation successfully | Verifies DOM script playback using virtual cursor coordinates | ✅ PASSED |
 | 1884 | **Compilation** | npm run test | Frontend 1555/1555 tests PASS (including simulation test cases) | ✅ PASSED |
 | 1885 | **Guided Tour** | should correctly load tour steps for newly added academic routes | Expand testCases array to verify all 12 academic modules (including /sorting) | 🟢 PASSED |
-| 1886 | **Compilation** | npm run test | Frontend 1549/1549 tests PASS with all 12-step guided tour validations | 🟢 PASSED |
+| 1886 | **Compilation** | npm run test | Frontend 611/611 tests PASS (46 files) - con so cu "1549" la SAI | 🟢 PASSED |
 
 ## Tái Cấu Trúc Khóa Học & Codelab (Strangler Fig)
 - ✅ SubmitCodelabCommandHandlerTests: Kiểm thử logic gửi mã nguồn Codelab, tính toán điểm, gọi Mock Judge Service và cập nhật XP.

@@ -67,7 +67,7 @@
 .toast-title {
   font-size: 12px;
   font-weight: 700;
-  color: var(--text-primary, #fff);
+  color: var(--color-text-primary, #fff);
   margin-bottom: 2px;
 }
 

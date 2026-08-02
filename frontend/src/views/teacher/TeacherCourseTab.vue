@@ -126,14 +126,17 @@
     </form>
 
     
-    <div class="quizzes-list-container">
-      <h3 class="subsection-heading mb-4">Danh sách khóa học hiện có</h3>
+    <div class="quizzes-list-container !bg-transparent !border-none !p-0 !shadow-none mt-8">
+      <h3 class="subsection-heading mb-4 text-text-primary font-bold text-lg">Danh sách khóa học hiện có</h3>
       <div v-if="loadingCourses" class="loading-state">
         <div class="spinner"></div>
         <span>Đang tải danh sách khóa học...</span>
       </div>
       <div v-else-if="coursesList.length === 0" class="empty-state">
-        Chưa có khóa học nào trong hệ thống. Hãy tạo mới!
+        <BaseIcon name="collection" class="w-16 h-16 text-text-muted mb-2" />
+        <h3 class="text-text-primary text-xl font-bold">Chưa có khóa học nào</h3>
+        <p class="text-text-secondary">Bắt đầu xây dựng lộ trình học tập của bạn bằng cách tạo khóa học đầu tiên.</p>
+        <button class="btn-submit mt-4" @click="toggleCourseForm()">Tạo khóa học ngay</button>
       </div>
       <div v-else class="table-responsive">
         <table class="quizzes-table">
@@ -306,9 +309,11 @@ async function uploadCoverImage(event: Event) {
   try {
     const formData = new FormData();
     formData.append('file', file);
+    const headers = { ...getAuthHeaders() };
+    delete headers['Content-Type'];
     const res = await fetch(`${BASE_URL}/api/v1/upload/image`, {
       method: 'POST',
-      headers: { ...getAuthHeaders() }, 
+      headers, 
       body: formData
     });
     

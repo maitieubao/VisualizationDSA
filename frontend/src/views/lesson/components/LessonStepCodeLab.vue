@@ -26,7 +26,7 @@
               </svg>
               <span>Step 4 / 4 — Code Lab</span>
             </div>
-            <h2 class="text-lg font-extrabold text-white mt-0.5">{{ problemTitle }}</h2>
+            <h2 class="text-lg font-extrabold text-text-primary mt-0.5">{{ problemTitle }}</h2>
           </div>
           <span class="px-2.5 py-1 rounded-full text-[10px] font-bold bg-accent-green/80 text-accent-green border border-accent-green/30">
             Easy
@@ -122,7 +122,7 @@
               <span class="w-5 h-5 rounded-full bg-bg-surface text-text-secondary font-bold text-[10px] flex items-center justify-center">
                 #{{ idx + 1 }}
               </span>
-              <span class="font-bold text-white">{{ r.username }}</span>
+              <span class="font-bold text-text-primary">{{ r.username }}</span>
             </div>
             <div class="flex items-center gap-4 text-[11px] font-mono">
               <span class="text-accent">{{ r.runtimeMs }}ms</span>
@@ -171,18 +171,21 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted, shallowRef, computed } from 'vue';
+import { ref, onMounted, onUnmounted, shallowRef, computed, watch } from 'vue';
 import loader from '@monaco-editor/loader';
 import type * as monaco from 'monaco-editor';
+import { api } from '@/services/apiClient';
 
 const props = withDefaults(defineProps<{
   problemTitle?: string;
+  codelab?: any;
 }>(), {
-  problemTitle: 'Implement Bubble Sort',
+  problemTitle: 'Thực hành',
+  codelab: null
 });
 
 const emit = defineEmits<{
-  (e: 'completeLesson'): void;
+  (e: 'completeStep'): void;
 }>();
 
 const activeTab = ref('problem');
@@ -200,33 +203,22 @@ const problemTabs: Array<{ id: string; name: string; badge?: string }> = [
   { id: 'ranking', name: 'Leaderboard' },
 ];
 
-const testCaseResults = ref<Array<{ passed: boolean; name: string; input: string; expectedOutput: string; actualOutput?: string; errorMessage?: string; runtimeMs?: number; isHidden: boolean }>>([]);
+const testCaseResults = ref<Array<any>>([]);
 
-const defaultCode = `using System;
+const defaultCode = computed(() => props.codelab?.initialCode || '');
 
-public class Solution {
-    public int[] BubbleSort(int[] arr) {
-        int n = arr.Length;
-        for (int i = 0; i < n - 1; i++) {
-            for (int j = 0; j < n - i - 1; j++) {
-                if (arr[j] > arr[j + 1]) {
-                    int temp = arr[j];
-                    arr[j] = arr[j + 1];
-                    arr[j + 1] = temp;
-                }
-            }
-        }
-        return arr;
-    }
-}`;
+const userCode = ref('');
 
-const userCode = ref(defaultCode);
+// We don't watch props.codelab to reset the code dynamically after initialization 
+// to prevent accidental overwrites when the user is typing.
+userCode.value = defaultCode.value;
 
-const sampleTestcases = [
-  { input: '[5, 2, 9, 1, 5, 6]', expectedOutput: '[1, 2, 5, 5, 6, 9]', isHidden: false },
-  { input: '[10, -2, 4, 0]', expectedOutput: '[-2, 0, 4, 10]', isHidden: false },
-  { input: '[100 random elements]', expectedOutput: '[Sorted array]', isHidden: true },
-];
+const sampleTestcases = computed<{input: string, expectedOutput: string, isHidden: boolean}[]>(() => {
+  if (props.codelab && props.codelab.testCases) {
+    return props.codelab.testCases;
+  }
+  return [];
+});
 
 const leaderboard = ref([
   { id: '1', username: 'alex_dev', runtimeMs: 12, memoryMb: 14.2, score: 100 },
@@ -238,44 +230,56 @@ const testResults = ref<Array<{ passed: boolean }>>([]);
 
 function resetCode(): void {
   if (editorInstance.value) {
-    editorInstance.value.setValue(defaultCode);
+    editorInstance.value.setValue(defaultCode.value);
   }
-  userCode.value = defaultCode;
+  userCode.value = defaultCode.value;
 }
 
-function runTestcases(): void {
+async function runTestcases(): Promise<void> {
+  if (!props.codelab) return;
   isRunning.value = true;
   activeTab.value = 'testcases';
-  setTimeout(() => {
-    testResults.value = sampleTestcases.map(() => ({ passed: true }));
-    testCaseResults.value = sampleTestcases.map((tc, idx) => ({
-      name: `Testcase #${idx + 1}`,
-      input: tc.input,
-      expectedOutput: tc.expectedOutput,
-      passed: true,
-      isHidden: tc.isHidden,
-      runtimeMs: Math.floor(Math.random() * 20) + 5,
-    }));
+  try {
+    const res = await api.post(`/codelabs/${props.codelab.id}/run`, {
+      code: userCode.value,
+      language: 'csharp'
+    }) as any;
+    const result = res.data;
+    if (result.testCaseResultsJson) {
+      const parsedResults = JSON.parse(result.testCaseResultsJson);
+      testResults.value = parsedResults.map((p: any) => ({ passed: p.Passed }));
+      testCaseResults.value = parsedResults;
+    }
+  } catch (error) {
+    console.error('Run failed', error);
+  } finally {
     isRunning.value = false;
-  }, 800);
+  }
 }
 
-function submitSolution(): void {
+async function submitSolution(): Promise<void> {
+  if (!props.codelab) return;
   isSubmitting.value = true;
-  activeTab.value = 'ranking';
-  setTimeout(() => {
-    testResults.value = sampleTestcases.map(() => ({ passed: true }));
-    testCaseResults.value = sampleTestcases.map((tc, idx) => ({
-      name: `Testcase #${idx + 1}`,
-      input: tc.input,
-      expectedOutput: tc.expectedOutput,
-      passed: true,
-      isHidden: tc.isHidden,
-      runtimeMs: Math.floor(Math.random() * 20) + 5,
-    }));
+  activeTab.value = 'testcases';
+  try {
+    const res = await api.post(`/codelabs/${props.codelab.id}/submit`, {
+      code: userCode.value,
+      language: 'csharp'
+    }) as any;
+    const result = res.data;
+    if (result.testCaseResultsJson) {
+      const parsedResults = JSON.parse(result.testCaseResultsJson);
+      testResults.value = parsedResults.map((p: any) => ({ passed: p.Passed }));
+      testCaseResults.value = parsedResults;
+    }
+    if (result.passed) {
+      emit('completeStep');
+    }
+  } catch (error) {
+    console.error('Submit failed', error);
+  } finally {
     isSubmitting.value = false;
-    emit('completeLesson');
-  }, 1000);
+  }
 }
 
 onMounted(async () => {
@@ -283,7 +287,7 @@ onMounted(async () => {
     const monacoInstance = await loader.init();
     if (editorContainer.value) {
       editorInstance.value = monacoInstance.editor.create(editorContainer.value, {
-        value: defaultCode,
+        value: defaultCode.value,
         language: 'csharp',
         theme: 'vs-dark',
         automaticLayout: true,
@@ -300,6 +304,14 @@ onMounted(async () => {
         cursorSmoothCaretAnimation: 'on',
         smoothScrolling: true,
       });
+
+      editorInstance.value?.onDidChangeModelContent(() => {
+        userCode.value = editorInstance.value?.getValue() || '';
+      });
+
+      window.addEventListener('resize', () => {
+        editorInstance.value?.layout();
+      });
     }
   } catch (error) {
     console.error('Failed to initialize Monaco editor', error);
@@ -310,6 +322,9 @@ onUnmounted(() => {
   if (editorInstance.value) {
     editorInstance.value.dispose();
   }
+  window.removeEventListener('resize', () => {
+    editorInstance.value?.layout();
+  });
 });
 
 

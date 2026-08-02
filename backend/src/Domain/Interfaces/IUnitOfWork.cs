@@ -12,6 +12,8 @@ namespace VisualizationDSA.Domain.Interfaces
         IRepository<LearningProgress> LearningProgresses { get; }
         IRepository<RefreshToken>  RefreshTokens  { get; }
         IRepository<Order>         Orders         { get; }
+        IRepository<UserDailyQuest> UserDailyQuests { get; }
+        IRepository<QuestTemplate> QuestTemplates { get; }
 
         Task<int> CommitAsync();
         Task BeginTransactionAsync();

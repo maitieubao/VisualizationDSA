@@ -30,10 +30,10 @@ export interface BadgeResponse {
 
 export const gamificationApi = {
   getUserProgress: () =>
-    api.get<UserProgressResponse>('/users/progress'),
+    api.get<UserProgressResponse>('/users/me/progress'),
 
   awardXP: (amount: number, reason: string) =>
-    api.post<XPAwardResponse>('/users/xp', { amount, reason }),
+    api.post<XPAwardResponse>('/users/me/xp', { amount, reason }),
 
   getAllBadges: () =>
     api.get<BadgeResponse[]>('/badges'),

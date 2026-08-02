@@ -77,7 +77,11 @@ describe('useAuthStore - Impersonation Unit Tests', () => {
         role: 'Student',
         nickname: 'Student Nick',
         bio: 'Hello',
-        university: 'FPT University'
+        university: 'FPT University',
+        hearts: 5,
+        maxHearts: 5,
+        gemsCount: 0,
+        teacherAppStatus: 'pending'
       }
     };
 

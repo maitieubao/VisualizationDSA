@@ -23,7 +23,7 @@
           <span class="w-6 h-6 rounded-full bg-accent/30 border border-accent/50 text-accent font-bold text-xs flex items-center justify-center shrink-0">
             {{ qIdx + 1 }}
           </span>
-          <p class="text-sm font-bold text-white leading-relaxed">{{ q.questionText }}</p>
+          <p class="text-sm font-bold text-text-primary leading-relaxed">{{ q.questionText }}</p>
         </div>
 
         <div class="grid grid-cols-1 gap-2.5 ml-9">
@@ -37,7 +37,7 @@
               : 'bg-bg-secondary text-text-secondary border-border-subtle hover:border-border-default hover:bg-bg-surface'"
           >
             <span>{{ opt }}</span>
-            <span v-if="userAnswers[q.id] === oIdx" class="text-sm">✓</span>
+            <span v-if="userAnswers[q.id] === oIdx" class="text-sm"><BaseIcon name="check" class="w-3.5 h-3.5 text-accent" /></span>
           </button>
         </div>
       </div>
@@ -52,7 +52,7 @@
           :disabled="answeredCount < questions.length"
           class="px-6 py-3 bg-accent hover:bg-accent disabled:opacity-40 disabled:cursor-not-allowed text-white rounded-xl text-xs font-bold transition-all shadow-lg cursor-pointer"
         >
-          {{ isSubmitted ? 'Đã Đạt! Mở Khóa Code Lab →' : 'Nộp Bài Quiz' }}
+          {{ isSubmitted ? 'Đã Đạt! Mở Khóa Code Lab' : 'Nộp Bài Quiz' }} <BaseIcon v-if="isSubmitted" name="arrow-right" class="w-3.5 h-3.5 inline-block ml-0.5 align-text-bottom" />
         </button>
       </div>
     </div>
@@ -70,7 +70,7 @@
         @click="$emit('completeStep')"
         class="mt-6 px-6 py-3 bg-accent hover:bg-accent text-white rounded-xl text-xs font-bold transition-all shadow-lg cursor-pointer"
       >
-        Mở Khóa Code Lab →
+        Mở Khóa Code Lab <BaseIcon name="arrow-right" class="w-3.5 h-3.5 inline-block ml-0.5 align-text-bottom" />
       </button>
     </div>
   </div>

@@ -31,6 +31,10 @@ namespace VisualizationDSA.Domain.Engine
         public string? Nickname { get; set; }
         public string? Bio { get; set; }
         public string? University { get; set; }
+        public int Hearts { get; set; }
+        public int MaxHearts { get; set; }
+        public int GemsCount { get; set; }
+        public string TeacherAppStatus { get; set; } = "None";
     }
 
     public class StatelessBadgeInfoDto

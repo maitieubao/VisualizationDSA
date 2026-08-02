@@ -8,7 +8,7 @@
 </template>
 
 <script setup lang="ts">
-import { parseEmojiToSvg } from '../utils/emojiParser';
+import { parseEmojiToSvg } from '@/utils/emojiParser';
 
 defineProps<{
   actionType: string;

@@ -28,6 +28,16 @@ namespace VisualizationDSA.Infrastructure.Data
         public DbSet<LessonComment>  LessonComments  { get; set; }
         public DbSet<AuditLog>       AuditLogs       { get; set; }
         public DbSet<Notification>   Notifications   { get; set; }
+        public DbSet<TeacherApplication> TeacherApplications => Set<TeacherApplication>();
+        public DbSet<UserInventory>  UserInventory   { get; set; }
+        public DbSet<LearningSession> LearningSessions { get; set; }
+        public DbSet<CustomRoadmap> CustomRoadmaps => Set<CustomRoadmap>();
+        public DbSet<CustomNode> CustomNodes => Set<CustomNode>();
+        public DbSet<RoadmapEditLog> RoadmapEditLogs => Set<RoadmapEditLog>();
+        public DbSet<ContentReport> ContentReports => Set<ContentReport>();
+        public DbSet<KeywordBlacklist> KeywordBlacklists => Set<KeywordBlacklist>();
+        public DbSet<UserDailyQuest> UserDailyQuests => Set<UserDailyQuest>();
+        public DbSet<QuestTemplate> QuestTemplates => Set<QuestTemplate>();
         public DbSet<Classroom> Classrooms { get; set; }
         public DbSet<ClassroomLesson> ClassroomLessons { get; set; }
         public DbSet<ClassroomEnrollment> ClassroomEnrollments { get; set; }
@@ -255,6 +265,25 @@ namespace VisualizationDSA.Infrastructure.Data
             });
             base.OnModelCreating(modelBuilder);
 
+            modelBuilder.Entity<UserInventory>()
+                .HasOne(ui => ui.User)
+                .WithMany()
+                .HasForeignKey(ui => ui.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<CustomRoadmap>()
+                .HasMany(r => r.Nodes)
+                .WithOne(n => n.Roadmap)
+                .HasForeignKey(n => n.RoadmapId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<CustomRoadmap>()
+                .HasOne<User>()
+                .WithMany()
+                .HasForeignKey(r => r.TeacherId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            // User configuration
             
             modelBuilder.Entity<User>(entity =>
             {
@@ -271,13 +300,10 @@ namespace VisualizationDSA.Infrastructure.Data
                 
                 entity.Property(e => e.LastActivityDate).IsRequired(false);
                 entity.Property(e => e.Role).IsRequired().HasMaxLength(20).HasDefaultValue("Student");
-                if (!Database.IsSqlite())
-                {
-                    entity.Property<uint>("xmin")
-                        .HasColumnType("xid")
-                        .ValueGeneratedOnAddOrUpdate()
-                        .IsRowVersion();
-                }
+                entity.Property<uint>("xmin")
+                    .HasColumnType("xid")
+                    .ValueGeneratedOnAddOrUpdate()
+                    .IsRowVersion();
             });
 
             
@@ -374,17 +400,7 @@ namespace VisualizationDSA.Infrastructure.Data
                 entity.Property(e => e.Description).HasMaxLength(2000);
                 
                 var embeddingProp = entity.Property(e => e.Embedding);
-                if (Database.IsSqlite())
-                {
-                    embeddingProp.HasConversion(
-                        v => v == null ? null : string.Join(",", v),
-                        v => string.IsNullOrEmpty(v) ? Array.Empty<double>() : v.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries).Select(double.Parse).ToArray()
-                    );
-                }
-                else
-                {
-                    embeddingProp.HasColumnType("double precision[]");
-                }
+                embeddingProp.HasColumnType("double precision[]");
                 entity.Property(e => e.Importance).HasDefaultValue(0.0);
             });
 
@@ -424,10 +440,7 @@ namespace VisualizationDSA.Infrastructure.Data
                 entity.Property(e => e.Path).HasMaxLength(500);
                 
                 var payloadProp = entity.Property(e => e.Payload);
-                if (!Database.IsSqlite())
-                {
-                    payloadProp.HasColumnType("jsonb");
-                }
+                payloadProp.HasColumnType("jsonb");
             });
 
             
@@ -470,6 +483,19 @@ namespace VisualizationDSA.Infrastructure.Data
                       .OnDelete(DeleteBehavior.Cascade);
             });
 
+            // LearningSession configuration
+            modelBuilder.Entity<LearningSession>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+                entity.HasIndex(e => new { e.UserId, e.NodeId });
+                entity.Property(e => e.CurrentStep).IsRequired().HasMaxLength(50).HasDefaultValue("Theory");
+                entity.HasOne(e => e.User)
+                      .WithMany(u => u.LearningSessions)
+                      .HasForeignKey(e => e.UserId)
+                      .OnDelete(DeleteBehavior.Cascade);
+            });
+
+            // LessonComment configuration
             
             modelBuilder.Entity<LessonComment>(entity =>
             {
@@ -505,11 +531,123 @@ namespace VisualizationDSA.Infrastructure.Data
                 entity.HasKey(e => e.Id);
                 entity.Property(e => e.Content).IsRequired().HasMaxLength(1000);
                 entity.Property(e => e.LinkUrl).HasMaxLength(500);
+                entity.Property(e => e.DeepLink).HasMaxLength(500);
+                entity.Property(e => e.Type).IsRequired().HasMaxLength(50).HasDefaultValue("General");
                 entity.HasIndex(e => e.CreatedAt);
                 entity.HasOne(e => e.User)
                       .WithMany()
                       .HasForeignKey(e => e.UserId)
                       .OnDelete(DeleteBehavior.Cascade);
+            });
+
+            // TeacherApplication configuration
+            modelBuilder.Entity<TeacherApplication>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+                entity.Property(e => e.SchoolName).IsRequired().HasMaxLength(200);
+                entity.Property(e => e.CvUrl).IsRequired().HasMaxLength(500);
+                entity.Property(e => e.Reason).IsRequired().HasMaxLength(1000);
+                entity.Property(e => e.Status).IsRequired().HasMaxLength(20).HasDefaultValue("Pending");
+                entity.Property(e => e.RejectReason).HasMaxLength(500);
+                entity.HasIndex(e => e.UserId);
+                entity.HasIndex(e => e.Status);
+                entity.HasOne(e => e.User)
+                      .WithMany()
+                      .HasForeignKey(e => e.UserId)
+                      .OnDelete(DeleteBehavior.Cascade);
+            });
+
+            // ClassroomLeaderboardHistory configuration
+            modelBuilder.Entity<ClassroomLeaderboardHistory>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+                entity.HasIndex(e => e.ClassroomId);
+                entity.HasIndex(e => e.WeekStart);
+                entity.Property(e => e.ClassroomId).IsRequired().HasMaxLength(36);
+                entity.Property(e => e.RankingsJson).HasColumnType("jsonb");
+            });
+
+            // RoadmapEditLog configuration
+            modelBuilder.Entity<RoadmapEditLog>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+                entity.Property(e => e.ChangeType).IsRequired().HasMaxLength(50);
+                entity.Property(e => e.Note).HasMaxLength(500);
+                
+                entity.HasOne(e => e.Roadmap)
+                      .WithMany()
+                      .HasForeignKey(e => e.RoadmapId)
+                      .OnDelete(DeleteBehavior.Cascade);
+                      
+                entity.HasOne(e => e.Editor)
+                      .WithMany()
+                      .HasForeignKey(e => e.EditorId)
+                      .OnDelete(DeleteBehavior.Restrict);
+            });
+
+            // ContentReport configuration
+            modelBuilder.Entity<ContentReport>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+                entity.Property(e => e.Reason).IsRequired().HasMaxLength(50);
+                entity.Property(e => e.Detail).HasMaxLength(1000);
+                entity.Property(e => e.Status).IsRequired().HasMaxLength(20).HasDefaultValue("Pending");
+                
+                entity.HasOne(e => e.Node)
+                      .WithMany()
+                      .HasForeignKey(e => e.NodeId)
+                      .OnDelete(DeleteBehavior.Cascade);
+                      
+                entity.HasOne(e => e.Reporter)
+                      .WithMany()
+                      .HasForeignKey(e => e.ReporterId)
+                      .OnDelete(DeleteBehavior.Cascade);
+            });
+
+            // KeywordBlacklist configuration
+            modelBuilder.Entity<KeywordBlacklist>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+                entity.Property(e => e.Keyword).IsRequired().HasMaxLength(100);
+                entity.Property(e => e.Category).IsRequired().HasMaxLength(50).HasDefaultValue("general");
+                entity.HasIndex(e => e.Keyword).IsUnique();
+            });
+
+            // UserDailyQuest configuration
+            modelBuilder.Entity<UserDailyQuest>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+                entity.HasIndex(e => new { e.UserId, e.Date });
+                entity.Property(e => e.QuestType).IsRequired().HasMaxLength(50);
+                entity.Property(e => e.Difficulty).IsRequired().HasMaxLength(20);
+                entity.Property(e => e.Description).IsRequired().HasMaxLength(200);
+                
+                entity.HasOne(e => e.User)
+                      .WithMany()
+                      .HasForeignKey(e => e.UserId)
+                      .OnDelete(DeleteBehavior.Cascade);
+            });
+
+            // QuestTemplate configuration and Seeding
+            modelBuilder.Entity<QuestTemplate>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+                entity.Property(e => e.QuestType).IsRequired().HasMaxLength(50);
+                entity.Property(e => e.Difficulty).IsRequired().HasMaxLength(20);
+                entity.Property(e => e.Description).IsRequired().HasMaxLength(200);
+
+                // Seed some basic quest templates
+                var seedData = new[]
+                {
+                    new { Id = Guid.Parse("11111111-1111-1111-1111-111111111111"), QuestType = "EARN_XP", Difficulty = "Easy", Description = "Kiếm 50 XP", TargetValue = 50, GemsReward = 10, IsActive = true },
+                    new { Id = Guid.Parse("22222222-2222-2222-2222-222222222222"), QuestType = "COMPLETE_QUIZ", Difficulty = "Easy", Description = "Hoàn thành 1 bài trắc nghiệm", TargetValue = 1, GemsReward = 10, IsActive = true },
+                    new { Id = Guid.Parse("33333333-3333-3333-3333-333333333333"), QuestType = "COMPLETE_MODULE", Difficulty = "Medium", Description = "Hoàn thành 1 bài học (Module)", TargetValue = 1, GemsReward = 20, IsActive = true },
+                    new { Id = Guid.Parse("44444444-4444-4444-4444-444444444444"), QuestType = "EARN_XP", Difficulty = "Medium", Description = "Kiếm 150 XP", TargetValue = 150, GemsReward = 20, IsActive = true },
+                    new { Id = Guid.Parse("55555555-5555-5555-5555-555555555555"), QuestType = "PERFECT_QUIZ", Difficulty = "Hard", Description = "Hoàn thành 1 bài trắc nghiệm với điểm tối đa", TargetValue = 1, GemsReward = 50, IsActive = true },
+                    new { Id = Guid.Parse("66666666-6666-6666-6666-666666666666"), QuestType = "EARN_XP", Difficulty = "Hard", Description = "Kiếm 300 XP", TargetValue = 300, GemsReward = 50, IsActive = true }
+                };
+
+                entity.HasData(seedData);
             });
         }
     }

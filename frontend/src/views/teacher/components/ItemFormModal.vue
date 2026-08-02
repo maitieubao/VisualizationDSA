@@ -22,7 +22,7 @@
                 :key="type.value" 
                 class="type-option"
                 :class="{ active: form.itemType === type.value }"
-                @click="form.itemType = type.value"
+                @click="form.itemType = type.value as 'Lesson' | 'Quiz' | 'Codelab' | 'CustomLesson'"
               >
                 <BaseIcon :name="type.icon" class="w-5 h-5" />
                 <span>{{ type.label }}</span>

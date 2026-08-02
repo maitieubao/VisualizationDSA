@@ -1,19 +1,21 @@
 <template>
   <section class="students-manage-section">
     <div class="flex justify-between items-center mb-6 flex-wrap gap-3">
-      <h2 class="section-heading m-0 text-white">Quản lý & Theo dõi tiến trình học viên</h2>
+      <h2 class="section-heading m-0 text-text-primary">Quản lý & Theo dõi tiến trình học viên</h2>
       <div class="flex gap-2 w-full sm:w-auto">
         <input v-model="searchStudentQuery" @input="debouncedSearchStudents" class="form-input form-input--sm w-64" placeholder="Tìm theo email hoặc username..." />
       </div>
     </div>
 
-    <div class="quizzes-list-container">
+    <div class="quizzes-list-container !bg-transparent !border-none !p-0 !shadow-none mt-8">
       <div v-if="loadingStudents" class="loading-state">
         <div class="spinner"></div>
         <span>Đang tải danh sách học viên...</span>
       </div>
       <div v-else-if="studentsList.length === 0" class="empty-state">
-        Không tìm thấy học viên nào phù hợp với từ khóa tìm kiếm.
+        <BaseIcon name="collection" class="w-16 h-16 text-text-muted mb-2" />
+        <h3 class="text-text-primary text-xl font-bold">Không tìm thấy học viên</h3>
+        <p class="text-text-secondary">Không tìm thấy học viên nào phù hợp với từ khóa tìm kiếm.</p>
       </div>
       <div v-else class="table-responsive">
         <table class="quizzes-table">
@@ -50,14 +52,15 @@
           </tbody>
         </table>
 
-        
-        <div class="flex justify-between items-center mt-6">
-          <span class="text-xs text-text-muted">Hiển thị {{ studentsList.length }} học viên (Tổng số: {{ totalStudents }})</span>
-          <div class="flex gap-2">
-            <button :disabled="studentsPage === 1" @click="changeStudentsPage(-1)" class="btn-cancel px-3 py-1.5 text-xs disabled:opacity-50 cursor-pointer">Trước</button>
-            <span class="text-xs font-mono text-white flex items-center px-2">Trang {{ studentsPage }} / {{ totalStudentsPages }}</span>
-            <button :disabled="studentsPage >= totalStudentsPages" @click="changeStudentsPage(1)" class="btn-cancel px-3 py-1.5 text-xs disabled:opacity-50 cursor-pointer">Sau</button>
-          </div>
+      </div>
+
+      <!-- Pagination -->
+      <div v-if="studentsList.length > 0" class="flex justify-between items-center mt-6 p-4 bg-bg-secondary/50 rounded-2xl border border-border-default">
+        <span class="text-sm text-text-secondary">Hiển thị <strong class="text-text-primary">{{ studentsList.length }}</strong> học viên (Tổng số: <strong class="text-text-primary">{{ totalStudents }}</strong>)</span>
+        <div class="flex gap-2 bg-black/40 rounded-lg p-1 border border-border-default">
+          <button :disabled="studentsPage === 1" @click="changeStudentsPage(-1)" class="btn-cancel !bg-transparent !border-none !px-3 !py-1.5 text-xs disabled:opacity-50 hover:bg-bg-surface rounded-md transition-colors">Trước</button>
+          <span class="text-xs font-bold text-text-primary flex items-center px-3 bg-accent/20 rounded-md border border-border-accent">Trang {{ studentsPage }} / {{ totalStudentsPages }}</span>
+          <button :disabled="studentsPage >= totalStudentsPages" @click="changeStudentsPage(1)" class="btn-cancel !bg-transparent !border-none !px-3 !py-1.5 text-xs disabled:opacity-50 hover:bg-bg-surface rounded-md transition-colors">Sau</button>
         </div>
       </div>
     </div>

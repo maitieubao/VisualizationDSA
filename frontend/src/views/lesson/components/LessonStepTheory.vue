@@ -10,7 +10,7 @@
         <span>•</span>
         <span>Kiến Thức Nền Tảng</span>
       </div>
-      <h1 class="text-2xl font-black text-white tracking-tight">{{ title }}</h1>
+      <h1 class="text-2xl font-black text-text-primary tracking-tight">{{ title }}</h1>
     </div>
 
     
@@ -26,7 +26,7 @@
         class="px-5 py-2.5 bg-accent hover:bg-accent text-white rounded-xl text-xs font-bold transition-all shadow-lg shadow-accent/30 flex items-center gap-2 cursor-pointer"
       >
         <span>Chuyển sang Trực Quan Hóa</span>
-        <span>→</span>
+        <BaseIcon name="arrow-right" class="w-3.5 h-3.5" />
       </button>
     </div>
   </div>

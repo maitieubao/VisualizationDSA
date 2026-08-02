@@ -6,7 +6,7 @@
       @click.self="close"
     >
       <div class="bg-bg-secondary rounded-xl border border-border-subtle shadow-2xl max-w-md w-full p-6">
-        <h2 class="text-xl font-bold text-text-primary mb-2">🚧 {{ title }}</h2>
+        <h2 class="text-xl font-bold text-text-primary mb-2"><BaseIcon name="tool" class="w-4 h-4 inline-block mr-1 align-text-bottom" />{{ title }}</h2>
         <p class="text-text-secondary text-sm mb-4">{{ message }}</p>
         <div class="flex justify-end gap-2">
           <button

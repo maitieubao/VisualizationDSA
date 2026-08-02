@@ -20,7 +20,7 @@
         </div>
         <div class="flex-1 min-w-0">
           <div class="flex items-center gap-3 flex-wrap">
-            <h3 class="font-bold text-white truncate">{{ module.title }}</h3>
+            <h3 class="font-bold text-text-primary truncate">{{ module.title }}</h3>
             <span v-if="module.isHidden" class="badge badge-warning text-xs">Ẩn</span>
             <span v-if="module.unlockAt" class="badge badge-info text-xs">
               <BaseIcon name="clock" class="w-3 h-3 inline mr-1" /> 
@@ -90,10 +90,10 @@
           v-for="(item, index) in module.items" 
           :key="item.id"
           class="item-wrapper"
-          @dragstart="onDragStartItem(item, index)"
-          @dragover.prevent="onDragOverItem(item, index)"
+          @dragstart="onDragStartItem(item, Number(index))"
+          @dragover.prevent="onDragOverItem(item, Number(index))"
           @dragleave="onDragLeaveItem"
-          @drop="onDropItem(item, index)"
+          @drop="onDropItem(item, Number(index))"
           draggable="true"
         >
           <ModuleItemRow 

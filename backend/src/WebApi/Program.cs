@@ -16,6 +16,7 @@ using System.IO.Compression;
 using System.Text;
 using System.Text.Json;
 using System.Threading.RateLimiting;
+using VisualizationDSA.Application.Common.Interfaces;
 using VisualizationDSA.Application.Services;
 using VisualizationDSA.Domain.Interfaces;
 using VisualizationDSA.Infrastructure.Data;
@@ -24,6 +25,7 @@ using VisualizationDSA.Infrastructure.Interceptors;
 using VisualizationDSA.Infrastructure.Repositories;
 using VisualizationDSA.Infrastructure.Services;
 using VisualizationDSA.WebApi.Middlewares;
+using VisualizationDSA.Application.Common.Interfaces;
 
 
 Log.Logger = new LoggerConfiguration()
@@ -157,12 +159,19 @@ builder.Services.AddCors(options =>
     });
 });
 
-
+// Configure Database (PostgreSQL)
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+if (string.IsNullOrWhiteSpace(connectionString))
+{
+    throw new InvalidOperationException("Connection string 'DefaultConnection' chưa được cấu hình. Set biến môi trường ConnectionStrings__DefaultConnection (đầy đủ kèm Password) trước khi khởi động.");
+}
 builder.Services.AddDbContextPool<ApplicationDbContext>(options =>
-    options
-        .UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection"))
-        
-        .AddInterceptors(new ImmutableAuditInterceptor()));
+{
+    options.UseNpgsql(connectionString);
+    
+    // Bảo vệ tính bất biến của Event Sourcing Ledger (chặn UPDATE/DELETE).
+    options.AddInterceptors(new ImmutableAuditInterceptor());
+});
 
 builder.Services.AddScoped<VisualizationDSA.Application.Interfaces.IApplicationDbContext>(provider => provider.GetRequiredService<VisualizationDSA.Infrastructure.Data.ApplicationDbContext>());
 
@@ -171,9 +180,15 @@ builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 
 
 builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddScoped<IGemsShopService, GemsShopService>();
 builder.Services.AddScoped<IQuizService, QuizService>();
+builder.Services.AddScoped<IUploadService, CloudinaryUploadService>();
 builder.Services.AddScoped<IGamificationService, GamificationService>();
 builder.Services.AddScoped<ILeaderboardService, LeaderboardService>();
+builder.Services.AddScoped<IDailyQuestService, DailyQuestService>();
+
+// Register Background Service
+builder.Services.AddHostedService<CoreBackgroundJobsService>();
 builder.Services.AddScoped<IAnalyticsService, AnalyticsService>();
 builder.Services.AddScoped<IPaymentService, PaymentService>();
 builder.Services.AddScoped<ISemanticGraphService, SemanticGraphService>();
@@ -192,10 +207,25 @@ builder.Services.AddScoped<VisualizationDSA.Application.Services.IProgressRuleEn
 
 builder.Services.AddScoped<VisualizationDSA.Application.Services.IClassroomProgressService, VisualizationDSA.Infrastructure.Services.ClassroomProgressService>();
 builder.Services.AddScoped<VisualizationDSA.Application.Services.IClassroomUnlockRuleEngine, VisualizationDSA.Infrastructure.Services.ClassroomUnlockRuleEngine>();
+builder.Services.AddScoped<VisualizationDSA.Application.Services.IClassroomGradingService, VisualizationDSA.Infrastructure.Services.ClassroomGradingService>();
 
 
 builder.Services.AddAlgorithmStrategies();
 
+
+var jwtKey = builder.Configuration["Jwt:Key"];
+if (string.IsNullOrWhiteSpace(jwtKey))
+{
+    if (builder.Environment.IsDevelopment())
+    {
+        jwtKey = Convert.ToBase64String(System.Security.Cryptography.RandomNumberGenerator.GetBytes(32));
+        Console.WriteLine("[WARN] Jwt:Key chưa cấu hình - đã sinh key ngẫu nhiên cho Development (token sẽ hết hạn khi restart). Để token ổn định, set Jwt__Key.");
+    }
+    else
+    {
+        throw new InvalidOperationException("Jwt:Key chưa được cấu hình. Set biến môi trường Jwt__Key (>= 32 ký tự) trước khi khởi động.");
+    }
+}
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
@@ -209,7 +239,7 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             ValidateIssuerSigningKey = true,
             ValidIssuer              = builder.Configuration["Jwt:Issuer"],
             ValidAudience            = builder.Configuration["Jwt:Audience"],
-            IssuerSigningKey         = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]!)),
+            IssuerSigningKey         = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey)),
 
 
 
@@ -362,8 +392,8 @@ try
     using (var scope = app.Services.CreateScope())
     {
         var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-        
-        context.Database.Migrate();
+        // Dùng EnsureCreatedAsync() để auto-tạo schema cho PostgreSQL mà không cần qua Migrations (tránh lỗi xung đột SQLite)
+        await context.Database.EnsureCreatedAsync();
         
         var seeder = new DbSeeder(context);
         await seeder.SeedAsync();

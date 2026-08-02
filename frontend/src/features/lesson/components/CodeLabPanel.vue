@@ -213,7 +213,7 @@ async function runTestcases(isSubmit: boolean = false): Promise<void> {
   activeTab.value = 'testcases';
   testResults.value = []; 
   
-  const results = [];
+  const results: Array<{ passed: boolean; actualOutput?: string }> = [];
   
   
   

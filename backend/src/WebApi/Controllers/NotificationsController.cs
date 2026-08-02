@@ -13,7 +13,7 @@ namespace VisualizationDSA.WebApi.Controllers
 {
     [ApiVersion("1.0")]
     [ApiController]
-    [Route("api/v{version:apiVersion}/concepts/[controller]")]
+    [Route("api/v{version:apiVersion}/[controller]")]
     public class NotificationsController : ControllerBase
     {
         private readonly ApplicationDbContext _dbContext;

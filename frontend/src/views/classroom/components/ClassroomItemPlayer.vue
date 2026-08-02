@@ -28,6 +28,7 @@
             </div>
           </div>
         </div>
+      </div>
 
         <div class="flex items-center gap-3 ml-auto">
           <div class="hidden sm:flex items-center gap-2 bg-bg-surface/50 px-3 py-1.5 rounded-lg">
@@ -35,7 +36,6 @@
             <span class="text-sm font-bold text-accent-yellow">{{ item.xpReward || 0 }} XP</span>
           </div>
         </div>
-      </div>
       </header>
 
       
@@ -176,5 +176,5 @@ function getProgressText() {
 </script>
 
 <style scoped>
-@import "./ClassroomItemPlayer.css";
+
 </style>

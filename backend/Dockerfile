@@ -18,6 +18,7 @@ FROM mcr.microsoft.com/dotnet/aspnet:9.0 AS runtime
 WORKDIR /app
 
 COPY --from=build /app/publish .
+COPY src/Infrastructure/Data/SeedContent ./Data/SeedContent
 
 ENV ASPNETCORE_URLS=http://+:5055
 ENV ASPNETCORE_ENVIRONMENT=Production

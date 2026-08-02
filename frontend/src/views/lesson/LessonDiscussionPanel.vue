@@ -12,7 +12,7 @@
         class="text-xs text-accent hover:text-accent font-semibold transition-colors"
         :disabled="loading"
       >
-        {{ loading ? 'Đang làm mới...' : 'Làm mới ↻' }}
+        {{ loading ? 'Äang lÃ m má»›i...' : 'LÃ m má»›i' }} <BaseIcon v-if="!loading" name="refresh" class="w-3.5 h-3.5 inline-block ml-0.5 align-text-bottom" />
       </button>
     </div>
 
@@ -35,7 +35,7 @@
           @click="clearSearch"
           class="absolute right-2 top-1/2 -translate-y-1/2 text-text-muted hover:text-white transition-colors text-xs"
         >
-          ✕
+          <BaseIcon name="close" class="w-3 h-3" />
         </button>
       </div>
     </div>
@@ -70,7 +70,7 @@
               </div>
               <div>
                 <div class="flex items-center gap-1.5">
-                  <span class="text-xs font-bold text-white">{{ comment.username }}</span>
+                  <span class="text-xs font-bold text-text-primary">{{ comment.username }}</span>
                   
                   <span 
                     v-if="comment.role === 'Admin'" 
@@ -102,7 +102,7 @@
               @click="toggleReplyForm(comment.id)" 
               class="text-[10px] text-accent hover:text-accent font-bold transition-colors flex items-center gap-0.5"
             >
-              ↩ Trả lời
+              <BaseIcon name="arrow-right" class="w-3 h-3 inline-block rotate-180 mr-0.5 align-text-bottom" /> Tráº£ lá»i
             </button>
           </div>
         </div>
@@ -116,7 +116,7 @@
               </div>
               <div class="flex-1 min-w-0">
                 <div class="flex items-center gap-1.5">
-                  <span class="text-xs font-bold text-white">{{ reply.username }}</span>
+                  <span class="text-xs font-bold text-text-primary">{{ reply.username }}</span>
                   <span 
                     v-if="reply.role === 'Admin'" 
                     class="px-1.5 py-0.2 text-[8px] font-extrabold uppercase rounded bg-accent-red/20 text-accent-red border border-accent-red/10"
@@ -148,14 +148,14 @@
                 @click="replyingToId = null" 
                 class="px-2.5 py-1 text-[10px] bg-bg-hover text-text-muted font-bold rounded-lg border border-border-subtle hover:bg-bg-hover transition-all"
               >
-                Hủy
+                Há»§y
               </button>
               <button 
                 @click="submitComment(comment.id)" 
                 :disabled="submitting || !replyText.trim()"
                 class="px-3 py-1 text-[10px] bg-accent text-white font-bold rounded-lg hover:bg-accent transition-all disabled:opacity-50"
               >
-                {{ submitting ? 'Đang gửi...' : 'Gửi trả lời' }}
+                {{ submitting ? 'Äang gá»­i...' : 'Gá»­i tráº£ lá»i' }}
               </button>
             </div>
           </div>
@@ -177,7 +177,7 @@
           :disabled="submitting || !newCommentText.trim()"
           class="px-4 py-2 bg-gradient-to-r from-accent to-accent-purple text-white font-bold rounded-xl hover:from-accent hover:to-accent-purple transition-all text-xs disabled:opacity-50 shadow-lg shadow-accent/10"
         >
-          {{ submitting ? 'Đang gửi...' : 'Đăng thảo luận 💬' }}
+          {{ submitting ? 'Äang gá»­i...' : 'ÄÄƒng tháº£o luáº­n' }} <BaseIcon v-if="!submitting" name="message-circle" class="w-3.5 h-3.5 inline-block ml-1 align-text-bottom" />
         </button>
       </div>
     </div>
@@ -253,10 +253,10 @@ async function loadComments() {
     if (res.ok) {
       comments.value = await res.json();
     } else {
-      error.value = 'Không thể tải cuộc thảo luận.';
+      error.value = 'KhÃ´ng thá»ƒ táº£i cuá»™c tháº£o luáº­n.';
     }
   } catch (err) {
-    error.value = 'Lỗi kết nối khi tải thảo luận.';
+    error.value = 'Lá»—i káº¿t ná»‘i khi táº£i tháº£o luáº­n.';
   } finally {
     loading.value = false;
   }
@@ -305,10 +305,10 @@ async function submitComment(parentId: string | null = null) {
       }
     } else {
       const errData = await res.json();
-      error.value = errData.message ?? 'Đăng bình luận thất bại.';
+      error.value = errData.message ?? 'ÄÄƒng bÃ¬nh luáº­n tháº¥t báº¡i.';
     }
   } catch (err) {
-    error.value = 'Lỗi kết nối khi đăng thảo luận.';
+    error.value = 'Lá»—i káº¿t ná»‘i khi Ä‘Äƒng tháº£o luáº­n.';
   } finally {
     submitting.value = false;
   }

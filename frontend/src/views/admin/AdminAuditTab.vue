@@ -2,7 +2,7 @@
   <section class="tab-section fade-in">
     <div class="card card--audit-logs bg-bg-secondary/40 border border-border-subtle rounded-3xl p-6">
       <div class="card-header-row flex justify-between items-center mb-6">
-        <h3 class="card-heading flex items-center gap-2 m-0 text-white text-base font-black">
+        <h3 class="card-heading flex items-center gap-2 m-0 text-text-primary text-base font-black">
           <BaseIcon name="shield" style="width:18px;height:18px;color:#f87171" />
           Nhật ký Hoạt động Quản trị (Admin Audit Logs)
         </h3>

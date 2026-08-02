@@ -11,49 +11,85 @@
         </div>
       </div>
 
-      <div class="table-container">
-        <table class="data-table">
+      <div class="overflow-x-auto rounded-xl border border-border-default/50 bg-bg-surface shadow-xl mt-4">
+        <table class="w-full text-left border-collapse whitespace-nowrap">
           <thead>
-            <tr>
-              <th>Tài khoản</th><th>Vai trò</th><th>Tài khoản Premium</th>
-              <th>Level</th><th>Tổng XP</th><th>Thao tác quản trị</th>
+            <tr class="bg-bg-surface border-b border-border-default">
+              <th class="px-6 py-4 text-xs font-semibold text-text-secondary uppercase tracking-wider">Tài khoản</th>
+              <th class="px-6 py-4 text-xs font-semibold text-text-secondary uppercase tracking-wider">Vai trò</th>
+              <th class="px-6 py-4 text-xs font-semibold text-text-secondary uppercase tracking-wider">Trạng thái Premium</th>
+              <th class="px-6 py-4 text-xs font-semibold text-text-secondary uppercase tracking-wider">Cấp độ</th>
+              <th class="px-6 py-4 text-xs font-semibold text-text-secondary uppercase tracking-wider">Tổng XP</th>
+              <th class="px-6 py-4 text-xs font-semibold text-text-secondary uppercase tracking-wider text-right">Thao tác quản trị</th>
             </tr>
           </thead>
-          <tbody>
-            <tr v-for="u in usersList" :key="u.id">
-              <td>
-                <div class="student-info">
-                  <span class="student-name">{{ u.username }}</span>
-                  <span class="student-email">{{ u.email }}</span>
+          <tbody class="divide-y divide-slate-700/50">
+            <tr v-for="u in usersList" :key="u.id" class="hover:bg-bg-hover/30 transition-colors">
+              <td class="px-6 py-4">
+                <div class="flex items-center gap-3">
+                  <div class="w-10 h-10 rounded-full bg-gradient-to-br from-accent to-accent-purple flex items-center justify-center text-text-primary font-bold shadow-md">
+                    {{ u.username[0].toUpperCase() }}
+                  </div>
+                  <div class="flex flex-col">
+                    <span class="font-bold text-text-primary text-sm">{{ u.username }}</span>
+                    <span class="text-xs text-text-secondary">{{ u.email }}</span>
+                  </div>
                 </div>
               </td>
-              <td>
-                <select :value="u.role" class="inline-select" @change="changeUserRole(u.id, $event)">
+              <td class="px-6 py-4">
+                <select :value="u.role" class="bg-bg-hover border border-border-default text-text-secondary text-xs rounded-lg px-3 py-1.5 focus:ring-2 focus:ring-accent/50 outline-none transition-all" @change="changeUserRole(u.id, $event)">
                   <option value="Student">Học viên</option>
                   <option value="Teacher">Giảng viên</option>
                   <option value="Admin">Quản trị viên</option>
                 </select>
               </td>
-              <td>
-                <button class="toggle-btn" :class="u.isPremium ? 'toggle-btn--active' : 'toggle-btn--inactive'" @click="toggleUserPremium(u.id, u.isPremium)">
-                  <template v-if="u.isPremium">Premium <BaseIcon name="gem" style="width:13px;height:13px" /></template>
+              <td class="px-6 py-4">
+                <button 
+                  class="px-3 py-1 rounded-full text-xs font-bold transition-colors flex items-center gap-1.5" 
+                  :class="u.isPremium ? 'bg-accent-warm/20 text-accent-warm border border-accent-warm/30 hover:bg-accent-warm/30' : 'bg-bg-hover text-text-secondary border border-border-default hover:bg-bg-hover'" 
+                  @click="toggleUserPremium(u.id, u.isPremium)"
+                >
+                  <template v-if="u.isPremium">
+                    <span>Premium</span>
+                    <BaseIcon name="gem" class="w-3 h-3" />
+                  </template>
                   <template v-else>Miễn phí</template>
                 </button>
               </td>
-              <td><span class="level-badge">Lv.{{ u.currentLevel }}</span></td>
-              <td>{{ u.totalXP }} XP</td>
-              <td class="flex flex-wrap gap-1.5 items-center">
-                <button class="btn-audit-detail" @click="showUserAudit(u)" title="Xem chi tiết"><BaseIcon name="clipboard-list" style="width:13px;height:13px" /> Xem</button>
-                <button class="ban-btn" :class="u.isActive !== false ? 'ban-btn--active' : 'ban-btn--banned'" @click="toggleUserBan(u.id, u.isActive !== false)" title="Khóa/mở khóa">
-                  <BaseIcon :name="u.isActive !== false ? 'unlock' : 'lock'" style="width:13px;height:13px" />
-                  {{ u.isActive !== false ? 'Hoạt động' : 'Bị khóa' }}
-                </button>
-                <button class="btn-reset-password btn-impersonate" @click="openResetPasswordModal(u)" title="Đặt lại mật khẩu"><BaseIcon name="shield" style="width:13px;height:13px" /> Đổi Pass</button>
-                <button class="btn-impersonate" @click="impersonateUser(u.id)" title="Đóng vai"><BaseIcon name="impersonate" style="width:14px;height:14px" /> Đóng vai</button>
-                <button class="ban-btn ban-btn--banned flex items-center gap-1" @click="deleteUser(u.id, u.username)" title="Xóa tài khoản"><BaseIcon name="close" style="width:11px;height:11px" /> Xóa</button>
+              <td class="px-6 py-4">
+                <span class="px-2.5 py-1 rounded-md bg-accent/10 text-accent text-xs font-bold border border-border-accent">
+                  Lv.{{ u.currentLevel }}
+                </span>
+              </td>
+              <td class="px-6 py-4 font-mono font-bold text-accent-purple text-sm">
+                {{ u.totalXP.toLocaleString() }} XP
+              </td>
+              <td class="px-6 py-4">
+                <div class="flex justify-end gap-2">
+                  <button class="p-1.5 rounded-lg bg-bg-hover text-text-secondary hover:bg-bg-hover hover:text-text-primary transition-colors" @click="showUserAudit(u)" title="Xem chi tiết">
+                    <BaseIcon name="clipboard-list" class="w-4 h-4" />
+                  </button>
+                  <button class="p-1.5 rounded-lg transition-colors" :class="u.isActive !== false ? 'bg-accent-green/10 text-accent-green hover:bg-accent-green/20' : 'bg-accent-red/10 text-accent-red hover:bg-accent-red/20'" @click="toggleUserBan(u.id, u.isActive !== false)" :title="u.isActive !== false ? 'Đang hoạt động (Nhấn để khóa)' : 'Đã khóa (Nhấn để mở)'">
+                    <BaseIcon :name="u.isActive !== false ? 'unlock' : 'lock'" class="w-4 h-4" />
+                  </button>
+                  <button class="p-1.5 rounded-lg bg-accent/10 text-accent hover:bg-accent/20 transition-colors" @click="openResetPasswordModal(u)" title="Đặt lại mật khẩu">
+                    <BaseIcon name="shield" class="w-4 h-4" />
+                  </button>
+                  <button class="p-1.5 rounded-lg bg-accent-purple/10 text-accent-purple hover:bg-accent-purple/20 transition-colors" @click="impersonateUser(u.id)" title="Đóng vai người dùng">
+                    <BaseIcon name="impersonate" class="w-4 h-4" />
+                  </button>
+                  <button class="p-1.5 rounded-lg bg-accent-red/10 text-accent-red hover:bg-accent-red hover:text-text-primary transition-colors ml-2" @click="deleteUser(u.id, u.username)" title="Xóa tài khoản vĩnh viễn">
+                    <BaseIcon name="trash" class="w-4 h-4" />
+                  </button>
+                </div>
               </td>
             </tr>
-            <tr v-if="usersList.length === 0"><td colspan="7" class="empty-table-text">Không tìm thấy người dùng nào.</td></tr>
+            <tr v-if="usersList.length === 0">
+              <td colspan="6" class="px-6 py-12 text-center text-text-muted">
+                <BaseIcon name="users" class="w-12 h-12 mx-auto mb-3 opacity-20" />
+                Không tìm thấy người dùng nào.
+              </td>
+            </tr>
           </tbody>
         </table>
       </div>
@@ -104,7 +140,7 @@
       <div v-if="showCreateUserModal" class="user-modal-backdrop" @click.self="closeCreateUserModal">
         <div class="user-modal-card">
           <div class="user-modal-header">
-            <h2 class="user-modal-name text-white">Tạo người dùng mới</h2>
+            <h2 class="user-modal-name text-text-primary">Tạo người dùng mới</h2>
             <button class="user-modal-close" @click="closeCreateUserModal">&times;</button>
           </div>
           <form @submit.prevent="submitCreateUser" class="modal-form mt-4">

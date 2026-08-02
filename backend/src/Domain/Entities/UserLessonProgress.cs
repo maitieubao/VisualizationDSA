@@ -12,6 +12,14 @@ namespace VisualizationDSA.Domain.Entities
         public int LastActiveFrameIndex { get; private set; }
         public double LastScrollPercent { get; private set; }
 
+        // Fields v4.0 thêm mới:
+        public int? Stars { get; private set; }  // 1, 2, hoặc 3 sao
+        public bool QuizPassed { get; private set; } = false;
+        public bool LabPassed { get; private set; } = false;
+        public bool LeetCodePassed { get; private set; } = false;
+        public int? WeightedScore { get; private set; }  // 0 - 100%
+        public string? Hint1UsedSteps { get; private set; }  // JSON array string: ["Quiz", "LeetCode"]
+
         public virtual User User { get; private set; } = null!;
         public virtual Lesson Lesson { get; private set; } = null!;
 

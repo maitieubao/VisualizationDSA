@@ -31,7 +31,7 @@ const props = withDefaults(defineProps<{
 
 const iconClass = computed(() => `icon-${props.name}`);
 
-import { SVG_PATHS } from '../../utils/emojiParser';
+import { SVG_PATHS } from '@/utils/emojiParser';
 
 const icons: Record<string, string> = SVG_PATHS;
 

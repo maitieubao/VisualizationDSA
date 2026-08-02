@@ -42,55 +42,61 @@
       </div>
     </header>
 
-    
-    <main class="flex-1 min-h-0 relative w-full h-full overflow-hidden">
-      
-      <LessonStepTheory
-        v-if="activeStep === 1"
-        :title="lesson?.title || 'Lý Thuyết Thuật Toán'"
-        :content="lesson?.contentMarkdown || 'Đọc tài liệu lý thuyết nền tảng trước khi xem mô phỏng trực quan hóa.'"
-        @completeStep="activeStep = 2"
-      />
+    <main class="flex-1 min-h-0 relative w-full h-full overflow-hidden bg-bg-primary">
+      <Transition name="fade-slide" mode="out-in">
+        <LessonStepTheory
+          v-if="currentStepLabel === 'Lý Thuyết'"
+          :title="lesson?.title || 'Lý Thuyết Thuật Toán'"
+          :content="lesson?.contentMd || 'Đọc tài liệu lý thuyết nền tảng trước khi xem mô phỏng trực quan hóa.'"
+          @completeStep="goToNextStep"
+        />
 
-      
-      <LessonStepViz
-        v-else-if="activeStep === 2"
-        :vizTitle="lesson?.title"
-        moduleKey="sorting"
-        @completeStep="activeStep = 3"
-      />
+        <LessonStepViz
+          v-else-if="currentStepLabel === 'Trực Quan Hóa'"
+          :vizTitle="lesson?.title"
+          :moduleKey="lesson?.sandboxType || 'sorting'"
+          @completeStep="goToNextStep"
+        />
 
-      
-      <LessonStepQuiz
-        v-else-if="activeStep === 3"
-        @completeStep="activeStep = 4"
-      />
+        <LessonStepQuiz
+          v-else-if="currentStepLabel === 'Quiz'"
+          :quizId="lesson?.quizId"
+          @completeStep="goToNextStep"
+        />
 
-      
-      <LessonStepCodeLab
-        v-else-if="activeStep === 4"
-        :problemTitle="`Thực hành: ${lesson?.title || 'Lập trình thuật toán'}`"
-        @completeLesson="showCompletionModal = true"
-      />
+        <LessonStepCodeLab
+          v-else-if="currentStepLabel === 'Code Lab'"
+          :problemTitle="'Thực hành: ' + (lesson?.codelab?.title || lesson?.title)"
+          :codelab="lesson?.codelab"
+          @completeStep="goToNextStep"
+        />
+
+        <LessonStepLeetCode
+          v-else-if="currentStepLabel === 'LeetCode'"
+          :leetCodeId="lesson?.leetCodeId"
+          @completeLesson="completeLesson"
+        />
+      </Transition>
     </main>
 
-    
     <LessonCompletionModal
       :show="showCompletionModal"
       :xpReward="lesson?.xpReward ?? 50"
-      @close="showCompletionModal = false"
+      @close="goToNextLesson"
     />
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue';
+import { ref, computed, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import LessonStepTheory from './components/LessonStepTheory.vue';
 import LessonStepViz from './components/LessonStepViz.vue';
 import LessonStepQuiz from './components/LessonStepQuiz.vue';
 import LessonStepCodeLab from './components/LessonStepCodeLab.vue';
+import LessonStepLeetCode from './components/LessonStepLeetCode.vue';
 import LessonCompletionModal from './LessonCompletionModal.vue';
+import { api } from '@/services/apiClient';
 
 const route = useRoute();
 const router = useRouter();
@@ -101,34 +107,79 @@ const courseId = route.query.courseId as string;
 const activeStep = ref(1);
 const showCompletionModal = ref(false);
 
-const lesson = ref({
-  id: lessonId || '1',
-  title: 'Khởi Tạo Thuật Toán Sắp Xếp Bubble Sort',
-  xpReward: 50,
-  contentMarkdown: `### 1. Giới thiệu Thuật toán Bubble Sort
-  
-Bubble Sort (Sắp xếp nổi bọt) là một thuật toán sắp xếp đơn giản hoạt động bằng cách duyệt qua mảng nhiều lần, so sánh các cặp phần tử kế tiếp và hoán đổi chúng nếu chúng sai thứ tự.
-  
-### 2. Các Bước Thực Hiện
-1. Duyệt qua mảng từ vị trí 0 đến N-1.
-2. So sánh \`arr[j]\` và \`arr[j+1]\`.
-3. Nếu \`arr[j] > arr[j+1]\`, hoán đổi vị trí của 2 phần tử.
-4. Lặp lại cho đến khi mảng được sắp xếp hoàn toàn.
+const lesson = ref<any>(null);
+const steps = ref<{ number: number; label: string }[]>([]);
 
-### 3. Độ Phức Tạp Thuật Toán
-- **Thời gian (Time Complexity)**: Trung bình và Xấu nhất là **O(N²)**.
-- **Bộ nhớ (Space Complexity)**: **O(1)** (Sắp xếp tại chỗ - In-place sort).`
+const currentStepLabel = computed(() => steps.value.find(s => s.number === activeStep.value)?.label || '');
+
+async function goToNextStep() {
+  if (activeStep.value < steps.value.length) {
+    activeStep.value++;
+  } else {
+    await completeLesson();
+  }
+}
+
+async function completeLesson() {
+  try {
+    await api.post(`/concepts/lessons/${lessonId}/complete`);
+  } catch (e) {
+    console.error("Failed to complete lesson:", e);
+  }
+  showCompletionModal.value = true;
+}
+
+onMounted(async () => {
+  try {
+    const response = await api.get(`/concepts/lessons/${lessonId}`) as any;
+    lesson.value = response;
+    
+    let stepNum = 1;
+    const dynamicSteps: { number: number; label: string }[] = [];
+    dynamicSteps.push({ number: stepNum++, label: 'Lý Thuyết' });
+    dynamicSteps.push({ number: stepNum++, label: 'Trực Quan Hóa' });
+    
+    if (lesson.value.quizId) {
+      dynamicSteps.push({ number: stepNum++, label: 'Quiz' });
+    }
+    
+    if (lesson.value.codelab) {
+      dynamicSteps.push({ number: stepNum++, label: 'Code Lab' });
+    }
+    
+    if (lesson.value.leetCodeId) {
+      dynamicSteps.push({ number: stepNum++, label: 'LeetCode' });
+    }
+    
+    steps.value = dynamicSteps;
+  } catch (error) {
+    console.error("Failed to fetch lesson:", error);
+  }
 });
-
-const steps = [
-  { number: 1, label: 'Lý Thuyết' },
-  { number: 2, label: 'Trực Quan Hóa' },
-  { number: 3, label: 'Quiz' },
-  { number: 4, label: 'Code Lab' }
-];
 
 function goToNextLesson(): void {
   showCompletionModal.value = false;
-  router.push('/courses');
+  if (courseId) {
+    router.push(/courses/ + courseId);
+  } else {
+    router.push('/courses');
+  }
 }
 </script>
+
+<style scoped>
+.fade-slide-enter-active,
+.fade-slide-leave-active {
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.fade-slide-enter-from {
+  opacity: 0;
+  transform: translateX(20px);
+}
+
+.fade-slide-leave-to {
+  opacity: 0;
+  transform: translateX(-20px);
+}
+</style>

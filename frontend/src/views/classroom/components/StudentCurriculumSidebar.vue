@@ -111,7 +111,7 @@
             
             <div class="flex-1 min-w-0">
               <div class="flex items-center gap-2 flex-wrap">
-                <h5 class="font-medium text-white truncate">{{ item.overrideTitle || item.lessonTitle || item.quizTitle || item.codelabTitle || 'Untitled' }}</h5>
+                <h5 class="font-medium text-text-primary truncate">{{ item.overrideTitle || item.lessonTitle || item.quizTitle || item.codelabTitle || 'Untitled' }}</h5>
                 <span class="badge text-[10px]" :class="getTypeBadgeClass(item.itemType)">{{ item.itemType }}</span>
                 <span v-if="item.isRequired" class="badge badge-rose text-[10px]">Bắt buộc</span>
                 <span v-if="item.isHidden" class="badge badge-slate text-[10px]">Ẩn</span>

@@ -5,5 +5,5 @@
 </template>
 
 <script setup lang="ts">
-import { ExportShareWorkspace } from '../../features/export-share';
+import { ExportShareWorkspace } from '@/features/export-share';
 </script>

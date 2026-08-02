@@ -1,5 +1,5 @@
 <template>
-  <div class="skeleton-card">
+  <div class="skeleton-card glass-panel">
     <SkeletonLoader variant="rect" height="16px" width="60%" />
     <SkeletonLoader variant="text" width="90%" />
     <SkeletonLoader variant="text" width="75%" />
@@ -18,8 +18,6 @@ import SkeletonLoader from './SkeletonLoader.vue';
 .skeleton-card {
   padding: 16px;
   border-radius: 12px;
-  background: rgba(255, 255, 255, 0.02);
-  border: 1px solid rgba(255, 255, 255, 0.06);
   display: flex;
   flex-direction: column;
   gap: 10px;

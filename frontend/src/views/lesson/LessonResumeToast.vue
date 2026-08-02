@@ -1,7 +1,7 @@
 <template>
   <div v-if="show && resumeData" class="fixed bottom-6 right-6 z-50 max-w-sm bg-bg-secondary border border-accent/30 rounded-2xl p-4 shadow-2xl backdrop-blur-md animate-fade-in flex flex-col gap-3">
     <div class="flex items-start gap-3">
-      <span class="text-xl">🔄</span>
+      <BaseIcon name="refresh" class="w-5 h-5 text-accent" />
       <div>
         <h4 class="text-xs font-bold text-white uppercase tracking-wider">Khôi phục tiến trình</h4>
         <p class="text-[11px] text-text-secondary mt-1 leading-relaxed">

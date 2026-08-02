@@ -11,9 +11,8 @@ export const useThemeStore = defineStore('theme', () => {
     if (savedTheme && (savedTheme === 'terminal-dark' || savedTheme === 'light')) {
       currentTheme.value = savedTheme;
     } else {
-      
-      const prefersLight = window.matchMedia('(prefers-color-scheme: light)').matches;
-      currentTheme.value = prefersLight ? 'light' : 'terminal-dark';
+      // Default to dark theme instead of relying on OS preference
+      currentTheme.value = 'terminal-dark';
     }
     applyTheme(currentTheme.value);
   }

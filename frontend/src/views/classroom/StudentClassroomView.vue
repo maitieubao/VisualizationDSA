@@ -1,7 +1,7 @@
 <template>
   <div class="student-classroom-view min-h-screen bg-bg-secondary">
     
-    <div v-if="loading" class="flex items-center justify-center h-screen">
+    <div v-if="loading" class="flex items-center justify-center h-full">
       <div class="text-center">
         <div class="w-12 h-12 border-4 border-accent border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
         <p class="text-text-muted">Đang tải lớp học...</p>
@@ -9,7 +9,7 @@
     </div>
 
     
-    <div v-else class="flex h-screen">
+    <div v-else class="flex h-full">
       
       <aside class="w-80 shrink-0 p-4 overflow-y-auto border-r border-border-subtle">
         <StudentCurriculumSidebar

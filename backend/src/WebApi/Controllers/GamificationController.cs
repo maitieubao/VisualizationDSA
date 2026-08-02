@@ -1,19 +1,28 @@
+using System;
+using System.Linq;
+using System.Security.Claims;
+using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
+using VisualizationDSA.Infrastructure.Data;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Asp.Versioning;
 
 namespace VisualizationDSA.WebApi.Controllers
 {
-    
-    
-    
-    
     [ApiVersion("1.0")]
     [ApiController]
     [Route("api/v{version:apiVersion}/[controller]")]
+    [Authorize]
     public class GamificationController : ControllerBase
     {
-        
-        
+        private readonly ApplicationDbContext _context;
+
+        public GamificationController(ApplicationDbContext context)
+        {
+            _context = context;
+        }
+
         private static readonly object[] LevelDefinitions = new[]
         {
             new { level = 1, name = "Novice",       xpRequired = 0,    color = "#64748b" },
@@ -38,13 +47,8 @@ namespace VisualizationDSA.WebApi.Controllers
             new { id = "dsa-champion",     name = "DSA Champion",     description = "Hoàn thành toàn bộ khóa học",              icon = "👑", color = "#eab308" },
         };
 
-        
-        
-        
-        
-        
-        
         [HttpGet("config")]
+        [AllowAnonymous]
         [ResponseCache(Duration = 86400, Location = ResponseCacheLocation.Any)]
         public IActionResult GetConfig()
         {
@@ -61,5 +65,91 @@ namespace VisualizationDSA.WebApi.Controllers
                 }
             });
         }
+
+        private Guid GetCurrentUserId()
+        {
+            var userIdStr = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(userIdStr) || !Guid.TryParse(userIdStr, out var userId))
+                throw new UnauthorizedAccessException("User not found or invalid token.");
+            return userId;
+        }
+
+        [HttpGet("quests")]
+        public async Task<IActionResult> GetDailyQuests()
+        {
+            var userId = GetCurrentUserId();
+            var today = DateTime.UtcNow.Date;
+            
+            var quests = await _context.UserDailyQuests
+                .Where(q => q.UserId == userId && q.Date == today)
+                .Select(q => new {
+                    id = q.Id,
+                    type = q.QuestType,
+                    difficulty = q.Difficulty,
+                    description = q.Description,
+                    current = q.CurrentValue,
+                    target = q.TargetValue,
+                    completed = q.IsCompleted,
+                    claimed = q.IsClaimed,
+                    reward = q.GemsReward
+                })
+                .ToListAsync();
+                
+            // If empty, generate some fake ones for the first time
+            if (!quests.Any())
+            {
+                var newQuests = new[] {
+                    new Domain.Entities.UserDailyQuest(userId, today, "COMPLETE_QUIZ", "Easy", "Hoàn thành 1 bài tập Sorting", 1, 10),
+                    new Domain.Entities.UserDailyQuest(userId, today, "EARN_XP", "Medium", "Kiếm 150 XP", 150, 20),
+                    new Domain.Entities.UserDailyQuest(userId, today, "PERFECT_QUIZ", "Hard", "Đạt điểm tối đa 1 bài test OOP", 1, 50)
+                };
+                _context.UserDailyQuests.AddRange(newQuests);
+                await _context.SaveChangesAsync();
+                
+                quests = newQuests.Select(q => new {
+                    id = q.Id,
+                    type = q.QuestType,
+                    difficulty = q.Difficulty,
+                    description = q.Description,
+                    current = q.CurrentValue,
+                    target = q.TargetValue,
+                    completed = q.IsCompleted,
+                    claimed = q.IsClaimed,
+                    reward = q.GemsReward
+                }).ToList();
+            }
+
+            return Ok(quests);
+        }
+
+        [HttpGet("skills")]
+        public async Task<IActionResult> GetSkillStats()
+        {
+            var userId = GetCurrentUserId();
+            var progresses = await _context.UserLessonProgresses
+                .Where(p => p.UserId == userId && p.Status == "Completed")
+                .ToListAsync();
+
+            int completedCount = progresses.Count;
+            
+            // Baseline 20, max 100 based on completed lessons + user id hash
+            int hash = Math.Abs(userId.GetHashCode());
+            
+            int dsa = Math.Min(100, 20 + completedCount * 2 + (hash % 20));
+            int oop = Math.Min(100, 20 + completedCount * 2 + ((hash / 2) % 20));
+            int sys = Math.Min(100, 20 + completedCount * 1 + ((hash / 3) % 20));
+            int logic = Math.Min(100, 30 + completedCount * 3 + ((hash / 4) % 15));
+            int cleanCode = Math.Min(100, 25 + completedCount * 2 + ((hash / 5) % 15));
+
+            return Ok(new[]
+            {
+                new { subject = "Cấu trúc & Giải thuật", value = dsa },
+                new { subject = "OOP", value = oop },
+                new { subject = "System Design", value = sys },
+                new { subject = "Tư duy Logic", value = logic },
+                new { subject = "Clean Code", value = cleanCode }
+            });
+        }
     }
 }
+

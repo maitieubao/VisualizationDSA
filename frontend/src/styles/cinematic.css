@@ -1,14 +1,13 @@
-
-
+/* ── VCR FRAMES ── */
 .vcr-frame-enter {
-  animation: vcr-slide-in var(--duration-vcr) var(--ease-smooth) forwards;
+  animation: vcr-slide-in var(--duration-vcr) var(--ease-spring) forwards;
 }
 
 @keyframes vcr-slide-in {
   from {
     opacity: 0;
-    transform: translateY(12px) scale(0.97);
-    filter: blur(2px);
+    transform: translateY(16px) scale(0.96);
+    filter: blur(4px);
   }
   to {
     opacity: 1;
@@ -17,21 +16,21 @@
   }
 }
 
-
+/* ── INTERACTIVE HOVERS (Haptic feel) ── */
 .spring-hover {
   transition: transform var(--duration-slow) var(--ease-spring),
               box-shadow var(--duration-medium) ease;
 }
 .spring-hover:hover {
-  transform: translateY(-4px) scale(1.015);
+  transform: translateY(-4px) scale(1.02);
   box-shadow: var(--shadow-card-hover), var(--glow-accent);
 }
 .spring-hover:active {
-  transform: translateY(-1px) scale(0.99);
+  transform: translateY(-1px) scale(0.98);
   transition-duration: var(--duration-fast);
 }
 
-
+/* ── GLASS PANELS ── */
 .glass-panel {
   background: var(--glass-bg);
   backdrop-filter: var(--glass-blur);
@@ -45,17 +44,17 @@
   border-color: var(--glass-border);
 }
 
-
+/* ── VCR GLOWS ── */
 .vcr-active-glow {
   animation: vcr-glow 2s ease-in-out infinite alternate;
 }
 
 @keyframes vcr-glow {
-  from { box-shadow: 0 0 4px rgba(66, 85, 255, 0.22); }
-  to   { box-shadow: 0 0 16px rgba(66, 85, 255, 0.44); }
+  from { box-shadow: 0 0 8px rgba(79, 70, 229, 0.2); }
+  to   { box-shadow: 0 0 24px rgba(79, 70, 229, 0.4); }
 }
 
-
+/* ── STAGGER ENTRANCE (for grids & lists) ── */
 .stagger-enter {
   animation: stagger-fade-in var(--duration-medium) ease-out forwards;
   opacity: 0;
@@ -64,7 +63,7 @@
 @keyframes stagger-fade-in {
   from {
     opacity: 0;
-    transform: translateY(8px);
+    transform: translateY(12px);
   }
   to {
     opacity: 1;
@@ -72,18 +71,38 @@
   }
 }
 
-
+/* ── BANNERS ── */
 .vcr-banner-fade-enter-active {
-  transition: opacity 0.25s ease, transform 0.25s var(--ease-smooth);
+  transition: opacity var(--duration-medium) ease, transform var(--duration-medium) var(--ease-spring);
 }
 .vcr-banner-fade-leave-active {
   transition: opacity var(--duration-fast) ease, transform var(--duration-fast) ease;
 }
 .vcr-banner-fade-enter-from {
   opacity: 0;
-  transform: translateY(8px) scale(0.97);
+  transform: translateY(12px) scale(0.96);
 }
 .vcr-banner-fade-leave-to {
   opacity: 0;
-  transform: translateY(-4px) scale(0.98);
+  transform: translateY(-8px) scale(0.98);
+}
+
+/* ── AMBIENT EFFECTS ── */
+.ambient-float {
+  animation: ambient-float 12s ease-in-out infinite alternate;
+}
+@keyframes ambient-float {
+  0% { transform: translate(0, 0) scale(1); opacity: 0.6; }
+  50% { transform: translate(4%, 6%) scale(1.05); opacity: 0.8; }
+  100% { transform: translate(-2%, 4%) scale(0.95); opacity: 0.6; }
+}
+
+.gradient-shift {
+  background-size: 200% 200%;
+  animation: gradient-shift 8s ease infinite;
+}
+@keyframes gradient-shift {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
 }
