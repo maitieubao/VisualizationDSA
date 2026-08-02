@@ -4,10 +4,10 @@
     class="lesson-list-item group flex items-center gap-4 px-4 py-3 rounded-xl transition-all duration-200 border"
     :class="[
       status === 'completed'
-        ? 'border-accent-green/20 bg-accent-green/20 hover:bg-accent-green/20'
+        ? 'border-accent-green/20 bg-accent-green/20 hover:bg-accent-green/40'
         : status === 'in-progress'
-        ? 'border-accent-warm/20 bg-accent-warm/20 hover:bg-amber-950/40'
-        : 'border-border-default bg-bg-surface hover:bg-bg-surface hover:border-border-default'
+        ? 'border-accent-yellow/20 bg-accent-yellow/20 hover:bg-accent-yellow/40'
+        : 'border-border-subtle bg-bg-secondary/40 hover:bg-bg-surface/60 hover:border-border-subtle'
     ]"
   >
     
@@ -16,11 +16,11 @@
         status === 'completed'
           ? 'bg-accent-green/20 text-accent-green'
           : status === 'in-progress'
-          ? 'bg-accent-warm/20 text-accent-warm'
-          : 'bg-bg-hover text-text-muted'
+          ? 'bg-accent-yellow/20 text-accent-yellow'
+          : 'bg-bg-surface text-text-muted'
       ]"
     >
-      <span v-if="status === 'completed'"><BaseIcon name="check" class="w-3.5 h-3.5" /></span>
+      <span v-if="status === 'completed'">✓</span>
       <span v-else-if="status === 'in-progress'">◐</span>
       <span v-else>{{ order }}</span>
     </div>
@@ -28,7 +28,7 @@
     
     <div class="flex-1 min-w-0">
       <div class="flex items-center gap-2.5">
-        <h4 class="text-sm font-medium text-text-primary truncate">{{ title }}</h4>
+        <h4 class="text-sm font-medium text-white truncate">{{ title }}</h4>
         <span
           class="px-2 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wider flex-shrink-0"
           :class="statusBadgeClass"
@@ -44,7 +44,7 @@
     </div>
 
     
-    <div class="flex-shrink-0 text-text-muted group-hover:text-text-secondary transition-colors">
+    <div class="flex-shrink-0 text-text-disabled group-hover:text-text-secondary transition-colors">
       <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
         <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
       </svg>
@@ -80,8 +80,8 @@ const statusLabel = computed(() => {
 const statusBadgeClass = computed(() => {
   switch (status.value) {
     case 'completed': return 'bg-accent-green/20 text-accent-green border border-accent-green/30';
-    case 'in-progress': return 'bg-accent-warm/20 text-accent-warm border border-accent-warm/30';
-    default: return 'bg-bg-hover text-text-secondary border border-border-default';
+    case 'in-progress': return 'bg-accent-yellow/20 text-accent-yellow border border-accent-yellow/30';
+    default: return 'bg-bg-surface text-text-muted border border-border-subtle';
   }
 });
 </script>

@@ -66,11 +66,19 @@
       </div>
     </aside>
 
-    <!-- Main Content -->
+    
     <main class="studio-main">
-      <header class="main-header">
-        <h1 class="page-title">{{ activeTabLabel }}</h1>
-      </header>
+    <div class="panel-tabs flex border-b border-border-subtle gap-6 mb-8 mt-2 flex-wrap">
+      <button 
+        v-for="tab in allTabs" :key="tab.id"
+        type="button" 
+        class="pb-3 text-lg font-bold transition-all relative cursor-pointer whitespace-nowrap"
+        :class="activeTab === tab.id ? 'text-accent border-b-2 border-accent' : 'text-text-muted hover:text-text-primary'"
+        @click="activeTab = tab.id"
+      >
+        {{ tab.label }}
+      </button>
+    </div>
 
       <!-- Dashboard Stats Bento -->
       <div class="stats-bento">

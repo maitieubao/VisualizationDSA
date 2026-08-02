@@ -1,15 +1,15 @@
 <template>
-  <div class="lesson-step-codelab flex flex-col lg:flex-row h-full w-full bg-bg-primary overflow-hidden text-text-primary font-sans">
+  <div class="lesson-step-codelab flex flex-col lg:flex-row h-full w-full bg-bg-secondary overflow-hidden text-text-primary font-sans">
     
-    <div class="w-full lg:w-1/2 h-full flex flex-col border-r border-border-default bg-bg-secondary/60 overflow-hidden">
+    <div class="w-full lg:w-1/2 h-full flex flex-col border-r border-border-subtle bg-bg-secondary overflow-hidden">
       
-      <div class="flex border-b border-border-default bg-bg-primary/60 px-4 shrink-0">
+      <div class="flex border-b border-border-subtle bg-bg-secondary px-4 shrink-0">
         <button
           v-for="tab in problemTabs"
           :key="tab.id"
           @click="activeTab = tab.id"
           class="py-3 px-4 text-xs font-bold transition-all border-b-2 cursor-pointer"
-          :class="activeTab === tab.id ? 'border-border-accent text-accent' : 'border-transparent text-text-secondary hover:text-text-primary'"
+          :class="activeTab === tab.id ? 'border-accent text-accent' : 'border-transparent text-text-muted hover:text-text-primary'"
         >
           {{ tab.name }}
           <span v-if="tab.badge" class="ml-1 px-1.5 py-0.5 rounded-full text-[10px] bg-accent/20 text-accent">{{ tab.badge }}</span>
@@ -18,7 +18,7 @@
 
       
       <div v-show="activeTab === 'problem'" class="flex-1 overflow-y-auto p-5 space-y-4">
-        <div class="flex items-center justify-between border-b border-border-default pb-3">
+        <div class="flex items-center justify-between border-b border-border-subtle pb-3">
           <div>
             <div class="flex items-center gap-1.5 text-xs font-bold text-accent uppercase tracking-wider">
               <svg class="w-4 h-4 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
@@ -28,19 +28,24 @@
             </div>
             <h2 class="text-lg font-extrabold text-text-primary mt-0.5">{{ problemTitle }}</h2>
           </div>
-          <span class="px-2.5 py-1 rounded-full text-[10px] font-bold bg-accent-green/20 text-accent-green border border-accent-green/30">
+          <span class="px-2.5 py-1 rounded-full text-[10px] font-bold bg-accent-green/80 text-accent-green border border-accent-green/30">
             Easy
           </span>
         </div>
 
         <div class="text-xs leading-relaxed text-text-secondary space-y-3">
-          <pre class="whitespace-pre-wrap font-mono text-[13px] text-text-secondary">{{ codelab?.description || 'Viết hàm giải quyết bài toán.' }}</pre>
+          <p>Viết hàm sắp xếp mảng số nguyên tăng dần bằng thuật toán đã học. Đảm bảo đạt độ phức tạp O(N²).</p>
+          <div class="p-3 rounded-xl bg-bg-secondary border border-border-subtle space-y-1">
+            <span class="text-[10px] font-bold text-text-muted uppercase font-mono">Example 1:</span>
+            <div class="font-mono text-xs text-accent">Input: [5, 2, 9, 1, 5, 6]</div>
+            <div class="font-mono text-xs text-accent-green">Output: [1, 2, 5, 5, 6, 9]</div>
+          </div>
         </div>
 
         
-        <div class="pt-2 border-t border-border-default">
-          <span class="text-[11px] font-bold text-text-secondary uppercase">Performance Limits:</span>
-          <ul class="text-xs text-text-secondary list-disc list-inside mt-1 space-y-0.5 font-mono">
+        <div class="pt-2 border-t border-border-subtle">
+          <span class="text-[11px] font-bold text-text-muted uppercase">Performance Limits:</span>
+          <ul class="text-xs text-text-muted list-disc list-inside mt-1 space-y-0.5 font-mono">
             <li>N ≤ 1000 elements</li>
             <li>Time Limit ≤ 1000ms</li>
             <li>Memory Limit ≤ 128MB</li>
@@ -50,16 +55,15 @@
 
       
       <div v-show="activeTab === 'testcases'" class="flex-1 overflow-y-auto p-5 space-y-3">
-        <h3 class="text-xs font-bold uppercase text-text-secondary">Testcases ({{ testCaseResults.length }} tests)</h3>
-        <div v-for="(tc, idx) in sampleTestcases" :key="idx" class="p-3.5 rounded-xl bg-bg-primary border border-border-default space-y-2 text-xs">
+        <h3 class="text-xs font-bold uppercase text-text-muted">Testcases ({{ testCaseResults.length }} tests)</h3>
+        <div v-for="(tc, idx) in sampleTestcases" :key="idx" class="p-3.5 rounded-xl bg-bg-secondary border border-border-subtle space-y-2 text-xs">
           <div class="flex items-center justify-between">
-            <span class="font-bold text-text-secondary">Testcase #{{ Number(idx) + 1 }} {{ tc.isHidden ? '(Hidden)' : '' }}</span>
-            <span v-if="testResults[idx]" :class="testResults[idx].passed ? 'text-accent-green' : 'text-accent-red'" class="font-bold text-[11px] flex items-center gap-1">
-              <BaseIcon :name="testResults[idx].passed ? 'check' : 'close'" class="w-3 h-3" />
-              {{ testResults[idx].passed ? 'PASSED' : 'FAILED' }}
+            <span class="font-bold text-text-secondary">Testcase #{{ idx + 1 }} {{ tc.isHidden ? '(Hidden)' : '' }}</span>
+            <span v-if="testResults[idx]" :class="testResults[idx].passed ? 'text-accent-green' : 'text-accent-red'" class="font-bold text-[11px]">
+              {{ testResults[idx].passed ? '✓ PASSED' : '✕ FAILED' }}
             </span>
           </div>
-          <div v-if="!tc.isHidden" class="font-mono text-[11px] text-text-secondary">
+          <div v-if="!tc.isHidden" class="font-mono text-[11px] text-text-muted">
             <div>Input: <span class="text-accent">{{ tc.input }}</span></div>
             <div>Expected: <span class="text-accent-green">{{ tc.expectedOutput }}</span></div>
           </div>
@@ -74,8 +78,8 @@
 
       
       <div v-show="activeTab === 'hints'" class="flex-1 overflow-y-auto p-5 space-y-3">
-        <h3 class="text-xs font-bold uppercase text-text-secondary">Tiered Hints</h3>
-        <div class="p-4 rounded-xl bg-bg-primary border border-border-default space-y-2">
+        <h3 class="text-xs font-bold uppercase text-text-muted">Tiered Hints</h3>
+        <div class="p-4 rounded-xl bg-bg-secondary border border-border-subtle space-y-2">
           <div class="flex items-center justify-between">
             <div class="flex items-center gap-1.5 text-xs font-bold text-accent">
               <svg class="w-4 h-4 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
@@ -83,7 +87,7 @@
               </svg>
               <span>Hint #1 (Basic)</span>
             </div>
-            <button @click="showHint1 = !showHint1" class="text-[11px] text-text-secondary hover:text-text-primary cursor-pointer">
+            <button @click="showHint1 = !showHint1" class="text-[11px] text-text-muted hover:text-white cursor-pointer">
               {{ showHint1 ? 'Hide' : 'View (-5 XP)' }}
             </button>
           </div>
@@ -91,7 +95,7 @@
             Use two nested loops. Outer loop runs 0 to N-1, inner loop compares adjacent pairs.
           </p>
         </div>
-        <div class="p-4 rounded-xl bg-bg-primary border border-border-default space-y-2">
+        <div class="p-4 rounded-xl bg-bg-secondary border border-border-subtle space-y-2">
           <div class="flex items-center justify-between">
             <div class="flex items-center gap-1.5 text-xs font-bold text-accent">
               <svg class="w-4 h-4 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
@@ -99,7 +103,7 @@
               </svg>
               <span>Hint #2 (Optimized)</span>
             </div>
-            <button @click="showHint2 = !showHint2" class="text-[11px] text-text-secondary hover:text-text-primary cursor-pointer">
+            <button @click="showHint2 = !showHint2" class="text-[11px] text-text-muted hover:text-white cursor-pointer">
               {{ showHint2 ? 'Hide' : 'View (-10 XP)' }}
             </button>
           </div>
@@ -111,11 +115,11 @@
 
       
       <div v-show="activeTab === 'ranking'" class="flex-1 overflow-y-auto p-5 space-y-3">
-        <h3 class="text-xs font-bold uppercase text-text-secondary">Performance Leaderboard</h3>
+        <h3 class="text-xs font-bold uppercase text-text-muted">Performance Leaderboard</h3>
         <div class="space-y-2">
-          <div v-for="(r, idx) in leaderboard" :key="r.id" class="flex items-center justify-between p-3 rounded-xl bg-bg-primary border border-border-default text-xs">
+          <div v-for="(r, idx) in leaderboard" :key="r.id" class="flex items-center justify-between p-3 rounded-xl bg-bg-secondary border border-border-subtle text-xs">
             <div class="flex items-center gap-3">
-              <span class="w-5 h-5 rounded-full bg-bg-hover text-text-secondary font-bold text-[10px] flex items-center justify-center">
+              <span class="w-5 h-5 rounded-full bg-bg-surface text-text-secondary font-bold text-[10px] flex items-center justify-center">
                 #{{ idx + 1 }}
               </span>
               <span class="font-bold text-text-primary">{{ r.username }}</span>
@@ -123,7 +127,7 @@
             <div class="flex items-center gap-4 text-[11px] font-mono">
               <span class="text-accent">{{ r.runtimeMs }}ms</span>
               <span class="text-accent-green">{{ r.memoryMb }}MB</span>
-              <span class="text-accent-warm font-bold">{{ r.score }} XP</span>
+              <span class="text-accent-yellow font-bold">{{ r.score }} XP</span>
             </div>
           </div>
         </div>
@@ -131,14 +135,14 @@
     </div>
 
     
-    <div class="w-full lg:w-1/2 h-full flex flex-col bg-bg-primary">
+    <div class="w-full lg:w-1/2 h-full flex flex-col bg-bg-secondary">
       
-      <div class="px-4 py-2.5 border-b border-border-default bg-bg-secondary/80 flex items-center justify-between shrink-0">
+      <div class="px-4 py-2.5 border-b border-border-subtle bg-bg-secondary flex items-center justify-between shrink-0">
         <div class="flex items-center gap-2">
           <span class="text-xs font-bold text-text-secondary font-mono">Solution.cs</span>
-          <span class="text-[10px] px-2 py-0.5 rounded bg-bg-hover text-text-secondary font-mono">C# .NET 9</span>
+          <span class="text-[10px] px-2 py-0.5 rounded bg-bg-surface text-text-muted font-mono">C# .NET 9</span>
         </div>
-        <button @click="resetCode" class="text-[11px] text-text-secondary hover:text-text-primary cursor-pointer">
+        <button @click="resetCode" class="text-[11px] text-text-muted hover:text-white cursor-pointer">
           Reset to Starter Code
         </button>
       </div>
@@ -147,15 +151,15 @@
       <div class="flex-1 min-h-0" ref="editorContainer"></div>
 
       
-      <div class="p-4 border-t border-border-default bg-bg-secondary/90 flex items-center justify-between shrink-0">
+      <div class="p-4 border-t border-border-subtle bg-bg-secondary flex items-center justify-between shrink-0">
         <div class="flex items-center gap-2">
           <button @click="runTestcases" :disabled="isRunning"
-            class="px-4 py-2 bg-bg-hover hover:bg-bg-hover text-text-primary rounded-xl text-xs font-bold transition-all border border-border-default disabled:opacity-50 cursor-pointer">
+            class="px-4 py-2 bg-bg-surface hover:bg-bg-hover text-text-primary rounded-xl text-xs font-bold transition-all border border-border-subtle disabled:opacity-50 cursor-pointer">
             {{ isRunning ? 'Running...' : 'Run Testcases' }}
           </button>
         </div>
         <button @click="submitSolution" :disabled="isSubmitting"
-          class="px-5 py-2 bg-accent hover:bg-accent text-text-primary rounded-xl text-xs font-bold transition-all shadow-lg shadow-indigo-600/30 disabled:opacity-50 cursor-pointer flex items-center gap-2">
+          class="px-5 py-2 bg-accent hover:bg-accent text-white rounded-xl text-xs font-bold transition-all shadow-lg shadow-accent/30 disabled:opacity-50 cursor-pointer flex items-center gap-2">
           <span>Submit Solution</span>
           <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
             <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z" />

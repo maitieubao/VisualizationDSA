@@ -68,6 +68,35 @@ namespace VisualizationDSA.WebApi.Controllers
             var result = await _mediator.Send(command);
             return Ok(result);
         }
+
+        [HttpPost("{id}/reveal-hint")]
+        public async Task<IActionResult> RevealHint(Guid id, [FromBody] RevealHintRequestDto request)
+        {
+            var userIdStr = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrEmpty(userIdStr) || !Guid.TryParse(userIdStr, out var userId))
+            {
+                return Unauthorized();
+            }
+
+            var result = await _mediator.Send(new RevealHintCommand
+            {
+                UserId = userId,
+                CodelabId = id,
+                HintIndex = request.HintIndex
+            });
+
+            if (!result.Success)
+            {
+                return BadRequest(result);
+            }
+
+            return Ok(result);
+        }
+    }
+
+    public class RevealHintRequestDto
+    {
+        public int HintIndex { get; set; }
     }
 
     public class SubmitCodelabRequestDto

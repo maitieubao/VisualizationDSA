@@ -8,7 +8,7 @@
       
       <div
         class="absolute inset-0 transition-all duration-300"
-        :class="spotlightStyle ? 'bg-transparent' : 'bg-bg-primary/70 backdrop-blur-[2px]'"
+        :class="spotlightStyle ? 'bg-transparent' : 'bg-bg-secondary backdrop-blur-[2px]'"
         @click="handleBackdropClick"
       />
 
@@ -18,7 +18,7 @@
         class="spotlight-highlight absolute border-2 border-accent-cyan/80 rounded-xl transition-all duration-300 pointer-events-none"
         :style="spotlightStyle"
       >
-        <span class="absolute -top-6 left-0 bg-accent-cyan text-text-primary text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-t-md shadow-lg shadow-accent-cyan/20 animate-pulse">
+        <span class="absolute -top-6 left-0 bg-accent-cyan text-slate-950 text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-t-md shadow-lg shadow-accent-cyan/20 animate-pulse">
           Tiêu điểm
         </span>
       </div>
@@ -36,7 +36,7 @@
       <Transition name="scale" mode="out-in">
         <div
           :key="tourStore.currentStepIndex"
-          class="dialog-card p-6 rounded-2xl border border-border-default shadow-2xl flex flex-col gap-4 text-left transition-all duration-300"
+          class="dialog-card p-6 rounded-2xl border border-border-subtle shadow-2xl flex flex-col gap-4 text-left transition-all duration-300"
           :style="[cardStyle, defaultCardStyle]"
         >
           
@@ -65,7 +65,7 @@
                     v-for="(_, idx) in tourStore.currentSteps"
                     :key="idx"
                     class="w-1.5 h-1.5 rounded-full transition-all duration-200"
-                    :class="idx === tourStore.currentStepIndex ? 'bg-accent-cyan w-3' : 'bg-bg-surface'"
+                    :class="idx === tourStore.currentStepIndex ? 'bg-accent-cyan w-3' : 'bg-bg-hover'"
                   />
                 </div>
               </div>
@@ -83,9 +83,9 @@
           </div>
 
           
-          <div class="flex items-center justify-between mt-1 pt-4 border-t border-border-default">
+          <div class="flex items-center justify-between mt-1 pt-4 border-t border-border-subtle">
             <button
-              class="px-3 py-1.5 rounded-lg text-xs font-bold text-text-muted hover:text-text-primary hover:bg-bg-surface transition-all cursor-pointer"
+              class="px-3 py-1.5 rounded-lg text-xs font-bold text-text-muted hover:text-text-primary hover:bg-bg-hover transition-all cursor-pointer"
               @click="tourStore.skipTour()"
             >
               Bỏ qua
@@ -94,17 +94,17 @@
             
             <button
               v-if="currentStep.actionScript && currentStep.actionScript.length > 0"
-              class="px-3 py-1.5 rounded-lg text-xs font-bold bg-accent-warm/20 text-accent-warm border border-accent-warm/30 hover:bg-accent-warm/35 transition-all cursor-pointer flex items-center gap-1 shadow-lg shadow-accent"
+              class="px-3 py-1.5 rounded-lg text-xs font-bold bg-accent-yellow/20 text-accent-yellow border border-accent-yellow/30 hover:bg-accent-yellow/35 transition-all cursor-pointer flex items-center gap-1 shadow-lg shadow-accent-yellow/10"
               :disabled="tourStore.isExecutingScript"
               @click="tourStore.runCurrentStepScript()"
             >
-              <span>{{ tourStore.isExecutingScript ? 'Đang chạy...' : 'Xem Trợ lý Thao tác' }}</span> <BaseIcon v-if="!tourStore.isExecutingScript" name="zap" class="w-3 h-3" />
+              <span>{{ tourStore.isExecutingScript ? 'Đang chạy...' : 'Xem Trợ lý Thao tác ⚡' }}</span>
             </button>
 
             <div class="flex gap-2">
               <button
                 v-if="tourStore.currentStepIndex > 0"
-                class="px-3.5 py-1.5 rounded-lg text-xs font-bold text-text-secondary border border-border-default hover:bg-bg-surface transition-all cursor-pointer"
+                class="px-3.5 py-1.5 rounded-lg text-xs font-bold text-text-secondary border border-border-subtle hover:bg-bg-hover transition-all cursor-pointer"
                 @click="tourStore.prevStep()"
               >
                 Quay lại
@@ -114,7 +114,7 @@
                 @click="tourStore.nextStep()"
               >
                 <span>{{ isLastStep ? 'Hoàn tất' : 'Tiếp tục' }}</span>
-                <BaseIcon :name="isLastStep ? 'check' : 'arrow-right'" class="w-3 h-3" />
+                <span class="text-[10px] font-mono">{{ isLastStep ? '✓' : '→' }}</span>
               </button>
             </div>
           </div>

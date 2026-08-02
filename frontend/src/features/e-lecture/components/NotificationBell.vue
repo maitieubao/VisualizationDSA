@@ -49,7 +49,7 @@
         </div>
 
         <div v-else class="dropdown-empty">
-          <span class="dropdown-empty__icon"><BaseIcon name="bell" class="w-6 h-6" /></span>
+          <span class="dropdown-empty__icon">🔔</span>
           <p>Chưa có thông báo nào.</p>
         </div>
       </div>

@@ -122,11 +122,11 @@
                 :multiple="false"
                 @select="onTheorySelected"
               />
-              <div v-if="form.theoryArticleId" class="selected-theory p-4 bg-accent/10 border border-border-accent rounded-xl">
+              <div v-if="form.theoryArticleId" class="selected-theory p-4 bg-accent/10 border border-accent/20 rounded-xl">
                 <div class="flex items-center justify-between">
                   <div>
-                    <p class="font-semibold text-text-primary">{{ selectedTheory?.title }}</p>
-                    <p class="text-sm text-text-secondary">{{ selectedTheory?.category }} • {{ selectedTheory?.readTimeMinutes }} phút đọc</p>
+                    <p class="font-semibold text-white">{{ selectedTheory?.title }}</p>
+                    <p class="text-sm text-text-muted">{{ selectedTheory?.category }} • {{ selectedTheory?.readTimeMinutes }} phút đọc</p>
                   </div>
                   <button type="button" class="btn-secondary text-sm" @click="removeTheory">
                     <BaseIcon name="x" class="w-4 h-4 inline mr-1" /> Gỡ bỏ
@@ -175,15 +175,15 @@
           <div v-if="currentStep === 3" class="step-content animate-fade-in">
             <h4 class="step-title">Hoạt động thực hành</h4>
             
-            <p class="text-text-secondary text-sm mb-6">Chọn các hoạt động thực hành bổ sung cho bài học (tùy chọn)</p>
+            <p class="text-text-muted text-sm mb-6">Chọn các hoạt động thực hành bổ sung cho bài học (tùy chọn)</p>
             
             <div class="practice-options grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
               <label v-for="activity in practiceActivities" :key="activity.key" class="practice-card" :class="{ selected: form.practiceActivities.includes(activity.key) }" @click="togglePracticeActivity(activity.key)">
                 <div class="practice-icon">
                   <BaseIcon :name="activity.icon" class="w-8 h-8" />
                 </div>
-                <h5 class="font-semibold text-text-primary">{{ activity.label }}</h5>
-                <p class="text-xs text-text-secondary">{{ activity.description }}</p>
+                <h5 class="font-semibold text-white">{{ activity.label }}</h5>
+                <p class="text-xs text-text-muted">{{ activity.description }}</p>
                 <div class="practice-check">
                   <input type="checkbox" :value="activity.key" v-model="form.practiceActivities" class="form-checkbox" />
                   <span>Chọn</span>
@@ -204,8 +204,8 @@
               <div v-if="form.quizId" class="selected-quiz p-4 bg-accent-purple/10 border border-accent-purple/20 rounded-xl">
                 <div class="flex items-center justify-between">
                   <div>
-                    <p class="font-semibold text-text-primary">{{ selectedQuiz?.title }}</p>
-                    <p class="text-sm text-text-secondary">{{ selectedQuiz?.topic }} • Độ khó {{ selectedQuiz?.difficulty }} • {{ selectedQuiz?.questionCount }} câu</p>
+                    <p class="font-semibold text-white">{{ selectedQuiz?.title }}</p>
+                    <p class="text-sm text-text-muted">{{ selectedQuiz?.topic }} • Độ khó {{ selectedQuiz?.difficulty }} • {{ selectedQuiz?.questionCount }} câu</p>
                   </div>
                   <button type="button" class="btn-secondary text-sm" @click="removeQuiz">
                     <BaseIcon name="x" class="w-4 h-4 inline mr-1" /> Gỡ bỏ
@@ -230,8 +230,8 @@
               <div v-if="form.codelabId" class="selected-codelab p-4 bg-accent-green/10 border border-accent-green/20 rounded-xl">
                 <div class="flex items-center justify-between">
                   <div>
-                    <p class="font-semibold text-text-primary">{{ selectedCodelab?.title }}</p>
-                    <p class="text-sm text-text-secondary">{{ selectedCodelab?.difficulty }} • {{ selectedCodelab?.testCaseCount }} testcases</p>
+                    <p class="font-semibold text-white">{{ selectedCodelab?.title }}</p>
+                    <p class="text-sm text-text-muted">{{ selectedCodelab?.difficulty }} • {{ selectedCodelab?.testCaseCount }} testcases</p>
                   </div>
                   <button type="button" class="btn-secondary text-sm" @click="removeCodelab">
                     <BaseIcon name="x" class="w-4 h-4 inline mr-1" /> Gỡ bỏ

@@ -1,0 +1,149 @@
+.sort-item {
+  border-radius: var(--radius-xl);
+  border: 1px solid transparent;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-weight: var(--font-bold);
+  box-shadow: var(--shadow-sm);
+  flex-shrink: 0;
+  position: relative;
+  cursor: pointer;
+  transition: var(--transition-smooth);
+}
+
+.item-index {
+  opacity: 0.6;
+  font-size: 9px;
+}
+
+.default-item {
+  border-color: color-mix(in srgb, var(--vis-color-default) 40%, transparent);
+  background: linear-gradient(to bottom right, color-mix(in srgb, var(--vis-color-default) 20%, transparent), color-mix(in srgb, var(--vis-color-default) 5%, transparent));
+  color: var(--color-text-secondary);
+}
+.default-item:hover {
+  border-color: var(--vis-color-default);
+}
+
+.dimmed-item {
+  border-color: var(--color-border-subtle);
+  background-color: color-mix(in srgb, var(--color-bg-primary) 10%, transparent);
+  color: var(--color-text-muted);
+  opacity: 0.25;
+  transform: scale(0.95);
+}
+
+.sorted-item {
+  border-color: var(--vis-color-sorted);
+  background: linear-gradient(to bottom right, color-mix(in srgb, var(--vis-color-sorted) 30%, transparent), color-mix(in srgb, var(--vis-color-sorted) 10%, transparent));
+  color: var(--color-accent-green-light);
+  box-shadow: 0 0 12px var(--color-accent-green-glow);
+}
+
+.pivot-item {
+  border-color: var(--vis-color-pivot);
+  background: linear-gradient(to bottom right, color-mix(in srgb, var(--vis-color-pivot) 40%, transparent), color-mix(in srgb, var(--vis-color-pivot) 15%, transparent));
+  color: var(--color-accent-yellow-light);
+  transform: scale(1.05);
+}
+
+.swap-item {
+  border-color: var(--vis-color-swap);
+  background: linear-gradient(to bottom right, color-mix(in srgb, var(--vis-color-swap) 40%, transparent), color-mix(in srgb, var(--vis-color-swap) 15%, transparent));
+  color: var(--color-accent-red-light);
+  transform: scale(1.05);
+}
+
+.compare-item {
+  border-color: var(--vis-color-compare);
+  background: linear-gradient(to bottom right, color-mix(in srgb, var(--vis-color-compare) 40%, transparent), color-mix(in srgb, var(--vis-color-compare) 15%, transparent));
+  color: var(--vis-color-compare);
+  box-shadow: 0 0 12px var(--color-accent-purple-glow);
+}
+
+.hover-tooltip {
+  position: absolute;
+  bottom: 100%;
+  margin-bottom: 8px;
+  z-index: 50;
+  background-color: color-mix(in srgb, var(--vis-panel-bg-deep) 90%, transparent);
+  border: 1px solid var(--color-border-subtle);
+  padding: 10px;
+  border-radius: var(--radius-xl);
+  text-align: left;
+  backdrop-filter: blur(var(--glass-blur));
+  box-shadow: var(--shadow-xl);
+  font-size: 10px;
+  color: var(--color-text-primary);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  width: 11rem;
+  pointer-events: none;
+}
+
+.tooltip-header {
+  font-weight: var(--font-bold);
+  color: var(--color-accent-cyan);
+  border-bottom: 1px solid var(--color-border-subtle);
+  padding-bottom: 4px;
+  display: flex;
+  justify-content: space-between;
+}
+
+.tooltip-state-badge {
+  font-size: 9px;
+  padding: 0 4px;
+  border-radius: var(--radius-sm);
+  background-color: var(--color-bg-active);
+}
+
+.text-val {
+  color: var(--color-accent-yellow-light);
+  font-weight: var(--font-bold);
+}
+
+.text-partition {
+  color: var(--color-text-secondary);
+  font-size: 9px;
+}
+
+.pivot-badge {
+  position: absolute;
+  top: -10px;
+  background-color: var(--color-accent-yellow);
+  color: var(--color-text-inverse);
+  font-size: 8px;
+  font-weight: 800;
+  padding: 2px 4px;
+  border-radius: var(--radius-sm);
+  box-shadow: 0 0 8px var(--color-accent-yellow-glow);
+  letter-spacing: 0.03em;
+  display: flex;
+  align-items: center;
+}
+
+
+.sort-list-move {
+  transition: transform 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+@keyframes pivotGlow {
+  0%, 100% { box-shadow: 0 0 10px var(--color-accent-yellow-glow); border-color: color-mix(in srgb, var(--vis-color-pivot) 50%, transparent); }
+  50% { box-shadow: 0 0 20px var(--color-accent-yellow-glow); border-color: var(--vis-color-pivot); }
+}
+
+.pivot-pulse {
+  animation: pivotGlow 2s infinite ease-in-out;
+}
+
+@keyframes swapGlow {
+  0%, 100% { box-shadow: 0 0 10px var(--color-accent-red-glow); border-color: color-mix(in srgb, var(--vis-color-swap) 50%, transparent); }
+  50% { box-shadow: 0 0 20px var(--color-accent-red-glow); border-color: var(--vis-color-swap); }
+}
+
+.swap-pulse {
+  animation: swapGlow 1.5s infinite ease-in-out;
+}

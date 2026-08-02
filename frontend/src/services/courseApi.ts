@@ -27,8 +27,7 @@ export interface AddModuleItemDto {
 }
 
 export const courseApi = {
-  createCourse: (data: CreateCourseDto) => api.post('/concepts/courses', data),
-  addModule: (courseId: string, data: AddModuleDto) => api.post(`/concepts/courses/${courseId}/modules`, data),
-  addModuleItem: (moduleId: string, data: AddModuleItemDto) => api.post(`/concepts/modules/${moduleId}/items`, data),
-  getCourseById: (id: string) => api.get(`/courses/${id}`),
+  createCourse: (data: CreateCourseDto) => api.post<{ courseId: string; message: string }>('/concepts/courses', data),
+  addModule: (courseId: string, data: AddModuleDto) => api.post<{ moduleId: string; message: string }>(`/concepts/courses/${courseId}/modules`, data),
+  addModuleItem: (moduleId: string, data: AddModuleItemDto) => api.post<{ message: string }>(`/concepts/modules/${moduleId}/items`, data),
 };

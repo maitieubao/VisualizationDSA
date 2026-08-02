@@ -93,14 +93,14 @@ import { useGuidedTourStore } from './features/guided-tour/store/useGuidedTourSt
 import AppHeader from './components/AppHeader.vue';
 import BottomMobileNav from './components/BottomMobileNav.vue';
 import ToastContainer from './components/ToastContainer.vue';
-import { useUserProgressStore } from './features/gamification/user-progress/store/useUserProgressStore';
+import { useUserProgressStore } from './features/user-progress/store/useUserProgressStore';
 // NotificationBell removed
 import HeartDisplay from './components/common/HeartDisplay.vue';
 import { APP_TABS } from './appTabs';
 import type { TabGroup, TabItem } from './appTabs';
 
 // Epic 2 Session
-import { useSessionStore } from './features/gamification/gamification-engine/store/useSessionStore';
+import { useSessionStore } from './features/gamification-engine/store/useSessionStore';
 import OutOfHeartsModal from './features/gamification/components/OutOfHeartsModal.vue';
 import SessionResumePrompt from './features/gamification/components/SessionResumePrompt.vue';
 import GuidedTourOverlay from './features/guided-tour/components/GuidedTourOverlay.vue';

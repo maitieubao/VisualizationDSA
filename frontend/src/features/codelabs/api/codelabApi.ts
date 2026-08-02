@@ -43,11 +43,11 @@ export const codelabApi = {
   },
 
   async runCodelab(id: string, payload: SubmitCodeRequest): Promise<SubmitCodeResult> {
-    const response = await axios.post(`/api/v1/codelabs/${id}/run`, payload);
+    const response = await axios.post(`/api/codelabs/${id}/run`, payload);
     return response.data;
   },
 
-  revealHint: async (id: string, hintIndex: number): Promise<void> => {
-    await axios.post(`/api/v1/codelabs/${id}/hints/${hintIndex}/reveal`);
+  async revealHint(id: string, hintIndex: number): Promise<void> {
+    await axios.post(`/api/codelabs/${id}/hints/${hintIndex}/reveal`);
   }
 };

@@ -160,7 +160,7 @@
 import { computed } from 'vue';
 import { useRouter } from 'vue-router';
 import { useAuthStore } from '@/features/auth/store/useAuthStore';
-import SkillRadarChart from '@/features/gamification/user-progress/components/SkillRadarChart.vue';
+import SkillRadarChart from '@/features/user-progress/components/SkillRadarChart.vue';
 import DailyQuestsCard from '@/features/gamification/components/DailyQuestsCard.vue';
 import LottiePlayer from '@/shared/components/LottiePlayer.vue';
 

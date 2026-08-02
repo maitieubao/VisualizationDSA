@@ -2,7 +2,7 @@
   <div class="virtual-mascot-container relative flex flex-col items-center select-none">
     
     <div
-      class="mascot-avatar w-16 h-16 rounded-full border border-border-strong flex items-center justify-center shadow-lg transition-all duration-500"
+      class="mascot-avatar w-16 h-16 rounded-full border border-border-default flex items-center justify-center shadow-lg transition-all duration-500"
       :class="[mascotClass, emotionGlowClass]"
     >
       
@@ -40,7 +40,7 @@
             <path d="M 56 47 Q 60 40 66 47" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" />
           </g>
 
-          <g v-else-if="state === 'SIMULATING'" class="text-accent-warm">
+          <g v-else-if="state === 'SIMULATING'" class="text-accent-yellow">
             
             <line x1="33" y1="45" x2="45" y2="45" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" />
             <line x1="55" y1="45" x2="67" y2="45" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" />
@@ -93,13 +93,13 @@ const props = defineProps<{
 const mascotClass = computed(() => {
   switch (props.state) {
     case 'GREETING':
-      return 'border-accent-cyan/40 bg-bg-secondary/60 text-accent-cyan';
+      return 'border-accent-cyan/40 bg-bg-secondary text-accent-cyan';
     case 'SIMULATING':
-      return 'border-accent-warm/40 bg-bg-secondary/60 text-accent-warm';
+      return 'border-accent-yellow/40 bg-bg-secondary text-accent-yellow';
     case 'SUCCESS':
-      return 'border-accent-green/40 bg-bg-secondary/60 text-accent-green';
+      return 'border-accent-green/40 bg-bg-secondary text-accent-green';
     default:
-      return 'border-border-strong bg-bg-secondary/60 text-accent-cyan';
+      return 'border-border-default bg-bg-secondary text-accent-cyan';
   }
 });
 

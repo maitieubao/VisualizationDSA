@@ -10,3 +10,5 @@ declare module '*.vue' {
 declare module '@dnd-kit/sortable' {
   export * from '@dnd-kit/sortable';
 }
+
+declare module 'monaco-editor/esm/vs/language/typescript/monaco.contribution';

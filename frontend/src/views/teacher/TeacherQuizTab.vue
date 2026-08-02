@@ -118,83 +118,104 @@
         <p class="text-text-secondary">Tạo bài trắc nghiệm để học viên có thể ôn tập kiến thức.</p>
         <button class="btn-submit mt-4" @click="toggleForm('manual')">Tạo thủ công</button>
       </div>
-      <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        <div v-for="q in quizzesList" :key="q.id" class="course-card flex flex-col p-0 overflow-hidden hover:border-border-accent/50 transition-colors cursor-pointer group" @click="toggleQuizAccordion(String(q.id))">
-          
-          <div class="p-5 flex-1 flex flex-col relative">
-            <div class="absolute top-4 right-4 flex gap-2">
-              <span class="topic-badge shadow-md" :class="'topic-' + q.topic">{{ formatTopic(q.topic) }}</span>
-            </div>
-            
-            <BaseIcon name="quiz" class="w-10 h-10 text-accent/50 mb-4" />
-            <h4 class="text-lg font-bold text-text-primary mb-2 line-clamp-2 leading-tight group-hover:text-accent transition-colors pr-20">{{ q.title }}</h4>
-            
-            <div class="flex items-center justify-between text-xs text-text-secondary mb-4 mt-auto pt-4">
-              <span class="flex items-center gap-1"><BaseIcon name="collection" class="w-3.5 h-3.5" /> {{ q.questionCount }} câu</span>
-              <span class="font-mono text-accent-warm font-bold flex items-center gap-1"><BaseIcon name="diamond" class="w-3.5 h-3.5" />+{{ q.xpReward }} XP</span>
-              <span class="diff-badge" :class="'diff-' + q.difficulty">{{ formatDifficulty(q.difficulty) }}</span>
-            </div>
-            
-            <div class="flex justify-between gap-2 border-t border-border-default pt-4">
-              <button class="btn-action btn-action--edit flex-1 flex items-center justify-center gap-1" @click.stop="editQuiz(q.id)">
-                <BaseIcon name="edit" class="w-3.5 h-3.5" /> Sửa
-              </button>
-              <button class="btn-action btn-action--delete flex items-center justify-center" @click.stop="deleteQuiz(q.id)">
-                <BaseIcon name="trash" class="w-3.5 h-3.5" />
-              </button>
-            </div>
-          </div>
-
-          <!-- Expanded Questions Area -->
-          <div v-if="expandedQuizId === String(q.id)" class="bg-black/40 border-t border-border-default p-4" @click.stop>
-            <div class="flex justify-between items-center mb-3">
-              <h5 class="text-sm font-bold text-accent m-0 flex items-center gap-1"><BaseIcon name="chevron-down" class="w-4 h-4" /> Câu hỏi ({{ q.questionCount }})</h5>
-            </div>
-            
-            <div v-if="loadingDetail[String(q.id)]" class="loading-detail py-2 justify-center">
-              <div class="spinner spinner--sm"></div>
-            </div>
-            <div v-else-if="quizDetails[String(q.id)]" class="space-y-4 max-h-[400px] overflow-y-auto pr-2 custom-scrollbar">
-              <div class="flex justify-between">
-                <button type="button" class="btn-add-inline w-full" @click="addInlineQuestion(String(q.id))">
-                  + Thêm câu hỏi
-                </button>
-              </div>
-              <div v-for="(subQ, qi) in quizDetails[String(q.id)].questions" :key="qi" class="bg-bg-surface p-3 rounded border border-border-default">
-                <div class="flex justify-between items-center mb-2">
-                  <span class="text-accent-warm text-xs font-bold">Câu {{ Number(qi) + 1 }}</span>
-                  <button type="button" class="text-accent-red hover:text-accent-red text-xs" @click="removeInlineQuestion(String(q.id), Number(qi))">Xóa</button>
-                </div>
-                <input v-model="subQ.text" class="form-input text-sm mb-2" placeholder="Nội dung câu hỏi..." />
-                <div class="grid grid-cols-1 gap-2 mb-2">
-                  <div v-for="(_, oi) in subQ.options" :key="oi" class="flex items-center gap-2">
-                    <input type="radio" :name="'correct-inline-' + String(q.id) + '-' + qi" :value="oi" v-model="subQ.correctIndex" />
-                    <input v-model="subQ.options[oi]" class="form-input form-input--sm text-xs py-1" :placeholder="'Đáp án ' + String.fromCharCode(65 + Number(oi))" />
+      <div v-else class="table-responsive">
+        <table class="quizzes-table">
+          <thead>
+            <tr>
+              <th>Tiêu đề</th>
+              <th>Chủ đề</th>
+              <th>Độ khó</th>
+              <th>XP Thưởng</th>
+              <th>Số câu hỏi</th>
+              <th class="text-center">Thao tác</th>
+            </tr>
+          </thead>
+          <tbody>
+            <template v-for="q in quizzesList" :key="q.id">
+              <tr @click="toggleQuizAccordion(String(q.id))" class="cursor-pointer hover:bg-bg-hover transition-colors">
+                <td class="font-bold text-white">
+                  <span class="inline-block mr-1 transition-transform duration-200" :style="expandedQuizId === String(q.id) ? 'transform: rotate(90deg)' : ''">▶</span>
+                  {{ q.title }}
+                </td>
+                <td><span class="topic-badge" :class="'topic-' + q.topic">{{ formatTopic(q.topic) }}</span></td>
+                <td><span class="diff-badge" :class="'diff-' + q.difficulty">{{ formatDifficulty(q.difficulty) }}</span></td>
+                <td class="font-mono text-accent-yellow font-bold"><BaseIcon name="diamond" class="w-4 h-4 text-accent-yellow inline mr-1 align-text-bottom" />+{{ q.xpReward }} XP</td>
+                <td class="font-mono text-text-secondary">{{ q.questionCount }} câu</td>
+                <td>
+                  <div class="flex justify-center gap-2" @click.stop>
+                    <button type="button" class="btn-action btn-action--edit" @click="editQuiz(q.id)" title="Chỉnh sửa">
+                      <BaseIcon name="edit" class="w-3.5 h-3.5 inline mr-1 align-text-bottom" /> Sửa
+                    </button>
+                    <button type="button" class="btn-action btn-action--delete" @click="deleteQuiz(q.id)" title="Xóa">
+                      <BaseIcon name="trash" class="w-3.5 h-3.5 inline mr-1 align-text-bottom" /> Xóa
+                    </button>
                   </div>
-                </div>
-                <input v-model="subQ.explanation" class="form-input form-input--sm text-xs py-1" placeholder="Giải thích..." />
-              </div>
+                </td>
+              </tr>
               
-              <div class="flex gap-2 sticky bottom-0 bg-bg-secondary/95 backdrop-blur pt-3 pb-1 z-10 border-t border-border-default mt-2">
-                <button type="button" class="btn-submit text-sm py-1.5 flex-1" @click="saveInlineQuiz(String(q.id))" :disabled="savingDetail[String(q.id)]">
-                  <span v-if="savingDetail[String(q.id)]">Đang lưu...</span>
-                  <span v-else>Lưu thay đổi</span>
-                </button>
-                <button type="button" class="btn-cancel text-sm py-1.5" @click="expandedQuizId = null">Đóng</button>
-              </div>
-              <p v-if="inlineError[String(q.id)]" class="text-accent-red text-xs text-center mt-1">{{ inlineError[String(q.id)] }}</p>
-            </div>
-          </div>
-        </div>
+              <tr v-if="expandedQuizId === String(q.id)" class="accordion-row">
+                <td colspan="6" class="accordion-cell">
+                  <div v-if="loadingDetail[String(q.id)]" class="loading-detail py-4">
+                    <div class="spinner spinner--sm"></div>
+                    <span>Đang tải danh sách câu hỏi...</span>
+                  </div>
+                  <div v-else-if="quizDetails[String(q.id)]" class="quiz-detail-panel animate-fade-in">
+                    <div class="flex justify-between items-center mb-4">
+                      <h4 class="detail-title text-accent font-bold m-0"><BaseIcon name="quiz" class="w-4 h-4 text-accent inline mr-1 align-text-bottom" /> Chỉnh sửa câu hỏi con</h4>
+                      <button type="button" class="btn-add-inline" @click="addInlineQuestion(String(q.id))">
+                        <BaseIcon name="plus" class="w-3.5 h-3.5 inline mr-1 align-text-bottom" /> Thêm câu hỏi mới
+                      </button>
+                    </div>
+                    <div v-if="quizDetails[String(q.id)].questions.length === 0" class="empty-state py-4 text-center">
+                      Bài trắc nghiệm này chưa có câu hỏi nào. Hãy thêm câu hỏi mới!
+                    </div>
+                    <div v-for="(subQ, qi) in quizDetails[String(q.id)].questions" :key="qi" class="sub-question-card">
+                      <div class="flex justify-between items-center mb-3">
+                        <span class="sub-q-num text-accent-yellow font-bold">Câu hỏi {{ Number(qi) + 1 }}</span>
+                        <button type="button" class="btn-remove-inline" @click="removeInlineQuestion(String(q.id), Number(qi))">
+                          <BaseIcon name="close" class="w-3 h-3 inline mr-1 align-text-bottom" /> Xóa câu này
+                        </button>
+                      </div>
+                      <div class="form-row">
+                        <label class="form-label">Nội dung câu hỏi</label>
+                        <input v-model="subQ.text" class="form-input" placeholder="Nhập nội dung câu hỏi..." />
+                      </div>
+                      <div class="options-grid">
+                        <div v-for="(_, oi) in subQ.options" :key="oi" class="option-row">
+                          <input type="radio" :name="'correct-inline-' + String(q.id) + '-' + qi" :value="oi" v-model="subQ.correctIndex" />
+                          <input v-model="subQ.options[oi]" class="form-input form-input--sm" :placeholder="'Đáp án ' + String.fromCharCode(65 + Number(oi))" />
+                        </div>
+                      </div>
+                      <div class="form-row">
+                        <label class="form-label">Giải thích đáp án đúng</label>
+                        <input v-model="subQ.explanation" class="form-input form-input--sm" placeholder="Giải thích vì sao đáp án này đúng..." />
+                      </div>
+                    </div>
+                    <div class="flex justify-end gap-2 mt-4">
+                      <button type="button" class="btn-save-inline" @click="saveInlineQuiz(String(q.id))" :disabled="savingDetail[String(q.id)]">
+                        <span v-if="savingDetail[String(q.id)]">Đang lưu...</span>
+                        <span v-else><BaseIcon name="save" class="w-3.5 h-3.5 inline mr-1 align-text-bottom" /> Lưu tất cả thay đổi</span>
+                      </button>
+                      <button type="button" class="btn-close-inline" @click="expandedQuizId = null">Đóng</button>
+                    </div>
+                    <p v-if="inlineError[String(q.id)]" class="text-accent-red text-sm mt-2 text-right">
+                      {{ inlineError[String(q.id)] }}
+                    </p>
+                  </div>
+                </td>
+              </tr>
+            </template>
+          </tbody>
+        </table>
       </div>
 
       
-      <div class="quizzes-report-container mt-10 p-6 rounded-2xl border border-border-default bg-bg-surface">
-        <h3 class="subsection-heading mb-2 flex items-center gap-2 text-text-primary">
+      <div class="quizzes-report-container mt-10 p-6 rounded-2xl border border-border-subtle bg-bg-secondary/40">
+        <h3 class="subsection-heading mb-2 flex items-center gap-2 text-white">
           <BaseIcon name="chart-bar" class="w-5 h-5 text-accent" />
           Báo cáo hiệu suất bài tập trắc nghiệm
         </h3>
-        <p class="text-xs text-text-secondary mb-6">Thống kê tổng hợp điểm số trung bình và tỷ lệ đậu theo từng chủ đề bài thi.</p>
+        <p class="text-xs text-text-muted mb-6">Thống kê tổng hợp điểm số trung bình và tỷ lệ đậu theo từng chủ đề bài thi.</p>
 
         <div v-if="loadingAnalytics" class="text-center py-6 text-text-muted">Đang tải dữ liệu báo cáo...</div>
         <div v-else-if="!quizPerformanceStats.length" class="text-center py-6 text-text-muted">Chưa có lượt làm bài nào để thống kê hiệu suất.</div>
@@ -220,7 +241,7 @@
                 <td class="text-center">
                   <span 
                     class="px-2 py-0.5 rounded-lg text-xs font-bold font-mono"
-                    :class="stat.passRatePercent >= 70 ? 'bg-accent-green/10 text-accent-green' : stat.passRatePercent >= 40 ? 'bg-accent-warm/10 text-accent-warm' : 'bg-accent-red/10 text-accent-red'"
+                    :class="stat.passRatePercent >= 70 ? 'bg-accent-green/10 text-accent-green' : stat.passRatePercent >= 40 ? 'bg-accent-yellow/10 text-accent-yellow' : 'bg-accent-red/10 text-accent-red'"
                   >
                     {{ stat.passRatePercent }}%
                   </span>

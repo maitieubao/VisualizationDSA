@@ -3,7 +3,7 @@
     <div class="flex justify-between items-center mb-6 flex-wrap gap-3">
       <div>
         <h2 class="section-heading m-0">Thư viện Bài viết Lý thuyết</h2>
-        <p class="text-text-secondary text-sm mt-1">Quản lý và soạn thảo bài viết kiến thức nền tảng cho học viên</p>
+        <p class="text-text-muted text-sm mt-1">Quản lý và soạn thảo bài viết kiến thức nền tảng cho học viên</p>
       </div>
       <div class="flex gap-2 flex-wrap">
         <button type="button" class="btn-secondary" @click="showFilters = !showFilters">
@@ -18,7 +18,7 @@
     </div>
 
     
-    <div v-if="showFilters" class="filters-panel mb-6 p-4 bg-bg-secondary/60 border border-border-default rounded-xl animate-slide-down">
+    <div v-if="showFilters" class="filters-panel mb-6 p-4 bg-bg-secondary border border-border-subtle rounded-xl animate-slide-down">
       <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
         <div>
           <label class="form-label">Tìm kiếm</label>
@@ -66,26 +66,26 @@
     </div>
 
     <div v-else-if="articles.length === 0" class="empty-state">
-      <div class="text-5xl mb-4"><BaseIcon name="book" class="w-12 h-12" /></div>
-      <h3 class="text-xl font-bold text-text-primary">Chưa có bài viết nào</h3>
-      <p class="text-text-secondary mt-2 max-w-md">Hãy tạo bài viết đầu tiên để bắt đầu xây dựng thư viện kiến thức</p>
+      <div class="text-5xl mb-4">📚</div>
+      <h3 class="text-xl font-bold text-white">Chưa có bài viết nào</h3>
+      <p class="text-text-muted mt-2 max-w-md">Hãy tạo bài viết đầu tiên để bắt đầu xây dựng thư viện kiến thức</p>
       <button class="btn-primary mt-6" @click="createNewArticle">
         <BaseIcon name="plus" class="w-4 h-4 inline mr-1" /> Tạo bài viết đầu tiên
       </button>
     </div>
 
     <div v-else class="space-y-3">
-      <div v-for="article in articles" :key="article.id" class="article-card bg-bg-secondary/60 border border-border-default rounded-xl p-5 hover:border-border-accent transition-colors">
+      <div v-for="article in articles" :key="article.id" class="article-card bg-bg-secondary border border-border-subtle rounded-xl p-5 hover:border-accent/30 transition-colors">
         <div class="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
           <div class="flex-1 min-w-0">
             <div class="flex items-center gap-2 flex-wrap mb-2">
-              <h3 class="font-bold text-text-primary truncate">{{ article.title }}</h3>
+              <h3 class="font-bold text-white truncate">{{ article.title }}</h3>
               <span v-if="article.isPublished" class="badge badge-emerald text-xs">Đã xuất bản</span>
               <span v-else class="badge badge-warning text-xs">Nháp</span>
               <span class="badge badge-indigo text-xs">{{ article.category }}</span>
               <span class="badge badge-slate text-xs">{{ article.difficulty }}</span>
             </div>
-            <p class="text-text-secondary text-sm line-clamp-2 mb-3">{{ article.slug }}</p>
+            <p class="text-text-muted text-sm line-clamp-2 mb-3">{{ article.slug }}</p>
             <div class="flex items-center gap-4 text-xs text-text-muted flex-wrap">
               <span><BaseIcon name="eye" class="w-3 h-3 inline mr-1" /> {{ article.viewCount }} lượt xem</span>
               <span><BaseIcon name="clock" class="w-3 h-3 inline mr-1" /> {{ article.readTimeMinutes }} phút đọc</span>
@@ -98,7 +98,7 @@
             <button type="button" class="btn-action-icon" @click="editArticle(article)" title="Chỉnh sửa">
               <BaseIcon name="edit-2" class="w-4 h-4" />
             </button>
-            <button type="button" class="btn-action-icon" :class="article.isPublished ? 'text-accent-warm hover:text-accent-warm' : 'text-accent-green hover:text-accent-green'" @click="togglePublish(article)" :title="article.isPublished ? 'Gỡ xuất bản' : 'Xuất bản'">
+            <button type="button" class="btn-action-icon" :class="article.isPublished ? 'text-accent-yellow hover:text-accent-yellow' : 'text-accent-green hover:text-accent-green'" @click="togglePublish(article)" :title="article.isPublished ? 'Gỡ xuất bản' : 'Xuất bản'">
               <BaseIcon :name="article.isPublished ? 'eye-off' : 'eye'" class="w-4 h-4" />
             </button>
             <button type="button" class="btn-action-icon text-accent-red hover:text-accent-red" @click="confirmDeleteArticle(article)" title="Xóa">
@@ -115,7 +115,7 @@
     
     <div v-if="totalPages > 1" class="flex justify-center gap-2 mt-6">
       <button class="btn-secondary px-3" @click="changePage(page - 1)" :disabled="page <= 1">Trước</button>
-      <span class="flex items-center px-3 text-sm text-text-secondary">Trang {{ page }} / {{ totalPages }}</span>
+      <span class="flex items-center px-3 text-sm text-text-muted">Trang {{ page }} / {{ totalPages }}</span>
       <button class="btn-secondary px-3" @click="changePage(page + 1)" :disabled="page >= totalPages">Sau</button>
     </div>
 

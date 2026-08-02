@@ -16,16 +16,17 @@ export const APP_TABS: readonly (TabGroup | TabItem)[] = [
     groupName: 'Học tập',
     items: [
       { id: 'roadmap',      path: '/courses',      name: 'Lộ trình / Roadmap' },
-      { id: 'docs',         path: '/docs/intro/intro',  name: 'Tài liệu & CheatSheet' },
+      { id: 'docs',         path: '/docs/intro/intro',  name: 'Tài liệu' },
       { id: 'gamification', path: '/gamification', name: 'Bảng xếp hạng' },
     ]
   },
   {
     groupName: 'Cộng đồng',
     items: [
-      { id: 'ai-assistant', path: '/ai-assistant', name: 'AI Trợ lý', requiresAuth: true },
-      { id: 'classrooms',   path: '/classrooms',   name: 'Lớp Học', requiresAuth: true },
-      { id: 'gems-shop',    path: '/gems-shop',    name: 'Cửa hàng Gems', requiresAuth: true },
+      { id: 'sorting',     path: '/sorting',     name: 'Sắp xếp' },
+      { id: 'graph',       path: '/graph',       name: 'Đồ thị' },
+      { id: 'code-ide',    path: '/code-ide',    name: 'Gỡ lỗi Code' },
+      { id: 'playground',  path: '/playground',  name: 'Playground' }
     ]
   },
   {

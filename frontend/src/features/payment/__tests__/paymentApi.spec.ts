@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import * as paymentApi from '@/features/payment/services/paymentApi';
+import * as paymentApi from '../services/paymentApi';
 
 describe('Payment API Service Unit Tests', () => {
   beforeEach(() => {
@@ -15,7 +15,7 @@ describe('Payment API Service Unit Tests', () => {
       qrUrl: 'https://img.vietqr.io/image/...'
     };
 
-    const fetchSpy = vi.spyOn(globalThis, 'fetch').mockImplementation(() =>
+    const fetchSpy = vi.spyOn(global, 'fetch').mockImplementation(() =>
       Promise.resolve({
         ok: true,
         json: () => Promise.resolve(mockOrder),
@@ -43,7 +43,7 @@ describe('Payment API Service Unit Tests', () => {
       status: 'Completed'
     };
 
-    const fetchSpy = vi.spyOn(globalThis, 'fetch').mockImplementation(() =>
+    const fetchSpy = vi.spyOn(global, 'fetch').mockImplementation(() =>
       Promise.resolve({
         ok: true,
         json: () => Promise.resolve(mockOrder),

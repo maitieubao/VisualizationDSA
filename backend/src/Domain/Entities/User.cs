@@ -56,7 +56,6 @@ namespace VisualizationDSA.Domain.Entities
         public virtual ICollection<QuizAttempt>         QuizAttempts         { get; private set; }
         public virtual ICollection<LearningProgress>    LearningProgresses   { get; private set; }
         public virtual ICollection<LearningSession>     LearningSessions     { get; private set; } = new List<LearningSession>();
-        public virtual ICollection<UserRoadmapLanguage> UserRoadmapLanguages { get; private set; } = new List<UserRoadmapLanguage>();
         public virtual ICollection<UserLessonProgress>   UserLessonProgresses { get; private set; }
 
         private User() { } // EF Core protected constructor
@@ -92,6 +91,15 @@ namespace VisualizationDSA.Domain.Entities
             if (amount <= 0) return;
             TotalXP += amount;
             _checkLevelUp();
+        }
+
+        public bool DeductXP(int amount)
+        {
+            if (amount <= 0) return true;
+            if (TotalXP < amount) return false;
+            TotalXP -= amount;
+            _checkLevelUp();
+            return true;
         }
 
         public void CompleteModule(string moduleId)

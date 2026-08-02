@@ -1,18 +1,30 @@
 using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using VisualizationDSA.Application.Interfaces;
-using VisualizationDSA.Application.DTOs;
-using VisualizationDSA.Domain.Entities;
-using System.Linq;
 
 namespace VisualizationDSA.Application.Features.Codelabs.Queries
 {
     public class GetCodelabDetailsQuery : IRequest<CodelabDto>
     {
         public Guid CodelabId { get; set; }
+    }
+
+    public class CodelabExampleDto
+    {
+        public string Input { get; set; } = string.Empty;
+        public string ExpectedOutput { get; set; } = string.Empty;
+    }
+
+    public class CodelabHintItemDto
+    {
+        public string Content { get; set; } = string.Empty;
+        public int XpCost { get; set; }
     }
 
     public class CodelabDto
@@ -26,6 +38,11 @@ namespace VisualizationDSA.Application.Features.Codelabs.Queries
         public int MaxRuntimeMs { get; set; }
         public int MaxMemoryBytes { get; set; }
         public string AllowedLanguages { get; set; } = string.Empty;
+        public string Constraints { get; set; } = string.Empty;
+        public string Tags { get; set; } = string.Empty;
+        public List<CodelabExampleDto>? Examples { get; set; }
+        public List<CodelabHintItemDto> Hints { get; set; } = new();
+        public List<CodelabTemplateDto> Templates { get; set; } = new();
     }
 
     public class GetCodelabDetailsQueryHandler : IRequestHandler<GetCodelabDetailsQuery, CodelabDto>
@@ -41,6 +58,9 @@ namespace VisualizationDSA.Application.Features.Codelabs.Queries
         {
             var codelab = await _context.Codelabs
                 .AsNoTracking()
+                .Include(c => c.TestCases)
+                .Include(c => c.Templates)
+                .Include(c => c.Hints)
                 .FirstOrDefaultAsync(c => c.Id == request.CodelabId, cancellationToken);
 
             if (codelab == null)
@@ -58,8 +78,38 @@ namespace VisualizationDSA.Application.Features.Codelabs.Queries
                 XPReward = codelab.XPReward,
                 MaxRuntimeMs = codelab.MaxRuntimeMs,
                 MaxMemoryBytes = codelab.MaxMemoryBytes,
-                AllowedLanguages = codelab.AllowedLanguages
+                AllowedLanguages = codelab.AllowedLanguages,
+                Constraints = codelab.Constraints,
+                Tags = codelab.Tags,
+                Examples = TryParseExamples(codelab.Examples),
+                Hints = codelab.Hints
+                    .OrderBy(h => h.OrderIndex)
+                    .Select(h => new CodelabHintItemDto { Content = h.Content, XpCost = h.XpCost })
+                    .ToList(),
+                Templates = codelab.Templates
+                    .Select(t => new CodelabTemplateDto
+                    {
+                        Id = t.Id,
+                        Language = t.Language,
+                        StarterCode = t.BoilerplateCode
+                    })
+                    .ToList()
             };
+        }
+
+        private static List<CodelabExampleDto>? TryParseExamples(string raw)
+        {
+            if (string.IsNullOrWhiteSpace(raw)) return null;
+
+            try
+            {
+                var parsed = JsonSerializer.Deserialize<List<CodelabExampleDto>>(raw);
+                return parsed;
+            }
+            catch (JsonException)
+            {
+                return null;
+            }
         }
     }
 }

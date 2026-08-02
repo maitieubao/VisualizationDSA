@@ -80,7 +80,7 @@
                 >
                 <span>Ghi đè chương trình học hiện tại (xóa modules/bài học cũ)</span>
               </label>
-              <p class="form-hint text-accent-warm">⚠️ Hành động này không thể hoàn tác!</p>
+              <p class="form-hint text-accent-yellow">⚠️ Hành động này không thể hoàn tác!</p>
             </div>
             
             <div class="modal-footer">
@@ -181,7 +181,7 @@
                 </div>
                 <div class="summary-item">
                   <span class="summary-label">Ghi đè hiện tại</span>
-                  <span class="summary-value" :class="form.overrideExisting ? 'text-accent-warm' : 'text-accent-green'">
+                  <span class="summary-value" :class="form.overrideExisting ? 'text-accent-yellow' : 'text-accent-green'">
                     {{ form.overrideExisting ? 'Có' : 'Không' }}
                   </span>
                 </div>
@@ -217,7 +217,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch, onMounted, reactive } from 'vue';
+import { ref, computed, watch, reactive } from 'vue';
 import BaseIcon from '@/shared/components/BaseIcon.vue';
 
 interface Props {

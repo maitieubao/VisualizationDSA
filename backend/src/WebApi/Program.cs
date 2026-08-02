@@ -193,28 +193,15 @@ builder.Services.AddScoped<IAnalyticsService, AnalyticsService>();
 builder.Services.AddScoped<IPaymentService, PaymentService>();
 builder.Services.AddScoped<ISemanticGraphService, SemanticGraphService>();
 builder.Services.AddScoped<IAuditEventService, AuditEventService>();
-builder.Services.AddScoped<ITeacherStudioService, TeacherStudioService>();
-builder.Services.AddScoped<VisualizationDSA.Application.Services.INotificationService, NotificationService>();
-builder.Services.AddScoped<IAiQuotaService, AiQuotaService>();
-builder.Services.AddHttpClient<IAiAssistantService, AiAssistantService>();
-builder.Services.AddScoped<IRoadmapAuditService, RoadmapAuditService>();
-builder.Services.AddScoped<IContentModerationService, ContentModerationService>();
-builder.Services.AddScoped<ISessionService, SessionService>();
-builder.Services.AddScoped<IRoadmapLanguageService, RoadmapLanguageService>();
-builder.Services.AddScoped<ICheatSheetService, CheatSheetService>();
-builder.Services.AddScoped<IUploadService, CloudinaryUploadService>();
-builder.Services.AddScoped<IHeartService, HeartService>();
-builder.Services.AddHttpClient<IJudge0Service, Judge0Service>();
-builder.Services.AddScoped<IPracticeLadderService, PracticeLadderService>();
-builder.Services.AddHttpClient<ISandboxService, SandboxService>();
-builder.Services.AddScoped<ITeacherApplicationService, TeacherApplicationService>();
-// Register Background Jobs
-builder.Services.AddHostedService<VisualizationDSA.Infrastructure.Jobs.PremiumExpiryJob>();
-builder.Services.AddHostedService<VisualizationDSA.Infrastructure.Jobs.StreakReminderJob>();
-builder.Services.AddHostedService<VisualizationDSA.Infrastructure.Jobs.PremiumExpiryWarningJob>();
-builder.Services.AddHostedService<VisualizationDSA.Infrastructure.Jobs.TeacherAppReminderJob>();
-builder.Services.AddHostedService<VisualizationDSA.Infrastructure.Jobs.StreakCheckJob>();
-builder.Services.AddScoped<ICodeJudgeService, MockCodeJudgeService>();
+
+
+builder.Services.Configure<JudgeOptions>(builder.Configuration.GetSection(JudgeOptions.SectionName));
+builder.Services.AddHttpClient<PistonCodeJudgeService>((sp, client) =>
+{
+    var options = sp.GetRequiredService<Microsoft.Extensions.Options.IOptions<JudgeOptions>>().Value;
+    client.Timeout = TimeSpan.FromSeconds(Math.Max(5, options.HttpTimeoutSeconds));
+});
+builder.Services.AddScoped<ICodeJudgeService>(sp => sp.GetRequiredService<PistonCodeJudgeService>());
 builder.Services.AddScoped<VisualizationDSA.Application.Services.IProgressRuleEngine, VisualizationDSA.Infrastructure.Services.ProgressRuleEngine>();
 
 
@@ -243,6 +230,7 @@ if (string.IsNullOrWhiteSpace(jwtKey))
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
     {
+        options.MapInboundClaims = true;
         options.TokenValidationParameters = new TokenValidationParameters
         {
             ValidateIssuer           = true,
@@ -253,14 +241,11 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             ValidAudience            = builder.Configuration["Jwt:Audience"],
             IssuerSigningKey         = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey)),
 
-            
-            
-            
-            
-            NameClaimType = "sub",
-            RoleClaimType = "role",
-        };
 
+
+            NameClaimType = System.Security.Claims.ClaimTypes.NameIdentifier,
+            RoleClaimType = System.Security.Claims.ClaimTypes.Role,
+        };
         options.Events = new JwtBearerEvents
         {
             OnMessageReceived = context =>

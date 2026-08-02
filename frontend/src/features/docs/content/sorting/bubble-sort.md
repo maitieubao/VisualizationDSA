@@ -38,11 +38,14 @@ Quá trình tiếp tục lặp lại cho đến khi mảng được sắp xếp 
 | **Không gian bộ nhớ** | **O(1)** - Sắp xếp tại chỗ (In-place), chỉ cần một biến tạm để đổi chỗ, không tốn thêm RAM. |
 | **Tính ổn định (Stable)** | **Có** - Các phần tử bằng nhau sẽ không bị đảo lộn vị trí ban đầu. |
 
-## Cài đặt bằng C# (Code Example) {#code-example}
+## Cài đặt (Code Example) {#code-example}
 
 Dưới đây là phiên bản Bubble Sort đã được tối ưu bằng một cờ `isSwapped`. Nếu trong suốt một lượt duyệt không có bất kỳ cặp nào phải đổi chỗ, mảng đã được sắp xếp và ta có thể dừng sớm!
 
-```csharp
+```playground:bubble-sort
+```
+
+```dual:bubble-sort
 public void BubbleSort(int[] array)
 {
     int n = array.Length;

@@ -3,7 +3,7 @@
     <div class="flex justify-between items-center mb-6 flex-wrap gap-3">
       <div>
         <h2 class="section-heading m-0">Quản lý Codelab (Thực hành Code)</h2>
-        <p class="text-text-secondary text-sm mt-1">Tạo bài tập lập trình với testcases, starter code đa ngôn ngữ, hints tiered</p>
+        <p class="text-text-muted text-sm mt-1">Tạo bài tập lập trình với testcases, starter code đa ngôn ngữ, hints tiered</p>
       </div>
       <button type="button" class="btn-primary" @click="createNewCodelab">
         <BaseIcon name="plus" class="w-4 h-4 inline mr-1 align-middle" /> Tạo Codelab mới
@@ -13,13 +13,13 @@
     
     <div class="filters-bar mb-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 w-full">
       <div class="relative w-full sm:w-64">
-        <input v-model="searchQuery" @input="debouncedSearch" type="text" placeholder="Tìm kiếm codelab..." class="appearance-none w-full bg-bg-secondary/80 text-text-primary border border-border-default rounded-full pl-10 pr-4 py-2.5 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-accent/30 focus:border-border-accent/50 transition-all" />
+        <input v-model="searchQuery" @input="debouncedSearch" type="text" placeholder="Tìm kiếm codelab..." class="appearance-none w-full bg-bg-secondary text-white border border-border-subtle rounded-full pl-10 pr-4 py-2.5 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-accent/30 focus:border-accent/50 transition-all" />
         <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4 text-text-muted">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
         </div>
       </div>
       <div class="flex gap-2 w-full sm:w-auto">
-        <select v-model="filterDifficulty" class="appearance-none bg-bg-secondary/80 text-text-primary border border-border-default rounded-full pl-4 pr-10 py-2.5 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-accent/30 focus:border-border-accent/50 transition-all cursor-pointer">
+        <select v-model="filterDifficulty" class="appearance-none bg-bg-secondary text-white border border-border-subtle rounded-full pl-4 pr-10 py-2.5 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-accent/30 focus:border-accent/50 transition-all cursor-pointer">
           <option value="">Tất cả độ khó</option>
           <option value="1">Dễ (1)</option>
           <option value="2">Dễ (2)</option>
@@ -27,7 +27,7 @@
           <option value="4">Khó (4)</option>
           <option value="5">Rất khó (5)</option>
         </select>
-        <select v-model="filterLanguage" class="appearance-none bg-bg-secondary/80 text-text-primary border border-border-default rounded-full pl-4 pr-10 py-2.5 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-accent/30 focus:border-border-accent/50 transition-all cursor-pointer">
+        <select v-model="filterLanguage" class="appearance-none bg-bg-secondary text-white border border-border-subtle rounded-full pl-4 pr-10 py-2.5 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-accent/30 focus:border-accent/50 transition-all cursor-pointer">
           <option value="">Tất cả ngôn ngữ</option>
           <option value="csharp">C#</option>
           <option value="python">Python</option>
@@ -46,9 +46,9 @@
     </div>
 
     <div v-else-if="codelabsList.length === 0" class="empty-state">
-      <div class="text-5xl mb-4"><BaseIcon name="code-ide" class="w-12 h-12" /></div>
-      <h3 class="text-xl font-bold text-text-primary">Chưa có Codelab nào</h3>
-      <p class="text-text-secondary mt-2 max-w-md">Tạo Codelab đầu tiên để bắt đầu xây dựng bài tập thực hành</p>
+      <div class="text-5xl mb-4">💻</div>
+      <h3 class="text-xl font-bold text-white">Chưa có Codelab nào</h3>
+      <p class="text-text-muted mt-2 max-w-md">Tạo Codelab đầu tiên để bắt đầu xây dựng bài tập thực hành</p>
       <button class="btn-primary mt-6" @click="createNewCodelab">
         <BaseIcon name="plus" class="w-4 h-4 inline mr-1" /> Tạo Codelab đầu tiên
       </button>
@@ -68,15 +68,15 @@
         </thead>
         <tbody>
           <template v-for="c in codelabsList" :key="c.id">
-            <tr @click="toggleCodelabAccordion(c.id)" class="cursor-pointer hover:bg-bg-surface transition-colors">
-              <td class="font-bold text-text-primary">
-                <span class="inline-block mr-1 transition-transform duration-200" :style="expandedCodelabId === c.id ? 'transform: rotate(90deg)' : ''"><BaseIcon name="chevron-right" class="w-4 h-4" /></span>
+            <tr @click="toggleCodelabAccordion(c.id)" class="cursor-pointer hover:bg-bg-hover transition-colors">
+              <td class="font-bold text-white">
+                <span class="inline-block mr-1 transition-transform duration-200" :style="expandedCodelabId === c.id ? 'transform: rotate(90deg)' : ''">▶</span>
                 {{ c.title }}
               </td>
               <td><span class="diff-badge" :class="'diff-' + c.difficulty">{{ c.difficulty }}</span></td>
-              <td class="text-xs text-text-secondary font-mono">{{ c.allowedLanguages }}</td>
+              <td class="text-xs text-text-muted font-mono">{{ c.allowedLanguages }}</td>
               <td class="font-mono text-text-secondary">{{ c.testCaseCount }} tests</td>
-              <td class="font-bold text-accent-warm">+{{ c.xpReward }} XP</td>
+              <td class="font-bold text-accent-yellow">+{{ c.xpReward }} XP</td>
               <td>
                 <div class="flex justify-center gap-2" @click.stop>
                   <button type="button" class="btn-action btn-action--edit" @click="editCodelab(c)" title="Chỉnh sửa">
@@ -112,11 +112,11 @@
                       <h5 class="text-xs font-semibold text-accent uppercase tracking-wider mb-3">Testcases ({{ c.testcases?.length || 0 }})</h5>
                       <div v-if="!c.testcases?.length" class="empty-state py-4 text-center text-sm">Chưa có testcase nào</div>
                       <div v-else class="space-y-2">
-                        <div v-for="tc in c.testcases" :key="tc.id" class="testcase-card p-3 rounded-lg border border-border-default bg-bg-primary/20 flex items-center justify-between">
+                        <div v-for="tc in c.testcases" :key="tc.id" class="testcase-card p-3 rounded-lg border border-border-subtle bg-bg-secondary/20 flex items-center justify-between">
                           <div class="flex items-center gap-3">
                             <span class="badge" :class="tc.isHidden ? 'badge-rose' : 'badge-emerald'">{{ tc.isHidden ? 'Ẩn' : 'Công khai' }}</span>
-                            <span class="text-xs text-text-secondary font-mono">Input: {{ tc.input }}</span>
-                            <span class="text-xs text-text-secondary font-mono">Expected: {{ tc.expectedOutput }}</span>
+                            <span class="text-xs text-text-muted font-mono">Input: {{ tc.input }}</span>
+                            <span class="text-xs text-text-muted font-mono">Expected: {{ tc.expectedOutput }}</span>
                           </div>
                           <div class="flex gap-2">
                             <button type="button" class="btn-action btn-action--edit text-xs" @click="editTestCase(c, tc)">Sửa</button>
@@ -134,10 +134,10 @@
                       <h5 class="text-xs font-semibold text-accent-green uppercase tracking-wider mb-3">Starter Templates ({{ c.templates?.length || 0 }})</h5>
                       <div v-if="!c.templates?.length" class="empty-state py-4 text-center text-sm">Chưa có template nào</div>
                       <div v-else class="space-y-2">
-                        <div v-for="tmpl in c.templates" :key="tmpl.id" class="template-card p-3 rounded-lg border border-border-default bg-bg-primary/20 flex items-center justify-between">
+                        <div v-for="tmpl in c.templates" :key="tmpl.id" class="template-card p-3 rounded-lg border border-border-subtle bg-bg-secondary/20 flex items-center justify-between">
                           <div class="flex items-center gap-3">
                             <span class="badge badge-emerald text-xs">{{ tmpl.language }}</span>
-                            <span class="text-xs text-text-secondary">Starter code: {{ tmpl.starterCode?.length || 0 }} ký tự</span>
+                            <span class="text-xs text-text-muted">Starter code: {{ tmpl.starterCode?.length || 0 }} ký tự</span>
                           </div>
                           <div class="flex gap-2">
                             <button type="button" class="btn-action btn-action--edit text-xs" @click="editTemplate(c, tmpl)">Sửa</button>
@@ -156,11 +156,11 @@
                     <h5 class="text-xs font-semibold text-accent-purple uppercase tracking-wider mb-3">Hints ({{ c.hints?.length || 0 }})</h5>
                     <div v-if="!c.hints?.length" class="empty-state py-4 text-center text-sm">Chưa có hint nào</div>
                     <div v-else class="space-y-2">
-                      <div v-for="hint in c.hints" :key="hint.id" class="hint-card p-3 rounded-lg border border-border-default bg-bg-primary/20 flex items-center justify-between">
+                      <div v-for="hint in c.hints" :key="hint.id" class="hint-card p-3 rounded-lg border border-border-subtle bg-bg-secondary/20 flex items-center justify-between">
                         <div class="flex items-center gap-3">
                           <span class="badge badge-purple text-xs">Hint #{{ hint.orderIndex }}</span>
                           <span class="badge" :class="hint.isTiered ? 'badge-amber' : 'badge-slate'">{{ hint.isTiered ? 'Tiered (XP cost)' : 'Thường' }}</span>
-                          <span class="text-xs text-text-secondary line-clamp-1 max-w-xs">{{ hint.content }}</span>
+                          <span class="text-xs text-text-muted line-clamp-1 max-w-xs">{{ hint.content }}</span>
                         </div>
                         <div class="flex gap-2">
                           <button type="button" class="btn-action btn-action--edit text-xs" @click="editHint(c, hint)">Sửa</button>
@@ -346,7 +346,7 @@ function editTestCase(c: any, tc: any) {
 
 function crudNotImplemented(action: string, endpoint: string): void {
   const msg =
-    `Chức năng "${action}" đang được phát triển.\n\n` +
+    `🚧 Chức năng "${action}" đang được phát triển.\n\n` +
     `Backend endpoint chưa được implement:\n${endpoint}\n\n` +
     `Vui lòng liên hệ team backend để hoàn tất command/query tương ứng.`;
   console.warn(`[CodelabBuilderTab] ${action} → ${endpoint}`);

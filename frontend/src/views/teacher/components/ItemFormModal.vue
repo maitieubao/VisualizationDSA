@@ -205,7 +205,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch, reactive, computed } from 'vue';
+import { ref, computed, watch, reactive } from 'vue';
 import BaseIcon from '@/shared/components/BaseIcon.vue';
 import CustomMarkdownEditor from '@/components/editor/CustomMarkdownEditor.vue';
 
@@ -226,7 +226,7 @@ const emit = defineEmits<Emits>();
 const saving = ref(false);
 const linkedContentId = ref<string | null>(null);
 
-const itemTypes = [
+const itemTypes: Array<{ value: 'Lesson' | 'Quiz' | 'Codelab' | 'CustomLesson'; label: string; icon: string }> = [
   { value: 'Lesson', label: 'Bài học (Lesson)', icon: 'book-open' },
   { value: 'Quiz', label: 'Trắc nghiệm (Quiz)', icon: 'help-circle' },
   { value: 'Codelab', label: 'Thực hành Code (Codelab)', icon: 'code' },

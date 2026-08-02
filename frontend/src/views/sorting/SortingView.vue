@@ -1,13 +1,13 @@
 <template>
   <div class="sorting-view-root flex flex-col h-full w-full p-1.5 max-w-[1920px] mx-auto overflow-hidden relative font-sans">
-    <div class="top-control-bar glass-panel flex items-center justify-between px-4 py-2 shrink-0 z-20 mb-2 rounded-xl">
+    <div class="top-control-bar flex items-center justify-between px-3 py-1 bg-bg-surface border border-border-default rounded-lg backdrop-blur-xl shrink-0 shadow-md z-20 mb-1">
       <div class="flex items-center gap-1.5">
         <button
           v-for="tab in tabs"
           :key="tab.id"
           class="sub-tab-pill flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-bold transition-all duration-200 cursor-pointer"
           :class="activeTab === tab.id
-            ? 'bg-accent text-text-primary shadow-sm'
+            ? 'bg-accent text-white shadow-sm'
             : 'text-text-secondary hover:text-text-primary hover:bg-bg-hover'"
           @click="activeTab = tab.id"
         >
@@ -41,12 +41,12 @@
       </KeepAlive>
 
       <template v-if="activeTab === 'sorting'">
-        <div class="absolute bottom-3 left-0 right-0 z-30 px-4 flex items-center justify-center pointer-events-none gap-3">
-          <div class="pointer-events-auto w-full max-w-2xl">
+        <div class="absolute bottom-3 left-0 right-0 z-30 px-4 flex items-center justify-center pointer-events-none gap-2">
+          <div class="pointer-events-auto flex-1 min-w-0 flex justify-center max-w-2xl">
             <VcrDockBar />
           </div>
 
-          <div class="pointer-events-auto shrink-0 absolute right-4">
+          <div class="pointer-events-auto shrink-0">
             <SortingDrawerTrace />
           </div>
         </div>
@@ -57,13 +57,14 @@
 
 <script setup lang="ts">
 import { ref, computed, defineComponent, h, onMounted, onUnmounted } from 'vue';
-import { ArrayBarVisualizer } from '@/features/core-learning/algorithm-sandbox';
-import SortingDrawerTrace from '@/features/core-learning/algorithm-sandbox/components/SortingDrawerTrace.vue';
-import { VcrDockBar } from '@/features/core-learning/vcr-player';
-import { useVcrStore } from '@/features/core-learning/vcr-player/store/useVcrStore';
-import { DSAPlayer } from '@/features/dsa/dsa-modules';
-import BaseIcon from '@/shared/components/BaseIcon.vue';
-import { useGuidedTourStore } from '@/features/guided-tour/store/useGuidedTourStore';
+import { ArrayBarVisualizer } from '../../features/algorithm-sandbox';
+import SortingDrawerTrace from '../../features/algorithm-sandbox/components/SortingDrawerTrace.vue';
+import { VcrDockBar } from '../../features/vcr-player';
+import { useVcrStore } from '../../features/vcr-player/store/useVcrStore';
+import { DSAPlayer } from '../../features/dsa-modules';
+import BaseIcon from '../../shared/components/BaseIcon.vue';
+import HelpButton from '../../features/guided-tour/components/HelpButton.vue';
+import { useGuidedTourStore } from '../../features/guided-tour/store/useGuidedTourStore';
 
 const activeTab = ref('sorting');
 const tourStore = useGuidedTourStore();
@@ -71,7 +72,7 @@ const vcrStore = useVcrStore();
 
 function handleKeydown(e: KeyboardEvent) {
   const tag = (e.target as HTMLElement)?.tagName;
-  if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return;
+  if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT' || tag === 'BUTTON') return;
 
   if (activeTab.value !== 'sorting') return;
 
@@ -132,6 +133,6 @@ const activeProps = computed(() => {
 
 <style scoped>
 .sorting-view-root {
-  background-image: linear-gradient(to bottom, var(--color-bg-gradient-start), var(--color-bg-gradient-end));
+  background-color: var(--color-bg-primary);
 }
 </style>

@@ -19,8 +19,6 @@
       <CodeWorkspace class="absolute inset-0 w-full h-full" />
     </div>
 
-    <!-- Nút Trợ giúp Guided Tour -->
-    
     
     <HelpButton />
   </div>
@@ -28,14 +26,15 @@
 
 <script setup lang="ts">
 import { onMounted } from 'vue';
-import { CodeWorkspace } from '@/features/core-learning/code-to-visualization';
-import BaseIcon from '@/shared/components/BaseIcon.vue';
-import HelpButton from '@/features/guided-tour/components/HelpButton.vue';
-import { useGuidedTourStore } from '@/features/guided-tour/store/useGuidedTourStore';
+import { CodeWorkspace } from '../../features/code-to-visualization';
+import BaseIcon from '../../shared/components/BaseIcon.vue';
+import HelpButton from '../../features/guided-tour/components/HelpButton.vue';
+import { useGuidedTourStore } from '../../features/guided-tour/store/useGuidedTourStore';
 
+const tourStore = useGuidedTourStore();
 
 onMounted(() => {
-  // tourStore.startPageTour('/code-ide', false);
+  tourStore.startPageTour('/code-ide', false);
 });
 </script>
 

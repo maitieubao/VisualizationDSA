@@ -1,5 +1,5 @@
 <template>
-  <div class="codelab-player min-h-[calc(100vh-3.5rem)] w-full flex flex-col bg-bg-primary text-text-primary font-sans">
+  <div class="codelab-player min-h-[calc(100vh-3.5rem)] w-full flex flex-col bg-bg-secondary text-text-primary font-sans">
 
     <div v-if="isLoading" class="flex-1 flex items-center justify-center">
       <div class="text-xl animate-pulse text-accent">Loading Codelab...</div>
@@ -20,21 +20,21 @@
         </div>
 
         <div class="flex items-center gap-4">
-          <select v-model="language" class="bg-bg-hover border border-border-default rounded px-3 py-1 text-sm outline-none focus:border-border-accent transition-colors">
+          <select v-model="language" class="bg-bg-surface border border-border-default rounded px-3 py-1 text-sm outline-none focus:border-accent transition-colors">
             <option v-for="lang in codelab.allowedLanguages.split(',')" :key="lang" :value="lang.trim()">
               {{ lang.trim() }}
             </option>
           </select>
-          <button @click="resetCode" class="text-xs text-text-secondary hover:text-text-primary px-3 py-1 rounded bg-bg-hover hover:bg-bg-hover transition cursor-pointer" title="Reset to starter code">
+          <button @click="resetCode" class="text-xs text-text-muted hover:text-white px-3 py-1 rounded bg-bg-surface hover:bg-bg-hover transition cursor-pointer" title="Reset to starter code">
             Reset Code
           </button>
           <button @click="runCode" :disabled="isRunning || isSubmitting"
-            class="bg-bg-hover hover:bg-bg-hover disabled:bg-bg-hover disabled:cursor-not-allowed text-text-primary px-4 py-1.5 rounded text-sm font-medium transition-all flex items-center gap-2 cursor-pointer">
+            class="bg-bg-surface hover:bg-bg-hover disabled:bg-bg-surface disabled:cursor-not-allowed text-white px-4 py-1.5 rounded text-sm font-medium transition-all flex items-center gap-2 cursor-pointer">
             <span v-if="isRunning" class="w-3 h-3 border-2 border-border-strong border-t-white rounded-full animate-spin"></span>
             {{ isRunning ? 'Running...' : 'Run' }}
           </button>
           <button @click="submitCode" :disabled="isRunning || isSubmitting"
-            class="bg-accent hover:bg-accent disabled:bg-indigo-900 disabled:cursor-not-allowed text-text-primary px-4 py-1.5 rounded text-sm font-medium transition-all shadow-[0_0_10px_rgba(79,70,229,0.3)] flex items-center gap-2 cursor-pointer">
+            class="bg-accent hover:bg-accent disabled:bg-accent disabled:cursor-not-allowed text-white px-4 py-1.5 rounded text-sm font-medium transition-all shadow-[0_0_10px_rgba(79,70,229,0.3)] flex items-center gap-2 cursor-pointer">
             <span v-if="isSubmitting" class="w-3 h-3 border-2 border-border-strong border-t-white rounded-full animate-spin"></span>
             {{ isSubmitting ? 'Submitting...' : 'Submit' }}
           </button>
@@ -42,13 +42,13 @@
       </header>
 
       
-      <div class="flex-1 flex overflow-hidden bg-bg-primary">
+      <div class="flex-1 flex overflow-hidden bg-bg-secondary">
         <div class="w-1/2 h-full flex flex-col border-r border-border-default">
           
-          <div class="flex border-b border-border-default bg-bg-secondary/60 shrink-0">
+          <div class="flex border-b border-border-default bg-bg-secondary shrink-0">
             <button v-for="tab in tabs" :key="tab.id" @click="activeTab = tab.id"
               class="py-2.5 px-4 text-xs font-bold transition-all border-b-2 cursor-pointer"
-              :class="activeTab === tab.id ? 'border-border-accent text-accent' : 'border-transparent text-text-muted hover:text-text-secondary'">
+              :class="activeTab === tab.id ? 'border-accent text-accent' : 'border-transparent text-text-muted hover:text-text-secondary'">
               {{ tab.name }}
               <span v-if="tab.badge" class="ml-1 px-1.5 py-0.5 rounded-full text-[10px] bg-accent/20 text-accent">{{ tab.badge }}</span>
             </button>
@@ -61,8 +61,8 @@
               <div class="prose prose-invert prose-sm max-w-none" v-html="codelab.description"></div>
 
               <div v-if="codelab.constraints" class="p-3 rounded-xl bg-bg-secondary border border-border-default/50">
-                <span class="text-[10px] font-bold text-text-secondary uppercase">Constraints</span>
-                <pre class="mt-2 text-xs text-text-secondary font-mono whitespace-pre-wrap">{{ codelab.constraints }}</pre>
+                <span class="text-[10px] font-bold text-text-muted uppercase">Constraints</span>
+                <pre class="mt-2 text-xs text-text-muted font-mono whitespace-pre-wrap">{{ codelab.constraints }}</pre>
               </div>
 
               <div v-if="codelab.examples && codelab.examples.length" class="space-y-3">
@@ -75,15 +75,15 @@
               </div>
 
               <div v-if="codelab.hints" class="p-3 rounded-xl bg-bg-secondary border border-border-default/50">
-                <span class="text-[10px] font-bold text-text-secondary uppercase">Hints</span>
+                <span class="text-[10px] font-bold text-text-muted uppercase">Hints</span>
                 <div v-for="(hint, idx) in codelab.hints" :key="idx" class="mt-3">
                   <button @click="toggleHint(idx)" class="flex items-center gap-2 text-xs text-accent hover:text-accent cursor-pointer">
                     <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 01-2 2h-0a2 2 0 01-2-2v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" /></svg>
                     Hint {{ idx + 1 }}
-                    <span v-if="hint.xpCost" class="text-accent-warm text-[10px]">(-{{ hint.xpCost }} XP)</span>
+                    <span v-if="hint.xpCost" class="text-accent-yellow text-[10px]">(-{{ hint.xpCost }} XP)</span>
                   </button>
-                  <p v-if="revealedHints[idx]" class="mt-2 text-xs text-text-secondary leading-relaxed pl-5">{{ hint.content }}</p>
-                  <button v-else-if="hint.xpCost" @click="revealHint(idx)" class="mt-2 text-[10px] text-accent-warm hover:text-accent-warm cursor-pointer">
+                  <p v-if="revealedHints[idx]" class="mt-2 text-xs text-text-muted leading-relaxed pl-5">{{ hint.content }}</p>
+                  <button v-else-if="hint.xpCost" @click="revealHint(idx)" class="mt-2 text-[10px] text-accent-yellow hover:text-accent-yellow cursor-pointer">
                     Reveal hint (costs {{ hint.xpCost }} XP)
                   </button>
                   <p v-else class="mt-2 text-xs text-text-muted pl-5">Click to reveal</p>
@@ -93,13 +93,12 @@
 
             
             <div v-show="activeTab === 'testcases'" class="p-4 space-y-3">
-              <h3 class="text-xs font-bold text-text-secondary uppercase mb-3">Test Cases ({{ visibleTestCaseCount }} visible / {{ allTestCaseCount }} total)</h3>
+              <h3 class="text-xs font-bold text-text-muted uppercase mb-3">Test Cases ({{ visibleTestCaseCount }} visible / {{ allTestCaseCount }} total)</h3>
               <div v-for="(tc, idx) in testCaseResults" :key="idx" class="p-3 rounded-xl border text-xs"
                 :class="tc.passed ? 'border-accent-green/30 bg-accent-green/10' : 'border-accent-red/30 bg-accent-red/10'">
                 <div class="flex items-center justify-between mb-2">
-                  <span class="font-bold flex items-center gap-1" :class="tc.passed ? 'text-accent-green' : 'text-accent-red'">
-                    <BaseIcon :name="tc.passed ? 'check' : 'close'" class="w-3 h-3" />
-                    {{ tc.passed ? 'PASS' : 'FAIL' }}
+                  <span class="font-bold" :class="tc.passed ? 'text-accent-green' : 'text-accent-red'">
+                    {{ tc.passed ? '✓ PASS' : '✗ FAIL' }}
                   </span>
                   <span class="text-[10px] text-text-muted">{{ tc.name }}</span>
                 </div>
@@ -127,14 +126,14 @@
 
             
             <div v-show="activeTab === 'hints'" class="p-4 space-y-3">
-              <h3 class="text-xs font-bold text-text-secondary uppercase mb-3">Hints & Solution</h3>
+              <h3 class="text-xs font-bold text-text-muted uppercase mb-3">Hints & Solution</h3>
               <div v-for="(hint, idx) in codelab.hints" :key="idx" class="p-3 rounded-xl bg-bg-secondary border border-border-default/50 space-y-2">
                 <div class="flex items-center justify-between">
                   <span class="text-xs font-bold text-accent">Hint #{{ idx + 1 }}</span>
-                  <span v-if="hint.xpCost" class="text-[10px] text-accent-warm">-{{ hint.xpCost }} XP</span>
+                  <span v-if="hint.xpCost" class="text-[10px] text-accent-yellow">-{{ hint.xpCost }} XP</span>
                 </div>
                 <p v-if="revealedHints[idx]" class="text-xs text-text-secondary leading-relaxed">{{ hint.content }}</p>
-                <button v-else @click="revealHint(idx)" class="text-[10px] text-accent-warm hover:text-accent-warm cursor-pointer">
+                <button v-else @click="revealHint(idx)" class="text-[10px] text-accent-yellow hover:text-accent-yellow cursor-pointer">
                   Reveal (costs {{ hint.xpCost }} XP)
                 </button>
               </div>
@@ -143,38 +142,36 @@
 
             
             <div v-show="activeTab === 'leaderboard'" class="p-4 space-y-3">
-              <h3 class="text-xs font-bold text-text-secondary uppercase mb-3">Leaderboard</h3>
+              <h3 class="text-xs font-bold text-text-muted uppercase mb-3">Leaderboard</h3>
               <div v-for="(entry, idx) in leaderboard" :key="entry.id" class="flex items-center justify-between p-3 rounded-xl bg-bg-secondary border border-border-default/50 text-xs">
                 <div class="flex items-center gap-3">
                   <span class="w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold"
-                    :class="idx === 0 ? 'bg-accent-warm/20 text-accent-warm' : idx === 1 ? 'bg-bg-hover/20 text-text-secondary' : idx === 2 ? 'bg-accent-warm/20 text-accent-warm' : 'bg-bg-hover text-text-muted'">
+                    :class="idx === 0 ? 'bg-accent-yellow/20 text-accent-yellow' : idx === 1 ? 'bg-gray-400/20 text-text-secondary' : idx === 2 ? 'bg-accent-yellow/20 text-accent-yellow' : 'bg-bg-surface text-text-muted'">
                     {{ idx + 1 }}
                   </span>
-                  <span class="font-bold text-text-primary">{{ entry.username }}</span>
+                  <span class="font-bold text-white">{{ entry.username }}</span>
                   <span v-if="entry.isYou" class="text-[10px] px-1.5 py-0.5 rounded bg-accent/20 text-accent">You</span>
                 </div>
                 <div class="flex items-center gap-4 text-[10px] font-mono">
                   <span class="text-accent">{{ entry.runtimeMs }}ms</span>
                   <span class="text-accent-green">{{ entry.memoryMb }}MB</span>
-                  <span class="text-accent-warm font-bold">{{ entry.score }} XP</span>
+                  <span class="text-accent-yellow font-bold">{{ entry.score }} XP</span>
                 </div>
               </div>
             </div>
 
             
             <div v-show="activeTab === 'submissions'" class="p-4 space-y-3">
-              <h3 class="text-xs font-bold text-text-secondary uppercase mb-3">Submission History</h3>
+              <h3 class="text-xs font-bold text-text-muted uppercase mb-3">Submission History</h3>
               <div v-for="(sub, idx) in submissionHistory" :key="idx" class="p-3 rounded-xl bg-bg-secondary border border-border-default/50 text-xs">
                 <div class="flex items-center justify-between mb-2">
-                  <span class="font-bold flex items-center gap-1" :class="sub.passed ? 'text-accent-green' : 'text-accent-red'">
-                    <BaseIcon v-if="sub.passed" name="check" class="w-3 h-3" />
-                    <BaseIcon v-else name="close" class="w-3 h-3" />
-                    {{ sub.passed ? 'Accepted' : sub.status }}
+                  <span class="font-bold" :class="sub.passed ? 'text-accent-green' : 'text-accent-red'">
+                    {{ sub.passed ? '✓ Accepted' : '✗ ' + sub.status }}
                   </span>
                   <span class="text-text-muted">{{ sub.language }} · {{ sub.runtimeMs }}ms</span>
                 </div>
                 <div v-if="!sub.passed && sub.errorMessage" class="text-accent-red text-[11px] mb-2 whitespace-pre-wrap">{{ sub.errorMessage }}</div>
-                <div v-if="sub.score !== undefined" class="text-accent-warm font-bold">Score: {{ sub.score }} XP</div>
+                <div v-if="sub.score !== undefined" class="text-accent-yellow font-bold">Score: {{ sub.score }} XP</div>
               </div>
               <div v-if="submissionHistory.length === 0" class="text-text-muted text-xs italic text-center py-8">
                 No submissions yet. Submit your code to see history.
@@ -185,7 +182,7 @@
 
         
         <div class="w-1/2 h-full flex flex-col">
-          <div class="px-4 py-2 bg-bg-secondary/80 border-b border-border-default flex items-center justify-between shrink-0">
+          <div class="px-4 py-2 bg-bg-secondary border-b border-border-default flex items-center justify-between shrink-0">
             <div class="flex items-center gap-2">
               <span class="text-xs font-bold text-text-secondary font-mono">{{ codelab.title }}.{{ languageExtension }}</span>
             </div>
@@ -235,7 +232,7 @@ const testCaseResults = computed(() => {
   return [];
 });
 
-const visibleTestCaseCount = computed(() => testCaseResults.value.filter(tc => !tc.isHidden).length);
+const visibleTestCaseCount = computed(() => testCaseResults.value.filter((tc: { isHidden?: boolean }) => !tc.isHidden).length);
 const allTestCaseCount = computed(() => testCaseResults.value.length);
 
 const difficultyLabel = computed(() => {
@@ -249,9 +246,9 @@ const difficultyLabel = computed(() => {
 const difficultyClass = computed(() => {
   const d = codelab.value?.difficulty;
   if (d === 1) return 'bg-accent-green/20 text-accent-green border border-accent-green/30';
-  if (d === 2) return 'bg-accent-warm/20 text-accent-warm border border-accent-warm/30';
+  if (d === 2) return 'bg-accent-yellow/20 text-accent-yellow border border-accent-yellow/30';
   if (d === 3) return 'bg-accent-red/20 text-accent-red border border-accent-red/30';
-  return 'bg-gray-500/20 text-text-secondary border border-gray-500/30';
+  return 'bg-gray-500/20 text-text-muted border border-gray-500/30';
 });
 
 const languageExtension = computed(() => {

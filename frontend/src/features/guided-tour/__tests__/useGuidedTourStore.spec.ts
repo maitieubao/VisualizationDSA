@@ -1,3 +1,4 @@
+// @vitest-environment jsdom
 
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { setActivePinia, createPinia } from 'pinia';
@@ -25,7 +26,7 @@ class LocalStorageMock {
 }
 
 const localStorageMock = new LocalStorageMock();
-globalThis.localStorage = localStorageMock as unknown as Storage;
+global.localStorage = localStorageMock as unknown as Storage;
 
 describe('useGuidedTourStore', () => {
   beforeEach(() => {

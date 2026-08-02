@@ -50,53 +50,53 @@
             
             <div v-else-if="articles.length === 0" class="empty-state text-center py-8">
               <BaseIcon name="book-open" class="w-12 h-12 text-text-muted mx-auto mb-3" />
-              <p class="text-text-secondary">Không tìm thấy bài viết phù hợp</p>
+              <p class="text-text-muted">Không tìm thấy bài viết phù hợp</p>
             </div>
             
             <div v-else class="articles-table overflow-hidden">
               <table class="w-full">
                 <thead>
-                  <tr class="border-b border-border-default">
-                    <th class="text-left p-3 text-xs font-semibold text-text-secondary uppercase tracking-wider w-10"></th>
-                    <th class="text-left p-3 text-xs font-semibold text-text-secondary uppercase tracking-wider">Bài viết</th>
-                    <th class="text-left p-3 text-xs font-semibold text-text-secondary uppercase tracking-wider w-32">Danh mục</th>
-                    <th class="text-left p-3 text-xs font-semibold text-text-secondary uppercase tracking-wider w-24">Độ khó</th>
-                    <th class="text-left p-3 text-xs font-semibold text-text-secondary uppercase tracking-wider w-20">Đọc</th>
-                    <th class="text-left p-3 text-xs font-semibold text-text-secondary uppercase tracking-wider w-20">Lượt xem</th>
-                    <th class="text-left p-3 text-xs font-semibold text-text-secondary uppercase tracking-wider w-10"></th>
+                  <tr class="border-b border-border-subtle">
+                    <th class="text-left p-3 text-xs font-semibold text-text-muted uppercase tracking-wider w-10"></th>
+                    <th class="text-left p-3 text-xs font-semibold text-text-muted uppercase tracking-wider">Bài viết</th>
+                    <th class="text-left p-3 text-xs font-semibold text-text-muted uppercase tracking-wider w-32">Danh mục</th>
+                    <th class="text-left p-3 text-xs font-semibold text-text-muted uppercase tracking-wider w-24">Độ khó</th>
+                    <th class="text-left p-3 text-xs font-semibold text-text-muted uppercase tracking-wider w-20">Đọc</th>
+                    <th class="text-left p-3 text-xs font-semibold text-text-muted uppercase tracking-wider w-20">Lượt xem</th>
+                    <th class="text-left p-3 text-xs font-semibold text-text-muted uppercase tracking-wider w-10"></th>
                   </tr>
                 </thead>
                 <tbody>
                   <tr 
                     v-for="article in articles" 
                     :key="article.id"
-                    class="border-b border-border-default hover:bg-bg-surface transition-colors"
+                    class="border-b border-border-subtle hover:bg-bg-hover transition-colors"
                     @click="toggleSelect(article)"
                   >
                     <td class="p-3">
                       <input 
                         type="checkbox" 
-                        class="form-checkbox h-4 w-4 accent-indigo-500" 
+                        class="form-checkbox h-4 w-4 accent-accent" 
                         :checked="isSelected(article)"
                         @click.stop
                       >
                     </td>
                     <td class="p-3">
-                      <div class="font-medium text-text-primary truncate max-w-xs">{{ article.title }}</div>
+                      <div class="font-medium text-white truncate max-w-xs">{{ article.title }}</div>
                       <div class="text-xs text-text-muted truncate max-w-xs mt-0.5">{{ article.slug }}</div>
                     </td>
-                    <td class="p-3 text-xs text-text-secondary">{{ article.category }}</td>
+                    <td class="p-3 text-xs text-text-muted">{{ article.category }}</td>
                     <td class="p-3">
                       <span class="badge" :class="difficultyBadgeClass(article.difficulty)">
                         {{ article.difficulty }}
                       </span>
                     </td>
-                    <td class="p-3 text-xs text-text-secondary">{{ article.readTimeMinutes }} phút</td>
-                    <td class="p-3 text-xs text-text-secondary">{{ article.viewCount }}</td>
+                    <td class="p-3 text-xs text-text-muted">{{ article.readTimeMinutes }} phút</td>
+                    <td class="p-3 text-xs text-text-muted">{{ article.viewCount }}</td>
                     <td class="p-3">
                       <button 
                         type="button" 
-                        class="btn-action-icon text-text-secondary hover:text-accent"
+                        class="btn-action-icon text-text-muted hover:text-accent"
                         @click.stop="previewArticle(article)"
                         title="Xem trước"
                       >
@@ -109,19 +109,19 @@
             </div>
             
             
-            <div v-if="totalPages > 1" class="flex justify-center items-center gap-2 mt-4 pt-4 border-t border-border-default">
+            <div v-if="totalPages > 1" class="flex justify-center items-center gap-2 mt-4 pt-4 border-t border-border-subtle">
               <button class="btn-secondary px-3 text-xs" @click="changePage(page - 1)" :disabled="page <= 1">Trước</button>
-              <span class="text-sm text-text-secondary px-2">Trang {{ page }} / {{ totalPages }}</span>
+              <span class="text-sm text-text-muted px-2">Trang {{ page }} / {{ totalPages }}</span>
               <button class="btn-secondary px-3 text-xs" @click="changePage(page + 1)" :disabled="page >= totalPages">Sau</button>
             </div>
             
             
-            <div v-if="selectedArticles.length > 0" class="mt-4 p-4 bg-accent/10 border border-border-accent rounded-xl">
+            <div v-if="selectedArticles.length > 0" class="mt-4 p-4 bg-accent/10 border border-accent/20 rounded-xl">
               <div class="flex items-center justify-between mb-2">
                 <span class="text-sm font-medium text-accent">
                   Đã chọn {{ selectedArticles.length }} bài viết
                 </span>
-                <button type="button" class="text-text-secondary hover:text-text-primary text-xs" @click="clearSelection">
+                <button type="button" class="text-text-muted hover:text-white text-xs" @click="clearSelection">
                   Xóa tất cả
                 </button>
               </div>

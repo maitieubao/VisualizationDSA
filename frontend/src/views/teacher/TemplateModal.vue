@@ -18,7 +18,7 @@
           </button>
           <button
             type="button"
-            class="px-4 py-2 rounded-lg bg-accent/20 text-accent border border-border-accent hover:bg-accent/30 transition-colors"
+            class="px-4 py-2 rounded-lg bg-accent/20 text-accent border border-accent/30 hover:bg-accent/30 transition-colors"
             @click="onSaveStub"
           >
             Lưu (Stub)

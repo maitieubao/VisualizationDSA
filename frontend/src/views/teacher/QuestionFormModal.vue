@@ -23,7 +23,7 @@
             <label class="form-label">Đáp án (tối thiểu 2, tối đa 6) <span class="text-accent-red">*</span></label>
             <div class="options-list space-y-3">
               <div v-for="(opt, idx) in form.options" :key="idx" class="flex items-center gap-3">
-                <span class="text-sm text-text-secondary font-mono w-6">{{ idx + 1 }}.</span>
+                <span class="text-sm text-text-muted font-mono w-6">{{ idx + 1 }}.</span>
                 <input 
                   v-model="form.options[idx]" 
                   type="text" 
@@ -32,7 +32,7 @@
                   required 
                   maxlength="200"
                 />
-                <button type="button" class="btn-action-icon text-text-secondary hover:text-accent-red" @click="removeOption(idx)" :disabled="form.options.length <= 2" title="Xóa đáp án">
+                <button type="button" class="btn-action-icon text-text-muted hover:text-accent-red" @click="removeOption(idx)" :disabled="form.options.length <= 2" title="Xóa đáp án">
                   <BaseIcon name="trash-2" class="w-4 h-4" />
                 </button>
               </div>

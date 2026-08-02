@@ -47,9 +47,12 @@ flowchart TD
     B1 --> B2 --> B3
 ```
 
-## Cài đặt bằng C# (Code Example) {#code-example}
+## Cài đặt (Code Example) {#code-example}
 
-```csharp
+```playground:selection-sort
+```
+
+```dual:selection-sort
 public void SelectionSort(int[] arr)
 {
     int n = arr.Length;

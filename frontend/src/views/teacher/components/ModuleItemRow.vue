@@ -125,7 +125,7 @@
       
       <button 
         type="button" 
-        class="action-btn text-text-secondary hover:text-accent"
+        class="action-btn text-text-muted hover:text-accent"
         @click.stop="$emit('override-settings', item)"
         title="Cài đặt nâng cao"
       >
@@ -134,7 +134,7 @@
       
       <button 
         type="button" 
-        class="action-btn text-text-secondary hover:text-accent-red"
+        class="action-btn text-text-muted hover:text-accent-red"
         @click.stop="$emit('delete', item)"
         title="Xóa"
       >
@@ -431,7 +431,7 @@ function onDrop(e: DragEvent) {
   background: rgba(245, 158, 11, 0.15);
 }
 
-.action-btn.text-text-secondary:hover {
+.action-btn.text-text-muted:hover {
   color: #6366f1;
 }
 

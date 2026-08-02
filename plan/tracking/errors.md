@@ -580,43 +580,43 @@ edirect: '/'.
     - Cáº¥u hinh `IMemoryCache` tren AnalyticsController cho public statistics (cache GetOverview trong 2 phut, GetPopularModules trong 10 phut) va clamp tham so limit de tranh query ton tai nguyen DB.
     - Khai bao 2 chinh sach rate limit tai `Program.cs`: `"api"` (60 request/phut) va `"heavy"` (15 request/phut, 0 queue de fail-fast) theo IP nguoi dung.
     - Ap dung decorator `[EnableRateLimiting("heavy")]` cho tat ca cac simulation controllers va `[EnableRateLimiting("api")]` cho AnalyticsController.
-# # #   S ía   L ×i   1 7 4 :   T h u ­t   T o á n   S ¯p   X ¿p   C h è n   C h ¡y   N g ¯n   ( E R R _ S A N D B O X _ E L S E _ C A T C H _ B U G ) 
- *       * * M ô   t £: * *   S a n d b o x   b i ê n   d Ëc h   m ã   n g u Ón   c ça   I n s e r t i o n   S o r t   b Ë  d ën g   Ùt   n g Ùt   ( c h ¡y   r ¥t   n g ¯n )   v à   b á o   l ×i   c ú   p h á p   n g §m   t r o n g   c o n s o l e   k h i   g ·p   l Çn h   \ e l s e \ . 
- *       * * M ã   L ×i : * *   E R R _ S A N D B O X _ E L S E _ C A T C H _ B U G 
- *       * * N g u y ê n   n h â n   g Ñc : * *   R e g e x   t i ê m   v ¿t   ( i n s t r u m e n t a t i o n )   t r o n g   \ C o m p i l e r S t e p E x e c u t o r . t s \   t h ê m   t r a c k i n g   s a i   v à o   k h Ñi   \ e l s e \   m à   k h ô n g   k i Ãm   t r a   c ¥u   t r ú c   b l o c k ,   p h á   v á  c ú   p h á p   J a v a S c r i p t ,   b u Ùc   s a n d b o x   p h £i   c h u y Ãn   s a n g   c h ¿  Ù  f a l l b a c k   t )n h   ( k h ô n g   c h ¡y   °ãc   l o g i c   v ò n g   l ·p   p h éc   t ¡p ) . 
- *       * * C á c h   k h ¯c   p h åc : * *   C ­p   n h ­t   r e g e x   v à   l o g i c   x í  l ı   \ e l s e \   t r o n g   \ C o m p i l e r S t e p E x e c u t o r \   Ã  b Ï  q u a   t i ê m   m ã   l Çn h   t h e o   d õ i   s a i   v Ë  t r í . 
+# # #   S ï¿½a   L ï¿½i   1 7 4 :   T h u ï¿½t   T o ï¿½ n   S ï¿½p   X ï¿½p   C h ï¿½ n   C h ï¿½y   N g ï¿½n   ( E R R _ S A N D B O X _ E L S E _ C A T C H _ B U G ) 
+ *       * * M ï¿½   t ï¿½: * *   S a n d b o x   b i ï¿½ n   d ï¿½c h   m ï¿½   n g u ï¿½n   c ï¿½a   I n s e r t i o n   S o r t   b ï¿½  d ï¿½n g   ï¿½t   n g ï¿½t   ( c h ï¿½y   r ï¿½t   n g ï¿½n )   v ï¿½   b ï¿½ o   l ï¿½i   c ï¿½   p h ï¿½ p   n g ï¿½m   t r o n g   c o n s o l e   k h i   g ï¿½p   l ï¿½n h   \ e l s e \ . 
+ *       * * M ï¿½   L ï¿½i : * *   E R R _ S A N D B O X _ E L S E _ C A T C H _ B U G 
+ *       * * N g u y ï¿½ n   n h ï¿½ n   g ï¿½c : * *   R e g e x   t i ï¿½ m   v ï¿½t   ( i n s t r u m e n t a t i o n )   t r o n g   \ C o m p i l e r S t e p E x e c u t o r . t s \   t h ï¿½ m   t r a c k i n g   s a i   v ï¿½ o   k h ï¿½i   \ e l s e \   m ï¿½   k h ï¿½ n g   k i ï¿½m   t r a   c ï¿½u   t r ï¿½ c   b l o c k ,   p h ï¿½   v ï¿½  c ï¿½   p h ï¿½ p   J a v a S c r i p t ,   b u ï¿½c   s a n d b o x   p h ï¿½i   c h u y ï¿½n   s a n g   c h ï¿½  ï¿½  f a l l b a c k   t )n h   ( k h ï¿½ n g   c h ï¿½y   ï¿½ï¿½c   l o g i c   v ï¿½ n g   l ï¿½p   p h ï¿½c   t ï¿½p ) . 
+ *       * * C ï¿½ c h   k h ï¿½c   p h ï¿½c : * *   C ï¿½p   n h ï¿½t   r e g e x   v ï¿½   l o g i c   x ï¿½  l ï¿½   \ e l s e \   t r o n g   \ C o m p i l e r S t e p E x e c u t o r \   ï¿½  b ï¿½  q u a   t i ï¿½ m   m ï¿½   l ï¿½n h   t h e o   d ï¿½ i   s a i   v ï¿½  t r ï¿½ . 
  
- # # #   S ía   L ×i   1 7 5 :   C o d e   S a n d b o x   K h ô n g   C ­p   N h ­t   C o d e   M Ûi   ( E R R _ S A N D B O X _ S T A L E _ C O D E ) 
- *       * * M ô   t £: * *   N g °İi   d ù n g   c h Én h   s ía   c o d e   t r o n g   t a b   C o d e   S a n d b o x ,   s a u   ó   b ¥m   c h ¡y ,   n h °n g   h Ç  t h Ñn g   v «n   t i ¿p   t åc   c h ¡y   t h u ­t   t o á n   c i  ( h o ·c   c o d e   c i)   m à   k h ô n g   c ó   l ×i   b á o . 
- *       * * M ã   L ×i : * *   E R R _ S A N D B O X _ S T A L E _ C O D E 
- *       * * N g u y ê n   n h â n   g Ñc : * *   T r ¡n g   t h á i   c a c h e   \ p l a y b a c k F r a m e s \   t r o n g   \  c r S t o r e \   k h ô n g   b Ë  x ó a   k h i   n g °İi   d ù n g   s ía   m ã   n g u Ón   t r o n g   \ C o d e E d i t o r . v u e \ .   K h i   ¥n   c h ¡y   l ¡i ,   s t o r e   t h ¥y   f r a m e s   >   0   n ê n   t r ñc   t i ¿p   p l a y   l ¡i   b Ù  f r a m e s   c i  t h a y   v ì   b i ê n   d Ëc h   l ¡i   c o d e   m Ûi . 
- *       * * C á c h   k h ¯c   p h åc : * *   T h ê m   s ñ  k i Çn   l ¯n g   n g h e   \ o n C o d e C h a n g e \   t r o n g   \ C o d e E d i t o r . v u e \ .   B ¥t   c é  k h i   n à o   c o d e   t h a y   Õi ,   g Íi   \  c r S t o r e . r e s e t ( ) \   Ã  x ó a   t r ¯n g   \ p l a y b a c k F r a m e s \   b u Ùc   h Ç  t h Ñn g   p h £i   d Ëc h   l ¡i .   Ón g   t h İi   b Ï  \  u t o - p l a y \   k h i   c h Ín   t h u ­t   t o á n . 
+ # # #   S ï¿½a   L ï¿½i   1 7 5 :   C o d e   S a n d b o x   K h ï¿½ n g   C ï¿½p   N h ï¿½t   C o d e   M ï¿½i   ( E R R _ S A N D B O X _ S T A L E _ C O D E ) 
+ *       * * M ï¿½   t ï¿½: * *   N g ï¿½ï¿½i   d ï¿½ n g   c h ï¿½n h   s ï¿½a   c o d e   t r o n g   t a b   C o d e   S a n d b o x ,   s a u   ï¿½   b ï¿½m   c h ï¿½y ,   n h ï¿½n g   h ï¿½  t h ï¿½n g   v ï¿½n   t i ï¿½p   t ï¿½c   c h ï¿½y   t h u ï¿½t   t o ï¿½ n   c i  ( h o ï¿½c   c o d e   c i)   m ï¿½   k h ï¿½ n g   c ï¿½   l ï¿½i   b ï¿½ o . 
+ *       * * M ï¿½   L ï¿½i : * *   E R R _ S A N D B O X _ S T A L E _ C O D E 
+ *       * * N g u y ï¿½ n   n h ï¿½ n   g ï¿½c : * *   T r ï¿½n g   t h ï¿½ i   c a c h e   \ p l a y b a c k F r a m e s \   t r o n g   \  c r S t o r e \   k h ï¿½ n g   b ï¿½  x ï¿½ a   k h i   n g ï¿½ï¿½i   d ï¿½ n g   s ï¿½a   m ï¿½   n g u ï¿½n   t r o n g   \ C o d e E d i t o r . v u e \ .   K h i   ï¿½n   c h ï¿½y   l ï¿½i ,   s t o r e   t h ï¿½y   f r a m e s   >   0   n ï¿½ n   t r ï¿½c   t i ï¿½p   p l a y   l ï¿½i   b ï¿½  f r a m e s   c i  t h a y   v ï¿½   b i ï¿½ n   d ï¿½c h   l ï¿½i   c o d e   m ï¿½i . 
+ *       * * C ï¿½ c h   k h ï¿½c   p h ï¿½c : * *   T h ï¿½ m   s ï¿½  k i ï¿½n   l ï¿½n g   n g h e   \ o n C o d e C h a n g e \   t r o n g   \ C o d e E d i t o r . v u e \ .   B ï¿½t   c ï¿½  k h i   n ï¿½ o   c o d e   t h a y   ï¿½i ,   g ï¿½i   \  c r S t o r e . r e s e t ( ) \   ï¿½  x ï¿½ a   t r ï¿½n g   \ p l a y b a c k F r a m e s \   b u ï¿½c   h ï¿½  t h ï¿½n g   p h ï¿½i   d ï¿½c h   l ï¿½i .   ï¿½n g   t h ï¿½i   b ï¿½  \  u t o - p l a y \   k h i   c h ï¿½n   t h u ï¿½t   t o ï¿½ n . 
  
- # # #   S ía   L ×i   1 7 6 :   T £i   L ¡i   T r a n g   ( F 5 )   L u ô n   B Ë  V n g   R a   L a n d i n g   P a g e   ( E R R _ R O U T E R _ F 5 _ A U T H _ R A C E ) 
- *       * * M ô   t £: * *   a n g   ß  t r o n g   b à i   h Íc   ( L e s s o n V i e w )   h o ·c   D a s h b o a r d ,   n g °İi   d ù n g   ¥n   F 5   t h ì   l u ô n   b Ë  ©y   r a   n g o à i   t r a n g   c h ç  \ / l a n d i n g \ ,   m ·c   d ù   t r ¡n g   t h á i   n g   n h ­p   ( t o k e n )   v «n   c ò n   t r o n g   l o c a l S t o r a g e . 
- *       * * M ã   L ×i : * *   E R R _ R O U T E R _ F 5 _ A U T H _ R A C E 
- *       * * N g u y ê n   n h â n   g Ñc : * *   R a c e   c o n d i t i o n   ( b ¥t   Ón g   b Ù)   t r o n g   V u e   S P A .   T r ì n h   Ën h   t u y ¿n   \  o u t e r \   k h ßi   c h ¡y   v à   á n h   g i á   g u a r d   \  e q u i r e s A u t h \   n g a y   l ­p   t éc   t r °Ûc   k h i   \  u t h S t o r e . i n i t ( ) \   k Ëp   k h ô i   p h åc   l ¡i   t r ¡n g   t h á i   T o k e n   t ë  l o c a l S t o r a g e   ( p h £i   Íc   q u a   P r o m i s e ) ,   d «n   ¿n   v i Çc   r o u t e r   n g h )  n g °İi   d ù n g   c h °a   n g   n h ­p . 
- *       * * C á c h   k h ¯c   p h åc : * *   T r o n g   \ m a i n . t s \ ,   k ì m   h ã m   k h ô n g   g Íi   \  p p . u s e ( r o u t e r ) \   c h o   ¿n   k h i   \  u t h S t o r e . i n i t ( ) \   ã   h o à n   t ¥t   k h ô i   p h åc   t r ¡n g   t h á i   v à o   b Ù  n h Û.  
+ # # #   S ï¿½a   L ï¿½i   1 7 6 :   T ï¿½i   L ï¿½i   T r a n g   ( F 5 )   L u ï¿½ n   B ï¿½  V n g   R a   L a n d i n g   P a g e   ( E R R _ R O U T E R _ F 5 _ A U T H _ R A C E ) 
+ *       * * M ï¿½   t ï¿½: * *   a n g   ï¿½  t r o n g   b ï¿½ i   h ï¿½c   ( L e s s o n V i e w )   h o ï¿½c   D a s h b o a r d ,   n g ï¿½ï¿½i   d ï¿½ n g   ï¿½n   F 5   t h ï¿½   l u ï¿½ n   b ï¿½  ï¿½y   r a   n g o ï¿½ i   t r a n g   c h ï¿½  \ / l a n d i n g \ ,   m ï¿½c   d ï¿½   t r ï¿½n g   t h ï¿½ i   n g   n h ï¿½p   ( t o k e n )   v ï¿½n   c ï¿½ n   t r o n g   l o c a l S t o r a g e . 
+ *       * * M ï¿½   L ï¿½i : * *   E R R _ R O U T E R _ F 5 _ A U T H _ R A C E 
+ *       * * N g u y ï¿½ n   n h ï¿½ n   g ï¿½c : * *   R a c e   c o n d i t i o n   ( b ï¿½t   ï¿½n g   b ï¿½)   t r o n g   V u e   S P A .   T r ï¿½ n h   ï¿½n h   t u y ï¿½n   \  o u t e r \   k h ï¿½i   c h ï¿½y   v ï¿½   ï¿½ n h   g i ï¿½   g u a r d   \  e q u i r e s A u t h \   n g a y   l ï¿½p   t ï¿½c   t r ï¿½ï¿½c   k h i   \  u t h S t o r e . i n i t ( ) \   k ï¿½p   k h ï¿½ i   p h ï¿½c   l ï¿½i   t r ï¿½n g   t h ï¿½ i   T o k e n   t ï¿½  l o c a l S t o r a g e   ( p h ï¿½i   ï¿½c   q u a   P r o m i s e ) ,   d ï¿½n   ï¿½n   v i ï¿½c   r o u t e r   n g h )  n g ï¿½ï¿½i   d ï¿½ n g   c h ï¿½a   n g   n h ï¿½p . 
+ *       * * C ï¿½ c h   k h ï¿½c   p h ï¿½c : * *   T r o n g   \ m a i n . t s \ ,   k ï¿½ m   h ï¿½ m   k h ï¿½ n g   g ï¿½i   \  p p . u s e ( r o u t e r ) \   c h o   ï¿½n   k h i   \  u t h S t o r e . i n i t ( ) \   ï¿½   h o ï¿½ n   t ï¿½t   k h ï¿½ i   p h ï¿½c   t r ï¿½n g   t h ï¿½ i   v ï¿½ o   b ï¿½  n h ï¿½.  
  
-### Bug: Sân chõi ğ? th? b? màn h?nh hı?ng d?n che khu?t và không th? t?t
-- **Nguyên nhân:** B?ng hı?ng d?n (Onboarding guide) ? ch? ğ? pointer-events-none khi?n click xuyên qua, nhıng do ch? ğ? m?c ğ?nh c?a Canvas là SELECT nên click vào không v? ğı?c ğ?nh m?i. Ngı?i dùng tı?ng b?ng b? k?t và che khu?t mà không có nút ğóng r? ràng.
-- **Cách kh?c ph?c:** C?p nh?t usePlaygroundStore.ts thêm c? isGuideDismissed. C?p nh?t InteractivePlayground.vue thêm nút 'Ğ? hi?u và B?t ğ?u v?' v?i pointer-events-auto ğ? ğóng b?ng hı?ng d?n và cho phép v? t? do.
+### Bug: Sï¿½n chï¿½i ï¿½? th? b? mï¿½n h?nh hï¿½?ng d?n che khu?t vï¿½ khï¿½ng th? t?t
+- **Nguyï¿½n nhï¿½n:** B?ng hï¿½?ng d?n (Onboarding guide) ? ch? ï¿½? pointer-events-none khi?n click xuyï¿½n qua, nhï¿½ng do ch? ï¿½? m?c ï¿½?nh c?a Canvas lï¿½ SELECT nï¿½n click vï¿½o khï¿½ng v? ï¿½ï¿½?c ï¿½?nh m?i. Ngï¿½?i dï¿½ng tï¿½?ng b?ng b? k?t vï¿½ che khu?t mï¿½ khï¿½ng cï¿½ nï¿½t ï¿½ï¿½ng r? rï¿½ng.
+- **Cï¿½ch kh?c ph?c:** C?p nh?t usePlaygroundStore.ts thï¿½m c? isGuideDismissed. C?p nh?t InteractivePlayground.vue thï¿½m nï¿½t 'ï¿½? hi?u vï¿½ B?t ï¿½?u v?' v?i pointer-events-auto ï¿½? ï¿½ï¿½ng b?ng hï¿½?ng d?n vï¿½ cho phï¿½p v? t? do.
 
-### Bug: M?c l?c bài h?c b? 'Tr? l? d?ng ğ? th?' ğè lên
-- **Nguyên nhân:** Compoment CustomInputPanel trong Sân chõi ğ? th? ğı?c gán z-index: 1005 (Tailwind: z-[1005]), trong khi thanh ngãn kéo (Drawer) M?c l?c khoá h?c ? LessonStudyView ch? ğı?c gán z-index: 50 (z-50). Do ğó panel nh?p li?u hi?n th? ğè lên Drawer, che m?t n?i dung m?c l?c.
-- **Cách kh?c ph?c:** C?p nh?t LessonStudyView.vue, nâng z-index c?a thanh Drawer lên z-[2000] và l?p n?n m? overlay lên z-[1999] ğ? luôn hi?n th? cao nh?t.
+### Bug: M?c l?c bï¿½i h?c b? 'Tr? l? d?ng ï¿½? th?' ï¿½ï¿½ lï¿½n
+- **Nguyï¿½n nhï¿½n:** Compoment CustomInputPanel trong Sï¿½n chï¿½i ï¿½? th? ï¿½ï¿½?c gï¿½n z-index: 1005 (Tailwind: z-[1005]), trong khi thanh ngï¿½n kï¿½o (Drawer) M?c l?c khoï¿½ h?c ? LessonStudyView ch? ï¿½ï¿½?c gï¿½n z-index: 50 (z-50). Do ï¿½ï¿½ panel nh?p li?u hi?n th? ï¿½ï¿½ lï¿½n Drawer, che m?t n?i dung m?c l?c.
+- **Cï¿½ch kh?c ph?c:** C?p nh?t LessonStudyView.vue, nï¿½ng z-index c?a thanh Drawer lï¿½n z-[2000] vï¿½ l?p n?n m? overlay lï¿½n z-[1999] ï¿½? luï¿½n hi?n th? cao nh?t.
 
-### Bug: Nút tr? giúp (?) AI không hi?n th? tour hı?ng d?n trong khoá h?c ğ? th?
-- **Nguyên nhân:** Nút HelpButton m?c ğ?nh g?i k?ch b?n AI d?a trên URL hi?n t?i (oute.path). Khi ? trong khoá h?c, URL là d?ng /courses/:id/lessons/:id ch? không ph?i là /graph. Trong khi ğó, k?ch b?n hı?ng d?n l?i ğãng k? dı?i key /graph ? useGuidedTourStore, d?n ğ?n vi?c h? th?ng không t?m th?y k?ch b?n tıõng ?ng ğ? ch?y.
-- **Cách kh?c ph?c:** C?p nh?t file GraphView.vue truy?n c?ng tham s? 	our-key=/graph` cho component <HelpButton /> ğ? nó luôn n?p ğúng k?ch b?n hı?ng d?n b?t k? URL bên ngoài là g?.
+### Bug: Nï¿½t tr? giï¿½p (?) AI khï¿½ng hi?n th? tour hï¿½?ng d?n trong khoï¿½ h?c ï¿½? th?
+- **Nguyï¿½n nhï¿½n:** Nï¿½t HelpButton m?c ï¿½?nh g?i k?ch b?n AI d?a trï¿½n URL hi?n t?i (oute.path). Khi ? trong khoï¿½ h?c, URL lï¿½ d?ng /courses/:id/lessons/:id ch? khï¿½ng ph?i lï¿½ /graph. Trong khi ï¿½ï¿½, k?ch b?n hï¿½?ng d?n l?i ï¿½ï¿½ng k? dï¿½?i key /graph ? useGuidedTourStore, d?n ï¿½?n vi?c h? th?ng khï¿½ng t?m th?y k?ch b?n tï¿½ï¿½ng ?ng ï¿½? ch?y.
+- **Cï¿½ch kh?c ph?c:** C?p nh?t file GraphView.vue truy?n c?ng tham s? 	our-key=/graph` cho component <HelpButton /> ï¿½? nï¿½ luï¿½n n?p ï¿½ï¿½ng k?ch b?n hï¿½?ng d?n b?t k? URL bï¿½n ngoï¿½i lï¿½ g?.
 
-### Bug: N?i dung hı?ng d?n AI (Guided Tour) không kh?p v?i tên g?i công c? trên UI
-- **Nguyên nhân:** L?i tho?i hı?ng d?n c?a tr? l? ?o trong file useGuidedTourStore.ts dùng các thu?t ng? c? ho?c ti?ng Anh (nhı Select, Add Node, Add Edge...) trong khi thanh công c? th?c t? trên UI ğ? ğı?c vi?t hóa (Di chuy?n, + Ğ?nh, ? C?nh, ? Tr?ng s?, ?? Xóa). Ngoài ra, có t?n t?i m?t b?n ghi c?u h?nh tour /graph b? trùng l?p.
-- **Cách kh?c ph?c:** Xóa b? b?n ghi tour c?u h?nh trùng l?p c? và c?p nh?t ğ?ng b? toàn b? n?i dung hı?ng d?n t? bı?c 2 ğ?n bı?c 6 cho kh?p tuy?t ğ?i v?i nh?n (label) c?a các công c? v? trên màn h?nh.
+### Bug: N?i dung hï¿½?ng d?n AI (Guided Tour) khï¿½ng kh?p v?i tï¿½n g?i cï¿½ng c? trï¿½n UI
+- **Nguyï¿½n nhï¿½n:** L?i tho?i hï¿½?ng d?n c?a tr? l? ?o trong file useGuidedTourStore.ts dï¿½ng cï¿½c thu?t ng? c? ho?c ti?ng Anh (nhï¿½ Select, Add Node, Add Edge...) trong khi thanh cï¿½ng c? th?c t? trï¿½n UI ï¿½? ï¿½ï¿½?c vi?t hï¿½a (Di chuy?n, + ï¿½?nh, ? C?nh, ? Tr?ng s?, ?? Xï¿½a). Ngoï¿½i ra, cï¿½ t?n t?i m?t b?n ghi c?u h?nh tour /graph b? trï¿½ng l?p.
+- **Cï¿½ch kh?c ph?c:** Xï¿½a b? b?n ghi tour c?u h?nh trï¿½ng l?p c? vï¿½ c?p nh?t ï¿½?ng b? toï¿½n b? n?i dung hï¿½?ng d?n t? bï¿½?c 2 ï¿½?n bï¿½?c 6 cho kh?p tuy?t ï¿½?i v?i nh?n (label) c?a cï¿½c cï¿½ng c? v? trï¿½n mï¿½n h?nh.
 
-### Bug: Listbox (Dropdown ch?n gi?i thu?t) b? m?, khó nh?n trên n?n tr?ng
-- **Nguyên nhân:** Các th? \<option>\ bên trong dropdown ğang s? d?ng các bi?n màu CSS custom (\g-bg-secondary\, \	ext-text-primary\). Tr?nh duy?t Windows thı?ng không render chu?n các bi?n màu này bên trong component dropdown g?c (native UI), d?n ğ?n vi?c n?n b? tr?ng toát và ch? b? m? nh?t (low contrast).
-- **Cách kh?c ph?c:** Ch?nh s?a file \InteractivePlayground.vue\ và \CustomInputPanel.vue\, g? b? class màu custom và thay th? b?ng h? màu t?nh chu?n c?a Tailwind (ví d?: \g-slate-900 text-slate-100\) ğ? ép bu?c tr?nh duy?t render màu t?i (dark theme) cho toàn b? các m?c ch?n bên trong Listbox.
+### Bug: Listbox (Dropdown ch?n gi?i thu?t) b? m?, khï¿½ nh?n trï¿½n n?n tr?ng
+- **Nguyï¿½n nhï¿½n:** Cï¿½c th? \<option>\ bï¿½n trong dropdown ï¿½ang s? d?ng cï¿½c bi?n mï¿½u CSS custom (\g-bg-secondary\, \	ext-text-primary\). Tr?nh duy?t Windows thï¿½?ng khï¿½ng render chu?n cï¿½c bi?n mï¿½u nï¿½y bï¿½n trong component dropdown g?c (native UI), d?n ï¿½?n vi?c n?n b? tr?ng toï¿½t vï¿½ ch? b? m? nh?t (low contrast).
+- **Cï¿½ch kh?c ph?c:** Ch?nh s?a file \InteractivePlayground.vue\ vï¿½ \CustomInputPanel.vue\, g? b? class mï¿½u custom vï¿½ thay th? b?ng h? mï¿½u t?nh chu?n c?a Tailwind (vï¿½ d?: \g-slate-900 text-slate-100\) ï¿½? ï¿½p bu?c tr?nh duy?t render mï¿½u t?i (dark theme) cho toï¿½n b? cï¿½c m?c ch?n bï¿½n trong Listbox.
 
 ### Sua Loi 177: Vite Import-Analysis Failed Resolve `./components/PseudocodeViewer.vue` Trong `code-editor` Barrel (ERR_VITE_RESOLVE_MISSING_COMPONENT)
 *   **MÃ´ táº£:** Khi load trang chÃ­nh, Vite bÃ¡o lá»—i `[plugin:vite:import-analysis] Failed to resolve import "./components/PseudocodeViewer.vue" from "src/features/code-editor/index.ts". Does the file exist?` trÃªn overlay Ä‘á» che khuáº¥t toÃ n bá»™ UI.
@@ -648,29 +648,77 @@ px vue-tsc --noEmit exit code 0 (toan bo type check pass).
     - **(3)** Thay 8 hÃ m CRUD rá»—ng/sai báº±ng helper crudNotImplemented(action, endpoint) â€” show alert 'Ä‘ang phÃ¡t triá»ƒn' + console.warn + block comment TODO vá»›i fetch boilerplate sáºµn Ä‘á»ƒ uncomment khi backend ready.
 *   **Verify:** ind-missing-imports.cjs âœ“ clean, ind-duplicate-decls.cjs âœ“ clean, ue-tsc --noEmit exit 0.
 
-### S?a L?i 180: Nút "Mô ph?ng thanh toán" Còn Hi?n Th? Trong Production (ERR_SIMULATE_PAYMENT_PROD_LEAK)
-* **Mô t?:** Nút "?? Mô ph?ng: Xác nh?n dã thanh toán" trong PremiumCheckoutView.vue có th? v?n hi?n th? trong production build do ki?m tra isDev chua d? robust.
-* **Mã L?i:** ERR_SIMULATE_PAYMENT_PROD_LEAK
-* **Nguyên nhân g?c:** Vite thay th? import.meta.env.DEV thành false trong production, nhung d? d?m b?o tính v?ng ch?c, c?n ki?m tra c? import.meta.env.PROD.
-* **Cách kh?c ph?c:** C?p nh?t isDev = import.meta.env.DEV && !import.meta.env.PROD trong PremiumCheckoutView.vue.
-* **Verify:** Build production ? nút không xu?t hi?n trong DOM.
+### S?a L?i 180: Nï¿½t "Mï¿½ ph?ng thanh toï¿½n" Cï¿½n Hi?n Th? Trong Production (ERR_SIMULATE_PAYMENT_PROD_LEAK)
+* **Mï¿½ t?:** Nï¿½t "?? Mï¿½ ph?ng: Xï¿½c nh?n dï¿½ thanh toï¿½n" trong PremiumCheckoutView.vue cï¿½ th? v?n hi?n th? trong production build do ki?m tra isDev chua d? robust.
+* **Mï¿½ L?i:** ERR_SIMULATE_PAYMENT_PROD_LEAK
+* **Nguyï¿½n nhï¿½n g?c:** Vite thay th? import.meta.env.DEV thï¿½nh false trong production, nhung d? d?m b?o tï¿½nh v?ng ch?c, c?n ki?m tra c? import.meta.env.PROD.
+* **Cï¿½ch kh?c ph?c:** C?p nh?t isDev = import.meta.env.DEV && !import.meta.env.PROD trong PremiumCheckoutView.vue.
+* **Verify:** Build production ? nï¿½t khï¿½ng xu?t hi?n trong DOM.
 
 ### S?a L?i 181: Difficulty Mismatch Trong TeacherCourseTab (ERR_COURSE_DIFFICULTY_MISMATCH)
-* **Mô t?:** TeacherCourseTab.vue dùng Easy/Medium/Hard trong dropdown, trong khi backend enum CourseDifficulty và view khác dùng Beginner/Intermediate/Advanced.
-* **Mã L?i:** ERR_COURSE_DIFFICULTY_MISMATCH
-* **Nguyên nhân g?c:** TeacherCourseTab vi?t d?c l?p, dropdown difficulty không d?ng b? backend enum.
-* **Cách kh?c ph?c:** C?p nh?t 3 d?a di?m: dropdown options, courseForm default, cancelCourseEdit reset — d?ng b? Beginner/Intermediate/Advanced.
+* **Mï¿½ t?:** TeacherCourseTab.vue dï¿½ng Easy/Medium/Hard trong dropdown, trong khi backend enum CourseDifficulty vï¿½ view khï¿½c dï¿½ng Beginner/Intermediate/Advanced.
+* **Mï¿½ L?i:** ERR_COURSE_DIFFICULTY_MISMATCH
+* **Nguyï¿½n nhï¿½n g?c:** TeacherCourseTab vi?t d?c l?p, dropdown difficulty khï¿½ng d?ng b? backend enum.
+* **Cï¿½ch kh?c ph?c:** C?p nh?t 3 d?a di?m: dropdown options, courseForm default, cancelCourseEdit reset ï¿½ d?ng b? Beginner/Intermediate/Advanced.
 * **Verify:** Vue-tsc --noEmit exit 0, backend build 0 errors.
 
-### S?a L?i 182: D?n d?p Dead Code & Chuy?n d?i System Design Visualization Sang Tài Li?u (ERR_DEAD_CODE_CLEANUP)
-* **Mô t?:** D?n d?p toàn b? dead code (views, features) không còn s? d?ng và chuy?n d?i tính nang tr?c quan hóa thi?t k? h? th?ng thành tài li?u lı thuy?t.
-* **Mã L?i:** ERR_DEAD_CODE_CLEANUP
-* **Nguyên nhân g?c:** Nhi?u views và features dã b? comment out trong routes nhung v?n t?n t?i trong codebase, gây r?i và tang kích thu?c bundle.
-* **Cách kh?c ph?c:**
-    - **Xóa 15 dead views:** AnimationView, CompareView, ConcurrencyView, DebugView, DSAModulesView, LeaderboardView, LearningPathView, MultiViewView, PlaygroundView, StateInspectorView, TimelinePlaybackView, di/, oop/, patterns/, solid/
-    - **Xóa dead feature:** smart-quiz (không du?c import ? dâu)
-    - **Luu ı:** animation-engine du?c gi? l?i vì dang du?c s? d?ng b?i nhi?u features ho?t d?ng (custom-input, code-to-visualization, dsa-modules, e-lecture, interactive-playground, lesson, quiz-system, pseudocode-sync)
-    - **Chuy?n d?i System Design Visualization sang tài li?u:** T?o 5 file markdown trong docs/content/system-design/ (system-design-intro, load-balancer, server-health, packet-routing, replication-lag, failure-handling). Thêm vào docsNavigation.ts. Xóa system-design-viz feature, SystemDesignVizView.vue, route /system, appTabs entry.
+### S?a L?i 182: D?n d?p Dead Code & Chuy?n d?i System Design Visualization Sang Tï¿½i Li?u (ERR_DEAD_CODE_CLEANUP)
+* **Mï¿½ t?:** D?n d?p toï¿½n b? dead code (views, features) khï¿½ng cï¿½n s? d?ng vï¿½ chuy?n d?i tï¿½nh nang tr?c quan hï¿½a thi?t k? h? th?ng thï¿½nh tï¿½i li?u lï¿½ thuy?t.
+* **Mï¿½ L?i:** ERR_DEAD_CODE_CLEANUP
+* **Nguyï¿½n nhï¿½n g?c:** Nhi?u views vï¿½ features dï¿½ b? comment out trong routes nhung v?n t?n t?i trong codebase, gï¿½y r?i vï¿½ tang kï¿½ch thu?c bundle.
+* **Cï¿½ch kh?c ph?c:**
+    - **Xï¿½a 15 dead views:** AnimationView, CompareView, ConcurrencyView, DebugView, DSAModulesView, LeaderboardView, LearningPathView, MultiViewView, PlaygroundView, StateInspectorView, TimelinePlaybackView, di/, oop/, patterns/, solid/
+    - **Xï¿½a dead feature:** smart-quiz (khï¿½ng du?c import ? dï¿½u)
+    - **Luu ï¿½:** animation-engine du?c gi? l?i vï¿½ dang du?c s? d?ng b?i nhi?u features ho?t d?ng (custom-input, code-to-visualization, dsa-modules, e-lecture, interactive-playground, lesson, quiz-system, pseudocode-sync)
+    - **Chuy?n d?i System Design Visualization sang tï¿½i li?u:** T?o 5 file markdown trong docs/content/system-design/ (system-design-intro, load-balancer, server-health, packet-routing, replication-lag, failure-handling). Thï¿½m vï¿½o docsNavigation.ts. Xï¿½a system-design-viz feature, SystemDesignVizView.vue, route /system, appTabs entry.
     - **C?p nh?t visualizerMap.ts:** Chuy?n hu?ng OOP/SOLID/Patterns/DI/SystemDesign t?i DocsView.vue
     - **C?p nh?t LessonStepViz.vue:** Chuy?n hu?ng OOP/SOLID t?i DocsView.vue
 * **Verify:** vue-tsc --noEmit exit 0, frontend tests 688/688 PASS, find-missing-imports.cjs OK, dotnet build 0 errors.
+
+### Sá»­a Lá»—i 183: Audit & Fix ToÃ n Diá»‡n Module algorithm-sandbox (ERR_SANDBOX_ALGORITHM_AUDIT)
+*   **MÃ´ táº£:** RÃ  soÃ¡t toÃ n bá»™ module algorithm-sandbox (7 thuáº­t toÃ¡n, engine, composables, 30+ components) phÃ¡t hiá»‡n vÃ  kháº¯c phá»¥c cÃ¡c lá»—i nghiÃªm trá»ng vá» tÃ­nh Ä‘Ãºng Ä‘áº¯n thuáº­t toÃ¡n, stats khÃ´ng Ä‘á»“ng nháº¥t, edge case crash vÃ  layout vá»¡ trÃªn mÃ n hÃ¬nh tháº¥p.
+*   **Ma Loi:** ERR_SANDBOX_ALGORITHM_AUDIT
+*   **Nguyen nhan goc:**
+    - **(1) CountingSort sai báº£n cháº¥t:** chá»‰ Ä‘áº¿m 1 pass theo chá»¯ sá»‘ hÃ ng Ä‘Æ¡n vá»‹ (`val % 10`, Count cá»‘ Ä‘á»‹nh 10 Ã´) â†’ máº£ng Ä‘a chá»¯ sá»‘ tráº£ vá» káº¿t quáº£ KHÃ”NG sáº¯p xáº¿p nhÆ°ng description tuyÃªn bá»‘ "Ä‘Ã£ sáº¯p xáº¿p"; sá»‘ Ã¢m bá»‹ clamp `Math.max(0,...)` phÃ¡ há»ng thá»© tá»±.
+    - **(2) RadixSort crash vá»›i sá»‘ Ã¢m:** `Math.floor(-3/1) % 10 = -3` â†’ `trackedBuckets[-3].push` nÃ©m TypeError; seed `Math.max(...input, 1)` biáº¿n máº£ng toÃ n Ã¢m thÃ nh crash. `sortedIndices` luÃ´n rá»—ng á»Ÿ má»i frame ká»ƒ cáº£ frame cuá»‘i.
+    - **(3) QuickSort Ä‘á»‡ quy khÃ´ng guard depth:** Lomuto trÃªn máº£ng Ä‘Ã£ sáº¯p xáº¿p â†’ Ä‘á»™ sÃ¢u = n â†’ StackOverflowException (che ngáº§m bá»Ÿi MAX_ELEMENTS=15); hoÃ¡n vá»‹ Ä‘áº·t pivot `[i+1]â†”[high]` khÃ´ng `swaps++` â†’ stats thiáº¿u swap.
+    - **(4) MergeSort Ä‘Ã¡nh dáº¥u sorted quÃ¡ sá»›m:** `sortedIndices` gÃ¡n sau má»—i merge trung gian dÃ¹ pháº§n tá»­ sáº½ bá»‹ merge phÃ­a sau di chuyá»ƒn tiáº¿p; thiáº¿u hoÃ n toÃ n comparisons/writes stats.
+    - **(5) Heap/Bubble empty-array:** máº£ng rá»—ng â†’ `sortedIndices=[0]` + description "Root = undefined"; heap thiáº¿u comparisons.
+    - **(6) BucketSort:** insertion sort trong bucket khÃ´ng Ä‘áº¿m comparisons/swaps; `arrayState` báº¥t Ä‘á»™ng suá»‘t animation (tÆ°Æ¡ng tá»± CountingSort).
+    - **(7) sortingIdEnricher Ä‘á»•i identity:** greedy nearest-value trÃ¡o identity giá»¯a pháº§n tá»­ trÃ¹ng giÃ¡ trá»‹ khi swap nháº£y xa (vd heap [10,5,5] swap [0]â†”[2]).
+    - **(8) UI layout:** VcrDockBar (max-w-2xl centered) Ä‘Ã¨ chá»“ng nÃºt drawer trÃªn mÃ n hÃ¬nh < 800px; Counting/Bucket visualizer bá»‹ clip khÃ´ng scroll trÃªn viewport tháº¥p; Space phÃ­m táº¯t kÃ­ch hoáº¡t kÃ©p khi focus vÃ o nÃºt Play; dispatcher khÃ´ng cÃ³ nhÃ¡nh bubble tÆ°á»ng minh + khÃ´ng cÃ³ empty state khi generator lá»—i; drawer cá»‘ Ä‘á»‹nh w-96 trÃ n viewport háº¹p; useHeapSortVisualizer khá»›p keyword 'hoÃ¡n Ä‘á»•i' khÃ´ng bao giá» trÃºng (generator emit "HoÃ¡n vá»‹") â†’ phase badge sai.
+*   **Cach khac phuc:**
+    - **(1)** Viáº¿t láº¡i `countingSort.ts` thÃ nh LSD counting multi-pass (tá»«ng hÃ ng chá»¯ sá»‘: Count â†’ Prefix Sum â†’ Output), offset giÃ¡ trá»‹ Ã¢m (val - min) Ä‘á»ƒ chá»¯ sá»‘ luÃ´n há»£p lá»‡ [0..9]; `stepIndex` báº¯t Ä‘áº§u tá»« 0; `arrayState` tiáº¿n hÃ³a dáº§n (merged view nÃ©n: pháº§n tá»­ Ä‘Ã£ Ä‘áº·t chiáº¿m vá»‹ trÃ­ á»•n Ä‘á»‹nh, pháº§n cÃ²n láº¡i giá»¯ thá»© tá»±, id luÃ´n duy nháº¥t); frame cuá»‘i `sortedIndices` Ä‘á»§; `activeDigitPlace` phá»¥c vá»¥ visualizer.
+    - **(2)** `radixSort.ts`: offset sá»‘ Ã¢m, bá» seed `1` sai, `sortedIndices` Ä‘á»§ á»Ÿ frame cuá»‘i, máº£ng rá»—ng khÃ´ng crash.
+    - **(3)** `quickSort.ts`: chuyá»ƒn Ä‘á»‡ quy â†’ stack tÆ°á»ng minh (khÃ´ng bao giá» trÃ n stack), `swaps++` khi Ä‘áº·t pivot (stats khá»›p 100% vá»›i swap frames).
+    - **(4)** `mergeSort.ts`: chá»‰ Ä‘Ã¡nh dáº¥u sortedIndices á»Ÿ phÃ©p gá»™p gá»‘c phá»§ toÃ n máº£ng; bá»• sung `comparisons` + `writes` stats.
+    - **(5)** `heapSort.ts`/`bubbleSort.ts`: guard máº£ng rá»—ng (`sortedIndices` khÃ´ng gÃ¡n [0] sai, khÃ´ng in "undefined"); heap bá»• sung `comparisons` khá»›p tá»«ng frame so sÃ¡nh.
+    - **(6)** `bucketSort.ts`: bá»• sung comparisons/swaps (khá»›p sá»‘ frame So sÃ¡nh/HoÃ¡n Ä‘á»•i); pha collect dÃ¹ng merged view tiáº¿n hÃ³a.
+    - **(7)** `sortingIdEnricher.ts`: dÃ¹ng sá»± kiá»‡n `swappedIndices` Ä‘á»ƒ hoÃ¡n Ä‘á»•i identity xÃ¡c Ä‘á»‹nh (giá»¯ nguyÃªn identity chÃ­nh xÃ¡c vá»›i pháº§n tá»­ trÃ¹ng), greedy chá»‰ dÃ¹ng cho ghi Ä‘Ã¨ kiá»ƒu merge.
+    - **(8)** UI: SortingView Ä‘á»•i bottom bar sang flex row (dock `flex-1 min-w-0 max-w-2xl` + drawer `shrink-0` tham gia layout, khÃ´ng chá»“ng láº¥n); guard `BUTTON` trong handleKeydown; Counting/Bucket thÃªm `overflow-y-auto` cho vÃ¹ng tier; dispatcher thÃªm nhÃ¡nh `bubble` + empty/error state; drawer `w-80 max-w-[calc(100vw_-_1.5rem)] max-h-[min(520px,calc(100vh_-_6rem))]`; useHeapSortVisualizer dÃ¹ng `heapSize < total` phÃ¢n biá»‡t BUILD/SORT thay keyword; sá»­a label tooltip heap dÃ¹ng `currentHeapSize`; xÃ³a `as any` trong ArrayBarVisualizer.
+*   **Files sá»­a:** `algorithms/countingSort.ts`, `algorithms/radixSort.ts`, `algorithms/quickSort.ts`, `algorithms/mergeSort.ts`, `algorithms/heapSort.ts`, `algorithms/bubbleSort.ts`, `algorithms/bucketSort.ts`, `helpers/sortingIdEnricher.ts`, `composables/useHeapSortVisualizer.ts`, `components/SortingVisualizerDispatcher.vue`, `components/ArrayBarVisualizer.vue`, `components/CountingSortVisualizer.vue`, `components/BucketSortVisualizer.vue`, `components/SortingDrawerTrace.vue`, `views/sorting/SortingView.vue`, `__tests__/sortingEdgeCases.spec.ts` (má»›i, 27 test)
+*   **Verify:** vitest 822/822 PASS (thÃªm 27 test edge-case), vue-tsc --noEmit exit 0.
+
+### Sá»­a Lá»—i 184: EF Core InMemory NRE khi Clear collection con cÃ³ FK báº¯t buá»™c (ERR_INMEMORY_NAV_CLEAR)
+* **MÃ´ táº£:** Test `UpdateCodelab_WithChildren_ShouldReplaceChildren` nÃ©m `NullReferenceException` táº¡i `InternalEntityEntryNotifier.NavigationCollectionChanged` khi `SaveChangesAsync` trong `UpdateCodelabCommandHandler`.
+* **NguyÃªn nhÃ¢n gá»‘c:** InMemory provider khÃ´ng há»— trá»£ Ä‘Ãºng viá»‡c xÃ³a required dependents qua navigation collection (`codelab.TestCases.Clear()`). ÄÃ¢y lÃ  limitation Ä‘Ã£ biáº¿t cá»§a provider InMemory (EF khuyáº¿n nghá»‹ khÃ´ng dÃ¹ng InMemory Ä‘á»ƒ test).
+* **CÃ¡ch kháº¯c phá»¥c:** Bá» mutation navigation collection trong handler; thay báº±ng `_context.CodelabTestCases.Where(tc => tc.CodelabId == id).ToListAsync()` â†’ `RemoveRange(existing)` â†’ `AddRange(new)`. Files sá»­a: `UpdateCodelabCommand.cs`, `CodelabCrudCommandHandlerTests.cs` (dÃ¹ng `TestCases = new List<...>{...}` thay vÃ¬ collection initializer).
+* **Verify:** dotnet test 40/40 PASS.
+
+### Sá»­a Lá»—i 185: Deserialize JSON `"code": null` vÃ o `int` (ERR_PISTON_NULL_CODE)
+* **MÃ´ táº£:** Test Piston timeout nÃ©m `InvalidOperationException: Cannot get the value of a token type 'Null' as a number.` vÃ¬ Piston tráº£ `"code": null` (kill signal/timeout).
+* **NguyÃªn nhÃ¢n gá»‘c:** `PistonStage.Code` lÃ  `int` nhÆ°ng JSON cá»§a Piston chá»©a `null` khi process bá»‹ timeout/kill.
+* **CÃ¡ch kháº¯c phá»¥c:** Äá»•i `PistonStage.Code` thÃ nh `int?` vÃ  so sÃ¡nh qua `(Code ?? 0)`. Files sá»­a: `PistonCodeJudgeService.cs`.
+* **Verify:** dotnet test 40/40 PASS.
+
+### Sá»­a Lá»—i 186: Mojibake chuá»—i tiáº¿ng Viá»‡t do PowerShell Set-Content -Encoding UTF8 (ERR_MOJIBAKE_PS)
+* **MÃ´ táº£:** File `PistonCodeJudgeService.cs` bá»‹ há»ng chuá»—i tiáº¿ng Viá»‡t ("NgÃƒÂ´n ngÃ¡Â»Â¯..." thay vÃ¬ "NgÃ´n ngá»¯...") sau khi chá»‰nh sá»­a báº±ng `Set-Content -Encoding UTF8` tá»« PowerShell, khiáº¿n test `UnsupportedLanguage` fail khi so khá»›p message.
+* **NguyÃªn nhÃ¢n gá»‘c:** PowerShell 5.1 `Get-Content`/`Set-Content` máº·c Ä‘á»‹nh ANSI/Latin-1; Ä‘á»c file UTF-8 rá»“i ghi láº¡i Ä‘Ã¨ lÃ m double-encode cÃ¡c kÃ½ tá»± Ä‘a byte.
+* **CÃ¡ch kháº¯c phá»¥c:** Ghi láº¡i file báº±ng tool write (UTF-8 Ä‘Ãºng), khÃ´ng dÃ¹ng Set-Content cho file chá»©a kÃ½ tá»± khÃ´ng-ASCII. Verify chuá»—i tiáº¿ng Viá»‡t sau khi ghi.
+* **Verify:** dotnet test 40/40 PASS, message "NgÃ´n ngá»¯ 'x' khÃ´ng Ä‘Æ°á»£c há»— trá»£..." hiá»ƒn thá»‹ Ä‘Ãºng.
+
+### Sá»­a Lá»—i 187: [Authorize(Roles)] tráº£ 403 dÃ¹ token há»£p lá»‡ (ERR_JWT_ROLE_CLAIM)
+* **MÃ´ táº£:** POST /api/v1/codelabs tráº£ 403 dÃ¹ token tháº­t tá»« AuthService cÃ³ claim `"role":"Teacher"`. Má»i endpoint `[Authorize(Roles="Teacher,Admin")]` Ä‘á»u bá»‹ áº£nh hÆ°á»Ÿng.
+* **NguyÃªn nhÃ¢n gá»‘c:** .NET 8+ JwtBearer máº·c Ä‘á»‹nh `MapInboundClaims=true` â€” claim "role" bá»‹ rename thÃ nh `ClaimTypes.Role` (URI dÃ i), trong khi cáº¥u hÃ¬nh `RoleClaimType="role"` khÃ´ng khá»›p claim Ä‘Ã£ rename â†’ identity khÃ´ng cÃ³ role.
+* **CÃ¡ch kháº¯c phá»¥c:** Giá»¯ `MapInboundClaims=true` (toÃ n app Ä‘á»c `ClaimTypes.NameIdentifier`), Ä‘á»•i `RoleClaimType = ClaimTypes.Role` vÃ  `NameClaimType = ClaimTypes.NameIdentifier`. File sá»­a: `Program.cs`. Chi tiáº¿t ADR-22.
+* **Verify:** E2E POST/PUT/DELETE /api/v1/codelabs vá»›i token Teacher â†’ 200.

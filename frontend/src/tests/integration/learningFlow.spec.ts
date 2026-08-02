@@ -1,12 +1,11 @@
-// @ts-nocheck
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { setActivePinia, createPinia } from 'pinia';
-import { useUserProgressStore } from '@/features/gamification/user-progress/store/useUserProgressStore';
-import { useAuthStore } from '@/features/auth/store/useAuthStore';
-import * as api from '@/features/gamification/user-progress/service/userProgressApi';
+import { useUserProgressStore } from '../../features/user-progress/store/useUserProgressStore';
+import { useAuthStore } from '../../features/auth/store/useAuthStore';
+import * as userProgressApi from '../../features/user-progress/service/userProgressApi';
 
 
-vi.mock('@/features/gamification/user-progress/service/userProgressApi', () => {
+vi.mock('../../features/user-progress/service/userProgressApi', () => {
   return {
     fetchUserProgress: vi.fn(),
     syncXPToServer: vi.fn(),
@@ -36,13 +35,16 @@ describe('E2E Learning Flow Integration Test (Vitest Mock)', () => {
     const progressStore = useUserProgressStore();
     
     
-    vi.mocked(api.fetchUserProgress).mockResolvedValueOnce({
+    vi.mocked(userProgressApi.fetchUserProgress).mockResolvedValueOnce({
       totalXP: 100,
       currentLevel: 2,
       xpToNextLevel: 150,
       levelProgressPercent: 50,
+      badgesEarned: 1,
+      modulesCompleted: 1,
       currentStreak: 1,
-      completedModuleIds: ['lesson-1-id'] 
+      completedModuleIds: ['lesson-1-id'],
+      badges: []
     });
 
     await progressStore.loadProgress();
@@ -51,14 +53,12 @@ describe('E2E Learning Flow Integration Test (Vitest Mock)', () => {
     expect(progressStore.isModuleCompleted('quiz-1-id')).toBe(false);
 
     
-    vi.mocked(api.syncXPToServer).mockResolvedValueOnce({
+    vi.mocked(userProgressApi.syncXPToServer).mockResolvedValueOnce({
+      message: 'OK',
       totalXP: 150,
-      currentLevel: 2,
-      xpToNextLevel: 100,
-      levelProgressPercent: 75,
-      currentStreak: 1
+      currentLevel: 2
     });
-    vi.mocked(api.markModuleComplete).mockResolvedValueOnce();
+    vi.mocked(userProgressApi.markModuleComplete).mockResolvedValueOnce();
 
     await progressStore.syncXP(50, 'Completed Quiz 1');
     await progressStore.completeModule('quiz-1-id');
@@ -68,14 +68,12 @@ describe('E2E Learning Flow Integration Test (Vitest Mock)', () => {
 
     
     
-    vi.mocked(api.syncXPToServer).mockResolvedValueOnce({
+    vi.mocked(userProgressApi.syncXPToServer).mockResolvedValueOnce({
+      message: 'OK',
       totalXP: 250,
-      currentLevel: 3,
-      xpToNextLevel: 200,
-      levelProgressPercent: 25,
-      currentStreak: 1
+      currentLevel: 3
     });
-    vi.mocked(api.markModuleComplete).mockResolvedValueOnce();
+    vi.mocked(userProgressApi.markModuleComplete).mockResolvedValueOnce();
 
     await progressStore.syncXP(100, 'Completed Codelab 1');
     await progressStore.completeModule('codelab-1-id');
@@ -89,21 +87,24 @@ describe('E2E Learning Flow Integration Test (Vitest Mock)', () => {
   it('phải tự động rollback trạng thái local nếu Backend từ chối XP (HTTP 400)', async () => {
     const progressStore = useUserProgressStore();
     
-    vi.mocked(api.fetchUserProgress).mockResolvedValue({
+    vi.mocked(userProgressApi.fetchUserProgress).mockResolvedValue({
       totalXP: 50,
       currentLevel: 1,
       xpToNextLevel: 50,
       levelProgressPercent: 50,
+      badgesEarned: 0,
+      modulesCompleted: 0,
       currentStreak: 1,
-      completedModuleIds: []
+      completedModuleIds: [],
+      badges: []
     });
 
     await progressStore.loadProgress();
     expect(progressStore.totalXP).toBe(50);
 
     
-    vi.mocked(api.syncXPToServer).mockRejectedValueOnce(
-      new api.ApiError("Invalid XP submission", 400)
+    vi.mocked(userProgressApi.syncXPToServer).mockRejectedValueOnce(
+      new userProgressApi.ApiError("Invalid XP submission", 400)
     );
 
     await progressStore.syncXP(1000, 'Hacked Quiz');

@@ -15,7 +15,7 @@
         <div class="modal-body versions-list">
           <div v-if="!article?.versions?.length" class="empty-versions">
             <BaseIcon name="git-branch" class="w-12 h-12 text-text-muted mx-auto mb-3" />
-            <p class="text-text-secondary text-center">Chưa có phiên bản nào</p>
+            <p class="text-text-muted text-center">Chưa có phiên bản nào</p>
             <p class="text-text-muted text-sm text-center mt-1">Các phiên bản sẽ xuất hiện khi bạn chỉnh sửa bài viết</p>
           </div>
           
@@ -23,11 +23,11 @@
             <div 
               v-for="(version, index) in article.versions" 
               :key="version.id"
-              class="version-item p-4 rounded-xl border border-border-default bg-bg-primary/40 hover:border-border-accent transition-colors"
+              class="version-item p-4 rounded-xl border border-border-subtle bg-bg-secondary/40 hover:border-accent/20 transition-colors"
             >
               <div class="version-header flex items-center justify-between gap-4 mb-3 flex-wrap">
                 <div class="flex items-center gap-3">
-                  <span class="version-badge text-[10px] font-bold px-2.5 py-1 rounded-full bg-accent/20 text-accent border border-border-accent">
+                  <span class="version-badge text-[10px] font-bold px-2.5 py-1 rounded-full bg-accent/20 text-accent border border-accent/30">
                     v{{ getVersionNumber(article.versions, index) }}
                   </span>
                   <span class="version-date text-xs text-text-muted">
@@ -38,18 +38,18 @@
                   </span>
                 </div>
                 
-                <span v-if="version.changeSummary" class="version-summary text-xs text-text-secondary italic max-w-xs truncate">
+                <span v-if="version.changeSummary" class="version-summary text-xs text-text-muted italic max-w-xs truncate">
                   {{ version.changeSummary }}
                 </span>
               </div>
               
               <div class="version-preview">
-                <div class="preview-content text-xs text-text-secondary line-clamp-3 font-mono bg-bg-primary/50 p-3 rounded-lg border border-border-default">
+                <div class="preview-content text-xs text-text-muted line-clamp-3 font-mono bg-bg-secondary p-3 rounded-lg border border-border-subtle">
                   {{ stripHtml(version.contentMd).substring(0, 200) }}...
                 </div>
               </div>
               
-              <div class="version-actions flex items-center justify-end gap-2 mt-3 pt-3 border-t border-border-default">
+              <div class="version-actions flex items-center justify-end gap-2 mt-3 pt-3 border-t border-border-subtle">
                 <button 
                   type="button" 
                   class="btn-secondary text-xs px-3 py-1.5"
@@ -60,7 +60,7 @@
                 </button>
                 <button 
                   type="button" 
-                  class="btn-action-icon text-text-secondary hover:text-accent p-1.5"
+                  class="btn-action-icon text-text-muted hover:text-accent p-1.5"
                   @click="viewFullVersion(version)"
                   title="Xem đầy đủ"
                 >

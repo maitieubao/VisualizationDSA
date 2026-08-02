@@ -73,7 +73,7 @@
               <span class="font-bold text-text-primary">{{ course.title }}</span>
               <span class="text-accent-purple font-semibold">{{ course.enrollmentsCount }} lượt học</span>
             </div>
-            <div class="w-full bg-bg-primary/80 rounded-full h-3 overflow-hidden border border-border-default">
+            <div class="w-full bg-bg-secondary rounded-full h-3 overflow-hidden border border-border-subtle">
               <div class="bg-gradient-to-r from-accent-purple to-accent h-full rounded-full transition-all duration-1000"
                 :style="{ width: getCoursePercentage(course.enrollmentsCount) + '%' }"></div>
             </div>

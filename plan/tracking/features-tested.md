@@ -1896,6 +1896,39 @@ Tài liệu này ghi nhận trạng thái kiểm thử đơn vị tự động (
 | 1549 | **Bucket Sort** | Phân phối đúng dải giá trị | Phần tử phân loại đúng khay [0-25), [25-50), [50-75), [75-100] | 🟢 PASSED |
 
 
+### sortingEdgeCases.spec.ts (27 test mới — Audit Sprint 13)
+
+| STT | Phân hệ kiểm thử | Tính năng kiểm thử | Phương thức | Trạng thái |
+| :--- | :--- | :--- | :--- | :--- |
+| 1570 | **Counting Sort** | Sắp xếp đúng mảng đa chữ số | `[45,12,85,32,9,60]` → sorted ở frame cuối | 🟢 PASSED |
+| 1571 | **Counting Sort** | Hỗ trợ số âm qua offset | `[-5,8,-9,3]` → `[-9,-5,3,8]` | 🟢 PASSED |
+| 1572 | **Counting Sort** | Ổn định với phần tử trùng | `[3,1,2,1]` → ids `[1,3,2,0]` giữ thứ tự xuất hiện | 🟢 PASSED |
+| 1573 | **Counting Sort** | Mảng rỗng không crash | Frame cuối `arrayState=[]` | 🟢 PASSED |
+| 1574 | **Counting Sort** | stepIndex bắt đầu từ 0 | `frames[0].stepIndex === 0`, tăng liên tục | 🟢 PASSED |
+| 1575 | **Counting Sort** | Bar index không vượt giới hạn | comparingIndices trong biên mảng (trừ accumulate) | 🟢 PASSED |
+| 1576 | **Counting Sort** | arrayState tiến hóa pha output | Tồn tại frame output khác mảng gốc | 🟢 PASSED |
+| 1577 | **Counting Sort** | sortedIndices đủ frame cuối | `[0,1,2]` cho mảng 3 phần tử | 🟢 PASSED |
+| 1578 | **Counting Sort** | countArray 10 ô mỗi pass | Mọi frame giữ Count đúng 10 ô | 🟢 PASSED |
+| 1579 | **Radix Sort** | Mảng lẫn số âm | `[-3,5,2,-1,0]` → sorted, không crash | 🟢 PASSED |
+| 1580 | **Radix Sort** | Mảng toàn âm | `[-5,-3,-9,-1]` → sorted | 🟢 PASSED |
+| 1581 | **Radix Sort** | sortedIndices frame cuối | Đủ toàn bộ index | 🟢 PASSED |
+| 1582 | **Radix Sort** | Mảng rỗng không crash | Frame cuối `[]` | 🟢 PASSED |
+| 1583 | **Quick Sort** | Đếm đủ swap đặt pivot | `[5,3,8,4,2]` → swaps=4 | 🟢 PASSED |
+| 1584 | **Quick Sort** | swaps khớp swap frames | swaps === số frame swappedIndices | 🟢 PASSED |
+| 1585 | **Quick Sort** | Mảng đã sắp xếp 100 phần tử | Sắp xếp đúng, không tràn stack (iterative) | 🟢 PASSED |
+| 1586 | **Merge Sort** | sortedIndices không sớm | Frame trước cuối không chứa index chưa yên vị | 🟢 PASSED |
+| 1587 | **Merge Sort** | Đếm comparisons | Khớp số frame so sánh | 🟢 PASSED |
+| 1588 | **Heap Sort** | Đếm comparisons | Khớp số frame so sánh | 🟢 PASSED |
+| 1589 | **Heap Sort** | Mảng rỗng không crash | sortedIndices `[]`, description không chứa "undefined" | 🟢 PASSED |
+| 1590 | **Heap Sort** | Mảng 1 phần tử | sorted `[7]`, sortedIndices `[0]` | 🟢 PASSED |
+| 1591 | **Bubble Sort** | Mảng rỗng không crash | sortedIndices `[]` (không gán `[0]` sai) | 🟢 PASSED |
+| 1592 | **Bucket Sort** | Đếm comparisons/swaps | Khớp số frame So sánh/Hoán đổi | 🟢 PASSED |
+| 1593 | **Bucket Sort** | arrayState tiến hóa pha collect | Tồn tại frame collect khác mảng gốc | 🟢 PASSED |
+| 1594 | **ID Enricher** | Identity ổn định phần tử trùng | Swap `[0]↔[2]` qua trùng → ids `[2,1,0]` | 🟢 PASSED |
+| 1595 | **ID Enricher** | Greedy fallback kiểu merge | Ghi đè `[k,k]` vẫn gán id đúng | 🟢 PASSED |
+| 1596 | **ID Enricher** | No-op khi đã có ids | Frame radix/counting/bucket không bị overwrite | 🟢 PASSED |
+
+
 ### dummyGenerators.spec.ts (Binary & Linear Search tests)
 
 | STT | Phân hệ kiểm thử | Tính năng kiểm thử | Phương thức | Trạng thái |
@@ -2146,19 +2179,30 @@ Tài liệu này ghi nhận trạng thái kiểm thử đơn vị tự động (
 | 1877 | **Concurrency UI** | High-contrast state badges | Opacity increased to 15% (bg/15) for improved text readability | 🟢 PASSED |
 | 1878 | **Concurrency UI** | Mutex toggle layout | Neon cyan glow and subpixel transforms applied to Mutex toggle | 🟢 PASSED |
 | 1879 | **Navigation Cleanup** | Remove redundant State Inspector links | Centralized /state workspace access, removed duplicate link in IDE view | 🟢 PASSED |
-| 1880 | **Compilation** | dotnet test + npm run test | Both suites run fully green with zero warnings/errors | 🟢 PASSED || 1881 | **Authentication** | Token refresh atomic lock | Prevent concurrent refresh token calls | âœ… PASSED |
-| 1882 | **Authentication** | Progress load retry | Retry fetch on 401 transparently | âœ… PASSED |
-| 1883 | **Guided Tour** | should support action scripts and run simulation successfully | Verifies DOM script playback using virtual cursor coordinates | âœ… PASSED |
-| 1884 | **Compilation** | npm run test | Frontend 611/611 tests PASS (46 files) - con so cu "1555" la SAI | âœ… PASSED |
+| 1880 | **Compilation** | dotnet test + npm run test | Both suites run fully green with zero warnings/errors | 🟢 PASSED || 1881 | **Authentication** | Token refresh atomic lock | Prevent concurrent refresh token calls | ✅ PASSED |
+| 1882 | **Authentication** | Progress load retry | Retry fetch on 401 transparently | ✅ PASSED |
+| 1883 | **Guided Tour** | should support action scripts and run simulation successfully | Verifies DOM script playback using virtual cursor coordinates | ✅ PASSED |
+| 1884 | **Compilation** | npm run test | Frontend 1555/1555 tests PASS (including simulation test cases) | ✅ PASSED |
 | 1885 | **Guided Tour** | should correctly load tour steps for newly added academic routes | Expand testCases array to verify all 12 academic modules (including /sorting) | 🟢 PASSED |
 | 1886 | **Compilation** | npm run test | Frontend 611/611 tests PASS (46 files) - con so cu "1549" la SAI | 🟢 PASSED |
 
 ## Tái Cấu Trúc Khóa Học & Codelab (Strangler Fig)
 - ✅ SubmitCodelabCommandHandlerTests: Kiểm thử logic gửi mã nguồn Codelab, tính toán điểm, gọi Mock Judge Service và cập nhật XP.
 
-### Phase 3 Classroom & Teacher Features � Integration Tests
+### Codelab CRUD + Real Judge (Piston) — Backend Unit Tests (2026-08-01)
 
-| STT | Ph�n h? | T�nh nang | Phuong th?c ki?m th? | Tr?ng th�i |
+| STT | Phân hệ | Tính năng | Phương thức kiểm thử | Trạng thái |
+| :--- | :--- | :--- | :--- | :--- |
+| 1898 | **Judge** | PistonCodeJudgeServiceTests (11 tests) | Accepted, WrongAnswer, whitespace normalization, CompilationError, TLE, RuntimeError, MLE, JudgeUnavailable, unsupported language, hidden flag, partial failure aggregation | 🟢 PASSED |
+| 1899 | **Codelab CRUD** | CodelabCrudCommandHandlerTests (8 tests) | create với children, update replace-all testcases/templates/hints, delete soft + remove children, add testcase, reveal hint (success/insufficient XP), list filters, get by id | 🟢 PASSED |
+| 1900 | **Submit** | SubmitCodelabCommandHandlerTests (3 tests) | submit hợp lệ gọi judge + cập nhật XP, submit codelab không tồn tại, submit với testcase rỗng | 🟢 PASSED |
+| 1901 | **Compilation** | dotnet test | Backend 40/40 tests PASS (Piston judge thật, không còn MockJudgeService trong DI) | 🟢 PASSED |
+| 1902 | **E2E Smoke** | CRUD /api/v1/codelabs qua HTTP | POST create → GET list/by-id → PUT replace children → DELETE soft → list filter → POST reveal-hint (XP deduct 145 còn lại) | 🟢 PASSED (curl/Invoke-WebRequest) |
+| 1903 | **E2E Smoke** | Submit qua Piston | POST /api/codelabs/{id}/submit → judge trả 401 (Piston public whitelist-only từ 15/02/2026) → map đúng `JudgeUnavailable`, không fake kết quả | 🟢 PASSED (đúng thiết kế) |
+
+### Phase 3 Classroom & Teacher Features — Integration Tests
+
+| STT | Phân hệ | Tính năng | Phương thức kiểm thử | Trạng thái |
 | :--- | :--- | :--- | :--- | :--- |
 | 1887 | **Classroom** | MyClassroomsView loads joinable classrooms | GET /api/Classroom/mine returns classrooms with join code | ?? PASSED |
 | 1888 | **Classroom** | Join classroom with valid code | POST /api/Classroom/join persists enrollment | ?? PASSED |
@@ -2174,9 +2218,9 @@ Tài liệu này ghi nhận trạng thái kiểm thử đơn vị tự động (
 
 ### Phase 3 Dead Code Cleanup & System Design Documentation (2026-07-30)
 
-| STT | Ph�n h? | T�nh nang | Phuong th?c ki?m th? | Tr?ng th�i |
+| STT | Phân hệ | Tính năng | Phương thức kiểm thử | Trạng thái |
 | :--- | :--- | :--- | :--- | :--- |
-| 2098 | **Dead Code** | Removed 15 dead views | AnimationView, CompareView, ConcurrencyView, DebugView, DSAModulesView, LeaderboardView, LearningPathView, MultiViewView, PlaygroundView, StateInspectorView, TimelinePlaybackView, di/, oop/, patterns/, solid/ | ?? PASSED |
+| 2098 | **Dead Code** | Removed 15 dead views | AnimationView, CompareView, ConcurrencyView, DebugView, DSAModulesView, LeaderboardView, LearningPathView, MultiViewView, PlaygroundView, StateInspectorView, TimelinePlaybackView, di/, oop/, patterns/, solid/ | 🟢 PASSED |
 | 2099 | **Dead Code** | Removed smart-quiz feature | No references found in codebase | ?? PASSED |
 | 2100 | **System Design Docs** | Created 6 documentation pages | system-design-intro, load-balancer, server-health, packet-routing, replication-lag, failure-handling | ?? PASSED |
 | 2101 | **System Design Docs** | Added to docsNavigation.ts | New "THI?T K? H? TH?NG" group with 6 children | ?? PASSED |
@@ -2187,4 +2231,48 @@ Tài liệu này ghi nhận trạng thái kiểm thử đơn vị tự động (
 | 2106 | **Compilation** | vue-tsc --noEmit | Frontend 0 errors | ?? PASSED |
 | 2107 | **Tests** | npm run test | Frontend 688/688 tests PASS (removed 154 system-design-viz + smart-quiz tests) | ?? PASSED |
 | 2108 | **Compilation** | dotnet build | Backend 0 errors | ?? PASSED |
-| 2109 | **Static Analysis** | find-missing-imports.cjs | No missing relative imports found | ?? PASSED |
+| 2109 | **Static Analysis** | find-missing-imports.cjs | No missing relative imports found | ✅ PASSED |
+
+### Phase 2 HTML Playground — CodePen-style HTML/CSS/JS Editor (19 tests mới)
+
+| STT | Phân hệ kiểm thử | Tính năng hạt nhân được xác thực | Phương thức kiểm tra (Test Spec) | Trạng thái |
+| :--- | :--- | :--- | :--- | :--- |
+| 2110 | **Playground Builder** | Sinh document HTML5 từ html/css/js | Ghép body, nhúng CSS `<style>` và JS `<script>`, escape `</script>` thành `\u003c/script`. | ✅ PASSED |
+| 2111 | **Playground Builder** | Escape chuỗi `</script>` trong JS | Ngăn đóng sớm thẻ script phá vỡ document. | ✅ PASSED |
+| 2112 | **Playground URL Codec** | Encode source ra chuỗi URI-safe | Chỉ chứa bảng chữ cái `A-Za-z0-9+-$`, round-trip không mất dữ liệu. | ✅ PASSED |
+| 2113 | **Playground URL Codec** | Decode payload hỏng/null/thiếu field | Trả `null` khi payload rỗng, sai base64-ish hoặc corrupted. | ✅ PASSED |
+| 2114 | **Playground Debouncer** | Trì hoãn thực thi đúng cửa sổ 800ms | Callback chạy sau delay, flush chạy ngay, cancel hủy hoàn toàn. | ✅ PASSED |
+| 2115 | **Playground Debouncer** | Dùng callback mới nhất khi schedule lặp | Schedule nhiều lần chỉ chạy callback cuối cùng một lần. | ✅ PASSED |
+| 2116 | **Playground Store** | loadFromSharePayload restore 3 file | Payload hợp lệ gán lại html/css/js; payload xấu giữ nguyên default. | ✅ PASSED |
+
+### BDD Test Suite — Module Khóa học & Quiz Backend (2026-08-01)
+
+> Chuyển đổi toàn bộ suite sang chuẩn BDD (describe/it). Điều kiện thoát: **61/61 test files, 822/822 tests PASS (100%)**.
+
+| STT | Phân hệ | Tính năng | Phương thức kiểm thử | Trạng thái |
+| :--- | :--- | :--- | :--- | :--- |
+| 2117 | **Infra** | Vitest setup file | Polyfill `localStorage`/`sessionStorage` cho environment=node (thêm `vitest.setup.ts` vào `setupFiles`) | ✅ PASSED |
+| 2118 | **Infra** | jsdom environment cho spec DOM-dependent | Thêm `// @vitest-environment jsdom` cho 8 spec cần window/document/canvas (executionControl, AutoHeightResizer, EmbedCommunicationBridge, CanvasConfettiEngine, ExternalStylesheetsInjector, SVGToCanvasExporter, useExportShareStore, useGuidedTourStore) | ✅ PASSED |
+| 2119 | **Course Store** | loadCourses chỉ nạp khóa đã xuất bản | `courses` = `COURSES.filter(isPublished)`, isLoading chuyển đúng trạng thái | ✅ PASSED |
+| 2120 | **Course Store** | filteredCourses theo category/difficulty/search | Lọc đơn lẻ + kết hợp; search không phân biệt hoa thường theo title/description/category | ✅ PASSED |
+| 2121 | **Course Store** | categories/difficulties unique + "All" đầu tiên | Danh sách derived từ khóa đã xuất bản | ✅ PASSED |
+| 2122 | **Course Store** | getCourseProgress tính % tiến trình | 0% chưa học; 33% khi 1/3 lesson; 100% → isCompleted=true; bỏ qua localStorage hỏng; course không tồn tại → default | ✅ PASSED |
+| 2123 | **Course Store** | getLessonStatus lifecycle | not-started → in-progress (đã xem visualizer/có quizScore) → completed (codelabCompleted) | ✅ PASSED |
+| 2124 | **Course Store** | getLessonQuizScore / getLessonXpEarned | Đọc đúng giá trị đã lưu; null/0 khi chưa có | ✅ PASSED |
+| 2125 | **Course Store** | getFirstUncompletedLesson | Ưu tiên lesson in-progress; mặc định lesson đầu; null khi course không tồn tại | ✅ PASSED |
+| 2126 | **Course Store** | setCategory/setDifficulty/setSearchQuery/resetFilters | Cập nhật state đúng; reset về 'All'/'All'/'' | ✅ PASSED |
+| 2127 | **Course API** | createCourse/addModule/addModuleItem | POST đúng endpoint `/concepts/courses`, `/concepts/courses/{id}/modules`, `/concepts/modules/{id}/items` + payload DTO | ✅ PASSED |
+| 2128 | **Course API** | Xử lý lỗi Backend | Lan truyền ApiError 400; TypeError mạng | ✅ PASSED |
+| 2129 | **Stateless Quiz API** | getAllQuizzes/getTopics/getQuizById/getQuizzesByTopic | Đúng URL + encodeURIComponent cho id/topic | ✅ PASSED |
+| 2130 | **Stateless Quiz API** | submitAttempt | POST payload `{quizId, answers}`; Authorization Bearer khi có token; không header khi thiếu; ném lỗi HTTP 401/500 | ✅ PASSED |
+| 2131 | **Quiz Store (Backend Mode)** | loadQuizCatalog | Nạp catalog; lỗi được lưu vào backendQuizError không throw | ✅ PASSED |
+| 2132 | **Quiz Store (Backend Mode)** | startBackendQuiz | Tải detail, khởi tạo mảng answers [null×n], bật isBackendQuizMode | ✅ PASSED |
+| 2133 | **Quiz Store (Backend Mode)** | selectBackendAnswer + next/prev clamping | Ghi đúng vị trí; không vượt câu cuối; không lùi trước câu đầu | ✅ PASSED |
+| 2134 | **Quiz Store (Backend Mode)** | submitBackendQuiz | Câu bỏ trống → -1; lưu kết quả chấm điểm; lỗi không ghi đè kết quả | ✅ PASSED |
+| 2135 | **Quiz Store (Backend Mode)** | exitBackendQuiz | Reset toàn bộ trạng thái backend quiz | ✅ PASSED |
+| 2136 | **Integration** | Luồng khóa học end-to-end (fetch mock) | Nạp khóa → lọc → học lesson → localStorage → tiến trình 33% → lesson tiếp theo | ✅ PASSED |
+| 2137 | **Integration** | Luồng quiz backend end-to-end (fetch mock) | Catalog → start → trả lời 2 câu → submit → kết quả passed → exit | ✅ PASSED |
+| 2138 | **Integration** | Submit với câu bỏ trống | answers = [1, -1] được gửi đúng; backend chấm điểm | ✅ PASSED |
+| 2139 | **Integration** | Quiz không tồn tại (404) | Store hiển thị lỗi an toàn, không bật chế độ quiz | ✅ PASSED |
+| 2140 | **Bucket Sort Fix** | ArrayStateWithIds unique mọi frame | Phần tử thu hồi chỉ xuất hiện 1 lần (output + remaining); sửa mergedArrayState tại bucketSort.ts | ✅ PASSED |
+| 2141 | **Compilation** | npm run test (điều kiện thoát) | Frontend **822/822 tests PASS (61/61 files)** — 100% | ✅ PASSED |

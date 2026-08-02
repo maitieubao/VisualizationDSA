@@ -9,7 +9,7 @@ import 'aos/dist/aos.css'
 import Particles from '@tsparticles/vue3'
 import { loadSlim } from '@tsparticles/slim'
 import { useAuthStore } from './features/auth/store/useAuthStore'
-import { useUserProgressStore } from './features/gamification/user-progress/store/useUserProgressStore'
+import { useUserProgressStore } from './features/user-progress/store/useUserProgressStore'
 
 import BaseIcon from './shared/components/BaseIcon.vue'
 

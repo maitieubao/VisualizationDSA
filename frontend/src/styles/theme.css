@@ -106,10 +106,69 @@
   --color-dot-min:     #F59E0B;
   --color-dot-max:     #10B981;
 
-  /* ── BORDERS (Indigo tinted) ── */
-  --color-border-subtle:     rgba(79, 70, 229, 0.05);
-  --color-border-default:    rgba(79, 70, 229, 0.12);
-  --color-border-strong:     rgba(79, 70, 229, 0.25);
+  
+  
+  --color-accent-green:       #23b26d;
+  --color-accent-green-light: #2fd484;
+  --color-accent-green-glow:  rgba(35, 178, 109, 0.28);
+  --color-accent-green-dim:   rgba(35, 178, 109, 0.12);
+
+  
+  
+  --color-accent-blue:       #75b3ff;
+  --color-accent-blue-light: #9ac8ff;
+  --color-accent-blue-glow:  rgba(117, 179, 255, 0.25);
+  --color-accent-blue-dim:   rgba(117, 179, 255, 0.12);
+
+  
+  
+  --color-accent-red:       #ff4136;
+  --color-accent-red-light: #ff6b63;
+  --color-accent-red-glow:  rgba(255, 65, 54, 0.28);
+  --color-accent-red-dim:   rgba(255, 65, 54, 0.12);
+
+  
+  
+  --color-accent-yellow:       #ffcd3c;
+  --color-accent-yellow-light: #ffe066;
+  --color-accent-yellow-glow:  rgba(255, 205, 60, 0.28);
+  --color-accent-yellow-dim:   rgba(255, 205, 60, 0.12);
+
+  
+  
+  --color-accent-cyan:      #06b6d4;
+  --color-accent-cyan-light: #67e8f9;
+  --color-accent-cyan-glow:  rgba(6, 182, 212, 0.25);
+  --color-accent-cyan-dim:   rgba(6, 182, 212, 0.12);
+
+  
+  
+  --color-accent-purple:      #c084fc;
+  --color-accent-purple-light:#d8b4fe;
+  --color-accent-purple-glow:  rgba(192, 132, 252, 0.28);
+  --color-accent-purple-dim:   rgba(192, 132, 252, 0.12);
+
+  
+  --color-syntax-keyword:    #6b7bff;
+  --color-syntax-string:     #23b26d;
+  --color-syntax-number:     #ffcd3c;
+  --color-syntax-comment:    #5c6382;
+  --color-syntax-type:       #75b3ff;
+  --color-syntax-variable:   #ffffff;
+  --color-syntax-function:   #c084fc;
+  --color-syntax-operator:   #939bb4;
+  --color-syntax-punctuation:#939bb4;
+
+  
+  --color-dot-close:   #ff5f57;
+  --color-dot-min:     #febc2e;
+  --color-dot-max:     #28c840;
+
+  
+  
+  --color-border-subtle:     rgba(255, 255, 255, 0.07);
+  --color-border-default:    rgba(255, 255, 255, 0.10);
+  --color-border-strong:     rgba(255, 255, 255, 0.18);
   --color-border-focus:      var(--color-accent-primary);
   --color-border-accent:     rgba(79, 70, 229, 0.35);
   --color-border-card:       rgba(79, 70, 229, 0.15);

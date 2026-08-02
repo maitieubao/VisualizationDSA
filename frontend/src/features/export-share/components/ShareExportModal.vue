@@ -10,7 +10,7 @@
         <h2 class="share-dialog-title">XUẤT SƠ ĐỒ / SHARE</h2>
 
         
-        
+        <ExportFormatSelector />
 
         
         <button
@@ -22,7 +22,7 @@
         </button>
 
         
-        
+        <ExportProgressBar />
 
         
         <div class="divider" />
@@ -57,7 +57,7 @@
         </div>
 
         
-        
+        <QRCodeDisplay />
 
         
         <button class="close-btn" @click="store.closeModal()">Đóng</button>
@@ -69,7 +69,9 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { useExportShareStore } from '../store/useExportShareStore';
-
+import ExportFormatSelector from './ExportFormatSelector.vue';
+import ExportProgressBar from './ExportProgressBar.vue';
+import QRCodeDisplay from './QRCodeDisplay.vue';
 import type { WorkspaceState } from '../types/export-share.types';
 
 const store = useExportShareStore();

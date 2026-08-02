@@ -5,5 +5,5 @@
 </template>
 
 <script setup lang="ts">
-import { GamificationWorkspace } from '@/features/gamification/gamification-engine';
+import { GamificationWorkspace } from '../../features/gamification-engine';
 </script>

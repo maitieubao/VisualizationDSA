@@ -1,10 +1,10 @@
 <template>
-  <div class="lesson-discussion bg-bg-surface border border-border-default rounded-3xl p-6 flex flex-col h-full overflow-hidden text-text-secondary">
+  <div class="lesson-discussion bg-bg-secondary/40 border border-border-subtle rounded-3xl p-6 flex flex-col h-full overflow-hidden text-text-secondary">
     <div class="flex items-center justify-between mb-4 flex-shrink-0">
-      <h3 class="text-sm font-black text-text-primary flex items-center gap-2">
-        <BaseIcon name="message-circle" class="w-4 h-4" /> THáº¢O LUáº¬N & Há»ŽI ÄÃP
+      <h3 class="text-sm font-black text-white flex items-center gap-2">
+        💬 THẢO LUẬN & HỎI ĐÁP
         <span class="px-2 py-0.5 rounded-full bg-accent/20 text-accent text-[10px] font-bold">
-          {{ comments.length }} bÃ¬nh luáº­n
+          {{ comments.length }} bình luận
         </span>
       </h3>
       <button 
@@ -19,18 +19,21 @@
     
     <div class="mb-4 flex-shrink-0">
       <div class="relative">
-        <BaseIcon name="search" class="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-text-muted" />
+        <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-text-muted" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <circle cx="11" cy="11" r="8"/>
+          <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+        </svg>
         <input
           v-model="searchQuery"
           type="text"
-          placeholder="TÃ¬m kiáº¿m trong tháº£o luáº­n..."
-          class="w-full bg-bg-primary border border-border-default rounded-xl pl-9 pr-3 py-2 text-xs focus:border-border-accent focus:outline-none text-text-primary placeholder:text-text-muted transition-colors"
+          placeholder="Tìm kiếm trong thảo luận..."
+          class="w-full bg-bg-secondary border border-border-subtle rounded-xl pl-9 pr-3 py-2 text-xs focus:border-accent focus:outline-none text-white placeholder-text-muted transition-colors"
           @input="debouncedSearch"
         />
         <button
           v-if="searchQuery"
           @click="clearSearch"
-          class="absolute right-2 top-1/2 -translate-y-1/2 text-text-muted hover:text-text-primary transition-colors text-xs"
+          class="absolute right-2 top-1/2 -translate-y-1/2 text-text-muted hover:text-white transition-colors text-xs"
         >
           <BaseIcon name="close" class="w-3 h-3" />
         </button>
@@ -45,20 +48,20 @@
     
     <div class="flex-1 overflow-y-auto pr-2 scrollbar-thin space-y-4 mb-4">
       <div v-if="loading && comments.length === 0" class="h-32 flex items-center justify-center text-xs text-text-muted">
-        <div class="inline-block w-4 h-4 border-2 border-border-accent border-t-indigo-400 rounded-full animate-spin mr-2"></div>
-        Äang táº£i cÃ¡c tháº£o luáº­n...
+        <div class="inline-block w-4 h-4 border-2 border-accent/20 border-t-indigo-400 rounded-full animate-spin mr-2"></div>
+        Đang tải các thảo luận...
       </div>
 
       <div v-else-if="rootComments.length === 0" class="h-32 flex flex-col items-center justify-center text-xs text-text-muted text-center">
-        <BaseIcon name="message-circle" class="w-8 h-8 mb-1 text-text-muted" />
-        ChÆ°a cÃ³ tháº£o luáº­n nÃ o cho bÃ i há»c nÃ y.
-        <span class="text-[10px] text-text-muted mt-0.5">Äáº·t cÃ¢u há»i Ä‘áº§u tiÃªn cá»§a báº¡n á»Ÿ dÆ°á»›i!</span>
+        <div class="text-2xl mb-1">💬</div>
+        Chưa có thảo luận nào cho bài học này.
+        <span class="text-[10px] text-text-disabled mt-0.5">Đặt câu hỏi đầu tiên của bạn ở dưới!</span>
       </div>
 
       
       <div v-else v-for="comment in rootComments" :key="comment.id" class="space-y-3">
         
-        <div class="p-4 bg-bg-surface/[0.02] border border-border-default rounded-2xl hover:border-border-default transition-all">
+        <div class="p-4 bg-white/[0.02] border border-border-subtle rounded-2xl hover:border-border-subtle transition-all">
           <div class="flex items-start justify-between gap-3">
             <div class="flex items-center gap-2">
               
@@ -77,7 +80,7 @@
                   </span>
                   <span 
                     v-else-if="comment.role === 'Teacher'" 
-                    class="px-1.5 py-0.2 text-[8px] font-extrabold uppercase rounded bg-accent-warm/20 text-accent-warm border border-accent-warm/10"
+                    class="px-1.5 py-0.2 text-[8px] font-extrabold uppercase rounded bg-accent-yellow/20 text-accent-yellow border border-accent-yellow/10"
                   >
                     Teacher
                   </span>
@@ -105,8 +108,8 @@
         </div>
 
         
-        <div class="pl-8 space-y-2 border-l border-border-accent/10">
-          <div v-for="reply in getReplies(comment.id)" :key="reply.id" class="p-3 bg-bg-surface/[0.01] border border-border-default rounded-xl">
+        <div class="pl-8 space-y-2 border-l border-accent/10">
+          <div v-for="reply in getReplies(comment.id)" :key="reply.id" class="p-3 bg-white/[0.01] border border-border-subtle rounded-xl">
             <div class="flex items-start gap-2">
               <div class="w-6 h-6 rounded-full bg-accent-purple/20 text-accent-purple flex items-center justify-center font-bold text-[10px] capitalize flex-shrink-0">
                 {{ reply.username.charAt(0) }}
@@ -122,7 +125,7 @@
                   </span>
                   <span 
                     v-else-if="reply.role === 'Teacher'" 
-                    class="px-1.5 py-0.2 text-[8px] font-extrabold uppercase rounded bg-accent-warm/20 text-accent-warm border border-accent-warm/10"
+                    class="px-1.5 py-0.2 text-[8px] font-extrabold uppercase rounded bg-accent-yellow/20 text-accent-yellow border border-accent-yellow/10"
                   >
                     Teacher
                   </span>
@@ -134,23 +137,23 @@
           </div>
 
           
-          <div v-if="replyingToId === comment.id" class="p-3 bg-accent/5 border border-border-accent/15 rounded-xl space-y-2">
+          <div v-if="replyingToId === comment.id" class="p-3 bg-accent/5 border border-accent/15 rounded-xl space-y-2">
             <textarea 
               v-model="replyText" 
-              placeholder="Nháº­p ná»™i dung cÃ¢u tráº£ lá»i..." 
-              class="w-full h-16 bg-bg-primary border border-border-default rounded-lg p-2 text-xs focus:border-border-accent focus:outline-none resize-none text-text-primary"
+              placeholder="Nhập nội dung câu trả lời..." 
+              class="w-full h-16 bg-bg-secondary border border-border-subtle rounded-lg p-2 text-xs focus:border-accent focus:outline-none resize-none text-white"
             ></textarea>
             <div class="flex items-center justify-end gap-2">
               <button 
                 @click="replyingToId = null" 
-                class="px-2.5 py-1 text-[10px] bg-bg-surface text-text-secondary font-bold rounded-lg border border-border-default hover:bg-bg-surface transition-all"
+                class="px-2.5 py-1 text-[10px] bg-bg-hover text-text-muted font-bold rounded-lg border border-border-subtle hover:bg-bg-hover transition-all"
               >
                 Há»§y
               </button>
               <button 
                 @click="submitComment(comment.id)" 
                 :disabled="submitting || !replyText.trim()"
-                class="px-3 py-1 text-[10px] bg-accent text-text-primary font-bold rounded-lg hover:bg-accent transition-all disabled:opacity-50"
+                class="px-3 py-1 text-[10px] bg-accent text-white font-bold rounded-lg hover:bg-accent transition-all disabled:opacity-50"
               >
                 {{ submitting ? 'Äang gá»­i...' : 'Gá»­i tráº£ lá»i' }}
               </button>
@@ -161,18 +164,18 @@
     </div>
 
     
-    <div class="border-t border-border-default pt-4 flex-shrink-0 space-y-2">
+    <div class="border-t border-border-subtle pt-4 flex-shrink-0 space-y-2">
       <textarea 
         v-model="newCommentText" 
-        placeholder="Äáº·t cÃ¢u há»i hoáº·c chia sáº» Ã½ kiáº¿n vá» bÃ i há»c nÃ y..." 
-        class="w-full h-20 bg-bg-primary border border-border-default rounded-xl p-3 text-xs focus:border-border-accent focus:outline-none resize-none text-text-primary scrollbar-none"
+        placeholder="Đặt câu hỏi hoặc chia sẻ ý kiến về bài học này..." 
+        class="w-full h-20 bg-bg-secondary border border-border-subtle rounded-xl p-3 text-xs focus:border-accent focus:outline-none resize-none text-white scrollbar-none"
       ></textarea>
       <div class="flex items-center justify-between">
-        <span class="text-[10px] text-text-muted">Tá»‘i Ä‘a 2000 kÃ½ tá»±. Vui lÃ²ng tÃ´n trá»ng ná»™i quy tháº£o luáº­n.</span>
+        <span class="text-[10px] text-text-muted">Tối đa 2000 ký tự. Vui lòng tôn trọng nội quy thảo luận.</span>
         <button 
           @click="submitComment(null)" 
           :disabled="submitting || !newCommentText.trim()"
-          class="px-4 py-2 bg-gradient-to-r from-accent to-accent-purple text-text-primary font-bold rounded-xl hover:from-accent hover:to-accent-purple transition-all text-xs disabled:opacity-50 shadow-lg shadow-indigo-600/10"
+          class="px-4 py-2 bg-gradient-to-r from-accent to-accent-purple text-white font-bold rounded-xl hover:from-accent hover:to-accent-purple transition-all text-xs disabled:opacity-50 shadow-lg shadow-accent/10"
         >
           {{ submitting ? 'Äang gá»­i...' : 'ÄÄƒng tháº£o luáº­n' }} <BaseIcon v-if="!submitting" name="message-circle" class="w-3.5 h-3.5 inline-block ml-1 align-text-bottom" />
         </button>

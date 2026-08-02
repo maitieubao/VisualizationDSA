@@ -34,7 +34,7 @@
         <span class="text-3xl font-extrabold text-[var(--color-gold)] font-mono">199.000đ</span>
         <span class="text-xs text-[var(--text-muted)] line-through">499.000đ</span>
       </div>
-      <p class="text-[10px] text-accent-green/80 mt-2 font-medium"><BaseIcon name="star" class="w-3 h-3 inline-block mr-1 align-text-bottom" />Thanh toán một lần duy nhất, sở hữu mãi mãi.</p>
+      <p class="text-[10px] text-accent-green/80 mt-2 font-medium">★ Thanh toán một lần duy nhất, sở hữu mãi mãi.</p>
     </div>
   </div>
 </template>

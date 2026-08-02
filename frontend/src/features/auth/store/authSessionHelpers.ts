@@ -1,6 +1,6 @@
 import type { Ref } from 'vue';
 import * as authApi from '@/features/auth/services/authApi';
-import { useGamificationStore } from '@/features/gamification/gamification-engine/store/useGamificationStore';
+import { useGamificationStore } from '@/features/gamification-engine/store/useGamificationStore';
 
 const REFRESH_TOKEN_KEY  = 'vdsa_refresh_token';
 const ACCESS_EXPIRES_KEY = 'vdsa_access_expires'; 

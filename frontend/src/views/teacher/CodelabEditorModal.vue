@@ -96,17 +96,17 @@
               Chưa có gợi ý nào. <button type="button" class="text-accent hover:underline" @click="addHint">Thêm gợi ý đầu tiên</button>
             </div>
             <div v-else class="space-y-3">
-              <div v-for="(hint, idx) in form.hints" :key="idx" class="hint-row p-3 rounded-lg border border-border-default bg-bg-primary/50 flex items-start gap-3">
-                <span class="text-sm text-text-secondary font-mono w-6">{{ idx + 1 }}.</span>
+              <div v-for="(hint, idx) in form.hints" :key="idx" class="hint-row p-3 rounded-lg border border-border-subtle bg-bg-secondary flex items-start gap-3">
+                <span class="text-sm text-text-muted font-mono w-6">{{ idx + 1 }}.</span>
                 <div class="flex-1 min-w-0 space-y-2">
                   <input v-model="hint.content" type="text" class="form-input" :placeholder="`Gợi ý ${idx + 1}...`" required />
                   <div class="flex items-center gap-3">
-                    <label class="flex items-center gap-2 cursor-pointer text-text-secondary hover:text-text-primary">
+                    <label class="flex items-center gap-2 cursor-pointer text-text-secondary hover:text-white">
                       <input type="checkbox" v-model="hint.isTiered" class="form-checkbox" />
                       <span>Gợi ý tiered (tốn XP)</span>
                     </label>
                     <div v-if="hint.isTiered" class="flex items-center gap-2">
-                      <label class="text-xs text-text-secondary">XP cost:</label>
+                      <label class="text-xs text-text-muted">XP cost:</label>
                       <input v-model.number="hint.xpCost" type="number" class="form-input w-20" min="1" max="50" required />
                     </div>
                   </div>

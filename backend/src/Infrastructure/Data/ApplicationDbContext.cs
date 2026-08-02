@@ -31,8 +31,6 @@ namespace VisualizationDSA.Infrastructure.Data
         public DbSet<TeacherApplication> TeacherApplications => Set<TeacherApplication>();
         public DbSet<UserInventory>  UserInventory   { get; set; }
         public DbSet<LearningSession> LearningSessions { get; set; }
-        public DbSet<UserRoadmapLanguage> UserRoadmapLanguages => Set<UserRoadmapLanguage>();
-        public DbSet<CheatSheetSnippet> CheatSheetSnippets => Set<CheatSheetSnippet>();
         public DbSet<CustomRoadmap> CustomRoadmaps => Set<CustomRoadmap>();
         public DbSet<CustomNode> CustomNodes => Set<CustomNode>();
         public DbSet<RoadmapEditLog> RoadmapEditLogs => Set<RoadmapEditLog>();
@@ -58,6 +56,7 @@ namespace VisualizationDSA.Infrastructure.Data
         public DbSet<Codelab> Codelabs { get; set; }
         public DbSet<CodelabTestCase> CodelabTestCases { get; set; }
         public DbSet<CodelabTemplate> CodelabTemplates { get; set; }
+        public DbSet<CodelabHint> CodelabHints { get; set; }
         public DbSet<CodelabSubmission> CodelabSubmissions { get; set; }
 
 
@@ -236,6 +235,14 @@ namespace VisualizationDSA.Infrastructure.Data
                 entity.HasKey(e => e.Id);
                 entity.HasOne(e => e.Codelab)
                     .WithMany(c => c.Templates)
+                    .HasForeignKey(e => e.CodelabId)
+                    .OnDelete(DeleteBehavior.Restrict); 
+            });
+
+            modelBuilder.Entity<CodelabHint>(entity => {
+                entity.HasKey(e => e.Id);
+                entity.HasOne(e => e.Codelab)
+                    .WithMany(c => c.Hints)
                     .HasForeignKey(e => e.CodelabId)
                     .OnDelete(DeleteBehavior.Restrict); 
             });
@@ -549,30 +556,6 @@ namespace VisualizationDSA.Infrastructure.Data
                       .HasForeignKey(e => e.UserId)
                       .OnDelete(DeleteBehavior.Cascade);
             });
-
-            // UserRoadmapLanguage configuration
-            modelBuilder.Entity<UserRoadmapLanguage>(entity =>
-            {
-                entity.HasKey(e => e.Id);
-                entity.HasIndex(e => new { e.UserId, e.RoadmapId }).IsUnique();
-                entity.Property(e => e.RoadmapId).IsRequired().HasMaxLength(100);
-                entity.Property(e => e.Language).IsRequired().HasMaxLength(20);
-                entity.HasOne(e => e.User)
-                      .WithMany(u => u.UserRoadmapLanguages)
-                      .HasForeignKey(e => e.UserId)
-                      .OnDelete(DeleteBehavior.Cascade);
-            });
-
-            // CheatSheetSnippet configuration
-            modelBuilder.Entity<CheatSheetSnippet>(entity =>
-            {
-                entity.HasKey(e => new { e.Language, e.DataStructure });
-                entity.Property(e => e.Language).HasMaxLength(50);
-                entity.Property(e => e.DataStructure).HasMaxLength(50);
-                entity.Property(e => e.CodeSnippet).IsRequired();
-            });
-
-
 
             // ClassroomLeaderboardHistory configuration
             modelBuilder.Entity<ClassroomLeaderboardHistory>(entity =>

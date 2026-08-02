@@ -27,7 +27,6 @@ namespace VisualizationDSA.Infrastructure.Data
             try { await SeedLeaderboardUsersAsync(); } catch (Exception ex) { Console.WriteLine($"[SeedUsers Error]: {ex.Message}"); }
             try { await SeedQuizzesAsync(); } catch (Exception ex) { Console.WriteLine($"[SeedQuizzes Error]: {ex.Message}"); }
             try { await SeedSemanticGraphAsync(); } catch (Exception ex) { Console.WriteLine($"[SeedGraph Error]: {ex.Message}"); }
-            try { await SeedCheatSheetAsync(); } catch (Exception ex) { Console.WriteLine($"[SeedCheatSheet Error]: {ex.Message}"); }
             try { await SeedCoursesAsync(); } catch (Exception ex) { Console.WriteLine($"[SeedCourses Error]: {ex}"); }
             try { await SeedTeacherRoadmapsAsync(); } catch (Exception ex) { Console.WriteLine($"[SeedRoadmaps Error]: {ex.Message}"); }
         }
@@ -117,22 +116,6 @@ namespace VisualizationDSA.Infrastructure.Data
                 await _context.Badges.AddAsync(badge);
             }
 
-            await _context.SaveChangesAsync();
-        }
-
-        private async Task SeedCheatSheetAsync()
-        {
-            if (_context.CheatSheetSnippets.Any()) return;
-
-            var snippets = new List<CheatSheetSnippet>
-            {
-                new CheatSheetSnippet("javascript", "array", "const arr = [1, 2, 3, 4, 5];\n// Truy cập phần tử: arr[0]\n// Độ dài: arr.length", "Khai báo mảng trong JavaScript"),
-                new CheatSheetSnippet("python", "array", "arr = [1, 2, 3, 4, 5]\n# Truy cập phần tử: arr[0]\n# Độ dài: len(arr)", "Khai báo mảng trong Python (List)"),
-                new CheatSheetSnippet("java", "array", "int[] arr = {1, 2, 3, 4, 5};\n// Truy cập: arr[0]\n// Độ dài: arr.length", "Khai báo mảng trong Java tĩnh"),
-                new CheatSheetSnippet("cpp", "array", "vector<int> arr = {1, 2, 3, 4, 5};\n// Truy cập: arr[0]\n// Độ dài: arr.size()", "Khai báo Vector trong C++")
-            };
-
-            await _context.CheatSheetSnippets.AddRangeAsync(snippets);
             await _context.SaveChangesAsync();
         }
 
@@ -366,7 +349,7 @@ namespace VisualizationDSA.Infrastructure.Data
                     {
                         var codelab = new Codelab(
                             sl.Codelab.Title, sl.Codelab.Description, sl.Codelab.InitialCode,
-                            1, 50, 5000, 128000000, "csharp", "Vui lòng xem mô tả", "Xem ví dụ trong mô tả", "", "general"
+                            1, 50, 5000, 128000000, "csharp", "Vui lòng xem mô tả", "Xem ví dụ trong mô tả", "general"
                         );
                         
                         int caseIndex = 1;

@@ -103,11 +103,14 @@ Mảng cuối cùng: `[10, 30, 40, 50, 70, 80, 90]`.
 
 ---
 
-## 3. Mã nguồn C# (Code Example) {#code-example}
+## 3. Mã nguồn (Code Example) {#code-example}
 
 Phần thuật toán chính được cấu thành từ 2 hàm: `QuickSort` (Chứa đệ quy) và `Partition` (Chia mảng).
 
-```csharp
+```playground:quick-sort
+```
+
+```dual:quick-sort
 public class QuickSortEngine
 {
     public void Sort(int[] arr)

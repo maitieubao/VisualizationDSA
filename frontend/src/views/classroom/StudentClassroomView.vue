@@ -1,17 +1,17 @@
 <template>
-  <div class="student-classroom-view h-full bg-bg-primary">
+  <div class="student-classroom-view min-h-screen bg-bg-secondary">
     
     <div v-if="loading" class="flex items-center justify-center h-full">
       <div class="text-center">
-        <div class="w-12 h-12 border-4 border-border-accent border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-        <p class="text-text-secondary">Đang tải lớp học...</p>
+        <div class="w-12 h-12 border-4 border-accent border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+        <p class="text-text-muted">Đang tải lớp học...</p>
       </div>
     </div>
 
     
     <div v-else class="flex h-full">
       
-      <aside class="w-80 shrink-0 p-4 overflow-y-auto border-r border-border-default">
+      <aside class="w-80 shrink-0 p-4 overflow-y-auto border-r border-border-subtle">
         <StudentCurriculumSidebar
           :classroom-id="classroomId"
           :curriculum="curriculum"
@@ -24,9 +24,9 @@
       <main class="flex-1 p-6 overflow-y-auto">
         
         <div v-if="!currentItem" class="flex flex-col items-center justify-center h-full text-center">
-          <BaseIcon name="book-open" class="w-16 h-16 text-text-muted mb-4" />
-          <h2 class="text-2xl font-bold text-text-primary mb-2">Chào mừng đến với lớp học!</h2>
-          <p class="text-text-secondary max-w-md">
+          <BaseIcon name="book-open" class="w-16 h-16 text-text-disabled mb-4" />
+          <h2 class="text-2xl font-bold text-white mb-2">Chào mừng đến với lớp học!</h2>
+          <p class="text-text-muted max-w-md">
             Chọn một bài học từ sidebar để bắt đầu. Tiến độ của bạn sẽ được tự động lưu lại.
           </p>
         </div>

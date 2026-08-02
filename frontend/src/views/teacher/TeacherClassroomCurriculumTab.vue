@@ -4,7 +4,7 @@
     <div class="flex justify-between items-center mb-6 flex-wrap gap-3">
       <div>
         <h2 class="section-heading m-0">Quản lý Chương trình học (Curriculum)</h2>
-        <p class="text-text-secondary text-sm mt-1">
+        <p class="text-text-muted text-sm mt-1">
           Kéo thả để sắp xếp Module & Bài học. Mỗi Module/Bài học có thể tùy chỉnh riêng cho lớp này.
         </p>
       </div>
@@ -39,9 +39,9 @@
 
     
     <div v-else-if="!curriculum || curriculum.modules.length === 0" class="empty-state">
-      <div class="text-5xl mb-4"><BaseIcon name="roadmap" class="w-12 h-12" /></div>
-      <h3 class="text-xl font-bold text-text-primary">Chưa có Module nào</h3>
-      <p class="text-text-secondary mt-2 max-w-md">
+      <div class="text-5xl mb-4">📚</div>
+      <h3 class="text-xl font-bold text-white">Chưa có Module nào</h3>
+      <p class="text-text-muted mt-2 max-w-md">
         Tạo Module đầu tiên hoặc Import từ Khóa học có sẵn để bắt đầu xây dựng chương trình học.
       </p>
       <div class="flex gap-2 mt-6 justify-center">
@@ -59,7 +59,7 @@
       <div 
         v-for="module in curriculum.modules" 
         :key="module.id"
-        class="module-accordion bg-bg-secondary/60 border border-border-default rounded-2xl overflow-hidden"
+        class="module-accordion bg-bg-secondary border border-border-subtle rounded-2xl overflow-hidden"
         :class="{ 'module-hidden': module.isHidden }"
         @dragstart="onDragStartModule(module)"
         @dragover.prevent="onDragOverModule(module)"
@@ -70,33 +70,33 @@
         
         <button
           type="button"
-          class="module-header w-full flex items-center justify-between p-5 cursor-pointer hover:bg-bg-surface transition-colors"
+          class="module-header w-full flex items-center justify-between p-5 cursor-pointer hover:bg-bg-hover transition-colors"
           @click="toggleModuleExpanded(module.id)"
         >
           <div class="flex items-center gap-4 flex-1 min-w-0">
-            <div class="flex items-center justify-center w-10 h-10 rounded-xl bg-accent/20 border border-border-accent text-accent font-bold text-lg">
+            <div class="flex items-center justify-center w-10 h-10 rounded-xl bg-accent/20 border border-accent/30 text-accent font-bold text-lg">
               {{ getModuleIndex(module.id) + 1 }}
             </div>
             <div class="flex-1 min-w-0">
               <div class="flex items-center gap-3 flex-wrap">
-                <h3 class="font-bold text-text-primary truncate">{{ module.title }}</h3>
+                <h3 class="font-bold text-white truncate">{{ module.title }}</h3>
                 <span v-if="module.isHidden" class="badge badge-warning text-xs">Ẩn</span>
                 <span v-if="module.unlockAt" class="badge badge-info text-xs">
                   <BaseIcon name="clock" class="w-3 h-3 inline mr-1" /> 
                   {{ formatDate(module.unlockAt) }}
                 </span>
               </div>
-              <p v-if="module.description" class="text-text-secondary text-sm mt-1 line-clamp-1">{{ module.description }}</p>
+              <p v-if="module.description" class="text-text-muted text-sm mt-1 line-clamp-1">{{ module.description }}</p>
             </div>
           </div>
           
           <div class="flex items-center gap-2">
-            <span class="text-text-secondary text-sm font-mono">
+            <span class="text-text-muted text-sm font-mono">
               {{ module.items.length }} bài
             </span>
             <BaseIcon 
               :name="isModuleExpanded(module.id) ? 'chevron-up' : 'chevron-down'" 
-              class="w-5 h-5 text-text-secondary transition-transform"
+              class="w-5 h-5 text-text-muted transition-transform"
             />
           </div>
         </button>
@@ -104,7 +104,7 @@
         
         <div 
           v-show="isModuleExpanded(module.id)"
-          class="module-items px-5 pb-5 border-t border-border-default animate-slide-down"
+          class="module-items px-5 pb-5 border-t border-border-subtle animate-slide-down"
         >
           
           <div class="flex gap-2 mb-4 pt-4">
@@ -135,13 +135,13 @@
           </div>
 
           
-          <component :is="DndContext as any" 
+          <DndContext 
             :collisionDetection="closestCenter"
             @drag-start="handleDragStart"
             @drag-over="handleDragOver"
             @drag-end="handleDragEnd"
           >
-            <component :is="SortableContext as any" :items="module.items.map(i => i.id)">
+            <SortableContextWrapper :items="module.items.map(i => i.id)">
               <div class="space-y-2" ref="itemsContainer">
                 <template v-for="(item, index) in module.items" :key="item.id">
                   <ModuleItemRow
@@ -165,7 +165,7 @@
                 
                 <div 
                   class="drop-zone h-8 border-2 border-dashed border-transparent transition-colors rounded-xl"
-                  :class="{ 'border-border-accent bg-accent/10': dragOverModuleId === module.id }"
+                  :class="{ 'border-accent bg-accent/10': dragOverModuleId === module.id }"
                   @dragover.prevent="onDragOverModule(module)"
                   @dragleave="onDragLeaveModule(module)"
                   @drop="onDropItem(module, -1)"
@@ -175,8 +175,8 @@
                   </div>
                 </div>
               </div>
-            </component>
-          </component>
+            </SortableContextWrapper>
+          </DndContext>
         </div>
       </div>
     </div>
@@ -228,8 +228,7 @@ import { ref, computed, onMounted, nextTick } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 // @ts-ignore
 import { DndContext, closestCenter } from '@dnd-kit/core';
-// @ts-ignore
-import { SortableContext } from '@dnd-kit/sortable';
+import SortableContextWrapper from '@/components/ui/SortableContextWrapper.vue';
 import { useClassroomCurriculumStore } from '@/stores/classroomCurriculum';
 import { useAuthStore } from '@/features/auth/store/useAuthStore';
 

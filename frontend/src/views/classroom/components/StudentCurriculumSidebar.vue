@@ -1,15 +1,15 @@
 <template>
-  <div class="curriculum-sidebar bg-bg-secondary/60 border border-border-default rounded-2xl p-4 h-full max-h-[calc(100vh-120px)] overflow-y-auto sticky top-24">
+  <div class="curriculum-sidebar bg-bg-secondary border border-border-subtle rounded-2xl p-4 h-full max-h-[calc(100vh-120px)] overflow-y-auto sticky top-24">
     
-    <div class="mb-6 p-4 bg-bg-primary/50 border border-border-default rounded-xl">
-      <h3 class="text-sm font-bold text-text-primary mb-3">Tiến độ tổng thể</h3>
-      <div class="w-full h-2 bg-bg-hover rounded-full overflow-hidden mb-2">
+    <div class="mb-6 p-4 bg-bg-secondary border border-border-subtle rounded-xl">
+      <h3 class="text-sm font-bold text-white mb-3">Tiến độ tổng thể</h3>
+      <div class="w-full h-2 bg-bg-surface rounded-full overflow-hidden mb-2">
         <div 
           class="h-full bg-gradient-to-r from-accent to-accent-purple transition-all duration-500" 
           :style="{ width: overallProgress + '%' }"
         ></div>
       </div>
-      <div class="flex justify-between text-xs text-text-secondary">
+      <div class="flex justify-between text-xs text-text-muted">
         <span>{{ completedItems }}/{{ totalItems }} bài học đã hoàn thành</span>
         <span>{{ overallProgress }}%</span>
       </div>
@@ -28,7 +28,7 @@
           type="button"
           class="module-header w-full flex items-center justify-between p-3 rounded-xl transition-colors"
           :class="[
-            isModuleExpanded(module.id) ? 'bg-bg-surface' : 'hover:bg-bg-surface',
+            isModuleExpanded(module.id) ? 'bg-bg-hover' : 'hover:bg-bg-hover',
             isModuleLocked(module) ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'
           ]"
           @click="toggleModule(module.id)"
@@ -41,8 +41,8 @@
               <span v-else class="text-accent font-bold text-sm">{{ getModuleIndex(module.id) + 1 }}</span>
             </div>
             <div class="flex-1 min-w-0">
-              <h4 class="font-semibold text-text-primary truncate">{{ module.title }}</h4>
-              <div class="flex items-center gap-2 mt-1 text-xs text-text-secondary">
+              <h4 class="font-semibold text-white truncate">{{ module.title }}</h4>
+              <div class="flex items-center gap-2 mt-1 text-xs text-text-muted">
                 <span>{{ module.items?.length || 0 }} bài</span>
                 <span v-if="module.unlockAt" class="flex items-center gap-1">
                   <BaseIcon name="clock" class="w-3 h-3" />
@@ -53,12 +53,12 @@
           </div>
           
           <div class="flex items-center gap-2">
-            <span class="text-xs text-text-secondary font-mono">
+            <span class="text-xs text-text-muted font-mono">
               {{ getModuleCompletedCount(module) }}/{{ module.items?.length || 0 }}
             </span>
             <BaseIcon 
               :name="isModuleExpanded(module.id) ? 'chevron-up' : 'chevron-down'" 
-              class="w-4 h-4 text-text-secondary transition-transform"
+              class="w-4 h-4 text-text-muted transition-transform"
             />
           </div>
         </button>
@@ -66,7 +66,7 @@
         
         <div 
           v-show="isModuleExpanded(module.id) && !isModuleLocked(module)"
-          class="module-items mt-2 ml-4 border-l border-border-default pl-4 space-y-2 animate-slide-down"
+          class="module-items mt-2 ml-4 border-l border-border-subtle pl-4 space-y-2 animate-slide-down"
         >
           <div 
             v-for="item in module.items" 
@@ -75,7 +75,7 @@
             :class="[
               'flex items-center gap-3 p-3 rounded-xl transition-colors',
               getItemStatusClass(item),
-              currentItemId === item.id ? 'bg-accent/10 border border-border-accent' : 'hover:bg-bg-surface'
+              currentItemId === item.id ? 'bg-accent/10 border border-accent/20' : 'hover:bg-bg-hover'
             ]"
             @click="onItemClick(item)"
           >
@@ -117,7 +117,7 @@
                 <span v-if="item.isHidden" class="badge badge-slate text-[10px]">Ẩn</span>
               </div>
               
-              <div class="flex items-center gap-3 mt-1 text-[11px] text-text-secondary">
+              <div class="flex items-center gap-3 mt-1 text-[11px] text-text-muted">
                 <span v-if="item.unlockAt" class="flex items-center gap-1">
                   <BaseIcon name="clock" class="w-3 h-3" />
                   {{ formatDate(item.unlockAt) }}
@@ -217,8 +217,8 @@ const isModuleLocked = (module: any) => {
 
 const getModuleStatusClass = (module: any) => {
   if (isModuleCompleted(module)) return 'bg-accent-green/20 border-accent-green/30 text-accent-green';
-  if (isModuleLocked(module)) return 'bg-bg-hover border-border-default text-text-muted';
-  return 'bg-accent/20 border-border-accent text-accent';
+  if (isModuleLocked(module)) return 'bg-bg-surface border-border-default text-text-muted';
+  return 'bg-accent/20 border-accent/30 text-accent';
 };
 
 const isItemCompleted = (item: any) => item.status === 'Completed';
@@ -241,9 +241,9 @@ const getItemStatusClass = (item: any) => {
 
 const getItemStatusBgClass = (item: any) => {
   if (item.status === 'Completed') return 'bg-accent-green/20 text-accent-green border-accent-green/30';
-  if (isItemLocked(item)) return 'bg-bg-hover text-text-muted border-border-default';
-  if (item.status === 'InProgress') return 'bg-accent-warm/20 text-accent-warm border-accent-warm/30';
-  return 'bg-bg-hover text-text-secondary border-border-default';
+  if (isItemLocked(item)) return 'bg-bg-surface text-text-muted border-border-default';
+  if (item.status === 'InProgress') return 'bg-accent-yellow/20 text-accent-yellow border-accent-yellow/30';
+  return 'bg-bg-surface text-text-muted border-border-default';
 };
 
 const getTypeBadgeClass = (type: string) => {

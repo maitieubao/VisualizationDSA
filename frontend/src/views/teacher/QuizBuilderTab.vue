@@ -3,7 +3,7 @@
     <div class="flex justify-between items-center mb-6 flex-wrap gap-3">
       <div>
         <h2 class="section-heading m-0">Quản lý Trắc nghiệm</h2>
-        <p class="text-text-secondary text-sm mt-1">Tạo và quản lý bộ câu hỏi trắc nghiệm cho bài học</p>
+        <p class="text-text-muted text-sm mt-1">Tạo và quản lý bộ câu hỏi trắc nghiệm cho bài học</p>
       </div>
       <button type="button" class="btn-primary" @click="createNewQuiz">
         <BaseIcon name="plus" class="w-4 h-4 inline mr-1 align-middle" /> Tạo Quiz mới
@@ -13,17 +13,17 @@
     
     <div class="filters-bar mb-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 w-full">
       <div class="relative w-full sm:w-64">
-        <input v-model="searchQuery" @input="debouncedSearch" type="text" placeholder="Tìm kiếm quiz..." class="appearance-none w-full bg-bg-secondary/80 text-text-primary border border-border-default rounded-full pl-10 pr-4 py-2.5 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-accent/30 focus:border-border-accent/50 transition-all" />
+        <input v-model="searchQuery" @input="debouncedSearch" type="text" placeholder="Tìm kiếm quiz..." class="appearance-none w-full bg-bg-secondary text-white border border-border-subtle rounded-full pl-10 pr-4 py-2.5 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-accent/30 focus:border-accent/50 transition-all" />
         <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4 text-text-muted">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
         </div>
       </div>
       <div class="flex gap-2 w-full sm:w-auto">
-        <select v-model="filterTopic" class="appearance-none bg-bg-secondary/80 text-text-primary border border-border-default rounded-full pl-4 pr-10 py-2.5 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-accent/30 focus:border-border-accent/50 transition-all cursor-pointer">
+        <select v-model="filterTopic" class="appearance-none bg-bg-secondary text-white border border-border-subtle rounded-full pl-4 pr-10 py-2.5 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-accent/30 focus:border-accent/50 transition-all cursor-pointer">
           <option value="">Tất cả chủ đề</option>
           <option v-for="t in topics" :key="t" :value="t">{{ t }}</option>
         </select>
-        <select v-model="filterDifficulty" class="appearance-none bg-bg-secondary/80 text-text-primary border border-border-default rounded-full pl-4 pr-10 py-2.5 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-accent/30 focus:border-border-accent/50 transition-all cursor-pointer">
+        <select v-model="filterDifficulty" class="appearance-none bg-bg-secondary text-white border border-border-subtle rounded-full pl-4 pr-10 py-2.5 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-accent/30 focus:border-accent/50 transition-all cursor-pointer">
           <option value="">Tất cả độ khó</option>
           <option value="1">Dễ (1)</option>
           <option value="2">Dễ (2)</option>
@@ -41,9 +41,9 @@
     </div>
 
     <div v-else-if="quizzesList.length === 0" class="empty-state">
-      <div class="text-5xl mb-4"><BaseIcon name="quiz" class="w-12 h-12" /></div>
-      <h3 class="text-xl font-bold text-text-primary">Chưa có Quiz nào</h3>
-      <p class="text-text-secondary mt-2 max-w-md">Tạo Quiz đầu tiên để bắt đầu xây dựng ngân hàng câu hỏi</p>
+      <div class="text-5xl mb-4">❓</div>
+      <h3 class="text-xl font-bold text-white">Chưa có Quiz nào</h3>
+      <p class="text-text-muted mt-2 max-w-md">Tạo Quiz đầu tiên để bắt đầu xây dựng ngân hàng câu hỏi</p>
       <button class="btn-primary mt-6" @click="createNewQuiz">
         <BaseIcon name="plus" class="w-4 h-4 inline mr-1" /> Tạo Quiz đầu tiên
       </button>
@@ -63,15 +63,15 @@
         </thead>
         <tbody>
           <template v-for="q in quizzesList" :key="q.id">
-            <tr @click="toggleQuizAccordion(q.id)" class="cursor-pointer hover:bg-bg-surface transition-colors">
-              <td class="font-bold text-text-primary">
-                <span class="inline-block mr-1 transition-transform duration-200" :style="expandedQuizId === q.id ? 'transform: rotate(90deg)' : ''"><BaseIcon name="chevron-right" class="w-4 h-4" /></span>
+            <tr @click="toggleQuizAccordion(q.id)" class="cursor-pointer hover:bg-bg-hover transition-colors">
+              <td class="font-bold text-white">
+                <span class="inline-block mr-1 transition-transform duration-200" :style="expandedQuizId === q.id ? 'transform: rotate(90deg)' : ''">▶</span>
                 {{ q.title }}
               </td>
               <td><span class="topic-badge" :class="'topic-' + q.topic">{{ q.topic }}</span></td>
               <td><span class="diff-badge" :class="'diff-' + q.difficulty">{{ q.difficulty }}</span></td>
               <td class="font-mono text-text-secondary">{{ q.questionCount }} câu</td>
-              <td class="font-bold text-accent-warm">+{{ q.xpReward }} XP</td>
+              <td class="font-bold text-accent-yellow">+{{ q.xpReward }} XP</td>
               <td>
                 <div class="flex justify-center gap-2" @click.stop>
                   <button type="button" class="btn-action btn-action--edit" @click="editQuiz(q)" title="Chỉnh sửa">
@@ -100,11 +100,11 @@
                     Quiz này chưa có câu hỏi nào. Hãy thêm câu hỏi đầu tiên!
                   </div>
                   <div v-else class="space-y-3">
-                    <div v-for="(question, qIdx) in quizQuestions[q.id]" :key="question.id" class="question-card p-4 rounded-xl border border-border-default bg-bg-primary/20">
+                    <div v-for="(question, qIdx) in quizQuestions[q.id]" :key="question.id" class="question-card p-4 rounded-xl border border-border-subtle bg-bg-secondary/20">
                       <div class="flex items-start justify-between gap-4 mb-3">
                         <div class="flex items-center gap-3 flex-1 min-w-0">
-                          <span class="w-6 h-6 rounded-full bg-accent/30 border border-border-accent/50 text-accent font-bold text-xs flex items-center justify-center shrink-0">{{ qIdx + 1 }}</span>
-                          <p class="font-semibold text-text-primary truncate">{{ question.question }}</p>
+                          <span class="w-6 h-6 rounded-full bg-accent/30 border border-accent/50 text-accent font-bold text-xs flex items-center justify-center shrink-0">{{ qIdx + 1 }}</span>
+                          <p class="font-semibold text-white truncate">{{ question.question }}</p>
                         </div>
                         <span class="badge badge-indigo text-xs shrink-0">Câu hỏi</span>
                       </div>
@@ -114,18 +114,18 @@
                           :key="oIdx"
                           class="px-3 py-2 rounded-lg border text-left text-xs font-semibold transition-all cursor-pointer"
                           :class="oIdx === question.correctIndex
-                            ? 'bg-accent text-text-primary border-border-accent shadow-md'
-                            : 'bg-bg-primary/60 text-text-secondary border-border-default hover:border-border-strong hover:bg-bg-hover'"
+                            ? 'bg-accent text-white border-accent shadow-md'
+                            : 'bg-bg-secondary text-text-secondary border-border-subtle hover:border-border-default hover:bg-bg-surface'"
                         >
                           {{ opt }}
                           <span v-if="oIdx === question.correctIndex" class="ml-2 text-sm">✓</span>
                         </button>
                       </div>
-                      <div v-if="question.explanation" class="mt-3 p-3 rounded-lg bg-bg-secondary/50 border border-border-default">
+                      <div v-if="question.explanation" class="mt-3 p-3 rounded-lg bg-bg-secondary border border-border-subtle">
                         <span class="text-xs text-accent font-bold">Giải thích:</span>
                         <span class="text-xs text-text-secondary ml-2">{{ question.explanation }}</span>
                       </div>
-                      <div class="flex justify-end gap-2 mt-3 pt-3 border-t border-border-default">
+                      <div class="flex justify-end gap-2 mt-3 pt-3 border-t border-border-subtle">
                         <button type="button" class="btn-action btn-action--edit" @click="editQuestion(q.id, question)">Sửa</button>
                         <button type="button" class="btn-action btn-action--delete" @click="composableDeleteQuestion(q.id, question.id)">Xóa</button>
                       </div>

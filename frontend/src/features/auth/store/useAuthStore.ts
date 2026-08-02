@@ -14,7 +14,7 @@ import * as authApi from '@/features/auth/services/authApi';
 import { setSession, clearSession, getSavedRefreshToken } from './authSessionHelpers';
 import { statelessAuthApi } from '@/features/auth/services/statelessAuthApi';
 import type { StatelessUserDto, StatelessAuthResponse } from '@/features/auth/services/statelessAuthApi';
-import { useGamificationStore } from '@/features/gamification/gamification-engine/store/useGamificationStore';
+import { useGamificationStore } from '@/features/gamification-engine/store/useGamificationStore';
 
 export const useAuthStore = defineStore('auth', () => {
   

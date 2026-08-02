@@ -70,9 +70,12 @@ flowchart TD
 | **Không gian bộ nhớ** | **O(N + K)** - Cần mảng `count` kích thước K và mảng `output` kích thước N. |
 | **Tính ổn định (Stable)** | **Có** - Cực kỳ quan trọng để Counting Sort có thể được dùng làm thuật toán lõi hỗ trợ cho Radix Sort. |
 
-## Cài đặt bằng C# (Code Example) {#code-example}
+## Cài đặt (Code Example) {#code-example}
 
-```csharp
+```playground:counting-sort
+```
+
+```dual:counting-sort
 public void CountingSort(int[] array)
 {
     int n = array.Length;

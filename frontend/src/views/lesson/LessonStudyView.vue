@@ -1,66 +1,43 @@
 <template>
-  <div class="lesson-study-view flex flex-col h-full w-full overflow-hidden font-sans">
+  <div class="lesson-study-view flex flex-col min-h-[calc(100vh-64px)] w-full overflow-auto bg-bg-secondary font-sans">
     
-    <header class="glass-panel px-6 py-4 flex flex-col md:flex-row items-center justify-between shrink-0 z-20 border-b border-border-default relative">
-      <!-- Progress Bar Background (Glassmorphism) -->
-      <div class="absolute inset-0 bg-gradient-to-r from-accent/5 to-accent-purple/5 pointer-events-none"></div>
-
-      <div class="flex items-center gap-4 w-full md:w-auto relative z-10 mb-4 md:mb-0">
-        <router-link :to="courseId ? '/courses/' + courseId : '/courses'" class="flex items-center justify-center w-8 h-8 rounded-full bg-bg-surface hover:bg-bg-surface border border-border-default text-text-secondary hover:text-text-primary transition-all group">
-          <BaseIcon name="arrow-left" class="w-4 h-4 transform group-hover:-translate-x-0.5 transition-transform" />
+    <header class="px-6 py-3 border-b border-border-subtle bg-bg-secondary backdrop-blur-md flex items-center justify-between shrink-0 shadow-lg z-20">
+      
+      <div class="flex items-center gap-3">
+        <router-link :to="courseId ? `/courses/${courseId}` : '/courses'" class="text-xs font-semibold text-text-muted hover:text-white transition-colors flex items-center gap-1">
+          <span>←</span> Quay lại
         </router-link>
-        <div class="h-6 w-px bg-bg-surface mx-1"></div>
-        <h2 class="text-base font-extrabold text-text-primary line-clamp-1 tracking-wide" v-if="lesson">
+        <span class="text-text-disabled">|</span>
+        <h2 class="text-sm font-extrabold text-white line-clamp-1" v-if="lesson">
           {{ lesson.title }}
         </h2>
       </div>
 
-      <!-- Steps Progress UI -->
-      <div class="flex flex-1 w-full md:w-auto justify-center relative z-10 max-w-2xl px-4 md:px-8">
-        <div class="flex items-center justify-between w-full relative">
-          <!-- Connecting Line -->
-          <div class="absolute top-1/2 left-0 w-full h-0.5 bg-bg-surface -translate-y-1/2 rounded-full z-0 hidden sm:block">
-            <div class="h-full bg-gradient-to-r from-accent to-accent-purple rounded-full transition-all duration-500"
-                 :style="{ width: `${((activeStep - 1) / (steps.length - 1)) * 100}%` }"></div>
-          </div>
-          
-          <button
-            v-for="step in steps"
-            :key="step.number"
-            @click="activeStep = step.number"
-            class="relative z-10 flex flex-col items-center gap-2 group cursor-pointer"
-          >
-            <!-- Step Circle -->
-            <div 
-              class="w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm transition-all duration-300 border-2 shadow-lg backdrop-blur-md"
-              :class="[
-                activeStep === step.number 
-                  ? 'bg-accent border-border-accent text-text-primary shadow-indigo-600/50 scale-110' 
-                  : activeStep > step.number
-                    ? 'bg-accent/20 border-border-accent/50 text-accent hover:bg-accent/30'
-                    : 'bg-bg-secondary/80 border-border-default/50 text-text-muted hover:border-slate-500/50 hover:text-text-secondary'
-              ]"
-            >
-              <BaseIcon v-if="activeStep > step.number" name="check" class="w-5 h-5" />
-              <span v-else>{{ step.number }}</span>
-            </div>
-            
-            <!-- Step Label -->
-            <span 
-              class="text-[10px] sm:text-xs font-bold uppercase tracking-wider transition-colors duration-300 hidden sm:block absolute -bottom-6 whitespace-nowrap"
-              :class="activeStep === step.number ? 'text-accent' : 'text-text-muted group-hover:text-text-secondary'"
-            >
-              {{ step.label }}
-            </span>
-          </button>
-        </div>
+      
+      <div class="flex items-center gap-2">
+        <button
+          v-for="step in steps"
+          :key="step.number"
+          @click="activeStep = step.number"
+          class="flex items-center gap-2 px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer"
+          :class="activeStep === step.number
+            ? 'bg-accent text-white shadow-md shadow-accent/30'
+            : 'bg-bg-secondary text-text-muted hover:text-text-primary border border-border-subtle'"
+        >
+          <span class="w-4 h-4 rounded-full flex items-center justify-center text-[10px]" :class="activeStep === step.number ? 'bg-bg-hover text-white' : 'bg-bg-surface text-text-muted'">
+            {{ step.number }}
+          </span>
+          <span>{{ step.label }}</span>
+        </button>
       </div>
 
-      <!-- XP Badge -->
-      <div class="flex items-center justify-end w-full md:w-auto relative z-10 mt-6 sm:mt-0">
-        <span class="px-3 py-1.5 rounded-xl bg-gradient-to-r from-accent-warm/10 to-accent-warm/10 border border-accent-warm/20 text-accent-warm font-bold flex items-center gap-2 shadow-inner backdrop-blur-sm">
-          <BaseIcon name="lightning" class="w-4 h-4 text-accent-warm" />
-          <span class="text-sm">+{{ lesson?.xpReward ?? 50 }} XP</span>
+      
+      <div class="flex items-center gap-2 font-mono text-xs">
+        <span class="px-2.5 py-1 rounded-lg bg-accent-yellow/50 text-accent-yellow border border-accent-yellow/30 font-bold flex items-center gap-1.5">
+          <svg class="w-3.5 h-3.5 text-accent-yellow" fill="currentColor" viewBox="0 0 24 24">
+            <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" />
+          </svg>
+          <span>+{{ lesson?.xpReward ?? 50 }} XP</span>
         </span>
       </div>
     </header>
