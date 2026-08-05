@@ -2,10 +2,7 @@
   <div class="flex flex-col h-full w-full gap-3 p-4 bg-bg-secondary/80 overflow-auto">
     
     <div class="flex items-center gap-2">
-      <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24"
-        fill="none" stroke="currentColor" stroke-width="2.5" class="text-accent-yellow">
-        <path d="M12 20h9" /><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z" />
-      </svg>
+      <BaseIcon name="edit" class="w-3.5 h-3.5 text-accent-yellow" />
       <span class="text-xs font-bold uppercase tracking-wider text-text-secondary">Custom Input</span>
     </div>
 
@@ -30,10 +27,10 @@
       <div class="relative" ref="dropdownRef">
         <button class="px-3 py-1.5 rounded-lg text-[11px] font-bold bg-bg-surface border border-border-default text-text-secondary hover:text-white hover:border-border-strong transition-colors flex items-center gap-1.5"
           @click="showDropdown = !showDropdown">
-          <span class="text-base leading-none">&#x1F3B2;</span>
+          <BaseIcon name="dice" class="w-3.5 h-3.5" />
           <span>Sinh Ngẫu Nhiên</span>
-          <svg class="w-3 h-3 transition-transform" :class="{ 'rotate-180': showDropdown }" viewBox="0 0 20 20" fill="currentColor">
-            <path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clip-rule="evenodd" />
+          <svg class="w-3 h-3 transition-transform" :class="{ 'rotate-180': showDropdown }" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="6 9 12 15 18 9" />
           </svg>
         </button>
         <Transition name="dropdown">
@@ -54,7 +51,7 @@
         <svg v-if="inputStore.isLoading" class="w-3 h-3 animate-spin" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
           <circle cx="12" cy="12" r="10" class="opacity-25" /><path d="M4 12a8 8 0 018-8" class="opacity-75" />
         </svg>
-        <span v-else class="text-base leading-none">&#x26A1;</span>
+        <BaseIcon v-else name="zap" class="w-3.5 h-3.5" />
         <span>{{ inputStore.isLoading ? 'Đang xử lý...' : 'Chạy Trực Quan' }}</span>
       </button>
     </div>

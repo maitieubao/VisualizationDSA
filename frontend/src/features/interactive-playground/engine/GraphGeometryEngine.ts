@@ -31,6 +31,22 @@ export class GraphGeometryEngine {
     };
   }
 
+  static drawArrowhead(ctx: CanvasRenderingContext2D, placement: ArrowPlacement, color: string, lineWidth: number) {
+    const arrowSize = 8;
+    ctx.save();
+    ctx.translate(placement.end.x, placement.end.y);
+    ctx.rotate(placement.angle);
+    ctx.beginPath();
+    ctx.moveTo(0, 0);
+    ctx.lineTo(-arrowSize, -arrowSize * 0.6);
+    ctx.lineTo(-arrowSize * 0.5, 0);
+    ctx.lineTo(-arrowSize, arrowSize * 0.6);
+    ctx.closePath();
+    ctx.fillStyle = color;
+    ctx.fill();
+    ctx.restore();
+  }
+
   static isWithinSnapDistance(mousePos: Point, node: NodeDTO, snapDistance = 40): boolean {
     return Math.hypot(mousePos.x - node.x, mousePos.y - node.y) <= node.radius + snapDistance;
   }

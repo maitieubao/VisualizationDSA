@@ -8,7 +8,7 @@ description: Khám phá kiến trúc dữ liệu mang tính cách mạng kết h
 :::info Mục tiêu bài học
 - Phân tích cơ chế "chặn cổng" logic giúp BST thu hẹp một nửa dữ liệu sau mỗi bước đi.
 - Soi thấu vào bên trong thao tác Xóa (Deletion), đặc biệt là màn "Thế mạng" (Successor) vô cùng phức tạp khi xóa Node có 2 con.
-- Giải mã mã nguồn C# với kỹ thuật Đệ quy siêu ngắn gọn thay thế vòng lặp While rườm rà.
+- Giải mã mã nguồn C# với kỹ thuật Đệ quy siêu ngắn gọn hạn chế tối đa vòng lặp While rườm rà.
 - Nhận diện rủi ro "Cây lệch (Skewed Tree)" có thể đánh sập hệ thống.
 :::
 
@@ -116,11 +116,14 @@ flowchart TD
 
 ---
 
-## 4. Bóc tách Mã Nguồn (Line-by-line C#) {#code-example}
+## 4. Bóc tách Mã Nguồn (Line-by-line) {#code-example}
 
-Dưới đây là tuyệt kỹ sử dụng Đệ quy (Recursion) của C# để xử lý toàn bộ các kịch bản trên một cách thanh lịch mà không cần dùng bất kỳ vòng lặp `while` rườm rà nào.
+Dưới đây là tuyệt kỹ sử dụng Đệ quy (Recursion) của C# để xử lý toàn bộ các kịch bản trên một cách thanh lịch, gần như không cần dùng vòng lặp `while` rườm rà (chỉ còn một vòng lặp nhỏ duy nhất trong hàm tìm Successor).
 
-```csharp
+```playground:bst
+```
+
+```dual:bst
 public class BSTNode 
 {
     public int Data;
@@ -221,3 +224,32 @@ Trong các thư viện chuẩn (như `SortedDictionary` của C#, hoặc Data In
 - "Gót chân Achilles" của thuật toán xóa nằm ở việc thay thế Node có 2 con. Đòi hỏi kỹ thuật tìm In-order Successor cực kỳ khéo léo.
 - Trong thế giới thực, luôn cẩn thận với lỗi Cây Lệch (Skewed Tree). Hãy chắc chắn rằng bạn đang sử dụng AVL hoặc Red-Black tree cho các hệ thống Enterprise.
 :::
+
+## Next Steps {#next-steps}
+
+Bạn đã chinh phục xong BST thô sơ! Nhưng hãy nhớ bài học ở Mục 5: nếu không tự cân bằng, BST có thể thoái hóa thành Linked List với tốc độ tra cứu `O(N)` đáng sợ. Bước tiếp theo là khám phá các phiên bản tự cân bằng và cách duyệt cây để làm chủ toàn bộ nhóm Cây & Đồ thị.
+
+<div class="vt-box-container next-steps">
+  <a class="vt-box" href="/docs/tree-graph/avl-tree">
+    <p class="next-steps-link">Cây AVL tự cân bằng</p>
+    <p class="next-steps-caption">Dùng Balance Factor và 4 phép xoay LL/RR/LR/RL để giữ cây luôn cân bằng, đảm bảo O(log N).</p>
+  </a>
+  <a class="vt-box" href="/docs/tree-graph/tree-traversal">
+    <p class="next-steps-link">Duyệt cây (Pre/In/Post-order)</p>
+    <p class="next-steps-caption">Ba cách duyệt cây kinh điển giúp bạn quét toàn bộ dữ liệu trong BST theo thứ tự.</p>
+  </a>
+  <a class="vt-box" href="/docs/tree-graph/tree-graph-summary">
+    <p class="next-steps-link">Tổng hợp ứng dụng Cây & Đồ thị</p>
+    <p class="next-steps-caption">Bức tranh toàn cảnh: khi nào nên dùng cấu trúc cây nào cho bài toán thực tế.</p>
+  </a>
+</div>
+
+## 📚 Tham khảo lý thuyết {#references}
+
+Nguồn lý thuyết chính được dùng để biên soạn bài viết này:
+
+- **Cormen, Leiserson, Rivest & Stein (CLRS) – *Introduction to Algorithms*, 3rd Edition (MIT Press):** Chương 12 *Binary Search Trees* trình bày đầy đủ tính chất BST, các thao tác Search/Insert/Delete và thuật toán tìm In-order Successor.
+- **Wikipedia – [Binary search tree](https://en.wikipedia.org/wiki/Binary_search_tree):** Khái niệm, tính chất BST, phân tích độ phức tạp và trường hợp cây suy biến (Degenerate tree).
+- **MIT OpenCourseWare – [6.006 Introduction to Algorithms](https://ocw.mit.edu/courses/6-006-introduction-to-algorithms-spring-2020/):** Bài giảng về Binary Search Trees và cấu trúc dữ liệu động.
+- **GeeksforGeeks – [Binary Search Tree](https://www.geeksforgeeks.org/binary-search-tree-data-structure/):** Tổng hợp cài đặt C#/C++ các thao tác BST và phân tích chi tiết từng kịch bản xóa.
+- **Microsoft Learn – [SortedDictionary&lt;TKey,TValue&gt;](https://learn.microsoft.com/en-us/dotnet/api/system.collections.generic.sorteddictionary-2):** Tài liệu chính thức về cấu trúc cây Đỏ Đen tự cân bằng trong .NET, liên hệ thực tế ở Mục 5.

@@ -22,15 +22,13 @@
         <span class="text-[11px] font-bold text-accent uppercase font-mono">{{ algoLabel }}</span>
       </div>
       <div class="flex items-start gap-1.5">
-        <svg class="w-3 h-3 text-accent-cyan shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-        </svg>
-        <p class="text-[11px] text-text-primary leading-normal">{{ stepDescription }}</p>
+        <BaseIcon name="info" class="w-3 h-3 text-accent-cyan shrink-0 mt-0.5" />
+        <p class="text-[11px] text-text-primary leading-normal" v-html="parseEmojiToSvg(stepDescription)"></p>
       </div>
       <div class="flex items-center gap-3 text-[10px] text-text-muted font-mono">
         <span>Bước: <strong class="text-accent">{{ vcrStore.currentFrameIndex + 1 }}/{{ vcrStore.totalFrames }}</strong></span>
-        <span v-if="frame?.comparingIndices">So sánh: [{{ frame.comparingIndices[0] }}]↔[{{ frame.comparingIndices[1] }}]</span>
-        <span v-if="frame?.swappedIndices" class="text-accent-red">Đổi: [{{ frame.swappedIndices[0] }}]↔[{{ frame.swappedIndices[1] }}]</span>
+        <span v-if="compareLabel" class="text-accent-cyan" v-html="parseEmojiToSvg(compareLabel)"></span>
+        <span v-if="frame?.swappedIndices" class="text-accent-red">Đổi: [{{ frame.swappedIndices[0] }}]<BaseIcon name="arrows-horizontal" class="w-3 h-3 inline mx-0.5" />[{{ frame.swappedIndices[1] }}]</span>
       </div>
     </div>
 
@@ -49,6 +47,7 @@
 import { computed, ref, watch } from 'vue';
 import { useVcrStore } from '../../vcr-player';
 import { useSharedSortingAnimation } from '../composables/useSortingAnimation';
+import { parseEmojiToSvg } from '../../../utils/emojiParser';
 import SortingTraceTable from './SortingTraceTable.vue';
 import type { SortAlgorithm } from '../types/sorting.types';
 
@@ -68,6 +67,23 @@ const algoLabels: Record<SortAlgorithm, string> = {
 };
 
 const algoLabel = computed(() => algoLabels[selectedAlgo.value] ?? "Custom");
+
+// comparingIndices mang ngữ nghĩa khác nhau theo thuật toán:
+// - bubble/quick/merge/heap/bucket: cặp bar index thật
+// - counting: [barIdx, ô Count] — không phải phép so sánh bar-bar
+// - radix: [barIdx, barIdx] kèm thông tin hộp trong variables
+const compareLabel = computed(() => {
+  const f = frame.value;
+  const ci = f?.comparingIndices;
+  if (!ci) return null;
+  if (f.algorithm === 'counting') return `A[${ci[0]}] → Count[${ci[1]}]`;
+  if (f.algorithm === 'radix') {
+    return f.radixStep === 'distribute'
+      ? `A[${ci[0]}] → Hộp[${f.variables?.digit ?? ci[1]}]`
+      : `Hộp → A[${ci[0]}]`;
+  }
+  return `So sánh: [${ci[0]}]↔[${ci[1]}]`;
+});
 
 const activeTab = ref<'detail' | 'vars'>('vars');
 

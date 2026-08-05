@@ -14,7 +14,7 @@ namespace VisualizationDSA.WebApi.Controllers
 {
     [ApiController]
     [Route("api/v1/theory-articles")]
-    [Authorize]
+    [RequireJwtRole]
     public class TheoryArticleController : ControllerBase
     {
         private readonly IMediator _mediator;
@@ -33,6 +33,16 @@ namespace VisualizationDSA.WebApi.Controllers
             [FromQuery] int pageSize = 20,
             [FromQuery] bool onlyPublished = true)
         {
+            // Student KHÔNG được liệt kê bài nháp — onlyPublished do server ép buộc,
+            // không để client kiểm soát.
+            if (!JwtHelper.IsTeacherOrAdmin(Request))
+            {
+                onlyPublished = true;
+            }
+
+            page = Math.Max(1, page);
+            pageSize = Math.Clamp(pageSize, 1, 100);
+
             var query = new GetTheoryArticlesQuery
             {
                 Category = category,
@@ -57,16 +67,27 @@ namespace VisualizationDSA.WebApi.Controllers
             var result = await _mediator.Send(query);
             if (result == null)
                 return NotFound(new { error = "NOT_FOUND", message = "Article not found." });
+
+            // Chống IDOR: bài nháp chỉ Teacher/Admin xem được (Student đoán GUID → 404).
+            if (!result.IsPublished && !JwtHelper.IsTeacherOrAdmin(Request))
+                return NotFound(new { error = "NOT_FOUND", message = "Article not found." });
+
             return Ok(result);
         }
 
         [HttpPost]
-        [Authorize(Roles = "Teacher,Admin")]
+        [RequireJwtRole("Teacher,Admin")]
         public async Task<IActionResult> CreateArticle([FromBody] CreateTheoryArticleRequest request)
         {
             var userIdStr = JwtHelper.ExtractSubFromToken(Request);
             if (!Guid.TryParse(userIdStr, out var authorId))
                 return Unauthorized();
+
+            // Validate sớm — trước đây Title/Slug rỗng → ArgumentException 500.
+            if (string.IsNullOrWhiteSpace(request.Title) || string.IsNullOrWhiteSpace(request.Slug))
+            {
+                return BadRequest(new { error = "VALIDATION_ERROR", message = "Tiêu đề và Slug không được để trống." });
+            }
 
             var command = new CreateTheoryArticleCommand
             {
@@ -80,12 +101,19 @@ namespace VisualizationDSA.WebApi.Controllers
                 ReadTimeMinutes = request.ReadTimeMinutes
             };
 
-            var articleId = await _mediator.Send(command);
-            return Ok(new { articleId });
+            try
+            {
+                var articleId = await _mediator.Send(command);
+                return Ok(new { articleId });
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(new { error = "VALIDATION_ERROR", message = ex.Message });
+            }
         }
 
         [HttpPut("{id}")]
-        [Authorize(Roles = "Teacher,Admin")]
+        [RequireJwtRole("Teacher,Admin")]
         public async Task<IActionResult> UpdateArticle(Guid id, [FromBody] UpdateTheoryArticleRequest request)
         {
             var userIdStr = JwtHelper.ExtractSubFromToken(Request);
@@ -121,7 +149,7 @@ namespace VisualizationDSA.WebApi.Controllers
         }
 
         [HttpPost("{id}/publish")]
-        [Authorize(Roles = "Teacher,Admin")]
+        [RequireJwtRole("Teacher,Admin")]
         public async Task<IActionResult> PublishArticle(Guid id, [FromBody] PublishArticleRequest request)
         {
             var userIdStr = JwtHelper.ExtractSubFromToken(Request);

@@ -54,9 +54,12 @@ Biến mảng lộn xộn ban đầu thành một cấu trúc Max Heap. Quá tr�
 
 | Đặc tính | Phân tích Big O |
 | :--- | :--- |
-| **Thời gian (Tốt/Xấu/Trung bình)** | **O(N log N)** - Hàm Heapify mất O(log N) và nó phải được gọi N lần. |
+| **Thời gian (Tốt/Xấu/Trung bình)** | **O(N log N)** - Giai đoạn Build Heap chỉ tốn O(N), nhưng giai đoạn trích xuất phải gọi Heapify N lần, mỗi lần mất O(log N), nên tổng cộng vẫn là O(N log N). |
 | **Không gian bộ nhớ** | **O(1)** - Mọi thao tác tráo đổi diễn ra trực tiếp trên mảng gốc, không cần mảng phụ. |
 | **Tính ổn định (Stable)** | **Không** - Quá trình kéo thả trong cây có thể phá vỡ thứ tự ban đầu của các số bằng nhau. |
+
+### Vì sao Build Heap chỉ tốn O(N)?
+Bạn có thể thắc mắc: gọi Heapify cho ~N/2 node, mỗi lần tối đa O(log N), vậy chẳng phải Build Heap tốn O(N log N) sao? Câu trả lời là **không**, nhờ cách vun ngược từ dưới lên (bottom-up). Hãy để ý một chi tiết tinh tế: đa số các node đều nằm ở tầng lá hoặc gần lá — với chi phí vun chìm chỉ là O(1) hoặc rất nhỏ. Chỉ có rất ít node nằm gần gốc cây mới phải chìm sâu hết mức O(log N). Tổng chi phí của mọi tầng gộp lại là $T = \sum_{h=0}^{\log N} \frac{N}{2^{h+1}} \cdot h = O(N)$, nên **Build Max Heap chạy trong O(N)**, không phải O(N log N). Do đó tổng thời gian của toàn bộ Heap Sort là O(N + N log N) = **O(N log N)**.
 
 ## Cài đặt (Code Example) {#code-example}
 
@@ -141,3 +144,11 @@ Thế nhưng, điều kỳ diệu là vẫn có những thuật toán sắp xế
     <p class="next-steps-caption">Phép màu phá vỡ giới hạn O(N log N) bằng cách ngừng so sánh.</p>
   </a>
 </div>
+
+## 📚 Tham khảo lý thuyết {#references}
+
+- **Cây nhị phân hoàn chỉnh (Complete Binary Tree), biểu diễn Heap bằng mảng 1 chiều với công thức con trái `2*i+1`, con phải `2*i+2`:** *Binary Heap*, Wikipedia — https://en.wikipedia.org/wiki/Binary_heap
+- **Thuật toán Heapsort: các giai đoạn Build Heap và Extract, độ phức tạp O(N log N) trong mọi trường hợp, sắp xếp tại chỗ O(1) và tính không ổn định (Unstable):** *Heapsort*, Wikipedia — https://en.wikipedia.org/wiki/Heapsort
+- **Chương 6 (Heapsort) - phân tích toán học Build-Max-Heap chạy trong O(N), thủ tục Max-Heapify và chứng minh độ phức tạp tổng thể:** Cormen, T. H., Leiserson, C. E., Rivest, R. L., & Stein, C. (2009). *Introduction to Algorithms (CLRS)*, 3rd Edition, MIT Press.
+- **Minh họa từng bước thuật toán Heap Sort kèm mã giả và ví dụ chạy tay:** *Heap Sort Algorithm*, GeeksforGeeks — https://www.geeksforgeeks.org/heap-sort/
+- **So sánh Heap Sort với Quick Sort / Merge Sort trong thực tế, vấn đề CPU Cache và tác động đến hiệu năng:** *Sorting Algorithms in C#*, Microsoft Learn — https://learn.microsoft.com/en-us/dotnet/standard/collections/

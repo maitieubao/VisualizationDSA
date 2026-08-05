@@ -55,12 +55,12 @@ Vì 81 > 66 $\rightarrow$ Cần giảm tổng $\rightarrow$ Giảm `right`.
 flowchart LR
     L((L)) --> 0[11]
     0 --- 1[23] --- 2[29] --- 3[37] --- 4[41] --- 5[58] --- 6[62] --- 7[70]
-    7 <-- R((R))
+    R((R)) --> 7
     
-    style L fill:#ef4444,color:#fff
-    style R fill:#3b82f6,color:#fff
-    style 0 stroke:#ef4444,stroke-width:2px
-    style 7 stroke:#3b82f6,stroke-width:2px
+    style L fill:#b85c5c,color:#fff
+    style R fill:#c9a227,color:#fff
+    style 0 stroke:#b85c5c,stroke-width:2px
+    style 7 stroke:#c9a227,stroke-width:2px
 ```
 
 **Bước 2: Dịch Right**
@@ -71,11 +71,11 @@ Vì 73 > 66 $\rightarrow$ Vẫn cần giảm tổng $\rightarrow$ Giảm `right`
 flowchart LR
     L((L)) --> 0[11]
     0 --- 1[23] --- 2[29] --- 3[37] --- 4[41] --- 5[58] --- 6[62]
-    6 <-- R((R))
+    R((R)) --> 6
     6 ~~~ 7[70]
     
-    style L fill:#ef4444,color:#fff
-    style R fill:#3b82f6,color:#fff
+    style L fill:#b85c5c,color:#fff
+    style R fill:#c9a227,color:#fff
     style 7 opacity:0.3
 ```
 
@@ -87,11 +87,11 @@ Vì 69 > 66 $\rightarrow$ Vẫn cần giảm $\rightarrow$ Giảm `right`.
 flowchart LR
     L((L)) --> 0[11]
     0 --- 1[23] --- 2[29] --- 3[37] --- 4[41] --- 5[58]
-    5 <-- R((R))
+    R((R)) --> 5
     5 ~~~ 6[62] ~~~ 7[70]
     
-    style L fill:#ef4444,color:#fff
-    style R fill:#3b82f6,color:#fff
+    style L fill:#b85c5c,color:#fff
+    style R fill:#c9a227,color:#fff
     style 6 opacity:0.3
     style 7 opacity:0.3
 ```
@@ -105,10 +105,10 @@ flowchart LR
     0[11] ~~~ 1[23]
     1 --- 2[29] --- 3[37] --- 4[41]
     L((L)) --> 1
-    4 <-- R((R))
+    R((R)) --> 4
     
-    style L fill:#ef4444,color:#fff
-    style R fill:#3b82f6,color:#fff
+    style L fill:#b85c5c,color:#fff
+    style R fill:#c9a227,color:#fff
     style 0 opacity:0.3
 ```
 
@@ -116,12 +116,21 @@ flowchart LR
 `left = 1` (23), `right = 4` (41). Tổng = 23 + 41 = 64.
 Vì 64 < 66 $\rightarrow$ Cần tăng $\rightarrow$ Tăng `left`.
 
-**Bước 6: Tìm thấy kết quả!**
-`left = 2` (29), `right = 4` (37). Tổng = 29 + 37 = 66. Bingo! Trả về `[2, 4]`.
+**Bước 6: Dịch Right**
+`left = 2` (29), `right = 4` (41). Tổng = 29 + 41 = 70.
+Vì 70 > 66 $\rightarrow$ Cần giảm $\rightarrow$ Giảm `right`.
+
+**Bước 7: Tìm thấy kết quả!**
+`left = 2` (29), `right = 3` (37). Tổng = 29 + 37 = 66. Bingo! Trả về `[2, 3]`.
 
 ### Phân tích Mã nguồn (Line-by-line Analysis)
 
-```csharp
+Xem thuật toán Two Pointers chạy thực tế trên Playground bên dưới.
+
+```playground:two-pointers
+```
+
+```dual:two-pointers
 public int[] TwoSum(int[] numbers, int target) 
 {
     // Bước 1: Khởi tạo 2 con trỏ ở 2 đầu mảng
@@ -245,3 +254,32 @@ Mỗi khi nhìn thấy bài toán yêu cầu tìm "Cặp số (Pairs)", "Tổng"
 2. [LeetCode 26 - Remove Duplicates from Sorted Array](https://leetcode.com/problems/remove-duplicates-from-sorted-array/)
 3. [LeetCode 11 - Container With Most Water](https://leetcode.com/problems/container-with-most-water/) (Bài toán nâng cao, dùng tư duy vứt bỏ cột ngắn hơn).
 4. [LeetCode 15 - 3Sum](https://leetcode.com/problems/3sum/) (Siêu phẩm kết hợp 1 vòng lặp For và Two Pointers bên trong).
+
+---
+
+## Next Steps {#next-steps}
+
+Two Pointers chỉ là một mảnh ghép trong gia đình kỹ thuật duyệt mảng thông minh. Khi bài toán yêu cầu quan sát một đoạn con liên tục (subarray/substring) thay vì hai đầu mảng, bạn sẽ cần đến người anh em song sinh của Two Pointers: **Kỹ thuật Cửa sổ trượt (Sliding Window)**. Còn nếu bạn muốn ôn lại cách tư duy chia để trị trên mảng đã sắp xếp, đừng quên **Tìm kiếm Nhị phân (Binary Search)**.
+
+<div class="vt-box-container next-steps">
+  <a class="vt-box" href="/docs/searching/binary-search">
+    <p class="next-steps-link">Tìm kiếm Nhị phân (Binary Search)</p>
+    <p class="next-steps-caption">Thu hẹp phạm vi tìm kiếm một nửa mỗi bước, đạt tốc độ O(log N) trên mảng đã sắp xếp.</p>
+  </a>
+  <a class="vt-box" href="/docs/searching/sliding-window">
+    <p class="next-steps-link">Kỹ thuật Cửa sổ trượt (Sliding Window)</p>
+    <p class="next-steps-caption">Quản lý đoạn con liên tục trượt qua mảng, xử lý bài toán Subarray/Substring trong O(N).</p>
+  </a>
+</div>
+
+## 📚 Tham khảo lý thuyết {#references}
+
+Nguồn lý thuyết chính được dùng để biên soạn bài viết này:
+
+- **Cormen, Leiserson, Rivest, Stein (CLRS) – *Introduction to Algorithms*, 3rd Edition (MIT Press):**
+  - Chương 2 *Getting Started* — khái niệm vòng lặp bất biến (Loop Invariant) dùng để chứng minh tính đúng đắn của vòng lặp Two Pointers.
+- **Wikipedia – *Two-pointer technique*:** Giải thích tổng quan hai hướng tiếp cận cốt lõi — Con trỏ ngược chiều (Opposite / Meet-in-the-middle) và Con trỏ cùng chiều (Fast & Slow).
+- **Wikipedia – *Two sum*:** Mô tả bài toán kinh điển Two Sum II trên mảng đã sắp xếp và lời giải Two Pointers O(N).
+- **GeeksforGeeks – *Two Pointers Technique*:** Hướng dẫn chi tiết cách xây dựng vòng lặp Two Pointers kèm các lỗi biên (Edge Cases) thường mắc phải.
+- **LeetCode – *167. Two Sum II - Input Array Is Sorted*:** Đề bài và quy ước trả về vị trí 1-indexed được tham chiếu trong ví dụ mã nguồn.
+- **LeetCode – *26. Remove Duplicates from Sorted Array*:** Đề bài Remove Duplicates in-place được phân tích trong Biến thể 2 (Fast & Slow Pointers).

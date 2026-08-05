@@ -63,7 +63,8 @@ export class GraphAlgorithmSimulator {
     algorithm: 'BFS' | 'DFS' | 'DIJKSTRA',
     nodes: NodeDTO[],
     edges: EdgeDTO[],
-    sourceNodeId: string | null
+    sourceNodeId: string | null,
+    graphType: 'undirected' | 'directed' = 'undirected'
   ): SimulationResult {
     if (nodes.length === 0) {
       return {
@@ -85,11 +86,11 @@ export class GraphAlgorithmSimulator {
 
     switch (algorithm) {
       case 'BFS':
-        return this.runBFS(nodes, edges, startNode.id);
+        return this.runBFS(nodes, edges, startNode.id, graphType);
       case 'DFS':
-        return this.runDFS(nodes, edges, startNode.id);
+        return this.runDFS(nodes, edges, startNode.id, graphType);
       case 'DIJKSTRA':
-        return this.runDijkstra(nodes, edges, startNode.id);
+        return this.runDijkstra(nodes, edges, startNode.id, graphType);
     }
   }
 
@@ -97,7 +98,23 @@ export class GraphAlgorithmSimulator {
     return nodes.find(n => n.id === id)?.label || '?';
   }
 
-  private static runBFS(nodes: NodeDTO[], edges: EdgeDTO[], startId: string): SimulationResult {
+  /**
+   * Xác định đỉnh kề của currId qua cạnh edge.
+   * Đồ thị có hướng: chỉ duyệt theo chiều from → to (không đi ngược mũi tên).
+   */
+  private static resolveNeighbor(
+    edge: EdgeDTO,
+    currId: string,
+    graphType: 'undirected' | 'directed'
+  ): string | null {
+    if (graphType === 'directed') {
+      return edge.from === currId ? edge.to : null;
+    }
+    if (edge.from !== currId && edge.to !== currId) return null;
+    return edge.from === currId ? edge.to : edge.from;
+  }
+
+  private static runBFS(nodes: NodeDTO[], edges: EdgeDTO[], startId: string, graphType: 'undirected' | 'directed'): SimulationResult {
     const frames: GraphAnimationStep[] = [];
     let stepId = 1;
 
@@ -147,10 +164,9 @@ export class GraphAlgorithmSimulator {
       });
 
       
-      const outgoingEdges = edges.filter(e => e.from === currId);
-      
-      for (const edge of outgoingEdges) {
-        const neighborId = edge.to;
+      for (const edge of edges) {
+        const neighborId = this.resolveNeighbor(edge, currId, graphType);
+        if (neighborId === null) continue;
         const neighborLabel = this.getNodeLabel(nodes, neighborId);
 
         if (!visited.has(neighborId)) {
@@ -201,7 +217,7 @@ export class GraphAlgorithmSimulator {
     };
   }
 
-  private static runDFS(nodes: NodeDTO[], edges: EdgeDTO[], startId: string): SimulationResult {
+  private static runDFS(nodes: NodeDTO[], edges: EdgeDTO[], startId: string, graphType: 'undirected' | 'directed'): SimulationResult {
     const frames: GraphAnimationStep[] = [];
     let stepId = 1;
 
@@ -259,10 +275,9 @@ export class GraphAlgorithmSimulator {
         });
 
         
-        const outgoingEdges = edges.filter(e => e.from === currId);
-
-        for (const edge of outgoingEdges) {
-          const neighborId = edge.to;
+        for (const edge of edges) {
+          const neighborId = this.resolveNeighbor(edge, currId, graphType);
+          if (neighborId === null) continue;
           const neighborLabel = this.getNodeLabel(nodes, neighborId);
 
           if (!visited.has(neighborId)) {
@@ -311,7 +326,7 @@ export class GraphAlgorithmSimulator {
     };
   }
 
-  private static runDijkstra(nodes: NodeDTO[], edges: EdgeDTO[], startId: string): SimulationResult {
+  private static runDijkstra(nodes: NodeDTO[], edges: EdgeDTO[], startId: string, graphType: 'undirected' | 'directed'): SimulationResult {
     const frames: GraphAnimationStep[] = [];
     let stepId = 1;
 
@@ -372,10 +387,9 @@ export class GraphAlgorithmSimulator {
       });
 
       
-      const outgoingEdges = edges.filter(e => e.from === currId);
-
-      for (const edge of outgoingEdges) {
-        const neighborId = edge.to;
+      for (const edge of edges) {
+        const neighborId = this.resolveNeighbor(edge, currId, graphType);
+        if (neighborId === null) continue;
         const neighborLabel = this.getNodeLabel(nodes, neighborId);
 
         if (visited.has(neighborId)) continue;

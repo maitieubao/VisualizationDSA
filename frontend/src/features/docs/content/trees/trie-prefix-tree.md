@@ -1,13 +1,13 @@
 ---
 title: Trie (Cây Tiền tố / Prefix Tree)
-description: Khám phá cấu trúc dữ liệu siêu mạnh cho bài toán tìm kiếm chuỗi, autocomplete, và dictionary lookup. Tối ưu O(L) thay vì O(L) hash + compare.
+description: Khám phá cấu trúc dữ liệu siêu mạnh cho bài toán tìm kiếm chuỗi, autocomplete, và dictionary lookup. Tìm kiếm từ đầy đủ và tiền tố đều trong O(L) — điều mà Hash Table không hỗ trợ.
 ---
 
 # Trie (Cây Tiền tố / Prefix Tree) {#trie-prefix-tree}
 
 :::info Mục tiêu bài học
 - Hiểu cách Trie lưu trữ **từng ký tự** của chuỗi thành các Node, tạo thành "cây từ điển".
-- Nắm vững lợi thế vượt trội: **Tìm kiếm O(L)** (L = độ dài chuỗi) thay vì O(L) của Hash Table (hash + string compare).
+- Nắm vững lợi thế vượt trội: **Tìm kiếm từ O(L)** và **tìm kiếm tiền tố O(L)** (L = độ dài chuỗi) — Hash Table chỉ truy vấn được từ đầy đủ (hash + so sánh chuỗi), không hỗ trợ prefix search.
 - Thành thạo các thao tác: Insert, Search, StartsWith (autocomplete), Delete.
 - Phân tích ứng dụng thực tế: Autocomplete, Spell Checker, IP Routing, Word Dictionary.
 - Hiểu cách tối ưu bộ nhớ: **Ternary Search Tree**, **Radix Tree (Patricia Trie)**.
@@ -43,11 +43,11 @@ flowchart TD
     
     A --> P1["p"]
     P1 --> P2["p"]
-    P2 --> L["l"]
+    P2 --> L1["l"]
     P2 --> E["e"]
     P2 --> R["r"]
     
-    L --> E1["e"]
+    L1 --> E1["e"]
     E1 --> Star1["* (end: apple)"]
     
     E --> Star2["* (end: app)"]
@@ -55,15 +55,15 @@ flowchart TD
     R --> I["i"]
     I --> C["c"]
     C --> O["o"]
-    O --> T["t"]
-    T --> Star3["* (end: apricot)"]
+    O --> T1["t"]
+    T1 --> Star3["* (end: apricot)"]
     
     B --> A1["a"]
-    A1 --> T["t"]
-    T --> Star4["* (end: bat)"]
+    A1 --> T2["t"]
+    T2 --> Star4["* (end: bat)"]
     
-    A1 --> L["l"]
-    L --> L2["l"]
+    A1 --> L3["l"]
+    L3 --> L2["l"]
     L2 --> Star5["* (end: ball)"]
     
     style Root fill:#3b82f6,color:#fff
@@ -101,6 +101,9 @@ public class TrieNode
 public class Trie
 {
     private readonly TrieNode _root;
+
+    // Cho phép các module gợi ý từ (autocomplete, spell check) duyệt từ gốc
+    public TrieNode Root => _root;
 
     public Trie()
     {
@@ -352,14 +355,15 @@ public class IpRouter
     
     public void AddRoute(string ipPrefix, string gateway)
     {
-        _routingTable.Insert(ipPrefix, gateway);
+        // (sketch) Trie mở rộng sẽ lưu thêm gateway tại Node kết thúc prefix
+        _routingTable.Insert(ipPrefix);
     }
     
     public string Lookup(string ipAddress)
     {
-        // Tìm prefix dài nhất khớp với IP
+        // (sketch) Longest Prefix Match: duyệt Trie theo từng bit của địa chỉ IP
         // Ví dụ: IP "192.168.1.100" khớp với route "192.168.1.0/24"
-        return _routingTable.LongestPrefixMatch(ipAddress);
+        return "gateway"; // Trả về gateway của prefix dài nhất khớp được
     }
 }
 ```
@@ -392,7 +396,7 @@ public IList<string> FindWords(char[][] board, string[] words)
 ## 8. Cạm bẫy thường gặp {#pitfalls}
 
 <details class="vt-quiz">
-<summary>❓ Quiz 1: Trie có nh; lợi thế gì so với Hash Table cho tìm kiếm từ đầy đủ?</summary>
+<summary>❓ Quiz 1: Trie có lợi thế gì so với Hash Table cho tìm kiếm từ đầy đủ?</summary>
 
 **Đáp án:**
 1. **Trie:** O(L) - chỉ duyệt ký tự, **không cần hash**.
@@ -439,15 +443,28 @@ public IList<string> FindWords(char[][] board, string[] words)
 
 ## Next Steps {#next-steps}
 
-Trie là cấu trúc dữ liệu mạnh mẽ cho bài toán chuỗi, nhưng để xử lý **truy vấn đoạn (Range Query)** trên mảng, chúng ta cần các cấu trúc khác như Segment Tree hay Fenwick Tree. Hãy khám phá:
+Trie là cấu trúc dữ liệu mạnh mẽ cho bài toán chuỗi. Để củng cố kiến thức về cây và biết cách chọn đúng cấu trúc cho từng bài toán, hãy khám phá:
 
 <div class="vt-box-container next-steps">
-  <a class="vt-box" href="/docs/trees/union-find">
-    <p class="next-steps-link">Union-Find (Disjoint Set Union)</p>
-    <p class="next-steps-caption">Kết nối thành phần, Kruskal MST, Dynamic Connectivity trong O(α(N)).</p>
+  <a class="vt-box" href="/docs/tree-graph/bst">
+    <p class="next-steps-link">Cây Nhị phân Tìm kiếm (BST)</p>
+    <p class="next-steps-caption">Cấu trúc cây tìm kiếm dữ liệu có thứ tự trong O(log N), so sánh trực tiếp với Trie.</p>
   </a>
-  <a class="vt-box" href="/docs/trees/segment-tree">
-    <p class="next-steps-link">Segment Tree (Cây đoạn)</p>
-    <p class="next-steps-caption">Truy vấn tổng/min/max đoạn [L, R] trong O(log N).</p>
+  <a class="vt-box" href="/docs/tree-graph/tree-graph-summary">
+    <p class="next-steps-link">Tổng hợp ứng dụng Cây & Đồ thị</p>
+    <p class="next-steps-caption">Toàn cảnh các cấu trúc cây và đồ thị để chọn đúng công cụ cho đúng bài toán.</p>
   </a>
 </div>
+
+---
+
+## 📚 Tham khảo lý thuyết {#references}
+
+Dưới đây là các nguồn tài liệu kinh điển và chính thống được dùng để biên soạn bài viết này, giúp bạn tự nghiên cứu sâu hơn nếu muốn:
+
+- **Cormen, Leiserson, Rivest & Stein (CLRS)** — *Introduction to Algorithms*, 3rd Edition, mục 12.5 "Radix Trees" (biến thể nén đường đi của Trie).
+- **Dasgupta, Papadimitriou & Vazirani** — *Algorithms* (phần về từ điển và cấu trúc dữ liệu chuỗi, so sánh Trie/Hash/BST).
+- **Wikipedia** — [Trie](https://en.wikipedia.org/wiki/Trie) (cấu trúc cây tiền tố, ứng dụng autocomplete và mối liên hệ với Radix Tree).
+- **GeeksforGeeks** — [Trie | (Insert and Search)](https://www.geeksforgeeks.org/trie-insert-and-search/).
+- **MIT OpenCourseWare** — *6.006 Introduction to Algorithms*, bài giảng về Hash Tables và cấu trúc dữ liệu từ điển.
+- **LeetCode** — [208. Implement Trie (Prefix Tree)](https://leetcode.com/problems/implement-trie-prefix-tree/).

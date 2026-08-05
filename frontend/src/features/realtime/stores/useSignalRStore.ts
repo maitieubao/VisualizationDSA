@@ -77,8 +77,9 @@ export const useSignalRStore = defineStore('signalr', () => {
       await connection.start()
       leaderboardConnection.value = connection
       leaderboardState.value = 'connected'
-    } catch {
+    } catch (err: unknown) {
       leaderboardState.value = 'error'
+      errorMessage.value = err instanceof Error ? err.message : 'Không thể kết nối bảng xếp hạng thời gian thực.'
     }
   }
 
@@ -103,11 +104,17 @@ export const useSignalRStore = defineStore('signalr', () => {
 
     connection.on('BadgeAwarded', (notification: BadgeNotification) => {
       badgeNotifications.value.unshift(notification)
+      if (badgeNotifications.value.length > 50) {
+        badgeNotifications.value = badgeNotifications.value.slice(0, 50)
+      }
       unreadNotificationCount.value++
     })
 
     connection.on('LevelUp', (notification: LevelUpNotification) => {
       levelUpNotifications.value.unshift(notification)
+      if (levelUpNotifications.value.length > 50) {
+        levelUpNotifications.value = levelUpNotifications.value.slice(0, 50)
+      }
       unreadNotificationCount.value++
     })
 
@@ -119,8 +126,9 @@ export const useSignalRStore = defineStore('signalr', () => {
       await connection.start()
       notificationConnection.value = connection
       notificationState.value = 'connected'
-    } catch {
+    } catch (err: unknown) {
       notificationState.value = 'error'
+      errorMessage.value = err instanceof Error ? err.message : 'Không thể kết nối thông báo thời gian thực.'
     }
   }
 
@@ -154,6 +162,7 @@ export const useSignalRStore = defineStore('signalr', () => {
 
     connection.on('ParticipantJoined', (room: QuizRoomDto) => {
       currentRoom.value = room
+      errorMessage.value = null
     })
 
     connection.on('ParticipantLeft', (room: QuizRoomDto) => {
@@ -172,6 +181,7 @@ export const useSignalRStore = defineStore('signalr', () => {
       currentRoom.value = room
       answerResults.value = []
       quizResults.value = null
+      errorMessage.value = null
     })
 
     connection.on('NewQuestion', (question: QuizQuestionBroadcast) => {
@@ -206,8 +216,10 @@ export const useSignalRStore = defineStore('signalr', () => {
       await connection.start()
       quizRoomConnection.value = connection
       quizRoomState.value = 'connected'
-    } catch {
+      errorMessage.value = null
+    } catch (err: unknown) {
       quizRoomState.value = 'error'
+      errorMessage.value = err instanceof Error ? err.message : 'Không thể kết nối phòng quiz.'
     }
   }
 
@@ -220,44 +232,76 @@ export const useSignalRStore = defineStore('signalr', () => {
       currentQuestion.value = null
       answerResults.value = []
       quizResults.value = null
+      errorMessage.value = null
     }
   }
 
   async function createRoom(quizId: string): Promise<void> {
     if (!quizRoomConnection.value) return
-    await quizRoomConnection.value.invoke('CreateRoom', quizId)
+    try {
+      await quizRoomConnection.value.invoke('CreateRoom', quizId)
+    } catch (err: unknown) {
+      errorMessage.value = err instanceof Error ? err.message : 'Không thể tạo phòng.'
+    }
   }
 
   async function joinRoom(roomCode: string): Promise<void> {
     if (!quizRoomConnection.value) return
-    await quizRoomConnection.value.invoke('JoinRoom', roomCode)
+    try {
+      await quizRoomConnection.value.invoke('JoinRoom', roomCode)
+    } catch (err: unknown) {
+      errorMessage.value = err instanceof Error ? err.message : `Không thể tham gia phòng ${roomCode}.`
+    }
   }
 
   async function leaveRoom(roomCode: string): Promise<void> {
     if (!quizRoomConnection.value) return
-    await quizRoomConnection.value.invoke('LeaveRoom', roomCode)
+    try {
+      await quizRoomConnection.value.invoke('LeaveRoom', roomCode)
+    } catch (err: unknown) {
+      errorMessage.value = err instanceof Error ? err.message : `Không thể rời phòng ${roomCode}.`
+    }
     currentRoom.value = null
     currentQuestion.value = null
+    answerResults.value = []
+    quizResults.value = null
+    errorMessage.value = null
   }
 
   async function startQuiz(roomCode: string): Promise<void> {
     if (!quizRoomConnection.value) return
-    await quizRoomConnection.value.invoke('StartQuiz', roomCode)
+    try {
+      await quizRoomConnection.value.invoke('StartQuiz', roomCode)
+    } catch (err: unknown) {
+      errorMessage.value = err instanceof Error ? err.message : 'Không thể bắt đầu quiz.'
+    }
   }
 
   async function submitAnswer(roomCode: string, questionIndex: number, answerIndex: number): Promise<void> {
     if (!quizRoomConnection.value) return
-    await quizRoomConnection.value.invoke('SubmitAnswer', roomCode, questionIndex, answerIndex)
+    try {
+      await quizRoomConnection.value.invoke('SubmitAnswer', roomCode, questionIndex, answerIndex)
+    } catch (err: unknown) {
+      errorMessage.value = err instanceof Error ? err.message : 'Không thể gửi câu trả lời.'
+    }
   }
 
   async function nextQuestion(roomCode: string): Promise<void> {
     if (!quizRoomConnection.value) return
-    await quizRoomConnection.value.invoke('NextQuestion', roomCode)
+    try {
+      await quizRoomConnection.value.invoke('NextQuestion', roomCode)
+    } catch (err: unknown) {
+      errorMessage.value = err instanceof Error ? err.message : 'Không thể chuyển câu hỏi.'
+    }
   }
 
   async function fetchActiveRooms(): Promise<void> {
     if (!quizRoomConnection.value) return
-    await quizRoomConnection.value.invoke('GetActiveRooms')
+    try {
+      await quizRoomConnection.value.invoke('GetActiveRooms')
+    } catch (err: unknown) {
+      errorMessage.value = err instanceof Error ? err.message : 'Không thể tải danh sách phòng.'
+    }
   }
 
   

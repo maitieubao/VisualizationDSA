@@ -32,12 +32,13 @@ export function useSortingAnimation() {
   });
 
   const stepDescription = computed(
-    () => currentSortFrame.value?.description ?? "Chọn thuật toán và nhấn Play ▶"
+    () => currentSortFrame.value?.description ?? "Chọn thuật toán và nhấn Play"
   );
 
   const progressPercent = computed(() => {
-    if (!sortFrames.value.length) return 0;
-    return (vcrStore.currentFrameIndex / (sortFrames.value.length - 1)) * 100;
+    if (sortFrames.value.length <= 1) return 0;
+    const ratio = vcrStore.currentFrameIndex / (sortFrames.value.length - 1);
+    return Math.min(100, Math.max(0, ratio * 100));
   });
 
   const generators: Record<SortAlgorithm, (a: number[]) => SortFrame[]> = {
@@ -52,12 +53,20 @@ export function useSortingAnimation() {
 
   function recompileForAlgo(algo: SortAlgorithm): void {
     const arrStr = vcrStore.rawInputArray;
-    const parsedArr = arrStr
-      .split(",")
-      .map((num) => parseInt(num.trim(), 10))
-      .filter((num) => !isNaN(num));
 
-    const arr = parsedArr.length > 0
+    // Parse chặt: mỗi token phải là số nguyên hợp lệ; nếu có token rác → dùng mảng mặc định
+    const tokens = arrStr.split(",").map((s) => s.trim()).filter((s) => s.length > 0);
+    const parsedArr: number[] = [];
+    let malformed = false;
+    for (const token of tokens) {
+      if (!/^-?\d+$/.test(token)) {
+        malformed = true;
+        break;
+      }
+      parsedArr.push(parseInt(token, 10));
+    }
+
+    const arr = !malformed && parsedArr.length > 0
       ? parsedArr.slice(0, MAX_ELEMENTS)
       : [45, 12, 85, 32, 9, 60];
 
@@ -81,9 +90,9 @@ export function useSortingAnimation() {
   }
 
   onMounted(() => {
-    if (vcrStore.playbackFrames.length === 0) {
-      selectAlgorithm(selectedAlgo.value);
-    }
+    // Luôn khởi tạo frames của sorting khi view mount — kể cả khi store dùng chung
+    // đã chứa frames của feature khác (CodeEditor, Quiz...), tránh "sorting tab chết"
+    selectAlgorithm(selectedAlgo.value);
   });
 
   return {

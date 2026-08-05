@@ -77,7 +77,7 @@
 
       
       <div v-if="module.items.length === 0" class="empty-items text-center py-8">
-        <div class="text-4xl mb-2">📝</div>
+        <div class="text-4xl mb-2"><BaseIcon name="clipboard-list" class="w-10 h-10 text-text-muted mx-auto" /></div>
         <p class="text-text-muted">Module này chưa có bài học nào</p>
         <button class="btn-primary mt-4" @click="$emit('add-item', module)">
           <BaseIcon name="plus" class="w-4 h-4 inline mr-1" /> Thêm bài học đầu tiên

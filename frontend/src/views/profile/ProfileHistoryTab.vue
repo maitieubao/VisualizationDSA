@@ -31,7 +31,7 @@
             <td class="cell-score">{{ attempt.score }} / {{ attempt.maxScore }}</td>
             <td>
               <span class="status-pill" :class="attempt.passed ? 'status-pill--pass' : 'status-pill--fail'">
-                {{ attempt.passed ? 'ĐẠT ✓' : 'CHƯA ĐẠT ✗' }}
+                {{ attempt.passed ? 'ĐẠT' : 'CHƯA ĐẠT' }} <BaseIcon :name="attempt.passed ? 'check' : 'close'" class="w-3 h-3 inline ml-1 align-middle" />
               </span>
             </td>
             <td class="cell-date">{{ formatAttemptDate(attempt.attemptedAt) }}</td>

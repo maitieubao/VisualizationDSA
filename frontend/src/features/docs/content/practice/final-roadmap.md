@@ -13,10 +13,10 @@ Chúc mừng bạn! Việc đọc, hiểu và thẩm thấu đến tận những
 
 Hãy tự hào về những hành trang đồ sộ bạn đang mang trên vai. Đây không phải là các mánh khóe học thuộc lòng, mà là **Nguyên lý bất biến** - thứ sẽ đi theo bạn suốt cả thập kỷ tới, bất chấp sự thay đổi chóng mặt của các Framework:
 
-1. **Tư duy Thuật toán & Big O:** Không còn sợ hãi trước những bài toán xử lý hàng triệu dữ liệu. Nắm vững nghệ thuật chia để trị (Merge Sort), và kỹ năng duyệt phi tuyến tính (Binary Tree, Graph, DFS, Dijkstra).
-2. **Linh hồn Hướng đối tượng (OOP):** Hiểu rõ giá trị của việc Đóng gói (Encapsulation), tái sử dụng qua Kế thừa (Inheritance), linh hoạt với Đa hình (Polymorphism) và định hình bằng Trừu tượng hóa (Abstraction).
-3. **Tiêu chuẩn Thiết kế (SOLID):** Không còn viết ra những đoạn mã dính chặt vào nhau (Tightly Coupled). Bạn đã biết cách thiết kế các Module rời rạc, dễ bảo trì, dễ mở rộng (Open-Closed) mà không làm sụp đổ hệ thống cũ.
-4. **Giải pháp Hệ thống (Design Patterns & DI):** Nắm trong tay quyền lực tối cao của Dependency Injection, IoC Container, Factory, và Strategy Pattern để tự tay xây dựng những kiến trúc Enterprise khổng lồ.
+1. **Tư duy Thuật toán & Big O:** Không còn sợ hãi trước những bài toán xử lý hàng triệu dữ liệu. Nắm vững nghệ thuật chia để trị ([Merge Sort](/docs/sorting/merge-sort)), và kỹ năng duyệt phi tuyến tính ([Binary Tree](/docs/tree-graph/bst), [Graph & DFS](/docs/tree-graph/dfs), [Dijkstra](/docs/tree-graph/dijkstra)).
+2. **Linh hồn Hướng đối tượng (OOP):** Hiểu rõ giá trị của việc [Đóng gói](/docs/oop/encapsulation), tái sử dụng qua [Kế thừa](/docs/oop/inheritance), linh hoạt với [Đa hình](/docs/oop/polymorphism) và định hình bằng [Trừu tượng hóa](/docs/oop/abstraction).
+3. **Tiêu chuẩn Thiết kế (SOLID):** Không còn viết ra những đoạn mã dính chặt vào nhau (Tightly Coupled). Bạn đã biết cách thiết kế các Module rời rạc, dễ bảo trì, dễ mở rộng ([Open-Closed](/docs/solid/ocp)) mà không làm sụp đổ hệ thống cũ.
+4. **Giải pháp Hệ thống (Design Patterns & DI):** Nắm trong tay quyền lực tối cao của [Dependency Injection](/docs/di/basics), IoC Container, [Factory](/docs/patterns/factory), và [Strategy Pattern](/docs/patterns/strategy) để tự tay xây dựng những kiến trúc Enterprise khổng lồ.
 
 ```mermaid
 mindmap
@@ -106,6 +106,44 @@ Nếu bạn:
 **Chúng tôi luôn rộng cửa chào đón bạn!**
 
 Hãy truy cập kho lưu trữ GitHub của dự án (hoặc mã nguồn trên máy của bạn), tạo một nhánh mới (Branch), viết mã, và gửi Pull Request. Việc có tên trên bảng vàng đóng góp cho mã nguồn mở không chỉ là niềm tự hào, mà còn là một điểm cộng khổng lồ trong mắt các tập đoàn công nghệ toàn cầu.
+
+---
+
+## Next Steps {#next-steps}
+
+Hành trình 12 chặng đường đã khép lại, nhưng trước khi bước sang chặng mới (Clean Architecture, DDD, Microservices), hãy dành chút thời gian ôn lại nhanh những trụ cột cốt lõi:
+
+<div class="vt-box-container next-steps">
+  <a class="vt-box" href="/docs/sorting/sorting-summary">
+    <p class="next-steps-link">Tổng hợp thuật toán Sắp xếp</p>
+    <p class="next-steps-caption">So sánh độ phức tạp và khi nào nên dùng thuật toán nào.</p>
+  </a>
+  <a class="vt-box" href="/docs/tree-graph/tree-graph-summary">
+    <p class="next-steps-link">Tổng hợp Cây & Đồ thị</p>
+    <p class="next-steps-caption">Ôn lại BFS, DFS, Dijkstra và các ứng dụng điển hình.</p>
+  </a>
+  <a class="vt-box" href="/docs/di/basics">
+    <p class="next-steps-link">Dependency Injection & IoC</p>
+    <p class="next-steps-caption">Nền tảng vững chắc cho những kiến trúc Enterprise khổng lồ.</p>
+  </a>
+  <a class="vt-box" href="/docs/system-design/system-design-intro">
+    <p class="next-steps-link">Thiết kế Hệ thống</p>
+    <p class="next-steps-caption">Khởi đầu cho lộ trình trở thành System Architect.</p>
+  </a>
+</div>
+
+## 📚 Tham khảo lý thuyết {#references}
+
+Dưới đây là các nguồn tài liệu kinh điển và chính thống đã định hình toàn bộ chương trình, giúp bạn tự nghiên cứu sâu hơn trong lộ trình phía trước:
+
+- **Thuật toán, Độ phức tạp & Cấu trúc dữ liệu:** Cormen, Leiserson, Rivest & Stein, *Introduction to Algorithms* (CLRS), 3rd Edition (MIT Press); Gayle Laakmann McDowell, *Cracking the Coding Interview*, 6th Edition — mục "Big O" và "Trees and Graphs".
+- **Ký hiệu O lớn:** [Wikipedia - Big O notation](https://en.wikipedia.org/wiki/Big_O_notation).
+- **SOLID & Clean Code:** Robert C. Martin, *Clean Code* và *Clean Architecture*; [Wikipedia - SOLID](https://en.wikipedia.org/wiki/SOLID).
+- **Design Patterns:** Erich Gamma et al. (Gang of Four), *Design Patterns: Elements of Reusable Object-Oriented Software*; [Wikipedia - Design Patterns](https://en.wikipedia.org/wiki/Design_Patterns).
+- **Dependency Injection trong .NET:** [Microsoft Learn - Dependency injection in .NET](https://learn.microsoft.com/dotnet/core/extensions/dependency-injection).
+- **Thiết kế Hệ thống & Hệ thống phân tán:** Alex Xu, *System Design Interview – An Insider's Guide* (Volume 1 & 2); Martin Kleppmann, *Designing Data-Intensive Applications* (DDIA).
+- **Microservices & Kiến trúc phần mềm:** Sam Newman, *Building Microservices*; [Wikipedia - Domain-driven design](https://en.wikipedia.org/wiki/Domain-driven_design).
+- **Nghề Kỹ sư Phần mềm:** Andrew Hunt & David Thomas, *The Pragmatic Programmer*, 20th Anniversary Edition.
 
 ---
 

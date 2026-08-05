@@ -7,7 +7,7 @@
           Nhật ký Hoạt động Quản trị (Admin Audit Logs)
         </h3>
         <button class="btn-create-user flex items-center gap-1 bg-bg-hover border border-border-subtle px-3 py-1.5 rounded-xl text-xs text-white hover:bg-bg-hover transition-all font-bold cursor-pointer" @click="loadAuditLogs">
-          Làm mới ↻
+          <BaseIcon name="refresh-cw" style="width:13px;height:13px" /> Làm mới
         </button>
       </div>
 

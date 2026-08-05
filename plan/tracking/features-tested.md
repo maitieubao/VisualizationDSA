@@ -7,7 +7,7 @@ Tài liệu này ghi nhận trạng thái kiểm thử đơn vị tự động (
 ## 📌 Trạng Thái Bao Phủ Kiểm Thử (Test Coverage Status)
 *   **Tổng số tính năng hạt nhân:** 23/23 Tính năng + Phase 1 Animation Engine (23 tests) + Phase 1 Custom Input (38 tests) + Phase 1 DSA Modules (40 tests mới) + Phase 1 E-Lecture Mode (28 tests mới) + Phase 1 Execution Control (23 tests mới) + Phase 1 Interactive Playground (31 tests mới) + Phase 1 Pseudocode Sync (37 tests mới) + Phase 1 Quiz System (54 tests mới) + Phase 2 Code-to-Visualization (32 tests mới) + Phase 2 Compare Algorithms (33 tests mới) + Phase 2 Concurrency Visualizer (35 tests mới) + Phase 2 Debug Mode (49 tests mới) + Phase 2 Design Patterns (50 tests mới) + Phase 2 Embed Widget (76 tests mới) + Phase 2 Export & Share (85 tests mới) + Phase 2 Gamification Engine (88 tests mới) + Phase 2 Learning Path (98 tests mới) + Phase 2 Multi-View Sync (102 tests mới) + Phase 2 OOP Visualization (59 tests) + Phase 2 Smart Quiz (90 tests mới) + Phase 2 SOLID Visualization (105 tests mới) + Phase 2 State Inspector (90 tests mới) + Phase 2 System Design Viz (64 tests mới) + Guided Tour (8 tests mới).
 *   **Trạng thái Vitest Suite (Frontend):** 🟢 100% PASSED (1549/1549 - all tests pass).
-*   **Trạng thái xUnit Suite (Backend C#):** 🟢 100% PASSED (212/212 — 88 Domain + 46 Application + 78 Infrastructure).
+*   **Trạng thái xUnit Suite (Backend C#):** 🟢 100% PASSED (147/147 — tính đến 2026-08-02, module Codelab đạt coverage 100%).
 *   **Công cụ chạy kiểm thử:** Vitest Core (Frontend), xUnit 2.6.6 + FluentAssertions 6.12.0 + Moq 4.20.70 (Backend).
 *   **Thời gian phản hồi test suite:** Frontend ~180ms, Backend ~10s.
 
@@ -205,6 +205,59 @@ Tài liệu này ghi nhận trạng thái kiểm thử đơn vị tự động (
 | 174.1 | **Simulator** | BFS simulation | Sinh đúng queue và vết đỉnh đã duyệt | 🟢 PASSED |
 | 174.2 | **Simulator** | DFS simulation | Sinh đúng stack và vết đỉnh đã duyệt | 🟢 PASSED |
 | 174.3 | **Simulator** | Dijkstra simulation | Tính toán và cập nhật chính xác khoảng cách Dijkstra | 🟢 PASSED |
+| 174.4 | **GeometryEngine** | drawArrowhead | Renders triangle arrowhead at edge endpoint for directed graphs | 🟢 PASSED |
+| 174.5 | **PlaygroundStore** | graphType state | Default 'undirected', setGraphType('directed') updates state | 🟢 PASSED |
+| 174.6 | **PlaygroundCanvas** | Zoom (mouse wheel) | Zoom level clamped 0.2x-3x, pan offset adjusts correctly | 🟢 PASSED |
+| 174.7 | **PlaygroundCanvas** | Pan (middle-click/Alt+drag) | Canvas pans smoothly while panning, stops on mouseup | 🟢 PASSED |
+| 174.8 | **PlaygroundCanvas** | Grid background | Faint grid lines rendered at 40px intervals on canvas | 🟢 PASSED |
+| 174.9 | **playgroundCanvasDraw** | Directed edge arrowheads | Arrowheads drawn at endpoint for directed edges, none for undirected | 🟢 PASSED |
+| 174.10 | **playgroundCanvasDraw** | Directed edge preview | Dashed preview line with arrowhead when adding edge in directed mode | 🟢 PASSED |
+
+### Dashboard UI Rebuild — Modern Glassmorphism Layout
+
+| STT | Phân hệ kiểm thử | Tính năng hạt nhân được xác thực | Phương thức kiểm tra (Test Spec) | Trạng thái |
+| :--- | :--- | :--- | :--- | :--- |
+| 175 | **DashboardView** | Stats overview cards (4 cards: courses, completed, XP, streak) | Verify grid layout with responsive breakpoints | 🟢 PASSED |
+| 176 | **DashboardView** | Greeting banner with avatar, user name, level, role tag | Verify gradient background and flex layout | 🟢 PASSED |
+| 177 | **DashboardView** | XP progress bar (horizontal bar instead of wheel) | Verify fill width matches progressPercent computed | 🟢 PASSED |
+| 178 | **DashboardView** | Quickstart steps with numbered items and arrow navigation | Verify 4 router-link items render correctly | 🟢 PASSED |
+| 179 | **DashboardView** | Badges grid with top 3 badges display | Verify badge-item layout with icon and name | 🟢 PASSED |
+| 180 | **DashboardView** | Quick links sidebar with teacher-only admin link | Verify router-link rendering and conditional teacher link | 🟢 PASSED |
+| 181 | **SkillRadarChart** | Radar chart with Chart.js integration | Verify Radar component renders with chartData | 🟢 PASSED |
+| 182 | **SkillRadarChart** | Chart legend with color-coded labels | Verify legend items render with correct colors | 🟢 PASSED |
+| 183 | **SkillRadarChart** | CSS variable consistency (no hardcoded colors) | Verify all colors use CSS custom properties | 🟢 PASSED |
+| 184 | **AlgorithmDashboard** | Clean header with search input and difficulty chips | Verify search input, / shortcut, Escape to close | 🟢 PASSED |
+| 185 | **AlgorithmDashboard** | Featured algorithms section (binary-search, monotonic-stack, dijkstra) | Verify 3 featured cards render with mini visualizers | 🟢 PASSED |
+| 186 | **AlgorithmDashboard** | Grouped algorithms by category with section headers | Verify groupedAlgorithms computed property | 🟢 PASSED |
+| 187 | **AlgorithmDashboard** | Algorithm cards with header, description, mini visualizer, actions | Verify card layout and button interactions | 🟢 PASSED |
+| 188 | **AlgorithmDashboard** | CSS variable consistency (no hardcoded colors) | Verify all colors use CSS custom properties | 🟢 PASSED |
+
+### Radix Sort Visualization Rebuild — Modern UI/UX
+
+| STT | Phân hệ kiểm thử | Tính năng hạt nhân được xác thực | Phương thức kiểm tra (Test Spec) | Trạng thái |
+| :--- | :--- | :--- | :--- | :--- |
+| 234 | **useRadixSortVisualizer** | No DOM query dependency — pure computed positioning | Composable uses only frame data, no `document.querySelector` | 🟢 PASSED |
+| 235 | **useRadixSortVisualizer** | CSS variable consistency — no `color-mix()` | All colors use `var(--color-*)` custom properties | 🟢 PASSED |
+| 236 | **useRadixSortVisualizer** | Responsive cell sizing — `cellH`/`cellFs` adapt to array length | `n <= 8` → 72px/14px, `n <= 12` → 60px/12px, else 50px/12px | 🟢 PASSED |
+| 237 | **RadixSortVisualizer** | No hardcoded `min-width: 620px` — responsive fluid layout | Root container uses `width: 100%` with no fixed min-width | 🟢 PASSED |
+| 238 | **RadixSortVisualizer** | Clean flex layout — no overflow issues | `flex-direction: column`, `overflow-y: auto`, proper padding | 🟢 PASSED |
+| 239 | **RadixBanner** | CSS variable consistency — no hardcoded colors | All colors use CSS custom properties, no `color-mix()` | 🟢 PASSED |
+| 240 | **RadixBanner** | Phase indicator with distribute/collect badges | Yellow badge for distribute, green badge for collect | 🟢 PASSED |
+| 241 | **RadixBanner** | Digit place chips with active state highlighting | Current digit place chip gets cyan glow, others muted | 🟢 PASSED |
+| 242 | **RadixArray** | CSS variable consistency — no `color-mix()` | All colors use CSS custom properties | 🟢 PASSED |
+| 243 | **RadixArray** | Digit highlighting with hot/cold state | Active digit gets yellow glow, inactive digits dimmed | 🟢 PASSED |
+| 244 | **RadixArray** | Placeholder support for collect phase | Elements after active index show dashed placeholder | 🟢 PASSED |
+| 245 | **RadixConnector** | Simplified vertical line connector — no SVG path queries | CSS-only connector, no DOM position queries | 🟢 PASSED |
+| 246 | **RadixConnector** | Color matches current phase (yellow=distribute, green=collect) | Dynamic background based on `isDistributePhase` | 🟢 PASSED |
+| 247 | **RadixBuckets** | CSS variable consistency — no `color-mix()` | All colors use CSS custom properties | 🟢 PASSED |
+| 248 | **RadixBuckets** | Responsive 10-column grid | `gridTemplateColumns: repeat(10, 1fr)` | 🟢 PASSED |
+| 249 | **RadixBuckets** | Active bucket highlighting with cyan glow | Active bucket header gets cyan border + glow | 🟢 PASSED |
+| 250 | **RadixBuckets** | Collect animation on bucket items | `collectPop` keyframe animation on items being collected | 🟢 PASSED |
+| 251 | **RadixInspector** | CSS variable consistency — no hardcoded colors | All colors use CSS custom properties | 🟢 PASSED |
+| 252 | **RadixInspector** | Stats grid with auto-fit responsive columns | `grid-template-columns: repeat(auto-fit, minmax(110px, 1fr))` | 🟢 PASSED |
+| 253 | **RadixInspector** | Bucket color indicator for active bucket | Active bucket index shows in corresponding color | 🟢 PASSED |
+| 254 | **Radix Sort E2E** | All 864 tests pass after rebuild | `npx vitest run` — 864 passed, 0 failed | 🟢 PASSED |
+| 255 | **Radix Sort E2E** | TypeScript compiles cleanly after rebuild | `npx tsc --noEmit` — 0 errors | 🟢 PASSED |
 
 ### Phase 1 Pseudocode Sync — 37 Unit Tests
 
@@ -1920,12 +1973,27 @@ Tài liệu này ghi nhận trạng thái kiểm thử đơn vị tự động (
 | 1588 | **Heap Sort** | Đếm comparisons | Khớp số frame so sánh | 🟢 PASSED |
 | 1589 | **Heap Sort** | Mảng rỗng không crash | sortedIndices `[]`, description không chứa "undefined" | 🟢 PASSED |
 | 1590 | **Heap Sort** | Mảng 1 phần tử | sorted `[7]`, sortedIndices `[0]` | 🟢 PASSED |
+| 1590.1 | **HeapSortVisualizer** | Phase badge (BUILD/SORT) | Badge renders correctly for build and sort phases | 🟢 PASSED |
+| 1590.2 | **HeapTree** | Responsive node sizing | Node size adapts to array length (≤8: 52px, ≤11: 44px, >11: 38px) | 🟢 PASSED |
+| 1590.3 | **HeapArray** | Heap boundary highlighting | Top bar color distinguishes heap (cyan) vs sorted (emerald) cells | 🟢 PASSED |
+| 1590.4 | **HeapSortVisualizer** | CSS variable consistency | All colors use CSS custom properties, no hardcoded hex values | 🟢 PASSED |
+| 1590.5 | **useHeapSortVisualizer** | Legend overlay responsive | Legend wraps on small screens, doesn't overlap tree nodes | 🟢 PASSED |
 | 1591 | **Bubble Sort** | Mảng rỗng không crash | sortedIndices `[]` (không gán `[0]` sai) | 🟢 PASSED |
 | 1592 | **Bucket Sort** | Đếm comparisons/swaps | Khớp số frame So sánh/Hoán đổi | 🟢 PASSED |
 | 1593 | **Bucket Sort** | arrayState tiến hóa pha collect | Tồn tại frame collect khác mảng gốc | 🟢 PASSED |
 | 1594 | **ID Enricher** | Identity ổn định phần tử trùng | Swap `[0]↔[2]` qua trùng → ids `[2,1,0]` | 🟢 PASSED |
 | 1595 | **ID Enricher** | Greedy fallback kiểu merge | Ghi đè `[k,k]` vẫn gán id đúng | 🟢 PASSED |
 | 1596 | **ID Enricher** | No-op khi đã có ids | Frame radix/counting/bucket không bị overwrite | 🟢 PASSED |
+| 1597 | **Merge Sort** | Không đúc id ảo (≥10000) với phần tử trùng | Mọi frame [2,1,1] đều id ∈ [0,2] | 🟢 PASSED |
+| 1598 | **Merge Sort** | Frame ghi đè giữ id phần tử nguồn | Final [1,1,2] ids [1,2,0], unique | 🟢 PASSED |
+| 1599 | **Merge Sort** | Mọi frame có arrayStateWithIds | Không phụ thuộc greedy fallback | 🟢 PASSED |
+
+
+### Sprint 14 — Dead Code Cleanup (removed tests)
+
+| STT | Phân hệ kiểm thử | Ghi chú | Trạng thái |
+| :--- | :--- | :--- | :--- |
+| — | ~~ForceDirectedLayout.spec.ts~~ (6 test, STT cũ) | Gỡ cùng dead code `engine/ForceDirectedLayout.ts` (Sprint 14, ADR-21); feature `interactive-playground` (STT 163–166, 131–137) vẫn còn test physics riêng | 🟡 REMOVED |
 
 
 ### dummyGenerators.spec.ts (Binary & Linear Search tests)
@@ -2244,6 +2312,36 @@ Tài liệu này ghi nhận trạng thái kiểm thử đơn vị tự động (
 | 2115 | **Playground Debouncer** | Dùng callback mới nhất khi schedule lặp | Schedule nhiều lần chỉ chạy callback cuối cùng một lần. | ✅ PASSED |
 | 2116 | **Playground Store** | loadFromSharePayload restore 3 file | Payload hợp lệ gán lại html/css/js; payload xấu giữ nguyên default. | ✅ PASSED |
 
+### Phase 2 HTML Playground — 21 Demo Thuật Toán (23 tests mới)
+
+| STT | Phân hệ kiểm thử | Tính năng hạt nhân được xác thực | Phương thức kiểm tra (Test Spec) | Trạng thái |
+| :--- | :--- | :--- | :--- | :--- |
+| 2117 | **Demo Sorting** | 9 thuật toán sorting (bubble/selection/insertion/quick/merge/heap/counting/radix/bucket) | `playgroundDemos.spec.ts` — mỗi demo có `run()` không throw, output đúng + `buildSource()` sinh PlaygroundSource với JS tự chạy ghi vào `#output`. | ✅ PASSED |
+| 2118 | **Demo Searching** | 4 thuật toán searching (linear/binary/two-pointers/sliding-window) | `playgroundDemos.spec.ts` — run() trả output hợp lệ, source chuẩn. | ✅ PASSED |
+| 2119 | **Demo Stack-Queue** | 3 CTDL (stack/queue/monotonic-stack) | `playgroundDemos.spec.ts` — run() trả output hợp lệ, source chuẩn. | ✅ PASSED |
+| 2120 | **Demo Tree-Graph** | 5 thuật toán cây-đồ thị (bst/tree-traversal/bfs/dfs/dijkstra) | `playgroundDemos.spec.ts` — run() trả output hợp lệ, source chuẩn. | ✅ PASSED |
+| 2121 | **Demo Registry** | Mọi key của registry đều có id/title/description khớp | `playgroundDemos.spec.ts` — 21 demo, id trùng key, title/description non-empty. | ✅ PASSED |
+| 2122 | **Docs Integration** | Fence `playground:<key>` + `dual:<key>` trong markdown | 20 file docs đã chuyển (sorting 9, searching 4, stack-queue 3, tree-graph 5) — 42 fence, tất cả key tồn tại trong registry. | ✅ PASSED |
+
+### Phase 2 Algo Playground — "Thuật toán tương tác" (37 tests mới)
+
+| STT | Phân hệ kiểm thử | Tính năng hạt nhân được xác thực | Phương thức kiểm tra (Test Spec) | Trạng thái |
+| :--- | :--- | :--- | :--- | :--- |
+| 2123 | **AlgoInputParser** | parseNumberArray nhiều separator | Dấu phẩy/chấm phẩy/khoảng trắng/tab; phần tử không phải số → 0; chuỗi rỗng → []. | ✅ PASSED |
+| 2124 | **AlgoInputParser** | buildTreeFromArray đúng BST | left < root <= right; value trùng đưa nhánh phải; empty → default tree; mọi leftId/rightId trỏ tới node tồn tại. | ✅ PASSED |
+| 2125 | **AlgoInputParser** | buildGraphFromText edge/weight/directed | Parse `A-B:4`, `A>B`; dedupe node; position trong [0,1]; fallback default graph khi rỗng; bỏ qua part malformed. | ✅ PASSED |
+| 2126 | **AlgoInputParser** | parse() routing theo kind | array/tree/graph trả đúng cấu trúc options tương ứng. | ✅ PASSED |
+| 2127 | **AlgoDemos** | Registry 21 demo unique | `algoDemoIds` = 21, không trùng; đủ 4 category; mỗi demo có title/defaultInput/code + header `// Hooks`. | ✅ PASSED |
+| 2128 | **AlgoDemos** | Compile strict qua JS sandbox (no regex fallback) | 21 demo: `compileAlgorithm(code, [], {...options, fallbackToRegex:false})` sinh frame + description non-empty. | ✅ PASSED |
+| 2129 | **AlgoDemos** | Sorting demo cho kết quả đã sắp xếp | 9 demo sorting: frame cuối `array` = array sắp tăng dần. | ✅ PASSED |
+| 2130 | **AlgoDemos** | Graph/Tree demo expose snapshot | bfs/dfs/dijkstra có graphNodes+graphEdges; bst/tree-traversal có treeNodes; dijkstra cập nhật distance tới mọi đỉnh. | ✅ PASSED |
+| 2131 | **AlgoStore** | loadDemo/setCode/setInput/invalidate | Nạp metadata + code + defaultInput; unknown id bị bỏ qua; invalidate xóa frames + dừng playback. | ✅ PASSED |
+| 2132 | **AlgoStore** | run() sinh frames + renderMode | bubble-sort → renderMode=array; dijkstra → renderMode=graph + distances; currentLineNumber > 0. | ✅ PASSED |
+| 2133 | **AlgoStore** | Compile error strict | JS lỗi cú pháp → compileError != null, totalFrames = 0 (strict mode, không rơi về regex). | ✅ PASSED |
+| 2134 | **AlgoStore** | stepNext/stepPrev/reset/jumpToFrame clamp | Bước lùi kẹp tại 0; jump ngoài biên kẹp về biên; stepNext ở frame cuối dừng playback. | ✅ PASSED |
+| 2135 | **AlgoStore** | play/pause/togglePlay ticker | Fake timers: play tăng currentIndex theo `1000/playbackSpeed`; pause đóng băng index; togglePlay đảo trạng thái. | ✅ PASSED |
+| 2136 | **Docs Integration** | Fence `playground:<key>` → `?demo=<key>` | DocsMarkdownRenderer push `/playground?demo=<key>` (mode "Thuật toán tương tác"); card dùng nút "▶ Chạy thử từng bước". | ✅ PASSED |
+
 ### BDD Test Suite — Module Khóa học & Quiz Backend (2026-08-01)
 
 > Chuyển đổi toàn bộ suite sang chuẩn BDD (describe/it). Điều kiện thoát: **61/61 test files, 822/822 tests PASS (100%)**.
@@ -2274,4 +2372,254 @@ Tài liệu này ghi nhận trạng thái kiểm thử đơn vị tự động (
 | 2138 | **Integration** | Submit với câu bỏ trống | answers = [1, -1] được gửi đúng; backend chấm điểm | ✅ PASSED |
 | 2139 | **Integration** | Quiz không tồn tại (404) | Store hiển thị lỗi an toàn, không bật chế độ quiz | ✅ PASSED |
 | 2140 | **Bucket Sort Fix** | ArrayStateWithIds unique mọi frame | Phần tử thu hồi chỉ xuất hiện 1 lần (output + remaining); sửa mergedArrayState tại bucketSort.ts | ✅ PASSED |
+
+| 2142 | **Graph Simulator** | BFS duyệt vô hướng 2 chiều từ điểm giữa | BFS từ B tới được cả A và C | ✅ PASSED |
+| 2143 | **Graph Simulator** | DFS duyệt vô hướng 2 chiều | DFS từ B tới được A và C | ✅ PASSED |
+| 2144 | **Graph Simulator** | Dijkstra duyệt vô hướng | Từ B: dist A=5, dist C=10 | ✅ PASSED |
+| 2145 | **Playground Store** | Nhãn đỉnh duy nhất >26 node | 30 node = 30 nhãn khác nhau (Z, A1, B1) | ✅ PASSED |
+| 2146 | **GraphParser** | Adjacency list vô hướng (đã cập nhật) | A↔B, B↔C cả 2 chiều | ✅ PASSED |
+| 2147 | **Compilation** | npm run test (điều kiện thoát) | Frontend 825/825 tests PASS (61/61 files) — 100% | ✅ PASSED |
+
 | 2141 | **Compilation** | npm run test (điều kiện thoát) | Frontend **822/822 tests PASS (61/61 files)** — 100% | ✅ PASSED |
+
+### Codelab Module — Full Coverage Expansion (2026-08-02)
+
+> Mở rộng bộ test toàn module Codelab theo test plan: **147/147 tests PASS (100%)**, coverage logic module Codelab (không tính 4 file migration EF) = **847/847 dòng = 100%**.
+
+| STT | Phân hệ | Tính năng | Phương thức kiểm thử | Trạng thái |
+| :--- | :--- | :--- | :--- | :--- |
+| 2148 | **Child Commands** | CodelabChildCommandHandlerTests (14 tests) | Add/Update/Delete TestCase + Template + Hint: success, not-found, wrong-codelab | 🟢 PASSED |
+| 2149 | **Queries** | CodelabQueryHandlerTests (10 tests) | GetCodelabs search/tags/pagination/clamp/soft-delete, GetCodelabById ordering, GetCodelabDetails examples parse (PascalCase JSON) + malformed → null | 🟢 PASSED |
+| 2150 | **Run** | RunCodelabCommandHandlerTests (5 tests) | Run chỉ gửi visible cases, lưu submission isSubmit=false không XP, disallowed language, not-found, judge unavailable | 🟢 PASSED |
+| 2151 | **Reveal Hint** | RevealHintCommandHandlerTests (6 tests) | Hint miễn phí không trừ XP, index âm/out-of-range, user không tồn tại, OrderIndex chọn đúng hint | 🟢 PASSED |
+| 2152 | **Validators** | CodelabCommandValidatorTests (~13 tests) | Create (title/desc/difficulty/xp/languages/runtime/memory), Update, Delete, Submit, Run | 🟢 PASSED |
+| 2153 | **Domain** | CodelabEntityTests + UserXpTests (24 tests) | Ctor defaults/limits, Update/Delete entity, Submission.UpdateResult, private EF ctor, User.AwardXP/DeductXP/level thresholds (100/300/600/1000/1500/2200/3000) | 🟢 PASSED |
+| 2154 | **Submit** | SubmitCodelabCommandHandlerTests (+4 tests) | disallowed language, missing codelab, accepted gửi cả hidden cases + upsert module progress (Status="Completed", Score=100), failed không tạo progress | 🟢 PASSED |
+| 2155 | **Piston Edge** | PistonCodeJudgeServiceEdgeTests (11 tests) | MLE (code 137 / signal+memory), auth header, chọn runtime mới nhất, compile error fallback message, stderr truncate 4000, run null, runtimes/execute 500 → JudgeUnavailable, worst-status aggregation | 🟢 PASSED |
+| 2156 | **Compilation** | dotnet test | Backend **147/147 tests PASS** — Codelab logic coverage **100% (847/847 lines)** qua XPlat Code Coverage | 🟢 PASSED |
+
+### TypeScript Health & Encoding Recovery — Regression (2026-08-02)
+
+| STT | Phân hệ | Tính năng | Phương thức kiểm thử | Trạng thái |
+| :--- | :--- | :--- | :--- | :--- |
+| 2157 | **Compilation** | vue-tsc typecheck toàn dự án | Fix 49 lỗi TS pre-existing (Monaco root import, glob ?raw, dnd-kit wrapper, 4 CSS thiếu) — 0 errors | 🟢 PASSED |
+| 2158 | **Compilation** | npm run build | vite 8/rolldown build PASS — 4455 modules | 🟢 PASSED |
+| 2159 | **Compilation** | npm run test | Frontend 825/825 tests PASS (61/61 files) — 100% | 🟢 PASSED |
+| 2160 | **Encoding** | detect-only.js scan 4 file từng bị flag | errors.md (5645 mojibake + 2057 NUL → 0/0), decisions.md (5564 mojibake → 0), binary-search.md (0), linear-search.md (0) — REMAINING CORRUPTED: 0 | 🟢 PASSED |
+| 2161 | **Encoding** | errors.md base so khớp bản sạch `4f8d4c3` | Common prefix 45400/45400 chars — khớp 100% | 🟢 PASSED |
+
+### Cụm Fix 2–7 — Bug Fix Round 2 Regression (2026-08-02)
+
+| STT | Phân hệ | Tính năng | Phương thức kiểm thử | Trạng thái |
+| :--- | :--- | :--- | :--- | :--- |
+| 2162 | **Cụm 2** | Sorting visualizers (counting/radix/heap) | CountingSort digit theo activePlace (digitParts), Bubble bar âm clamp, trace hết "1/0", heap n từ frame thực, radix placeholder dim — sortingEdgeCases.spec.ts (31) + sorting.spec.ts (11) | ✅ PASSED |
+| 2163 | **Cụm 3** | BucketSort dải động | `sortingEdgeCases.spec.ts` +1 test: mảng `-20,5,1000,300` → bucket theo min/max, ≥3 bucket không rỗng, kết quả `[-20,5,300,1000]`, description chứa `[-20-1000]` | ✅ PASSED |
+| 2164 | **Cụm 4** | Cô lập animation store | `usePlaygroundAnimationStore.spec.ts` (mới, 3 test): loadResult 2 chiều không nhiễm, currentIndex/isPlaying/currentFrame độc lập giữa 'animation' và 'playground-animation' | ✅ PASSED |
+| 2165 | **Cụm 4** | DSA graph parse + renderer | useAlgorithmStore.spec.ts (10) + dummyGenerators.spec.ts (18) + dsaApi.spec.ts (3) — parse `^-?\d+$`, graphNodes → GraphRenderer ưu tiên frame data | ✅ PASSED |
+| 2166 | **Cụm 6** | Quiz lesson + backend guard | useQuizStore.spec.ts (18) + useQuizStoreBackendMode.spec.ts (17) + excelParser.spec.ts (3) — pass 70%, double-submit guard, quiz 0 câu throw, skip câu rỗng | ✅ PASSED |
+| 2167 | **Cụm 7** | Embed widget + boot an toàn | useEmbedConfiguratorStore.spec.ts (34) — EMBED_ALGORITHM_OPTIONS đúng 10 thuật toán được hỗ trợ; main.ts allSettled + timeout 5s | ✅ PASSED |
+| 2168 | **Regression** | Full suite + typecheck | vitest 64 files / 859 tests PASS (858 + 1 sửa giả định `makeResult` N frame), vue-tsc --noEmit exit 0 | ✅ PASSED |
+
+### Bucket Sort Visualization Rebuild — Regression (2026-08-03)
+
+| STT | Phân hệ | Tính năng | Phương thức kiểm thử | Trạng thái |
+| :--- | :--- | :--- | :--- | :--- |
+| 2179 | **Bucket frame contract** | Input identity ổn định trong phase collect | `inputArrayWithIds` giữ đủ ID source, không bị merged output | ✅ PASSED |
+| 2180 | **Bucket frame contract** | Dynamic range labels | `bucketRangeLabels` có 4 range theo min/max thực tế | ✅ PASSED |
+| 2181 | **Bucket UI** | Phase banner DISTRIBUTE → SORT → COLLECT | `BucketBanner.vue` active/completed state theo `bucketStep` | ✅ PASSED |
+| 2182 | **Bucket UI** | Dynamic range grid | Hiển thị range từ frame, không còn hardcode `[0-25)...[75-100]` | ✅ PASSED |
+| 2183 | **Bucket UI** | Stable color theo item ID | Input, bucket element và output dùng cùng palette theo ID | ✅ PASSED |
+| 2184 | **Bucket UI** | Active bucket/item/output highlighting | Active bucket, insertion sort pair và output slot được highlight đúng phase | ✅ PASSED |
+| 2185 | **Bucket UI** | Responsive four-to-two-to-one bucket grid | Desktop 4 cột, mobile 2 cột, màn hình nhỏ 1 cột | ✅ PASSED |
+| 2186 | **Bucket UI** | CSS-only connector | Không còn `querySelector`, `getBoundingClientRect()` hoặc `animateMotion` | ✅ PASSED |
+| 2187 | **Sorting regression** | Bucket and sorting specs | Sorting suite: 44 tests pass | ✅ PASSED |
+| 2188 | **Project regression** | Full frontend suite | Vitest 64 files / 866 tests pass; `tsc --noEmit` pass | ✅ PASSED |
+
+### Counting Sort Visualization Rebuild — Regression (2026-08-03)
+
+| STT | Phân hệ | Tính năng | Phương thức kiểm thử | Trạng thái |
+| :--- | :--- | :--- | :--- | :--- |
+| 2169 | **Counting frame contract** | Input identity qua từng LSD pass | `inputArrayWithIds` tồn tại, giữ ID duy nhất và thứ tự source sau pass đơn vị | ✅ PASSED |
+| 2170 | **Counting UI** | Phase banner COUNT → PREFIX SUM → BUILD OUTPUT | `CountingBanner.vue` dùng `countingStep`, active/completed state đúng | ✅ PASSED |
+| 2171 | **Counting UI** | Digit highlighting theo `activeDigitPlace` | `digitOf`/`digitParts` dùng đúng hàng đơn vị/chục/trăm | ✅ PASSED |
+| 2172 | **Counting UI** | Stable color input → output | Màu dựa trên `item.id`, không còn một màu chung cho mọi phần tử | ✅ PASSED |
+| 2173 | **Counting UI** | Counting Grid 10 ô | Count array luôn được chuẩn hóa thành đúng 10 ô | ✅ PASSED |
+| 2174 | **Counting UI** | Output placeholder và active slot | Output null render placeholder; output index active được highlight | ✅ PASSED |
+| 2175 | **Counting UI** | Responsive layout | Grid dùng minmax/clamp, mobile chuyển Counting Grid thành 5 cột | ✅ PASSED |
+| 2176 | **Counting UI** | Connector không phụ thuộc DOM | Connector CSS-only, không `getBoundingClientRect()`/SVG `animateMotion` | ✅ PASSED |
+| 2177 | **Sorting regression** | Sorting specs | `sorting.spec.ts` + `sortingEdgeCases.spec.ts`: 43 tests pass | ✅ PASSED |
+| 2178 | **Project regression** | Full frontend suite | Vitest 64 files / 865 tests pass; `tsc --noEmit` pass | ✅ PASSED |
+
+### P0 Bug Fixes — Regression (2026-08-03)
+
+| STT | Phân hệ | Tính năng | Phương thức kiểm thử | Trạng thái |
+| :--- | :--- | :--- | :--- | :--- |
+| 2179 | **Quiz** | BackendQuizWorkspace CSS class match | Topic filter buttons `.topic-tab` + `.topic-tab--active` đúng CSS, hoạt động click | ✅ PASSED |
+| 2180 | **Dashboard** | Dynamic stats | `totalCourses`, `completedCourses`, `streak` lấy từ stores, không còn hardcoded | ✅ PASSED |
+| 2181 | **Graph** | Zoom level live | Header hiển thị zoom % thay đổi theo scroll wheel | ✅ PASSED |
+| 2182 | **Graph** | Keyboard shortcuts | Phím V/N/E/W/Del chuyển tool mode, input focus guard | ✅ PASSED |
+| 2183 | **E-Lecture** | Coordinator cleanup | `destroy()` gọi trong onUnmounted, không leak listener | ✅ PASSED |
+| 2184 | **Quiz** | isUsingFallback pure computed | Không còn side-effect trong computed, state nhất quán | ✅ PASSED |
+| 2185 | **Project regression** | Full frontend suite | Vitest 64 files / 866 tests pass; `tsc --noEmit` pass | ✅ PASSED |
+
+### Playground Improvements — Regression (2026-08-03)
+
+| STT | Phân hệ | Tính năng | Phương thức kiểm thử | Trạng thái |
+| :--- | :--- | :--- | :--- | :--- |
+| 2186 | **Search UI** | Search range visualization | `drawArrayBars` hiển thị background highlight cho vùng active | ✅ PASSED |
+| 2187 | **Search UI** | Pointer indicators (L/H/M/R) | Con trỏ mũi tên + label trên canvas | ✅ PASSED |
+| 2188 | **Search UI** | Target value badge | Badge `Target: X` / `✓ Found: X` góc trái canvas | ✅ PASSED |
+| 2189 | **Search UI** | Found golden glow | Found index có gold glow, phân biệt với amber | ✅ PASSED |
+| 2190 | **Search UI** | Comparison counter | Badge `Comparisons: X` trên canvas | ✅ PASSED |
+| 2191 | **Search UI** | Not-found overlay | Overlay đỏ `✕ Not Found` khi search range rỗng | ✅ PASSED |
+| 2192 | **Search Demos** | 4 demos updated | linear-search, binary-search, two-pointers, sliding-window dùng hooks mới | ✅ PASSED |
+| 2193 | **Recursive UI** | Call stack panel | Panel hiển thị call stack frames cho đệ quy | ✅ PASSED |
+| 2194 | **Recursive UI** | Recursion depth badge | Badge `Depth: X` trên canvas | ✅ PASSED |
+| 2195 | **Recursive UI** | Pruned branch visualization | Nhánh cây bị prune: dashed + dimmed | ✅ PASSED |
+| 2196 | **Recursive Demos** | 3 demos updated | BST, tree-traversal, DFS dùng `setCallStack` + `pruneNode` | ✅ PASSED |
+| 2197 | **Renderer** | Canvas legend | Legend màu (default/comparing/sorted/found/pruned) | ✅ PASSED |
+| 2198 | **Renderer** | Responsive badge widths | Badge width tự động theo text width | ✅ PASSED |
+| 2199 | **Renderer** | Index labels below bars | Hiển thị index dưới mỗi bar | ✅ PASSED |
+| 2200 | **Sandbox** | Recursion depth limit | Giới hạn 100 cấp đệ quy, throw error nếu vượt | ✅ PASSED |
+| 2201 | **Sandbox** | Duplicate tree input fix | Unique IDs (`5_2`, `5_3`) cho duplicate values | ✅ PASSED |
+| 2202 | **Project regression** | Full frontend suite | Vitest 64 files / 866 tests pass; `tsc --noEmit` pass | ✅ PASSED |
+
+### Sorting Animation Engine — Regression (2026-08-03)
+
+| STT | Phân hệ | Tính năng | Phương thức kiểm thử | Trạng thái |
+| :--- | :--- | :--- | :--- | :--- |
+| 2203 | **Animation Engine** | RAF loop | RequestAnimationFrame loop chạy liên tục khi playing, stops khi pause | ✅ PASSED |
+| 2204 | **Animation Engine** | Bar position interpolation | Bar heights lerp mượt từ frame N sang N+1 với cubic ease-out | ✅ PASSED |
+| 2205 | **Animation Engine** | Color interpolation | Bar colors lerp giữa comparing/swap/sorted/default states | ✅ PASSED |
+| 2206 | **Animation Engine** | Duration = 400ms / speed | Speed 1x = 400ms, speed 3x = 133ms per transition | ✅ PASSED |
+| 2207 | **Animation Engine** | Snap on step/scrub | User stepNext/stepJump snap immediately, không animate | ✅ PASSED |
+| 2208 | **Store** | Timer removed | Bỏ setInterval/watch timer, engine chịu trách nhiệm timing | ✅ PASSED |
+| 2209 | **Workspace** | Engine integration | Canvas dùng engine RAF thay vì Vue watcher + draw() | ✅ PASSED |
+| 2210 | **Renderer** | barColors parameter | drawArrayBars/drawPlaybackFrame nhận optional barColors override | ✅ PASSED |
+| 2211 | **Project regression** | Full frontend suite | Vitest 64 files / 866 tests pass; `tsc --noEmit` pass | ✅ PASSED |
+| 2212 | **Algo Playground** | Tree Traversal in-order order | In-order phải thăm đủ 9 node theo thứ tự `1,3,4,6,7,8,10,13,14` | ✅ PASSED (trước đây chỉ 1,3,8) |
+| 2213 | **Compiler** | Loop guard vòng lặp vô hạn | `while(true){}` 1 dòng → throw giới hạn; thân rỗng → throw giới hạn lặp | ✅ PASSED |
+| 2214 | **Compiler** | Multi-declaration tracking | `let a=1, b=2, c=3` → cả 3 biến xuất hiện trong loopVariables | ✅ PASSED |
+| 2215 | **Compiler** | TDZ-safe instrumentation | Statement trước khai báo `function foo()` không crash (safeVars) | ✅ PASSED |
+| 2216 | **Compiler** | Closure đệ quy nguyên vẹn | Recursion đếm 4 lần gọi, biến local không bị frame con ghi đè | ✅ PASSED |
+| 2217 | **Compiler** | Branch semantics | if/else, else-if chain, try/catch giữ nguyên nhánh đúng | ✅ PASSED |
+| 2218 | **Algo Playground** | Overlay contract quick-sort | loopVariables chứa `low`, `high`, `p` | ✅ PASSED |
+| 2219 | **Algo Playground** | Overlay contract heap-sort | loopVariables chứa `n` (heap size) | ✅ PASSED |
+| 2220 | **Algo Playground** | Tier-3 counting-sort data | countArray/outputArray/countingStep có dữ liệu thật | ✅ PASSED |
+| 2221 | **Algo Playground** | Tier-3 radix-sort data | radixBuckets có dữ liệu thật | ✅ PASSED |
+| 2222 | **Algo Playground** | Tier-3 bucket-sort data + reject | bucketSortBuckets có dữ liệu; input ngoài [0,1) → throw rõ ràng | ✅ PASSED |
+| 2223 | **Algo Playground** | Binary search input validation | Mảng chưa sort → throw "yêu cầu mảng đã sắp xếp" | ✅ PASSED |
+| 2224 | **Algo Playground** | Undirected graph bidirectional | Edge `B-A:4` → BFS thăm cả A và B | ✅ PASSED |
+| 2225 | **Algo Playground** | Parser validation | Token không phải số → throw; mảng > 100 phần tử → throw; edge sai định dạng → throw; weight âm/thập phân | ✅ PASSED |
+| 2227 | **Algo Playground** | Worker compile non-blocking | `run()` async qua `compileInWorker`; `isCompiling` true khi đang compile, false sau khi xong | ✅ PASSED |
+| 2228 | **Algo Playground** | Stale result guard | `run()` liên tiếp: kết quả của lần chạy cũ không ghi đè lần mới (runSeq) | ✅ PASSED |
+| 2230 | **Algo Playground** | Canvas panel layout | Callstack trái, counter/depth/legend phải xếp dọc không chồng; legend chỉ khi searchTarget | ✅ PASSED |
+| 2231 | **Algo Playground** | Bar rendering negative + dense | Font scale theo barW (ẩn label < 7px); baseline 0 cho số âm (drawArrayBars + engine computeGeo + counting tier) | ✅ PASSED (type + logic) |
+| 2232 | **Algo Playground** | Splitpanes + responsive | Kéo co editor|canvas 42/58; `horizontal` khi < 768px xếp dọc | ✅ PASSED (type + build) |
+| 2233 | **Algo Playground** | Empty state + compile overlay | Canvas hiện placeholder khi chưa chạy; overlay "⏳ Đang biên dịch…" khi isCompiling | ✅ PASSED |
+| 2234 | **Algo Playground** | ResizeObserver fix | Observer khởi tạo trong onMounted (trước đây tạo ở setup → chết) | ✅ PASSED |
+| 2235 | **Algo Playground** | Random input generator | `generateDemoInput`: bucket [0,1), binary-search/two-pointers sorted, graph liên thông, counting/radix int nhỏ | ✅ PASSED (3 assertion sets) |
+| 2236 | **Algo Playground** | HOOKS_HINT tách khỏi editor | Code sạch trong editor; hint qua nút "ℹ️ Hooks"; gutter click map đúng line | ✅ PASSED |
+| 2237 | **Algo Playground** | Toolbar mở rộng | Nút 🎲 Sinh ngẫu nhiên, ↺ Code mẫu, ⭮ Format, mô tả demo dưới toolbar | ✅ PASSED |
+| 2238 | **Algo Playground** | Error translator | 9 nhóm lỗi → gợi ý tiếng Việt kèm message gốc (compileErrorTranslator.spec) | ✅ PASSED (9 tests) |
+| 2239 | **Algo Playground** | VCR/Trace nâng cấp | traceLogs lọc frame rác (store), hotkeys Space/←/→/Home/End, ⏩ về cuối, speed 0.25-4x, panel Lịch sử | ✅ PASSED |
+| 2240 | **Algo Playground** | Persist + URL validate | localStorage {demoId, code, inputRaw} restore qua store mới; `?demo=` sai → fallback bubble-sort | ✅ PASSED |
+| 2242 | **Algo Playground** | Tree/Graph transition | BST/DFS/Dijkstra/heap/merge lerp màu trạng thái giữa frame (hết nhảy cóc + hết trắng màn hình giữa frame khi play) | ✅ PASSED |
+| 2243 | **Algo Playground** | drawPlaybackFrameTransition | Trả false cho snapshot array → engine fallback array pipeline; dùng chung drawSnapshotOverlays | ✅ PASSED |
+| 2244 | **Algo Playground** | Component tests | 9 tests jsdom: load demo + counter, description, select đổi demo, hooks panel, random input, hotkey Space/ArrowRight, trace lọc junk, overlay biên dịch | ✅ PASSED |
+| 2245 | **Algo Playground** | Persist version guard | localStorage schema `version:1`; dữ liệu version cũ bị bỏ (không migrate hỏng) | ✅ PASSED |
+| 2246 | **Algo Playground** | Monaco mock đầy đủ | Phát hiện watcher cần `revealLineInCenter` (PseudocodeSyncer) — bổ sung vào mock | ✅ PASSED |
+| 2248 | **Algo Playground** | Live input validation | `inputValidation` computed; UI hiện ✓ N phần tử / ✗ lỗi ngay khi gõ | ✅ PASSED |
+| 2249 | **Algo Playground** | Scrubber markers | `notableSteps` (swap ⇄, found ✓, max 15); chấm vàng trên slider | ✅ PASSED |
+| 2250 | **Algo Playground** | Scrubber hover preview | Tooltip "Bước N: description" khi hover (tính frame từ clientX) | ✅ PASSED |
+| 2251 | **Algo Playground** | Complexity metadata | 21 demo có `complexity`/`space` (map DEMO_COMPLEXITY); chip ⏱/💾 trên UI | ✅ PASSED |
+| 2252 | **Algo Playground** | Fullscreen canvas | Nút ⛶ toggle fullscreen trên canvasWrap + CSS dark bg | ✅ PASSED |
+| 2253 | **Algo Playground** | VCR disabled states | ⏮⏭⏩⟲ disabled khi chưa có frame + trace autoscroll | ✅ PASSED |
+| 2254 | **Algo Playground** | Share state qua URL | Nút 🔗 Chia sẻ (lz-string ?src=), restore khi mount, fallback prompt | ✅ PASSED |
+| 2255 | **Build gate** | vue-tsc deterministic | `build` dùng `--force` — hết lỗi phantom cache incremental | ✅ PASSED |
+| 2257 | **Algo Playground** | Restore inputKind | `applyExternalDemo` — localStorage/URL restore đặt demoId + inputKind (graph demo không còn parse sai) | ✅ PASSED |
+| 2258 | **Algo Playground** | Empty input hint | `inputValidation` trả "Input trống" khi input rỗng (không báo "4 phần tử" default graph) | ✅ PASSED |
+| 2259 | **Algo Playground** | matchMedia cleanup | Listener gỡ đúng tham chiếu khi unmount (hết leak) | ✅ PASSED |
+| 2260 | **Algo Playground** | Self-review fixes | drawTreeTransition phục hồi block stroke/text; nodeStateColor O(n) qua prunedSet; generateDemoInput không cạnh trùng | ✅ PASSED |
+| 2262 | **Algo Playground** | Auto-play ghosting fix | Clear canvas mỗi transition draw (swap/compare/highlight/move) — hết đè chồng khi play; step thủ công không đổi | ✅ PASSED |
+| 2263 | **Algo Playground** | Engine regression tests | `SortingAnimationEngine.spec.ts` — clearRect tăng khi play (fail trước fix) + đúng 1 clear/tick | ✅ PASSED |
+| 2265 | **Algo Playground** | Watcher-transition race fix | `setSnapshots` khi play reset progress=0; tick advance không vẽ; pause snap frame tĩnh — hết lệch/đè khi play tự động trên máy chậm | ✅ PASSED |
+| 2266 | **Algo Playground** | Lerp giữ alpha | `lerpColorHex` hỗ trợ rgba (pruned không bị đặc cứng khi transition cây/đồ thị) | ✅ PASSED |
+| 2267 | **Algo Playground** | Engine race regression tests | Advance không vẽ + progress reset + snap khi !playing (SortingAnimationEngine.spec +3) | ✅ PASSED |
+| 2269 | **Algo Playground** | Play at step 0 fix | `syncSnapshots` prev = frames[max(0, idx-1)] — bấm ▶ chạy ngay từ bước 0 (không cần step trước) | ✅ PASSED |
+| 2270 | **Algo Playground** | Remove decorative lines | Bỏ connector/arc-trail/bracket/boundary/mũi tên/stroke vùng — giữ glow, badge, fill vùng, PIVOT ring, con trỏ | ✅ PASSED |
+| 2271 | **Algo Playground** | Play-at-0 regression test | Engine: setSnapshots(prev=curr) + play → advance ngay (fail nếu prev null) | ✅ PASSED |
+| 2273 | **Algo Playground** | Merge engine riêng | `MergeSortAnimationEngine.ts` — layout CHIA/TRỘN 3 tầng: mảng + segment, hàng L/R + con trỏ, output điền dần (thay cây 3-node giả) | ✅ PASSED |
+| 2274 | **Algo Playground** | setMergeState hook | `MergeSortState` + `mergeState` snapshot field + hook deep-copy (left/right/output) + sandbox param | ✅ PASSED |
+| 2275 | **Algo Playground** | Demo merge-sort data-driven | Gọi setMergeState divide mỗi segment + từng bước merge (leftIdx/rightIdx/output) | ✅ PASSED |
+| 2276 | **Algo Playground** | Merge engine tests | canHandle data-driven; draw divide/merge không throw; empty subarray; contract chia/trộn + output tăng dần theo segment | ✅ PASSED |
+| 2278 | **Algo Playground** | Heap engine riêng | `HeapSortAnimationEngine.ts` — cây heap complete-tree (index→con) + dải mảng vùng heap/sorted, phase XÂY ĐỐNG/TRÍCH XUẤT (thay buildHeapTree generic) | ✅ PASSED |
+| 2279 | **Algo Playground** | setHeapState hook | `HeapSortState` {phase, heapSize, activeIdx} + `heapState` snapshot field + hook + sandbox param | ✅ PASSED |
+| 2280 | **Algo Playground** | Demo heap data-driven | Biến phase build→extract; heapify gọi setHeapState mỗi vòng sift | ✅ PASSED |
+| 2281 | **Algo Playground** | Dọn pipeline cũ | Xóa isTreeAlgorithm/enrichForTree/buildHeapTree; delegate canHandle; renderMode heap→tree | ✅ PASSED |
+| 2282 | **Algo Playground** | Heap engine tests | canHandle data-driven; draw build/extract không throw; single-element; contract phase/heapSize giảm dần/activeIdx | ✅ PASSED |
+| 2284 | **Algo Playground** | Heap engine redesign v2 | Layout parent-centered (con giữa cha), ẩn chữ khi nodeR<9, swap animation cung parabol trong cây, siftPath highlight, dải mảng baseline-0 + swap trượt ngang | ✅ PASSED |
+| 2285 | **Algo Playground** | Heap swap animation | `draw(ctx,w,h,snap,prev?,progress)` — 2 giá trị bay dọc cạnh cây khi swappingIndices; SortingAnimationEngine truyền prev/progress | ✅ PASSED |
+| 2286 | **Algo Playground** | SiftPath tracking | Demo heapify track siftPath ([i] + push khi chọn largest/di chuyển); compiler deep-copy; renderer tô amber mờ | ✅ PASSED |
+| 2287 | **Algo Playground** | Heap engine tests | +1 test swap animation; contract: siftPath kết thúc tại activeIdx, trong heap, có path dài>1 ở build | ✅ PASSED |
+| 2289 | **Algo Playground** | Heap UI v3 rebuild | Header banner hướng dẫn + stats; bố cục động theo pha (build 58/42, extract 42/58); node lớn màu tối giản; compare pulse; ROOT marker; swap bay cung | ✅ PASSED |
+| 2290 | **Algo Playground** | Heap phase-aware layout | build → cây to (sift-down), extract → mảng to (root về cuối) — tập trung đúng thứ quan trọng từng pha | ✅ PASSED |
+| 2291 | **Algo Playground** | Heap visual polish | Header banner tiếng Việt + heapSize/comparisonCount; glow active node; root triangle marker; bars ngoài đống tối mờ | ✅ PASSED |
+| 2293 | **Algo Playground** | Heap UI v4 rebuild (array-first) | Mảng 62% (bar lớn, chỉ số, vùng tint khe hở, ROOT marker, swap bay cung, compare pulse) + Mini Focus Tree 24% (chỉ active+2 con, node r=18) + Caption 12% tường thuật động | ✅ PASSED |
+| 2294 | **Algo Playground** | Mini focus tree | Chỉ vẽ node đang xử lý + 2 con trong đống (không cả rừng node); swap sift bay cung ngắn; edge chỉ tới con trong đống | ✅ PASSED |
+| 2295 | **Algo Playground** | Dynamic caption | `captionFor` public static — so sánh/đổi chỗ/vun đống/root, tiếng Việt, test riêng (3 case) | ✅ PASSED |
+| 2297 | **Algo Playground** | Space optimization toolbar | Gộp mô tả vào title select; chips ⏱💾 cạnh select; menu ⋯ (Hooks/Code mẫu/Chia sẻ); bỏ Reset trùng VCR | ✅ PASSED |
+| 2298 | **Algo Playground** | Merged pane header | 1 thanh "Code · 👁 · Format | Visual · Bước X/Y · ⛶" thay 2 header riêng | ✅ PASSED |
+| 2299 | **Algo Playground** | Editor collapse | 👁 ẩn editor → canvas full width (Pane size 0, hide-splitter); +test component | ✅ PASSED |
+| 2300 | **Algo Playground** | Hooks popover + hint inline | Hooks thành popover không đẩy layout; validation hint inline trong ô input | ✅ PASSED |
+| 2301 | **Project regression** | Full frontend suite | Vitest 70 files / 938 tests PASS; `vue-tsc -b --force` CLEAN; `npm run build` SUCCESS | ✅ PASSED |
+| 2302 | **Lesson Study** | Load lesson API-first | etchLessonDetail -> store ghi de local (title/quiz/codelab tu registry); API fail -> fallback local; id khong ton tai -> error | PASSED |
+| 2303 | **Lesson Study** | Restore activeStep theo progress | codelabCompleted->4, quizPassed->3, watched->2, default->1; merge quizScore tu server | PASSED |
+| 2304 | **Lesson Study** | View render tu store | LessonStudyView hien thi title/XP tu currentLesson, khong con hardcode Bubble Sort | PASSED |
+| 2305 | **Lesson Viz** | resolveLessonViz mapping | sorting/searching/dsa + {"demo":...} -> AlgoPlaygroundWorkspace demo dung; fallback theo sandboxType; graph/oop -> component tinh; config sai -> fallback an toan | PASSED |
+| 2306 | **Lesson Quiz** | Quiz that tu lesson | Khong truyen questions -> empty state; 3/4 -> pass + emit submit; 2/4 -> fail khong completeStep; confirm dialog; reset | PASSED |
+| 2307 | **Lesson Codelab** | Executor that | Code dung -> 100% PASS (multi-arg binarySearch, de quy factorial); code sai -> FAIL; hidden testcase chay an; loi cu phap/runtime -> bao loi ro; timeout 1500ms terminate worker khi treo; fallback dong bo khi worker khong kha dung | PASSED |
+| 2308 | **Lesson Nav** | Completion modal + dieu huong | go-quiz / quiz?quizId=; next lesson theo orderIndex; bai cuoi -> ve course; close -> ve course | PASSED |
+| 2309 | **Backend Seed** | Khoa nhap mon 6 bai | Course ton tai, DataStructure/Beginner, IsPublished=true; dung 6 lesson dung ten; sandboxType hop le + demo parse duoc; 6 quiz item + 6 lesson item; XPReward > 0; seed 2 lan khong nhan doi | PASSED |
+| 2310 | **Backend Seed** | 6 quiz moi | Du 6 quiz title, >= 4 cau; correctIndex hop le + explanation khong rong; upsert khong nhan doi; quizId lien ket dung topic (sorting/searching/dsa) | PASSED |
+| 2311 | **Project regression** | Full frontend suite | Vitest 75 files / 974 tests PASS; ue-tsc -b --force CLEAN; 
+pm run build SUCCESS; dotnet test 158/158 PASS | PASSED || 2312 | **Lesson Viz** | Force-load demo theo bai hoc | LessonStepViz watch demoId -> lgoStore.loadDemo khi khac (fix persist demoId cu); same demo khong reset code; emit watched | PASSED |
+| 2313 | **Mermaid syntax** | Toan bo 88 khoi mermaid trong docs parse hop le | `docsMermaidSyntax.spec.ts` — 88 blocks / 55 files qua `mermaid.parse` khong throw (truoc sua: 12 khoi loi) | PASSED |
+| 2314 | **Mermaid theme** | Config dung chung toi gian mau | `mermaidTheme.ts` — theme base, palette 5 tong + 1 accent #3d9970, class diagram 2 tong, flowchart curve linear | PASSED (unit + build) |
+| 2315 | **Mermaid docs fixes** | 5 file docs sua cu phap + chuan hoa mau style directive | two-pointers/sliding-window/queue/hash-table-theory/binary-search/counting-sort — backward link `<--`, parens unquoted, rgba style, subgraph link bang title | PASSED |
+| 2316 | **Lesson store spec** | `lessonStudyFlow.spec.ts` voi API moi (`getLessonAuthToken`) | Mock chuyen sang `importOriginal` spread, chi mock 4 ham API — 6/6 tests PASS (offline-first, backend override, fallback, progress merge) | PASSED |
+| 2317 | **Project regression** | Full frontend suite | Vitest 77 files / 980 tests PASS; `npm run build` PASS | PASSED |
+| 2318 | **Tailwind tokens** | `bg-bg-surface` va token utilities compile | Scan CSS build: `.bg-bg-surface{background-color:var(--color-bg-surface)}`, `.bg-bg-hover`, `.text-text-secondary`, `.border-border-default`, `.text-accent-cyan` co mat; core utilities (px-4, opacity-0, w-48, rounded-lg) khong bi mat | PASSED |
+| 2319 | **Tailwind tokens** | Dropdown navbar khong trong suot | AppHeader group dropdown panel `bg-bg-surface` + `border-border-default` + item `hover:bg-bg-hover` / active `bg-bg-active text-accent` — opacity qua `@theme inline` bridge | PASSED (CSS verified) |
+| 2320 | **Tailwind tokens** | Theme sang/toi van hoat dong | Unlayered `:root` (theme.css) thang `@layer theme` (Tailwind) — khong circular reference; `--color-accent-cyan/purple` co ca 2 theme | PASSED |
+| 2321 | **Tailwind tokens** | Toan bo token classes compile | Scan tu dong 40 token class dung trong template + modifier: 0 missing — bo sung bridge accent-primary(+light/dim/glow/text/dark), green/red/yellow/cyan/purple(-light/-glow/-dim), emerald family, secondary, bg-base, bg-tertiary, border-color; verify `.bg-accent-emerald\/20`, `.bg-accent-purple\/10`... co trong CSS build | PASSED |
+| 2322 | **Project regression** | Full frontend suite | Vitest 79 files / 993 tests PASS; `npm run build` (vue-tsc + vite) PASS | PASSED || 2313 | **Backend E2E** | Course/Lesson/Quiz chain | Course detail: 6 bai + quizId dung tung bai (OrderIndex match); Lesson detail: quizId + sandboxConfig.demo + contentMd (teacher bypass premium); Quiz GET DB fallback: 4 cau; Quiz SUBMIT: 4/4 -> passed=True xp=40, 0-1/4 -> passed=False | PASSED |
+| 2314 | **Backend E2E** | Auth token source | lessonApi dung authStore token (statelessLogin) thay localStorage 'token' — lesson detail 200 khi co token | PASSED |
+| 2315 | **Project regression** | Full suite post-fix | Vitest 980/980 PASS; dotnet 158/158 PASS; vue-tsc CLEAN; backend da restart voi seed moi | PASSED || 2316 | **Course List** | Render voi du lieu API that | Test mount coursesListView.spec.ts: 2 courses published -> card hien thi; empty -> empty state; error -> retry button; unpublished -> loc bo | PASSED |
+| 2317 | **Course List** | getCourseProgress null-safe | course.lessons ?? [] — khong crash khi API list thieu lessons | PASSED |
+| 2318 | **Course List** | Difficulty enum ho tro ca 2 bo | Beginner/Intermediate/Advanced + Easy/Medium/Hard: badge, label, sort | PASSED |
+| 2319 | **Project regression** | Full suite post-fix | Vitest 984/984 PASS; vue-tsc CLEAN; build SUCCESS | PASSED || 2320 | **Lesson Theory** | Render code fence markdown | Code fence -> <pre><code> (khong bi bold/heading bien doi); escape HTML chong XSS; nhieu fence lien tiep; inline code; content rong | PASSED |
+| 2321 | **Lesson Quiz** | submitQuiz luu localStorage + khong double-award | quizScore luu dung; awardXp goi 1 lan (50 XP); nop lai khong cong 2 lan; duoi nguong khong award | PASSED |
+| 2322 | **Lesson Study** | An buoc 4 khi khong co codelabTask | View chi hien 3 buoc (Ly Thuyet/Truc Quan Hoa/Quiz), khong hien Code Lab | PASSED |
+| 2323 | **Lesson Utils** | Go logic parse sandbox | sandboxConfig.ts util chung; visualizerMap validate; store dung chung; xoa resolveSandboxDemo trung lap (alias deprecated) | PASSED |
+| 2324 | **Course Store** | Don dead reference | Xoa useLessonStore khong dung trong useCourseStore | PASSED |
+| 2325 | **Project regression** | Full suite | Vitest 993/993 PASS; vue-tsc CLEAN; build SUCCESS | PASSED || 2326 | **Course Cover** | Anh bia SVG thay bitmap | CourseCover.vue: gradient + icon theo danh muc (sorting/searching/tree/oop/solid/patterns/system/di/code), gradient id unique theo course, badge category, aria-label; dung o CourseCard + CourseDetail; +7 test | PASSED |
+| 2327 | **Project regression** | Full suite | Vitest 1000/1000 PASS (80 files); vue-tsc CLEAN; build SUCCESS | PASSED || 2328 | **Content Dot 1** | Khoa Nhap mon 6 bai noi dung moi | 6 bai (Big O, Mang & Chuoi, De quy, Tim kiem, Sap xep co ban, Stack/Queue) — contentMd 450-750 tu, demo dung, quiz 4 cau/bai | PASSED |
+| 2329 | **Content Dot 1** | Khoa Linked List 4 bai + Khoa Stack/Queue 4 bai | Node/Singly, Cat noi, Doubly/Sentinel, LRU; LIFO/FIFO, Valid Parentheses, Infix-Postfix, Circular Queue/Deque | PASSED |
+| 2330 | **Content Dot 1** | Khoa moi: Bang bam (Hash Table) 4 bai | Hash function & collision, Map/Set thuc te, Frequency Counter, Two Sum — E2E: 4 bai + 4 quiz (4 cau) qua API | PASSED |
+| 2331 | **Backend Seed** | Guard moi + 18 quiz upsert | Guard theo khoa Bang bam 4 bai; GetOrCreate fix pending duplicate; 12 khoa / 39 bai | PASSED |
+| 2332 | **Backend tests** | DbSeederTests cap nhat | 12/12 PASS (intro 6 bai, hash 4 bai, 18 quiz >= 4 cau, upsert khong nhan doi); full suite 159/159 PASS | PASSED || 2333 | **Lesson Theory** | Render bang markdown | Bang do phuc tap | a | b | -> <table> thead/tbody dark theme; khong lo dau | ; khong crash khi thieu separator | PASSED |
+| 2334 | **Lesson Viz** | Bo fallback demo sai chu de | dsa khong demo -> empty state (demoId null, component null); sorting/searching giu fallback hop ly; +test | PASSED |
+| 2335 | **Content Phase 1** | Fix cau muc 5 + demo bai 3.3 | 9 bai khong demo: cau trung thuc (chua co demo chuyen biet); Infix-Postfix gan demo stack; bo ' (Why this matters)' 3 bai | PASSED |
+| 2336 | **Project regression** | Full suite | Vitest 1002/1002 (80 files); dotnet 159/159; vue-tsc CLEAN; build SUCCESS; DB reset + reseed E2E OK | PASSED || 2337 | **Quiz 10 cau** | Nang cap 18 bai 4 -> 10 cau | 9 subagents + 1 retry: +108 cau moi (tong 180 cau); khong trung questionText, correctIndex hop le, explanation day du; k2 bai 3-4 agent loi -> viet lai | PASSED |
+| 2338 | **Quiz 10 cau** | Tai sinh seeder + fix dup title | 18 blocks qKxLy tai sinh tu staging; xoa 2 block cu 4 cau trung title (recursionQuiz, sortingBasicQuiz) de GetOrCreate khong giu quiz cu | PASSED |
+| 2339 | **Quiz 10 cau** | E2E verify | 12 khoa, quiz 10 cau/bai (Khoa Nhap mon 60 cau); submit 7/10 -> passed=True (nguong 70% dung voi 10 cau); dotnet 159/159 PASS | PASSED || 2340 | **Roadmap v2** | 39 lesson doc lap + 3 roadmap | Seeder: Lesson doc lap (khong thuoc course), roadmap = Course container (Module=chang, ModuleItem tham chieu); guard marker | PASSED |
+| 2341 | **Roadmap v2** | Quiz lien ket dung | 39 ModuleItem Quiz (order +500, buoc 1000); E2E: moi lesson quiz rieng dung chu de (12/15/12), 10 cau/bai | PASSED |
+| 2342 | **Roadmap v2** | DbSeederTests moi | 7 test: lesson count 39, 3 roadmap dung difficulty + published, 2 module/roadmap, so lesson 12/15/12, quiz >= 10 cau, seed 2 lan khong nhan doi | PASSED |
+| 2343 | **Frontend** | Title lo trinh + courseId query | CoursesListView 'Lo trinh hoc DSA'; CourseDetailView.startLesson kem ?courseId= de Quay lai dung roadmap | PASSED |
+| 2344 | **Project regression** | Full suite | dotnet 154/154; Vitest 1002/1002; vue-tsc CLEAN; build SUCCESS; E2E 3 roadmap OK | PASSED || 2345 | **Lesson 40** | DP Patterns bo sung | Interval/Bitmask/Tree DP: content 6572 chars + quiz 10 cau; r3m1 order 4000/4500 | PASSED |
+| 2346 | **Roadmap v2** | 40 lesson tong | 3 roadmap: Co ban 12 / Trung cap 15 / Nang cao 13 = 40 lesson, moi lesson quiz rieng; dotnet 154/154; DbSeederTests 7/7 | PASSED |
+| 2347 | **Docs Audit** | 68 bai ly thuyet dat checklist A-G | 6 dot sub-agent (68 bai): frontmatter + H1 anchor `{#slug}` giu routing, tieng Viet dung khoa hoc, code C#, mermaid hop le, Next Steps link ton tai trong docsNavigation, Tham khao khong bia URL | PASSED |
+| 2348 | **Docs Audit** | Fix loi khoa hoc + mermaid | heap-sort build O(N), counting-sort K, mid chong tran, Dictionary K,V Separate Chaining, WAL truoc commit, off-by-one Fenwick, alpha(N)<=5, trung node ID Trie/UF/segment, 12 khoi mermaid loi cu phap | PASSED |
+| 2349 | **Docs Navigation** | Them nhom CẤU TRÚC CÂY NÂNG CAO | docsNavigation.ts `trees-group` 5 muc (heap-priority-queue, trie-prefix-tree, segment-tree, fenwick-tree, union-find) — 3 link `/docs/trees/*` chuyen tu link chet thanh hop le; DocsSidebar render tu docsNavigation | PASSED |
+| 2350 | **Mermaid syntax** | Regression sau khi them nav | `docsMermaidSyntax.spec.ts` 2/2 PASS — 95 khoi / 58 file parse hop le | PASSED |

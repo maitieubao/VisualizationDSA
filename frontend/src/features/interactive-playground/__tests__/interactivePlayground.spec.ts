@@ -48,6 +48,21 @@ describe('usePlaygroundStore', () => {
     expect(store.nodes).toHaveLength(30);
   });
 
+  it('assigns unique labels beyond 26 nodes (A..Z then A1..)', () => {
+    const store = usePlaygroundStore();
+    const labels = new Set<string>();
+    for (let i = 0; i < 30; i++) {
+      const n = store.addNode(i * 5, i * 5);
+      expect(n).not.toBeNull();
+      labels.add(n!.label);
+    }
+    // Không được có nhãn trùng dù đạt MAX_NODES = 30 (> 26 chữ cái).
+    expect(labels.size).toBe(30);
+    expect(store.nodes[25].label).toBe('Z');
+    expect(store.nodes[26].label).toBe('A1');
+    expect(store.nodes[27].label).toBe('B1');
+  });
+
   it('adds edge between two nodes', () => {
     const store = usePlaygroundStore();
     const a = store.addNode(100, 100)!;
@@ -350,14 +365,14 @@ describe('GraphParser', () => {
     { id: 'e2', from: 'n2', to: 'n3', weight: 5 },
   ];
 
-  it('converts to adjacency list (directed)', () => {
+  it('converts to adjacency list (undirected: both directions)', () => {
     const payload = GraphParser.toAdjacencyList(nodes, edges, 'dijkstra');
     expect(payload.algorithmId).toBe('dijkstra');
     expect(payload.inputType).toBe('adjacency-list');
     expect(payload.nodes).toEqual(['A', 'B', 'C']);
     expect(payload.adjacencyList['A']).toEqual([{ target: 'B', weight: 10 }]);
-    expect(payload.adjacencyList['B']).toEqual([{ target: 'C', weight: 5 }]);
-    expect(payload.adjacencyList['C']).toEqual([]);
+    expect(payload.adjacencyList['B']).toEqual([{ target: 'A', weight: 10 }, { target: 'C', weight: 5 }]);
+    expect(payload.adjacencyList['C']).toEqual([{ target: 'B', weight: 5 }]);
   });
 
   it('finds isolated nodes (disconnected graph)', () => {

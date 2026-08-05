@@ -3,7 +3,7 @@
     <button class="ctrl-btn" @click="$emit('stop')" title="Reset (R)">
       <BaseIcon name="stop" class="w-3.5 h-3.5" />
     </button>
-    <button class="ctrl-btn" @click="$emit('stepBackward')" title="Step Back (←)">
+    <button class="ctrl-btn" @click="$emit('stepBackward')" title="Step Back (Left)">
       <BaseIcon name="step-backward" class="w-3.5 h-3.5" />
     </button>
     <button
@@ -13,7 +13,7 @@
     >
       <BaseIcon :name="isPlaying ? 'pause' : 'play'" class="w-4 h-4" />
     </button>
-    <button class="ctrl-btn" @click="$emit('stepForward')" title="Step Forward (→)">
+    <button class="ctrl-btn" @click="$emit('stepForward')" title="Step Forward (Right)">
       <BaseIcon name="step-forward" class="w-3.5 h-3.5" />
     </button>
 
@@ -24,6 +24,7 @@
       :max="Math.max(0, totalSteps - 1)"
       :value="currentIndex"
       class="timeline-scrubber"
+      aria-label="Tiến trình hoạt ảnh"
       @input="onScrub"
     />
 
@@ -31,6 +32,7 @@
     <select
       class="speed-select"
       :value="playbackSpeed"
+      aria-label="Tốc độ phát"
       @change="onSpeedChange"
     >
       <option :value="0.5">0.5x</option>

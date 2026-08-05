@@ -147,3 +147,19 @@
   background: rgba(244, 63, 94, 0.15);
   box-shadow: 0 0 12px rgba(244, 63, 94, 0.12);
 }
+
+.theme-btn:focus-visible,
+.embed-select:focus-visible,
+.toggle-switch:focus-visible,
+.reset-btn:focus-visible,
+.embed-custom-range-slider:focus-visible {
+  outline: 2px solid #06b6d4;
+  outline-offset: 2px;
+}
+
+.reset-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}

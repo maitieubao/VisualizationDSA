@@ -102,3 +102,12 @@ Chúc mừng bạn đã hoàn thành phần Nền tảng! Bạn đã nắm trong
     <p class="next-steps-caption">Mô phỏng cách các bọt khí nổi lên mặt nước để sắp xếp dữ liệu.</p>
   </a>
 </div>
+
+## 📚 Tham khảo lý thuyết {#references}
+
+Nội dung bài viết được biên soạn dựa trên các nguồn tài liệu uy tín dưới đây. Bạn có thể đào sâu thêm từng khái niệm chính bằng cách đọc theo từng mục:
+
+- **Stack (Ngăn xếp), cấu trúc LIFO và quản lý bộ nhớ:** Wikipedia — [Stack (abstract data type)](https://en.wikipedia.org/wiki/Stack_(abstract_data_type)) mô tả nguyên lý Last-In, First-Out; [Memory management](https://en.wikipedia.org/wiki/Memory_management) giải thích sự khác biệt giữa cấp phát trên Stack (nhanh, giới hạn) và Heap (chậm hơn, linh hoạt hơn).
+- **Cơ chế Garbage Collector (GC) trong .NET:** Microsoft Learn — [Fundamentals of garbage collection](https://learn.microsoft.com/en-us/dotnet/standard/garbage-collection/fundamentals) giải thích cách GC truy vết tham chiếu từ Stack tới Heap và dọn dẹp các đối tượng không còn được sử dụng.
+- **Value Type và Reference Type trong C#:** Microsoft Learn — [Value types](https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/builtin-types/value-types) và [Structure types (struct)](https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/builtin-types/struct) trình bày quy tắc sao chép và phân bổ bộ nhớ của từng loại; cuốn sách kinh điển [CLR via C# (Jeffrey Richter)](https://www.microsoftpressstore.com/store/clr-via-c-sharp-9780735667457) là nguồn tham khảo sâu về mô hình bộ nhớ và cách thức hoạt động bên trong .NET.
+- **Lỗi tràn Stack (StackOverflowException):** Microsoft Learn — [StackOverflowException Class](https://learn.microsoft.com/en-us/dotnet/api/system.stackoverflowexception) mô tả nguyên nhân tràn ngăn xếp xảy ra khi đệ quy quá sâu hoặc vô hạn.

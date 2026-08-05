@@ -41,12 +41,16 @@
   background: none;
   border: none;
   color: var(--color-text-secondary, #888);
-  font-size: 24px;
   cursor: pointer;
-  padding: 0 4px;
+  padding: 6px;
   line-height: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
 }
 .modal-close:hover { color: var(--color-text-primary, #fff); }
+.modal-close:focus-visible { outline: 2px solid var(--color-accent-primary, #4255ff); outline-offset: 2px; }
 
 .modal-error {
   background: rgba(239, 68, 68, 0.1);
@@ -55,7 +59,7 @@
   padding: 8px 12px;
   margin-bottom: 16px;
   font-size: 12px;
-  color: #ef4444;
+  color: var(--color-accent-red);
 }
 
 .modal-form { display: flex; flex-direction: column; gap: 16px; }

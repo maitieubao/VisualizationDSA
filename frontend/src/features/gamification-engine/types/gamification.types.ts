@@ -5,6 +5,8 @@ export interface UserProgressState {
   lastActiveDate: string; 
   unlockedBadges: string[];
   streakFreezesCount: number;
+  /** Id các thuật toán người dùng đã hoàn thành — badge có requiredAlgorithmId cần khớp. */
+  completedAlgorithms: string[];
 }
 
 export interface BadgeDefinition {
@@ -27,6 +29,8 @@ export interface LeaderboardEntry {
 export interface StreakResult {
   nextStreak: number;
   shouldUpdate: boolean;
+  /** Đánh dấu lượt dùng Streak Freeze để store giảm số lượng còn lại. */
+  freezeUsed?: boolean;
 }
 
 export interface ConfettiParticle {
@@ -51,9 +55,9 @@ export const LEADERBOARD_TOP_N = 10;
 export const WEEKLY_RESET_DAY = 0; 
 
 export const BADGE_TEMPLATES: BadgeDefinition[] = [
-  { id: 'recursion-master', title: 'Recursion Master', description: 'Hoàn thành Quiz thuật toán Đệ Quy xuất sắc', icon: '🔄', xpThresholdRequired: 500, streakThresholdRequired: 3, requiredAlgorithmId: 'quicksort' },
-  { id: 'solid-architect', title: 'SOLID Architect', description: 'Đạt coupling index dưới 20% trong DIP Sandbox', icon: '🏛️', xpThresholdRequired: 1000, streakThresholdRequired: 5 },
-  { id: 'sorting-champion', title: 'Sorting Champion', description: 'Hoàn thành tất cả thuật toán sắp xếp', icon: '⚡', xpThresholdRequired: 300, streakThresholdRequired: 2, requiredAlgorithmId: 'sorting' },
-  { id: 'streak-warrior', title: 'Streak Warrior', description: 'Duy trì chuỗi học tập 7 ngày liên tiếp', icon: '🔥', xpThresholdRequired: 200, streakThresholdRequired: 7 },
-  { id: 'graph-explorer', title: 'Graph Explorer', description: 'Khám phá tất cả thuật toán đồ thị', icon: '🗺️', xpThresholdRequired: 800, streakThresholdRequired: 4, requiredAlgorithmId: 'graph' },
+  { id: 'recursion-master', title: 'Recursion Master', description: 'Hoàn thành Quiz thuật toán Đệ Quy xuất sắc', icon: 'refresh-cw', xpThresholdRequired: 500, streakThresholdRequired: 3, requiredAlgorithmId: 'quicksort' },
+  { id: 'solid-architect', title: 'SOLID Architect', description: 'Đạt coupling index dưới 20% trong DIP Sandbox', icon: 'solid', xpThresholdRequired: 1000, streakThresholdRequired: 5 },
+  { id: 'sorting-champion', title: 'Sorting Champion', description: 'Hoàn thành tất cả thuật toán sắp xếp', icon: 'zap', xpThresholdRequired: 300, streakThresholdRequired: 2, requiredAlgorithmId: 'sorting' },
+  { id: 'streak-warrior', title: 'Streak Warrior', description: 'Duy trì chuỗi học tập 7 ngày liên tiếp', icon: 'fire', xpThresholdRequired: 200, streakThresholdRequired: 7 },
+  { id: 'graph-explorer', title: 'Graph Explorer', description: 'Khám phá tất cả thuật toán đồ thị', icon: 'graph', xpThresholdRequired: 800, streakThresholdRequired: 4, requiredAlgorithmId: 'graph' },
 ];

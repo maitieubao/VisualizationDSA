@@ -3,13 +3,13 @@
     <span class="hud-step-label">
       Step {{ stepId }} / {{ totalSteps }}
     </span>
-    <p class="hud-explanation">
-      {{ explanation }}
-    </p>
+    <p class="hud-explanation" v-html="parseEmojiToSvg(escapeHtmlText(explanation))"></p>
   </div>
 </template>
 
 <script setup lang="ts">
+import { parseEmojiToSvg, escapeHtmlText } from '../../../utils/emojiParser';
+
 defineProps<{
   stepId: number;
   totalSteps: number;

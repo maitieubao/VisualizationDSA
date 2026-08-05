@@ -2,7 +2,7 @@
   <div class="json-panel">
     <div class="panel-header">
       <span class="panel-title">Adjacency List Payload</span>
-      <button class="close-btn" @click="$emit('close')">&times;</button>
+      <button class="close-btn" aria-label="Đóng bảng JSON" @click="$emit('close')"><BaseIcon name="x" class="w-4 h-4" /></button>
     </div>
     <pre class="json-content">{{ json }}</pre>
   </div>

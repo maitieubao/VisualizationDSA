@@ -40,6 +40,13 @@ describe('Counting Sort — sắp xếp đúng chuẩn', () => {
     expect(final.arrayStateWithIds!.map((e) => e.id)).toEqual([1, 3, 2, 0]);
   });
 
+  it('giữ metadata ID của input sau mỗi pass LSD', () => {
+    const frames = generateCountingSortFrames([13, 1, 22, 11]);
+    const tensPass = frames.find((frame) => frame.countingStep === 'count' && frame.activeDigitPlace === 10);
+    expect(tensPass?.inputArrayWithIds?.map((item) => item.id)).toEqual([1, 3, 2, 0]);
+    expect(new Set(tensPass?.inputArrayWithIds?.map((item) => item.id)).size).toBe(4);
+  });
+
   it('mảng rỗng không crash', () => {
     const frames = generateCountingSortFrames([]);
     expect(frames[frames.length - 1].arrayState).toEqual([]);
@@ -190,6 +197,30 @@ describe('Bucket Sort — stats & arrayState tiến hóa', () => {
       collectFrames.some((f) => f.arrayState.some((v, i) => v !== input[i]))
     ).toBe(true);
   });
+
+  it('dải Bucket được tính động theo giá trị thực tế (số âm & > 100)', () => {
+    const frames = generateBucketSortFrames([-20, 5, 1000, 300]);
+    expect(frames[0].description).toContain('[-20-1000]');
+
+    const distributeDone = frames.find((f) => f.description.includes('Phân phối thành công phần tử A[3]'));
+    expect(distributeDone).toBeDefined();
+    const buckets = distributeDone!.bucketSortBuckets!;
+    const nonEmpty = buckets.filter((b) => b.length > 0).length;
+    expect(nonEmpty).toBeGreaterThanOrEqual(3);
+
+    const final = frames[frames.length - 1];
+    expect(final.arrayState).toEqual([-20, 5, 300, 1000]);
+  });
+
+  it('giữ input identity và range label động trong mọi phase', () => {
+    const input = [45, -20, 1000, 300];
+    const frames = generateBucketSortFrames(input);
+    const collectFrame = frames.find((frame) => frame.bucketStep === 'collect');
+    expect(collectFrame?.inputArrayWithIds?.map((item) => item.id)).toEqual([0, 1, 2, 3]);
+    expect(collectFrame?.bucketRangeLabels).toHaveLength(4);
+    expect(collectFrame?.bucketRangeLabels?.[0]).toContain('-20');
+    expect(new Set(collectFrame?.inputArrayWithIds?.map((item) => item.id)).size).toBe(input.length);
+  });
 });
 
 describe('sortingIdEnricher — identity ổn định với phần tử trùng giá trị', () => {
@@ -219,5 +250,29 @@ describe('sortingIdEnricher — identity ổn định với phần tử trùng g
     ];
     enrichFramesWithIds(frames);
     expect(frames[1].arrayStateWithIds).toBeUndefined();
+  });
+});
+
+describe('Merge Sort — identity theo phần tử qua frame ghi đè', () => {
+  it('không đúc id ảo (≥10000) với phần tử trùng giá trị', () => {
+    const frames = generateMergeSortFrames([2, 1, 1]);
+    enrichFramesWithIds(frames);
+    for (const f of frames) {
+      const ids = f.arrayStateWithIds!.map((e) => e.id);
+      expect(ids.every((id) => id >= 0 && id < 10000)).toBe(true);
+    }
+  });
+
+  it('frame ghi đè giữ đúng id của phần tử nguồn (kết quả ổn định)', () => {
+    const frames = generateMergeSortFrames([2, 1, 1]);
+    const final = frames[frames.length - 1];
+    expect(final.arrayState).toEqual([1, 1, 2]);
+    expect(final.arrayStateWithIds!.map((e) => e.id)).toEqual([1, 2, 0]);
+    expect(new Set(final.arrayStateWithIds!.map((e) => e.id)).size).toBe(3);
+  });
+
+  it('mọi frame đều có arrayStateWithIds (không phụ thuộc greedy fallback)', () => {
+    const frames = generateMergeSortFrames([3, 1, 2, 1]);
+    expect(frames.every((f) => f.arrayStateWithIds && f.arrayStateWithIds.length === 4)).toBe(true);
   });
 });

@@ -20,6 +20,23 @@ Chính sự gò bó đó lại là sức mạnh, giúp đảm bảo tính nhất
 | **Hình ảnh thực tế**| Chồng đĩa, Nút Undo/Back | Xếp hàng mua vé, Lò vi sóng | Xếp hàng theo chiều cao, ai lùn bị đẩy ra |
 | **Bản chất ý nghĩa**| **Lịch sử:** Trở về quá khứ gần nhất | **Công bằng:** Xử lý theo thứ tự đến trước | **Tầm nhìn:** Tìm vật cản gần nhất |
 
+## Sơ đồ Lựa chọn Cấu trúc {#decision-tree}
+
+Khi gặp một bài toán, hãy lần lượt tự hỏi theo thứ tự sau để chọn đúng cấu trúc dữ liệu:
+
+```mermaid
+flowchart TD
+    A["Bài toán có cần duy trì trạng thái theo thứ tự xử lý?"] -->|"Không"| Z["Dùng cấu trúc khác: Mảng, Danh sách liên kết, Bảng băm..."]
+    A -->|"Có"| B["Cần thao tác nhanh ở cả hai đầu?"]
+    B -->|"Có"| D["Deque<br/>O(1) thêm/xóa cả hai đầu"]
+    B -->|"Không"| C["Phần tử cần xử lý tiếp theo là phần tử nào?"]
+    C -->|"Mới nhất (LIFO)"| S["Stack"]
+    C -->|"Lâu nhất (FIFO)"| Q["Queue"]
+    S --> E["Có cần tìm phần tử lớn hơn / nhỏ hơn gần nhất?"]
+    E -->|"Có"| M["Monotonic Stack<br/>O(N) tổng thể"]
+    E -->|"Không"| P["Stack thông thường<br/>O(1) thêm/xóa đỉnh"]
+```
+
 ## Nhận diện "Mùi" bài toán (Pattern Matching) {#pattern-matching}
 
 Khi đi phỏng vấn thuật toán (như LeetCode hay HackerRank), bạn hiếm khi gặp câu hỏi "Hãy cài đặt Stack". Thay vào đó, bạn phải tự nhận ra khi nào cần dùng chúng. Dưới đây là các dấu hiệu:
@@ -61,3 +78,14 @@ Hãy hít một hơi thật sâu, vì chúng ta chuẩn bị tiến vào nhóm d
     <p class="next-steps-caption">Sự kết hợp hoàn hảo giữa Cấu trúc liên kết và tốc độ O(log N).</p>
   </a>
 </div>
+
+## 📚 Tham khảo lý thuyết {#references}
+
+Dưới đây là các nguồn tài liệu kinh điển và chính thống được dùng để biên soạn bài viết này, giúp bạn tự nghiên cứu sâu hơn nếu muốn:
+
+- **Định nghĩa Stack (Ngăn xếp), Queue (Hàng đợi) và Deque (Hàng đợi hai đầu), các thao tác cơ bản cùng độ phức tạp O(1):** Cormen, Leiserson, Rivest & Stein, *Introduction to Algorithms* (CLRS), 3rd Edition (MIT Press) - Chương 10 "Elementary Data Structures" (Stack, Queues and Linked Lists).
+- **Khái niệm Stack và Queue như Abstract Data Type (ADT):** [Wikipedia - Stack (abstract data type)](https://en.wikipedia.org/wiki/Stack_(abstract_data_type)) và [Wikipedia - Queue (abstract data type)](https://en.wikipedia.org/wiki/Queue_(abstract_data_type)).
+- **Deque (Double-ended queue) và khả năng thêm/xóa ở cả hai đầu:** [Wikipedia - Double-ended queue](https://en.wikipedia.org/wiki/Double-ended_queue).
+- **Monotonic Stack và các dạng bài toán "phần tử lớn hơn/nhỏ hơn gần nhất" (Next Greater/Smaller Element), Largest Rectangle in Histogram, Trapping Rain Water:** [GeeksforGeeks - Monotonic Stack](https://www.geeksforgeeks.org/monotonic-stack/).
+- **Duyệt theo chiều rộng (BFS) sử dụng Queue, và kỹ thuật Sliding Window Max/Min sử dụng Deque:** Cormen, Leiserson, Rivest & Stein, *Introduction to Algorithms* (CLRS), 3rd Edition (MIT Press) - Chương 22 "Elementary Graph Algorithms" (Breadth-First Search).
+- **Cấu trúc `Stack<T>`, `Queue<T>` trong .NET:** Microsoft Learn - [Stack\<T\> Class (.NET)](https://learn.microsoft.com/en-us/dotnet/api/system.collections.generic.stack-1) và [Queue\<T\> Class (.NET)](https://learn.microsoft.com/en-us/dotnet/api/system.collections.generic.queue-1).

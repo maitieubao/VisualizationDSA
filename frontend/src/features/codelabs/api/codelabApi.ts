@@ -48,6 +48,7 @@ export const codelabApi = {
   },
 
   async revealHint(id: string, hintIndex: number): Promise<void> {
-    await axios.post(`/api/codelabs/${id}/hints/${hintIndex}/reveal`);
+    // Khớp route thật của backend: POST /api/Codelabs/{id}/reveal-hint (body { hintIndex })
+    await axios.post(`/api/Codelabs/${id}/reveal-hint`, { hintIndex });
   }
 };

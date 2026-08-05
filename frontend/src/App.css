@@ -252,7 +252,7 @@
 }
 
 .meta-xp {
-  color: #c084fc;
+  color: var(--color-accent-primary);
   font-weight: 600;
   font-family: var(--font-mono, monospace);
 }
@@ -332,18 +332,18 @@
 
 
 
-:global(.page-fade-enter-active) {
+.page-fade-enter-active {
   transition: opacity 0.2s ease, transform 0.2s ease;
 }
-:global(.page-fade-leave-active) {
+.page-fade-leave-active {
   transition: opacity 0.12s ease, transform 0.12s ease;
 }
 
-:global(.page-fade-enter-from) {
+.page-fade-enter-from {
   opacity: 0;
   transform: translateY(8px);
 }
-:global(.page-fade-leave-to) {
+.page-fade-leave-to {
   opacity: 0;
   transform: translateY(-4px);
 }
@@ -351,32 +351,27 @@
 
 .premium-crown {
   font-size: 16px;
-  filter: drop-shadow(0 0 6px rgba(255, 215, 0, 0.6));
-  animation: crown-glow 2s ease-in-out infinite alternate;
-}
-@keyframes crown-glow {
-  from { filter: drop-shadow(0 0 4px rgba(255, 215, 0, 0.4)); }
-  to   { filter: drop-shadow(0 0 8px rgba(255, 215, 0, 0.8)); }
+  filter: drop-shadow(0 0 4px var(--color-accent-primary-glow));
 }
 
 .user-badge--premium {
-  border: 1px solid rgba(255, 215, 0, 0.3);
+  border: 1px solid rgba(66, 85, 255, 0.3);
   border-radius: 8px;
   padding: 2px 6px;
-  background: rgba(255, 215, 0, 0.05);
+  background: var(--color-accent-primary-dim);
 }
 
 .user-badge__avatar--premium {
-  background: linear-gradient(135deg, #ffd700, #ff8c00) !important;
-  color: #000 !important;
-  box-shadow: 0 0 8px rgba(255, 215, 0, 0.4);
+  background: var(--color-accent-primary) !important;
+  color: #fff !important;
+  box-shadow: 0 0 8px var(--color-accent-primary-glow);
 }
 
 .premium-tag {
   font-size: 8px;
   font-weight: 700;
-  background: linear-gradient(90deg, #ffd700, #ff8c00);
-  color: #000;
+  background: var(--color-accent-primary);
+  color: #fff;
   padding: 1px 4px;
   border-radius: 3px;
   margin-left: 4px;

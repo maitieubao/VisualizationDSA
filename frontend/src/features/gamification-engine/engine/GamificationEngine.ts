@@ -18,6 +18,11 @@ export class GamificationEngine {
     for (const badge of BADGE_TEMPLATES) {
       if (userState.unlockedBadges.includes(badge.id)) continue;
 
+      // Badge yêu cầu hoàn thành thuật toán cụ thể — KHÔNG mở khóa nếu chưa làm.
+      if (badge.requiredAlgorithmId && !userState.completedAlgorithms.includes(badge.requiredAlgorithmId)) {
+        continue;
+      }
+
       const meetsXP = userState.totalXP >= badge.xpThresholdRequired;
       const meetsStreak = userState.activeStreak >= badge.streakThresholdRequired;
 

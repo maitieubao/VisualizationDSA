@@ -170,7 +170,7 @@ Nhiều sinh viên nghĩ: *"O(log N) nhanh hơn O(N) thì lúc nào cũng dùng 
 | **Mảng nhỏ (N < 50-100)** | **Linear Search** | Overhead của Binary Search (chia đôi, tính mid, nhảy nhánh) lớn hơn việc duyệt tuyến tính. CPU Cache line load 64 bytes (~16 int) một lần -> Linear scan cực nhanh. |
 | **Mảng KHÔNG SẮP XẾP** | **Linear Search** | Binary Search **BẮT BUỘC** mảng đã sắp xếp. Sort tốn O(N log N) > O(N) search. |
 | **Dữ liệu thay đổi liên tục** | **Linear Search** | Maintain sorted array (Insert O(N)) đắt hơn Search O(N). |
-| **Mảng lớn (N > 10,000), tĩnh, đã sort** | **Binary Search** | O(log N)destroy O(N). 1,000,000 phần tử: Linear ~500k ops, Binary ~20 ops. |
+| **Mảng lớn (N > 10,000), tĩnh, đã sort** | **Binary Search** | O(log N) thắng O(N). 1,000,000 phần tử: Linear ~500k ops, Binary ~20 ops. |
 | **Cần tìm TẤT CẢ vị trí** | **Linear Search** | Binary Search chỉ tìm 1 vị trí (Lower/Upper bound cần 2 lần log N). |
 
 ### Benchmark DotNet (Mẫu tham khảo)
@@ -203,7 +203,7 @@ BinarySearch:      ~80 ns  (Binary thắng áp đảo 50x)
 ## Tóm tắt nhanh (Key Takeaways)
 
 - **Đơn giản, mạnh mẽ:** Không cần setup, không cần dữ liệu sort, code không bao giờ sai (hard to bug).
-- **O(N) là giới hạn cứng:** Không thể tối ưu hơn về độ phức tạp渐近 (asymptotic), chỉ tối ưu hằng số (constant factors: SIMD, Sentinel, Prefetch).
+- **O(N) là giới hạn cứng:** Không thể tối ưu hơn về độ phức tạp tiệm cận (asymptotic), chỉ tối ưu hằng số (constant factors: SIMD, Sentinel, Prefetch).
 - **Quy tắc vàng:** **N < 50~100 -> Linear Search. N > 10,000 & Sorted -> Binary Search.** Giữa đó: Benchmark thực tế trên data của bạn.
 - **Luôn dùng LINQ/Built-in** (`Array.FindIndex`, `List.Find`) trong production code C#.
 
@@ -243,3 +243,15 @@ Mặc dù Linear Search tốt cho các mảng nhỏ và chưa được sắp x�
     <p class="next-steps-caption">Kỹ năng tìm kiếm xé dọc mảng dữ liệu với tốc độ O(log N).</p>
   </a>
 </div>
+
+---
+
+## 📚 Tham khảo lý thuyết {#references}
+
+Dưới đây là các nguồn tài liệu kinh điển và chính thống được dùng để biên soạn bài viết này, giúp bạn tự nghiên cứu sâu hơn nếu muốn:
+
+- **Nền tảng phân tích độ phức tạp Big O và thuật toán tìm kiếm tuần tự:** Cormen, Leiserson, Rivest & Stein, *Introduction to Algorithms* (CLRS), 4th Edition, MIT Press — Chương 2 (Getting Started) phân tích chi tiết Linear Search cùng ví dụ chạy tay và ký hiệu O lớn.
+- **Khái niệm Linear Search, sentinel và minh họa từng bước:** [Linear search - Wikipedia](https://en.wikipedia.org/wiki/Linear_search). Nguồn chính về mô tả thuật toán, phân tích độ phức tạp và ứng dụng của Linear Search.
+- **Biến thể Sentinel Search và các bài tập nâng cao:** GeeksforGeeks - [Linear Search](https://www.geeksforgeeks.org/linear-search/). Bài viết phân tích chi tiết các biến thể bao gồm kỹ thuật sentinel và so sánh thực nghiệm.
+- **Học liệu giảng dạy thuật toán cấp đại học:** MIT OpenCourseWare - *Introduction to Algorithms (6.006)*, [MIT OCW](https://ocw.mit.edu/courses/6-006-introduction-to-algorithms-spring-2020/). Cung cấp bài giảng về đệ quy, chia để trị và phân tích tiệm cận làm nền tảng so sánh với Binary Search.
+- **API LINQ/Built-in được nhắc trong bài:** Microsoft Learn - [Array.FindIndex Method](https://learn.microsoft.com/en-us/dotnet/api/system.array.findindex) và [List<T>.FindIndex Method](https://learn.microsoft.com/en-us/dotnet/api/system.collections.generic.list-1.findindex). Tài liệu chính thức về cách .NET triển khai tìm kiếm tuyến tính nội bộ.

@@ -44,10 +44,10 @@ flowchart LR
     end
     Window ~~~ 3[1] ~~~ 4[3] ~~~ 5[2]
     
-    style Window fill:rgba(59, 130, 246, 0.1),stroke:#3b82f6,stroke-width:2px,stroke-dasharray: 5 5
-    style 0 fill:#10b981,color:#fff
-    style 1 fill:#10b981,color:#fff
-    style 2 fill:#10b981,color:#fff
+    style Window fill:#252b27,stroke:#5ab88a,stroke-width:2px,stroke-dasharray:5 5
+    style 0 fill:#3d9970,color:#fff
+    style 1 fill:#3d9970,color:#fff
+    style 2 fill:#3d9970,color:#fff
 ```
 
 **Bước 2:** Trượt cửa sổ sang phải 1 ô.
@@ -62,11 +62,11 @@ flowchart LR
     end
     Window ~~~ 4[3] ~~~ 5[2]
     
-    style Window fill:rgba(59, 130, 246, 0.1),stroke:#3b82f6,stroke-width:2px,stroke-dasharray: 5 5
+    style Window fill:#252b27,stroke:#5ab88a,stroke-width:2px,stroke-dasharray:5 5
     style 0 opacity:0.3
-    style 1 fill:#10b981,color:#fff
-    style 2 fill:#10b981,color:#fff
-    style 3 fill:#10b981,color:#fff
+    style 1 fill:#3d9970,color:#fff
+    style 2 fill:#3d9970,color:#fff
+    style 3 fill:#3d9970,color:#fff
 ```
 
 **Bước 3:** Trượt tiếp. Loại bỏ `1`, thêm `3`.
@@ -80,17 +80,22 @@ flowchart LR
     end
     Window ~~~ 5[2]
     
-    style Window fill:rgba(59, 130, 246, 0.1),stroke:#3b82f6,stroke-width:2px,stroke-dasharray: 5 5
+    style Window fill:#252b27,stroke:#5ab88a,stroke-width:2px,stroke-dasharray:5 5
     style 0 opacity:0.3
     style 1 opacity:0.3
-    style 2 fill:#10b981,color:#fff
-    style 3 fill:#10b981,color:#fff
-    style 4 fill:#10b981,color:#fff
+    style 2 fill:#3d9970,color:#fff
+    style 3 fill:#3d9970,color:#fff
+    style 4 fill:#3d9970,color:#fff
 ```
 
-### Phân tích Mã nguồn (C#)
+### Phân tích Mã nguồn
 
-```csharp
+Xem thuật toán Sliding Window chạy thực tế trên Playground bên dưới.
+
+```playground:sliding-window
+```
+
+```dual:sliding-window
 public int MaxSumSubarrayOfSizeK(int[] arr, int k) 
 {
     if (arr.Length < k) return 0; // Edge case
@@ -202,3 +207,30 @@ public int MinSubArrayLen(int target, int[] nums)
 :::tip Lời khuyên thực chiến
 Mọi bài toán chuỗi liên tiếp (Contiguous Subarray/Substring) đều có khả năng cao là Cửa sổ trượt. Đừng bao giờ lôi vòng lặp lồng nhau ra sử dụng trừ khi đó là lối thoát duy nhất!
 :::
+
+---
+
+## Next Steps {#next-steps}
+
+Bạn đã làm chủ kỹ thuật Cửa sổ Trượt — bộ đôi trượt-điều-chỉnh giúp xử lý dãy con liên tiếp chỉ trong một lượt quét O(N). Kỹ thuật này có họ hàng gần với Two Pointers: đều là những con trỏ lướt trên mảng, chỉ khác là cửa sổ trượt bao giờ cũng quản lý một **đoạn liên tiếp**. Nếu muốn gom toàn bộ nhóm Tìm kiếm lại để ôn thi, hãy ghé qua bài tổng hợp.
+
+<div class="vt-box-container next-steps">
+  <a class="vt-box" href="/docs/searching/two-pointers">
+    <p class="next-steps-link">Kỹ thuật Hai con trỏ (Two Pointers)</p>
+    <p class="next-steps-caption">Dùng hai con trỏ quét từ hai đầu để giải bài toán trên mảng đã sắp xếp.</p>
+  </a>
+  <a class="vt-box" href="/docs/searching/searching-summary">
+    <p class="next-steps-link">Tổng hợp ứng dụng Tìm kiếm</p>
+    <p class="next-steps-caption">Bức tranh toàn cảnh: khi nào dùng thuật toán tìm kiếm nào.</p>
+  </a>
+</div>
+
+## 📚 Tham khảo lý thuyết {#references}
+
+Nguồn lý thuyết chính được dùng để biên soạn bài viết này:
+
+- **GeeksforGeeks – [Window Sliding Technique](https://www.geeksforgeeks.org/window-sliding-technique/):** Nguồn chính về kỹ thuật cửa sổ trượt, phân biệt Fixed Window và Variable Window, kèm phân tích độ phức tạp O(N).
+- **GeeksforGeeks – [Find maximum (or minimum) sum of a subarray of size k](https://www.geeksforgeeks.org/find-maximum-minimum-sum-subarray-size-k/):** Bài toán Fixed Window kinh điển được phân tích trong Mục 2 (Maximum Sum Subarray of Size K).
+- **Wikipedia – [Maximum subarray problem](https://en.wikipedia.org/wiki/Maximum_subarray_problem):** Nền tảng lý thuyết cho họ bài toán tổng mảng con (subarray sum).
+- **LeetCode – [Problem 209: Minimum Size Subarray Sum](https://leetcode.com/problems/minimum-size-subarray-sum/):** Bài toán Dynamic Window kinh điển được phân tích trong Mục 3 (Smallest Subarray with a given sum).
+- **Cormen, T. H., Leiserson, C. E., Rivest, R. L., & Stein, C. (2009). *Introduction to Algorithms* (CLRS), 3rd Edition, MIT Press:** Nền tảng phân tích thuật toán và độ phức tạp thời gian dùng xuyên suốt bài viết.

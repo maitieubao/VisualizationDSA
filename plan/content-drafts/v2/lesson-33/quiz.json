@@ -1,0 +1,93 @@
+{
+  "quizTitle": "Trắc nghiệm Union-Find",
+  "topic": "dsa",
+  "difficulty": 2,
+  "xpReward": 40,
+  "questions": [
+    {
+      "questionText": "Hai thao tác cốt lõi của Union-Find là gì?",
+      "options": ["Push và Pop", "Find và Union", "Insert và Delete", "Search và Sort"],
+      "correctIndex": 1,
+      "explanation": "Find(x) trả về gốc đại diện của tập chứa x; Union(x, y) gộp hai tập chứa x và y thành một tập."
+    },
+    {
+      "questionText": "Path compression (nén đường) làm gì khi gọi Find(x)?",
+      "options": [
+        "Tăng chiều cao của cây",
+        "Trỏ thẳng mọi node trên đường đi về gốc để lần sau tìm nhanh hơn",
+        "Xóa toàn bộ tập chứa x",
+        "Hoán đổi gốc với node lá"
+      ],
+      "correctIndex": 1,
+      "explanation": "Khi leo tới gốc, thuật toán gán parent của mọi node trên đường đi cho chính gốc, rút ngắn chuỗi cha từ O(N) xuống gần 1 bước."
+    },
+    {
+      "questionText": "Union by rank (gộp theo hạng) có tác dụng gì?",
+      "options": [
+        "Luôn treo cây thấp hơn dưới cây cao hơn để giữ cây cân bằng",
+        "Sắp xếp các tập theo kích thước",
+        "Đếm số phần tử trong tập",
+        "Loại bỏ các cạnh trùng nhau"
+      ],
+      "correctIndex": 0,
+      "explanation": "Treo gốc của cây thấp hơn làm con của gốc cây cao hơn giữ chiều cao cây ở mức O(log N) ngay cả khi chưa nén đường."
+    },
+    {
+      "questionText": "Kết hợp path compression và union by rank, độ phức tạp mỗi thao tác là bao nhiêu?",
+      "options": ["O(N)", "O(log N)", "O(N log N)", "O(α(N)) ≈ O(1)"],
+      "correctIndex": 3,
+      "explanation": "α là hàm nghịch đảo Ackermann; với mọi N thực tế α(N) ≤ 4 nên coi như thời gian hằng số."
+    },
+    {
+      "questionText": "Trạng thái khởi tạo của mảng parent khi tạo Union-Find với N phần tử là gì?",
+      "options": [
+        "parent[i] = 0 với mọi i",
+        "parent[i] = i với mọi i",
+        "parent[i] = i - 1 với mọi i",
+        "parent[i] = i + 1 với mọi i"
+      ],
+      "correctIndex": 1,
+      "explanation": "Ban đầu mỗi phần tử là một tập riêng nên nó là gốc của chính mình: parent[i] = i."
+    },
+    {
+      "questionText": "Dùng Union-Find phát hiện chu trình trong đồ thị vô hướng trong trường hợp nào?",
+      "options": [
+        "Khi Find(u) khác Find(v) trong phép union(u, v)",
+        "Khi Find(u) bằng Find(v) trước khi gộp union(u, v)",
+        "Khi số đỉnh lớn hơn số cạnh",
+        "Khi rank của hai gốc bằng nhau"
+      ],
+      "correctIndex": 1,
+      "explanation": "Nếu hai đầu cạnh đã cùng tập nghĩa là đã có đường nối giữa chúng; thêm cạnh này sẽ tạo chu trình — union trả về false."
+    },
+    {
+      "questionText": "Bài toán nào sau đây KHÔNG phù hợp để dùng Union-Find?",
+      "options": [
+        "Đếm thành phần liên thông",
+        "Thuật toán Kruskal",
+        "Tìm đường đi ngắn nhất đơn nguồn",
+        "Số tỉnh kết nối (Number of Provinces)"
+      ],
+      "correctIndex": 2,
+      "explanation": "Đường đi ngắn nhất cần tổng trọng số nhỏ nhất nên dùng Dijkstra hoặc Bellman-Ford; Union-Find chỉ trả lời câu hỏi kết nối."
+    },
+    {
+      "questionText": "Union-Find với 5 phần tử 0..4, thực hiện Union(0,1), Union(2,3), Union(0,3). Còn lại bao nhiêu thành phần liên thông?",
+      "options": ["1", "2", "3", "4"],
+      "correctIndex": 1,
+      "explanation": "{0,1,2,3} gộp thành một thành phần nhờ các lệnh union, còn 4 đứng riêng nên tổng cộng còn 2 thành phần."
+    },
+    {
+      "questionText": "Redundant Connection: đồ thị vô hướng 3 đỉnh với các cạnh [1,2], [2,3], [3,1]. Cạnh nào tạo ra chu trình?",
+      "options": ["[1,2]", "[2,3]", "[3,1]", "Không cạnh nào"],
+      "correctIndex": 2,
+      "explanation": "Union(1,2) và Union(2,3) gộp ba đỉnh về một tập; tới [3,1], Find(3) bằng Find(1) nên cạnh này tạo chu trình và bị đánh dấu thừa."
+    },
+    {
+      "questionText": "Sau Union(0,1) rồi Union(1,2) với union by rank (rank khởi tạo đều bằng 0), parent[2] có giá trị bao nhiêu?",
+      "options": ["0", "1", "2", "Không xác định"],
+      "correctIndex": 0,
+      "explanation": "Union(0,1): rank bằng nhau nên gắn parent[1] = 0 và rank[0] = 1. Union(1,2): rank[0] = 1 lớn hơn rank[2] = 0 nên gắn parent[2] = 0."
+    }
+  ]
+}

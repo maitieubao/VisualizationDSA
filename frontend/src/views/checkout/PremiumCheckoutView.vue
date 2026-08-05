@@ -13,7 +13,7 @@
         
         <div v-if="!authStore.isAuthenticated" class="text-center py-12 flex flex-col items-center gap-6">
           <div class="w-16 h-16 rounded-full bg-accent/10 border border-accent/20 flex items-center justify-center text-accent text-2xl">
-            👑
+            <BaseIcon name="crown" class="w-8 h-8" />
           </div>
           <div>
             <h3 class="text-lg font-bold text-text-primary mb-2">Yêu cầu Đăng nhập</h3>
@@ -69,7 +69,7 @@
               class="px-4 py-2 text-xs bg-accent-green/20 border border-accent-green/40 rounded-lg hover:bg-accent-green/30 transition"
               @click="handleSimulatePayment"
             >
-              🧪 Mô phỏng: Xác nhận đã thanh toán
+              <BaseIcon name="flask" class="w-3.5 h-3.5 inline mr-1 align-middle" />Mô phỏng: Xác nhận đã thanh toán
             </button>
           </div>
         </template>

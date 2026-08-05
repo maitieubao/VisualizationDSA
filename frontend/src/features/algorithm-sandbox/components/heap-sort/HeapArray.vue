@@ -1,7 +1,8 @@
 <template>
   <div class="heap-array-container w-full flex items-center justify-between gap-2 py-1 shrink-0 select-none border-t font-sans">
     <div class="text-[10px] font-mono text-text-muted shrink-0">
-      Heap Size: <span class="font-bold accent-cyan-label">{{ currentHeapSize }}/{{ n }}</span>
+      Heap Size: <span class="font-bold" style="color: var(--color-accent-cyan)">{{ currentHeapSize }}/{{ n }}</span>
+      <span class="ml-2 px-1.5 py-0.5 rounded text-[8px] font-bold" :class="phaseBadgeClass">{{ currentPhase }}</span>
     </div>
 
     <div class="relative flex-1 flex items-center justify-center overflow-x-auto min-w-0">
@@ -14,14 +15,12 @@
         <div
           v-for="(item, idx) in frame?.arrayStateWithIds || []"
           :key="item.id"
-          class="array-cell rounded-md border flex flex-col items-center justify-center font-mono font-bold
-                 transition-all duration-300 shadow-sm shrink-0 relative"
+          class="array-cell rounded-md border flex flex-col items-center justify-center font-mono font-bold transition-all duration-300 shadow-sm shrink-0 relative"
           :class="getArrayItemClass(idx)"
           :style="{ width: itemSize, height: itemHeight, fontSize: fontSize }"
         >
-          
-          <div 
-            class="highlight-top-bar absolute top-0 left-0 right-0 h-1 rounded-t-md" 
+          <div
+            class="highlight-top-bar absolute top-0 left-0 right-0 h-1 rounded-t-md"
             :class="isNodeInHeap(idx) ? 'bar-in-heap' : 'bar-sorted'"
           ></div>
           <span>{{ item.value }}</span>
@@ -33,6 +32,7 @@
 </template>
 
 <script setup lang="ts">
+import { computed } from 'vue';
 import { useHeapSortVisualizer } from '../../composables/useHeapSortVisualizer';
 import type { SortFrame } from '../../types/sorting.types';
 
@@ -40,6 +40,7 @@ const props = defineProps<{ frame: SortFrame | null }>();
 const {
   n,
   currentHeapSize,
+  currentPhase,
   isNodeInHeap,
   getArrayItemClass,
   itemSize,
@@ -47,6 +48,12 @@ const {
   itemGap,
   fontSize
 } = useHeapSortVisualizer(() => props.frame);
+
+const phaseBadgeClass = computed(() => {
+  return currentPhase.value === 'BUILD'
+    ? 'bg-accent-cyan/20 text-accent-cyan border border-accent-cyan/30'
+    : 'bg-accent-emerald/20 text-accent-emerald border border-accent-emerald/30';
+});
 </script>
 
 <style scoped>
@@ -54,27 +61,9 @@ const {
   border-top: 1px solid var(--color-border-subtle);
 }
 
-.label-row {
-  color: var(--color-text-secondary);
-}
-
-.muted-label {
-  color: var(--color-text-muted);
-}
-
-.accent-cyan-label {
-  color: var(--color-accent-cyan);
-}
-
 .array-cell {
   background-color: color-mix(in srgb, var(--color-bg-primary) 60%, transparent);
 }
-
-.cell-idx-label {
-  font-size: 9px;
-  color: var(--color-text-muted);
-}
-
 
 .bar-in-heap {
   background-color: var(--color-accent-cyan-dim);
@@ -84,9 +73,8 @@ const {
   background-color: var(--color-accent-green-dim);
 }
 
-
 .item-active {
-  border-color: color-mix(in srgb, var(--color-accent-cyan) 35%, transparent);
+  border-color: rgba(61, 153, 112, 0.35);
   color: var(--color-accent-cyan);
   box-shadow: 0 0 10px var(--color-accent-cyan-glow);
 }
@@ -106,11 +94,10 @@ const {
 }
 
 .item-sorted {
-  border-color: color-mix(in srgb, var(--color-accent-green) 40%, transparent) !important;
+  border-color: rgba(16, 185, 129, 0.4) !important;
   background-color: var(--color-accent-green-dim) !important;
   color: var(--color-accent-green) !important;
 }
-
 
 .sort-list-move         { transition: transform .4s cubic-bezier(.25,.8,.25,1); }
 .sort-list-enter-from   { opacity: 0; transform: translateY(-8px) scale(.92); }

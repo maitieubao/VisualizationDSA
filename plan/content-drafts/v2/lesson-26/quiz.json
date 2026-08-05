@@ -1,0 +1,103 @@
+{
+  "quizTitle": "Trắc nghiệm Matrix & Grid",
+  "topic": "dsa",
+  "difficulty": 2,
+  "xpReward": 40,
+  "questions": [
+    {
+      "questionText": "Trong mảng directions = [(-1,0),(1,0),(0,-1),(0,1)], cặp (0,-1) tương ứng với hướng nào?",
+      "options": ["Lên trên", "Xuống dưới", "Sang trái", "Sang phải"],
+      "correctIndex": 2,
+      "explanation": "Cặp (dr, dc) cộng vào tọa độ ô hiện tại: (0,-1) làm cột giảm đi 1 nên đi sang trái."
+    },
+    {
+      "questionText": "Điều kiện đúng để ô (r, c) nằm trong lưới có M hàng và N cột?",
+      "options": [
+        "0 ≤ r ≤ M và 0 ≤ c ≤ N",
+        "0 ≤ r < M và 0 ≤ c < N",
+        "0 < r ≤ M và 0 < c ≤ N",
+        "r ≥ 0 và c ≥ 0"
+      ],
+      "correctIndex": 1,
+      "explanation": "Chỉ số hàng chạy từ 0 tới M-1 và chỉ số cột từ 0 tới N-1, nên phải dùng dấu nhỏ hơn (không lấy dấu bằng)."
+    },
+    {
+      "questionText": "Vai trò chính của việc đánh dấu visited trong thuật toán flood fill là gì?",
+      "options": [
+        "Lưu giá trị của từng ô",
+        "Tăng tốc độ duyệt lưới",
+        "Tránh thăm lại ô đã xử lý gây vòng lặp vô hạn hoặc đếm trùng",
+        "So sánh kích thước các vùng"
+      ],
+      "correctIndex": 2,
+      "explanation": "Không đánh dấu visited, DFS sẽ quay lại chính ô đã đi qua mãi mãi; đánh dấu cũng đảm bảo mỗi ô được xử lý đúng một lần."
+    },
+    {
+      "questionText": "Trong lưới 3×3, ô (2,2) có bao nhiêu ô lân cận theo 4 hướng nằm trong biên?",
+      "options": ["4", "3", "2", "1"],
+      "correctIndex": 2,
+      "explanation": "Ô góc (2,2) chỉ có hai ô lân cận hợp lệ là (1,2) phía trên và (2,1) bên trái; hai hướng còn lại vượt biên."
+    },
+    {
+      "questionText": "Xoay ma trận [[1,2],[3,4]] 90 độ theo chiều kim đồng hồ cho kết quả nào?",
+      "options": [
+        "[[3,1],[4,2]]",
+        "[[1,3],[2,4]]",
+        "[[4,2],[3,1]]",
+        "[[2,4],[1,3]]"
+      ],
+      "correctIndex": 0,
+      "explanation": "Hàng trên cùng của kết quả là cột ngoài cùng bên trái đọc từ dưới lên: 3, 1; hàng dưới là cột còn lại: 4, 2."
+    },
+    {
+      "questionText": "Trong bài toán rotting oranges, vì sao dùng BFS thay vì DFS?",
+      "options": [
+        "BFS tiêu tốn ít bộ nhớ hơn",
+        "BFS lan đều theo từng phút từ mọi quả hỏng cùng lúc, khớp với quy tắc lây lan theo thời gian",
+        "DFS không thể duyệt qua các ô liền kề",
+        "BFS luôn chạy nhanh hơn DFS trong mọi lưới"
+      ],
+      "correctIndex": 1,
+      "explanation": "Mỗi phút một lớp quả hỏng mới xuất hiện, đúng với cơ chế quét theo tầng của BFS; DFS đi sâu một nhánh sẽ sai thời điểm lây lan."
+    },
+    {
+      "questionText": "Khi gặp một ô đất chưa thăm trong bài đếm hòn đảo, việc làm đúng là gì?",
+      "options": [
+        "Chỉ tăng biến đếm rồi tiếp tục duyệt",
+        "Tăng biến đếm và loang đánh dấu toàn bộ hòn đảo chứa ô đó",
+        "Tăng biến đếm cho từng ô đất",
+        "Loang nhưng không đánh dấu để dễ đếm lại"
+      ],
+      "correctIndex": 1,
+      "explanation": "Mỗi ô đất chưa thăm là khởi đầu của một hòn đảo; loang và đánh dấu cả vùng giúp mỗi hòn đảo chỉ được đếm đúng một lần."
+    },
+    {
+      "questionText": "Lưới 3×3 toàn bộ là ô đất (giá trị 1). Diện tích hòn đảo lớn nhất trong lưới là bao nhiêu?",
+      "options": ["9", "6", "8", "12"],
+      "correctIndex": 0,
+      "explanation": "Toàn bộ 9 ô nối liền nhau theo 4 hướng nên chỉ có một hòn đảo duy nhất, diện tích đúng bằng 9."
+    },
+    {
+      "questionText": "Thứ tự duyệt xoắn ốc (spiral) của ma trận [[1,2,3],[4,5,6],[7,8,9]] là gì?",
+      "options": [
+        "1 2 3 6 9 8 7 4 5",
+        "1 2 3 4 5 6 7 8 9",
+        "1 4 7 8 9 6 3 2 5",
+        "3 6 9 8 7 4 1 2 5"
+      ],
+      "correctIndex": 0,
+      "explanation": "Quét hàng trên 1 2 3, xuống cột phải 6 9, ngược hàng dưới 8 7, lên cột trái 4, kết thúc tại ô giữa 5."
+    },
+    {
+      "questionText": "Trong bài word search, vì sao phải khôi phục lại giá trị ban đầu của ô sau khi nhánh đệ quy thất bại?",
+      "options": [
+        "Để giảm độ phức tạp thời gian",
+        "Để các nhánh tìm kiếm khác bắt đầu từ ô này có thể sử dụng lại nó",
+        "Để tránh tràn bộ nhớ stack",
+        "Để lưu lại đường đi đã đi"
+      ],
+      "correctIndex": 1,
+      "explanation": "Đánh dấu tạm chỉ có giá trị trong đường đi đang thử; thất bại thì phải trả lại trạng thái ban đầu, nếu không các hướng đi khác sẽ bỏ lỡ ô này."
+    }
+  ]
+}

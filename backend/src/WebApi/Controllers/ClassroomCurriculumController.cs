@@ -18,8 +18,8 @@ using VisualizationDSA.Domain.Enums;
 namespace VisualizationDSA.WebApi.Controllers
 {
     [ApiController]
-    [Route("api/v1/classrooms")]
-    [Authorize]
+    [Route("api/v{version:apiVersion}/classrooms")]
+    [RequireJwtRole]
     public class ClassroomCurriculumController : ControllerBase
     {
         private readonly IMediator _mediator;
@@ -29,8 +29,8 @@ namespace VisualizationDSA.WebApi.Controllers
             _mediator = mediator;
         }
 
-        [HttpGet("{classroomId}/curriculum/teacher")]
-        [Authorize(Roles = "Teacher")]
+        [HttpGet("{classroomId:guid}/curriculum/teacher")]
+        [RequireJwtRole("Teacher")]
         public async Task<IActionResult> GetTeacherCurriculum(Guid classroomId)
         {
             var teacherIdStr = JwtHelper.ExtractSubFromToken(Request);
@@ -46,7 +46,7 @@ namespace VisualizationDSA.WebApi.Controllers
             return Ok(result);
         }
 
-        [HttpGet("{classroomId}/curriculum/student")]
+        [HttpGet("{classroomId:guid}/curriculum/student")]
         public async Task<IActionResult> GetStudentCurriculum(Guid classroomId)
         {
             var userIdStr = JwtHelper.ExtractSubFromToken(Request);
@@ -62,8 +62,8 @@ namespace VisualizationDSA.WebApi.Controllers
             return Ok(result);
         }
 
-        [HttpPost("{classroomId}/modules")]
-        [Authorize(Roles = "Teacher")]
+        [HttpPost("{classroomId:guid}/modules")]
+        [RequireJwtRole("Teacher")]
         public async Task<IActionResult> CreateModule(Guid classroomId, [FromBody] CreateModuleRequest request)
         {
             var teacherIdStr = JwtHelper.ExtractSubFromToken(Request);
@@ -85,7 +85,7 @@ namespace VisualizationDSA.WebApi.Controllers
         }
 
         [HttpPut("modules/{moduleId}")]
-        [Authorize(Roles = "Teacher")]
+        [RequireJwtRole("Teacher")]
         public async Task<IActionResult> UpdateModule(Guid moduleId, [FromBody] UpdateModuleRequest request)
         {
             var teacherIdStr = JwtHelper.ExtractSubFromToken(Request);
@@ -108,7 +108,7 @@ namespace VisualizationDSA.WebApi.Controllers
         }
 
         [HttpDelete("modules/{moduleId}")]
-        [Authorize(Roles = "Teacher")]
+        [RequireJwtRole("Teacher")]
         public async Task<IActionResult> DeleteModule(Guid moduleId)
         {
             var teacherIdStr = JwtHelper.ExtractSubFromToken(Request);
@@ -120,7 +120,7 @@ namespace VisualizationDSA.WebApi.Controllers
         }
 
         [HttpPost("modules/{moduleId}/items")]
-        [Authorize(Roles = "Teacher")]
+        [RequireJwtRole("Teacher")]
         public async Task<IActionResult> CreateModuleItem(Guid moduleId, [FromBody] CreateModuleItemRequest request)
         {
             var teacherIdStr = JwtHelper.ExtractSubFromToken(Request);
@@ -158,7 +158,7 @@ namespace VisualizationDSA.WebApi.Controllers
         }
 
         [HttpPut("modules/{moduleId}/items/reorder")]
-        [Authorize(Roles = "Teacher")]
+        [RequireJwtRole("Teacher")]
         public async Task<IActionResult> ReorderModuleItems(Guid moduleId, [FromBody] ReorderItemsRequest request)
         {
             var teacherIdStr = JwtHelper.ExtractSubFromToken(Request);
@@ -180,8 +180,8 @@ namespace VisualizationDSA.WebApi.Controllers
             return NoContent();
         }
 
-[HttpPut("classrooms/{classroomId}/modules/reorder")]
-        [Authorize(Roles = "Teacher")]
+[HttpPut("{classroomId}/modules/reorder")]
+        [RequireJwtRole("Teacher")]
         public async Task<IActionResult> ReorderModules(Guid classroomId, [FromBody] ReorderModulesRequest request)
         {
             var teacherIdStr = JwtHelper.ExtractSubFromToken(Request);

@@ -46,7 +46,7 @@
     </div>
 
     <div v-else-if="codelabsList.length === 0" class="empty-state">
-      <div class="text-5xl mb-4">💻</div>
+      <div class="text-5xl mb-4"><BaseIcon name="monitor" class="w-12 h-12 text-text-muted mx-auto" /></div>
       <h3 class="text-xl font-bold text-white">Chưa có Codelab nào</h3>
       <p class="text-text-muted mt-2 max-w-md">Tạo Codelab đầu tiên để bắt đầu xây dựng bài tập thực hành</p>
       <button class="btn-primary mt-6" @click="createNewCodelab">

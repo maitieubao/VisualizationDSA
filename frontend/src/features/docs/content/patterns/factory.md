@@ -264,3 +264,34 @@ public class ModernPaymentFactory
 - **Factory Method (GoF):** Dùng tính Kế Thừa (Inheritance) để ép Lớp con phải tự xây dựng hàm `Create()`. Đạt chuẩn OCP tuyệt đối.
 - Ở các dự án hiện đại, Dependency Injection Container (như `IServiceProvider` của .NET) chính là một hệ thống Abstract Factory cực kỳ siêu việt, lo liệu toàn bộ việc "new" đối tượng cho bạn.
 :::
+
+## Next Steps {#next-steps}
+
+Bạn đã tháo gỡ gông cùm của từ khóa `new` và đưa trách nhiệm Khởi tạo về đúng "Nhà máy" chuyên trách. Tiếp theo, hãy khám phá các mẫu thiết kế đồng minh cùng đại gia đình GoF và cơ chế Dependency Injection — cấp độ cao hơn của việc "giao phó chữ `new` cho người khác lo liệu":
+
+<div class="vt-box-container next-steps">
+  <a class="vt-box" href="/docs/patterns/strategy">
+    <p class="next-steps-link">Strategy Pattern</p>
+    <p class="next-steps-caption">Đóng gói từng thuật toán thành đối tượng hoán đổi linh hoạt — người anh em cùng nhà với Factory Method trong đại gia đình Creational/Behavioral.</p>
+  </a>
+  <a class="vt-box" href="/docs/patterns/observer">
+    <p class="next-steps-link">Observer Pattern</p>
+    <p class="next-steps-caption">Thiết lập quan hệ Một - Nhiều giữa các đối tượng để thông báo thay đổi trạng thái tự động.</p>
+  </a>
+  <a class="vt-box" href="/docs/di/basics">
+    <p class="next-steps-link">Dependency Injection & IoC</p>
+    <p class="next-steps-caption">Đưa "nhà máy tạo object" lên đẳng cấp mới với IoC Container — hệ thống Abstract Factory siêu việt của .NET.</p>
+  </a>
+</div>
+
+## 📚 Tham khảo lý thuyết {#references}
+
+Các kiến thức lý thuyết trong bài được tổng hợp và đối chiếu từ những nguồn học thuật sau:
+
+- **Định nghĩa chuẩn về Factory Method, Abstract Factory và phân loại Creational Patterns:** Erich Gamma, Richard Helm, Ralph Johnson & John Vlissides (Gang of Four), *Design Patterns: Elements of Reusable Object-Oriented Software* (Addison-Wesley, 1994) — Chương 3 *Creational Patterns*.
+- **Giải thích dễ hiểu kèm ví dụ trực quan về Factory Method và Abstract Factory:** Eric Freeman & Elisabeth Robson, *Head First Design Patterns* (O'Reilly Media) — Chương 4 *The Factory Pattern*.
+- **Factory Method Pattern:** Wikipedia — https://en.wikipedia.org/wiki/Factory_method_pattern
+- **Abstract Factory Pattern:** Wikipedia — https://en.wikipedia.org/wiki/Abstract_factory_pattern
+- **Hướng dẫn Factory Method và Abstract Factory với mã nguồn đầy đủ (C++, C#, Java, Python):** Refactoring.Guru — https://refactoring.guru/design-patterns/factory-method và https://refactoring.guru/design-patterns/abstract-factory
+- **Tổng quan Design Patterns trong .NET và cơ chế Dependency Injection:** Microsoft Learn — *Design patterns in .NET* và *Dependency injection in ASP.NET Core*.
+- **Giới thiệu Simple Factory, Factory Method và cách phân biệt:** SourceMaking — *Factory Method Design Pattern* — https://sourcemaking.com/design_patterns/factory_method

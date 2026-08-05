@@ -8,6 +8,7 @@ export const COURSES: Course[] = [
     category: 'Sorting',
     difficulty: 'Easy',
     xpReward: 300,
+    isPremium: false,
     totalLessons: 3,
     lessons: [
       { id: 'bubble-sort', title: 'Bubble Sort - Sắp xếp nổi bọt', order: 1 },
@@ -24,6 +25,7 @@ export const COURSES: Course[] = [
     category: 'Sorting',
     difficulty: 'Hard',
     xpReward: 500,
+    isPremium: false,
     totalLessons: 3,
     lessons: [
       { id: 'quick-sort', title: 'Quick Sort - Sắp xếp nhanh', order: 1 },
@@ -39,6 +41,7 @@ export const COURSES: Course[] = [
     category: 'Searching',
     difficulty: 'Medium',
     xpReward: 400,
+    isPremium: false,
     totalLessons: 3,
     lessons: [
       { id: 'linear-search', title: 'Linear Search - Tìm kiếm tuần tự', order: 1 },
@@ -54,6 +57,7 @@ export const COURSES: Course[] = [
     category: 'Tree/Graph',
     difficulty: 'Medium',
     xpReward: 450,
+    isPremium: false,
     totalLessons: 4,
     lessons: [
       { id: 'bst', title: 'Binary Search Tree - Cây tìm kiếm nhị phân', order: 1 },
@@ -70,6 +74,7 @@ export const COURSES: Course[] = [
     category: 'OOP',
     difficulty: 'Easy',
     xpReward: 250,
+    isPremium: false,
     totalLessons: 2,
     lessons: [
       { id: 'encapsulation', title: 'Encapsulation - Đóng gói', order: 1 },
@@ -84,6 +89,7 @@ export const COURSES: Course[] = [
     category: 'SOLID',
     difficulty: 'Hard',
     xpReward: 500,
+    isPremium: false,
     totalLessons: 3,
     lessons: [
       { id: 'srp', title: 'SRP - Single Responsibility Principle', order: 1 },

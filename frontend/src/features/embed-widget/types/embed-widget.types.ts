@@ -43,6 +43,9 @@ export const EMBED_MAX_HEIGHT = 1200;
 export const EMBED_RESIZE_DEBOUNCE_MS = 100;
 export const EMBED_BASE_URL = 'https://visualization-dsa.edu.vn/embed';
 
+// Chỉ liệt kê các thuật toán mà EmbedWidgetView (VISUALIZER_MAP) thực sự hỗ trợ —
+// trước đây có quicksort-recursion/binary-search/bst-insert/... nhưng view embed
+// không có renderer tương ứng nên iframe hiển thị "Thuật toán không hợp lệ"
 export const EMBED_ALGORITHM_OPTIONS: { id: string; label: string }[] = [
   { id: 'bubble-sort', label: 'Bubble Sort' },
   { id: 'selection-sort', label: 'Selection Sort' },
@@ -50,8 +53,8 @@ export const EMBED_ALGORITHM_OPTIONS: { id: string; label: string }[] = [
   { id: 'quicksort-recursion', label: 'QuickSort (Recursion)' },
   { id: 'merge-sort', label: 'Merge Sort' },
   { id: 'heap-sort', label: 'Heap Sort' },
-  { id: 'binary-search', label: 'Binary Search' },
-  { id: 'bst-insert', label: 'BST Insert' },
-  { id: 'stack-operations', label: 'Stack Operations' },
-  { id: 'queue-operations', label: 'Queue Operations' },
+  { id: 'bst', label: 'BST (Cây nhị phân)' },
+  { id: 'graph-bfs', label: 'BFS trên Đồ thị' },
+  { id: 'graph-dfs', label: 'DFS trên Đồ thị' },
+  { id: 'dijkstra', label: 'Dijkstra' },
 ];

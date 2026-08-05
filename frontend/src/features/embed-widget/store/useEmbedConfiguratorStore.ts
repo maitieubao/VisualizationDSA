@@ -8,7 +8,7 @@
 import { defineStore } from 'pinia';
 import { ref, computed } from 'vue';
 import type { EmbedTheme } from '../types/embed-widget.types';
-import { EMBED_BASE_URL } from '../types/embed-widget.types';
+import { EMBED_ALGORITHM_OPTIONS, EMBED_BASE_URL } from '../types/embed-widget.types';
 
 export const useEmbedConfiguratorStore = defineStore('embedConfigurator', () => {
   
@@ -24,21 +24,25 @@ export const useEmbedConfiguratorStore = defineStore('embedConfigurator', () => 
   const selectedAlgorithm = ref('quicksort-recursion');
   const isCopied = ref(false);
 
+  let copyResetTimer: ReturnType<typeof setTimeout> | null = null;
+
+  
   
   
   
 
-  const generatedIframeCode = computed(() => {
-    const params = new URLSearchParams({
+  const widgetQueryParams = computed(() =>
+    new URLSearchParams({
       algo: selectedAlgorithm.value,
       theme: selectedTheme.value,
       vcr: showVcrControls.value.toString(),
       watch: showWatchVariables.value.toString(),
       interactive: isInteractive.value.toString(),
-    });
+    })
+  );
 
-    const iframeUrl = `${EMBED_BASE_URL}?${params.toString()}`;
-
+  const generatedIframeCode = computed(() => {
+    const iframeUrl = `${EMBED_BASE_URL}?${widgetQueryParams.value.toString()}`;
     return [
       `<iframe`,
       `  src="${iframeUrl}"`,
@@ -51,14 +55,23 @@ export const useEmbedConfiguratorStore = defineStore('embedConfigurator', () => 
   });
 
   const iframeSrcUrl = computed(() => {
-    const params = new URLSearchParams({
-      algo: selectedAlgorithm.value,
-      theme: selectedTheme.value,
-      vcr: showVcrControls.value.toString(),
-      watch: showWatchVariables.value.toString(),
-      interactive: isInteractive.value.toString(),
-    });
-    return `${EMBED_BASE_URL}?${params.toString()}`;
+    return `${EMBED_BASE_URL}?${widgetQueryParams.value.toString()}`;
+  });
+
+  const algorithmLabel = computed(() => {
+    const found = EMBED_ALGORITHM_OPTIONS.find(
+      (a) => a.id === selectedAlgorithm.value,
+    );
+    return found ? found.label : selectedAlgorithm.value;
+  });
+
+  const themeLabel = computed(() => {
+    const labels: Record<EmbedTheme, string> = {
+      dark: 'Dark',
+      light: 'Light',
+      glass: 'Glass',
+    };
+    return labels[selectedTheme.value];
   });
 
   
@@ -70,8 +83,12 @@ export const useEmbedConfiguratorStore = defineStore('embedConfigurator', () => 
       await navigator.clipboard.writeText(generatedIframeCode.value);
       isCopied.value = true;
 
-      setTimeout(() => {
+      if (copyResetTimer !== null) {
+        clearTimeout(copyResetTimer);
+      }
+      copyResetTimer = setTimeout(() => {
         isCopied.value = false;
+        copyResetTimer = null;
       }, 2000);
 
       return true;
@@ -128,6 +145,8 @@ export const useEmbedConfiguratorStore = defineStore('embedConfigurator', () => 
     isCopied,
     generatedIframeCode,
     iframeSrcUrl,
+    themeLabel,
+    algorithmLabel,
     copyEmbedCodeToClipboard,
     setTheme,
     setAlgorithm,

@@ -1,0 +1,68 @@
+{
+  "quizTitle": "Trắc nghiệm Tìm kiếm Linear & Binary",
+  "topic": "searching",
+  "difficulty": 1,
+  "xpReward": 40,
+  "questions": [
+    {
+      "questionText": "Điều kiện tiên quyết để chạy được Linear Search trên một mảng là gì?",
+      "options": ["Mảng đã sắp xếp tăng dần", "Mảng đã sắp xếp giảm dần", "Không có điều kiện nào về thứ tự", "Mảng không chứa số âm"],
+      "correctIndex": 2,
+      "explanation": "Linear Search chỉ duyệt tuần tự nên hoạt động trên mọi mảng, dù đã sắp xếp hay chưa."
+    },
+    {
+      "questionText": "Điều kiện tiên quyết để Binary Search cho kết quả đúng là gì?",
+      "options": ["Mảng có ít hơn 100 phần tử", "Mảng đã được sắp xếp", "Mảng chỉ chứa số nguyên dương", "Mảng không trùng giá trị"],
+      "correctIndex": 1,
+      "explanation": "Binary Search loại bỏ một nửa không gian tìm kiếm dựa trên so sánh, nên chỉ đúng khi mảng đã sắp xếp."
+    },
+    {
+      "questionText": "Khi không tìm thấy target, Linear Search và Binary Search trả về giá trị nào theo quy ước?",
+      "options": ["0", "null", "-1", "Độ dài mảng"],
+      "correctIndex": 2,
+      "explanation": "Cả hai thuật toán đều trả về -1 để báo không tồn tại phần tử cần tìm."
+    },
+    {
+      "questionText": "Độ phức tạp thời gian trung bình của Linear Search là gì?",
+      "options": ["O(1)", "O(log N)", "O(N)", "O(N log N)"],
+      "correctIndex": 2,
+      "explanation": "Trung bình phải duyệt N/2 phần tử, hằng số 1/2 bị bỏ qua nên là O(N)."
+    },
+    {
+      "questionText": "Độ phức tạp thời gian của Binary Search trong trường hợp xấu nhất là gì?",
+      "options": ["O(1)", "O(log N)", "O(N)", "O(N²)"],
+      "correctIndex": 1,
+      "explanation": "Mỗi bước chia đôi không gian tìm kiếm nên chỉ cần log2(N) bước, kể cả khi target không tồn tại."
+    },
+    {
+      "questionText": "Tại sao nên tính mid = low + (high - low) / 2 thay vì mid = (low + high) / 2?",
+      "options": ["Nhanh hơn về mặt CPU", "Tránh tràn số nguyên khi low + high vượt giới hạn kiểu dữ liệu", "Giúp làm tròn kết quả khác đi", "Tránh chia cho số 0"],
+      "correctIndex": 1,
+      "explanation": "Khi low và high lớn, phép cộng có thể tràn thành số âm gây sai mid; phép trừ (high - low) không bao giờ tràn."
+    },
+    {
+      "questionText": "Với mảng 1 triệu phần tử đã sắp xếp, Binary Search cần tối đa khoảng bao nhiêu phép so sánh?",
+      "options": ["1 triệu", "100.000", "500.000", "Khoảng 20"],
+      "correctIndex": 3,
+      "explanation": "log2(1.000.000) xấp xỉ 20, nên cần tối đa ~20 bước, trong khi Linear Search cần tới 1 triệu."
+    },
+    {
+      "questionText": "Mô phỏng Binary Search tìm target = 9 trong mảng [1, 3, 5, 7, 9, 11]: theo thứ tự các mid bị duyệt là gì?",
+      "options": ["mid = 3, sau đó mid = 5", "mid = 2, sau đó mid = 4", "mid = 1, sau đó mid = 3", "mid = 4, sau đó mid = 5"],
+      "correctIndex": 1,
+      "explanation": "low=0, high=5 → mid=2 (giá trị 5, 5 < 9 nên low=3); low=3, high=5 → mid=4 (giá trị 9, khớp)."
+    },
+    {
+      "questionText": "Mô phỏng Binary Search tìm 23 trong mảng [2, 5, 8, 12, 16, 23, 38, 56, 72, 91]: dãy low, mid, high qua các bước lần lượt là gì?",
+      "options": ["mid = 4, 7, 6 rồi mid = 5", "mid = 5, 2, 1", "mid = 9, 4, 6", "mid = 4, 2, 5"],
+      "correctIndex": 0,
+      "explanation": "Bước 1: mid=4 (16 < 23 → low=5). Bước 2: mid=7 (56 > 23 → high=6). Bước 3: mid=5 (23, khớp, trả về 5)."
+    },
+    {
+      "questionText": "Edge case: chạy Binary Search trên mảng chưa sắp xếp [10, 3, 7, 1, 9] tìm target = 7 sẽ cho kết quả gì?",
+      "options": ["Luôn đúng vì Binary Search kiểm tra mọi phần tử", "Kết quả có thể sai mà không báo lỗi", "Ném ngoại lệ IndexOutOfRange", "Trả về vị trí của phần tử 10"],
+      "correctIndex": 1,
+      "explanation": "Binary Search giả định dữ liệu có thứ tự nên vứt bỏ nửa mảng dựa trên giả định sai → trả về -1 hoặc chỉ số sai một cách âm thầm."
+    }
+  ]
+}

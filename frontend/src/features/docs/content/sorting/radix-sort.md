@@ -119,4 +119,20 @@ Mặc dù nghe có vẻ nhanh thần tốc O(N), nhưng Radix Sort có nhược 
 
 Thuật toán Radix Sort nhìn trên màn hình mô phỏng sẽ vô cùng thú vị. Các con số sẽ nhảy múa ra vào các xô với nhịp điệu cực kỳ đều đặn. Hãy bấm xem Sandbox nhé!
 
-Sau khi chứng kiến cả 5 thuật toán vừa qua, ắt hẳn bạn đang bị rối não: *"Rốt cục thì dự án thực tế nên xài cái nào?"*. Đừng lo, bài học tiếp theo sẽ giải đáp hoàn toàn thắc mắc đó: **Bảng Tổng hợp & Chọn thuật toán sắp xếp phù hợp**.
+Sau khi chứng kiến các thuật toán vừa qua, ắt hẳn bạn đang bị rối não: *"Rốt cục thì dự án thực tế nên xài cái nào?"*. Đừng lo, bài học tiếp theo sẽ giải đáp hoàn toàn thắc mắc đó: **Bảng Tổng hợp & Chọn thuật toán sắp xếp phù hợp**.
+
+<div class="vt-box-container next-steps">
+  <a class="vt-box" href="/docs/sorting/sorting-summary">
+    <p class="next-steps-link">Tổng hợp: Chọn Thuật toán Sắp xếp</p>
+    <p class="next-steps-caption">Bảng so sánh tối thượng và bí quyết chọn thuật toán trong môi trường Production.</p>
+  </a>
+</div>
+
+## 📚 Tham khảo lý thuyết {#references}
+
+Nội dung bài viết được biên soạn dựa trên các nguồn tài liệu uy tín dưới đây. Bạn có thể đào sâu thêm từng khái niệm chính bằng cách đọc theo từng mục:
+
+- **Radix Sort, nguyên lý LSD từ hàng đơn vị và tính ổn định (stable):** Wikipedia — [Radix sort](https://en.wikipedia.org/wiki/Radix_sort). Nguồn chính mô tả chi tiết biến thể LSD/MSD, quy trình chia xô theo từng chữ số và vai trò bắt buộc của tính ổn định.
+- **Giới hạn dưới Ω(N log N) của mọi thuật toán sắp xếp so sánh, và chứng minh Radix Sort đạt O(d × (N + k)):** Cormen, Leiserson, Rivest & Stein, *Introduction to Algorithms* (CLRS), Chương 8 "Sorting in Linear Time". Nguồn kinh điển phân tích định lý giới hạn dưới so sánh, Counting Sort và Radix Sort.
+- **Phân tích độ phức tạp O(d × (N + k)) với d là số chữ số, k là cơ số cùng cách dùng Counting Sort làm thuật toán chia xô nội bộ:** Dasgupta, Papadimitriou & Vazirani, *Algorithms*, Chương về Counting và Radix Sort; cùng bài viết [Radix Sort - GeeksforGeeks](https://www.geeksforgeeks.org/radix-sort/) minh họa cài đặt LSD bằng Counting Sort.
+- **Ví dụ cài đặt C# và kỹ thuật duyệt ngược để duy trì tính ổn định:** [Radix Sort - GeeksforGeeks](https://www.geeksforgeeks.org/radix-sort/); mô phỏng trực quan từng vòng tại [Visualgo Sorting](https://visualgo.net/en/sorting).

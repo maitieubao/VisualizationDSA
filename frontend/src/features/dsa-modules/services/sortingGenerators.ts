@@ -329,15 +329,40 @@ export function generateRadixSort(inputData: number[]): AlgorithmResult {
 export function generateCountingSort(inputData: number[]): AlgorithmResult {
   const arr = [...inputData], n = arr.length, frames: FrameDTO[] = [];
   let stepId = 0;
-  const pseudoCode = ['count[0..9] = 0', 'count[A[i]%10]++', 'prefix sum', 'build output (right-to-left)'];
-  const count = new Array(10).fill(0);
+  const pseudoCode = ['count[0..range] = 0', 'count[A[i]]++', 'prefix sum', 'build output (right-to-left)'];
 
-  frames.push({ stepId: ++stepId, activeLine: 0, explanation: 'Khởi tạo Counting Sort.', dataState: [...arr], highlights: defaultHighlights() });
-  for (let i = 0; i < n; i++) { const d = Math.max(0, Math.min(arr[i]%10, 9)); count[d]++; frames.push({ stepId: ++stepId, activeLine: 1, explanation: `Count A[${i}]=${arr[i]}, digit=${d}. Count[${d}]=${count[d]}.`, dataState: [...arr], highlights: defaultHighlights({ compare: [i] }) }); }
-  for (let i = 1; i < 10; i++) count[i] += count[i-1];
+  if (n === 0) {
+    frames.push({ stepId: ++stepId, activeLine: 0, explanation: 'Mảng rỗng.', dataState: [], highlights: defaultHighlights() });
+    return { algorithmId: 'counting-sort', pseudoCode, frames };
+  }
+
+  // Counting sort THỰC SỰ: đếm theo giá trị đầy đủ (min..max), không phải chữ số hàng đơn vị.
+  const minVal = Math.min(...arr), maxVal = Math.max(...arr);
+  const range = maxVal - minVal + 1;
+
+  // Guard: range quá lớn → insertion sort đơn giản (giữ algorithmId counting-sort).
+  // Trước đây fallback sang radix — SAI với số âm (digit âm → NaN) và đổi cả nhãn thuật toán.
+  if (range > 1000) {
+    const a = [...arr];
+    for (let i = 1; i < n; i++) {
+      const key = a[i];
+      let j = i - 1;
+      while (j >= 0 && a[j] > key) { a[j + 1] = a[j]; j--; }
+      a[j + 1] = key;
+    }
+    frames.push({ stepId: ++stepId, activeLine: 0, explanation: 'Khoảng giá trị quá lớn — dùng Insertion Sort thay thế.', dataState: [...arr], highlights: defaultHighlights() });
+    frames.push({ stepId: ++stepId, activeLine: 3, explanation: `Kết quả: [${a.join(', ')}].`, dataState: [...a], highlights: defaultHighlights({ sorted: Array.from({ length: n }, (_, i) => i) }) });
+    return { algorithmId: 'counting-sort', pseudoCode, frames };
+  }
+
+  const count = new Array(range).fill(0);
+
+  frames.push({ stepId: ++stepId, activeLine: 0, explanation: `Khởi tạo Counting Sort. Khoảng giá trị [${minVal}, ${maxVal}] (${range} ô đếm).`, dataState: [...arr], highlights: defaultHighlights() });
+  for (let i = 0; i < n; i++) { const idx = arr[i] - minVal; count[idx]++; frames.push({ stepId: ++stepId, activeLine: 1, explanation: `Count A[${i}]=${arr[i]}. Count[${arr[i]}]=${count[idx]}.`, dataState: [...arr], highlights: defaultHighlights({ compare: [i] }) }); }
+  for (let i = 1; i < range; i++) count[i] += count[i-1];
   frames.push({ stepId: ++stepId, activeLine: 2, explanation: 'Prefix sum hoàn tất.', dataState: [...arr], highlights: defaultHighlights() });
   const output = new Array(n);
-  for (let i = n-1; i >= 0; i--) { const d = Math.max(0, Math.min(arr[i]%10, 9)); count[d]--; output[count[d]] = arr[i]; }
+  for (let i = n-1; i >= 0; i--) { const idx = arr[i] - minVal; count[idx]--; output[count[idx]] = arr[i]; }
   frames.push({ stepId: ++stepId, activeLine: 3, explanation: `Kết quả: [${output.join(', ')}].`, dataState: [...output], highlights: defaultHighlights({ sorted: Array.from({ length: n }, (_, i) => i) }) });
   return { algorithmId: 'counting-sort', pseudoCode, frames };
 }

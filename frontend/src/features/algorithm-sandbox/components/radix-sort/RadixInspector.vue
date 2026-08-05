@@ -1,91 +1,121 @@
 <template>
   <div class="r-inspector">
-    <div class="r-insp-header">
-      <span>🔍 Giải thích bước hiện tại</span>
-      <span class="r-insp-badge" :class="isDistributePhase ? 'r-ib--dist' : 'r-ib--coll'">
-        {{ isDistributePhase ? 'DISTRIBUTE' : 'COLLECT' }}
-      </span>
-    </div>
-    <div class="r-stats">
+    <div class="r-inspector-grid">
       <div class="r-stat">
-        <span class="r-slbl">Hàng chữ số</span>
-        <span class="r-sval r-sval--c">{{ digitPlaceLabel }}</span>
+        <span class="r-stat-lbl">Hàng</span>
+        <span class="r-stat-val">{{ digitPlaceLabel }}</span>
       </div>
       <div class="r-stat">
-        <span class="r-slbl">Bước</span>
-        <span class="r-sval r-sval--w">{{ frame?.stepIndex ?? 0 }}</span>
+        <span class="r-stat-lbl">Bước</span>
+        <span class="r-stat-val">{{ isDistributePhase ? 'Phân Phối' : 'Thu Hoạch' }}</span>
       </div>
       <div class="r-stat">
-        <span class="r-slbl">Phần tử xét</span>
-        <span class="r-sval r-sval--y">
-          {{ comparingIndices?.length
-            ? `arr[${comparingIndices[0]}] = ${frame?.arrayState[comparingIndices[0]] ?? '—'}`
-            : '—' }}
+        <span class="r-stat-lbl">Phần tử</span>
+        <span class="r-stat-val">{{ activeElementIdx >= 0 ? '#' + activeElementIdx : '—' }}</span>
+      </div>
+      <div class="r-stat">
+        <span class="r-stat-lbl">Hộp</span>
+        <span class="r-stat-val" :style="{ color: activeBucketIdx >= 0 ? bucketColor : 'var(--color-text-muted)' }">
+          {{ activeBucketIdx >= 0 ? '[' + activeBucketIdx + ']' : '—' }}
         </span>
       </div>
       <div class="r-stat">
-        <span class="r-slbl">Hộp đích</span>
-        <span class="r-sval r-sval--g">{{ activeBucketIdx >= 0 ? `[${activeBucketIdx}]` : '—' }}</span>
+        <span class="r-stat-lbl">Phần tử</span>
+        <span class="r-stat-val">{{ frame?.arrayState.length ?? 0 }}</span>
+      </div>
+      <div class="r-stat">
+        <span class="r-stat-lbl">Độ phức tạp</span>
+        <span class="r-stat-val r-stat-val--mono">O(n·k)</span>
       </div>
     </div>
-    <div class="r-notes">
-      <p><strong>Non-comparison:</strong> Sắp xếp theo vị trí chữ số, không so sánh cặp khóa.</p>
-      <p><strong>FIFO Stability:</strong> Phần tử dưới đáy hộp được rút trước → tính ổn định.</p>
-      <p><strong>Độ phức tạp:</strong> O(d·(n+k)), d = số chữ số, k = 10.</p>
+
+    <div class="r-inspector-explain">
+      <div class="r-inspector-explain-title"><BaseIcon name="book-open" class="r-explain-ic" /> Giải thích</div>
+      <div class="r-inspector-explain-body" v-html="parseEmojiToSvg(currentStepDescription)"></div>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
+import { computed } from 'vue';
 import { useRadixSortVisualizer } from '../../composables/useRadixSortVisualizer';
+import { parseEmojiToSvg } from '../../../../utils/emojiParser';
 import type { SortFrame } from '../../types/sorting.types';
 
 const props = defineProps<{ frame: SortFrame | null }>();
 const {
-  isDistributePhase,
   digitPlaceLabel,
-  comparingIndices,
-  activeBucketIdx
+  isDistributePhase,
+  activeElementIdx,
+  activeBucketIdx,
+  currentStepDescription
 } = useRadixSortVisualizer(() => props.frame);
+
+const bucketColor = computed(() => {
+  const b = activeBucketIdx.value;
+  const colors = ['#eab308','#f97316','#ef4444','#ec4899','#a855f7','#8b5cf6','#6366f1','#3b82f6','#06b6d4','#10b981'];
+  return colors[b] || 'var(--color-accent-cyan)';
+});
 </script>
 
 <style scoped>
 .r-inspector {
-  flex: 1;
-  min-height: 0;
-  background: color-mix(in srgb, var(--color-bg-secondary) 65%, transparent);
+  flex-shrink: 0;
+  margin-top: 10px;
+  background: var(--color-bg-secondary);
   border: 1px solid var(--color-border-subtle);
-  border-radius: 13px;
-  padding: 9px 13px;
+  border-radius: var(--radius-lg);
+  padding: 10px 13px;
+}
+.r-inspector-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
+  gap: 6px;
+}
+.r-stat {
   display: flex;
   flex-direction: column;
-  gap: 7px;
-  backdrop-filter: blur(6px);
-  overflow: hidden;
+  gap: 1px;
 }
-.r-insp-header {
-  display: flex; align-items: center; justify-content: space-between;
-  font-size: 13.5px; font-weight: 700; color: var(--color-text-secondary);
-  border-bottom: 1px solid var(--color-border-subtle); padding-bottom: 6px;
-  flex-shrink: 0;
+.r-stat-lbl {
+  font-size: 10px;
+  font-family: var(--font-mono);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .08em;
+  color: var(--color-text-secondary);
 }
-.r-insp-badge {
-  font-size: 10.5px; font-family: var(--font-mono); font-weight: 700;
-  padding: 2px 7px; border-radius: 999px; border: 1px solid;
+.r-stat-val {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--color-text-primary);
 }
-.r-ib--dist { background: var(--color-accent-yellow-dim); color: var(--color-accent-yellow); border-color: color-mix(in srgb, var(--color-accent-yellow) 30%, transparent); }
-.r-ib--coll { background: var(--color-accent-green-dim);  color: var(--color-accent-green); border-color: color-mix(in srgb, var(--color-accent-green) 30%, transparent); }
+.r-stat-val--mono {
+  font-family: var(--font-mono);
+  color: var(--color-accent-cyan);
+}
 
-.r-stats { display: flex; flex-wrap: wrap; gap: 6px; flex-shrink: 0; }
-.r-stat  { display: flex; flex-direction: column; gap: 2px; background: color-mix(in srgb, var(--color-bg-primary) 20%, transparent); border: 1px solid var(--color-border-subtle); border-radius: 7px; padding: 7px 11px; min-width: 96px; }
-.r-slbl  { font-size: 9.5px; font-family: var(--font-mono); color: var(--color-text-muted); text-transform: uppercase; letter-spacing: .07em; }
-.r-sval  { font-size: 14.5px; font-weight: 700; font-family: var(--font-mono); }
-.r-sval--c { color: var(--color-accent-cyan); }
-.r-sval--w { color: var(--color-text-primary); }
-.r-sval--y { color: var(--color-accent-yellow); }
-.r-sval--g { color: var(--color-accent-green); }
-
-.r-notes { display: flex; flex-direction: column; gap: 2px; border-top: 1px solid var(--color-border-subtle); padding-top: 6px; flex-shrink: 0; }
-.r-notes p { font-size: 12px; color: var(--color-text-secondary); line-height: 1.5; margin: 0; }
-.r-notes strong { color: var(--color-text-primary); }
+.r-inspector-explain {
+  margin-top: 8px;
+  padding-top: 7px;
+  border-top: 1px solid var(--color-border-subtle);
+}
+.r-inspector-explain-title {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--color-text-secondary);
+  margin-bottom: 3px;
+}
+.r-explain-ic {
+  width: 12px;
+  height: 12px;
+  vertical-align: -1.5px;
+  margin-right: 3px;
+}
+.r-inspector-explain-body {
+  font-size: 12px;
+  color: var(--color-text-primary);
+  line-height: 1.5;
+  opacity: .9;
+}
 </style>

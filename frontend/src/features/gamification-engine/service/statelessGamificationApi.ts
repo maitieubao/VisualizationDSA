@@ -6,6 +6,8 @@
 
 const BASE_URL = import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:5055';
 
+import { useAuthStore } from '../../auth/store/useAuthStore';
+
 export interface StatelessUserProfile {
   userId: string;
   username: string;
@@ -43,6 +45,17 @@ export interface StatelessLeaderboardEntry {
   streakDays: number;
 }
 
+/** Lấy access token đang hoạt động (backend xác định user từ token). */
+function getAuthToken(): string | null {
+  try {
+    const fromStore = useAuthStore().getAccessToken();
+    if (fromStore) return fromStore;
+  } catch {
+    // Pinia chưa active (test edge)
+  }
+  return localStorage.getItem('token');
+}
+
 export const statelessGamificationApi = {
   
   async getProfile(): Promise<StatelessUserProfile> {
@@ -53,9 +66,14 @@ export const statelessGamificationApi = {
 
   
   async awardXp(amount: number, reason: string): Promise<StatelessUserProfile> {
+    // Endpoint yêu cầu Teacher/Admin (chống tự cày XP) — phải gửi token.
+    const token = getAuthToken();
     const res = await fetch(`${BASE_URL}/api/v1/concepts/gamification/award-xp`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
+      },
       body: JSON.stringify({ amount, reason }),
     });
     if (!res.ok) throw new Error(`HTTP ${res.status}`);

@@ -1,0 +1,83 @@
+{
+  "quizTitle": "Trắc nghiệm Tổng ôn DSA",
+  "topic": "dsa",
+  "difficulty": 2,
+  "xpReward": 40,
+  "questions": [
+    {
+      "questionText": "Cần liên tục tra cứu nhanh một phần tử theo khóa, cấu trúc dữ liệu phù hợp nhất là gì?",
+      "options": ["Hash table", "Danh sách liên kết đơn", "Ngăn xếp", "Hàng đợi"],
+      "correctIndex": 0,
+      "explanation": "Hash table tra cứu theo khóa trong O(1) trung bình, nhanh nhất trong các lựa chọn trên."
+    },
+    {
+      "questionText": "Cần lặp đi lặp lại thao tác lấy phần tử nhỏ nhất đang có, nên dùng cấu trúc nào?",
+      "options": ["Mảng chưa sắp xếp", "Heap (hàng đợi ưu tiên)", "Bảng băm", "Ngăn xếp"],
+      "correctIndex": 1,
+      "explanation": "Heap đưa phần tử min/max lên đầu trong O(1) và mỗi lần thêm/xóa chỉ mất O(log n)."
+    },
+    {
+      "questionText": "Đồ thị không trọng số, tìm đường đi ngắn nhất từ đỉnh S, thuật toán phù hợp nhất là gì?",
+      "options": ["BFS", "Topological sort", "Backtracking", "Binary search"],
+      "correctIndex": 0,
+      "explanation": "BFS mở rộng theo tầng nên lần đầu chạm tới đỉnh đích chính là đường đi ngắn nhất về số cạnh."
+    },
+    {
+      "questionText": "Dữ liệu xử lý theo nguyên tắc vào trước ra trước nên dùng cấu trúc nào?",
+      "options": ["Stack", "Queue", "Heap", "Trie"],
+      "correctIndex": 1,
+      "explanation": "Queue thực thi đúng FIFO — phần tử thêm trước được lấy ra trước."
+    },
+    {
+      "questionText": "Mảng đã sắp xếp tăng dần, cần tìm vị trí của một phần tử, cách nhanh nhất là gì?",
+      "options": ["Quét tuần tự", "Binary search", "Dùng stack", "Dựng đồ thị rồi DFS"],
+      "correctIndex": 1,
+      "explanation": "Binary search khai thác tính có thứ tự của mảng, chia đôi không gian tìm kiếm mỗi bước, chỉ mất O(log n)."
+    },
+    {
+      "questionText": "Đề yêu cầu liệt kê mọi hoán vị của một tập hợp, kỹ thuật phù hợp nhất là gì?",
+      "options": ["Backtracking", "Two pointers", "Rolling hash", "Union-Find"],
+      "correctIndex": 0,
+      "explanation": "Sinh mọi nghiệm đòi hỏi duyệt toàn bộ không gian lời giải theo kiểu thử-sai, đúng bản chất của backtracking."
+    },
+    {
+      "questionText": "Cần tìm 3 phần tử lớn nhất trong mảng 1 triệu phần tử, giải pháp tiết kiệm nhất là gì?",
+      "options": [
+        "Sắp xếp toàn mảng rồi lấy 3 phần tử cuối",
+        "Dùng heap tối thiểu kích thước 3",
+        "Dùng bảng băm",
+        "Chạy binary search"
+      ],
+      "correctIndex": 1,
+      "explanation": "Min-heap kích thước 3 luôn giữ 3 phần tử lớn nhất, mỗi phần tử chỉ tốn O(log 3) thay vì O(N log N) khi sắp xếp."
+    },
+    {
+      "questionText": "Để tránh tràn số khi tính chỉ số giữa của binary search với lo và hi rất lớn, công thức nào đúng?",
+      "options": [
+        "mid = (lo + hi) / 2",
+        "mid = lo + (hi - lo) / 2",
+        "mid = (hi - lo) / 2",
+        "mid = hi - (hi + lo)"
+      ],
+      "correctIndex": 1,
+      "explanation": "Biểu thức lo + (hi - lo)/2 tránh phép cộng lo + hi có thể tràn kiểu số nguyên 32-bit."
+    },
+    {
+      "questionText": "Cho mảng [2, 2, 1], mọi số xuất hiện đúng 2 lần trừ một số. Gộp toàn mảng bằng phép XOR cho kết quả là bao nhiêu?",
+      "options": ["0", "1", "2", "3"],
+      "correctIndex": 1,
+      "explanation": "XOR là phép toán có phần tử trung hòa 0 và hai giá trị giống nhau triệt tiêu nhau: 2 XOR 2 = 0, còn lại 0 XOR 1 = 1."
+    },
+    {
+      "questionText": "Mảng sắp xếp [1, 2, 4, 6, 9] với target 8, thuật toán two pointers bắt đầu lo = 0, hi = 4. Tổng 1 + 9 = 10 lớn hơn 8, bước tiếp theo là gì?",
+      "options": [
+        "Tăng lo lên 1",
+        "Giảm hi xuống 3",
+        "Tăng cả lo và hi",
+        "Dừng thuật toán"
+      ],
+      "correctIndex": 1,
+      "explanation": "Tổng lớn hơn target nên phải giảm số hạng lớn nhất, tức giảm hi; khi tổng nhỏ hơn target mới tăng lo."
+    }
+  ]
+}

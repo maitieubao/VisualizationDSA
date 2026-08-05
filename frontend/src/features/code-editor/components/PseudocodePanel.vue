@@ -5,7 +5,16 @@
 
     
     <div class="flex-1 overflow-y-auto p-2" ref="viewport">
-      <div class="font-mono text-sm leading-7">
+      <div
+        v-if="!vcrStore.code.trim()"
+        class="h-full flex flex-col items-center justify-center gap-2 text-center px-4"
+      >
+        <BaseIcon name="file-text" class="w-6 h-6 text-text-muted" />
+        <p class="text-xs text-text-muted font-sans max-w-[220px] leading-relaxed">
+          Chưa có mã nguồn. Chọn một preset hoặc nhập code để bắt đầu.
+        </p>
+      </div>
+      <div v-else class="font-mono text-sm leading-7">
         <div
           v-for="(line, idx) in codeLines"
           :key="idx"
@@ -15,7 +24,11 @@
             }
           "
           @click="onLineClick(idx + 1)"
-          class="group flex items-center rounded-md px-2 py-0.5 cursor-pointer select-none transition-all"
+          @keydown.enter.prevent="onLineClick(idx + 1)"
+          :role="isLineExecutable(idx + 1) ? 'button' : undefined"
+          :tabindex="isLineExecutable(idx + 1) ? 0 : -1"
+          :aria-current="isLineActive(idx + 1) ? 'true' : undefined"
+          class="group flex items-center rounded-md px-2 py-0.5 cursor-pointer select-none transition-all focus:outline-none focus-visible:ring-1 focus-visible:ring-accent-cyan"
           :class="getLineClasses(idx + 1)"
         >
           
@@ -52,7 +65,7 @@ const activeLoopVars = computed(() => {
   if (!isPlaybackFrame(frame)) return [];
   const vars = frame.canvasStateSnapshot.loopVariables;
   if (!vars) return [];
-  return Object.entries(vars) as [string, number][];
+  return Object.entries(vars);
 });
 
 const isLineActive = (lineNum: number) => {

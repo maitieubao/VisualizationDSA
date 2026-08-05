@@ -13,7 +13,7 @@ namespace VisualizationDSA.WebApi.Controllers
 {
     [ApiVersion("1.0")]
     [ApiController]
-    [Route("api/v{version:apiVersion}/concepts/[controller]")]
+    [Route("api/v{version:apiVersion}/[controller]")]
     public class NotificationsController : ControllerBase
     {
         private readonly ApplicationDbContext _dbContext;
@@ -36,8 +36,10 @@ namespace VisualizationDSA.WebApi.Controllers
                 return Unauthorized();
 
             var notifications = await _dbContext.Notifications
+                .AsNoTracking()
                 .Where(n => n.UserId == userId)
                 .OrderByDescending(n => n.CreatedAt)
+                .Take(100)
                 .Select(n => new
                 {
                     n.Id,
@@ -90,6 +92,11 @@ namespace VisualizationDSA.WebApi.Controllers
             var unreadNotifications = await _dbContext.Notifications
                 .Where(n => n.UserId == userId && !n.IsRead)
                 .ToListAsync();
+
+            if (unreadNotifications.Count == 0)
+            {
+                return Ok(new { success = true, message = "Không có thông báo chưa đọc." });
+            }
 
             foreach (var notification in unreadNotifications)
             {

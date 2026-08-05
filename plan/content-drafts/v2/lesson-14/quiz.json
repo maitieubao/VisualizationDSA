@@ -1,0 +1,68 @@
+{
+  "quizTitle": "Trắc nghiệm Prefix Sum",
+  "topic": "dsa",
+  "difficulty": 1,
+  "xpReward": 40,
+  "questions": [
+    {
+      "questionText": "Công thức nào đúng khi xây dựng mảng prefix sum?",
+      "options": ["prefix[i] = prefix[i - 1] + arr[i]", "prefix[i] = prefix[i] + arr[i - 1]", "prefix[i] = arr[i] - arr[i - 1]", "prefix[i] = prefix[i - 1] * arr[i]"],
+      "correctIndex": 0,
+      "explanation": "Mỗi prefix[i] cộng dồn phần tử hiện tại vào tổng trước đó, với quy ước prefix[0] = 0."
+    },
+    {
+      "questionText": "Với quy ước prefix[0] = 0 và chỉ số 1-based, tổng mảng con arr[l..r] tính bằng công thức nào?",
+      "options": ["prefix[r] - prefix[l]", "prefix[r] - prefix[l - 1]", "prefix[r] + prefix[l - 1]", "prefix[l] - prefix[r]"],
+      "correctIndex": 1,
+      "explanation": "Lấy tổng cộng dồn đến r rồi khử đi phần cộng dồn trước l: prefix[r] - prefix[l - 1]."
+    },
+    {
+      "questionText": "Độ phức tạp thời gian để xây dựng mảng prefix sum là bao nhiêu?",
+      "options": ["O(1)", "O(N)", "O(N²)", "O(log N)"],
+      "correctIndex": 1,
+      "explanation": "Chỉ một vòng lặp duyệt N phần tử, mỗi phần tử một phép cộng, nên chi phí là O(N)."
+    },
+    {
+      "questionText": "Sau khi có mảng prefix, mỗi truy vấn tổng mảng con có độ phức tạp bao nhiêu?",
+      "options": ["O(N)", "O(log N)", "O(N²)", "O(1)"],
+      "correctIndex": 3,
+      "explanation": "Chỉ cần hai phép truy cập mảng và một phép trừ, không phụ thuộc độ dài đoạn truy vấn."
+    },
+    {
+      "questionText": "Cho arr = [3, 1, 4, 1, 5] với prefix[0] = 0, giá trị prefix[3] bằng bao nhiêu?",
+      "options": ["8", "9", "7", "10"],
+      "correctIndex": 1,
+      "explanation": "prefix[3] = 3 + 1 + 4 = 9 (tổng ba phần tử đầu tiên của mảng)."
+    },
+    {
+      "questionText": "Với arr = [3, 1, 4, 1, 5] và prefix = [0, 3, 4, 8, 9, 14], tổng arr[2..4] (chỉ số 1-based) bằng bao nhiêu?",
+      "options": ["8", "9", "10", "6"],
+      "correctIndex": 3,
+      "explanation": "prefix[4] - prefix[1] = 9 - 3 = 6, đúng bằng 1 + 4 + 1."
+    },
+    {
+      "questionText": "Với difference array, muốn cộng v vào mọi phần tử arr[l..r] (1-based, độ dài N) thì thao tác nào đúng?",
+      "options": ["diff[l] += v và diff[r] += v", "diff[l] += v và diff[r + 1] -= v", "diff[l + 1] += v và diff[r] -= v", "diff[l] -= v và diff[r + 1] += v"],
+      "correctIndex": 1,
+      "explanation": "diff[l] += v đánh dấu bắt đầu tăng, diff[r + 1] -= v chặn tăng sau vị trí r; quét cộng dồn sẽ tái lập mảng."
+    },
+    {
+      "questionText": "Cho arr = [1, 2, 3, -1, 2] và K = 3, có bao nhiêu mảng con liên tiếp có tổng đúng bằng K?",
+      "options": ["1", "2", "3", "4"],
+      "correctIndex": 1,
+      "explanation": "Hai mảng con thỏa mãn: [1, 2] và [3]. Dùng hash đếm tần suất prefix[i] - K xuất hiện trước đó cho kết quả 2."
+    },
+    {
+      "questionText": "Cho ma trận 2x2 = [[1, 2], [3, 4]] và mảng 2D prefix P với P[0][*] = P[*][0] = 0, giá trị P[2][2] bằng bao nhiêu?",
+      "options": ["7", "9", "10", "12"],
+      "correctIndex": 2,
+      "explanation": "P[2][2] = P[1][2] + P[2][1] - P[1][1] + arr[2][2] = 3 + 4 - 1 + 4 = 10, bằng tổng toàn bộ ma trận."
+    },
+    {
+      "questionText": "Mảng arr dài 5 (toàn số 0). Áp dụng: cộng 2 vào arr[1..3] và cộng -1 vào arr[3..4] (chỉ số 1-based). Giá trị cuối cùng của arr[3] là bao nhiêu?",
+      "options": ["2", "1", "3", "0"],
+      "correctIndex": 1,
+      "explanation": "diff = [0, 2, 0, -1, -2, 1]; cộng dồn được arr = [2, 2, 1, -1, 0]. arr[3] nhận +2 từ đoạn 1..3 và -1 từ đoạn 3..4 nên bằng 1."
+    }
+  ]
+}

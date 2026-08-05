@@ -8,19 +8,21 @@
     </div>
     <input type="range" min="0" :max="Math.max(totalSteps - 1, 0)" :value="currentIndex"
       :disabled="totalSteps === 0 || disabled" class="custom-timeline-slider" :style="progressStyle"
+      aria-label="Tiến trình hoạt ảnh"
       @mousedown="$emit('scrubStart')" @input="$emit('scrubInput', $event)"
       @mouseup="$emit('scrubEnd')" @touchstart="$emit('scrubStart')" @touchend="$emit('scrubEnd')" />
 
     
     <div v-if="tooltipVisible && !disabled" :style="{ left: tooltipX + 'px' }" class="slider-dynamic-tooltip">
       <span class="tooltip-step-label">Bước {{ tooltipStep }}:</span>
-      <p class="tooltip-explanation-text">{{ tooltipText }}</p>
+      <p class="tooltip-explanation-text" v-html="parseEmojiToSvg(escapeHtmlText(tooltipText))"></p>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref } from 'vue';
+import { parseEmojiToSvg, escapeHtmlText } from '../../../utils/emojiParser';
 
 defineProps<{
   currentIndex: number; totalSteps: number; disabled?: boolean;

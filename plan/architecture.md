@@ -115,87 +115,152 @@ c:\Users\maiti\OneDrive\Desktop\LearningEnglishApp\VisualizationDSA\frontend\
             └── SOLIDLCOM4Calculator.spec.ts  # Test tính toán kết dính SRP bằng thuật toán BFS đồ thị
 ```
 
-### 3.2. Cấu Trúc Backend Kế Hoạch (C# ASP.NET Core - Clean Architecture)
+### 3.2. Cấu Trúc Backend (C# ASP.NET Core - Clean Architecture)
 
-Để phục vụ quản lý dữ liệu lớn, xác thực và đồng bộ tiến trình của hàng ngàn học viên song song, dự án triển khai backend C# theo kiến trúc 4 tầng chuẩn Clean Architecture:
+Backend triển khai theo mô hình **Clean Architecture 4 tầng** với **Domain-Driven Design**, mỗi entity tự quản lý `Id` (Guid) độc lập — **không có BaseEntity chung**.
+
+#### Sơ Đồ Lớp EFCore DbContext & Entities
+
+```mermaid
+classDiagram
+    direction TB
+
+    class IApplicationDbContext {
+        <<interface>>
+        +DbSet~User~ Users
+        +DbSet~Course~ Courses
+        +DbSet~Lesson~ Lessons
+        +DbSet~Quiz~ Quizzes
+        +DbSet~RefreshToken~ RefreshTokens
+        +SaveChangesAsync() int
+    }
+
+    class ApplicationDbContext {
+        -OnModelCreating()
+        +DbSet~User~ Users
+        +DbSet~Course~ Courses
+        +DbSet~Lesson~ Lessons
+        +DbSet~Quiz~ Quizzes
+        +DbSet~RefreshToken~ RefreshTokens
+    }
+
+    class User {
+        +Guid Id
+        +string Email
+        +string Username
+        +string PasswordHash
+        +int TotalXP
+        +int CurrentLevel
+        +string Role
+        +AwardXP()
+        +RecordLogin()
+    }
+
+    class RefreshToken {
+        +Guid Id
+        +string Token
+        +Guid UserId
+        +DateTime ExpiresAt
+        +bool IsRevoked
+        +Revoke()
+    }
+
+    class Course {
+        +Guid Id
+        +Guid TeacherId
+        +string Title
+        +CourseCategory Category
+        +bool IsPublished
+        +Publish()
+        +Delete()
+    }
+
+    class Lesson {
+        +Guid Id
+        +string Title
+        +string ContentMd
+        +int XPReward
+        +LessonPublishStatus PublishStatus
+        +SubmitForReview()
+        +ApproveAndPublish()
+    }
+
+    class Quiz {
+        +Guid Id
+        +string Title
+        +string Topic
+        +int Difficulty
+        +int XPReward
+        +AddQuestion()
+        +ClearQuestions()
+    }
+
+    class QuizQuestion {
+        +Guid Id
+        +Guid QuizId
+        +string Question
+        +string[] Options
+        +int CorrectIndex
+    }
+
+    class QuizAttempt {
+        +Guid Id
+        +Guid UserId
+        +Guid QuizId
+        +int Score
+        +bool Passed
+        +DateTime AttemptedAt
+    }
+
+    IApplicationDbContext <|.. ApplicationDbContext : implements
+    User "1" --> "*" RefreshToken : possesses
+    User "1" --> "*" Course : teaches
+    User "1" --> "*" Lesson : creates
+    User "1" --> "*" QuizAttempt : attempts
+    Course "1" --> "*" Quiz : contains
+    Quiz "1" --> "*" QuizQuestion : has
+    Quiz "1" --> "*" QuizAttempt : receives
+```
+
+> **Lưu ý:** Mỗi entity tự quản lý `Guid Id` với `private set` — không kế thừa từ `BaseEntity` chung. Kiến trúc này tuân thủ nguyên tắc **rich domain model** với behavior methods bên trong entity.
+
+#### Cấu Trúc Thư Mục Backend
 
 ```
-c:\Users\maiti\OneDrive\Desktop\LearningEnglishApp\VisualizationDSA\backend\
-├── VisualizationDSA.sln                        # Tệp quản lý toàn bộ các dự án thành phần của Visual Studio
+backend/
+├── VisualizationDSA.sln
 ├── src/
-│   ├── VisualizationDSA.Domain/                # LỚP HẠT NHÂN DOMAIN (Không phụ thuộc vào lớp nào khác)
-│   │   ├── VisualizationDSA.Domain.csproj
-│   │   ├── Entities/                           # Các thực thể nghiệp vụ cốt lõi ánh xạ database
-│   │   │   ├── User.cs                         # Thông tin tài khoản người dùng
-│   │   │   ├── UserProgress.cs                 # Lưu giữ Level, XP và lịch sử hoạt động học tập
-│   │   │   ├── Algorithm.cs                    # Danh sách các thuật toán được quản lý (Bubble, Dijkstra...)
-│   │   │   ├── Quiz.cs                         # Bài kiểm tra trắc nghiệm liên kết thuật toán
-│   │   │   ├── QuizQuestion.cs                 # Các câu hỏi chi tiết của Quiz (nhiều lựa chọn/điền code)
-│   │   │   ├── UserSubmission.cs               # Kết quả nộp bài, điểm số và mã nguồn của sinh viên
-│   │   │   ├── EmbeddingWidget.cs              # Cấu hình iframe nhúng chia sẻ (theme, width, height...)
-│   │   │   └── Achievement.cs                  # Định nghĩa các huy hiệu Neon để khen thưởng học viên
-│   │   ├── Exceptions/                         # Custom Exception để kiểm soát lỗi nghiệp vụ sạch
-│   │   │   ├── DomainException.cs
-│   │   │   └── EntityNotFoundException.cs
-│   │   └── ValueObjects/                       # Các đối tượng giá trị không có định danh độc lập
-│   │       └── Dimension.cs                    # Bọc kích thước (Width, Height) của Widget nhúng
+│   ├── Domain/                    # Hạt nhân Domain (0 dependencies)
+│   │   ├── Entities/              # Rich domain models
+│   │   │   ├── User.cs
+│   │   │   ├── Course.cs
+│   │   │   ├── Lesson.cs
+│   │   │   ├── Quiz.cs
+│   │   │   ├── RefreshToken.cs
+│   │   │   └── ... (36 entity files)
+│   │   ├── Interfaces/            # Repository abstractions
+│   │   └── Strategies/            # Algorithm strategy patterns
 │   │
-│   ├── VisualizationDSA.Application/           # LỚP NGHIỆP VỤ APPLICATION (Định nghĩa Services & DTOs)
-│   │   ├── VisualizationDSA.Application.csproj
-│   │   ├── Interfaces/                         # Trừu tượng hóa kết nối (Abstractions)
-│   │   │   ├── IApplicationDbContext.cs        # Interface cầu nối cơ sở dữ liệu
-│   │   │   ├── IUserService.cs
-│   │   │   ├── IProgressService.cs             # Cộng XP, kiểm định gian lận, thăng cấp bậc
-│   │   │   └── IWidgetService.cs               # Tạo mã iframe, kiểm duyệt sandbox
-│   │   ├── DTOs/                               # Đối tượng vận chuyển dữ liệu trao đổi qua API
-│   │   │   ├── AuthDto.cs                      # Request/Response đăng ký, đăng nhập
-│   │   │   ├── ProgressDto.cs                  # Trạng thái đồng bộ XP học tập
-│   │   │   ├── QuizSubmissionDto.cs            # Payload nộp bài giải thuật và đáp án
-│   │   │   └── WidgetDto.cs                    # Bản thiết kế cấu hình Iframe nhận về
-│   │   ├── Services/                           # Triển khai các ca sử dụng nghiệp vụ ứng dụng
-│   │   │   ├── UserService.cs
-│   │   │   ├── ProgressService.cs              # Cộng XP, cập nhật level, kiểm định mở khóa Huy hiệu
-│   │   │   └── WidgetService.cs                # Tạo mới mã nhúng, lấy thông tin widget độc lập
-│   │   └── Validators/                         # Bộ lọc dữ liệu đầu vào ngăn chặn spam bằng FluentValidation
-│   │       ├── XpSubmissionValidator.cs
-│   │       └── QuizSubmissionValidator.cs
+│   ├── Application/               # Business logic layer
+│   │   ├── Interfaces/            # IApplicationDbContext, services
+│   │   ├── Services/              # Use-case implementations
+│   │   └── Validators/            # FluentValidation rules
 │   │
-│   ├── VisualizationDSA.Infrastructure/        # LỚP HẠ TẦNG INFRASTRUCTURE (Kết nối PostgreSQL, EF Core)
-│   │   ├── VisualizationDSA.Infrastructure.csproj
-│   │   ├── Persistence/                        # Triển khai tầng lưu trữ dữ liệu
-│   │   │   ├── ApplicationDbContext.cs         # EF Core DbContext kết nối PostgreSQL
-│   │   │   ├── ApplicationDbContextSeed.cs     # Tự động gieo dữ liệu mẫu (Algorithms, Quizzes, Questions)
-│   │   │   └── Migrations/                     # Chứa các bản cập nhật lược đồ SQL được sinh ra tự động
-│   │   ├── Security/                           # Quản lý mã hóa bảo mật
-│   │   │   ├── PasswordHasher.cs               # Mã hóa Bcrypt bảo vệ mật khẩu người học
-│   │   │   └── JwtTokenGenerator.cs            # Sinh mã token JWT phục vụ đăng nhập không trạng thái
-│   │   └── Caching/                            # Tăng tốc độ truy vấn xếp hạng và Widget tĩnh
-│   │       └── RedisCacheService.cs            # Tích hợp Redis tăng tốc độ nạp dữ liệu dưới 15ms
+│   ├── Infrastructure/            # EF Core + external services
+│   │   ├── Data/
+│   │   │   └── ApplicationDbContext.cs  # DbContext (516 lines Fluent API)
+│   │   ├── Services/              # Redis, JWT, Payment
+│   │   └── Migrations/
 │   │
-│   └── VisualizationDSA.WebApi/                # LỚP CỔNG API PRESENTATION (Endpoints & Middlewares)
-│       ├── VisualizationDSA.WebApi.csproj
-│       ├── Program.cs                          # Điểm khởi chạy API, đăng ký Dependency Injection, CORS, JWT
-│       ├── appsettings.json                    # File chứa các chuỗi kết nối Database và cấu hình biến môi trường
-│       ├── appsettings.Development.json
-│       ├── Controllers/                        # Định tuyến RESTful API
-│       │   ├── BaseApiController.cs
-│       │   ├── AuthController.cs               # Đăng ký, đăng nhập tài khoản
-│       │   ├── ProgressController.cs           # Lấy Leaderboard, nộp XP tiến trình
-│       │   ├── QuizController.cs               # Phục vụ tải quiz và nộp bài chấm điểm
-│       │   └── WidgetController.cs             # Lưu trữ và tải cấu hình widget nhúng Iframe
-│       └── Middlewares/                        # Bộ lọc đường truyền
-│           ├── ErrorHandlingMiddleware.cs      # Bắt lỗi Exception tập trung, trả JSON chuẩn 500/400
-│           └── SecurityHeadersMiddleware.cs    # Thêm header bảo mật CORS, XSS Protection
+│   └── WebApi/                    # ASP.NET Core REST API
+│       ├── Controllers/           # Auth, Progress, Quiz, Widget
+│       ├── Filters/               # JWT, Audit, HealthCheck
+│       ├── Validators/
+│       └── Program.cs             # DI, CORS, JWT config
 │
 └── tests/
-    ├── VisualizationDSA.UnitTests/             # Thử nghiệm đơn vị logic Services cốt lõi
-    │   ├── Services/
-    │   │   └── ProgressServiceTests.cs         # Test tính logic cộng điểm XP và thăng cấp
-    │   └── Domain/
-    └── VisualizationDSA.IntegrationTests/      # Kiểm thử tích hợp từ Controller xuống DB Postgres thật
-        ├── Controllers/
-        │   └── ProgressControllerTests.cs
-        └── CustomWebApplicationFactory.cs      # Khởi tạo máy chủ ảo tích hợp SQLite/Postgres Test Container
+    ├── UnitTests/
+    └── IntegrationTests/
 ```
 
 ---

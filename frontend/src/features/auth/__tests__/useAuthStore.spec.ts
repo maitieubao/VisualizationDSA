@@ -115,8 +115,14 @@ describe('useAuthStore - Impersonation Unit Tests', () => {
       id: 'student-456',
       email: 'student@dsa.com',
       username: 'student_user',
-      role: 'Student'
-    } as any;
+      role: 'Student',
+      totalXP: 200,
+      currentLevel: 2,
+      streakDays: 1,
+      createdAt: '2024-02-02',
+      badges: [],
+      isPremium: false,
+    };
 
     expect(store.isImpersonating).toBe(true);
 

@@ -7,6 +7,8 @@ using System.Threading.Tasks;
 using VisualizationDSA.Application.DTOs;
 using VisualizationDSA.Application.Services;
 
+using VisualizationDSA.WebApi.Filters;
+
 namespace VisualizationDSA.WebApi.Controllers
 {
     
@@ -64,7 +66,7 @@ namespace VisualizationDSA.WebApi.Controllers
         
         
         [HttpPost("logout")]
-        [Authorize]
+        [RequireJwtRole]
         public async Task<IActionResult> Logout([FromBody] RefreshTokenRequest request)
         {
             await _authService.LogoutAsync(request.RefreshToken);
@@ -77,11 +79,10 @@ namespace VisualizationDSA.WebApi.Controllers
         
         
         [HttpGet("me")]
-        [Authorize]
+        [RequireJwtRole]
         public async Task<ActionResult<UserDto>> GetMe()
         {
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier)
-                         ?? User.FindFirstValue("sub");
+            var userId = JwtHelper.ExtractSubFromToken(Request);
 
             if (userId == null)
                 return Unauthorized(new { message = "Token không hợp lệ." });

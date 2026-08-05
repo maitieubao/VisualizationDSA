@@ -84,7 +84,12 @@ namespace VisualizationDSA.Application.Features.Codelabs.Queries
                 Examples = TryParseExamples(codelab.Examples),
                 Hints = codelab.Hints
                     .OrderBy(h => h.OrderIndex)
-                    .Select(h => new CodelabHintItemDto { Content = h.Content, XpCost = h.XpCost })
+                    .Select(h => new CodelabHintItemDto
+                    {
+                        // Hint trả phí KHÔNG được trả Content qua GET — phải đi qua reveal-hint (trừ XP).
+                        Content = h.XpCost > 0 ? string.Empty : h.Content,
+                        XpCost = h.XpCost
+                    })
                     .ToList(),
                 Templates = codelab.Templates
                     .Select(t => new CodelabTemplateDto

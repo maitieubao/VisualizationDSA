@@ -1,0 +1,78 @@
+{
+  "quizTitle": "Trắc nghiệm Duyệt cây",
+  "topic": "tree-graph",
+  "difficulty": 2,
+  "xpReward": 40,
+  "questions": [
+    {
+      "questionText": "Node nào của cây không có node cha?",
+      "options": ["Node lá", "Node root", "Node con trái", "Node con phải"],
+      "correctIndex": 1,
+      "explanation": "Root là node gốc duy nhất không có cha; mọi node khác đều có đúng một cha."
+    },
+    {
+      "questionText": "Chiều cao (height) của một node được định nghĩa như thế nào?",
+      "options": [
+        "Số cạnh từ root tới node đó",
+        "Số cạnh dài nhất từ node đó xuống một node lá",
+        "Số node con trực tiếp của node đó",
+        "Số cạnh từ node đó tới root"
+      ],
+      "correctIndex": 1,
+      "explanation": "Depth đo số cạnh từ root xuống node, còn height đo số cạnh dài nhất từ node xuống một lá; height của cây là height của root."
+    },
+    {
+      "questionText": "Trong duyệt preorder, thứ tự xử lý là gì?",
+      "options": ["Trái - Node - Phải", "Trái - Phải - Node", "Node - Trái - Phải", "Phải - Node - Trái"],
+      "correctIndex": 2,
+      "explanation": "Preorder nghĩa là node hiện tại được thăm trước, sau đó mới đến nhánh trái rồi nhánh phải, nên root luôn in ra đầu tiên."
+    },
+    {
+      "questionText": "Duyệt theo chiều rộng (level-order) sử dụng cấu trúc dữ liệu nào?",
+      "options": ["Ngăn xếp (Stack)", "Hàng đợi (Queue)", "Mảng động", "Bảng băm"],
+      "correctIndex": 1,
+      "explanation": "BFS cần duyệt ai phát hiện trước thì xử lý trước, đúng nguyên tắc FIFO nên bắt buộc dùng hàng đợi."
+    },
+    {
+      "questionText": "Cho cây: root 1, con trái 2 (có con 4, 5), con phải 3 (có con 6). Thứ tự inorder của cây là gì?",
+      "options": ["1 2 4 5 3 6", "4 2 5 1 6 3", "4 5 2 6 3 1", "1 2 3 4 5 6"],
+      "correctIndex": 1,
+      "explanation": "Inorder là trái - node - phải: nhánh trái cho 4 2 5, thăm root 1, nhánh phải cho 6 3, kết quả là 4 2 5 1 6 3."
+    },
+    {
+      "questionText": "Với cùng cây trên, thứ tự postorder là gì?",
+      "options": ["4 5 2 6 3 1", "1 2 4 5 3 6", "4 2 5 1 6 3", "6 3 4 5 2 1"],
+      "correctIndex": 0,
+      "explanation": "Postorder duyệt trái rồi phải rồi mới thăm node: nhánh trái cho 4 5 2, nhánh phải cho 6 3, cuối cùng thăm root 1."
+    },
+    {
+      "questionText": "Để kiểm tra một cây có đối xứng (symmetric) hay không, cách tiếp cận đúng là gì?",
+      "options": [
+        "Duyệt inorder và kiểm tra dãy có tăng dần hay không",
+        "Đệ quy so sánh cây con trái và cây con phải theo kiểu phản chiếu qua gương",
+        "Đếm số node trái và phải bằng nhau",
+        "So sánh chiều cao hai nhánh"
+      ],
+      "correctIndex": 1,
+      "explanation": "Cây đối xứng nghĩa là con trái của nhánh trái phải bằng con phải của nhánh phải, so sánh theo cặp phản chiếu qua gốc."
+    },
+    {
+      "questionText": "Cây lệch thành chuỗi dài N node, đệ quy DFS sẽ dùng ngăn xếp sâu tối đa bao nhiêu?",
+      "options": ["O(1)", "O(log N)", "O(N)", "O(N²)"],
+      "correctIndex": 2,
+      "explanation": "Chiều cao cây lệch bằng N, mỗi mức đệ quy giữ một khung gọi trên call stack nên bộ nhớ phụ là O(h) = O(N)."
+    },
+    {
+      "questionText": "Cho cây: root 1, con trái 2 (có con 4, 5), con phải 3 (có con 6). Thứ tự level-order (BFS) là gì?",
+      "options": ["1 2 3 4 5 6", "1 2 4 5 3 6", "4 2 5 1 6 3", "4 5 2 6 3 1"],
+      "correctIndex": 0,
+      "explanation": "BFS quét theo tầng: tầng 1 gồm 1, tầng 2 gồm 2 và 3, tầng 3 gồm 4, 5, 6 nên kết quả là 1 2 3 4 5 6."
+    },
+    {
+      "questionText": "Cho cây: root 1, con trái 2 (có con trái 4), con phải 3 (có con phải 5, và 5 có con trái 6). Chiều cao của cây (số cạnh dài nhất từ root tới lá) là bao nhiêu?",
+      "options": ["2", "3", "4", "5"],
+      "correctIndex": 1,
+      "explanation": "Đường dài nhất là 1 → 3 → 5 → 6 gồm 3 cạnh; đường 1 → 2 → 4 chỉ có 2 cạnh, nên chiều cao cây là 3."
+    }
+  ]
+}

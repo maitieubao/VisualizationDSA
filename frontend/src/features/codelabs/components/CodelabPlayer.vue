@@ -20,7 +20,7 @@
         </div>
 
         <div class="flex items-center gap-4">
-          <select v-model="language" class="bg-bg-surface border border-border-default rounded px-3 py-1 text-sm outline-none focus:border-accent transition-colors">
+          <select v-model="language" aria-label="Programming language" class="bg-bg-surface border border-border-default rounded px-3 py-1 text-sm outline-none focus:border-accent transition-colors">
             <option v-for="lang in codelab.allowedLanguages.split(',')" :key="lang" :value="lang.trim()">
               {{ lang.trim() }}
             </option>
@@ -30,12 +30,12 @@
           </button>
           <button @click="runCode" :disabled="isRunning || isSubmitting"
             class="bg-bg-surface hover:bg-bg-hover disabled:bg-bg-surface disabled:cursor-not-allowed text-white px-4 py-1.5 rounded text-sm font-medium transition-all flex items-center gap-2 cursor-pointer">
-            <span v-if="isRunning" class="w-3 h-3 border-2 border-border-strong border-t-white rounded-full animate-spin"></span>
+            <BaseIcon v-if="isRunning" name="spinner" class="w-3 h-3 animate-spin" />
             {{ isRunning ? 'Running...' : 'Run' }}
           </button>
           <button @click="submitCode" :disabled="isRunning || isSubmitting"
             class="bg-accent hover:bg-accent disabled:bg-accent disabled:cursor-not-allowed text-white px-4 py-1.5 rounded text-sm font-medium transition-all shadow-[0_0_10px_rgba(79,70,229,0.3)] flex items-center gap-2 cursor-pointer">
-            <span v-if="isSubmitting" class="w-3 h-3 border-2 border-border-strong border-t-white rounded-full animate-spin"></span>
+            <BaseIcon v-if="isSubmitting" name="spinner" class="w-3 h-3 animate-spin" />
             {{ isSubmitting ? 'Submitting...' : 'Submit' }}
           </button>
         </div>
@@ -45,8 +45,8 @@
       <div class="flex-1 flex overflow-hidden bg-bg-secondary">
         <div class="w-1/2 h-full flex flex-col border-r border-border-default">
           
-          <div class="flex border-b border-border-default bg-bg-secondary shrink-0">
-            <button v-for="tab in tabs" :key="tab.id" @click="activeTab = tab.id"
+          <div role="tablist" class="flex border-b border-border-default bg-bg-secondary shrink-0">
+            <button v-for="tab in tabs" :key="tab.id" role="tab" :aria-selected="activeTab === tab.id" @click="activeTab = tab.id"
               class="py-2.5 px-4 text-xs font-bold transition-all border-b-2 cursor-pointer"
               :class="activeTab === tab.id ? 'border-accent text-accent' : 'border-transparent text-text-muted hover:text-text-secondary'">
               {{ tab.name }}
@@ -58,7 +58,7 @@
           <div class="flex-1 overflow-y-auto">
             
             <div v-show="activeTab === 'problem'" class="p-5 space-y-4">
-              <div class="prose prose-invert prose-sm max-w-none" v-html="codelab.description"></div>
+              <div class="prose prose-invert prose-sm max-w-none" v-html="parseEmojiToSvg(escapeHtmlText(codelab.description))"></div>
 
               <div v-if="codelab.constraints" class="p-3 rounded-xl bg-bg-secondary border border-border-default/50">
                 <span class="text-[10px] font-bold text-text-muted uppercase">Constraints</span>
@@ -78,7 +78,7 @@
                 <span class="text-[10px] font-bold text-text-muted uppercase">Hints</span>
                 <div v-for="(hint, idx) in codelab.hints" :key="idx" class="mt-3">
                   <button @click="toggleHint(idx)" class="flex items-center gap-2 text-xs text-accent hover:text-accent cursor-pointer">
-                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 01-2 2h-0a2 2 0 01-2-2v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" /></svg>
+                    <BaseIcon name="bulb" class="w-3 h-3" />
                     Hint {{ idx + 1 }}
                     <span v-if="hint.xpCost" class="text-accent-yellow text-[10px]">(-{{ hint.xpCost }} XP)</span>
                   </button>
@@ -98,7 +98,7 @@
                 :class="tc.passed ? 'border-accent-green/30 bg-accent-green/10' : 'border-accent-red/30 bg-accent-red/10'">
                 <div class="flex items-center justify-between mb-2">
                   <span class="font-bold" :class="tc.passed ? 'text-accent-green' : 'text-accent-red'">
-                    {{ tc.passed ? '✓ PASS' : '✗ FAIL' }}
+                    <BaseIcon v-if="tc.passed" name="check" class="w-3.5 h-3.5 inline mr-1" /><BaseIcon v-else name="close" class="w-3.5 h-3.5 inline mr-1" />{{ tc.passed ? 'PASS' : 'FAIL' }}
                   </span>
                   <span class="text-[10px] text-text-muted">{{ tc.name }}</span>
                 </div>
@@ -166,7 +166,7 @@
               <div v-for="(sub, idx) in submissionHistory" :key="idx" class="p-3 rounded-xl bg-bg-secondary border border-border-default/50 text-xs">
                 <div class="flex items-center justify-between mb-2">
                   <span class="font-bold" :class="sub.passed ? 'text-accent-green' : 'text-accent-red'">
-                    {{ sub.passed ? '✓ Accepted' : '✗ ' + sub.status }}
+                    <BaseIcon v-if="sub.passed" name="check" class="w-3.5 h-3.5 inline mr-1" /><BaseIcon v-else name="close" class="w-3.5 h-3.5 inline mr-1" />{{ sub.passed ? 'Accepted' : sub.status }}
                   </span>
                   <span class="text-text-muted">{{ sub.language }} · {{ sub.runtimeMs }}ms</span>
                 </div>
@@ -186,15 +186,19 @@
             <div class="flex items-center gap-2">
               <span class="text-xs font-bold text-text-secondary font-mono">{{ codelab.title }}.{{ languageExtension }}</span>
             </div>
-            <span class="text-[10px] text-text-muted">Ctrl+Enter to run · Ctrl+Enter in editor</span>
+            <span class="text-[10px] text-text-muted">Ctrl+Enter to run</span>
           </div>
           <div class="flex-1 min-h-0" ref="editorContainer"></div>
         </div>
       </div>
     </template>
 
-    <div v-else class="flex-1 flex items-center justify-center">
-      <div class="text-accent-red text-lg">Codelab not found.</div>
+    <div v-else class="flex-1 flex flex-col items-center justify-center gap-4">
+      <div class="text-accent-red text-lg">{{ loadError ?? 'Codelab not found.' }}</div>
+      <button v-if="loadError" @click="loadCodelab"
+        class="bg-bg-surface hover:bg-bg-hover text-white px-4 py-1.5 rounded text-sm font-medium transition-all cursor-pointer">
+        Retry
+      </button>
     </div>
   </div>
 </template>
@@ -203,9 +207,8 @@
 import { ref, onMounted, onUnmounted, shallowRef, computed } from 'vue';
 import loader from '@monaco-editor/loader';
 import type * as monaco from 'monaco-editor';
-import { codelabApi, type CodelabDto } from '../api/codelabApi';
-import { Splitpanes, Pane } from 'splitpanes';
-import 'splitpanes/dist/splitpanes.css';
+import { codelabApi, type CodelabDto, type SubmitCodeResult } from '../api/codelabApi';
+import { parseEmojiToSvg, escapeHtmlText } from '../../../utils/emojiParser';
 
 const props = defineProps<{
   codelabId: string;
@@ -214,25 +217,38 @@ const props = defineProps<{
 const isLoading = ref(true);
 const isSubmitting = ref(false);
 const isRunning = ref(false);
+const loadError = ref<string | null>(null);
 const codelab = ref<CodelabDto | null>(null);
 const editorContainer = ref<HTMLElement | null>(null);
 const editorInstance = shallowRef<monaco.editor.IStandaloneCodeEditor | null>(null);
-const result = ref<any>(null);
+const result = ref<SubmitCodeResult | null>(null);
 const activeTab = ref('problem');
 const language = ref('csharp');
 const revealedHints = ref<boolean[]>([]);
 const submissionHistory = ref<Array<{ passed: boolean; status: string; runtimeMs: number; memoryMb: number; score?: number; language: string; errorMessage?: string }>>([]);
 const leaderboard = ref<Array<{ id: string; username: string; runtimeMs: number; memoryMb: number; score: number; isYou?: boolean }>>([]);
 
-const testCaseResults = computed(() => {
-  if (!result.value) return [];
-  if (result.value.testCaseResultsJson) {
-    try { return JSON.parse(result.value.testCaseResultsJson); } catch { return []; }
+interface TestCaseResult {
+  name: string;
+  input: string;
+  expectedOutput: string;
+  passed: boolean;
+  isHidden?: boolean;
+  actualOutput?: string;
+  errorMessage?: string;
+  runtimeMs?: number;
+}
+
+const testCaseResults = computed<TestCaseResult[]>(() => {
+  if (!result.value?.testCaseResultsJson) return [];
+  try {
+    return JSON.parse(result.value.testCaseResultsJson) as TestCaseResult[];
+  } catch {
+    return [];
   }
-  return [];
 });
 
-const visibleTestCaseCount = computed(() => testCaseResults.value.filter((tc: { isHidden?: boolean }) => !tc.isHidden).length);
+const visibleTestCaseCount = computed(() => testCaseResults.value.filter((tc) => !tc.isHidden).length);
 const allTestCaseCount = computed(() => testCaseResults.value.length);
 
 const difficultyLabel = computed(() => {
@@ -275,7 +291,9 @@ async function revealHint(idx: number): Promise<void> {
   if (hint.xpCost && codelab.value) {
     try {
       await codelabApi.revealHint(codelab.value.id, idx);
-    } catch {  }
+    } catch (error) {
+      console.error('Reveal hint failed', error);
+    }
   }
   revealedHints.value[idx] = true;
 }
@@ -286,7 +304,9 @@ function resetCode(): void {
   }
 }
 
-onMounted(async () => {
+async function loadCodelab(): Promise<void> {
+  isLoading.value = true;
+  loadError.value = null;
   try {
     codelab.value = await codelabApi.getCodelab(props.codelabId);
     if (codelab.value.allowedLanguages) {
@@ -306,6 +326,10 @@ onMounted(async () => {
     
     const monacoInstance = await loader.init();
     if (editorContainer.value) {
+      if (editorInstance.value) {
+        editorInstance.value.dispose();
+        editorInstance.value = null;
+      }
       editorInstance.value = monacoInstance.editor.create(editorContainer.value, {
         value: codelab.value.initialCode || '',
         language: language.value,
@@ -329,12 +353,26 @@ onMounted(async () => {
     }
   } catch (error) {
     console.error('Failed to load codelab', error);
+    loadError.value = 'Failed to load codelab. Please try again.';
   } finally {
     isLoading.value = false;
   }
+}
+
+function handleGlobalKeydown(event: KeyboardEvent): void {
+  if ((event.ctrlKey || event.metaKey) && event.key === 'Enter') {
+    event.preventDefault();
+    void runCode();
+  }
+}
+
+onMounted(() => {
+  window.addEventListener('keydown', handleGlobalKeydown);
+  void loadCodelab();
 });
 
 onUnmounted(() => {
+  window.removeEventListener('keydown', handleGlobalKeydown);
   if (editorInstance.value) {
     editorInstance.value.dispose();
   }
@@ -349,6 +387,7 @@ const submitCode = async () => {
   try {
     const res = await codelabApi.submitCodelab(codelab.value.id, { code, language: language.value });
     result.value = res;
+    activeTab.value = 'testcases';
     submissionHistory.value.unshift({
       passed: res.passed,
       status: res.status || (res.passed ? 'Accepted' : 'Wrong Answer'),
@@ -360,7 +399,7 @@ const submitCode = async () => {
     });
   } catch (error) {
     console.error('Submission failed', error);
-    result.value = { passed: false, status: 'Error', errorMessage: 'Network error or server unavailable.', runtimeMs: 0 };
+    result.value = { passed: false, status: 'Error', errorMessage: 'Network error or server unavailable.', runtimeMs: 0, memoryBytes: 0 };
     submissionHistory.value.unshift({
       passed: false, status: 'Error', runtimeMs: 0, memoryMb: 0, language: language.value,
       errorMessage: 'Network error or server unavailable.',
@@ -379,9 +418,10 @@ const runCode = async () => {
   try {
     const res = await codelabApi.runCodelab(codelab.value.id, { code, language: language.value });
     result.value = res;
+    activeTab.value = 'testcases';
   } catch (error) {
     console.error('Run failed', error);
-    result.value = { passed: false, status: 'Error', errorMessage: 'Network error or server unavailable.', runtimeMs: 0 };
+    result.value = { passed: false, status: 'Error', errorMessage: 'Network error or server unavailable.', runtimeMs: 0, memoryBytes: 0 };
   } finally {
     isRunning.value = false;
   }
@@ -394,9 +434,4 @@ const runCode = async () => {
 ::-webkit-scrollbar-track { background: rgba(31, 41, 55, 0.3); }
 ::-webkit-scrollbar-thumb { background: rgba(79, 70, 229, 0.4); border-radius: 3px; }
 ::-webkit-scrollbar-thumb:hover { background: rgba(79, 70, 229, 0.7); }
-
-
-.custom-splitpanes.default-theme .splitpanes__pane { background-color: transparent; }
-.custom-splitpanes.default-theme .splitpanes__splitter { background-color: #374151; transition: background-color 0.2s; }
-.custom-splitpanes.default-theme .splitpanes__splitter:hover { background-color: #4f46e5; }
 </style>

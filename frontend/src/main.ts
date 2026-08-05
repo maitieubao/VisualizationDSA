@@ -74,9 +74,18 @@ window.fetch = async function (input: RequestInfo | URL, init?: RequestInit): Pr
 const authStore     = useAuthStore()
 const progressStore = useUserProgressStore()
 
-authStore.init().then(() => {
-  return progressStore.initFromServer()
-}).finally(() => {
+// Nếu backend treo (không trả response), init sẽ không bao giờ resolve → app không
+// bao giờ mount. Thêm timeout an toàn để ứng dụng vẫn khởi chạy với trạng thái ẩn danh.
+const authInit = Promise.allSettled([
+  authStore.init(),
+  progressStore.initFromServer(),
+]);
+
+const initTimeout = new Promise<void>((resolve) => {
+  setTimeout(resolve, 5000);
+});
+
+Promise.race([authInit, initTimeout]).finally(() => {
   app.use(router)
   router.isReady().then(() => {
     app.mount('#app')

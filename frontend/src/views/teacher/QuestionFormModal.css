@@ -74,7 +74,7 @@
 }
 
 .form-label .required {
-  color: #f43f5e;
+  color: var(--color-accent-red);
 }
 
 .form-input,
@@ -95,7 +95,7 @@
 .form-textarea:focus,
 .form-select:focus {
   outline: none;
-  border-color: #6366f1;
+  border-color: var(--color-accent-primary);
   box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
 }
 
@@ -202,7 +202,7 @@
   border-radius: 10px;
   font-weight: 600;
   font-size: 13px;
-  background: linear-gradient(135deg, #6366f1, #8b5cf6);
+  background: var(--color-accent-primary);
   border: none;
   color: white;
   cursor: pointer;

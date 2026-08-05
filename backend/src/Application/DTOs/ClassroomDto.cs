@@ -14,7 +14,7 @@ namespace VisualizationDSA.Application.DTOs
     public class JoinClassroomDto
     {
         [Required]
-        public string InviteCode { get; set; } = string.Empty;
+        public string? InviteCode { get; set; }
     }
 
     public class ClassroomResponseDto
@@ -24,7 +24,7 @@ namespace VisualizationDSA.Application.DTOs
         public string Description { get; set; } = string.Empty;
         public Guid OwnerTeacherId { get; set; }
         public string OwnerTeacherName { get; set; } = string.Empty;
-        public string InviteCode { get; set; } = string.Empty;
+        public string? InviteCode { get; set; }
         public bool IsArchived { get; set; }
         public DateTime CreatedAt { get; set; }
         public int StudentCount { get; set; }

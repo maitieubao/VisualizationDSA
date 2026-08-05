@@ -140,3 +140,17 @@ Việc hiểu Big O là nền tảng để bạn chọn đúng cấu trúc dữ 
     <p class="next-steps-caption">Phân biệt Stack và Heap, Reference type và Value type trong .NET.</p>
   </a>
 </div>
+
+## 📚 Tham khảo lý thuyết {#references}
+
+Nguồn lý thuyết chính được dùng để biên soạn bài viết này:
+
+- **Cormen, Leiserson, Rivest, Stein (CLRS) – *Introduction to Algorithms*, 3rd Edition (MIT Press):**
+  - Chương 3 *Growth of Functions* — định nghĩa chặt chẽ về Ký hiệu O Lớn cùng khái niệm độ phức tạp thời gian và không gian.
+  - Chương 2.3 *Designing Algorithms* — phân tích chi phí của Thuật toán Tìm kiếm Nhị phân, điển hình cho họ O(log N).
+- **Dasgupta, Papadimitriou, Vazirani – *Algorithms* (McGraw-Hill, 2006):** Chương 0 *Prologue* — nền tảng đo lường chi phí thuật toán theo số bước thực thi thay vì thời gian đồng hồ trên từng máy tính.
+- **Wikipedia – *Big O notation*:** Giải thích trực quan định nghĩa O Lớn, cách đọc ký hiệu và so sánh giữa các họ độ phức tạp O(1), O(log N), O(N), O(N²).
+- **Wikipedia – *Binary search algorithm*:** Xác nhận số phép so sánh tối đa của Tìm kiếm Nhị phân là ⌊log₂(N)⌋ + 1, tức thuộc họ O(log N).
+- **Wikipedia – *Bubble sort*:** Xác nhận độ phức tạp thời gian trung bình O(N²) của các thuật toán sắp xếp so sánh đơn giản.
+- **Microsoft Learn – *System.Collections.Generic.Dictionary<TKey,TValue>*:** Tài liệu chính thức của .NET về thao tác truy cập trung bình O(1) của từ điển băm, được nhắc đến trong phần O(1).
+- **Microsoft Learn – *Language Integrated Query (LINQ)*:** Tài liệu chính thức về các toán tử `.Where()`, `.Select()` duyệt tuyến tính danh sách với độ phức tạp O(N).

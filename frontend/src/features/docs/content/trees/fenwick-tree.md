@@ -1,6 +1,6 @@
 ---
 title: Fenwick Tree (Binary Indexed Tree - BIT)
-description: Khám phá cấu trúc dữ liệu gọn gàng và nhanh hơn Segment Tree cho bài toán prefix sums và point updates. Chỉ với 1 mảng và phép toán bit thần phép.
+description: Khám phá cấu trúc dữ liệu gọn gàng và nhanh hơn Segment Tree cho bài toán prefix sums và point updates. Chỉ với 1 mảng và phép toán bit thần kỳ.
 ---
 
 # Fenwick Tree (Binary Indexed Tree - BIT) {#fenwick-tree}
@@ -27,21 +27,23 @@ Hãy tưởng tượng bạn đang quản lý một bảng số liệu bán hàn
 
 ## 2. Ý tưởng cốt lõi: Phép toán `i & (-i)` {#bit-operation}
 
-Đây là "phép mág" nền tảng của Fenwick Tree.
+Đây là "phép màu" nền tảng của Fenwick Tree.
 
 **`i & (-i)`** trả về **số nguyên có duy nhất 1 bit 1** - đúng bằng **bit 1 cuối cùng (least significant bit)** của `i`.
 
 ```csharp
-// Ví dụ:
-i = 12 (binary: 1100)
--i = -12 (binary: ...11110100)  // Two's complement
-i & (-i) = 1100 & ...110100 = 100 = 4
+// Ví dụ (dùng 8-bit để dễ đọc):
+i = 12 (binary: 00001100)
+-i = -12 (binary: 11110100)  // Two's complement
+i & (-i) = 00001100 & 11110100 = 00000100 = 4
 
-i = 10 (binary: 1010)
-i & (-i) = 1010 & ...1110110 = 10 = 2
+i = 10 (binary: 00001010)
+-i = -10 (binary: 11110110)
+i & (-i) = 00001010 & 11110110 = 00000010 = 2
 
-i = 8 (binary: 1000)
-i & (-i) = 1000 & ...1111000 = 1000 = 8
+i = 8 (binary: 00001000)
+-i = -8 (binary: 11111000)
+i & (-i) = 00001000 & 11111000 = 00001000 = 8
 ```
 
 **Bảng tra cứu nhanh:**
@@ -165,8 +167,8 @@ public int RangeSum(int l, int r)
 ```
 
 **Cách hoạt động:**
-- `PrefixSum(5)` = `tree[5]` + `tree[4]` + `tree[0]` (dừng)
-- `5 → 5 - (5 & -5) = 5 - 1 = 4 → 4 - (4 & -4) = 4 - 4 = 0` (dừng)
+- `PrefixSum(5)` = `tree[6]` + `tree[4]` (dừng)
+- `6 → 6 - (6 & -6) = 6 - 2 = 4 → 4 - (4 & -4) = 4 - 4 = 0` (dừng)
 
 ---
 
@@ -315,8 +317,8 @@ public IList<int> CountSmaller(int[] nums)
     for (int i = nums.Length - 1; i >= 0; i--)
     {
         int pos = map[nums[i]];
-        // Số phần tử nhỏ hơn nums[i] ở bên phải
-        result[i] = pos > 1 ? ft.PrefixSum(pos - 1) : 0;
+        // Số phần tử nhỏ hơn nums[i] ở bên phải (rank < pos => prefix sum tới pos - 2)
+        result[i] = pos > 1 ? ft.PrefixSum(pos - 2) : 0;
         ft.Update(pos - 1, 1); // Đánh dấu nums[i] đã xuất hiện
     }
     
@@ -340,8 +342,8 @@ public int CountInversions(int[] arr)
     for (int i = arr.Length - 1; i >= 0; i--)
     {
         int pos = map[arr[i]];
-        // Số phần tử nhỏ hơn arr[i] đã thấy (ở bên phải)
-        inversions += pos > 1 ? ft.PrefixSum(pos - 1) : 0;
+        // Số phần tử nhỏ hơn arr[i] đã thấy (ở bên phải) (rank < pos => prefix sum tới pos - 2)
+        inversions += pos > 1 ? ft.PrefixSum(pos - 2) : 0;
         ft.Update(pos - 1, 1);
     }
     
@@ -458,12 +460,22 @@ Nhưng đổi lại, Fenwick Tree **ít tính năng hơn** (không Range Update,
 Fenwick Tree là công cụ hoàn hảo cho truy vấn prefix sums. Để hoàn thiện hành trình học thuật, hãy khám phá thêm các chủ đề nâng cao:
 
 <div class="vt-box-container next-steps">
-  <a class="vt-box" href="/docs/trees/heap-priority-queue">
-    <p class="next-steps-link">Heap & Priority Queue</p>
-    <p class="next-steps-caption">Cấu trúc dữ liệu cho truy cập phần tử min/max trong O(1).</p>
+  <a class="vt-box" href="/docs/tree-graph/advanced-trees">
+    <p class="next-steps-link">Cấu trúc Cây nâng cao</p>
+    <p class="next-steps-caption">Khám phá các cấu trúc cây chuyên sâu hơn dành cho bài toán truy vấn phức tạp.</p>
   </a>
-  <a class="vt-box" href="/docs/trees/trie-prefix-tree">
-    <p class="next-steps-link">Trie (Prefix Tree)</p>
-    <p class="next-steps-caption">Cây tiền tố cho bài toán tìm kiếm chuỗi và autocomplete.</p>
+  <a class="vt-box" href="/docs/tree-graph/avl-tree">
+    <p class="next-steps-link">Cây AVL tự cân bằng</p>
+    <p class="next-steps-caption">Cây tìm kiếm nhị phân tự cân bằng, giữ mọi thao tác ở O(log N).</p>
   </a>
 </div>
+
+## 📚 Tham khảo lý thuyết {#references}
+
+Nguồn lý thuyết chính được dùng để biên soạn bài viết này:
+
+- **Fenwick, Peter M. (1994) – *A New Data Structure for Cumulative Frequency Tables*:** Bài báo khoa học gốc giới thiệu Binary Indexed Tree, đăng trên *Software: Practice and Experience*, Vol. 24(3), pp. 327–336.
+- **Wikipedia – *Fenwick tree*:** Giải thích ý tưởng mảng cộng dồn, công thức truy vấn `i -= i & (-i)`, cập nhật `i += i & (-i)` và cách xây dựng O(N): https://en.wikipedia.org/wiki/Fenwick_tree
+- **CP-Algorithms – *Fenwick Tree*:** Trình bày chi tiết cấu trúc, các thao tác cơ bản và mở rộng (range update, k-th order statistic): https://cp-algorithms.com/data_structures/fenwick.html
+- **GeeksforGeeks – *Binary Indexed Tree or Fenwick Tree*:** Minh họa trực quan, code mẫu nhiều ngôn ngữ và các bài toán ứng dụng (Count of Smaller, Inversion Count): https://www.geeksforgeeks.org/dsa/binary-indexed-tree-or-fenwick-tree-2/
+- **MIT OpenCourseWare – 6.006 Introduction to Algorithms:** Nền tảng phân tích thuật toán và cấu trúc dữ liệu động (dynamic order statistics) dùng làm cơ sở phân tích độ phức tạp O(log N): https://ocw.mit.edu/courses/6-006-introduction-to-algorithms-spring-2020/

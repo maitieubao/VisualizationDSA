@@ -183,14 +183,14 @@ async function addModuleItem() {
   max-width: 800px;
   margin: 0 auto;
   color: var(--color-text-primary);
-  background: var(--bg-card);
+  background: var(--card-bg);
   border-radius: 12px;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
 }
 
 h2 {
   text-align: center;
-  color: var(--color-brand-primary);
+  color: var(--color-accent-primary);
   margin-bottom: 24px;
 }
 
@@ -238,9 +238,9 @@ h2 {
 .form-group input:focus,
 .form-group textarea:focus,
 .form-group select:focus {
-  border-color: var(--color-brand-primary);
+  border-color: var(--color-accent-primary);
   outline: none;
-  box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2);
+  box-shadow: 0 0 0 2px var(--color-accent-primary-glow);
 }
 
 .form-group textarea {
@@ -250,7 +250,7 @@ h2 {
 
 .btn-primary {
   padding: 10px 20px;
-  background: var(--color-brand-primary);
+  background: var(--color-accent-primary);
   color: white;
   border: none;
   border-radius: 6px;
@@ -260,7 +260,7 @@ h2 {
 }
 
 .btn-primary:hover:not(:disabled) {
-  background: #4f46e5;
+  background: var(--color-accent-primary-dark);
 }
 
 .btn-primary:disabled {

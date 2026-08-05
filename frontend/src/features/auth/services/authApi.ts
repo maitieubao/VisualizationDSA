@@ -45,7 +45,7 @@ export interface LoginPayload {
 
 async function handleResponse<T>(response: Response): Promise<T> {
   if (!response.ok) {
-    const body = await response.json().catch(() => null);
+    const body: { message?: string } | null = await response.json().catch(() => null);
     throw new Error(body?.message ?? `HTTP ${response.status}: ${response.statusText}`);
   }
   return response.json() as Promise<T>;

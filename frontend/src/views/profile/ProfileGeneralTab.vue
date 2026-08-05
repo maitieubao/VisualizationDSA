@@ -21,7 +21,7 @@
         <div class="summary-stats-bar">
           <span class="stat-pill">Cấp độ {{ authStore.userLevel }}</span>
           <span class="stat-pill stat-pill--xp">{{ authStore.userXP }} XP</span>
-          <span class="stat-pill stat-pill--fire">🔥 {{ authStore.currentUser?.streakDays || 0 }} ngày streak</span>
+          <span class="stat-pill stat-pill--fire"><BaseIcon name="fire" class="w-3.5 h-3.5 inline mr-1 align-middle" />{{ authStore.currentUser?.streakDays || 0 }} ngày streak</span>
         </div>
       </div>
     </div>

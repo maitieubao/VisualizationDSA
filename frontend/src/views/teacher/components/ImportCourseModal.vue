@@ -80,7 +80,7 @@
                 >
                 <span>Ghi đè chương trình học hiện tại (xóa modules/bài học cũ)</span>
               </label>
-              <p class="form-hint text-accent-yellow">⚠️ Hành động này không thể hoàn tác!</p>
+              <p class="form-hint text-accent-yellow"><BaseIcon name="warning" class="w-3.5 h-3.5 inline mr-1 align-middle" />Hành động này không thể hoàn tác!</p>
             </div>
             
             <div class="modal-footer">

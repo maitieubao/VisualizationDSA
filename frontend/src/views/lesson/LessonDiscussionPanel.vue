@@ -2,7 +2,7 @@
   <div class="lesson-discussion bg-bg-secondary/40 border border-border-subtle rounded-3xl p-6 flex flex-col h-full overflow-hidden text-text-secondary">
     <div class="flex items-center justify-between mb-4 flex-shrink-0">
       <h3 class="text-sm font-black text-white flex items-center gap-2">
-        💬 THẢO LUẬN & HỎI ĐÁP
+        <BaseIcon name="message-circle" class="w-4 h-4 text-accent" />THẢO LUẬN & HỎI ĐÁP
         <span class="px-2 py-0.5 rounded-full bg-accent/20 text-accent text-[10px] font-bold">
           {{ comments.length }} bình luận
         </span>
@@ -12,7 +12,7 @@
         class="text-xs text-accent hover:text-accent font-semibold transition-colors"
         :disabled="loading"
       >
-        {{ loading ? 'Đang làm mới...' : 'Làm mới ↻' }}
+        {{ loading ? 'Đang làm mới...' : 'Làm mới' }} <BaseIcon v-if="!loading" name="refresh-cw" class="w-3 h-3 inline ml-1 align-middle" />
       </button>
     </div>
 
@@ -35,7 +35,7 @@
           @click="clearSearch"
           class="absolute right-2 top-1/2 -translate-y-1/2 text-text-muted hover:text-white transition-colors text-xs"
         >
-          ✕
+          <BaseIcon name="close" class="w-3 h-3" />
         </button>
       </div>
     </div>
@@ -53,7 +53,7 @@
       </div>
 
       <div v-else-if="rootComments.length === 0" class="h-32 flex flex-col items-center justify-center text-xs text-text-muted text-center">
-        <div class="text-2xl mb-1">💬</div>
+        <div class="text-2xl mb-1"><BaseIcon name="message-circle" class="w-6 h-6 text-text-muted mx-auto" /></div>
         Chưa có thảo luận nào cho bài học này.
         <span class="text-[10px] text-text-disabled mt-0.5">Đặt câu hỏi đầu tiên của bạn ở dưới!</span>
       </div>
@@ -102,7 +102,7 @@
               @click="toggleReplyForm(comment.id)" 
               class="text-[10px] text-accent hover:text-accent font-bold transition-colors flex items-center gap-0.5"
             >
-              ↩ Trả lời
+              <BaseIcon name="corner-up-left" class="w-3 h-3" /> Trả lời
             </button>
           </div>
         </div>
@@ -177,7 +177,7 @@
           :disabled="submitting || !newCommentText.trim()"
           class="px-4 py-2 bg-gradient-to-r from-accent to-accent-purple text-white font-bold rounded-xl hover:from-accent hover:to-accent-purple transition-all text-xs disabled:opacity-50 shadow-lg shadow-accent/10"
         >
-          {{ submitting ? 'Đang gửi...' : 'Đăng thảo luận 💬' }}
+          {{ submitting ? 'Đang gửi...' : 'Đăng thảo luận' }} <BaseIcon v-if="!submitting" name="message-circle" class="w-3.5 h-3.5 inline ml-1 align-middle" />
         </button>
       </div>
     </div>

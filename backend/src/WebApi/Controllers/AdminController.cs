@@ -9,6 +9,8 @@ using VisualizationDSA.Domain.Entities;
 using VisualizationDSA.Infrastructure.Data;
 using VisualizationDSA.WebApi.Filters;
 
+using VisualizationDSA.Domain;
+
 namespace VisualizationDSA.WebApi.Controllers
 {
     
@@ -619,16 +621,15 @@ namespace VisualizationDSA.WebApi.Controllers
 
         private static string GenerateImpersonatedJwt(string userId, string email, string username, string role, int level, string adminId)
         {
-            var header = Convert.ToBase64String(Encoding.UTF8.GetBytes("{\"alg\":\"HS256\",\"typ\":\"JWT\"}"));
-            var payload = Convert.ToBase64String(Encoding.UTF8.GetBytes(
+            var header = JwtSigningConfig.Base64UrlEncode(Encoding.UTF8.GetBytes("{\"alg\":\"HS256\",\"typ\":\"JWT\"}"));
+            var payload = JwtSigningConfig.Base64UrlEncode(Encoding.UTF8.GetBytes(
                 $"{{\"sub\":\"{userId}\",\"email\":\"{email}\",\"name\":\"{username}\"," +
                 $"\"role\":\"{role}\"," +
                 $"\"level\":{level},\"exp\":{DateTimeOffset.UtcNow.AddMinutes(15).ToUnixTimeSeconds()}," +
                 $"\"jti\":\"{Guid.NewGuid()}\",\"isImpersonated\":true,\"originalAdminId\":\"{adminId}\"}}"
             ));
-            var key = Encoding.UTF8.GetBytes("VisualizationDSA-Stateless-Dev-Secret-Key-2024-Phase6-256bit!");
-            var signature = Convert.ToBase64String(
-                HMACSHA256.HashData(key, Encoding.UTF8.GetBytes($"{header}.{payload}"))
+            var signature = JwtSigningConfig.Base64UrlEncode(
+                HMACSHA256.HashData(JwtSigningConfig.Key, Encoding.UTF8.GetBytes($"{header}.{payload}"))
             );
             return $"{header}.{payload}.{signature}";
         }

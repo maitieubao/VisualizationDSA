@@ -1,0 +1,98 @@
+{
+  "quizTitle": "Trắc nghiệm Greedy",
+  "topic": "dsa",
+  "difficulty": 2,
+  "xpReward": 40,
+  "questions": [
+    {
+      "questionText": "Tư tưởng cốt lõi của thuật toán tham lam (Greedy) là gì?",
+      "options": [
+        "Thử mọi phương án rồi chọn phương án tốt nhất",
+        "Tại mỗi bước chọn phương án tốt nhất cục bộ và không quay lui",
+        "Chia bài toán thành các bài toán con độc lập",
+        "Ghi nhớ kết quả các bài toán con đã giải"
+      ],
+      "correctIndex": 1,
+      "explanation": "Tham lam ra quyết định tối ưu cục bộ ngay mỗi bước và giữ nguyên quyết định, hy vọng đạt tối ưu toàn cục."
+    },
+    {
+      "questionText": "Hai tính chất cần có để một chiến lược tham lam chứng minh được là đúng?",
+      "options": [
+        "Tính chất lựa chọn tham lam và cấu trúc con tối ưu",
+        "Tính ổn định và khả năng quay lui",
+        "Tính đơn điệu và tính giao hoán",
+        "Tính chất chia để trị và cấu trúc cây đệ quy"
+      ],
+      "correctIndex": 0,
+      "explanation": "Phải chứng minh luôn tồn tại lời giải tối ưu chứa lựa chọn tham lam (greedy choice property) và lời giải tối ưu chứa lời giải tối ưu của bài toán con (optimal substructure)."
+    },
+    {
+      "questionText": "Trong Activity Selection, hoạt động đầu tiên được chọn là hoạt động nào?",
+      "options": [
+        "Hoạt động bắt đầu sớm nhất",
+        "Hoạt động kết thúc sớm nhất",
+        "Hoạt động dài nhất",
+        "Hoạt động ngắn nhất"
+      ],
+      "correctIndex": 1,
+      "explanation": "Sắp theo thời gian kết thúc tăng dần rồi chọn hoạt động kết thúc sớm nhất — lựa chọn tham lam để lại nhiều thời gian nhất cho các hoạt động sau."
+    },
+    {
+      "questionText": "Vì sao Fractional Knapsack giải được tối ưu bằng tham lam, còn 0/1 Knapsack thì không?",
+      "options": [
+        "Vì 0/1 Knapsack có nhiều đồ vật hơn",
+        "Vì đồ vật trong Fractional Knapsack có thể chia nhỏ tùy ý, còn 0/1 phải lấy trọn hoặc bỏ",
+        "Vì Fractional Knapsack không cần sắp xếp",
+        "Vì 0/1 Knapsack không có lời giải"
+      ],
+      "correctIndex": 1,
+      "explanation": "Khi đồ vật chia được, đổ đầy theo tỷ lệ giá trị/khối lượng giảm dần là tối ưu; còn 0/1 bắt buộc chọn trọn nên tham lam có thể bỏ lỡ phối hợp tốt hơn."
+    },
+    {
+      "questionText": "Trong bài toán Jump Game, tại mỗi vị trí i cần cập nhật điều gì?",
+      "options": [
+        "Vị trí nhỏ nhất có thể đứng",
+        "Vị trí xa nhất có thể nhảy tới từ các bước đã duyệt",
+        "Tổng số lần nhảy đã thực hiện",
+        "Chi phí nhảy đến vị trí i"
+      ],
+      "correctIndex": 1,
+      "explanation": "Duyệt trái qua phải, mỗi bước cập nhật farthest = max(farthest, i + nums[i]); nếu farthest đủ lớn để vượt mảng thì thắng."
+    },
+    {
+      "questionText": "Đổi 6 đồng bằng bộ mệnh giá {1, 3, 4}, thuật toán tham lam cho kết quả nào?",
+      "options": ["3 đồng (3 + 3)", "3 đồng (4 + 1 + 1)", "2 đồng (4 + 2)", "2 đồng (3 + 3)"],
+      "correctIndex": 1,
+      "explanation": "Tham lam lấy 4 trước rồi 1 và 1, được 3 đồng — trong khi lời giải tối ưu là 3 + 3 chỉ dùng 2 đồng, nên tham lam sai với bộ mệnh giá này."
+    },
+    {
+      "questionText": "Để giải bài toán Assign Cookies, việc đầu tiên cần làm là gì?",
+      "options": [
+        "Gán bánh lớn nhất cho trẻ có độ tham ăn nhỏ nhất",
+        "Sắp xếp cả độ tham ăn của trẻ và kích thước bánh",
+        "Đếm tổng số bánh và tổng số trẻ",
+        "Chỉ quan tâm đến trẻ có độ tham ăn lớn nhất"
+      ],
+      "correctIndex": 1,
+      "explanation": "Sắp xếp cả hai mảng rồi dùng hai con trỏ, mỗi lần gán chiếc bánh nhỏ nhất vừa đủ cho từng trẻ — chuẩn greedy tối ưu."
+    },
+    {
+      "questionText": "Cho 11 hoạt động (s, f): (1,4), (3,5), (0,6), (5,7), (3,9), (5,9), (6,10), (8,11), (8,12), (2,14), (12,16). Số hoạt động tối đa có thể chọn là bao nhiêu?",
+      "options": ["3", "4", "5", "6"],
+      "correctIndex": 1,
+      "explanation": "Greedy theo end: chọn (1,4), (5,7), (8,11), (12,16) — 4 hoạt động không chồng nhau, và không thể chọn được nhiều hơn."
+    },
+    {
+      "questionText": "Đổi 36 đồng bằng bộ mệnh giá {1, 5, 10, 25}, tham lam dùng tối thiểu bao nhiêu đồng xu?",
+      "options": ["3 đồng", "4 đồng", "5 đồng", "6 đồng"],
+      "correctIndex": 0,
+      "explanation": "Lấy 25, còn 11; lấy 10, còn 1; lấy 1 — tổng 3 đồng (25 + 10 + 1), và đây là lời giải tối ưu vì bộ mệnh giá chuẩn."
+    },
+    {
+      "questionText": "Cái túi chứa tối đa 50 đơn vị khối lượng. Có 3 đồ vật (khối lượng, giá trị): (10, 60), (20, 100), (30, 120). Fractional Knapsack thu được giá trị tối đa là bao nhiêu?",
+      "options": ["220", "230", "240", "260"],
+      "correctIndex": 2,
+      "explanation": "Tỷ lệ lần lượt 6, 5, 4: lấy đủ (10, 60) và (20, 100), lấy 20/30 của (30, 120) được 80; tổng 60 + 100 + 80 = 240."
+    }
+  ]
+}

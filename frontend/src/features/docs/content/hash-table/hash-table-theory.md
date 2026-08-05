@@ -10,7 +10,7 @@ description: Khám phá kiến trúc dữ liệu mạnh mẽ nhất thế giới
 - Hiểu khái niệm Hàm băm (Hash Function) và Vai trò của nó.
 - Phân tích nguyên nhân xảy ra Va chạm (Collision) và các phương pháp giải quyết kinh điển: **Chaining** vs **Open Addressing** (Linear/Quadratic/Double Hashing).
 - Nắm vững **Load Factor** và **Rehashing** - cơ chế tự mở rộng của Dictionary.
-- Hiểu cách C# `Dictionary<TKey, TValue>` triển khai bên dưới (Open Addressing + Randomized Hashing).
+- Hiểu cách C# `Dictionary<TKey, TValue>` triển khai bên dưới (Separate Chaining trên mảng liên tục + Randomized Hashing).
 :::
 
 ## 1. Giới thiệu Bảng Băm (Hash Table) {#introduction}
@@ -27,11 +27,11 @@ Bí mật của Bảng băm nằm ở **Hàm băm**. Hàm băm là một cỗ m�
 
 ```mermaid
 flowchart LR
-    Key["Khóa (Key)\n'Alice'"] --> HF{Hàm Băm\n(Hash Function)}
+    Key["Khóa (Key)\n'Alice'"] --> HF{"Hàm Băm\n(Hash Function)"}
     HF --> Index["Chỉ số Mảng\n(Index: 4)"]
     Index --> Array["Lưu vào Mảng\nArray[4] = Data"]
     
-    style HF fill:#f59e0b,color:#fff
+    style HF fill:#c9a227,color:#fff
 ```
 
 **Tính chất bắt buộc của một Hàm băm tốt:**
@@ -47,7 +47,7 @@ public static uint HashString(string key)
     foreach (char c in key)
     {
         // hash = hash * 33 + c  (tương đương (hash << 5) + hash + c)
-        hash = ((hash << 5) + hash) ^ (uint)c;
+        hash = ((hash << 5) + hash) + (uint)c;
     }
     return hash;
 }
@@ -71,7 +71,7 @@ Khi `"Bob"` cũng rơi vào ô số `4`, ta chỉ việc thêm `"Bob"` vào đ�
 
 ```mermaid
 flowchart LR
-    subgraph Hash Table (Array)
+    subgraph "Hash Table (Array)"
         direction TB
         A0["Index 0: null"]
         A1["Index 1: null"]
@@ -79,7 +79,7 @@ flowchart LR
         A4["Index 4: Head"]
     end
     
-    subgraph Linked List at Index 4
+    subgraph "Linked List at Index 4"
         direction LR
         Node1["Alice\nValue: 90"] --> Node2["Bob\nValue: 85"] --> Node3["Charlie\nValue: 92"]
     end
@@ -130,7 +130,7 @@ Công thức: `index = (hash1(key) + i * hash2(key)) % capacity`
 | **α < 0.5** | Mảng thưa | Cache tốt, probe ngắn, nhưng lãng phí RAM. |
 | **α ≈ 0.7 - 0.75** | **Cân bằng lý tưởng** | Trade-off tốt giữa memory và speed. **C# `Dictionary` default = 0.72~0.75**. |
 | **α > 0.8** | Mảng đông | Collision nhiều, probe dài, hiệu năng sụt giảm mạnh. |
-| **α → 1.0** | Mảng gần đầy | Open Addressing: **Tuyệt đối tránh** (Insert/Search có thể vô tận). Chaining: Chuyển thành Linked List thuần túy. |
+| **α → 1.0** | Mảng gần đầy | Open Addressing: **Tuyệt đối tránh** (không thể chèn thêm, phải rehash ngay). Chaining: Chain dài, Insert/Search trở lại O(N). |
 
 ### Rehashing (Mở rộng mảng - Resize)
 Khi `n > capacity * MaxLoadFactor` (ví dụ: thêm phần tử thứ 75 vào mảng size 100 với LF=0.75):
@@ -146,7 +146,7 @@ Khi `n > capacity * MaxLoadFactor` (ví dụ: thêm phần tử thứ 75 vào m�
 
 ## 5. Triển khai thực tế trong C#: `Dictionary<TKey, TValue>` {#csharp-implementation}
 
-C# `Dictionary` (trong `System.Collections.Generic`) sử dụng **Open Addressing với Double Hashing** + **Randomized Hashing** (bảo mật).
+C# `Dictionary` (trong `System.Collections.Generic`) sử dụng **Separate Chaining trên mảng liên tục (Contiguous Array)** + **Randomized Hashing** (bảo mật). Khác với Java dùng Node phân tán rời rạc, .NET lưu toàn bộ "node" trong một mảng `entries` liên tục nên vừa cache-friendly vừa có thứ tự chèn ổn định.
 
 ### Cấu trúc nội bộ (Simplified)
 ```csharp
@@ -159,7 +159,7 @@ private int freeCount;      // Number of free slots
 
 struct Entry {
     public int hashCode;    // Cached hash code (lower 31 bits)
-    public int next;        // Index of next entry in collision chain (Open addressing probe chain)
+    public int next;        // Index of entry tiếp theo trong chuỗi va chạm của cùng 1 bucket
     public TKey key;
     public TValue value;
 }
@@ -169,17 +169,17 @@ struct Entry {
 1.  **Mảng `entries` liên tục (Contiguous):** Cache-friendly! Khác hẳn Java Chaining dùng Linked List (node phân tán).
 2.  **`buckets` lưu index + 1:** `0` nghĩa là empty. Index thực tế trong `entries` = `buckets[i] - 1`.
 3.  **Randomized Hashing:** `key.GetHashCode()` bị XOR với một `randomSeed` được sinh lúc runtime (`Environment.TickCount`...). **Mục đích:** Chống **HashDoS Attack** (Hacker gửi hàng triệu key cùng hash để làm sập server).
-4.  **Xóa (Remove) dùng "Tombstone":** Không xóa vật lý khỏi `entries` (vì làm hỏng probe chain của key khác). Chỉ set `hashCode = -1` (hoặc key=null). Slot đó trở thành "Free" để Insert sau dùng lại.
+4.  **Xóa (Remove) dùng cơ chế "Free List":** Không xóa vật lý ngay khỏi `entries` (tránh chi phí dịch chuyển cả mảng), chỉ gỡ entry khỏi chuỗi bucket của nó và đẩy index vào danh sách ô trống (`freeList`/`freeCount`). Slot đó được tái sử dụng cho lần Insert sau.
 
 ### So sánh C# Dictionary vs Java HashMap vs C++ unordered_map
 
 | Đặc tính | C# `Dictionary` | Java `HashMap` (8+) | C++ `unordered_map` |
 | :--- | :--- | :--- | :--- |
-| **Collision Resolution** | **Open Addressing** (Double Hashing) | **Chaining** (List → Tree) | **Chaining** (Bucket = List) |
+| **Collision Resolution** | **Chaining trên mảng liên tục** (Contiguous) | **Chaining** (List → Tree) | **Chaining** (Bucket = List) |
 | **Memory Layout** | **Contiguous Array** (Cache friendly) | Array of Node pointers (Cache miss) | Array of Node pointers |
-| **Worst Case Search** | O(N) (rare,probe full) | **O(log N)** (Treeify) | O(N) |
+| **Worst Case Search** | O(N) (rare, probe full) | **O(log N)** (Treeify) | O(N) |
 | **Security (HashDoS)** | **Randomized Hashing** (Default ON) | Hash randomization (Optional) | Hash Policy (Custom) |
-| **Remove Performance** | O(1) (Tombstone) | O(1) (Unlink node) | O(1) (Erase node) |
+| **Remove Performance** | O(1) (Free List) | O(1) (Unlink node) | O(1) (Erase node) |
 | **Iteration Order** | Insertion Order (Preserved!) | Random (Unstable) | Random |
 
 > **Quan trọng:** C# `Dictionary` **giữ nguyên thứ tự chèn (Insertion Order)** khi duyệt `foreach` (từ .NET Core 3.0+). Điều này **KHÔNG** được đảm bảo bởi Spec nhưng là hành vi ổn định của implementation hiện tại.
@@ -232,7 +232,7 @@ key.Add(3); // MUTATED KEY!
 | Tra cứu Key-Value chung | `Dictionary<TKey, TValue>` | O(1) nhanh nhất, built-in |
 | Chỉ cần Key (Set) | `HashSet<T>` | Tối ưu memory, O(1) Contains |
 | Cần giữ thứ tự Key (Sorted) | `SortedDictionary` / `SortedList` | O(log N), dùng Red-Black Tree |
-| Key là string, tra cứu prefix | `Trie` (Prefix Tree) | O(L) thay vì O(L) hash + compare |
+| Key là string, cần tra cứu tiền tố (prefix) | `Trie` (Prefix Tree) | Hỗ trợ tìm theo tiền tố O(L) mà Hash Table không làm được |
 | Thread-safe | `ConcurrentDictionary` | Lock-free reads, fine-grained locks |
 | Memory cực hạn, Key nhỏ | `FrozenDictionary` (.NET 8+) | Read-only, tối ưu memory & speed |
 | Cần Multi-value per Key | `Dictionary<TKey, List<TValue>>` hoặc `ILookup` | `ToLookup()` từ LINQ |
@@ -242,9 +242,11 @@ key.Add(3); // MUTATED KEY!
 ## 8. Quiz kiểm tra hiểu bản chất {#quiz}
 
 <details class="vt-quiz">
-<summary>❓ Quiz 1: Tại sao C# Dictionary dùng Open Addressing thay vì Chaining như Java?</summary>
+<summary>❓ Quiz 1: Tại sao C# Dictionary dùng mảng liên tục (contiguous) thay vì nhiều Node phân tán như Java HashMap?</summary>
 
 **Đáp án:**
+
+Thực chất cả hai đều dùng **Separate Chaining**, nhưng .NET lưu toàn bộ "node" trong **một mảng `entries` liên tục duy nhất** nên chuỗi va chạm chỉ là các index liên tiếp nhau chứ không phải con trỏ rời rạc:
 1.  **Cache Locality:** Mảng `entries` liên tục → CPU load cache line đọc nhiều entry cùng lúc. Java Chasing pointer (Linked List) → Cache miss liên tục.
 2.  **Memory Overhead:** Không cần object `Node` wrapper cho mỗi entry (tiết kiệm 16-24 bytes/entry).
 3.  **Allocation:** Chỉ alloc 2 mảng lớn (`buckets`, `entries`) thay vì alloc rải rác hàng triệu object Node nhỏ → GC nhẹ nhàng hơn.
@@ -254,7 +256,7 @@ key.Add(3); // MUTATED KEY!
 <summary>❓ Quiz 2: Load Factor 0.75 có ý nghĩa gì? Tại sao không để 0.9 hoặc 0.5?</summary>
 
 **Đáp án:**
-- **0.75** là "điểm cân bằng" (Golden Ratio) giữa **Memory** và **Probe Length**.
+- **0.75** là "điểm cân bằng" kinh điển giữa **Memory** và **Probe Length** (Java `HashMap` cũng dùng default load factor = 0.75).
 - **Math:** Với Open Addressing, Expected Probes ≈ `1/(1-α)`.
   - α=0.5 → 2 probes. 
   - α=0.75 → 4 probes. 
@@ -267,6 +269,16 @@ key.Add(3); // MUTATED KEY!
 
 **Đáp án:** **CÓ** (khi không có Writer). `Dictionary` implementation hiện tại (.NET Core+) an toàn cho **Multiple Readers + No Writers**. Nếu có Writer → Phải dùng `ConcurrentDictionary` hoặc `lock`.
 </details>
+
+---
+
+## 📚 Tham khảo lý thuyết
+
+- **Cormen et al. (CLRS)** — *Introduction to Algorithms*, 3rd Edition, Chương 11 "Hash Tables" (Hash function, Chaining, Open Addressing, Load Factor).
+- **Wikipedia** — [Hash table](https://en.wikipedia.org/wiki/Hash_table), [Hash function](https://en.wikipedia.org/wiki/Hash_function), mục [Load factor](https://en.wikipedia.org/wiki/Hash_table#Key_statistics).
+- **Microsoft Learn** — [`Dictionary<TKey,TValue>` Class](https://learn.microsoft.com/en-us/dotnet/api/system.collections.generic.dictionary-2), [`HashSet<T>` Class](https://learn.microsoft.com/en-us/dotnet/api/system.collections.generic.hashset-1).
+- **GeeksforGeeks** — [Hashing Data Structure](https://www.geeksforgeeks.org/hashing-data-structure/), [Load Factor and Rehashing](https://www.geeksforgeeks.org/load-factor-and-rehashing/).
+- **MIT OpenCourseWare** — 6.006 Introduction to Algorithms, bài giảng "Hashing I & Hashing II".
 
 ---
 

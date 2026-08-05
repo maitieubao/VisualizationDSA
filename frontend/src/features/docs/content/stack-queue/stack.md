@@ -28,7 +28,7 @@ Một Stack chuẩn mực chỉ phơi bày đúng 3 thao tác giao tiếp ra th�
 | Thao tác | Ý nghĩa | Độ phức tạp | Cảnh báo nguy hiểm |
 | :--- | :--- | :---: | :--- |
 | **`Push(x)`** | Đẩy phần tử `x` lên đỉnh (Top) của Stack. | $O(1)$ | **StackOverflow:** Nếu giới hạn RAM bị vượt qua. |
-| **`Pop()`** | Lấy và XÓA phần tử ở đỉnh Stack ra ngoài. | $O(1)$ | **EmptyStackException:** Cố gắng rút đĩa khi chồng đĩa đã trống trơn. |
+| **`Pop()`** | Lấy và XÓA phần tử ở đỉnh Stack ra ngoài. | $O(1)$ | **InvalidOperationException:** Cố gắng rút đĩa khi chồng đĩa đã trống trơn (Trong C#, lỗi này tên là `InvalidOperationException`). |
 | **`Peek()`** / `Top()` | Chỉ nhìn xem phần tử trên đỉnh là gì (Không xóa). | $O(1)$ | Tương tự Pop, sẽ lỗi nếu Stack rỗng. |
 
 ### Minh họa Push và Pop
@@ -114,9 +114,14 @@ Chúng ta dùng Stack để lưu **Chỉ số (Index)** của những ngày đan
 | 4 | **69** | `69 < T[3] (71)`. Lại vào Stack chờ. Push(4). | `[2, 3, 4]` (Giá trị: 75, 71, 69) | - |
 | 5 | **72** | **BÙNG NỔ!** `72 > T[4] (69)`. (4) được giải thoát! `KQ[4] = 5-4=1`. Pop(4). <br>`72 > T[3] (71)`. (3) được giải thoát! `KQ[3] = 5-3=2`. Pop(3). <br>`72 < T[2] (75)`. Dừng lại. Push(5). | `[2, 5]` (Giá trị tương ứng: 75, 72) | `KQ[4] = 1`<br>`KQ[3] = 2` |
 
-### Mã nguồn C# (Monotonic Stack)
+### Mã nguồn (Monotonic Stack)
 
-```csharp
+Bạn có thể xem Stack hoạt động trực quan trong Playground bên dưới.
+
+```playground:stack
+```
+
+```dual:stack
 public int[] DailyTemperatures(int[] temperatures) 
 {
     int[] result = new int[temperatures.Length];
@@ -144,3 +149,33 @@ public int[] DailyTemperatures(int[] temperatures)
 - Đệ quy chính là ngụy trang của Stack. Mỗi lần đệ quy tốn bộ nhớ Call Stack. Hết bộ nhớ là `StackOverflow`.
 - Monotonic Stack là mẫu thiết kế (Pattern) siêu hạng để xử lý dữ liệu theo cặp (Matching) ví dụ như: Kiểm tra ngoặc hợp lệ `() {}`, Tìm phần tử lớn hơn tiếp theo, hoặc Tính diện tích lớn nhất của Histogram.
 :::
+
+## Next Steps {#next-steps}
+
+Bạn vừa làm chủ lực lượng **LIFO**. Đã đến lúc làm quen với người anh em đối nghịch — **Hàng đợi (Queue)** với triết lý công bằng FIFO — cùng với tuyệt kỹ **Monotonic Stack** và biến thể hai đầu **Deque** để hoàn thiện toàn bộ kho vũ khí Cấu trúc tuyến tính:
+
+<div class="vt-box-container next-steps">
+  <a class="vt-box" href="/docs/stack-queue/queue">
+    <p class="next-steps-link">Hàng đợi (Queue)</p>
+    <p class="next-steps-caption">Người anh em FIFO đối lập hoàn hảo với Stack, và bi kịch O(N) khi cài bằng Mảng.</p>
+  </a>
+  <a class="vt-box" href="/docs/stack-queue/monotonic-stack">
+    <p class="next-steps-link">Ngăn xếp đơn điệu (Monotonic Stack)</p>
+    <p class="next-steps-caption">Đào sâu thêm mẫu hình Stack đơn điệu để hạ gục các bài toán Matching kinh điển.</p>
+  </a>
+  <a class="vt-box" href="/docs/stack-queue/deque">
+    <p class="next-steps-link">Hàng đợi hai đầu (Deque)</p>
+    <p class="next-steps-caption">Hợp nhất sức mạnh của Stack và Queue trong một cấu trúc duy nhất.</p>
+  </a>
+</div>
+
+## 📚 Tham khảo lý thuyết {#references}
+
+Các kiến thức lý thuyết trong bài được tổng hợp và đối chiếu từ những nguồn học thuật sau:
+
+- **Cấu trúc dữ liệu Stack, các thao tác Push/Pop/Peek và phân tích độ phức tạp O(1):** Cormen, T. H., Leiserson, C. E., Rivest, R. L., & Stein, C., *Introduction to Algorithms* (CLRS), 3rd Edition, MIT Press, 2009 — Chương 10.1 *Stacks and queues*.
+- **Call Stack, Stack Frame và cơ chế StackOverflow khi đệ quy quá sâu:** Wikipedia, *Call stack* — https://en.wikipedia.org/wiki/Call_stack
+- **Tổng quan khái niệm LIFO, các phép toán và ứng dụng của Stack:** Wikipedia, *Stack (abstract data type)* — https://en.wikipedia.org/wiki/Stack_(abstract_data_type)
+- **Cài đặt chuẩn `Stack<T>` trong .NET/C# và các phương thức Push/Pop/Peek:** Microsoft Learn, *Stack<T> Class* — https://learn.microsoft.com/dotnet/api/system.collections.generic.stack-1
+- **Mẫu hình Monotonic Stack và thuật toán Next Greater Element:** GeeksforGeeks, *Next Greater Element* — https://www.geeksforgeeks.org/next-greater-element/
+- **Bài toán vận dụng Daily Temperatures (LeetCode 739):** LeetCode, *Daily Temperatures* — https://leetcode.com/problems/daily-temperatures/

@@ -1,20 +1,16 @@
-import { ref, computed } from 'vue';
+import { computed, ref } from 'vue';
 import type { SortFrame } from '../types/sorting.types';
 
 export function useHeapSortVisualizer(frame: () => SortFrame | null) {
   const hoveredNodeIdx = ref<number | null>(null);
 
-  const n = computed(() => frame()?.arrayStateWithIds?.length ?? 6);
+  const n = computed(() => frame()?.arrayStateWithIds?.length ?? frame()?.arrayState.length ?? 0);
 
-  
   const currentHeapSize = computed(() => {
     if (!frame()) return n.value;
     return frame()!.heapSize ?? frame()!.arrayState.length;
   });
 
-  
-  // Phân biệt giai đoạn BUILD vs SORT dựa trên heapSize thay vì keyword mô tả
-  // (keyword 'hoán đổi' không bao giờ khớp vì generator emit "Hoán vị")
   const currentPhase = computed(() => {
     if (!frame()) return 'BUILD';
     const total = frame()!.arrayState.length;
@@ -22,7 +18,6 @@ export function useHeapSortVisualizer(frame: () => SortFrame | null) {
     return heapSize < total ? 'SORT' : 'BUILD';
   });
 
-  
   const currentStepDescription = computed(() => {
     if (!frame()) return 'Khởi tạo Heap Sort';
     return frame()!.description;
@@ -31,7 +26,7 @@ export function useHeapSortVisualizer(frame: () => SortFrame | null) {
   const miniStepDescription = computed(() => {
     if (!frame()) return 'Chuẩn bị dữ liệu mảng ban đầu.';
     const desc = frame()!.description.toLowerCase();
-    
+
     if (desc.includes('khởi tạo')) {
       return 'Khởi động giải thuật Heap Sort. Cây nhị phân hoàn chỉnh được xây dựng trực tiếp từ các chỉ số mảng vật lý: parent = i, left = 2i + 1, right = 2i + 2.';
     }
@@ -53,10 +48,8 @@ export function useHeapSortVisualizer(frame: () => SortFrame | null) {
     return frame()!.description;
   });
 
-  
   const maxDepth = computed(() => Math.ceil(Math.log2((n.value || 1) + 1)));
 
-  
   const placeholderIndices = computed(() => {
     const fullTreeSize = Math.pow(2, maxDepth.value) - 1;
     const list: number[] = [];
@@ -67,7 +60,7 @@ export function useHeapSortVisualizer(frame: () => SortFrame | null) {
   });
 
   function getXPct(idx: number): number {
-    const depth  = Math.floor(Math.log2(idx + 1));
+    const depth = Math.floor(Math.log2(idx + 1));
     const rowLen = Math.pow(2, depth);
     const posInRow = idx - (rowLen - 1);
     return ((posInRow + 0.5) / rowLen) * 100;
@@ -88,53 +81,45 @@ export function useHeapSortVisualizer(frame: () => SortFrame | null) {
     return idx < currentHeapSize.value;
   }
 
-  
   function getNodeClass(idx: number): string {
     if (!frame()) return '';
     const ci = frame()!.comparingIndices;
     const si = frame()!.swappedIndices;
-    
-    
+
     if (idx > 0) {
       const pIdx = getParentIndex(idx);
-      const val  = frame()!.arrayState[idx];
+      const val = frame()!.arrayState[idx];
       const pVal = frame()!.arrayState[pIdx];
-      
+
       if (idx < currentHeapSize.value && pVal < val && currentPhase.value === 'BUILD') {
         return 'node-violation animate-pulse';
       }
     }
-    
-    
+
     if (ci?.includes(idx)) {
       return 'node-comparing scale-105 z-20';
     }
-    
-    
+
     if (si?.includes(idx)) {
       return 'node-swapped scale-105 z-20';
     }
-    
-    
+
     if (idx >= currentHeapSize.value) {
       return 'node-sorted opacity-60';
     }
-    
-    
+
     return 'node-active';
   }
-  
+
   function getLineStroke(idx: number): string {
-    if (!frame()) return 'color-mix(in srgb, var(--color-accent-cyan) 20%, transparent)';
+    if (!frame()) return 'rgba(61, 153, 112, 0.2)';
     const ci = frame()!.comparingIndices;
     const pIdx = getParentIndex(idx);
-    
-    
+
     if (ci?.includes(idx) && ci?.includes(pIdx)) {
       return 'var(--color-accent-yellow)';
     }
-    
-    
+
     if (idx < currentHeapSize.value) {
       const val = frame()!.arrayState[idx];
       const pVal = frame()!.arrayState[pIdx];
@@ -142,15 +127,14 @@ export function useHeapSortVisualizer(frame: () => SortFrame | null) {
         return 'var(--color-accent-red)';
       }
     }
-    
-    
+
     if (idx >= currentHeapSize.value) {
-      return 'color-mix(in srgb, var(--color-accent-green) 8%, transparent)';
+      return 'rgba(16, 185, 129, 0.08)';
     }
-    
-    
-    return 'color-mix(in srgb, var(--color-accent-cyan) 35%, transparent)';
+
+    return 'rgba(61, 153, 112, 0.35)';
   }
+
   function getLineWidth(idx: number): number {
     if (!frame()) return 1.5;
     const ci = frame()!.comparingIndices;
@@ -158,12 +142,12 @@ export function useHeapSortVisualizer(frame: () => SortFrame | null) {
     if (ci?.includes(idx) && ci?.includes(pIdx)) return 3;
     return 2;
   }
-  
+
   function getArrayItemClass(idx: number): string {
     if (!frame()) return '';
     const ci = frame()!.comparingIndices;
     const si = frame()!.swappedIndices;
-    
+
     if (ci?.includes(idx)) {
       return 'item-comparing scale-102 z-10';
     }
@@ -175,7 +159,7 @@ export function useHeapSortVisualizer(frame: () => SortFrame | null) {
     }
     return 'item-active';
   }
-  
+
   function getLeftChildLabel(idx: number): string {
     const left = idx * 2 + 1;
     if (left >= currentHeapSize.value) return 'Không có';
@@ -188,18 +172,41 @@ export function useHeapSortVisualizer(frame: () => SortFrame | null) {
     return `Index ${right} (Value: ${frame()?.arrayState[right] ?? '—'})`;
   }
 
-  
-  const nodeSize     = computed(() => n.value <= 8 ? '52px' : n.value <= 11 ? '44px' : '38px');
-  const nodeFontSize = computed(() => n.value <= 8 ? '13px' : n.value <= 11 ? '11.5px' : '10.5px');
-  
-  const itemSize     = computed(() => n.value <= 6 ? '88px' : n.value <= 10 ? '72px' : '56px');
-  const itemHeight   = computed(() => n.value <= 6 ? '54px' : n.value <= 10 ? '48px' : '40px');
-  const itemGap      = computed(() => n.value <= 6 ? '18px' : n.value <= 10 ? '12px' : '6px');
-  const fontSize     = computed(() => n.value <= 6 ? '14px' : n.value <= 10 ? '12px' : '10.5px');
+  const nodeSize = computed(() => {
+    if (n.value <= 8) return '52px';
+    if (n.value <= 11) return '44px';
+    return '38px';
+  });
 
-  const containerStyle = computed(() => ({
-    minWidth: '580px',
-  }));
+  const nodeFontSize = computed(() => {
+    if (n.value <= 8) return '13px';
+    if (n.value <= 11) return '11.5px';
+    return '10.5px';
+  });
+
+  const itemSize = computed(() => {
+    if (n.value <= 6) return '88px';
+    if (n.value <= 10) return '72px';
+    return '56px';
+  });
+
+  const itemHeight = computed(() => {
+    if (n.value <= 6) return '54px';
+    if (n.value <= 10) return '48px';
+    return '40px';
+  });
+
+  const itemGap = computed(() => {
+    if (n.value <= 6) return '18px';
+    if (n.value <= 10) return '12px';
+    return '6px';
+  });
+
+  const fontSize = computed(() => {
+    if (n.value <= 6) return '14px';
+    if (n.value <= 10) return '12px';
+    return '10.5px';
+  });
 
   const childIndices = computed(() => {
     const list: number[] = [];
@@ -235,6 +242,5 @@ export function useHeapSortVisualizer(frame: () => SortFrame | null) {
     itemHeight,
     itemGap,
     fontSize,
-    containerStyle
   };
 }

@@ -22,7 +22,7 @@
       <div class="docs-footer mt-16 pt-8 border-t border-border-color flex justify-between">
         <router-link v-if="prevDoc" :to="prevDoc.path" class="nav-link prev group flex flex-col items-start">
           <span class="text-xs text-text-muted mb-1 flex items-center group-hover:text-accent-primary transition-colors">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="mr-1"><polyline points="15 18 9 12 15 6"></polyline></svg>
+            <BaseIcon name="chevron-left" class="w-3.5 h-3.5 mr-1" />
             Bài trước
           </span>
           <span class="text-accent-primary font-medium">{{ prevDoc.title }}</span>
@@ -32,7 +32,7 @@
         <router-link v-if="nextDoc" :to="nextDoc.path" class="nav-link next group flex flex-col items-end text-right">
           <span class="text-xs text-text-muted mb-1 flex items-center group-hover:text-accent-primary transition-colors">
             Bài tiếp theo
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="ml-1"><polyline points="9 18 15 12 9 6"></polyline></svg>
+            <BaseIcon name="chevron-right" class="w-3.5 h-3.5 ml-1" />
           </span>
           <span class="text-accent-primary font-medium">{{ nextDoc.title }}</span>
         </router-link>
@@ -44,10 +44,12 @@
 <script setup lang="ts">
 import { ref, watch, onMounted, onBeforeUnmount, nextTick } from 'vue';
 import { useRouter } from 'vue-router';
-import { marked } from 'marked';
-import { createHighlighter } from 'shiki';
+import { marked, type Tokens } from 'marked';
+import { createHighlighter, type Highlighter } from 'shiki';
+import BaseIcon from '@/shared/components/BaseIcon.vue';
+import { parseEmojiToSvg } from '../../../utils/emojiParser';
+import { buildMermaidInitConfig } from '../../../utils/mermaidTheme';
 import { getPlaygroundDemo } from '../../html-playground/demos/playgroundDemos';
-import { PlaygroundUrlCodec } from '../../html-playground/engine/PlaygroundUrlCodec';
 import '../styles/vue-docs-theme.css';
 
 const props = defineProps<{
@@ -68,8 +70,10 @@ const htmlContent = ref('');
 const loading = ref(true);
 const markdownContainer = ref<HTMLElement | null>(null);
 
-let highlighter: any = null;
+let highlighter: Highlighter | null = null;
 let containerListenersAttached = false;
+
+const errorMessage = (error: unknown): string => error instanceof Error ? error.message : String(error);
 
 const ensureContainerListeners = () => {
   if (containerListenersAttached || !markdownContainer.value) return;
@@ -85,7 +89,19 @@ const handleContainerClick = (event: Event) => {
     const url = target.getAttribute('data-playground-url') || target.getAttribute('href');
     if (url) {
       const [, query] = url.split('?');
-      router.push({ path: '/playground', query: query ? { code: new URLSearchParams(query).get('code') || '' } : {} });
+      const params = new URLSearchParams(query || '');
+      const demo = params.get('demo');
+      router.push({ path: '/playground', query: demo ? { demo } : {} });
+    }
+    return;
+  }
+
+  // Copy code: đọc từ data-attribute (an toàn với mọi ký tự, kể cả dấu nháy đơn trong C#).
+  const copyBtn = (event.target as HTMLElement).closest('button.copy-code-btn') as HTMLElement | null;
+  if (copyBtn) {
+    const encoded = copyBtn.getAttribute('data-copy-code');
+    if (encoded) {
+      navigator.clipboard.writeText(decodeURIComponent(encoded)).catch(() => {});
     }
   }
 };
@@ -177,12 +193,11 @@ const renderMarkdown = async () => {
     const contentWithoutFm = preprocessMarkdown(props.rawMarkdown);
     
     const renderer = new marked.Renderer();
-    const originalParagraph = renderer.paragraph.bind(renderer);
     
     
-    renderer.heading = function(token: any) {
-      let text = token.text;
-      const level = token.depth;
+    renderer.heading = function({ depth, text: rawText, raw }: Tokens.Heading) {
+      let text = rawText;
+      const level = depth;
       
       
       if (level === 1) return '';
@@ -193,8 +208,8 @@ const renderMarkdown = async () => {
         id = customIdMatch[1];
         text = text.replace(/\{#([^}]+)\}/, '').trim();
       } else {
-        const raw = token.raw || text;
-        id = raw
+        const rawTextForId = raw || text;
+        id = rawTextForId
           .toLowerCase()
           .normalize("NFD")
           .replace(/[\u0300-\u036f]/g, "")
@@ -202,31 +217,46 @@ const renderMarkdown = async () => {
           .replace(/[\s_-]+/g, '-')
           .replace(/^-+|-+$/g, '');
       }
+
+      // Render inline markdown trong heading (bold/backtick) — trước đây hiển thị thô **...**.
+      const renderedText = text
+        .replace(/\*\*(.*?)\*\*/g, '<strong class="font-bold">$1</strong>')
+        .replace(/`([^`]+)`/g, '<code class="bg-bg-surface text-accent px-1.5 py-0.5 rounded text-xs font-mono">$1</code>');
         
-      return `<h${level} id="${id}" class="group relative" data-title="${encodeURIComponent(text)}">
+      return `<h${level} id="${id}" class="group relative" data-title="${encodeURIComponent(renderedText)}">
         <a href="#${id}" class="absolute -left-6 opacity-0 group-hover:opacity-100 transition-opacity text-accent-primary no-underline hidden md:block">#</a>
-        ${text}
+        ${renderedText}
       </h${level}>\n`;
     };
 
+    // Link nội bộ /docs/... phải đi qua hash router — tránh reload toàn trang về trang chủ.
+    renderer.link = function({ href: rawHref, title: tokenTitle, tokens }: Tokens.Link) {
+      let href = rawHref ?? '';
+      if (href.startsWith('/')) {
+        href = '#' + href;
+      }
+      const title = tokenTitle ? ` title="${tokenTitle.replace(/"/g, '&quot;')}"` : '';
+      const text = this.parser.parseInline(tokens ?? []);
+      return `<a href="${href}"${title} class="docs-link">${text}</a>\n`;
+    };
+
     
-    renderer.code = function(token: any) {
-      const code = token.text;
-      const validLang = token.lang || 'text';
+    renderer.code = function({ text: codeText, lang: codeLang }: Tokens.Code) {
+      const code = codeText;
+      const validLang = codeLang || 'text';
       
       if (validLang === 'mermaid') {
         
         const encoded = encodeURIComponent(code);
-        return `<div class="mermaid-diagram flex justify-center my-6" data-mermaid-code="${encoded}"><div style="color:#888;font-size:14px;">⏳ Đang vẽ biểu đồ...</div></div>`;
+        return parseEmojiToSvg(`<div class="mermaid-diagram flex justify-center my-6" data-mermaid-code="${encoded}"><div style="color:#888;font-size:14px;">Đang vẽ biểu đồ...</div></div>`);
       }
       
       
       const playgroundMatch = validLang.match(/^playground:([a-zA-Z0-9-]+)$/);
       if (playgroundMatch) {
-        const demo = getPlaygroundDemo(playgroundMatch[1]);
+          const demo = getPlaygroundDemo(playgroundMatch[1]);
         if (demo) {
-          const payload = PlaygroundUrlCodec.encode(demo.source);
-          const shareUrl = `#/playground?code=${encodeURIComponent(payload)}`;
+          const shareUrl = `#/playground?demo=${demo.id}`;
           return `<div class="playground-demo-card" data-demo-id="${demo.id}">
             <div class="playground-demo-info">
               <span class="playground-demo-icon">
@@ -237,8 +267,9 @@ const renderMarkdown = async () => {
                 <span>${demo.description}</span>
               </div>
             </div>
-            <a class="playground-demo-link" href="${shareUrl}" data-playground-url="${shareUrl}" title="Mở trong Playground với code mẫu có sẵn">
-              ▶ Mở Playground
+            <a class="playground-demo-link" href="${shareUrl}" data-playground-url="${shareUrl}" title="Mở Playground chạy từng bước với thuật toán ${demo.title}">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg>
+              Chạy thử từng bước
             </a>
           </div>`;
         }
@@ -252,12 +283,12 @@ const renderMarkdown = async () => {
           let jsHtml = '';
           let csHtml = '';
           try {
-            jsHtml = highlighter.codeToHtml(demo.source.js, { lang: 'javascript', theme: 'one-dark-pro' });
+            jsHtml = highlighter!.codeToHtml(demo.source.js, { lang: 'javascript', theme: 'one-dark-pro' });
           } catch (e) {
             jsHtml = `<pre><code>${demo.source.js}</code></pre>`;
           }
           try {
-            csHtml = highlighter.codeToHtml(code, { lang: 'csharp', theme: 'one-dark-pro' });
+            csHtml = highlighter!.codeToHtml(code, { lang: 'csharp', theme: 'one-dark-pro' });
           } catch (e) {
             csHtml = `<pre><code>${code}</code></pre>`;
           }
@@ -277,7 +308,7 @@ const renderMarkdown = async () => {
       }
       
       try {
-        const highlighted = highlighter.codeToHtml(code, {
+        const highlighted = highlighter!.codeToHtml(code, {
           lang: validLang,
           theme: 'one-dark-pro'
         });
@@ -286,7 +317,7 @@ const renderMarkdown = async () => {
         
         return `<div class="language-${validLang} relative group">
           <div class="absolute top-3 right-3 z-10 flex items-center">
-            <button class="copy-code-btn opacity-0 group-hover:opacity-100 transition-all flex items-center justify-center w-8 h-8 rounded-md bg-transparent hover:bg-bg-hover text-text-muted hover:text-white" onclick="navigator.clipboard.writeText(decodeURIComponent('${encodeURIComponent(code)}'))" title="Copy code">
+            <button class="copy-code-btn opacity-0 group-hover:opacity-100 transition-all flex items-center justify-center w-8 h-8 rounded-md bg-transparent hover:bg-bg-hover text-text-muted hover:text-white" data-copy-code="${encodeURIComponent(code)}" title="Copy code">
               ${svgIcon}
             </button>
           </div>
@@ -298,8 +329,8 @@ const renderMarkdown = async () => {
     };
 
     
-    renderer.blockquote = function(token: any) {
-      const text = token.text;
+    renderer.blockquote = function({ text: quoteText }: Tokens.Blockquote) {
+      const text = quoteText;
       const typeMatch = text.match(/^\[!(NOTE|TIP|IMPORTANT|WARNING|CAUTION)\]/i);
       
       if (!typeMatch) {
@@ -338,7 +369,7 @@ const renderMarkdown = async () => {
     marked.use({ renderer, gfm: true, breaks: true });
 
     const parsedHtml = marked.parse(contentWithoutFm);
-    htmlContent.value = typeof parsedHtml === 'string' ? parsedHtml : await parsedHtml;
+    htmlContent.value = parseEmojiToSvg(typeof parsedHtml === 'string' ? parsedHtml : await parsedHtml);
     loading.value = false; 
     
     await nextTick(); 
@@ -353,11 +384,7 @@ const renderMarkdown = async () => {
     
     try {
       const { default: mermaid } = await import('mermaid');
-      mermaid.initialize({
-        startOnLoad: false,
-        theme: 'default',
-        fontFamily: '"Inter", "Segoe UI", system-ui, sans-serif'
-      });
+      mermaid.initialize(buildMermaidInitConfig());
       
       for (let i = 0; i < diagrams.length; i++) {
         const el = diagrams[i] as HTMLElement;
@@ -368,22 +395,22 @@ const renderMarkdown = async () => {
         try {
           const { svg } = await mermaid.render(`mermaid-svg-${Date.now()}-${i}`, code);
           el.innerHTML = svg;
-        } catch (renderErr: any) {
-          el.innerHTML = `<div style="background:rgba(200,50,50,0.15);border:1px solid #c53030;padding:16px;border-radius:8px;color:#fc8181;font-size:13px;text-align:left;width:100%;">
-            <strong>⚠️ Lỗi cú pháp Mermaid:</strong><br/>
-            <pre style="margin-top:8px;font-size:11px;overflow-x:auto;">${renderErr?.message || renderErr}</pre>
-          </div>`;
+        } catch (renderErr: unknown) {
+          el.innerHTML = parseEmojiToSvg(`<div style="background:rgba(200,50,50,0.15);border:1px solid #c53030;padding:16px;border-radius:8px;color:#fc8181;font-size:13px;text-align:left;width:100%;">
+            <strong>Lỗi cú pháp Mermaid:</strong><br/>
+            <pre style="margin-top:8px;font-size:11px;overflow-x:auto;">${errorMessage(renderErr)}</pre>
+          </div>`);
         }
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error("Lỗi tải Mermaid:", err);
       diagrams.forEach(el => {
-        el.innerHTML = `<div style="color:#fc8181;">❌ Không thể tải thư viện Mermaid: ${err?.message || err}</div>`;
+        el.innerHTML = parseEmojiToSvg(`<div style="color:#fc8181;">Không thể tải thư viện Mermaid: ${errorMessage(err)}</div>`);
       });
     }
-  } catch (error) {
+  } catch (error: unknown) {
     console.error("Lỗi khi render markdown:", error);
-    htmlContent.value = `<div class="text-accent-red">Lỗi khi phân giải tài liệu: ${error}</div>`;
+    htmlContent.value = `<div class="text-accent-red">Lỗi khi phân giải tài liệu: ${errorMessage(error)}</div>`;
     loading.value = false;
   }
 };

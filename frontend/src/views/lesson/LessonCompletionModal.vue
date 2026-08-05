@@ -8,13 +8,21 @@
       </div>
       <h3 class="text-2xl font-black text-white">Xuất Sắc!</h3>
       <p class="text-text-secondary mt-2 text-sm">Bạn đã hoàn thành bài học và tích lũy thêm điểm kinh nghiệm.</p>
-      
+
       <div class="my-6 p-4 rounded-2xl bg-bg-hover border border-border-subtle inline-flex flex-col items-center">
         <span class="text-xs text-text-muted font-bold uppercase tracking-widest">Điểm nhận được</span>
         <span class="text-3xl font-black text-accent-green mt-1">+{{ xpReward }} XP</span>
       </div>
 
       <div class="flex flex-col gap-3">
+        <button
+          v-if="nextLessonId"
+          @click="$emit('go-next', nextLessonId)"
+          class="w-full py-3 bg-gradient-to-r from-accent to-accent-purple hover:from-accent hover:to-accent-purple text-white font-bold rounded-2xl transition-all duration-300 cursor-pointer flex items-center justify-center gap-2"
+        >
+          <span>Học bài tiếp theo</span>
+          <BaseIcon name="arrow-right" class="w-4 h-4" />
+        </button>
         <button
           v-if="quizId"
           @click="$emit('go-quiz', quizId)"
@@ -41,10 +49,12 @@ defineProps<{
   show: boolean;
   xpReward: number;
   quizId?: string | null;
+  nextLessonId?: string | null;
 }>();
 
 defineEmits<{
   (e: 'go-quiz', quizId: string): void;
+  (e: 'go-next', lessonId: string): void;
   (e: 'close'): void;
 }>();
 </script>

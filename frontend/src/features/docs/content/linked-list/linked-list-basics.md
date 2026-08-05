@@ -148,7 +148,7 @@ flowchart LR
 
 ---
 
-## 4. Cài đặt Các Thao Truy Cơ Bản (Core Operations) {#operations}
+## 4. Cài đặt Các Thao Tác Cơ Bản (Core Operations) {#operations}
 
 ### 4.1. Chèn vào Đầu (Prepend) - O(1)
 ```csharp
@@ -470,3 +470,13 @@ Bây giờ bạn đã hình dung được cấu trúc, memory layout, và trade-
     <p class="next-steps-caption">Reverse (Iterative/Recursive), Detect Cycle (Floyd), Find Middle, Merge Sorted Lists, Palindrome, LRU Cache implementation.</p>
   </a>
 </div>
+
+## 📚 Tham khảo lý thuyết {#references}
+
+Các kiến thức lý thuyết trong bài được tổng hợp và đối chiếu từ những nguồn học thuật sau:
+
+- **Cấu trúc dữ liệu Linked List, Singly/Doubly/Circular, các phép toán cơ bản (Insert, Delete, Search, Reverse) và phân tích độ phức tạp:** Cormen, T. H., Leiserson, C. E., Rivest, R. L., & Stein, C., *Introduction to Algorithms* (CLRS), 3rd Edition, MIT Press, 2009 — Chương 10 *Elementary Data Structures* (mục 10.2 *Linked lists*).
+- **Khái niệm tổng quan, cách phân bố bộ nhớ không liền kề và so sánh với Array:** Wikipedia, *Linked list* — https://en.wikipedia.org/wiki/Linked_list
+- **API, cấu trúc nội bộ và các method của `LinkedList<T>`, `LinkedListNode<T>` trong .NET:** Microsoft Learn, *LinkedList\<T\> Class* — https://learn.microsoft.com/en-us/dotnet/api/system.collections.generic.linkedlist-1
+- **Cài đặt minh họa và các bài toán ứng dụng (Reverse, Detect Cycle, Find Middle):** GeeksforGeeks, *Linked List Data Structure* — https://www.geeksforgeeks.org/data-structures/linked-list/
+- **Vai trò của Cache Locality và bộ nhớ đệm trong phân tích hiệu năng cấu trúc dữ liệu:** MIT OpenCourseWare, *6.006 Introduction to Algorithms, Lecture 2: Data Structures* — https://ocw.mit.edu/courses/6-006-introduction-to-algorithms-spring-2020/

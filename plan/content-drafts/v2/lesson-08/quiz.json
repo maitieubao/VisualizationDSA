@@ -1,0 +1,118 @@
+{
+  "quizTitle": "Trắc nghiệm Đệ quy",
+  "topic": "dsa",
+  "difficulty": 1,
+  "xpReward": 40,
+  "questions": [
+    {
+      "questionText": "Đệ quy là gì?",
+      "options": [
+        "Vòng lặp chạy vô hạn",
+        "Hàm gọi chính nó để giải bài toán con nhỏ hơn",
+        "Hàm chỉ gọi các hàm khác",
+        "Cách lưu dữ liệu vào mảng"
+      ],
+      "correctIndex": 1,
+      "explanation": "Đệ quy là kỹ thuật hàm tự gọi chính nó với đầu vào nhỏ hơn cho tới khi chạm điều kiện dừng."
+    },
+    {
+      "questionText": "Base case (điều kiện dừng) trong hàm đệ quy có vai trò gì?",
+      "options": [
+        "Tăng tốc vòng lặp",
+        "Chặn lời gọi tiếp theo và trả về kết quả trực tiếp",
+        "Khởi tạo biến toàn cục",
+        "Xóa toàn bộ Call Stack"
+      ],
+      "correctIndex": 1,
+      "explanation": "Base case là trường hợp không gọi lại chính nó, trả về kết quả ngay để chuỗi đệ quy dừng lại và bắt đầu tháo lùi."
+    },
+    {
+      "questionText": "Cấu trúc dữ liệu nào quản lý thứ tự các lời gọi hàm khi chạy đệ quy?",
+      "options": [
+        "Queue",
+        "Stack (Call Stack)",
+        "Linked List",
+        "Binary Tree"
+      ],
+      "correctIndex": 1,
+      "explanation": "Mỗi lời gọi đẩy một stack frame lên Call Stack, và khi base case trả về các frame được bốc ra theo thứ tự LIFO."
+    },
+    {
+      "questionText": "Giá trị của factorial(3) (3 giai thừa) là bao nhiêu?",
+      "options": [
+        "3",
+        "6",
+        "9",
+        "12"
+      ],
+      "correctIndex": 1,
+      "explanation": "factorial(3) = 3 × 2 × 1 = 6, theo công thức n × factorial(n − 1) với base case factorial(1) = 1."
+    },
+    {
+      "questionText": "Điều gì xảy ra khi một hàm đệ quy không có điều kiện dừng hoặc base case không bao giờ chạm tới?",
+      "options": [
+        "Chương trình chạy nhanh hơn",
+        "Ném lỗi StackOverflow vì Call Stack tràn bộ nhớ",
+        "Kết quả trả về 0",
+        "Hàm tự biến thành vòng lặp"
+      ],
+      "correctIndex": 1,
+      "explanation": "Các lời gọi đẩy frame liên tục lên Call Stack có dung lượng giới hạn (khoảng 1–8 MB) nên nhanh chóng tràn và ném StackOverflowException."
+    },
+    {
+      "questionText": "Độ phức tạp thời gian của hàm Fibonacci cài đặt naive (không ghi nhớ) là bao nhiêu?",
+      "options": [
+        "O(N)",
+        "O(N log N)",
+        "O(2^N)",
+        "O(1)"
+      ],
+      "correctIndex": 2,
+      "explanation": "Mỗi lời gọi lại rẽ hai nhánh và tính lặp đi lặp lại các giá trị giống nhau nên số lời gọi tăng theo hàm mũ, khoảng 2^N."
+    },
+    {
+      "questionText": "Kỹ thuật memoization giúp Fibonacci cải thiện độ phức tạp như thế nào?",
+      "options": [
+        "Lưu kết quả đã tính vào bảng tra cứu, mỗi giá trị tính một lần nên còn O(N)",
+        "Bỏ qua base case để tính nhanh hơn",
+        "Tăng tốc bằng đa luồng",
+        "Dùng Queue thay vì Stack"
+      ],
+      "correctIndex": 0,
+      "explanation": "Memoization ghi nhớ kết quả của từng giá trị n, các lần gọi sau chỉ đọc lại nên tổng số phép tính giảm từ O(2^N) xuống O(N)."
+    },
+    {
+      "questionText": "Khi gọi factorial(5), hàm factorial được gọi tổng cộng bao nhiêu lần (tính cả lời gọi ban đầu)?",
+      "options": [
+        "4 lần",
+        "5 lần",
+        "6 lần",
+        "10 lần"
+      ],
+      "correctIndex": 1,
+      "explanation": "Chuỗi lời gọi là factorial(5), factorial(4), factorial(3), factorial(2), factorial(1) — tổng cộng 5 lần, tương ứng 5 stack frame."
+    },
+    {
+      "questionText": "Duyệt cây nhị phân tìm kiếm theo thứ tự In-order (L - N - R) cho ra kết quả như thế nào?",
+      "options": [
+        "Các giá trị theo thứ tự tăng dần",
+        "Các giá trị theo thứ tự giảm dần",
+        "Giá trị gốc luôn đứng đầu",
+        "Thứ tự xen kẽ ngẫu nhiên"
+      ],
+      "correctIndex": 0,
+      "explanation": "In-order duyệt nhánh trái, rồi node hiện tại, rồi nhánh phải nên với BST kết quả luôn là dãy sắp xếp tăng dần."
+    },
+    {
+      "questionText": "Với hàm fib(n) = fib(n - 1) + fib(n - 2), fib(0) = 0, fib(1) = 1, hàm fib được gọi tổng cộng bao nhiêu lần khi tính fib(3) theo cách naive?",
+      "options": [
+        "3 lần",
+        "4 lần",
+        "5 lần",
+        "7 lần"
+      ],
+      "correctIndex": 2,
+      "explanation": "fib(3) gọi fib(2) và fib(1); fib(2) gọi fib(1) và fib(0). Tổng cộng: fib(3), fib(2), fib(1), fib(0), fib(1) — đúng 5 lần gọi."
+    }
+  ]
+}

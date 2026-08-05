@@ -11,7 +11,7 @@ function buildGraphFrame(
   nodes: GraphNodeDTO[],
   edges: GraphEdgeDTO[],
   highlights?: Partial<HighlightIndices>,
-  distances?: Record<number, number> | null,
+  distances?: Record<string, number>,
   currentPath?: number[] | null,
 ): FrameDTO {
   return {
@@ -22,7 +22,7 @@ function buildGraphFrame(
     highlights: defaultHighlights(highlights),
     graphNodes: nodes,
     graphEdges: edges,
-    distances: distances ?? null,
+    distances,
     currentPath: currentPath ?? null,
   };
 }

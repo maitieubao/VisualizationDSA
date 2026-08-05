@@ -208,3 +208,23 @@ Trong các buổi phỏng vấn Senior, bạn sẽ hay bị hỏi 2 câu này:
 - Điểm đắt giá nhất của Strategy là khả năng dùng Setter (Hàm `ChangeStrategy`) để tráo đổi hành vi của đối tượng lúc Runtime mà không làm hỏng tính toàn vẹn của ứng dụng.
 - Trong C# hiện đại, người ta hay rút gọn Strategy Pattern bằng cách truyền trực tiếp các biểu thức Lambda (Delegates `Func<T>`) thay vì đẻ ra hàng đống Class, giúp mã nguồn cô đọng và linh hoạt hơn rất nhiều.
 :::
+
+---
+
+## Next Steps {#next-steps}
+
+- [Nguyên lý Open-Closed (OCP)](/docs/solid/ocp): Strategy Pattern được khai sinh từ chính OCP — đào sâu triết lý "Mở cho mở rộng, Đóng cho sửa đổi" để thấy lý do vì sao mẫu này là hình thái hoàn mỹ nhất của nguyên lý.
+- [Nguyên lý Dependency Inversion (DIP)](/docs/solid/dip): Class `TaxiRide` chỉ phụ thuộc vào Interface `IFareStrategy` thay vì các Class chiến lược cụ thể — biểu hiện rõ nét của DIP trong thực chiến.
+- [Factory Method](/docs/patterns/factory): Phân biệt mẫu Khởi tạo (nhà máy dùng `new` đẻ ra đối tượng) với mẫu Hành vi (hoán đổi thuật toán) khi thiết kế hệ thống.
+- [Observer Pattern](/docs/patterns/observer): Một mẫu Hành vi khác trong bộ GoF — thay vì hoán đổi thuật toán, Observer phân phối sự kiện tới nhiều Subscriber cùng lúc.
+
+## 📚 Tham khảo lý thuyết {#references}
+
+Các kiến thức lý thuyết trong bài được tổng hợp và đối chiếu từ những nguồn học thuật sau:
+
+- Erich Gamma, Richard Helm, Ralph Johnson, John Vlissides (Gang of Four), *Design Patterns: Elements of Reusable Object-Oriented Software* (Addison-Wesley, 1994) — Mẫu **Strategy** thuộc nhóm Behavioral Patterns.
+- Eric Freeman, Elisabeth Robson, *Head First Design Patterns* (O'Reilly) — Chương về Strategy Pattern và nguyên lý "Favor composition over inheritance".
+- Wikipedia — [Strategy pattern](https://en.wikipedia.org/wiki/Strategy_pattern).
+- Microsoft Learn — *Design patterns in .NET* (tài liệu giới thiệu Strategy Pattern và nhóm Behavioral Patterns).
+- Refactoring.Guru — [Strategy](https://refactoring.guru/design-patterns/strategy).
+- SourceMaking — [Strategy Design Pattern](https://sourcemaking.com/design_patterns/strategy).

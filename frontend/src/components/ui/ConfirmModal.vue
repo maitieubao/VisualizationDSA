@@ -37,7 +37,7 @@
           >
             <span v-if="loading" class="flex items-center gap-2">
               <span class="spinner-sm"></span>
-              Äang xá»­ lÃ½...
+              Đang xử lý...
             </span>
             <span v-else>{{ confirmText }}</span>
           </button>
@@ -68,8 +68,8 @@ interface Emits {
 }
 
 const props = withDefaults(defineProps<Props>(), {
-  confirmText: 'XÃ¡c nháº­n',
-  cancelText: 'Há»§y',
+  confirmText: 'Xác nhận',
+  cancelText: 'Hủy',
   variant: 'primary',
   icon: 'alert-circle'
 });

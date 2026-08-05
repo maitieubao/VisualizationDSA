@@ -12,7 +12,7 @@ describe('EmbedCommunicationBridge', () => {
   });
 
   describe('constructor & listener initialization', () => {
-    it('should create bridge with default wildcard origin', () => {
+    it('should create bridge with default same-origin allowlist (not wildcard)', () => {
       bridge = new EmbedCommunicationBridge();
       expect(bridge.listenerCount).toBe(0);
     });
@@ -219,8 +219,8 @@ describe('EmbedCommunicationBridge', () => {
       );
     });
 
-    it('should default to wildcard target origin', () => {
-      bridge = new EmbedCommunicationBridge();
+    it('should default to the first allowed origin as target origin', () => {
+      bridge = new EmbedCommunicationBridge([window.location.origin]);
       const mockWindow = { postMessage: vi.fn() } as unknown as Window;
       const msg: EmbedMessage = {
         source: 'VISUALIZATION_DSA_WIDGET',
@@ -230,7 +230,7 @@ describe('EmbedCommunicationBridge', () => {
 
       bridge.sendMessage(mockWindow, msg);
 
-      expect(mockWindow.postMessage).toHaveBeenCalledWith(msg, '*');
+      expect(mockWindow.postMessage).toHaveBeenCalledWith(msg, window.location.origin);
     });
   });
 

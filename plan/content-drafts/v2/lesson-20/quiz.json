@@ -1,0 +1,88 @@
+{
+  "quizTitle": "Trắc nghiệm Đồ thị cơ bản",
+  "topic": "graph",
+  "difficulty": 2,
+  "xpReward": 40,
+  "questions": [
+    {
+      "questionText": "Trong đồ thị vô hướng, cạnh nối giữa A và B có ý nghĩa gì?",
+      "options": [
+        "Chỉ đi được từ A sang B",
+        "Chỉ đi được từ B sang A",
+        "Đi được cả hai chiều A - B và B - A",
+        "Không cho phép di chuyển giữa A và B"
+      ],
+      "correctIndex": 2,
+      "explanation": "Cạnh vô hướng không có chiều, nghĩa là có thể di chuyển cả hai chiều giữa hai đỉnh."
+    },
+    {
+      "questionText": "Danh sách kề (adjacency list) của đồ thị N đỉnh, M cạnh tốn bao nhiêu bộ nhớ?",
+      "options": ["O(N)", "O(N + M)", "O(N²)", "O(M²)"],
+      "correctIndex": 1,
+      "explanation": "Mỗi đỉnh lưu một danh sách hàng xóm; tổng độ dài các danh sách là O(M) và có N danh sách nên bộ nhớ là O(N + M)."
+    },
+    {
+      "questionText": "Ưu điểm chính của ma trận kề (adjacency matrix) so với danh sách kề là gì?",
+      "options": [
+        "Tốn ít bộ nhớ hơn",
+        "Kiểm tra tồn tại cạnh u-v trong O(1)",
+        "Duyệt hàng xóm của một đỉnh nhanh hơn",
+        "Không cần đánh dấu visited"
+      ],
+      "correctIndex": 1,
+      "explanation": "Ma trận N×N cho phép trả lời ngay câu hỏi có cạnh giữa u và v hay không trong thời gian hằng số, đổi lại bộ nhớ O(N²)."
+    },
+    {
+      "questionText": "BFS duyệt đồ thị dựa trên cấu trúc dữ liệu nào?",
+      "options": ["Ngăn xếp (stack)", "Hàng đợi (queue)", "Cây đỏ đen", "Bảng băm"],
+      "correctIndex": 1,
+      "explanation": "BFS cần duyệt theo nguyên tắc ai phát hiện trước xử lý trước (FIFO) để quét hết tầng gần trước khi sang tầng xa hơn."
+    },
+    {
+      "questionText": "Cho danh sách kề: 0:[1, 2], 1:[3], 2:[3], 3:[]. Thứ tự BFS bắt đầu từ đỉnh 0 là gì?",
+      "options": ["0 1 2 3", "0 1 3 2", "0 2 1 3", "0 3 2 1"],
+      "correctIndex": 0,
+      "explanation": "BFS duyệt theo tầng: đỉnh 0, rồi cả hai hàng xóm tầng 1 là 1 và 2, cuối cùng 3 ở tầng 2 nên thứ tự là 0 1 2 3."
+    },
+    {
+      "questionText": "Với cùng danh sách kề trên, thứ tự DFS bắt đầu từ đỉnh 0 là gì?",
+      "options": ["0 1 2 3", "0 1 3 2", "0 2 3 1", "0 3 1 2"],
+      "correctIndex": 1,
+      "explanation": "DFS đâm sâu: 0 → 1 → 3 (ngõ cụt), quay lui về 1 rồi 0, sang 2 (3 đã thăm), nên thứ tự là 0 1 3 2."
+    },
+    {
+      "questionText": "Trong đồ thị không trọng số, thuật toán nào chắc chắn tìm được đường đi có ít cạnh nhất?",
+      "options": ["DFS", "BFS", "Tìm kiếm nhị phân", "Sắp xếp trộn (Merge Sort)"],
+      "correctIndex": 1,
+      "explanation": "BFS duyệt theo tầng nên lần đầu chạm tới một đỉnh luôn là đường ngắn nhất tính theo số cạnh; DFS không có đảm bảo này."
+    },
+    {
+      "questionText": "Trong DFS phát hiện chu trình trên đồ thị VÔ HƯỚNG, gặp một đỉnh kề đã thăm và là đỉnh cha trực tiếp nghĩa là gì?",
+      "options": [
+        "Có chu trình, vì đỉnh đó đã được thăm",
+        "Không phải chu trình, chỉ là cạnh lùi về cha",
+        "Đồ thị không liên thông",
+        "Đồ thị có trọng số âm"
+      ],
+      "correctIndex": 1,
+      "explanation": "Cạnh về cha chỉ là con đường vừa đi qua; chu trình trong đồ thị vô hướng chỉ xuất hiện khi gặp đỉnh đã thăm mà KHÔNG phải cha trực tiếp."
+    },
+    {
+      "questionText": "Cho lưới nhị phân [[1, 1, 0], [1, 0, 0], [0, 0, 1]] với 1 là đất, 0 là nước. Số hòn đảo (vùng đất liền kề theo 4 hướng) là bao nhiêu?",
+      "options": ["1", "2", "3", "4"],
+      "correctIndex": 1,
+      "explanation": "Ba ô (0,0), (0,1), (1,0) nối nhau tạo một đảo, còn ô (2,2) tách biệt tạo đảo thứ hai, tổng cộng 2 đảo."
+    },
+    {
+      "questionText": "Để phát hiện chu trình trong đồ thị CÓ HƯỚNG bằng DFS, ngoài mảng visited cần thêm điều gì?",
+      "options": [
+        "Mảng inStack đánh dấu đỉnh đang nằm trên đường đi hiện tại",
+        "Mảng parent lưu đỉnh cha của từng đỉnh",
+        "Mảng distance lưu khoảng cách từ đỉnh nguồn",
+        "Chỉ cần visited là đủ"
+      ],
+      "correctIndex": 0,
+      "explanation": "Với đồ thị có hướng, gặp đỉnh đã thăm chưa đủ kết luận; phải kiểm tra đỉnh đó có còn nằm trong nhánh đệ quy hiện tại (inStack) hay không thì mới là chu trình."
+    }
+  ]
+}

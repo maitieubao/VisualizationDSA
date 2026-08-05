@@ -5,17 +5,15 @@ using System.Text;
 using System.Text.Json;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using VisualizationDSA.Domain;
 
 namespace VisualizationDSA.WebApi.Filters
 {
     public static class JwtHelper
     {
-        private static readonly byte[] SecretKey = Encoding.UTF8.GetBytes("VisualizationDSA-Stateless-Dev-Secret-Key-2024-Phase6-256bit!");
+        // Key được cấu hình từ appsettings (Jwt:Key) tại Program.cs — KHÔNG hardcode trong source.
+        public static byte[] SecretKey => JwtSigningConfig.Key;
 
-        
-        
-        
-        
         public static IActionResult? RequireToken(HttpRequest request)
         {
             var header = request.Headers["Authorization"].FirstOrDefault();
@@ -33,28 +31,29 @@ namespace VisualizationDSA.WebApi.Filters
                 var jwtPayload = parts[1];
                 var jwtSignature = parts[2];
 
-                
-                var expectedSignature = Convert.ToBase64String(
+                // Chữ ký chuẩn base64url (RFC 7515); so sánh bằng bytes với FixedTimeEquals
+                // (chấp nhận cả token base64 chuẩn cũ nhờ DecodeBase64Url normalize cả 2 vế).
+                var expectedSignature = JwtSigningConfig.Base64UrlEncode(
                     HMACSHA256.HashData(SecretKey, Encoding.UTF8.GetBytes($"{jwtHeader}.{jwtPayload}"))
                 );
 
-                if (jwtSignature != expectedSignature)
+                var expectedBytes = JwtSigningConfig.DecodeBase64Url(expectedSignature);
+                var actualBytes = JwtSigningConfig.DecodeBase64Url(jwtSignature);
+
+                if (!CryptographicOperations.FixedTimeEquals(expectedBytes, actualBytes))
                     return new UnauthorizedObjectResult(new { error = "UNAUTHORIZED", message = "Chữ ký xác thực không hợp lệ." });
 
-                
-                var padding = (4 - jwtPayload.Length % 4) % 4;
-                var paddedPayload = jwtPayload + new string('=', padding);
-                paddedPayload = paddedPayload.Replace('-', '+').Replace('_', '/');
-                var json = Encoding.UTF8.GetString(Convert.FromBase64String(paddedPayload));
+                var json = Encoding.UTF8.GetString(JwtSigningConfig.DecodeBase64Url(jwtPayload));
 
                 using var doc = JsonDocument.Parse(json);
-                if (doc.RootElement.TryGetProperty("exp", out var expEl))
-                {
-                    var expUnix = expEl.GetInt64();
-                    var expTime = DateTimeOffset.FromUnixTimeSeconds(expUnix);
-                    if (expTime < DateTimeOffset.UtcNow)
-                        return new UnauthorizedObjectResult(new { error = "UNAUTHORIZED", message = "Phiên đăng nhập đã hết hạn." });
-                }
+                // Bắt buộc claim exp — token không có thời hạn bị từ chối (fail-closed).
+                if (!doc.RootElement.TryGetProperty("exp", out var expEl))
+                    return new UnauthorizedObjectResult(new { error = "UNAUTHORIZED", message = "Mã xác thực không hợp lệ." });
+
+                var expUnix = expEl.GetInt64();
+                var expTime = DateTimeOffset.FromUnixTimeSeconds(expUnix);
+                if (expTime < DateTimeOffset.UtcNow)
+                    return new UnauthorizedObjectResult(new { error = "UNAUTHORIZED", message = "Phiên đăng nhập đã hết hạn." });
             }
             catch
             {
@@ -82,11 +81,7 @@ namespace VisualizationDSA.WebApi.Filters
             try
             {
                 var payloadBase64 = parts[1];
-                var padding = (4 - payloadBase64.Length % 4) % 4;
-                payloadBase64 += new string('=', padding);
-                payloadBase64 = payloadBase64.Replace('-', '+').Replace('_', '/');
-
-                var json = Encoding.UTF8.GetString(Convert.FromBase64String(payloadBase64));
+                var json = Encoding.UTF8.GetString(JwtSigningConfig.DecodeBase64Url(payloadBase64));
                 using var doc = JsonDocument.Parse(json);
                 if (doc.RootElement.TryGetProperty("role", out var roleEl))
                     return roleEl.GetString();
@@ -114,11 +109,7 @@ namespace VisualizationDSA.WebApi.Filters
             try
             {
                 var payloadBase64 = parts[1];
-                var padding = (4 - payloadBase64.Length % 4) % 4;
-                payloadBase64 += new string('=', padding);
-                payloadBase64 = payloadBase64.Replace('-', '+').Replace('_', '/');
-
-                var json = Encoding.UTF8.GetString(Convert.FromBase64String(payloadBase64));
+                var json = Encoding.UTF8.GetString(JwtSigningConfig.DecodeBase64Url(payloadBase64));
                 using var doc = JsonDocument.Parse(json);
                 if (doc.RootElement.TryGetProperty("sub", out var subEl))
                     return subEl.GetString();

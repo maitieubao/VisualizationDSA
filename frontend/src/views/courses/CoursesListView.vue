@@ -1,13 +1,13 @@
 <template>
   <div class="courses-list-view container mx-auto px-4 py-8 max-w-7xl animate-fade-in">
-    
+
     <header class="mb-10 text-left flex flex-col md:flex-row md:items-end justify-between gap-6">
       <div class="flex-1">
         <h1 class="text-4xl font-extrabold text-text-primary m-0 tracking-tight">
-          Học Viện DSA & Thiết Kế
+          Lộ trình học DSA
         </h1>
         <p class="text-text-secondary mt-2 text-lg">
-          Khám phá các khóa học trực quan sinh động giúp bạn làm chủ cấu trúc dữ liệu, giải thuật và thiết kế hệ thống.
+          Ba lộ trình trực quan theo trình độ — Cơ bản, Trung cấp và Nâng cao — giúp bạn làm chủ cấu trúc dữ liệu và giải thuật từng bước.
         </p>
       </div>
       <div v-if="authStore.currentUser" class="stats-glass px-6 py-3 rounded-lg border border-border-default flex items-center gap-4 bg-bg-surface backdrop-blur">
@@ -23,337 +23,152 @@
       </div>
     </header>
 
-    
-    <section class="filters-bar mb-8 flex flex-col sm:flex-row items-center gap-4 w-full">
-      
-      <div class="relative w-full sm:w-64">
-        <select 
-          v-model="selectedCategory"
-          class="appearance-none w-full bg-bg-surface text-text-primary border border-border-strong rounded-full pl-4 pr-10 py-2.5 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-accent/30 focus:border-accent transition-all cursor-pointer"
+    <CourseFilter
+      :categories="courseStore.categories"
+      :difficulties="courseStore.difficulties"
+      :selected-category="courseStore.selectedCategory"
+      :selected-difficulty="courseStore.selectedDifficulty"
+      :search-query="courseStore.searchQuery"
+      @update:category="courseStore.setCategory"
+      @update:difficulty="courseStore.setDifficulty"
+      @update:searchQuery="courseStore.setSearchQuery"
+    />
+
+    <div class="flex items-center gap-3 mt-4 relative">
+      <label for="course-sort" class="text-xs text-text-muted font-semibold uppercase tracking-wider">Sắp xếp</label>
+      <div class="relative flex-1 sm:w-auto">
+        <select
+          id="course-sort"
+          v-model="selectedSort"
+          class="appearance-none w-full sm:w-auto bg-bg-surface text-text-primary border border-border-strong rounded-full pl-4 pr-10 py-2 text-xs font-medium focus:outline-none focus:ring-2 focus:ring-accent/30 focus:border-accent transition-all cursor-pointer"
+          aria-label="Sắp xếp khóa học"
         >
-          <option v-for="cat in categories" :key="cat.value" :value="cat.value">{{ cat.label }}</option>
+          <option value="default">Mặc định</option>
+          <option value="difficulty">Độ khó</option>
+          <option value="title">Tiêu đề A-Z</option>
+          <option value="xp">XP giảm dần</option>
         </select>
-        <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-4 text-text-secondary">
+        <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-4 text-text-secondary" aria-hidden="true">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg>
         </div>
       </div>
-
-      
-      <div class="relative w-full sm:w-48">
-        <select 
-          v-model="selectedDifficulty"
-          class="appearance-none w-full bg-bg-surface text-text-primary border border-border-strong rounded-full pl-4 pr-10 py-2.5 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-accent/30 focus:border-accent transition-all cursor-pointer"
-        >
-          <option v-for="diff in difficulties" :key="diff.value" :value="diff.value">{{ diff.label }}</option>
-        </select>
-        <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-4 text-text-secondary">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg>
-        </div>
-      </div>
-    </section>
-
-    
-    <div v-if="loading" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-      <div v-for="i in 4" :key="i" class="card-skeleton rounded-lg h-[300px] bg-bg-surface border border-border-default animate-pulse"></div>
     </div>
 
-    <div v-else-if="filteredCourses.length === 0" class="empty-state text-center py-20 bg-bg-surface rounded-lg border border-border-default">
-      <div class="text-5xl mb-4">🔍</div>
+    <div v-if="courseStore.isLoading" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6 mt-6" role="status" aria-label="Đang tải khóa học">
+      <div v-for="i in 4" :key="i" class="rounded-2xl overflow-hidden border border-border-subtle bg-bg-surface">
+        <div class="h-36 bg-bg-active animate-pulse"></div>
+        <div class="p-4 space-y-3">
+          <div class="h-4 bg-bg-active rounded w-3/4 animate-pulse"></div>
+          <div class="h-3 bg-bg-active rounded w-1/2 animate-pulse"></div>
+          <div class="h-1.5 bg-bg-active rounded w-full animate-pulse mt-4"></div>
+          <div class="h-8 bg-bg-active rounded animate-pulse mt-2"></div>
+        </div>
+      </div>
+    </div>
+
+    <div v-else-if="sortedCourses.length === 0" class="empty-state text-center py-20 bg-bg-surface rounded-lg border border-border-default mt-6" role="status">
+      <div class="text-5xl mb-4" aria-hidden="true"><BaseIcon name="search" class="w-14 h-14 text-text-muted mx-auto" /></div>
       <h3 class="text-xl font-bold text-text-primary">Không tìm thấy khóa học phù hợp</h3>
       <p class="text-text-secondary mt-2">Vui lòng thay đổi bộ lọc hoặc quay lại sau.</p>
     </div>
 
-    <div v-else class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
+    <div v-else class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6 mt-6" role="list" aria-label="Danh sách khóa học">
       <router-link
-        v-for="course in filteredCourses"
+        v-for="course in paginatedCourses"
         :key="course.id"
         :to="{ name: 'course-detail', params: { id: course.id } }"
-        class="course-card group flex flex-col bg-bg-surface rounded-lg overflow-hidden border border-border-default hover:shadow-lg transition-all duration-300 cursor-pointer h-full"
+        class="course-card-link block"
+        :aria-label="`Xem chi tiết khóa học ${course.title}`"
+        role="listitem"
       >
-        
-        <div class="relative w-full aspect-video overflow-hidden border-b border-border-subtle">
-          <img
-            :src="course.coverImageUrl || 'https://images.unsplash.com/photo-1618401471353-b98aedd07871?w=500&q=80'"
-            :alt="course.title"
-            class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-          />
-          
-          <div class="absolute top-2 left-2 flex gap-1.5">
-            <span
-              v-if="course.isPremium"
-              class="px-2 py-0.5 rounded text-[10px] font-bold uppercase bg-accent-yellow text-black shadow-sm"
-            >
-              Premium
-            </span>
-          </div>
-        </div>
-
-        
-        <div class="p-4 flex flex-col flex-1">
-          <h3 class="text-base font-bold text-text-primary group-hover:text-accent transition-colors line-clamp-2 leading-tight">
-            {{ course.title }}
-          </h3>
-          <p class="text-xs text-text-muted mt-1.5 font-medium uppercase tracking-wide">
-            {{ categories.find(c => c.value === course.category)?.label || course.category }}
-          </p>
-          
-          <div class="flex-1"></div>
-
-          
-          <div v-if="authStore.currentUser" class="mt-4">
-            <div class="w-full h-1 bg-bg-active rounded-full overflow-hidden">
-              <div
-                class="h-full bg-accent transition-all duration-500"
-                :style="{ width: course.progressPercent + '%' }"
-              ></div>
-            </div>
-            <div class="text-[10px] font-semibold text-text-muted mt-1">
-              Đã học {{ course.progressPercent }}%
-            </div>
-          </div>
-        </div>
+        <CourseCard :course="course" />
       </router-link>
+    </div>
+
+    <div v-if="hasMore" class="mt-8 text-center">
+      <button
+        @click="page++"
+        class="px-8 py-3 bg-bg-surface border border-border-default text-text-primary font-semibold rounded-xl hover:bg-bg-hover hover:border-accent/30 transition-all"
+      >
+        Xem thêm
+      </button>
+    </div>
+
+    <div v-if="errorMessage" class="mt-6 text-center py-10 bg-bg-surface rounded-lg border border-border-default">
+      <div class="text-5xl mb-4"><BaseIcon name="warning" class="w-14 h-14 text-accent-red mx-auto" /></div>
+      <h3 class="text-xl font-bold text-text-primary">Không thể tải khóa học</h3>
+      <p class="text-text-secondary mt-2">{{ errorMessage }}</p>
+      <button
+        @click="loadCourses"
+        class="mt-4 px-6 py-2.5 bg-accent text-white font-semibold rounded-xl hover:bg-accent-dark transition-colors"
+      >
+        Thử lại
+      </button>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue';
+import { onMounted, ref, computed, watch } from 'vue';
 import { useAuthStore } from '../../features/auth/store/useAuthStore';
-
-interface CourseDto {
-  id: string;
-  title: string;
-  description: string;
-  category: string;
-  difficulty: string;
-  isPremium: boolean;
-  coverImageUrl: string;
-  isPublished: boolean;
-  createdAt: string;
-  totalLessons: number;
-  completedLessons: number;
-  progressPercent: number;
-}
+import { useCourseStore } from '../../features/courses/store/useCourseStore';
+import { courseApi } from '../../services/courseApi';
+import CourseCard from '../../features/courses/components/CourseCard.vue';
+import CourseFilter from '../../features/courses/components/CourseFilter.vue';
 
 const authStore = useAuthStore();
-const BASE_URL = import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:5055';
+const courseStore = useCourseStore();
 
-const loading = ref(true);
-const courses = ref<CourseDto[]>([]);
+const errorMessage = ref<string | null>(null);
+const selectedSort = ref('default');
+const page = ref(1);
+const pageSize = 8;
 
-const selectedCategory = ref('all');
-const selectedDifficulty = ref('all');
+const paginatedCourses = computed(() => {
+  return sortedCourses.value.slice(0, page.value * pageSize);
+});
 
-const categories = [
-  { label: 'Tất cả', value: 'all' },
-  { label: 'Cấu trúc dữ liệu', value: 'DataStructure' },
-  { label: 'Giải thuật', value: 'Algorithm' },
-  { label: 'Hướng đối tượng (OOP)', value: 'OOP' },
-  { label: 'Thiết kế hệ thống', value: 'SystemDesign' },
-];
+const hasMore = computed(() => {
+  return paginatedCourses.value.length < sortedCourses.value.length;
+});
 
-const difficulties = [
-  { label: 'Tất cả độ khó', value: 'all' },
-  { label: 'Cơ bản', value: 'Beginner' },
-  { label: 'Trung cấp', value: 'Intermediate' },
-  { label: 'Nâng cao', value: 'Advanced' },
-];
+const sortedCourses = computed(() => {
+  const courses = courseStore.filteredCourses;
+  switch (selectedSort.value) {
+    case 'difficulty': {
+      const order: Record<string, number> = { Easy: 0, Beginner: 0, Medium: 1, Intermediate: 1, Hard: 2, Advanced: 2 };
+      return [...courses].sort((a, b) => (order[a.difficulty] ?? 0) - (order[b.difficulty] ?? 0));
+    }
+    case 'title':
+      return [...courses].sort((a, b) => a.title.localeCompare(b.title, 'vi'));
+    case 'xp':
+      return [...courses].sort((a, b) => (b.xpReward ?? 0) - (a.xpReward ?? 0));
+    default:
+      return courses;
+  }
+});
 
-const filteredCourses = computed(() => {
-  return courses.value.filter(c => {
-    const matchesCategory = selectedCategory.value === 'all' || c.category.toLowerCase() === selectedCategory.value.toLowerCase();
-    const matchesDifficulty = selectedDifficulty.value === 'all' || c.difficulty.toLowerCase() === selectedDifficulty.value.toLowerCase();
-    return matchesCategory && matchesDifficulty;
-  });
+watch([selectedSort, () => courseStore.filteredCourses], () => {
+  page.value = 1;
 });
 
 async function loadCourses() {
-  loading.value = true;
+  errorMessage.value = null;
+  courseStore.isLoading = true;
   try {
-    const headers: Record<string, string> = { 'Content-Type': 'application/json' };
-    const token = authStore.getAccessToken();
-    if (token) {
-      headers['Authorization'] = `Bearer ${token}`;
-    }
-
-    const res = await fetch(`${BASE_URL}/api/v1/concepts/courses`, { headers });
-    if (res.ok) {
-      const data = await res.json();
-      if (Array.isArray(data) && data.length > 0) {
-        courses.value = data;
-        return;
-      }
-    }
-    
-    courses.value = MOCK_COURSES;
+    const courses = await courseApi.getCourses();
+    const mapped = courses.map(c => ({
+      ...c,
+      coverImage: c.coverImageUrl ?? c.coverImage,
+    }));
+    courseStore.courses = mapped.filter(c => c.isPublished);
   } catch (err) {
     console.error('Failed to load courses:', err);
-    courses.value = MOCK_COURSES;
+    errorMessage.value = 'Không thể kết nối đến máy chủ. Vui lòng kiểm tra kết nối và thử lại.';
   } finally {
-    loading.value = false;
+    courseStore.isLoading = false;
   }
 }
-
-const MOCK_COURSES: CourseDto[] = [
-  
-  {
-    id: 'c1',
-    title: 'Nhập môn Cấu trúc dữ liệu & Giải thuật',
-    description: 'Làm quen với giao diện AlgoLens, hiểu bản chất chỉ số Big-O, thao tác mảng và chuỗi cơ bản.',
-    category: 'DataStructure',
-    difficulty: 'Beginner',
-    isPremium: false,
-    coverImageUrl: 'https://images.unsplash.com/photo-1516116211223-48a122638c59?w=500&q=80',
-    isPublished: true,
-    createdAt: new Date().toISOString(),
-    totalLessons: 1,
-    completedLessons: 0,
-    progressPercent: 0
-  },
-  {
-    id: 'c2',
-    title: 'Làm chủ Danh sách liên kết (Linked List)',
-    description: 'Nắm vững con trỏ, Node, Singly vs Doubly Linked List, cơ chế quản lý bộ nhớ và cắt nối con trỏ.',
-    category: 'DataStructure',
-    difficulty: 'Beginner',
-    isPremium: false,
-    coverImageUrl: 'https://images.unsplash.com/photo-1544383835-bda2bc66a55d?w=500&q=80',
-    isPublished: true,
-    createdAt: new Date().toISOString(),
-    totalLessons: 1,
-    completedLessons: 0,
-    progressPercent: 0
-  },
-  {
-    id: 'c3',
-    title: 'Ngăn xếp & Hàng đợi (Stack & Queue)',
-    description: 'Hiểu rõ nguyên lý LIFO vs FIFO, ứng dụng Stack trong Undo/Redo và Queue trong xử lý hàng chờ.',
-    category: 'DataStructure',
-    difficulty: 'Beginner',
-    isPremium: false,
-    coverImageUrl: 'https://images.unsplash.com/photo-1555066931-4365d14bab8c?w=500&q=80',
-    isPublished: true,
-    createdAt: new Date().toISOString(),
-    totalLessons: 1,
-    completedLessons: 0,
-    progressPercent: 0
-  },
-  
-  {
-    id: 'c4',
-    title: 'Sắp xếp & Tìm kiếm hiệu quả',
-    description: 'Làm chủ tư duy Divide & Conquer, so sánh side-by-side tốc độ Bubble vs Quick vs Merge Sort.',
-    category: 'Algorithm',
-    difficulty: 'Intermediate',
-    isPremium: false,
-    coverImageUrl: 'https://images.unsplash.com/photo-1618401471353-b98aedd07871?w=500&q=80',
-    isPublished: true,
-    createdAt: new Date().toISOString(),
-    totalLessons: 2,
-    completedLessons: 0,
-    progressPercent: 0
-  },
-  {
-    id: 'c5',
-    title: 'Cây nhị phân & Duyệt cây (Binary Trees)',
-    description: 'Khảo sát tư duy đệ quy, duyệt cây DFS (Pre/In/Post order) và duyệt BFS theo tầng (Level Order).',
-    category: 'DataStructure',
-    difficulty: 'Intermediate',
-    isPremium: false,
-    coverImageUrl: 'https://images.unsplash.com/photo-1518770660439-4636190af475?w=500&q=80',
-    isPublished: true,
-    createdAt: new Date().toISOString(),
-    totalLessons: 1,
-    completedLessons: 0,
-    progressPercent: 0
-  },
-  {
-    id: 'c6',
-    title: 'Tư duy Hướng đối tượng (OOP Mastery)',
-    description: 'Visual hóa 4 trụ cột OOP, bảng VTable, cơ chế Dynamic Binding và Access Control dưới bộ nhớ.',
-    category: 'OOP',
-    difficulty: 'Intermediate',
-    isPremium: false,
-    coverImageUrl: 'https://images.unsplash.com/photo-1517694712202-14dd9538aa97?w=500&q=80',
-    isPublished: true,
-    createdAt: new Date().toISOString(),
-    totalLessons: 1,
-    completedLessons: 0,
-    progressPercent: 0
-  },
-  {
-    id: 'c7',
-    title: 'Design Patterns cơ bản',
-    description: 'Học cách thiết kế phần mềm linh hoạt bằng Singleton, Factory, Observer và Strategy Pattern.',
-    category: 'OOP',
-    difficulty: 'Intermediate',
-    isPremium: false,
-    coverImageUrl: 'https://images.unsplash.com/photo-1504639725590-34d0984388bd?w=500&q=80',
-    isPublished: true,
-    createdAt: new Date().toISOString(),
-    totalLessons: 1,
-    completedLessons: 0,
-    progressPercent: 0
-  },
-  
-  {
-    id: 'c8',
-    title: 'Đồ thị & Bài toán tối ưu đường đi',
-    description: 'Khảo sát biểu diễn đồ thị, Dijkstra tô màu node realtime, Topological Sort và TSP.',
-    category: 'Algorithm',
-    difficulty: 'Advanced',
-    isPremium: true,
-    coverImageUrl: 'https://images.unsplash.com/photo-1558494949-ef010cbdcc31?w=500&q=80',
-    isPublished: true,
-    createdAt: new Date().toISOString(),
-    totalLessons: 1,
-    completedLessons: 0,
-    progressPercent: 0
-  },
-  {
-    id: 'c9',
-    title: 'Nguyên lý SOLID & Tái cấu trúc code',
-    description: 'Tối ưu kiến trúc phần mềm với 5 nguyên lý SOLID, chỉ số LCOM4 và kỹ thuật Refactoring God Class.',
-    category: 'OOP',
-    difficulty: 'Advanced',
-    isPremium: true,
-    coverImageUrl: 'https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=500&q=80',
-    isPublished: true,
-    createdAt: new Date().toISOString(),
-    totalLessons: 1,
-    completedLessons: 0,
-    progressPercent: 0
-  },
-  {
-    id: 'c10',
-    title: 'Quy hoạch động (Dynamic Programming)',
-    description: 'Bản chất Memoization vs Tabulation, bài toán Knapsack 0/1, LIS và kỹ thuật Traceback.',
-    category: 'Algorithm',
-    difficulty: 'Advanced',
-    isPremium: true,
-    coverImageUrl: 'https://images.unsplash.com/photo-1509228468518-180dd4864904?w=500&q=80',
-    isPublished: true,
-    createdAt: new Date().toISOString(),
-    totalLessons: 1,
-    completedLessons: 0,
-    progressPercent: 0
-  },
-  {
-    id: 'c11',
-    title: 'System Design nhập môn & Concurrency',
-    description: 'Mô phỏng Packet Routing, Load Balancing bốc khói, Race Condition, Lock & Thread-safe Singleton.',
-    category: 'SystemDesign',
-    difficulty: 'Advanced',
-    isPremium: true,
-    coverImageUrl: 'https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?w=500&q=80',
-    isPublished: true,
-    createdAt: new Date().toISOString(),
-    totalLessons: 1,
-    completedLessons: 0,
-    progressPercent: 0
-  }
-];
 
 onMounted(() => {
   loadCourses();
@@ -365,12 +180,9 @@ onMounted(() => {
   min-height: calc(100vh - 80px);
 }
 
-.hide-scrollbar {
-  -ms-overflow-style: none;  
-  scrollbar-width: none;  
-}
-.hide-scrollbar::-webkit-scrollbar {
-  display: none;
+.course-card-link {
+  text-decoration: none;
+  color: inherit;
 }
 
 .animate-fade-in {
@@ -386,19 +198,5 @@ onMounted(() => {
     opacity: 1;
     transform: translateY(0);
   }
-}
-
-.line-clamp-3 {
-  display: -webkit-box;
-  -webkit-line-clamp: 3;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-}
-
-.line-clamp-1 {
-  display: -webkit-box;
-  -webkit-line-clamp: 1;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
 }
 </style>

@@ -1,0 +1,68 @@
+{
+  "quizTitle": "Trắc nghiệm Sliding Window",
+  "topic": "searching",
+  "difficulty": 1,
+  "xpReward": 40,
+  "questions": [
+    {
+      "questionText": "Kỹ thuật cửa sổ trượt được dùng cho nhóm bài toán nào?",
+      "options": ["Mảng con hoặc chuỗi con liên tục thỏa mãn điều kiện", "Sắp xếp mảng theo chiều tăng dần", "Tìm kiếm một phần tử trong mảng đã sắp xếp", "Duyệt cây nhị phân theo chiều sâu"],
+      "correctIndex": 0,
+      "explanation": "Cửa sổ trượt tối ưu các bài toán subarray/substring liên tục bằng cách tái sử dụng kết quả cũ."
+    },
+    {
+      "questionText": "Khi trượt cửa sổ cố định kích thước k sang phải một ô, tổng mới được tính như thế nào?",
+      "options": ["Cộng lại toàn bộ k phần tử từ đầu", "Lấy tổng cũ trừ phần tử rời khỏi cửa sổ rồi cộng phần tử mới vào", "Nhân đôi tổng cũ rồi chia hai", "Chỉ cộng thêm phần tử mới, không trừ gì"],
+      "correctIndex": 1,
+      "explanation": "Công thức sum = sum - arr[i - k] + arr[i] chỉ mất hai phép tính, giúp giảm từ O(N × K) xuống O(N)."
+    },
+    {
+      "questionText": "Hai biến thể chính của cửa sổ trượt là gì?",
+      "options": ["Cửa sổ trái và cửa sổ phải", "Cửa sổ cố định (fixed) và cửa sổ động (dynamic)", "Cửa sổ trên và cửa sổ dưới", "Cửa sổ chẵn và cửa sổ lẻ"],
+      "correctIndex": 1,
+      "explanation": "Fixed window giữ kích thước K cố định, dynamic window cho kích thước cửa sổ thay đổi linh hoạt."
+    },
+    {
+      "questionText": "Ý tưởng cốt lõi của kỹ thuật cửa sổ trượt là gì?",
+      "options": ["Chia nhỏ mảng rồi sắp xếp từng phần", "Tái sử dụng kết quả đã tính thay vì tính lại từ đầu", "Lưu toàn bộ mảng vào bộ nhớ đệm", "Dùng đệ quy để duyệt mọi tổ hợp"],
+      "correctIndex": 1,
+      "explanation": "Mỗi bước trượt chỉ thay đổi hai phần tử biên, phần lớn kết quả cũ được giữ nguyên để tái sử dụng."
+    },
+    {
+      "questionText": "Cho arr = [2, 1, 5, 1, 3, 2] và k = 3. Tổng lớn nhất của ba phần tử liên tiếp là bao nhiêu?",
+      "options": ["7", "8", "9", "10"],
+      "correctIndex": 2,
+      "explanation": "Các cửa sổ lần lượt có tổng 8, 7, 9, 6; giá trị lớn nhất là 9 ứng với cửa sổ [5, 1, 3]."
+    },
+    {
+      "questionText": "Cho nums = [2, 1, 5, 2, 3, 2] và target = 7. Mảng con liên tiếp ngắn nhất có tổng lớn hơn hoặc bằng 7 dài bao nhiêu?",
+      "options": ["1", "2", "3", "4"],
+      "correctIndex": 1,
+      "explanation": "Cửa sổ [5, 2] có tổng 7, độ dài 2; không có cửa sổ nào dài 1 đạt tổng 7 nên kết quả là 2."
+    },
+    {
+      "questionText": "Cho chuỗi s = abcabcbb. Chiều dài chuỗi con dài nhất không chứa ký tự lặp là bao nhiêu?",
+      "options": ["2", "3", "4", "6"],
+      "correctIndex": 1,
+      "explanation": "Chuỗi con hợp lệ dài nhất là abc (dài 3); khi right gặp ký tự lặp, left phải co lên để loại bỏ ký tự đó khỏi cửa sổ."
+    },
+    {
+      "questionText": "Vì sao thuật toán cửa sổ động tìm mảng con có tổng lớn hơn hoặc bằng target không còn đúng khi mảng chứa số âm?",
+      "options": ["Vì số âm làm mảng bị tràn chỉ số", "Vì vươn right thêm số âm có thể làm tổng giảm, phá vỡ logic co đuôi khi tổng đạt target", "Vì số âm làm chương trình chạy chậm hơn", "Vì số âm yêu cầu phải sắp xếp mảng trước"],
+      "correctIndex": 1,
+      "explanation": "Thuật toán dựa vào tính đơn điệu: thêm số dương thì tổng tăng. Có số âm thì tổng có thể giảm khi vươn right, cần chuyển sang prefix sum kết hợp hash map."
+    },
+    {
+      "questionText": "Cho arr = [1, 3, -1, -3, 5, 3, 6, 7] và k = 3. Mảng các giá trị lớn nhất của từng cửa sổ là gì?",
+      "options": ["[3, 3, 5, 5, 6, 7]", "[3, -1, 5, 3, 6, 7]", "[1, 3, 5, 5, 6, 7]", "[3, 3, -1, 5, 6, 7]"],
+      "correctIndex": 0,
+      "explanation": "Lần lượt: [1,3,-1]→3, [3,-1,-3]→3, [-1,-3,5]→5, [-3,5,3]→5, [5,3,6]→6, [3,6,7]→7."
+    },
+    {
+      "questionText": "Công thức đúng để tính chiều dài của cửa sổ hiện tại trong cửa sổ động là gì?",
+      "options": ["right - left", "right - left + 1", "right + left", "right - left - 1"],
+      "correctIndex": 1,
+      "explanation": "Công thức right - left + 1 là bắt buộc để tránh lỗi off-by-one, ví dụ cửa sổ [left=1, right=3] gồm 3 phần tử."
+    }
+  ]
+}

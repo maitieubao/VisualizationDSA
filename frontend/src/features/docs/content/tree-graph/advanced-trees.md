@@ -27,7 +27,7 @@ Trie (đọc là "Try") là một loại cây tìm kiếm đặc biệt, trong �
 Thay vì mỗi Node lưu trữ một chuỗi hoàn chỉnh, một chuỗi sẽ được biểu diễn bằng **đường đi từ Gốc (Root) xuống Lá (Leaf)**. Các chuỗi có chung tiền tố (Prefix) sẽ dùng chung các nhánh ở phía trên!
 
 Ví dụ: Nếu ta chèn 3 từ `CAT`, `CAR`, và `COW` vào Trie:
-- `CAT` và `CAR` có chung tiền tố `CA`, nên chúng sẽ dùng chung 2 node đầu tiên là `C` và `A`. Từ `A` sẽ tẻ ra 2 nhánh `T` và `R`.
+- `CAT` và `CAR` có chung tiền tố `CA`, nên chúng sẽ dùng chung 2 node đầu tiên là `C` và `A`. Từ `A` sẽ rẽ ra 2 nhánh `T` và `R`.
 - `COW` có chung tiền tố `C`, nên nó chung node `C` nhưng rẽ sang nhánh `O` và `W`.
 
 ```mermaid
@@ -267,3 +267,14 @@ Segment Tree rất thường xuyên xuất hiện trong các kỳ thi Lập trì
     <p class="next-steps-caption">Thực hành 5 bài toán kinh điển bằng C#.</p>
   </a>
 </div>
+
+## 📚 Tham khảo lý thuyết {#references}
+
+Dưới đây là các nguồn tài liệu kinh điển và chính thống được dùng để biên soạn bài viết này, giúp bạn tự nghiên cứu sâu hơn nếu muốn:
+
+- **Trie (Prefix Tree) và các phép Insert/Search/StartsWith:** [Trie - Wikipedia](https://en.wikipedia.org/wiki/Trie). Nguồn tổng quan về cấu trúc cây tiền tố và mối liên hệ với Radix Tree.
+- **Giải thích Trie kèm ví dụ cài đặt chi tiết:** GeeksforGeeks - [Trie | (Insert and Search)](https://www.geeksforgeeks.org/trie-insert-and-search/).
+- **Radix Tree (dạng cây tiền tố lưu theo bit/nén đường đi):** Cormen, Leiserson, Rivest & Stein, *Introduction to Algorithms* (CLRS), 3rd ed., Section 12.5.
+- **Segment Tree và bài toán truy vấn tổng trên đoạn (Range Sum Query):** [Segment tree - Wikipedia](https://en.wikipedia.org/wiki/Segment_tree).
+- **Cài đặt Segment Tree cập nhật điểm và truy vấn đoạn bằng C++/C#:** GeeksforGeeks - [Segment Tree | Set 1 (Sum of given range)](https://www.geeksforgeeks.org/segment-tree-set-1-sum-of-given-range/).
+- **Giải thích sâu về Segment Tree, Lazy Propagation và các biến thể:** CP-Algorithms - [Segment Tree](https://cp-algorithms.com/data_structures/segment_tree.html).

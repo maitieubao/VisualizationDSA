@@ -8,6 +8,8 @@ using System.Security.Claims;
 using System.Threading.Tasks;
 using VisualizationDSA.Application.Services;
 
+using VisualizationDSA.WebApi.Filters;
+
 namespace VisualizationDSA.WebApi.Controllers
 {
     
@@ -44,11 +46,10 @@ namespace VisualizationDSA.WebApi.Controllers
         
         
         [HttpGet("me/rank")]
-        [Authorize]
+        [RequireJwtRole]
         public async Task<ActionResult<UserRankDto>> GetMyRank()
         {
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier)
-                         ?? User.FindFirstValue("sub");
+            var userId = JwtHelper.ExtractSubFromToken(Request);
 
             if (!Guid.TryParse(userId, out var id))
                 return Unauthorized();

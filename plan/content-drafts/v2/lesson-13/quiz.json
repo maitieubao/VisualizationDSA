@@ -1,0 +1,68 @@
+{
+  "quizTitle": "Trắc nghiệm Binary Search nâng cao",
+  "topic": "searching",
+  "difficulty": 2,
+  "xpReward": 40,
+  "questions": [
+    {
+      "questionText": "Lower bound của x trong mảng đã sắp xếp tăng dần được định nghĩa là gì?",
+      "options": ["Chỉ số đầu tiên có giá trị bằng x", "Chỉ số đầu tiên có giá trị lớn hơn hoặc bằng x", "Chỉ số cuối cùng có giá trị nhỏ hơn x", "Vị trí chèn giữa hai phần tử bất kỳ"],
+      "correctIndex": 1,
+      "explanation": "Lower bound trả về phần tử nhỏ nhất không nhỏ hơn x, tức chỉ số đầu tiên thỏa arr[i] >= x."
+    },
+    {
+      "questionText": "Điều kiện bắt buộc để áp dụng binary search thông thường trên mảng là gì?",
+      "options": ["Mảng chứa toàn số dương", "Mảng đã được sắp xếp", "Mảng không có phần tử trùng", "Độ dài mảng là lũy thừa của 2"],
+      "correctIndex": 1,
+      "explanation": "Binary search loại bỏ một nửa không gian tìm kiếm dựa vào trật tự, nên mảng phải được sắp xếp."
+    },
+    {
+      "questionText": "Công thức nào tính mid an toàn, tránh tràn số nguyên khi lo và hi rất lớn?",
+      "options": ["mid = (lo + hi) / 2", "mid = lo + (hi - lo) / 2", "mid = hi - (lo + hi) / 2", "mid = lo / 2 + hi"],
+      "correctIndex": 1,
+      "explanation": "Biểu thức lo + (hi - lo) / 2 không bao giờ tạo ra tổng lo + hi vượt giới hạn biểu diễn, nên an toàn tuyệt đối."
+    },
+    {
+      "questionText": "Khi tìm chính xác một giá trị target, nên dùng template nào?",
+      "options": ["while (lo < hi) với hi = mid", "while (lo < hi) với lo = mid", "while (lo <= hi) với hi = mid - 1", "while (lo <= hi) với lo = mid"],
+      "correctIndex": 2,
+      "explanation": "Khi tìm chính xác, mid chắc chắn bị loại nên cả hai con trỏ đều cộng/trừ 1; điều kiện lo <= hi giúp duyệt cả phần tử cuối cùng."
+    },
+    {
+      "questionText": "Cho arr = [1, 2, 4, 4, 4, 5, 7], lower bound của x = 4 là chỉ số nào?",
+      "options": ["1", "2", "4", "5"],
+      "correctIndex": 1,
+      "explanation": "arr[2] = 4 là vị trí đầu tiên thỏa điều kiện >= 4, nên lower bound bằng 2."
+    },
+    {
+      "questionText": "Cho arr = [1, 2, 4, 4, 4, 5, 7], upper bound của x = 4 (chỉ số đầu tiên > 4) là bao nhiêu?",
+      "options": ["3", "4", "5", "6"],
+      "correctIndex": 2,
+      "explanation": "arr[5] = 5 là phần tử đầu tiên lớn hơn 4, nên upper bound bằng 5; khoảng chứa số 4 là [2..4]."
+    },
+    {
+      "questionText": "Mảng xoay nums = [4, 5, 6, 7, 0, 1, 2], tìm target = 0. Với mid = 3 (nums[mid] = 7, nums[hi] = 2), kết luận đúng là gì?",
+      "options": ["Nửa trái [4, 5, 6, 7] đã sắp xếp, chuyển lo = mid + 1 vì 0 không thuộc đoạn này", "Nửa trái đã sắp xếp, chuyển hi = mid - 1", "Nửa phải [0, 1, 2] đã sắp xếp, chuyển lo = mid + 1", "Nửa phải đã sắp xếp, chuyển hi = mid - 1"],
+      "correctIndex": 0,
+      "explanation": "Vì nums[mid] > nums[hi] nên đoạn lo..mid tăng dần; target = 0 nằm ngoài [4..7], nên bỏ nửa trái và gán lo = mid + 1."
+    },
+    {
+      "questionText": "Koko ăn chuối: piles = [3, 6, 7, 11], H = 8 giờ. Tốc độ K (quả/giờ) tối thiểu để ăn hết là bao nhiêu?",
+      "options": ["3", "4", "5", "6"],
+      "correctIndex": 1,
+      "explanation": "K = 4 cần ceil(3/4) + ceil(6/4) + ceil(7/4) + ceil(11/4) = 1 + 2 + 2 + 3 = 8 giờ vừa đủ; K = 3 cần 1 + 2 + 3 + 4 = 10 giờ nên không đạt."
+    },
+    {
+      "questionText": "Tìm đỉnh với nums = [1, 2, 1, 3, 5, 6, 4] bằng cách so sánh nums[mid] với nums[mid + 1]: bắt đầu mid = 3 (nums[3] = 3 < nums[4] = 5), đỉnh tìm được có chỉ số bao nhiêu?",
+      "options": ["1 (giá trị 2)", "4 (giá trị 5)", "5 (giá trị 6)", "6 (giá trị 4)"],
+      "correctIndex": 2,
+      "explanation": "Dốc lên nên dịch lo = mid + 1: lo = 4, rồi mid = 5 có 6 > 4 nên hi = 5, mid = 4 có 5 < 6 nên lo = 5; kết thúc tại chỉ số 5 với giá trị 6 là đỉnh."
+    },
+    {
+      "questionText": "Cho arr = [2, 3, 5], lower bound của x = 9 (lớn hơn mọi phần tử) trả về giá trị nào?",
+      "options": ["0", "2", "3", "Không xác định"],
+      "correctIndex": 2,
+      "explanation": "Mọi phần tử đều < 9 nên lo chạy đến cuối mảng và trả về arr.length = 3 — chính là vị trí chèn hợp lệ cho 9."
+    }
+  ]
+}

@@ -61,7 +61,7 @@ export interface FrameDTO {
   treeNodes?: TreeNodeDTO[] | null;
   graphNodes?: GraphNodeDTO[] | null;
   graphEdges?: GraphEdgeDTO[] | null;
-  distances?: Record<number, number> | null;
+  distances?: Record<string, number>;
   predecessors?: Record<number, number> | null;
   queueState?: number[] | null;
   visitedSet?: number[] | null;

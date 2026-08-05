@@ -18,7 +18,7 @@ export const usePaymentStore = defineStore('payment', () => {
   const authStore = useAuthStore();
 
   
-  const currentOrder   = ref<any | null>(null); 
+  const currentOrder   = ref<StatelessOrderDto | paymentApi.OrderDto | null>(null);
   const paymentConfig  = ref<StatelessPaymentConfig | null>(null);
   const premiumStatus  = ref<StatelessPremiumStatus | null>(null);
   const isLoading      = ref(false);
@@ -47,10 +47,8 @@ export const usePaymentStore = defineStore('payment', () => {
   }
 
   async function loadPremiumStatus(): Promise<void> {
-    const userId = authStore.statelessUser?.id ?? authStore.currentUser?.id;
-    if (!userId) return;
     try {
-      premiumStatus.value = await statelessPaymentApi.getPremiumStatus(String(userId));
+      premiumStatus.value = await statelessPaymentApi.getPremiumStatus();
     } catch {  }
   }
 
@@ -64,16 +62,8 @@ export const usePaymentStore = defineStore('payment', () => {
     paymentError.value = null;
 
     if (authStore.isStatelessMode) {
-      
-      const userId = authStore.statelessUser?.id;
-      if (!userId) {
-        paymentError.value = 'Không tìm thấy thông tin người dùng.';
-        checkoutState.value = 'error';
-        isLoading.value = false;
-        return;
-      }
       try {
-        const order = await statelessPaymentApi.checkout(String(userId), paymentMethod);
+        const order = await statelessPaymentApi.checkout(paymentMethod);
         currentOrder.value = order;
         checkoutState.value = 'paying';
       } catch (err: unknown) {
@@ -118,15 +108,8 @@ export const usePaymentStore = defineStore('payment', () => {
     checkoutState.value = 'verifying';
 
     if (authStore.isStatelessMode) {
-      const userId = authStore.statelessUser?.id;
-      if (!userId) {
-        paymentError.value = 'Không tìm thấy thông tin người dùng.';
-        checkoutState.value = 'error';
-        isLoading.value = false;
-        return;
-      }
       try {
-        const result = await statelessPaymentApi.verify(currentOrder.value.id, String(userId));
+        const result = await statelessPaymentApi.verify(currentOrder.value.id);
         currentOrder.value = result;
 
         if (result.status === 'Completed') {
@@ -216,6 +199,11 @@ export const usePaymentStore = defineStore('payment', () => {
   }
 
   async function simulatePaymentSuccess(): Promise<void> {
+    // Chỉ tồn tại ở môi trường phát triển — production build KHÔNG có nhánh này.
+    if (!import.meta.env.DEV) {
+      paymentError.value = 'Tính năng mô phỏng chỉ khả dụng ở môi trường phát triển.';
+      return;
+    }
     if (!currentOrder.value) return;
     if (!authStore.isAuthenticated) {
       paymentError.value = 'Bạn cần đăng nhập để thực hiện thanh toán.';
@@ -223,33 +211,19 @@ export const usePaymentStore = defineStore('payment', () => {
     }
     isLoading.value = true;
 
-    if (authStore.isStatelessMode) {
-      try {
-        const result = await statelessPaymentApi.simulateWebhook(currentOrder.value.id);
-        currentOrder.value = result;
-        checkoutState.value = 'success';
-        if (authStore.currentUser) {
-          authStore.currentUser.isPremium = true;
-        }
-        await loadPremiumStatus();
-      } catch (err: unknown) {
-        paymentError.value = err instanceof Error ? err.message : 'Mô phỏng thanh toán thất bại.';
-      } finally {
-        isLoading.value = false;
+    try {
+      stopPolling();
+      const result = await statelessPaymentApi.simulateWebhook(currentOrder.value.id);
+      currentOrder.value = result;
+      checkoutState.value = 'success';
+      if (authStore.currentUser) {
+        authStore.currentUser.isPremium = true;
       }
-    } else {
-      
-      try {
-        stopPolling();
-        await paymentApi.simulateWebhook(currentOrder.value.paymentCode, currentOrder.value.amount);
-        
-        
-        await verifyPayment();
-      } catch (err: unknown) {
-        paymentError.value = err instanceof Error ? err.message : 'Mô phỏng thanh toán SePay thất bại.';
-      } finally {
-        isLoading.value = false;
-      }
+      await loadPremiumStatus();
+    } catch (err: unknown) {
+      paymentError.value = err instanceof Error ? err.message : 'Mô phỏng thanh toán thất bại.';
+    } finally {
+      isLoading.value = false;
     }
   }
 
@@ -262,10 +236,8 @@ export const usePaymentStore = defineStore('payment', () => {
 
   async function checkFeatureAccess(featureId: string): Promise<boolean> {
     if (isPremium.value) return true;
-    const userId = authStore.statelessUser?.id ?? authStore.currentUser?.id;
-    if (!userId) return false;
     try {
-      const result = await statelessPaymentApi.checkFeatureAccess(featureId, String(userId));
+      const result = await statelessPaymentApi.checkFeatureAccess(featureId);
       return result.hasAccess;
     } catch {
       return false;

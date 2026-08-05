@@ -17,6 +17,10 @@ export interface CodeLabTask {
   initialCode: string;
   solution: string;
   testCases: TestCase[];
+  /** Tên hàm entry point được gọi với các tham số parse từ `TestCase.input` (mặc định: solution). */
+  entryFunction?: string;
+  /** Gợi ý phân tầng (tiered hints). */
+  hints?: string[];
 }
 
 export interface Lesson {
@@ -25,6 +29,6 @@ export interface Lesson {
   algorithmId: string;
   xpReward: number;
   theoryContent: string;
-  quizQuestions: QuizQuestion[];
-  codelabTask: CodeLabTask;
+  quizQuestions?: QuizQuestion[];
+  codelabTask?: CodeLabTask;
 }

@@ -109,7 +109,7 @@
           <div v-for="(log, idx) in auditLogs" :key="idx" class="console-line">
             <span class="console-time">[{{ log.time }}]</span>
             <span class="console-tag" :class="'console-tag--' + log.type">{{ log.type }}</span>
-            <span class="console-msg">{{ log.message }}</span>
+            <span class="console-msg" v-html="parseEmojiToSvg(escapeHtmlText(log.message))"></span>
           </div>
         </div>
       </div>
@@ -120,6 +120,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue';
 import { useAdminApi } from './useAdminApi';
+import { parseEmojiToSvg, escapeHtmlText } from '../../utils/emojiParser';
 
 const { BASE_URL, getAuthHeaders, auditLogs, pushLog } = useAdminApi();
 

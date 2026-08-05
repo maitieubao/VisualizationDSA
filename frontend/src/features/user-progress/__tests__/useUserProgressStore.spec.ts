@@ -20,12 +20,17 @@ vi.mock('../../auth/store/useAuthStore', () => {
   };
 });
 
+interface MockAuthStore {
+  getAccessToken: ReturnType<typeof vi.fn>;
+  refreshAccessToken: ReturnType<typeof vi.fn>;
+}
+
 describe('useUserProgressStore', () => {
-  let authStore: any;
+  let authStore: MockAuthStore;
 
   beforeEach(() => {
     setActivePinia(createPinia());
-    authStore = useAuthStore();
+    authStore = useAuthStore() as unknown as MockAuthStore;
     authStore.getAccessToken.mockReturnValue('mock-token');
     authStore.refreshAccessToken.mockReset();
     vi.mocked(fetchUserProgress).mockReset();

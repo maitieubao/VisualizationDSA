@@ -1,7 +1,7 @@
 <template>
   <div class="canvas-wrapper">
     
-    <div v-if="isLoading" class="canvas-loading-overlay">
+    <div v-if="isLoading" class="canvas-loading-overlay" role="status" aria-label="Đang tải dữ liệu hoạt ảnh">
       <div class="loading-spinner"></div>
     </div>
 
@@ -17,7 +17,7 @@
       @close="$emit('close-summary')"
     />
 
-    <button v-if="showLectureBtn" class="e-lecture-btn" @click="$emit('open-lecture')" title="Mở bài giảng điện tử">
+    <button v-if="showLectureBtn" class="e-lecture-btn" @click="$emit('open-lecture')" title="Mở bài giảng điện tử" aria-label="Mở bài giảng điện tử">
       <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24"
         fill="none" stroke="currentColor" stroke-width="2.5">
         <path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5Z" />

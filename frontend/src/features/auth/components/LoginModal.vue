@@ -2,15 +2,15 @@
   <Teleport to="body">
     <Transition name="modal-fade">
       <div v-if="visible" class="modal-backdrop" @click.self="$emit('close')">
-        <div class="modal-card">
+        <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="auth-modal-title">
           
           <div class="modal-header">
-            <h2 class="modal-title">{{ isRegisterMode ? 'Đăng ký tài khoản' : 'Đăng nhập' }}</h2>
-            <button class="modal-close" @click="$emit('close')" aria-label="Đóng">&times;</button>
+            <h2 id="auth-modal-title" class="modal-title">{{ isRegisterMode ? 'Đăng ký tài khoản' : 'Đăng nhập' }}</h2>
+            <button class="modal-close" @click="$emit('close')" aria-label="Đóng"><BaseIcon name="close" class="w-4 h-4" /></button>
           </div>
 
           
-          <div v-if="authStore.authError" class="modal-error">
+          <div v-if="authStore.authError" class="modal-error" role="alert">
             {{ authStore.authError }}
           </div>
 
@@ -25,7 +25,7 @@
             <div v-if="isRegisterMode" class="form-group">
               <label class="form-label" for="auth-username">Username</label>
               <input id="auth-username" v-model="username" type="text" required minlength="3" maxlength="100"
-                class="form-input" placeholder="Tên hiển thị" />
+                class="form-input" placeholder="Tên hiển thị" autocomplete="username" />
             </div>
 
             <div class="form-group">
@@ -59,10 +59,10 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue';
+import { ref, watch, onBeforeUnmount } from 'vue';
 import { useAuthStore } from '../store/useAuthStore';
 
-defineProps<{ visible: boolean }>();
+const props = defineProps<{ visible: boolean }>();
 const emit = defineEmits<{ close: [] }>();
 
 const authStore = useAuthStore();
@@ -71,6 +71,20 @@ const email = ref('');
 const username = ref('');
 const password = ref('');
 const isRegisterMode = ref(false);
+
+function onKeydown(event: KeyboardEvent): void {
+  if (event.key === 'Escape') emit('close');
+}
+
+watch(
+  () => props.visible,
+  (visible) => {
+    if (visible) window.addEventListener('keydown', onKeydown);
+    else window.removeEventListener('keydown', onKeydown);
+  }
+);
+
+onBeforeUnmount(() => window.removeEventListener('keydown', onKeydown));
 
 function toggleMode(): void {
   isRegisterMode.value = !isRegisterMode.value;

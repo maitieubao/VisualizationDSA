@@ -52,3 +52,5 @@ Tài liệu này đặc tả chi tiết danh mục thư viện công nghệ, cá
 ## 4. Ràng Buộc Kiến Trúc Phụ Thuộc (Dependency Constraints)
 *   **Không dùng thư viện ngoài cho hoạt ảnh DSA:** Toàn bộ thuật toán sắp xếp mảng Lerp Parabol, quay AVL nút cây, hạt HTTP request bay dọc cạnh và khói sập nguồn Canvas đều phải viết bằng mã nguồn TypeScript thuần túy kết hợp Canvas 2D/SVG để tối ưu hiệu năng 60 FPS bám sát rAF.
 *   **Monaco Sandbox Security:** Phải cô lập Monaco Editor trong chế độ chặn nhấp chuột select văn bản (read-only pointer blockers) khi chạy VCR playback để bảo toàn dòng code.
+| **@babel/parser** | `^7.29.3` | AST Parsing | Instrumentation mới của `CompilerStepExecutor` (thay regex hoist) — trước đây chỉ là transitive dependency, nay import trực tiếp nên khai báo tường minh. |
+| **@babel/types** | `^7.29.0` | AST Types | Kiểu `Node` cho `instrumentAst` (scope-aware walker). |

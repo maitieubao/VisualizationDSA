@@ -78,7 +78,7 @@ public class UnionFindNaive
 
 ```mermaid
 flowchart LR
-    subgraph Before ["Trước Find(7)"]
+    subgraph Before ["Trước Find(0)"]
         B0((0)) --> B1((1))
         B1 --> B2((2))
         B2 --> B3((3))
@@ -89,7 +89,7 @@ flowchart LR
         style B7 fill:#f59e0b,color:#fff
     end
     
-    subgraph After ["Sau Find(7) - Path Compression"]
+    subgraph After ["Sau Find(0) - Path Compression"]
         A0((0)) --> A7((7))
         A1((1)) -.-> A7
         A2((2)) -.-> A7
@@ -235,7 +235,7 @@ public class UnionFindSize
 α(2^65536) = 6
 ```
 
-> **Thực tế:** Với N ≤ 10^18 (số nguyên 64-bit lớn nhất), α(N) ≤ 4.
+> **Thực tế:** Với N ≤ 10^18 (cỡ phạm vi số nguyên 64-bit), α(N) ≤ 5.
 > **Nghĩa đen:** **O(α(N)) ≈ O(1)** trong thực tế!
 
 ---
@@ -263,34 +263,33 @@ flowchart TB
     end
     
     subgraph Step1 ["Bước 1: Union(0, 1)"]
-        S1_0((0)) --> S1_1((1))
+        S1_1((1)) --> S1_0((0))
         S1_2((2))
         S1_3((3))
         S1_4((4))
-        S1_1 --> S1_0
         style S1_0 fill:#10b981,color:#fff
     end
     
     subgraph Step2 ["Bước 2: Union(1, 2)"]
-        S2_0((0)) --> S2_1((1))
-        S2_1 --> S2_2((2))
+        S2_1((1)) --> S2_0((0))
+        S2_2((2)) --> S2_0((0))
         S2_3((3))
         S2_4((4))
         style S2_0 fill:#10b981,color:#fff
     end
     
     subgraph Step3 ["Bước 3: Union(3, 4)"]
-        S3_0((0)) --> S3_1((1))
-        S3_1 --> S3_2((2))
-        S3_3((3)) --> S3_4((4))
-        style S3_3 fill:#10b981,color:#fff
+        S3_1((1)) --> S3_0((0))
+        S3_2((2)) --> S3_0((0))
+        S3_4((4)) --> S3_3((3))
+        style S3_0 fill:#10b981,color:#fff
     end
     
     subgraph Step4 ["Bước 4: Union(0, 3) - Gộp 2 cây"]
-        S4_0((0)) --> S4_1((1))
-        S4_1 --> S4_2((2))
-        S4_0 --> S4_3((3))
-        S4_3 --> S4_4((4))
+        S4_1((1)) --> S4_0((0))
+        S4_2((2)) --> S4_0((0))
+        S4_3((3)) --> S4_0((0))
+        S4_4((4)) --> S4_3((3))
         style S4_0 fill:#10b981,color:#fff
     end
     
@@ -478,7 +477,7 @@ public IList<IList<string>> AccountsMerge(IList<IList<string>> accounts)
 <details class="vt-quiz">
 <summary>❓ Quiz 2: Path Compression có thay đổi Rank/Size không? Tại sao?</summary>
 
-**Đáp án:** **KHÔNG thay đổi Rank** (Union by Rank) nhưng **CÓ thay đổi Size** (Union by Size).
+**Đáp án:** **Cả Rank (Union by Rank) và Size (Union by Size) đều KHÔNG bị thay đổi** bởi Path Compression — nó chỉ làm thẳng các con trỏ `parent`.
 - **Rank:** Là **ước lượng** chiều cao, không phải đúng. Path Compression có thể làm **giảm thực tế** nhưng **không giảm Rank ước lượng**. Điều này đảm bảo đúng tính toán độ phức tạp.
 - **Size:** Là **số thực** phần tử. Path Compression **không thay đổi** số phần tử, chỉ thay đổi cấu trúc cây. Size luôn đúng.
 </details>
@@ -486,7 +485,7 @@ public IList<IList<string>> AccountsMerge(IList<IList<string>> accounts)
 <details class="vt-quiz">
 <summary>❓ Quiz 3: Union-Find có thể dùng cho bài toán "Undo" (hoàn tác) Union không?</summary>
 
-**Đáp án:** **Không trựng hợp** với bản ghi gốc. Path Compression thay đổi cấu trúc cây một cách **không thể đảo ngược** (nhiều Node bị bẻ thẳng). Để hỗ trợ Undo, cần:
+**Đáp án:** **Không tương thích** với bản cài đặt cơ bản. Path Compression thay đổi cấu trúc cây một cách **không thể đảo ngược** (nhiều Node bị bẻ thẳng). Để hỗ trợ Undo, cần:
 1. **Rollback DSU:** Lưu lịch sử thao tác, dùng stack để undo (O(1) cho mỗi undo).
 2. **Persistent DSU:** Tạo bản sao mỗi khi thay đổi (tốn memory).
 3. **Chỉ dùng Union by Size (không Path Compression):** Có thể undo nhưng chậm hơn.
@@ -519,16 +518,25 @@ public IList<IList<string>> AccountsMerge(IList<IList<string>> accounts)
 
 ## Next Steps {#next-steps}
 
-Union-Find giải quyết bài toán kết nối và tìm đường hiệu quả. Để xử lý **truy vấn đoạn (Range Query)** như tổng/min/max từ index L đến R trên mảng, chúng ta cần **Segment Tree** - cấu trúc dữ liệu chuyên biệt cho bài toán này.
+Union-Find giải quyết bài toán kết nối và phát hiện chu trình hiệu quả. Để hiểu rõ hơn cách phát hiện chu trình trong đồ thị (ứng dụng trực tiếp của Union-Find) cũng như nắm bản đồ tổng quan toàn bộ nhóm Cây & Đồ thị, hãy khám phá:
 
 <div class="vt-box-container next-steps">
-  <a class="vt-box" href="/docs/trees/segment-tree">
-    <p class="next-steps-link">Segment Tree (Cây đoạn)</p>
-    <p class="next-steps-caption">Truy vấn tổng/min/max đoạn [L, R] trong O(log N) với Lazy Propagation.</p>
+  <a class="vt-box" href="/docs/tree-graph/cycle-detection">
+    <p class="next-steps-link">Phát hiện chu trình (Cycle Detection)</p>
+    <p class="next-steps-caption">Dùng Union-Find để kiểm tra đồ thị vô hướng có chu trình hay không trong O(E α(N)).</p>
   </a>
-  <a class="vt-box" href="/docs/trees/fenwick-tree">
-    <p class="next-steps-link">Fenwick Tree (Binary Indexed Tree)</p>
-    <p class="next-steps-link">Fenwick Tree (Binary Indexed Tree)</p>
-    <p class="next-steps-caption">Phiên bản gọn gàng của Segment Tree cho prefix sums và point updates.</p>
+  <a class="vt-box" href="/docs/tree-graph/tree-graph-summary">
+    <p class="next-steps-link">Tổng hợp Cây & Đồ thị</p>
+    <p class="next-steps-caption">Bản đồ tổng quan các cấu trúc dữ liệu và thuật toán Cây & Đồ thị.</p>
   </a>
 </div>
+
+---
+
+## 📚 Tham khảo lý thuyết
+
+- **CLRS** — *Introduction to Algorithms*, 3rd Edition, Chapter 21: Data Structures for Disjoint Sets.
+- **Wikipedia** — *Disjoint-set data structure*: https://en.wikipedia.org/wiki/Disjoint-set_data_structure
+- **CP-Algorithms** — *Disjoint Set Union*: https://cp-algorithms.com/data_structures/disjoint_set_union.html
+- **GeeksforGeeks** — *Union-Find Algorithm (Detect Cycle in an Undirected Graph)*: https://www.geeksforgeeks.org/union-find/
+- **MIT OCW 6.006** — *Introduction to Algorithms* (Spring 2020), bài giảng Union-Find: https://ocw.mit.edu/courses/6-006-introduction-to-algorithms-spring-2020/

@@ -20,8 +20,8 @@
           : 'bg-bg-surface text-text-muted'
       ]"
     >
-      <span v-if="status === 'completed'">✓</span>
-      <span v-else-if="status === 'in-progress'">◐</span>
+      <span v-if="status === 'completed'"><BaseIcon name="check" class="w-3.5 h-3.5" /></span>
+      <span v-else-if="status === 'in-progress'"><BaseIcon name="minus" class="w-3.5 h-3.5" /></span>
       <span v-else>{{ order }}</span>
     </div>
 
@@ -45,9 +45,7 @@
 
     
     <div class="flex-shrink-0 text-text-disabled group-hover:text-text-secondary transition-colors">
-      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-        <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
-      </svg>
+      <BaseIcon name="chevron-right" class="w-4 h-4" />
     </div>
   </router-link>
 </template>

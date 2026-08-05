@@ -6,13 +6,21 @@
         <span class="snippet-title">Mã nhúng Iframe</span>
       </div>
       <button
+        type="button"
         class="copy-btn"
-        :class="{ copied: store.isCopied }"
-        @click="store.copyEmbedCodeToClipboard()"
+        :class="{ copied: store.isCopied, failed: copyError }"
+        aria-label="Sao chép mã nhúng"
+        @click="onCopyClick"
       >
-        {{ store.isCopied ? 'COPIED!' : 'COPY CODE' }}
+        <BaseIcon v-if="store.isCopied" name="check" class="w-3 h-3 inline mr-1 align-middle" />
+        <BaseIcon v-else name="clipboard-list" class="w-3 h-3 inline mr-1 align-middle" />
+        {{ store.isCopied ? 'ĐÃ SAO CHÉP!' : 'SAO CHÉP MÃ' }}
       </button>
     </div>
+
+    <p v-if="copyError" class="copy-error" role="alert">
+      Không thể sao chép: trình duyệt chặn clipboard. Vui lòng thử lại.
+    </p>
 
     <div class="embed-code-snippet-box">
       <pre class="snippet-code"><code>{{ store.generatedIframeCode }}</code></pre>
@@ -31,22 +39,35 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue';
+import { computed, ref } from 'vue';
 import { useEmbedConfiguratorStore } from '../store/useEmbedConfiguratorStore';
 
 const store = useEmbedConfiguratorStore();
+const copyError = ref(false);
+
+async function onCopyClick(): Promise<void> {
+  copyError.value = false;
+  const ok = await store.copyEmbedCodeToClipboard();
+  copyError.value = !ok;
+}
 
 const hostIntegrationScript = computed(() => {
+  const embedOrigin = (() => {
+    try { return new URL(store.generatedIframeCode.match(/src="([^"]+)"/)?.[1] ?? '').origin; } catch { return 'https://visualization-dsa.edu.vn'; }
+  })();
   return `<script>
   const iframe = document.querySelector('iframe');
   window.addEventListener('message', (event) => {
+    // BẮT BUỘC verify origin — chỉ nhận tin từ widget của chúng ta (chống CSS injection/UI redressing).
+    if (event.origin !== ${JSON.stringify(embedOrigin)}) return;
     const msg = event.data;
     if (msg?.source === 'VISUALIZATION_DSA_WIDGET') {
-      if (msg.action === 'HEIGHT_CHANGED') {
-        iframe.style.height = msg.payload.height + 'px';
+      if (msg.action === 'HEIGHT_CHANGED' && Number.isFinite(Number(msg.payload?.height))) {
+        const h = Math.min(2000, Math.max(100, Number(msg.payload.height)));
+        iframe.style.height = h + 'px';
       }
       if (msg.action === 'QUIZ_COMPLETED') {
-        console.log('Quiz score:', msg.payload.quizScore);
+        console.log('Quiz score:', msg.payload?.quizScore);
       }
     }
   });

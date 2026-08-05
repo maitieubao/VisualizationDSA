@@ -47,7 +47,8 @@ export const useQuizStore = defineStore('quizSystem', () => {
     isSubmitted.value = false; isCorrect.value = false;
     feedbackExplanation.value = ''; matchedNodeId.value = null;
     isCanvasTargetMode.value = question.type === 'CANVAS_TARGET';
-    lectureStore.lockLectureInteraction();
+    // Chủ quyền 'quiz': thoát lecture giữa câu hỏi KHÔNG mở khóa canvas.
+    lectureStore.lockLectureInteraction('quiz');
     if (!completedCheckpointIndexes.value.includes(frameIndex)) completedCheckpointIndexes.value.push(frameIndex);
   }
 
@@ -71,13 +72,15 @@ export const useQuizStore = defineStore('quizSystem', () => {
 
   const dismissQuestionAndContinue = (): void => {
     resetActiveQuestionState(activeQuestion, selectedAnswerIndex, isSubmitted, isCorrect, feedbackExplanation, matchedNodeId, isCanvasTargetMode);
-    lectureStore.unlockLectureInteraction();
+    lectureStore.unlockLectureInteraction('quiz');
   };
 
   const resetQuizStore = (): void => {
     resetActiveQuestionState(activeQuestion, selectedAnswerIndex, isSubmitted, isCorrect, feedbackExplanation, matchedNodeId, isCanvasTargetMode);
     checkpoints.value = []; completedCheckpointIndexes.value = [];
     sessionCorrect.value = 0; sessionTotal.value = 0;
+    // Nhả lock 'quiz' — trước đây quên unlock → interactionLocked kẹt vĩnh viễn.
+    lectureStore.unlockLectureInteraction('quiz');
   };
 
   async function syncSessionToServer(quizId: string): Promise<void> {
@@ -94,6 +97,7 @@ export const useQuizStore = defineStore('quizSystem', () => {
   const backendAnswers = ref<(number | null)[]>([]);
   const backendResult = ref<StatelessAttemptResult | null>(null);
   const isBackendQuizLoading = ref(false);
+  const isBackendQuizSubmitting = ref(false);
   const backendQuizError = ref<string | null>(null);
   const isBackendQuizMode = ref(false);
 
@@ -125,6 +129,9 @@ export const useQuizStore = defineStore('quizSystem', () => {
       backendQuizError.value = null;
       backendResult.value = null;
       activeBackendQuiz.value = await statelessQuizApi.getQuizById(quizId);
+      if (activeBackendQuiz.value.questions.length === 0) {
+        throw new Error('Quiz không có câu hỏi nào để làm.');
+      }
       backendQuizIndex.value = 0;
       backendAnswers.value = new Array(activeBackendQuiz.value.questions.length).fill(null);
       isBackendQuizMode.value = true;
@@ -150,7 +157,8 @@ export const useQuizStore = defineStore('quizSystem', () => {
   }
 
   async function submitBackendQuiz(): Promise<void> {
-    if (!activeBackendQuiz.value) return;
+    if (!activeBackendQuiz.value || isBackendQuizSubmitting.value) return;
+    isBackendQuizSubmitting.value = true;
     const answers = backendAnswers.value.map(a => a ?? -1);
     try {
       isBackendQuizLoading.value = true;
@@ -164,6 +172,7 @@ export const useQuizStore = defineStore('quizSystem', () => {
       backendQuizError.value = msg;
     } finally {
       isBackendQuizLoading.value = false;
+      isBackendQuizSubmitting.value = false;
     }
   }
 
@@ -174,6 +183,7 @@ export const useQuizStore = defineStore('quizSystem', () => {
     backendQuizIndex.value = 0;
     backendAnswers.value = [];
     backendQuizError.value = null;
+    isBackendQuizSubmitting.value = false;
   }
 
   return {
@@ -186,7 +196,7 @@ export const useQuizStore = defineStore('quizSystem', () => {
     resetQuizStore, syncSessionToServer,
     
     quizCatalog, activeBackendQuiz, backendQuizIndex, backendAnswers, backendResult,
-    isBackendQuizLoading, backendQuizError, isBackendQuizMode,
+    isBackendQuizLoading, isBackendQuizSubmitting, backendQuizError, isBackendQuizMode,
     currentBackendQuestion, backendQuizProgress,
     loadQuizCatalog, startBackendQuiz, selectBackendAnswer,
     nextBackendQuestion, prevBackendQuestion, submitBackendQuiz, exitBackendQuiz,

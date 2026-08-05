@@ -25,10 +25,10 @@ Tài liệu này theo dõi chi tiết tiến độ hoàn thành **code thực t�
 | Sprint        | Nội dung trọng tâm                                  | Trạng thái CODE | Chi tiết                                                                                                                                                                              |
 | :------------ | :-------------------------------------------------- | :-------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | --- |
 | **Sprint 1**  | Động cơ Core Animation rAF & AST Compiler           | ✅ DONE         | `CoreAnimationEngine.ts`, `CompilerStepExecutor.ts` — 11 unit tests pass                                                                                                              |
-| **Sprint 2**  | Sắp xếp mảng động (Bubble, Quick, Merge, Heap, Radix, Counting, Bucket Sort) | ✅ DONE         | 7 frame generators, ArrayBarVisualizer.vue, VcrControlPanel.vue, useVcrStore.ts, Counting/Bucket custom UI renderers, Lerp colors. Cải tiến Counting Sort & Bucket Sort cao cấp với giao diện 3 tầng, stable ID, SVG Bezier connector động. |
+| **Sprint 2**  | Sắp xếp mảng động (Bubble, Quick, Merge, Heap, Radix, Counting, Bucket Sort) | ✅ DONE         | 7 frame generators, ArrayBarVisualizer.vue, VcrControlPanel.vue, useVcrStore.ts, Counting/Bucket custom UI renderers, Lerp colors. Cải tiến Counting Sort & Bucket Sort cao cấp với giao diện 3 tầng, stable ID, SVG Bezier connector động. **Radix Sort rebuild**: loại bỏ `min-width: 620px`, CSS variable consistency, responsive grid, simplified connector, no `color-mix()`. |
 | **Sprint 3**  | Đồng bộ dòng lệnh mã giả Monaco Editor              | ✅ DONE         | Monaco Editor thật `@monaco-editor/loader`, `MonacoGutterClickInterceptor` click-to-snap, `PseudocodeSyncer` highlight dòng, `ArrayBarVisualizer` Double Buffering                    |
 | **Sprint 4**  | Bài giảng Slide & Câu hỏi Trắc nghiệm Canvas        | ✅ CODE DONE    | `InteractiveLectureSlides.vue` đã mount trong `App.vue` (right column), `syncSlideWithVisualizer` kết nối `vcrStore.jumpToFrame()`, Quiz data hardcoded trong component, 3 tests pass |
-| **Sprint 5**  | Sân chơi vẽ đồ thị tự do & Trợ lý Xây dựng Đồ thị (Graph Builder Assistant) | ✅ CODE DONE    | Thiết kế lại UI/UX: Mode Bar dạng top pill, gộp toolbar trái, local BFS/DFS/Dijkstra simulator. Nâng cấp panel phải thành Graph Builder Assistant: bỏ hoàn toàn Array Input, tách tab Build/Import, form thêm cạnh có cấu trúc, đồng bộ hover highlight 2 chiều phát sáng, sinh đồ thị ngẫu nhiên và xóa sạch. 35 tests pass. |
+| **Sprint 5**  | Sân chơi vẽ đồ thị tự do & Trợ lý Xây dựng Đồ thị (Graph Builder Assistant) | ✅ CODE DONE    | Thiết kế lại UI/UX: Mode Bar dạng top pill, gộp toolbar trái, local BFS/DFS/Dijkstra simulator. Nâng cấp panel phải thành Graph Builder Assistant: bỏ hoàn toàn Array Input, tách tab Build/Import, form thêm cạnh có cấu trúc, đồng bộ hover highlight 2 chiều phát sáng, sinh đồ thị ngẫu nhiên và xóa sạch. **Rebuild giao diện đồ thị**: GraphView.vue với sidebar sạch (loại đồ thị, template, công cụ, hành động), InteractivePlayground.vue với toolbar cải tiến (toggle undirected/directed, template buttons, auto-layout), PlaygroundCanvas.vue với zoom/pan (scroll wheel 0.2x-3x, middle-click drag), grid background, responsive resize. playgroundCanvasDraw.ts hỗ trợ directed/undirected edges với arrowhead. GraphGeometryEngine.ts thêm drawArrowhead(). usePlaygroundStore.ts thêm graphType state. 35 tests pass. |
 | **Sprint 6**  | OOP Sandbox, đóng gói & VTable đa hình              | ✅ CODE DONE    | `OOPReflectionEngine` + `OOPSandbox.vue` mounted, Encapsulation locks (red/yellow/green), VTable dispatch visualization, Heap allocator UI                                            |     |
 | **Sprint 7**  | Chỉ số kết dính SRP LCOM4 DFS & LSP vỡ kính         | ✅ CODE DONE    | `SOLIDLCOM4Calculator` + `LspGlassCracker` + `SOLIDSandbox.vue` mounted, cracked glass animation, cohesion analyzer                                                                   |
 | **Sprint 8**  | IoC Container Singleton/Transient & Vòng lặp        | ✅ CODE DONE    | `DIContainerEngine` với DFS cycle detection, `DISandbox.vue` mounted, Transient/Singleton visualization, dependency graph Bezier                                                      |
@@ -47,6 +47,7 @@ Tài liệu này theo dõi chi tiết tiến độ hoàn thành **code thực t�
 | **Model** | `CodelabHint` entity (thay `Hints` string), `SubmissionStatus.JudgeUnavailable=7` | ✅ CODE DONE | Migration `20260801073413_Sprint4_CodelabHintsAndJudge` đã áp dụng vào `visualization_dsa.db` |
 | **JWT fix** | `[Authorize(Roles)]` trả 403 sai do MapInboundClaims | ✅ CODE DONE | `RoleClaimType=ClaimTypes.Role`, `NameClaimType=ClaimTypes.NameIdentifier` (Program.cs) — xem ADR-22 |
 | **Tests** | 40/40 backend tests PASS + E2E HTTP smoke (create/get/update/delete/reveal-hint/submit) | ✅ CODE DONE | `dotnet test` green; submit map đúng JudgeUnavailable khi Piston public trả 401 (whitelist-only 15/02/2026) |
+| **Test Coverage** | Mở rộng toàn module Codelab lên **147/147 tests PASS** | ✅ CODE DONE | 7 file test mới: `CodelabChildCommandHandlerTests` (14), `CodelabQueryHandlerTests` (10), `RunCodelabCommandHandlerTests` (5), `RevealHintCommandHandlerTests` (6), `CodelabCommandValidatorTests` (~13), `CodelabEntityTests` (12), `PistonCodeJudgeServiceEdgeTests` (11), `UserXpTests` (12), +4 Submit, +1 Delete/Update not-found. **Coverage logic 100% (847/847 dòng**, loại trừ 4 file migration EF) |
 | **Còn lại (P1)** | Nối `CodelabBuilderTab.vue` (bỏ `crudNotImplemented`), thêm `revealHint` vào `codelabApi.ts`, xóa `LessonStepCodeLab.vue` demo, self-host Piston | 🟡 IN PROGRESS | Backend xong 100%, frontend wiring chưa bắt đầu |
 
 ### Phase 2 Interactive Embed Widget — Tiện ích Nhúng Sơ đồ Trực quan
@@ -129,12 +130,51 @@ Tài liệu này theo dõi chi tiết tiến độ hoàn thành **code thực t�
 | **Store** | usePlaygroundStore (Pinia Setup Store) | ✅ CODE DONE | `store/usePlaygroundStore.ts` — 5 tool modes, NodeDTO/EdgeDTO, addNode/addEdge/deleteNode(cascade)/updateEdgeWeight/moveNode, max 30 nodes, selectNode/selectEdge |
 | **Engine** | GraphGeometryEngine (Hit Detection + Arrow Routing) | ✅ CODE DONE | `engine/GraphGeometryEngine.ts` — hitTestNode (Euclidean), hitTestEdge (point-to-segment), calculateArrowPlacement (atan2 border contact), isWithinSnapDistance, edgeMidpoint |
 | **Engine** | ForceDirectedEngine (Physics Simulation) | ✅ CODE DONE | `engine/ForceDirectedEngine.ts` — Coulomb repulsion (K=4000), Hooke spring (K=0.05, L=150), damping 0.85, stability detection, canvas boundary clamping, skip dragged node |
-| **Component** | PlaygroundCanvas.vue (Canvas 2D + Mouse Events) | ✅ CODE DONE | Single canvas element, 5 tool mode handlers (SELECT drag, ADD_NODE click, ADD_EDGE rubber-band, WEIGHT click-edge, DELETE click), snap glow highlight, arrowhead rendering, weight labels |
+| **Component** | PlaygroundCanvas.vue (Canvas 2D + Mouse Events + Zoom/Pan + Grid) | ✅ CODE DONE | Single canvas element, 5 tool mode handlers (SELECT drag, ADD_NODE click, ADD_EDGE rubber-band, WEIGHT click-edge, DELETE click), snap glow highlight, arrowhead rendering, weight labels, zoom (mouse wheel 0.2x-3x), pan (middle-click/Alt+drag), grid background, responsive resize |
 | **Component** | FloatingToolbar.vue (Glassmorphism Toolbar) | ✅ CODE DONE | 5 tool buttons (SELECT/ADD_NODE/ADD_EDGE/WEIGHT/DELETE), physics toggle, clear all, keyboard shortcuts (V/N/E/W/Del/Backspace), emerald active glow |
-| **Component** | InteractivePlayground.vue (Orchestrator) | ✅ CODE DONE | Status bar (node/edge count, mode badge), Export/Import JSON, Run algorithm (adjacency list output), Weight popover (auto-focus, Enter/Blur/Esc), Toast notifications, JSON output panel |
+| **Component** | InteractivePlayground.vue (Orchestrator) | ✅ CODE DONE | Status bar (node/edge count, mode badge), graph type toggle (undirected/directed), template buttons (Triangle/Square/Star/Binary Tree), auto-layout, Export/Import JSON, Run algorithm (adjacency list output), Weight popover (auto-focus, Enter/Blur/Esc), Toast notifications, JSON output panel |
+| **Component** | GraphView.vue (Page Layout) | ✅ CODE DONE | Clean header with node/edge/zoom stats, sidebar with graph type, templates, tools, actions, canvas area |
 | **Service** | GraphParser (Graph-to-JSON Converter) | ✅ CODE DONE | `services/GraphParser.ts` — toAdjacencyList (undirected), findIsolatedNodes (BFS connectivity), exportToJSON, importFromJSON (schema validation) |
+| **Engine** | GraphGeometryEngine (Arrow Drawing) | ✅ CODE DONE | Added `drawArrowhead()` static method for directed edge arrowheads |
+| **Drawing** | playgroundCanvasDraw.ts (Directed/Undirected) | ✅ CODE DONE | `drawPlayground()` accepts `graphType` param, draws arrowheads for directed edges, dashed edge preview with arrow when graphType=directed |
 | **Integration** | App.vue Playground tab | ✅ CODE DONE | New "Playground" tab in App.vue, full-screen InteractivePlayground component |
 | **Tests** | 31 Unit Tests | ✅ CODE DONE | `interactivePlayground.spec.ts` — Store (11), GeometryEngine (8), ForceDirectedEngine (4), GraphParser (8) — ALL PASS |
+
+### Phase 2 HTML Playground — CodePen-style HTML/CSS/JS Editor (Monaco local ESM) — 42 Unit Tests
+
+| Bước | Nội dung | Trạng thái CODE | Chi tiết |
+| :--- | :--- | :--- | :--- |
+| **Types** | PlaygroundSource / PlaygroundLanguage | ✅ CODE DONE | `types/playground.types.ts` — html/css/javascript union, default source, readOnly mode |
+| **Builder** | PlaygroundDocumentBuilder | ✅ CODE DONE | `lib/PlaygroundDocumentBuilder.ts` — ghép HTML5 doc: CSS nhúng `<style>`, JS nhúng `<script>`, escape `</script>` → `\u003c/script>` |
+| **Codec** | PlaygroundUrlCodec | ✅ CODE DONE | `lib/PlaygroundUrlCodec.ts` — encode/decode payload bằng lz-string, alphabet `A-Za-z0-9+-$`, decode hỏng trả `null` |
+| **Debouncer** | PlaygroundDebouncer | ✅ CODE DONE | `lib/PlaygroundDebouncer.ts` — cửa sổ 800ms, flush chạy ngay, cancel hủy hoàn toàn, luôn dùng callback mới nhất |
+| **Store** | useHtmlPlaygroundStore (Pinia Setup Store) | ✅ CODE DONE | `store/useHtmlPlaygroundStore.ts` — 3 file html/css/js, revision counter (resync editor khi load payload mới), loadFromSource/loadFromSharePayload/clearAll |
+| **Component** | PlaygroundWorkspace.vue | ✅ CODE DONE | `components/PlaygroundWorkspace.vue` — Monaco **local ESM bundle** (import monaco-editor + editor/ts workers, không fetch CDN runtime), 3 tabs + 1 Preview, Run, Share URL (encodeURIComponent), Format, editorLoadError fallback + reload, watch store.revision resync |
+| **View** | PlaygroundView.vue | ✅ CODE DONE | `views/playground/PlaygroundView.vue` — route `/playground`, đọc `route.query.code` + `watch` query để nạp payload mới khi reuse component |
+| **Registry** | 21 Demo Thuật Toán | ✅ CODE DONE | `demos/playgroundDemos.ts` — sorting (9), searching (4), stack-queue (3), tree-graph (5); mỗi demo có `run()` + `buildSource()` chuẩn |
+| **Docs Integration** | DocsMarkdownRenderer fences | ✅ CODE DONE | `docs/components/DocsMarkdownRenderer.vue` — fence `playground:<key>` → card demo + nút "▶ Mở Playground" (router.push `/playground?code=`), fence `dual:<key>` → dual-code-block JS (registry) / C# (block), event delegation click/change |
+| **Docs Content** | Chuyển 20 file markdown | ✅ CODE DONE | sorting (9) + searching (4) + stack-queue (3) + tree-graph (5): đổi block ` ```csharp ` → ` ```dual:<key> ` + chèn ` ```playground:<key> ` |
+| **Docs Audit** | Kiểm duyệt toàn bộ 68 bài lý thuyết | ✅ CODE DONE | `docs/content/` 14 nhóm (intro/sorting/searching/stack-queue/linked-list/hash-table/tree-graph/trees/oop/solid/patterns/di/system-design/practice) — 68/68 bài đạt checklist A–G (frontmatter, H1 anchor `{#slug}`, lý thuyết Việt chuẩn khoa học, ≥1 code C#, mermaid hợp lệ, `## Next Steps {#next-steps}` link hợp lệ, mục `## 📚 Tham khảo lý thuyết` nguồn cụ thể không bịa) |
+| **Docs Navigation** | Thêm nhóm CẤU TRÚC CÂY NÂNG CAO vào sidebar | ✅ CODE DONE | `docs/data/docsNavigation.ts` — thêm block `trees-group` sau `tree-graph-group` (5 mục: tr-heap, tr-trie, tr-segment, tr-fenwick, tr-union-find) → 3 link `/docs/trees/*` trong segment/fenwick/heap-priority-queue trước đây là link chết giờ hợp lệ |
+| **Docs Tests** | Mermaid syntax regression | ✅ CODE DONE | `docsMermaidSyntax.spec.ts` — 2/2 PASS, 95 khối mermaid / 58 file parse hợp lệ (chạy lại sau mỗi đợt audit) |
+| **CSS** | vue-docs-theme.css | ✅ CODE DONE | `.playground-demo-card`, `.dual-code-block`, `.dual-code-header`, `.dual-code-select`, `.dual-code-pane` + responsive |
+| **Router/Tab** | Route `/playground` + tab Playground | ✅ CODE DONE | `router/routes.ts` + `appTabs.ts` (group "Giải thuật") |
+| **BugFix** | Playground từ link docs không load | ✅ CODE DONE | Root cause: `@monaco-editor/loader` fetch CDN runtime không ổn định + `PlaygroundView` chỉ đọc query 1 lần. Fix: Monaco local ESM bundle + `watch(() => route.query.code)` + `watch(() => store.revision)` |
+| **Tests** | 42 Unit Tests | ✅ CODE DONE | `PlaygroundDocumentBuilder.spec.ts` (7), `PlaygroundDebouncer.spec.ts` (5), `PlaygroundUrlCodec.spec.ts` (7), `playgroundDemos.spec.ts` (23) — ALL PASS; `vue-tsc --noEmit` sạch |
+
+### Phase 2 Algo Playground — "Thuật toán tương tác" (sửa code JS + chạy từng bước) — 37 Unit Tests
+
+| Bước | Nội dung | Trạng thái CODE | Chi tiết |
+| :--- | :--- | :--- | :--- |
+| **Contract** | Mở rộng PlaybackFrame/CanvasStateSnapshot + hooks | ✅ CODE DONE | `core/CompilerStepExecutor.ts` — snapshot thêm `graphNodes/graphEdges/treeNodes/activeIds/visitedIds/queueIds/stackIds/distances/highlightedEdges/labels`; hooks mới `visit/unvisit/active/enqueue/dequeue/push/pop/setDist/markEdge/clearEdges/label/log`; `CompileOptions.fallbackToRegex` (strict mode ném lỗi cú pháp thật); fix Proxy `get/set` guard symbol (spread/iterator của `array`) |
+| **Input** | AlgoInputParser | ✅ CODE DONE | `engine/AlgoInputParser.ts` — `parseNumberArray`, `buildTreeFromArray` (chèn BST, value trùng đưa nhánh phải), `buildGraphFromText` (đồ thị dạng `A-B:4, A>C`, position chuẩn hóa 0..1, fallback default graph) |
+| **Catalog** | 21 Demo JS theo contract hooks | ✅ CODE DONE | `engine/playgroundAlgoDemos.ts` — `AlgoDemo` (id/title/description/category/inputKind/defaultInput/code), `HOOKS_HINT` header, `getAlgoDemo`/`algoDemoIds`; 21 demo đều compile qua JS sandbox **strict** (no regex fallback) |
+| **Renderer** | algoCanvasHelpers | ✅ CODE DONE | `renderer/algoCanvasHelpers.ts` — `drawArrayBars`, `drawTree`, `drawGraph`, `drawQueueStackBadges`, `drawPlaybackFrame`, `COLORS` |
+| **Store** | useAlgoPlaygroundStore | ✅ CODE DONE | `store/useAlgoPlaygroundStore.ts` — Pinia setup store: `demoId/code/inputKind/inputRaw/frames/currentIndex/isPlaying/playbackSpeed/compileError`; computed `currentFrame/currentLineNumber/renderMode/totalFrames/...`; actions `loadDemo/setCode/setInput/run/play/pause/togglePlay/stepNext/stepPrev/reset/jumpToFrame/invalidate`; ticker `setInterval` qua `watch([isPlaying, playbackSpeed])`; `run()` gọi `compileAlgorithm(code, [], {...options, fallbackToRegex: false})` |
+| **Component** | AlgoPlaygroundWorkspace.vue | ✅ CODE DONE | `components/AlgoPlaygroundWorkspace.vue` — Monaco local ESM bundle + highlight dòng hiện tại (`PseudocodeSyncer.highlightMonacoLine` + gutter click jump) + canvas `drawPlaybackFrame` (ResizeObserver + DPR) + thanh toolbar (select demo/input/Chạy/Reset) + VCR (scrub, speed, play/pause) + trace + loop variables + error compile |
+| **View** | PlaygroundView mode toggle | ✅ CODE DONE | `views/playground/PlaygroundView.vue` — 2 mode "✏️ Editor tự do" (Codepen `?code=`) ↔ "🧩 Thuật toán tương tác" (`?demo=<key>`) |
+| **Docs Integration** | Fence `playground:<key>` → `?demo=<key>` | ✅ CODE DONE | `docs/components/DocsMarkdownRenderer.vue` — card demo nút "▶ Chạy thử từng bước" router.push `/playground?demo=<key>`; bỏ import `PlaygroundUrlCodec`; 20 file docs giữ nguyên fence |
+| **Tests** | 37 Unit Tests | ✅ CODE DONE | `AlgoInputParser.spec.ts` (17), `playgroundAlgoDemos.spec.ts` (9), `useAlgoPlaygroundStore.spec.ts` (10) — ALL PASS; 140 tests chạy phối hợp (algo-playground + html-playground + algorithm-sandbox + core) đều pass; `vue-tsc --noEmit` sạch |
 
 ### Phase 1 Pseudocode Sync — Đồng bộ Mã giả Đa Ngôn ngữ & Watch Panel
 
@@ -149,6 +189,69 @@ Tài liệu này theo dõi chi tiết tiến độ hoàn thành **code thực t�
 | **Integration** | VisualizationPlayer + Dummy Generators | ✅ CODE DONE | `VisualizationPlayer.vue` replaced AnimPseudoCodePanel with MultilingualCodePanel, auto-load script on algorithmId change, `algorithmApi.ts` dummy BubbleSort updated with activeLogicalLineId + variables per frame |
 | **Store Ext** | useAnimationStore activeFrame alias | ✅ CODE DONE | Added `activeFrame` computed alias for `currentFrame` in `useAnimationStore.ts` |
 | **Tests** | 37 Unit Tests | ✅ CODE DONE | `PseudocodeSyncEngine.spec.ts` (15), `usePseudocodeStore.spec.ts` (15), `scriptLoader.spec.ts` (7) — ALL PASS |
+
+
+### Phase 2.5 Algo Playground Hardening - Sửa Bug P0/P1 (2026-08-03) - Babel AST Instrumentation
+
+| Bước | Nội dung | Trạng thái CODE | Chi tiết |
+| :--- | :--- | :--- | :--- |
+| **Compiler** | Babel AST instrumentation thay regex hoist | ✅ CODE DONE | `core/CompilerStepExecutor.ts` - `instrumentAst` giữ nguyên block scope/closure (Tree Traversal in-order đúng 9/9 node), chèn `__loopTick` đầu thân vòng lặp (chặn vòng lặp vô hạn 1 dòng), `safeVars` chống TDZ, không chèn trackLine vào khối if/else/try (sửa lỗi block bị tách), capture cả tham số hàm |
+| **Contract** | 10 hooks Tier-3 + 11 field mới trên CanvasStateSnapshot | ✅ CODE DONE | `setCounts/setCountingPhase/setOutputs/setBuckets/setBucketPhase/setDigitPlace/setActiveBucket/setRangeLabels/setBucketComparing` - counting/radix/bucket layout giờ hiển thị dữ liệu thật (trước đây vẽ số 0/xô rỗng) |
+| **Demos** | Fix contract overlay + validation input | ✅ CODE DONE | `playgroundAlgoDemos.ts` - quick-sort dùng `low/high` (overlay hoạt động), heap-sort có `compare()` + capture `n`, selection/insertion so sánh đúng thứ tự (badge MIN/KEY đúng vị trí), counting/radix hỗ trợ số âm, bucket-sort throw ngoài [0,1), binary-search/two-pointers kiểm tra mảng đã sort, sliding-window kiểm tra độ dài, BFS/DFS/Dijkstra dùng adjacency 2 chiều cho đồ thị vô hướng, stack/monotonic-stack bỏ push-pop nhấp nháy |
+| **Parser** | Validation nghiêm ngặt theo spec | ✅ CODE DONE | `AlgoInputParser.ts` - throw `Giá trị '...' không phải là số hợp lệ`, giới hạn `MAX_ARRAY_LENGTH=100`, throw edge sai định dạng, weight âm/thập phân |
+| **UX** | Monaco sync + ResizeObserver + play-at-end | ✅ CODE DONE | `AlgoPlaygroundWorkspace.vue` watch `store.code` đồng bộ editor (hết desync), ResizeObserver gọi `anim.onResize()`; `useAlgoPlaygroundStore.ts` play tại frame cuối tự động reset đầu |
+| **Build gate** | Toàn bộ lỗi type + build production | ✅ CODE DONE | Xóa duplicate getter + 15 field "ma" + sai tham số `drawComparisonCounter`; sửa 9 lỗi pre-existing (dsa-modules distances, quiz-system redeclare, quiz destroy, courses coverImageUrl, graph templates) - `vue-tsc -b` CLEAN, `npm run build` SUCCESS |
+| **Tests** | +14 test mới | ✅ CODE DONE | `CompilerStepExecutor.instrumentation.spec.ts` (10), `playgroundAlgoDemos.spec.ts` (+8 strong), `AlgoInputParser.spec.ts` (cập nhật throw) - 65 files / 886 tests PASS |
+| **Worker** | Compile bất đồng bộ qua Web Worker | ✅ CODE DONE | `compiler.worker.ts` + `compileWorker.ts` - timeout 15s → `worker.terminate()` (kill switch cuối chống treo tab), `runSeq` chống stale, `isCompiling` state, `pendingPlayAfterCompile`, dispose khi unmount; nút Chạy hiển thị "⏳ Đang chạy…" |
+| **Renderer** | Tree renderer chống chồng lấn cây sâu | ✅ CODE DONE | `algoCanvasHelpers.ts` - `nodeR = min(18, max(5, slotPx*0.4, levelH*0.35))` + `MAX_TREE_DEPTH=60` guard trong `assign()` |
+| **Tests** | +2 test store async | ✅ CODE DONE | `isCompiling` toggle + stale-result guard - 65 files / 888 tests PASS, `vue-tsc -b` CLEAN, `npm run build` SUCCESS |
+### Phase 2.6 Algo Playground UI Overhaul - Đại Tu Giao Diện (2026-08-03)
+
+| Bước | Nội dung | Trạng thái CODE | Chi tiết |
+| :--- | :--- | :--- | :--- |
+| **Canvas** | Hết chồng panel + bar rendering chuẩn | ✅ CODE DONE | `algoCanvasHelpers.ts` - callstack góc trái, badge phải xếp dọc (`topRightY`), legend chỉ khi search; font scale theo barW, baseline 0 cho số âm (đồng bộ `SortingAnimationEngine.computeGeo` + counting tier) |
+| **Layout** | Splitpanes + responsive + empty/loading state | ✅ CODE DONE | `AlgoPlaygroundWorkspace.vue` - splitpanes 42/58 kéo co, `horizontal` khi < 768px, placeholder "Chọn demo và bấm ▶ Chạy", overlay "⏳ Đang biên dịch…"; fix ResizeObserver tạo sai ở setup (chết vĩnh viễn) → chuyển vào onMounted |
+| **Editor** | Code sạch + tooling | ✅ CODE DONE | Tách `HOOKS_HINT` khỏi demo code (panel "ℹ️ Hooks" thay thế), nút ⭮ Format, `v-model` select; line numbers map thẳng code thật |
+| **Toolbar** | Sinh ngẫu nhiên + khôi phục + mô tả | ✅ CODE DONE | `generateDemoInput()` theo demo (bucket [0,1), binary-search sorted, graph liên thông); nút 🎲 / ↺ Code mẫu; hiển thị `demo.description` dưới toolbar |
+| **Lỗi** | Gợi ý tiếng Việt | ✅ CODE DONE | `compileErrorTranslator.ts` - 9 nhóm lỗi (cú pháp, vượt bước, loop, undefined, hàm, trùng khai báo...) kèm message gốc; +9 tests |
+| **VCR/Trace** | Hotkeys + lịch sử + về cuối | ✅ CODE DONE | Store `traceLogs` computed (lọc frame "Đang chạy dòng N", max 200); hotkeys Space/←/→/Shift+→/Home/End; nút ⏩; speed [0.25..4]; panel "🧾 Lịch sử" |
+| **Persist/URL** | Giữ trạng thái + validate | ✅ CODE DONE | localStorage `{demoId, code, inputRaw}`; `PlaygroundView` `?demo=` sai → fallback bubble-sort |
+| **Tests** | +12 test mới | ✅ CODE DONE | `compileErrorTranslator.spec.ts` (9), store traceLogs + persist (2), generateDemoInput (1) - 66 files / 900 tests PASS, `vue-tsc -b` CLEAN, `npm run build` SUCCESS |
+### Phase 2.7 Algo Playground - Tree/Graph Animation + Component Tests (2026-08-03)
+
+| Bước | Nội dung | Trạng thái CODE | Chi tiết |
+| :--- | :--- | :--- | :--- |
+| **Transition** | Nội suy màu trạng thái cho tree/graph | ✅ CODE DONE | `algoCanvasHelpers.ts` - tách `computeTreeLayout`/`nodeStateColor`/`edgeStateColor`/`drawSnapshotOverlays`; thêm `drawTreeTransition`/`drawGraphTransition` (lerp màu theo id node) + `drawPlaybackFrameTransition(): boolean` (fallback array) |
+| **Engine** | Bỏ nhánh isTreeAlgorithm cứng | ✅ CODE DONE | `SortingAnimationEngine.ts` - mọi snapshot tree/graph qua transition khi progress ∈ (0,1); hết trắng màn hình giữa frame khi play (trước đây rơi vào array-switch với mảng rỗng) |
+| **Tests** | Component tests đầu tiên của dự án | ✅ CODE DONE | `AlgoPlaygroundWorkspace.spec.ts` (jsdom) - mock Monaco (+`revealLineInCenter`)/splitpanes/worker; 9 tests: counter, description, select demo, hooks panel, random input, hotkey Space/Arrow, trace lọc junk, overlay biên dịch |
+| **Persist** | Version guard schema | ✅ CODE DONE | `useAlgoPlaygroundStore.ts` - payload `version:1`, bỏ dữ liệu version cũ |
+| **Verify** | Toàn bộ | ✅ CODE DONE | Vitest 67 files / 910 tests PASS; `vue-tsc -b` CLEAN; `npm run build` SUCCESS |
+### Phase 2.8 Algo Playground - UX Polish: Live Input, Scrubber, Complexity, Fullscreen, Share (2026-08-03)
+
+| Bước | Nội dung | Trạng thái CODE | Chi tiết |
+| :--- | :--- | :--- | :--- |
+| **Input** | Live validation feedback | ✅ CODE DONE | `inputValidation` computed (parse mọi lần gõ); hint ✓ N phần tử / ✗ lỗi cạnh mô tả demo; +3 tests store |
+| **Scrubber** | Marker bước quan trọng + hover preview | ✅ CODE DONE | `notableSteps` (swap ⇄ / found ✓, max 15); chấm vàng trên slider; tooltip "Bước N: description" khi hover |
+| **Metadata** | Complexity/space chips | ✅ CODE DONE | `DEMO_COMPLEXITY` 21 demo (merge trong `register`); chip ⏱ O(n²) / 💾 O(1) bên cạnh mô tả |
+| **Viewer** | Fullscreen + VCR disabled + trace autoscroll | ✅ CODE DONE | Nút ⛶ trên `canvasWrap` (+`:fullscreen` dark bg); ⏮⏭⏩⟲ disabled khi chưa có frame; watch autoscroll |
+| **Share** | Chia sẻ trạng thái qua URL | ✅ CODE DONE | Nút 🔗 (lz-string → `?src=`), restore khi mount ưu tiên hơn localStorage, fallback prompt |
+| **Build** | Deterministic typecheck | ✅ CODE DONE | `vue-tsc -b --force` — hết lỗi phantom cache incremental |
+| **Tests** | +10 test mới | ✅ CODE DONE | store inputValidation (3) + notableSteps (2); component chips/validation (1), markers (1), share/fullscreen (2), share copied (1) - 67 files / 919 tests PASS, `vue-tsc -b --force` CLEAN, `npm run build` SUCCESS |
+### Phase 2.9 Algo Playground - Self-Review & Bug Fixes (2026-08-03)
+
+| Bước | Nội dung | Trạng thái CODE | Chi tiết |
+| :--- | :--- | :--- | :--- |
+| **Restore** | Khôi phục inputKind đúng | ✅ CODE DONE | `applyExternalDemo` (demoId + inputKind, không reset code/input); dùng chung localStorage + URL ?src=; +2 tests |
+| **Input** | Hint trung thực khi rỗng | ✅ CODE DONE | `inputValidation` trả "Input trống" trước khi parse; +1 test |
+| **Cleanup** | Hết leak matchMedia | ✅ CODE DONE | Handler giữ tham chiếu, removeEventListener đúng hàm khi unmount |
+| **Perf/clean** | Renderer O(n) + input graph sạch | ✅ CODE DONE | `nodeStateColor(snap, id, prunedSet?)`; phục hồi block stroke/text drawTreeTransition (lỗi tự gây khi tối ưu — typecheck bắt kịp); generateDemoInput đánh dấu cạnh spanning tree |
+| **Verify** | Toàn bộ | ✅ CODE DONE | Vitest 67 files / 922 tests PASS; `vue-tsc -b --force` CLEAN; `npm run build` SUCCESS |
+
+
+
+
+
+
 
 ### Phase 1 Quiz System — Hệ thống Trắc nghiệm Tương tác (Interactive Quiz Checkpoints)
 
@@ -416,15 +519,14 @@ Tài liệu này theo dõi chi tiết tiến độ hoàn thành **code thực t�
 ### `src/features/algorithm-sandbox/` — Sprint 2 ✅ + Sprint 3 ✅ + Sprint 5 ✅
 
 - `algorithms/bubbleSort.ts`, `quickSort.ts`, `mergeSort.ts`, `heapSort.ts` — 4 frame generators
-- `components/ArrayBarVisualizer.vue` — Canvas 2D, Double Buffering, Lerp animation, zoom/pan
-- `components/CustomInputPanel.vue` — Graph Playground với drag-drop vertices, force-directed auto layout
-- `composables/useCamera.ts`, `useMousePan.ts`, `useCanvasResize.ts`
-- `renderers/renderSortBar.ts`, `renderLoopPointer.ts`
+- `components/ArrayBarVisualizer.vue` — bar visualization với Lerp animation, VCR controls
+- `components/CustomInputPanel.vue` — nhập mảng tùy chỉnh (dùng bởi SortingView & GraphView)
 - `PseudocodeSyncer.ts` — line mapping, step↔line lookup
 - `MonacoLineSyncerCoordinator.ts` — điều phối đồng bộ giữa Monaco và VCR
 - `CustomInputParser.ts` — parseNumberArray, parseAdjacencyList, InteractivePlaygroundEngine
-- `ForceDirectedLayout.ts` — Coulomb repulsion + Hooke attraction physics engine
-- `__tests__/ForceDirectedLayout.spec.ts` — 6 unit tests cho physics và graph parsing
+- `algorithms/` — 7 state generators (bubble, quick, merge, heap, radix, counting, bucket)
+- `engine/CustomInputParser.ts` — parse & validate input
+- `engine/MonacoLineSyncerCoordinator.ts` + `PseudocodeSyncer.ts` + `MonacoGutterClickInterceptor.ts` — Monaco ↔ VCR sync (dùng bởi code-editor)
 
 #### Sprint 13 — Algorithm Sandbox Audit & Correctness Fixes ✅ CODE DONE
 
@@ -438,8 +540,63 @@ Tài liệu này theo dõi chi tiết tiến độ hoàn thành **code thực t�
 | BucketSort thiếu stats + arrayState đứng im | ✅ CODE DONE | `algorithms/bucketSort.ts` — comparisons/swaps khớp frame; collect tiến hóa |
 | Enricher tráo identity phần tử trùng khi swap xa | ✅ CODE DONE | `helpers/sortingIdEnricher.ts` — swap deterministic qua swappedIndices |
 | Heap phase badge sai (keyword 'hoán đổi' không khớp) | ✅ CODE DONE | `composables/useHeapSortVisualizer.ts` — phân biệt BUILD/SORT qua heapSize |
+| Heap Sort UI rebuild — cleaner HeapTree/HeapArray/HeapSortVisualizer, phase badge, responsive sizing, CSS variable consistency | ✅ CODE DONE | `components/heap-sort/HeapTree.vue`, `components/heap-sort/HeapArray.vue`, `components/HeapSortVisualizer.vue`, `composables/useHeapSortVisualizer.ts`, `algorithms/heapSort.ts` |
 | UI: dock đè drawer, counting/bucket bị clip, Space kích hoạt kép, dispatcher thiếu nhánh bubble/empty state | ✅ CODE DONE | `views/sorting/SortingView.vue`, `components/SortingVisualizerDispatcher.vue`, `components/CountingSortVisualizer.vue`, `components/BucketSortVisualizer.vue`, `components/SortingDrawerTrace.vue`, `components/ArrayBarVisualizer.vue` |
 | Test edge case thiếu (counting không có test → bug lọt) | ✅ CODE DONE | `__tests__/sortingEdgeCases.spec.ts` — 27 test khóa hành vi chuẩn |
+
+#### Sprint 14 — Dead Code Cleanup (algorithm-sandbox) ✅ CODE DONE
+
+| Nhóm | File đã xóa | Lý do |
+| :--- | :--- | :--- |
+| Canvas chain (cũ) | `components/AlgorithmCanvas.vue`, `composables/useAlgorithmCanvasController.ts`, `composables/useAnimatedItems.ts`, `composables/useCamera.ts`, `composables/useCanvasResize.ts`, `composables/useMousePan.ts`, `renderers/renderArrayBar.ts`, `renderers/renderLoopPointer.ts`, `types/canvas.types.ts` | Không còn nơi nào import (ArrayBarVisualizer thay thế hoàn toàn) |
+| Graph playground chain (cũ) | `components/GraphPlayground.vue`, `components/GraphPlaygroundHud.vue`, `composables/useGraphPlayground.ts`, `composables/useGraphInteraction.ts`, `composables/useGraphPhysics.ts`, `renderers/renderGraphPlayground.ts`, `engine/ForceDirectedLayout.ts`, `engine/InteractivePlaygroundEngine.ts` | Dead since Sprint 5 (graph playground chuyển sang feature `interactive-playground` riêng) |
+| Inspector/Input cũ | `components/SortingDrawerInput.vue`, `components/LomutoInspector.vue`, `components/MergeInspector.vue`, `components/PartitionStack.vue` + `.css`, `components/heap-sort/HeapBanner.vue` | Không được mount ở đâu (dispatcher/visualizer mới thay thế) |
+| Test của dead code | `__tests__/ForceDirectedLayout.spec.ts` (6 test) | Test code đã xóa |
+| Barrel | `index.ts` — bỏ export `AlgorithmCanvas`, `SortingDrawerInput`, `ForceDirectedLayout` | Dọn public API |
+
+- **Giữ nguyên (ALIVE):** `CustomInputPanel` + `EdgeBuilderForm` + `useInputValidation` + `CustomInputParser` (GraphView dùng), `MonacoLineSyncerCoordinator` + `PseudocodeSyncer` + `MonacoGutterClickInterceptor` (CodeEditor dùng), toàn bộ visualizer chain + 7 algorithms + sortingIdEnricher.
+- **Verify:** vitest 60 files / 816 tests PASS (822 − 6 ForceDirectedLayout), vue-tsc --noEmit exit 0.
+
+#### Sprint 15 — Bug Fix Round 1 (QA scan sâu) ✅ CODE DONE
+
+| Bug | Mức | File sửa |
+| :--- | :--- | :--- |
+| Merge Sort đúc id ảo (≥10000) với phần tử trùng → bar ảo giữa animation | HIGH | `algorithms/mergeSort.ts` — chuyển sang TrackedElement (id theo phần tử nguồn qua frame ghi đè); `helpers/sortingIdEnricher.ts` — counter cục bộ theo batch (hết trôi vô hạn) |
+| Sorting tab "chết" nếu CodeEditor/Quiz đã compile vào store dùng chung (Play chạy pseudocode cũ) | MEDIUM | `composables/useSortingAnimation.ts` — onMounted luôn recompile |
+| Radix visualizer bỏ offset số âm → activeBucketIdx âm, không highlight hộp | MEDIUM | `composables/useRadixSortVisualizer.ts` — countOffset áp dụng digit/prefix/suffix |
+| comparingIndices counting/radix hiển thị sai ngữ nghĩa ở trace/detail (như cặp bar) | MEDIUM | `components/SortingDetailPanel.vue`, `components/SortingTraceTable.vue` — nhãn `A[i]→Count[d]` / `A[i]→Hộp[d]` |
+| Timer VCR chạy nền khi đổi tab Sorting ↔ DSA (KeepAlive) | LOW | `views/sorting/SortingView.vue` — pause khi rời tab |
+| bucketSort stepIndex bắt đầu 1 (lệch convention 0-based) | LOW | `algorithms/bucketSort.ts` — 11 chỗ `++stepIndex` → `stepIndex++` |
+| CountingSortVisualizer hiển thị chữ số âm sai (-1/-5) + barHeightPct âm | LOW | `components/CountingSortVisualizer.vue` — digit dùng offset + clamp ratio |
+| Parser nuốt rác (`parseInt("12abc")=12`) | LOW | `composables/useSortingAnimation.ts` — regex `^-?\d+$` chặt, token rác → mảng mặc định |
+| Test merge identity thiếu | HIGH | `__tests__/sortingEdgeCases.spec.ts` — +3 test (không id ≥10000, final ids [1,2,0] cho [2,1,1], mọi frame có ids) |
+
+- **Verify:** vitest 60 files / 819 tests PASS (816 + 3 merge), vue-tsc --noEmit exit 0.
+
+#### Sprint 16 — Bug Fix Round 2 (Cụm fix 2–7) ✅ CODE DONE
+
+| Cụm | Bug | Mức | File sửa |
+| :--- | :--- | :--- | :--- |
+| 2 | CountingSort hiển thị chữ số sai khi activePlace = tens (luôn hàng đơn vị) + nhánh output "?" chết | MEDIUM | `components/CountingSortVisualizer.vue` — helper `digitParts()` theo `activePlace` (prefix/digit/suffix), bỏ nhánh "?" |
+| 2 | BubbleSort bar âm vượt khỏi khung (ratio âm, height vượt 100%) | MEDIUM | `components/BubbleSortVisualizer.vue` — span = max(maxVal, |minVal|, 1), ratio clamp ≥ 0 |
+| 2 | Trace hiển thị "1/0" khi store chưa có frame | LOW | `components/SortingDrawerTrace.vue` — `codeBtnLabel` guard `total <= 0`, clamp step ≤ total |
+| 2 | Heap visualizer dựng cây 6 node ảo trước khi có frame | LOW | `composables/useHeapSortVisualizer.ts` — n fallback từ frame thực |
+| 2 | Radix: `frame().description` undefined khi collect + phần tử trong bucket xuất hiện 2 chỗ | MEDIUM | `composables/useRadixSortVisualizer.ts` — optional chain, placeholder dim `idx < activeIdx` pha distribute |
+| 3 | BucketSort dải tĩnh [0-25)…[75-100] → sai với số âm/giá trị >100 | HIGH | `algorithms/bucketSort.ts` — bucket động theo min/max/spread, `fmtRange`/`rangeLabel`/`rangeSummary` vào description; `__tests__/sortingEdgeCases.spec.ts` +1 test |
+| 4 | Store animation singleton dùng chung InteractivePlayground + DSAPlayer (cùng mount trong GraphView v-show) → frame/pseudoCode/xen lẫn | HIGH | `store/useAnimationStore.ts` — refactor `createAnimationVcrState()` + `useAnimationStore` ('animation') + `usePlaygroundAnimationStore` ('playground-animation'); `InteractivePlayground.vue`, `PlaygroundCanvas.vue` chuyển store mới |
+| 4 | DSAPlayer graph: `parseInt("0-1-4")` nuốt rác → 0; default input sai dạng edge-list | HIGH | `components/DSAPlayer.vue` — default node values `'50, 30, 70, 20, 40, 60, 80, 10'`, parse chặt `^-?\d+$`, loadResult truyền nguyên graphNodes/treeNodes/distances |
+| 4 | AlgorithmVisualizer chọn renderer theo tên algorithm → DSA graph bị render nhầm | MEDIUM | `components/AlgorithmVisualizer.vue` — ưu tiên frame data (graphNodes → GraphRenderer, treeNodes → TreeRenderer), cast FrameDTO DSA |
+| 4 | Test cô lập store mới thiếu | HIGH | `__tests__/usePlaygroundAnimationStore.spec.ts` (mới, 3 test) |
+| 5 | Weight popover: bấm Esc → blur → vẫn submit trọng số | MEDIUM | `components/InteractivePlayground.vue` — cờ `weightCancelRef`, `cancelWeightInput()` chặn trước `submitWeight()` |
+| 6 | Highlight code-editor làm sai màu comment chứa từ khóa/API | MEDIUM | `helpers/highlightHelper.ts` — split comment trước (`/(\/\/[^\n]*)/g`) rồi mới wrap keyword/number |
+| 6 | Lesson quiz: emit completeStep dù chưa đạt 70%, double-submit, chưa trả lời hết vẫn chấm | HIGH | `views/lesson/components/LessonStepQuiz.vue` — viết lại: PASS_THRESHOLD 0.7, quizScore/quizPassed/answeredCount, confirm khi còn câu trống, guard isSubmitted, resetQuiz, giải thích đáp án khi fail |
+| 6 | QuizPanel.vue dead (không ai import) | LOW | `components/QuizPanel.vue` (features/lesson) — XÓA |
+| 6 | excelParser đẩy quiz 0 câu / câu rỗng vào danh sách | MEDIUM | `service/excelParser.ts` — skip câu rỗng, lọc quiz không câu hỏi |
+| 6 | Backend quiz double-submit + quiz 0 câu chạy tiếp | MEDIUM | `store/useQuizStore.ts` — guard `isBackendQuizSubmitting`, throw khi 0 câu, reset flag exit; `components/BackendQuizWorkspace.vue` — nút disabled + 'Đang gửi...' |
+| 7 | Embed widget chọn quicksort-recursion → rỗng; EMBED_ALGORITHM_OPTIONS chứa thuật toán không hỗ trợ | MEDIUM | `views/embed/EmbedWidgetView.vue` — map `'quicksort-recursion'` → SortingView; `types/embed-widget.types.ts` — giữ 10 thuật toán được VISUALIZER_MAP hỗ trợ |
+| 7 | App treo white-screen khi backend init > 5s | HIGH | `main.ts` — `Promise.allSettled([authStore.init(), progressStore.initFromServer()])` race timeout 5s, mount không block |
+
+- **Verify:** vitest 64 files / 859 tests PASS, vue-tsc --noEmit exit 0.
 
 ### `src/features/oop-sandbox/` — Sprint 6 ✅
 
@@ -939,7 +1096,7 @@ Tất cả các mục tiêu Sprint 5 đã đạt:
 | Tính năng | Chi tiết | Trạng thái | Files liên quan |
 | :--- | :--- | :--- | :--- |
 | **Landing Page** | `/#/` for unauthenticated users, neon gradients, glassmorphic feature grid, stats bar | ✅ CODE DONE | `frontend/src/views/LandingView.vue` |
-| **Dashboard Hub** | `/#/dashboard` for authenticated users, greeting banner, XP progress wheel, top 3 badges, quick links | ✅ CODE DONE | `frontend/src/views/DashboardView.vue` |
+| **Dashboard Hub** | `/#/dashboard` for authenticated users, rebuilt with modern glassmorphism layout, stats overview (4 cards), improved greeting banner with avatar, XP progress bar, SkillRadarChart, badges, quick links | ✅ CODE DONE | `views/dashboard/DashboardView.vue`, `features/user-progress/components/SkillRadarChart.vue` |
 | **User.Role (Backend)** | Student/Teacher role on User entity, StatelessAuthStrategy, StatelessUserDto, DbContext config | ✅ CODE DONE | `User.cs`, `StatelessAuthStrategy.cs`, `StatelessAuthDto.cs`, `ApplicationDbContext.cs` |
 | **EF Migration: AddUserRole** | Adds Role column (varchar 20, default 'Student') to Users table | ✅ CODE DONE | `Infrastructure/Migrations/AddUserRole` |
 | **Demo user = Teacher** | demo@visualizationdsa.dev seeded as Teacher role in both in-memory and DbSeeder | ✅ CODE DONE | `StatelessAuthStrategy.cs`, `DbSeeder.cs` |
@@ -1229,6 +1386,21 @@ Tất cả các mục tiêu Sprint 5 đã đạt:
 | **State Inspector Tour Target** | Gắn data-tour-id vào CallStackPanel, HeapObjects, và RecursionTreeSVG để định vị tour trong phân hệ /state. | ✅ CODE DONE | `StateInspectorWorkspace.vue` |
 | **Pedagogical Tour Enhancements** | Bổ sung dynamic beforeAction hỗ trợ chuyển tab tự động (tab-switching) và tích hợp bài học chuyên sâu /state, /graph, /sorting. | ✅ CODE DONE | `useGuidedTourStore.ts`, `useGuidedTourStore.spec.ts` |
 
+### Radix Sort Visualization Rebuild — Modern UI/UX
+
+| Bước | Nội dung | Trạng thái CODE | Chi tiết |
+| :--- | :--- | :--- | :--- |
+| **Composable** | `useRadixSortVisualizer.ts` — loại bỏ DOM query dependency, CSS variable consistency, responsive cell sizing | ✅ CODE DONE | `composables/useRadixSortVisualizer.ts` — repositioning logic, class logic, digit highlighting |
+| **Orchestrator** | `RadixSortVisualizer.vue` — loại bỏ hardcoded `min-width: 620px`, responsive layout | ✅ CODE DONE | `RadixSortVisualizer.vue` — clean flex layout, no hardcoded dimensions |
+| **Banner** | `RadixBanner.vue` — CSS variable consistency, responsive chips, cleaner phase indicator | ✅ CODE DONE | `RadixBanner.vue` — no `color-mix()`, CSS custom properties throughout |
+| **Array** | `RadixArray.vue` — CSS variable consistency, responsive grid, placeholder support | ✅ CODE DONE | `RadixArray.vue` — no `color-mix()`, responsive cell sizing, digit highlighting |
+| **Connector** | `RadixConnector.vue` — simplified vertical line connector, no SVG path queries | ✅ CODE DONE | `RadixConnector.vue` — clean CSS-only connector, no DOM queries |
+| **Buckets** | `RadixBuckets.vue` — CSS variable consistency, responsive grid, cleaner bucket items | ✅ CODE DONE | `RadixBuckets.vue` — no `color-mix()`, responsive 10-column grid |
+| **Inspector** | `RadixInspector.vue` — CSS variable consistency, cleaner stats layout | ✅ CODE DONE | `RadixInspector.vue` — no hardcoded colors, responsive grid |
+| **Tests** | All 864 tests pass, TypeScript compiles cleanly | ✅ VERIFIED | `npx vitest run` — 864 passed; `npx tsc --noEmit` — 0 errors |
+
+---
+
 ---
 
 ## Section 46 — Compare & Concurrency UI Standardization & Tour Relocation (16/06/2026)
@@ -1471,3 +1643,440 @@ Tất cả các mục tiêu Sprint 5 đã đạt:
 | **Integration** | Course + Quiz flow — 4 tests BDD | ✅ CODE DONE | `frontend/src/tests/integration/courseAndQuizFlow.spec.ts` — luồng học viên end-to-end qua fetch mock giả lập backend thật (200/400/404) |
 | **Fix** | Bucket Sort duplicate IDs | ✅ CODE DONE | `frontend/src/features/algorithm-sandbox/algorithms/bucketSort.ts` — mergedArrayState hiển thị mỗi phần tử đúng 1 lần (output + remaining) → id unique mọi frame |
 | **Tests** | Điều kiện thoát đạt | ✅ CODE DONE | `npm run test` — **822/822 tests PASS (61/61 files) — 100%** |
+
+
+---
+
+### Sprint: Graph Feature Audit & Correctness Fixes (2026-08-01)
+
+| Hạng mục | Mô tả | Trạng thái | Files |
+| :--- | :--- | :--- | :--- |
+| **Bug Fix** | Thống nhất mô hình Vô hướng: BFS/DFS/Dijkstra duyệt 2 chiều | ✅ CODE DONE | `GraphAlgorithmSimulator.ts` |
+| **Bug Fix** | Bỏ mũi tên cạnh (undirected visual) | ✅ CODE DONE | `playgroundCanvasDraw.ts` |
+| **Bug Fix** | `GraphParser.toAdjacencyList` thêm cả 2 chiều | ✅ CODE DONE | `GraphParser.ts` |
+| **Bug Fix** | Nhãn đỉnh duy nhất A..Z, A1.. | ✅ CODE DONE | `usePlaygroundStore.ts` |
+| **Bug Fix** | Watch 2 chiều so sánh tập hợp, chống clobber | ✅ CODE DONE | `CustomInputPanel.vue` |
+| **Refactor** | Dọn dead code Graph legacy + FloatingToolbar/StatusBar | ✅ CODE DONE | `algorithm-sandbox`, `interactive-playground` |
+| **UX** | Legend màu, thu gọn Generator, responsive panel <1024px, tối ưu render loop idle | ✅ CODE DONE | `InteractivePlayground.vue`, `GraphView.vue`, `PlaygroundCanvas.vue`, `CustomInputPanel.vue` |
+| **Tests** | +4 test undirected traversal, +1 nhãn duy nhất, cập nhật test parser | ✅ CODE DONE | `graphAlgorithmSimulator.spec.ts`, `interactivePlayground.spec.ts`, `CustomInputParser.spec.ts` |
+| **Verify** | npm run test | ✅ CODE DONE | **825/825 tests PASS (61/61 files) — 100%**, vue-tsc exit 0 |
+
+---
+
+### Minimalist UI Overhaul — 2-Color System (2026-08-02)
+
+| Hạng mục | Mô tả | Trạng thái | Files |
+| :--- | :--- | :--- | :--- |
+| **Theme** | Đơn giản accent: giữ primary + green/red/yellow, xóa cyan/purple/blue families | ✅ CODE DONE | `styles/theme.css` |
+| **Theme** | Cyberpunk theme dùng primary thay cyan làm accent chính | ✅ CODE DONE | `styles/theme.css` |
+| **Theme** | Visualization colors dùng CSS vars thay hardcoded hex | ✅ CODE DONE | `styles/theme.css` |
+| **Tokens** | VCR accent đổi từ purple (#c084fc) sang primary (#4255ff) | ✅ CODE DONE | `styles/design-tokens.css` |
+| **Tokens** | Xóa glow-purple, glow-green, glow-gold tokens | ✅ CODE DONE | `styles/design-tokens.css` |
+| **Motion** | VCR glow animation dùng var(--vcr-accent-dim) thay hardcoded | ✅ CODE DONE | `styles/cinematic.css` |
+| **Utility** | Bỏ .text-cyan, .text-purple; .text-info dùng primary | ✅ CODE DONE | `style.css` |
+| **App Shell** | Premium crown/badge dùng primary thay gold gradient | ✅ CODE DONE | `App.css` |
+| **App Shell** | meta-xp dùng primary thay purple | ✅ CODE DONE | `App.css` |
+| **Landing** | Hero title/tagline/cta dùng primary thay indigo→purple gradient | ✅ CODE DONE | `views/landing/LandingView.css` |
+| **Landing** | Stats value dùng primary color thay gradient | ✅ CODE DONE | `views/landing/LandingView.css` |
+| **Dashboard** | Greeting banner dùng primary-dim thay purple gradient | ✅ CODE DONE | `views/dashboard/DashboardView.css` |
+| **Dashboard** | Quicklink teacher border dùng primary thay yellow | ✅ CODE DONE | `views/dashboard/DashboardView.css` |
+| **Dashboard** | Rebuilt with stats overview cards, XP progress bar, avatar, improved layout | ✅ CODE DONE | `views/dashboard/DashboardView.vue` |
+| **SkillRadarChart** | Rebuilt with legend, better colors, CSS variable consistency | ✅ CODE DONE | `features/user-progress/components/SkillRadarChart.vue` |
+| **AlgorithmDashboard** | Thay 27 hardcoded colors (cyan→primary) | ✅ CODE DONE | `features/dsa-modules/components/AlgorithmDashboard.css` |
+| **AlgorithmDashboard** | Rebuilt with cleaner header, search/filter, CSS variable consistency | ✅ CODE DONE | `features/dsa-modules/components/AlgorithmDashboard.vue` |
+
+---
+
+### Minimalist UI Overhaul — Phase 2: Component CSS Cleanup (2026-08-02)
+
+| Hạng mục | Mô tả | Trạng thái | Files |
+| :--- | :--- | :--- | :--- |
+| **AdminPanelView** | Thay 37 hardcoded colors → CSS vars | ✅ CODE DONE | `views/admin/AdminPanelView.css` |
+| **TeacherPanelView** | Thay 38 hardcoded colors → CSS vars | ✅ CODE DONE | `views/teacher/TeacherPanelView.css` |
+| **AlgorithmDashboard** | Thay 27 hardcoded colors (cyan→primary) | ✅ CODE DONE | `features/dsa-modules/components/AlgorithmDashboard.css` |
+| **ExcelQuizImporter** | Thay 29 hardcoded colors → CSS vars | ✅ CODE DONE | `features/quiz/components/ExcelQuizImporter.css` |
+| **LiveWidgetPreview** | Thay 16 hardcoded colors (cyan→primary) | ✅ CODE DONE | `features/embed-widget/components/LiveWidgetPreview.css` |
+| **CodelabEditorModal** | Thay 18 hardcoded colors → CSS vars | ✅ CODE DONE | `views/teacher/CodelabEditorModal.css` |
+| **QuizBuilderTab** | Thay 21 hardcoded colors → CSS vars | ✅ CODE DONE | `views/teacher/QuizBuilderTab.css` |
+| **CustomLessonCreator** | Thay 14 hardcoded colors → CSS vars | ✅ CODE DONE | `views/teacher/CustomLessonCreator.css` |
+| **NotFoundView** | Thay 4 hardcoded gradients + hex → CSS vars | ✅ CODE DONE | `views/not-found/NotFoundView.css` |
+| **vue-docs-theme** | Thay 12 hardcoded colors → CSS vars | ✅ CODE DONE | `features/docs/styles/vue-docs-theme.css` |
+| **ModuleItemRow** | Thay 33 hardcoded colors (css+vue) | ✅ CODE DONE | `views/teacher/components/ModuleItemRow.css` + `.vue` |
+| **ShareExportModal** | Thay 13 hardcoded colors → CSS vars | ✅ CODE DONE | `features/export-share/components/ShareExportModal.css` |
+| **LoginModal** | Thay 1 hardcoded color → CSS var | ✅ CODE DONE | `features/auth/components/LoginModal.css` |
+| **Teacher Modals** | Thay 36 hardcoded colors (6 modal files) | ✅ CODE DONE | QuizFormModal, QuestionFormModal, CodelabItemModal, VersionsModal, TheoryArticlePickerModal, TheoryArticleEditorModal |
+| **Verify** | npm run build — 0 errors | ✅ CODE DONE | 22.41s build |
+
+---
+
+### TypeScript Health Fix — 49 lỗi TS pre-existing (2026-08-02)
+
+| Hạng mục | Mô tả | Trạng thái | Files |
+| :--- | :--- | :--- | :--- |
+| **TS errors** | Fix toàn bộ 49 lỗi type pre-existing còn sót | ✅ CODE DONE | `vue-tsc -b` — 0 errors |
+| **Monaco** | Import root `monaco-editor` thay vì `monaco-editor/esm` | ✅ CODE DONE | `features/code-editor/components/CodeEditor.vue` + `src/env.d.ts` (module declaration) |
+| **Docs glob** | `import.meta.glob` cú pháp Vite 8: `{ query: '?raw', import: 'default' }` | ✅ CODE DONE | `views/docs/DocsView.vue` |
+| **dnd-kit** | Wrapper Vue `SortableContextWrapper.vue` cho SortableContext | ✅ CODE DONE | `components/ui/SortableContextWrapper.vue` |
+| **CSS files** | Tạo mới 4 CSS bị thiếu (errors liên quan import CSS) | ✅ CODE DONE | `TeacherClassroomCurriculumTab.css`, `ClassroomItemPlayer.css`, `QuizPickerModal.css`, `ImportCourseModal.css` |
+| **Verify** | Build + test | ✅ CODE DONE | `npm run build` PASS (vite 8/rolldown, 4455 modules) + `npm test` PASS (825 tests) |
+
+### Encoding Recovery — Fix mojibake 4 file markdown tracking/docs (2026-08-02)
+
+| Hạng mục | Mô tả | Trạng thái | Files |
+| :--- | :--- | :--- | :--- |
+| **errors.md** | Khôi phục cp1252→UTF-8 mojibake (5645 chars) + strip 2057 NUL bytes | ✅ CODE DONE | `plan/tracking/errors.md` — base khớp 100% commit `4f8d4c3`; vùng tail (Lỗi 174+, ~18 entries) bị hỏng UTF-16LE từ `fa5d844`, giữ nguyên + ghi chú |
+| **decisions.md** | Khôi phục toàn bộ mojibake (5564 chars) | ✅ CODE DONE | `plan/tracking/decisions.md` — 0 U+FFFD, 0 mojibake |
+| **binary-search.md** | Xác minh không phải mojibake (chỉ chữ Việt hợp lệ) | ✅ CODE DONE | `frontend/src/features/docs/content/searching/binary-search.md` |
+| **linear-search.md** | Xác minh không phải mojibake (chỉ chữ Việt hợp lệ) | ✅ CODE DONE | `frontend/src/features/docs/content/searching/linear-search.md` |
+| **Detect** | Script phát hiện mojibake | ✅ CODE DONE | `detect-only.js` — REMAINING CORRUPTED: 0 |
+
+### Counting Sort Visualization Rebuild — Responsive Three-Stage UI (2026-08-03)
+
+| Hạng mục | Mô tả | Trạng thái | Files |
+| :--- | :--- | :--- | :--- |
+| **Frame contract** | Bổ sung `inputArrayWithIds` để giữ identity của input qua từng LSD pass, phục vụ stable color chính xác | ✅ CODE DONE | `types/sorting.types.ts`, `algorithms/countingSort.ts` |
+| **Composable** | Tách phase detection, digit helpers, stable color, highlight và responsive sizing khỏi component | ✅ CODE DONE | `composables/useCountingSortVisualizer.ts` |
+| **UI** | Tách Banner, Input Array, Counting Grid, Output Array và Connector thành component độc lập | ✅ CODE DONE | `components/counting-sort/*.vue` |
+| **Orchestrator** | Rebuild component chính thành layout flow mỏng, responsive, không còn SVG connector/DOM measurement | ✅ CODE DONE | `components/CountingSortVisualizer.vue` |
+| **CSS cleanup** | Xóa CSS monolithic và toàn bộ `color-mix()`/`getBoundingClientRect()`/`animateMotion` của Counting Sort cũ | ✅ CODE DONE | Xóa `components/CountingSortVisualizer.css` |
+| **Regression** | Thêm test xác thực input IDs duy nhất và đúng thứ tự sau pass LSD | ✅ CODE DONE | `__tests__/sortingEdgeCases.spec.ts` |
+| **Verify** | Type-check, sorting tests và full Vitest suite | ✅ VERIFIED | `tsc --noEmit` pass; 64 files / 865 tests pass. `npm run build` còn 5 lỗi TS pre-existing ngoài module này |
+
+### Bucket Sort Visualization Rebuild — Responsive Range-Based UI (2026-08-03)
+
+| Hạng mục | Mô tả | Trạng thái | Files |
+| :--- | :--- | :--- | :--- |
+| **Frame contract** | Bổ sung `inputArrayWithIds` và `bucketRangeLabels` để input giữ identity và range hiển thị đúng min/max động | ✅ CODE DONE | `types/sorting.types.ts`, `algorithms/bucketSort.ts` |
+| **Composable** | Tách phase, bucket state, range, stable color, active item và output helpers | ✅ CODE DONE | `composables/useBucketSortVisualizer.ts` |
+| **UI** | Tách Banner, Input Array, Bucket Grid, Output Array và Connector | ✅ CODE DONE | `components/bucket-sort/*.vue` |
+| **Orchestrator** | Rebuild layout 3 tầng responsive, không còn SVG connector/query DOM | ✅ CODE DONE | `components/BucketSortVisualizer.vue` |
+| **CSS cleanup** | Xóa `color-mix()`, CSS monolithic và range label hardcoded `[0-25]...` | ✅ CODE DONE | Xóa `components/BucketSortVisualizer.css` |
+| **Regression** | Thêm test input identity và range labels trong phase collect | ✅ CODE DONE | `__tests__/sortingEdgeCases.spec.ts` |
+| **Verify** | Type-check và full Vitest suite | ✅ VERIFIED | `tsc --noEmit` pass; 64 files / 866 tests pass |
+
+### P0 Bug Fixes — Critical Functional Bugs (2026-08-03)
+
+| Hạng mục | Mô tả | Trạng thái | Files |
+| :--- | :--- | :--- | :--- |
+| **P0-1** | Sửa CSS class name mismatch `topic-tab-btn` → `topic-tab` trong BackendQuizWorkspace | ✅ CODE DONE | `quiz-system/components/BackendQuizWorkspace.css` |
+| **P0-2** | Sửa DashboardView hardcoded stats (`12/3/7`) → kết nối với `useCourseStore` + `useUserProgressStore` | ✅ CODE DONE | `views/dashboard/DashboardView.vue` |
+| **P0-3** | Sửa GraphView `zoomLevel` luôn hiển thị "100%" → thêm `zoomLevel` vào Playground store, sync từ PlaygroundCanvas | ✅ CODE DONE | `interactive-playground/store/usePlaygroundStore.ts`, `interactive-playground/components/PlaygroundCanvas.vue`, `views/graph/GraphView.vue` |
+| **P0-4** | Sửa GraphView keyboard shortcuts không hoạt động → thêm `keydown` listener với `shortcutMap` | ✅ CODE DONE | `views/graph/GraphView.vue` |
+| **P0-5** | Sửa InteractiveLectureSlides memory leak coordinator → tạo trong `onMounted`, `destroy()` trong `onUnmounted` | ✅ CODE DONE | `quiz/components/InteractiveLectureSlides.vue` |
+| **P0-6** | Sửa BackendQuizWorkspace side-effect trong computed → chuyển `isUsingFallback` sang `computed` thuần túy | ✅ CODE DONE | `quiz-system/components/BackendQuizWorkspace.vue` |
+| **Verify** | Type-check và full test suite | ✅ VERIFIED | `tsc --noEmit` pass; 64 files / 866 tests pass |
+
+### Playground Improvements — Searching + Recursive + Renderer + Safety (2026-08-03)
+
+| Nhóm | Hạng mục | Mô tả | Files |
+|---|---|---|---|
+| **A** | Search range visualization | Hiển thị vùng `[low..high]` trên array bars với background highlight | `algoCanvasHelpers.ts` |
+| **A** | Pointer indicators (L/H/M/R) | Con trỏ mũi tên + label trên canvas cho binary search, two-pointers | `algoCanvasHelpers.ts`, `CompilerStepExecutor.ts` |
+| **A** | Target value badge | Hiển thị `Target: X` hoặc `✓ Found: X` ở góc trái canvas | `algoCanvasHelpers.ts` |
+| **A** | Found state golden glow | Found index có glow gold, phân biệt với amber đang process | `algoCanvasHelpers.ts` |
+| **A** | Comparison counter | Hiển thị `Comparisons: X` trên canvas | `algoCanvasHelpers.ts`, `CompilerStepExecutor.ts` |
+| **A** | Not-found overlay | Overlay đỏ `✕ Not Found` khi search range rỗng | `algoCanvasHelpers.ts` |
+| **A** | Search demos updated | linear-search, binary-search, two-pointers, sliding-window dùng hooks mới | `playgroundAlgoDemos.ts` |
+| **B** | Call stack panel | Panel hiển thị call stack frames cho đệ quy (BST, tree-traversal, DFS) | `algoCanvasHelpers.ts`, `CompilerStepExecutor.ts` |
+| **B** | Recursion depth badge | Badge `Depth: X` trên canvas | `algoCanvasHelpers.ts`, `CompilerStepExecutor.ts` |
+| **B** | Pruned branch visualization | Nhánh cây bị prune hiển thị dashed + dimmed | `algoCanvasHelpers.ts`, `CompilerStepExecutor.ts` |
+| **B** | Recursive demos updated | BST, tree-traversal, DFS dùng `setCallStack` + `pruneNode` | `playgroundAlgoDemos.ts` |
+| **C** | Canvas legend | Legend màu hiển thị trên canvas (default/comparing/sorted/found/pruned) | `algoCanvasHelpers.ts` |
+| **C** | Responsive badge widths | Badge width tự động theo text width, không hardcoded 130px | `algoCanvasHelpers.ts` |
+| **C** | Index labels below bars | Hiển thị index `[0], [1], ...` dưới mỗi bar | `algoCanvasHelpers.ts` |
+| **D** | Recursion depth limit | Giới hạn đệ quy 100 cấp trong sandbox, throw error nếu vượt | `CompilerStepExecutor.ts` |
+| **D** | Duplicate tree input fix | `buildTreeFromArray` tạo unique ID (`5_2`, `5_3`) cho duplicate values | `AlgoInputParser.ts` |
+| **Verify** | Type-check + full test | `tsc --noEmit` pass; 64 files / 866 tests pass | |
+
+### Sorting Animation Engine v2 — Algorithm-Aware Transitions (2026-08-03)
+
+| Bước | Hạng mục | Mô tả | Files |
+|---|---|---|---|
+| **v2** | Transition detection | Engine phát hiện swap/compare/highlight/move từ diff giữa prev↔current snapshot | `algo-playground/engine/SortingAnimationEngine.ts` |
+| **v2** | SWAP animation | Parabolic arc trajectory + dashed trail, tween cả vị trí lẫn màu sắc | `SortingAnimationEngine.ts` |
+| **v2** | COMPARE animation | Pulse glow + scale bounce + connector indicator giữa 2 bar | `SortingAnimationEngine.ts` |
+| **v2** | HIGHLIGHT animation | Pop scale + fade từ default → green với shadow glow | `SortingAnimationEngine.ts` |
+| **v2** | MOVE animation | Smooth slide vị trí + height, lerp tất cả bars đồng thời | `SortingAnimationEngine.ts` |
+| **v2** | Duration tuning | Compare=250ms, Swap/Highlight/Move=400ms (all /speed) | `SortingAnimationEngine.ts` |
+| **Verify** | Type-check + full test | `tsc --noEmit` pass; 64 files / 866 tests pass | |
+
+### Icon System Migration — Loại bỏ Emoji/Unicode Icon → SVG (2026-08-03)
+
+| Hạng mục | Mô tả | Trạng thái | Files |
+| :--- | :--- | :--- | :--- |
+| **BaseIcon mở rộng** | Thêm ~45 icon mới (arrow-left/up/down, arrows-horizontal, x, x-circle, refresh-cw/ccw, skip-forward/backward, minus, help-circle, alert-circle, book-open, user, link, file-text, edit-2, terminal, code, list, list-ordered, quote, bold, italic, strikethrough, type, image, maximize/minimize-2, crown, dice, puzzle, palette, folder, monitor, download, upload, bell, flag, masks, message-circle, flask, snowflake, timer, heart, scales, atom, construction, rocket, party-popper, tree, corner-up-left) | ✅ CODE DONE | `shared/components/BaseIcon.vue` |
+| **emojiParser mở rộng** | SVG_PATHS + EMOJI_TO_ICON phủ 100% emoji/symbol đang dùng (VCR ⏮⏭⏩⏸▶⏱⏳, mũi tên, ✓✕⚠★⭐⚡⚙, 90 surrogate emoji 🔄🔥🏆...) + strip FE0F | ✅ CODE DONE | `utils/emojiParser.ts` |
+| **Template replacement** | Thay toàn bộ emoji/symbol trong template .vue bằng `<BaseIcon>` (110+ vị trí, ~60 files) — kiểm tra tự động: 0 emoji còn lại trong template | ✅ CODE DONE | `views/*`, `features/*`, `components/*` |
+| **Content render surfaces** | Nội dung chuỗi (guide tour, explanation frames, markdown lessons/docs, toast, badge icon, topic icon, demo description) render SVG qua `parseEmojiToSvg` | ✅ CODE DONE | `GuidedTourOverlay.vue`, `markdown.ts`, `TheoryPanel.vue`, `DocsMarkdownRenderer.vue`, `ExplanationPanel.vue`, `AnimationHud.vue`, `AnimTimelineSlider.vue`, `SortingTraceTable.vue`, `SortingDetailPanel.vue`, `RadixBanner.vue`, `RadixInspector.vue`, `CountingBanner.vue`, `BucketBanner.vue`, `BucketConnector.vue`, `ToastContainer.vue`, `BadgesCabinet.vue`, `GamificationWorkspace.vue`, `DashboardView.vue`, `AdminDashboardTab.vue`, `LessonContentEditor.vue`, `CustomMarkdownEditor.vue`, `InteractivePlayground.vue`, `GraphView.vue`, `AlgoPlaygroundWorkspace.vue`, `CodelabPlayer.vue`, `BackendQuizWorkspace.vue` |
+| **Giữ nguyên có chủ đích** | Canvas-drawn text (ctx.fillText ✓✕←), demo code strings trong editor, console.log — không phải icon DOM nên giữ nguyên | ✅ KEEP | `algoCanvasHelpers.ts`, `playgroundAlgoDemos.ts`, `useUserProgressStore.ts` |
+| **Tests** | Cập nhật assertion theo icon SVG (aria-label thay emoji text), notableSteps label `swap`/`found`, mount BaseIcon global | ✅ CODE DONE | `AlgoPlaygroundWorkspace.spec.ts`, `useAlgoPlaygroundStore.spec.ts` |
+| **Verify** | Full Vitest suite + build | ✅ VERIFIED | `npm run test` — 67 files / 922 tests PASS; `npm run build` (vue-tsc + vite) PASS |
+
+### Mermaid Diagrams — Theme tối giản + Syntax Scan tự động (2026-08-04)
+
+| Hạng mục | Mô tả | Trạng thái | Files |
+| :--- | :--- | :--- | :--- |
+| **Shared theme** | `buildMermaidInitConfig()` — theme `base`, bảng màu tối giản: 1 nền + 1 tông node + 1 tông phụ + 1 viền + 1 chữ + 1 màu cạnh, 1 accent duy nhất `#3d9970` cho activation; class diagram fillType0..7 xen kẽ 2 tông (hết "cầu vồng"); flowchart curve linear; themeCSS ép edge/label cùng tông | ✅ CODE DONE | `utils/mermaidTheme.ts` |
+| **Apply** | DocsMarkdownRenderer dùng config dùng chung thay `theme:'default'` cũ | ✅ CODE DONE | `features/docs/components/DocsMarkdownRenderer.vue` |
+| **Syntax scan** | Vitest spec parse toàn bộ 88 khối mermaid (55 file docs) bằng `mermaid.parse` — fail khi có lỗi cú pháp, báo rõ file + khối + message | ✅ CODE DONE | `features/docs/__tests__/docsMermaidSyntax.spec.ts` |
+| **Sửa 12 lỗi cú pháp** | 5 file docs: `7 <-- R` (mermaid KHÔNG hỗ trợ backward link `<--`), parens chưa quote trong diamond/subgraph title, `style fill:rgba(...)` (comma phá style parser), link subgraph bằng title string; chuẩn hóa màu style directive về palette app (#b85c5c/#c9a227/#3d9970) | ✅ CODE DONE | `searching/two-pointers.md`, `searching/sliding-window.md`, `stack-queue/queue.md`, `hash-table/hash-table-theory.md`, `searching/binary-search.md`, `sorting/counting-sort.md` |
+| **Fix test lessonStudyFlow** | Mock `lessonApi` stale (thiếu `getLessonAuthToken` — API refactor 04:41 AM cùng ngày) → chuyển sang `importOriginal` spread, chỉ mock 4 hàm API | ✅ CODE DONE | `features/lesson/__tests__/lessonStudyFlow.spec.ts` |
+| **Verify** | Full Vitest suite + build | ✅ VERIFIED | `npm run test` — 77 files / 980 tests PASS; `npm run build` PASS |
+
+### Tailwind v4 Token Bridge — Fix navbar dropdown trong suốt + khôi phục 1862 token classes (2026-08-04)
+
+| Hạng mục | Mô tả | Trạng thái | Files |
+| :--- | :--- | :--- | :--- |
+| **Chẩn đoán** | Dropdown navbar (AppHeader group tab) panel/item dùng `bg-bg-surface`/`hover:bg-bg-hover` nhưng CSS build không chứa rule nào → Tailwind v4.3 không tự nạp `tailwind.config.js` (JS config cần `@config`); 1.862 lượt token classes ở 122 file .vue đều "chết" | ✅ DIAGNOSED | `dist/assets/*.css` scan |
+| **Thử `@config`** | Thêm `@config "../tailwind.config.js"` → core utilities (px-4/opacity-0/w-48/rounded-lg/absolute) biến mất (legacy config thay thế default theme) → revert | ❌ REVERTED | `src/style.css` |
+| **Fix chính thức** | Block `@theme inline { ... }` bridge toàn bộ design tokens (bg/text/accent/border/radius/shadow/font) tham chiếu trực tiếp biến runtime trong `theme.css` — utility compile `background-color:var(--color-bg-surface)`; unlayered `:root` thắng `@layer theme` nên đổi theme sáng/tối vẫn đúng | ✅ CODE DONE | `src/style.css` |
+| **Token thiếu** | Định nghĩa `--color-accent-cyan` (#06b6d4 dark / #0891b2 light) + `--color-accent-purple` (#a78bfa / #7c3aed) + glow/dim — trước đó 183 lượt `text-accent-cyan` không có định nghĩa | ✅ CODE DONE | `src/styles/theme.css` |
+| **Verify** | Compiled CSS chứa `.bg-bg-surface{background-color:var(--color-bg-surface)}`, `.text-accent-cyan`, `hover:bg-bg-hover`, core utilities còn nguyên; full test suite xanh | ✅ VERIFIED | `npm run build` + `npm run test` — 980 PASS |
+
+### Phase 2.10 Algo Playground - Fix Hoạt Ảnh Đè Chồng Khi Play Tự Động (2026-08-03)
+
+| Bước | Nội dung | Trạng thái CODE | Chi tiết |
+| :--- | :--- | :--- | :--- |
+| **Bug** | Ghosting khi chạy tự động | ✅ CODE DONE | SortingAnimationEngine.drawInterpolated clear canvas sau setTransform (trước đây chỉ clear khi !curr — 4 nhánh transition không clear → tích tụ hình cũ); +2 regression tests với mock canvas/rAF |
+| **Verify** | Toàn bộ | ✅ CODE DONE | Vitest 68 files / 924 tests PASS; ue-tsc -b --force CLEAN; 
+
+### Phase 2.11 Algo Playground - Fix Race Timing Transition Khi Play Tự Động (2026-08-03)
+
+| Bước | Nội dung | Trạng thái CODE | Chi tiết |
+| :--- | :--- | :--- | :--- |
+| **Race** | Watcher async trễ → transition lệch/đè | ✅ CODE DONE | setSnapshots khi play reset progress=0; RAF tick vừa advance KHÔNG vẽ (chờ snapshots mới) — mỗi tick 1 transition nhất quán, miễn nhiễm độ trễ watcher |
+| **Alpha** | Lerp giữ kênh alpha | ✅ CODE DONE | lerpColorHex parse/lerp rgba — pruned không đặc cứng khi transition cây/đồ thị |
+| **Pause** | Dừng ở frame tĩnh | ✅ CODE DONE | useAlgoAnimation pause → engine.snapToCurrent() |
+| **Tests** | +3 regression | ✅ CODE DONE | advance không vẽ + progress reset khi play + snap khi !playing - 68 files / 926 tests PASS, ue-tsc -b --force CLEAN, 
+
+### Phase 2.12 Algo Playground - Fix Play Bước 0 + Bỏ Đường Kẻ Trang Trí (2026-08-03)
+
+| Bước | Nội dung | Trạng thái CODE | Chi tiết |
+| :--- | :--- | :--- | :--- |
+| **Play** | Bấm ▶ chạy ngay từ bước 0 | ✅ CODE DONE | useAlgoAnimation.syncSnapshots prev = rames[max(0, idx-1)] (trước: null ở idx 0 → loop không advance); +regression test engine |
+| **Visual** | Bỏ đường kẻ/sợi dây trang trí | ✅ CODE DONE | Xóa connector compare, arc trail swap, bracket + boundary bubble, mũi tên MIN/KEY, stroke vùng partition, bracket search range; giữ glow/pulse, badge, fill vùng, PIVOT ring, con trỏ L/H/M |
+| **Verify** | Toàn bộ | ✅ CODE DONE | Vitest 68 files / 927 tests PASS; ue-tsc -b --force CLEAN; 
+### Phase 2.13 Algo Playground - Merge Sort Animation Engine Riêng (2026-08-03)
+
+| Bước | Nội dung | Trạng thái CODE | Chi tiết |
+| :--- | :--- | :--- | :--- |
+| **Engine** | MergeSortAnimationEngine (mới) | ✅ CODE DONE | Stateless singleton, `canHandle(snap)` data-driven; layout 3 tầng CHIA/TRỘN: mảng + segment [low..high] 2 màu, hàng L/R + con trỏ leftIdx/rightIdx, output điền dần + slot kế; phase label; không kẻ viền |
+| **Contract** | MergeSortState + setMergeState | ✅ CODE DONE | `CompilerStepExecutor` — interface + `mergeState` snapshot field + hook deep-copy + sandbox param; HOOKS_HINT cập nhật |
+| **Demo** | Merge-sort bottom-up data-driven | ✅ CODE DONE | `playgroundAlgoDemos.ts` — setMergeState divide mỗi segment + từng bước merge (con trỏ + output); giữ compare/highlight |
+| **Integrate** | Delegate + dọn cây giả | ✅ CODE DONE | `SortingAnimationEngine` — drawCustomLayout delegate qua canHandle; xóa `buildMergeTree`; isTreeAlgorithm chỉ heap-sort |
+| **Tests** | +4 test | ✅ CODE DONE | `MergeSortAnimationEngine.spec.ts` (3: canHandle/draw/empty); demo contract chia-trộn (1) - 69 files / 931 tests PASS, `vue-tsc -b --force` CLEAN, `npm run build` SUCCESS |
+### Phase 2.14 Algo Playground - Heap Sort Animation Engine Riêng (2026-08-03)
+
+| Bước | Nội dung | Trạng thái CODE | Chi tiết |
+| :--- | :--- | :--- | :--- |
+| **Engine** | HeapSortAnimationEngine (mới) | ✅ CODE DONE | Stateless singleton, `canHandle(snap)` data-driven; cây heap complete-tree (index→con 2i+1/2i+2) + dải mảng vùng heap/sorted tô mờ; phase XÂY ĐỐNG/TRÍCH XUẤT · heapSize; nodeR scale theo độ sâu |
+| **Contract** | HeapSortState + setHeapState | ✅ CODE DONE | `CompilerStepExecutor` — interface {phase, heapSize, activeIdx} + `heapState` field + hook deep-copy + sandbox param; HOOKS_HINT cập nhật |
+| **Demo** | Heap-sort data-driven | ✅ CODE DONE | `playgroundAlgoDemos.ts` — biến `phase` build→extract; heapify gọi setHeapState mỗi vòng sift |
+| **Integrate** | Delegate + dọn pipeline cũ | ✅ CODE DONE | `SortingAnimationEngine` — xóa isTreeAlgorithm/enrichForTree/buildHeapTree; drawCustomLayout delegate canHandle; drawInterpolated dùng snapshot trực tiếp; `renderMode` heap→tree |
+| **Tests** | +4 test | ✅ CODE DONE | `HeapSortAnimationEngine.spec.ts` (3: canHandle/draw/single); demo contract phase+heapSize giảm dần+activeIdx (1) - 70 files / 935 tests PASS, `vue-tsc -b --force` CLEAN, `npm run build` SUCCESS |
+### Phase 2.15 Algo Playground - Redesign Heap Engine (Parent-Centered + Swap Animation + Sift Path) (2026-08-03)
+
+| Bước | Nội dung | Trạng thái CODE | Chi tiết |
+| :--- | :--- | :--- | :--- |
+| **Layout** | Parent-centered thay complete-tree | ✅ CODE DONE | Vị trí node bottom-up (lá trái→phải, trong = trung điểm 2 con); nodeR scale slot+levelH; ẩn label khi nodeR<9 — hết dồn trái/chữ đè nút |
+| **Animation** | Swap bay dọc cạnh cây | ✅ CODE DONE | `draw(..., prev?, progress)` — swappingIndices → 2 giá trị bay cung parabol giữa 2 node (easeInOut, arcH theo khoảng cách); SortingAnimationEngine truyền prev/progress |
+| **Sift path** | Highlight đường chìm | ✅ CODE DONE | `HeapSortState.siftPath` + demo heapify track; node trên path amber mờ (thứ tự ưu tiên màu đã chuẩn hóa) |
+| **Strip** | Baseline-0 + swap trượt ngang | ✅ CODE DONE | Dải mảng hỗ trợ số âm; 2 bar swap lerp ngang; vùng heap/sorted tô mờ giữ nguyên |
+| **Tests** | +1 test + contract mở rộng | ✅ CODE DONE | Swap animation draw không throw; siftPath kết thúc tại activeIdx + trong heap + tồn tại path dài>1 ở build - 70 files / 936 tests PASS, `vue-tsc -b --force` CLEAN, `npm run build` SUCCESS |
+### Phase 2.16 Algo Playground - Xây Lại Giao Diện Heap Engine v3 (2026-08-03)
+
+| Bước | Nội dung | Trạng thái CODE | Chi tiết |
+| :--- | :--- | :--- | :--- |
+| **Header** | Banner hướng dẫn + stats | ✅ CODE DONE | "01 · XÂY ĐỐNG — vun từng node..." / "02 · TRÍCH XUẤT — đưa phần tử lớn nhất về cuối mảng" + heapSize · so sánh |
+| **Layout** | Bố cục động theo pha | ✅ CODE DONE | build → cây 58%/mảng 42%; extract → cây 42%/mảng 58% — trọng tâm thị giác theo đúng pha |
+| **Cây** | Node lớn + màu tối giản + pulse | ✅ CODE DONE | nodeR min 8 (ẩn chữ <10); 5 trạng thái màu; glow active; cặp so sánh rung theo progress |
+| **Mảng** | ROOT marker + swap bay cung | ✅ CODE DONE | Tam giác + nhãn ROOT trên bar 0 khi extract; 2 bar bay cung khi đổi chỗ; bar ngoài đống tối mờ |
+| **Verify** | Toàn bộ | ✅ CODE DONE | 70 files / 936 tests PASS; `vue-tsc -b --force` CLEAN; `npm run build` SUCCESS |
+### Phase 2.17 Algo Playground - Heap Engine v4: Mảng Là Chính + Mini Focus Tree + Caption (2026-08-03)
+
+| Bước | Nội dung | Trạng thái CODE | Chi tiết |
+| :--- | :--- | :--- | :--- |
+| **Hero array** | Mảng 62% làm nhân vật chính | ✅ CODE DONE | Bar lớn + chỉ số dưới mỗi bar; vùng heap/sorted tô mờ khe hở ranh giới; ROOT marker (tam giác + nhãn) khi extract; swap bay cung; compare pulse viền sáng |
+| **Mini focus** | Cây chỉ active + 2 con | ✅ CODE DONE | Node r=18, edge chỉ tới con trong đống; so sánh rung 1.08x; swap sift (cha↔con) bay cung ngắn; bỏ "rừng node" vô nghĩa |
+| **Caption** | Tường thuật động | ✅ CODE DONE | `captionFor` public static (test riêng 3 case): so sánh → giữ X; đổi chỗ → root về cuối/heap thu hẹp; vun đống tại node X; root là phần tử lớn nhất |
+| **Header** | Gọn + stats | ✅ CODE DONE | Pha + heapSize (+ so sánh nếu có) |
+| **Verify** | Toàn bộ | ✅ CODE DONE | 70 files / 937 tests PASS; `vue-tsc -b --force` CLEAN; `npm run build` SUCCESS |
+### Phase 2.18 Algo Playground - Tối Ưu Không Gian Workspace (2026-08-03)
+
+| Bước | Nội dung | Trạng thái CODE | Chi tiết |
+| :--- | :--- | :--- | :--- |
+| **Toolbar** | Gộp + menu ⋯ | ✅ CODE DONE | Description → title select; chips cạnh select; Hooks/Code mẫu/Chia sẻ vào dropdown có backdrop; xóa Reset trùng VCR; hint validation inline |
+| **Header** | Gộp 2 pane → 1 thanh | ✅ CODE DONE | "Code · 👁 · Format \| Visualization — Mảng · Bước X/Y · ⛶" |
+| **Focus mode** | Collapse editor | ✅ CODE DONE | 👁 ẩn editor → canvas full width (Pane size 0 + hide-splitter + v-show giữ Monaco) |
+| **Popover** | Hooks không đẩy layout | ✅ CODE DONE | absolute dưới toolbar, max-h-48, scroll |
+| **Tests** | Cập nhật +1 test | ✅ CODE DONE | Description qua title; share/hooks qua menu; +test collapse editor - 70 files / 938 tests PASS, `vue-tsc -b --force` CLEAN, `npm run build` SUCCESS |
+
+
+
+
+
+
+
+pm run build SUCCESS |
+pm run build SUCCESS |
+pm run build SUCCESS |
+
+### Phase 2.19 Khoa Hoc "Nhap mon Cau truc du lieu & Giai thuat" (2026-08-04)
+
+| Buoc | Noi dung | Trang thai CODE | Chi tiet |
+| :--- | :--- | :--- | :--- |
+| **A1** | LessonStudyView doc du lieu that | ✅ CODE DONE | etchLessonDetail + useLessonStore.loadLesson API-first → fallback local; lessonMeta (courseId/quizId/sandbox); quiz backend qua statelessQuizApi; codelab tu registry theo demo |
+| **A2** | LessonStepViz dung demo | ✅ CODE DONE | esolveLessonViz (visualizerMap): sandboxConfig.demo → AlgoPlaygroundWorkspace demo-id; fallback theo sandboxType; emit watched → markVisualizerWatched |
+| **A3** | Quiz that | ✅ CODE DONE | Bo default Bubble Sort; props questions; emit submit → store.submitQuiz (70%, award XP 1 lan) |
+| **A4** | CodeLab that (worker + timeout) | ✅ CODE DONE | codelabExecutor.ts + codelab.worker.ts: worker 1500ms kill-switch chong vong lap vo han; Run/Submit chay testcase that; an buoc 4 khi lesson khong co task |
+| **A5** | Modal + dieu huong + don dead code | ✅ CODE DONE | go-quiz → /quiz?quizId=; next lesson theo orderIndex; xoa LessonResumeToast + 4 component dead (TheoryPanel/VisualizerPanel/LessonTabs/CodeLabPanel) |
+| **B1** | Seeder khoa c1 → 6 bai | ✅ CODE DONE | DbSeeder: guard reseed khi intro != 6 bai (early return tranh nhan doi khi restart); Publish() tat ca khoa seed (fix khoa vo hinh tren danh sach); sandboxConfig JSON {"demo":...} |
+| **B2** | 6 quiz moi (4 cau/bai) | ✅ CODE DONE | SeedQuizzesAsync upsert theo Title (khong nhan doi khi chay lai); quiz tieng Viet kem explanation |
+| **Tests** | 36 vitest + 11 xUnit moi | ✅ CODE DONE | 974 frontend / 158 backend PASS; ue-tsc -b --force CLEAN; 
+pm run build SUCCESS |
+
+> **Luu y van hanh:** Seeder xoa toan bo Course/Lesson (progress cascade) khi khoa nhap mon chua du 6 bai — can restart backend de ap dung seed moi. Seeder chay moi lan startup; guard moi giu nguyen du lieu khi da seed du.
+### Phase 2.19.1 Fix self-review: Demo sai khi chuyen bai (2026-08-04)
+| Buoc | Noi dung | Trang thai | Chi tiet |
+| :--- | :--- | :--- | :--- |
+| **A2-fix** | Force-load demo dung bai | ✅ CODE DONE | LessonStepViz watch demoId -> loadDemo khi khac; +4 test (TC-A2.7..A2.10); 40/40 lesson tests PASS |
+### Phase 2.19.2 E2E Verify + Fix tich hop (2026-08-04)
+| Buoc | Noi dung | Trang thai | Chi tiet |
+| :--- | :--- | :--- | :--- |
+| **E2E-1** | Restart backend + seed moi | ✅ CODE DONE | dotnet run 5055, seeder chay: 11 khoa, khoa nhap mon 6 bai, 6 quiz moi upsert |
+| **E2E-2** | Fix token source (Loi 180) | ✅ CODE DONE | getLessonAuthToken(): authStore -> fallback localStorage; ap dung 4 API + store |
+| **E2E-3** | Fix quizId matching (Loi 181) | ✅ CODE DONE | Lesson/CourseController: Quiz item cung module, OrderIndex > lesson item; GroupBy thay ToDictionary |
+| **E2E-4** | Fix quiz bank fallback (Loi 182, 183) | ✅ CODE DONE | GET/SUBMIT fallback DB + giu thu tu cau hoi; E2E 4/4 pass xp=40 |
+| **Verify** | Toan bo | ✅ CODE DONE | Vitest 980/980, dotnet 158/158, vue-tsc CLEAN; E2E: course/lesson/quiz chain OK |
+### Phase 2.19.3 Fix Course List trang (2026-08-04)
+| Buoc | Noi dung | Trang thai | Chi tiet |
+| :--- | :--- | :--- | :--- |
+| **C1** | Tim nguyen nhan | ✅ CODE DONE | Test mount dung du lieu API that phat hien getCourseProgress crash vi course.lessons undefined |
+| **C2** | Fix crash + difficulty enum | ✅ CODE DONE | Null-safe lessons; map ca 2 bo enum (badge/label/sort/type) |
+| **C3** | Verify | ✅ CODE DONE | 984/984 PASS, vue-tsc CLEAN, build SUCCESS; user refresh la hien thi |
+### Phase 2.19.4 Hoan thien tu self-review (2026-08-04)
+| Buoc | Noi dung | Trang thai | Chi tiet |
+| :--- | :--- | :--- | :--- |
+| **T1** | LessonStepTheory render code fence | ✅ CODE DONE | Tach fence truoc, escape HTML, +5 test (lessonStepTheory.spec.ts) |
+| **T2** | Bo sung test thieu | ✅ CODE DONE | TC-A3.7 (localStorage quizScore + khong double-award), TC-A4.2 (an buoc 4) |
+| **T3** | Go logic parse sandbox | ✅ CODE DONE | utils/sandboxConfig.ts dung chung store + visualizerMap |
+| **T4** | Don dead reference | ✅ CODE DONE | Xoa useLessonStore unused trong useCourseStore |
+| **Verify** | Toan bo | ✅ CODE DONE | Vitest 993/993, vue-tsc CLEAN, build SUCCESS |
+### Phase 2.19.5 Anh bia SVG thay the anh bitmap (2026-08-04)
+| Buoc | Noi dung | Trang thai | Chi tiet |
+| :--- | :--- | :--- | :--- |
+| **V1** | CourseCover.vue | ✅ CODE DONE | SVG dong: gradient theo danh muc + icon (sorting/searching/tree/oop/solid/patterns/system/di/code) + badge category; khong phu thuoc Unsplash URL |
+| **V2** | Tich hop | ✅ CODE DONE | CourseCard (thay <img>) + CourseDetailView; teacher upload preview giu nguyen (form quan ly) |
+| **V3** | Verify | ✅ CODE DONE | +7 test CourseCover; Vitest 1000/1000, vue-tsc CLEAN, build SUCCESS |
+
+### Phase 2.20 Noi dung Khoa hoc Dot 1 — 18 bai (2026-08-04)
+| Buoc | Noi dung | Trang thai | Chi tiet |
+| :--- | :--- | :--- | :--- |
+| **S1** | Template bai giang chuan | ✅ CODE DONE | plan/content-drafts/TEMPLATE.md: 6 muc + quiz/codelab schema + vi du mau |
+| **S2** | 8 subagents viet 18 bai | ✅ CODE DONE | staging plan/content-drafts/k1..k4: 18 md + 18 quiz.json, checklist dat (khong ", 6 muc, 4 cau quiz) |
+| **S3** | Ghep vao DbSeeder | ✅ CODE DONE | Script sinh C#: 18 quiz upsert + lookups, blocks c1/c2/c3 moi, khoa cHash (Bang bam) 4 bai, guard moi; fix 9 dong backtick + cHash var |
+| **S4** | Fix bug + tests | ✅ CODE DONE | Loi 186 GetOrCreate pending duplicate; DbSeederTests 12/12; full backend 159/159 PASS |
+| **S5** | E2E verify | ✅ CODE DONE | 12 khoa published; Bang bam 4 bai content 3.7-4.2k chars, quiz 4 cau/bai; backend restart OK |
+| **Luu y** | Dot 2/3 | 🟡 PENDING | Khoa 5-12 giu noi dung cu (39 bai tong); Dot 2: Sap xep/Tim kiem, Cay, Do thi, DP |
+### Phase 2.20.1 Kiem duyet noi dung Phase 1 + fix UX (2026-08-04)
+| Buoc | Noi dung | Trang thai | Chi tiet |
+| :--- | :--- | :--- | :--- |
+| **R1** | Review toan bo 18 bai | ✅ CODE DONE | Doc 18 contentMd + spot-check 4 quiz + chay thuc JS (binarySearch/infix/postfix/twoSum/NGE/reverse) — chinh xac khoa hoc, dung template, quiz dung dap an |
+| **R2** | Fix bang markdown khong render | ✅ CODE DONE | LessonStepTheory render bang | a | b | thanh <table> dark theme; +2 test |
+| **R3** | Fix demo sai chu de | ✅ CODE DONE | esolveLessonViz bo fallback 'dsa'->binary-search; empty state trung thuc; cau muc 5 sua cho 9 bai khong demo; demo stack cho bai Infix-Postfix |
+| **R4** | Dọn nho | ✅ CODE DONE | Bo ' (Why this matters)' 3 bai; quiz U+00D7 da dung tu dau (chi loi hien thi console) |
+| **R5** | Verify | ✅ CODE DONE | Reset DB (xoa visualization_dsa.db) + reseed; E2E: 12 khoa, bai 3.3 demo=stack, content moi; Vitest 1002/1002, dotnet 159/159, typecheck CLEAN, build SUCCESS |
+### Phase 2.20.2 Nang cap quiz 4 -> 10 cau (2026-08-04)
+| Buoc | Noi dung | Trang thai | Chi tiet |
+| :--- | :--- | :--- | :--- |
+| **Q1** | 10 subagents (9 + 1 retry) | ✅ CODE DONE | +108 cau moi cho 18 bai (4 -> 10); cau 5-7 trung binh, 8-10 kho (tinh toan, mo phong, edge case); khong trung cau cu |
+| **Q2** | Validate + tai sinh seeder | ✅ CODE DONE | Script kiem tra 180 cau: 0 trung, correctIndex hop le; tai sinh 18 quiz blocks; xoa 2 block cu trung title (Loi 187) |
+| **Q3** | Test + E2E | ✅ CODE DONE | DbSeederTests TC_B2_1 nang len >=10; dotnet 159/159; reset DB + reseed; E2E: 10 cau/bai, submit 7/10 passed=True |
+| **Luu y** | Frontend | ✅ Khong doi | Ngưỡng 70% tu dong dung voi 10 cau (ceil(10*0.7)=7) — da verify E2E |
+### Phase 3.0 Chuyen doi Lesson doc lap + 3 Roadmap (2026-08-04)
+| Buoc | Noi dung | Trang thai | Chi tiet |
+| :--- | :--- | :--- | :--- |
+| **M1** | Xoa toan bo khoa cu (theo quyet dinh user) | ✅ CODE DONE | 12 Course + 18 quiz Dot 1 da loai khoi seeder; staging cu xoa; giu 12 quiz goc (BackendQuizView) |
+| **M2** | 16 subagents viet 39 lesson doc lap | ✅ CODE DONE | plan/content-drafts/v2/lesson-01..39/: content 450-750 tu + quiz 10 cau; validate 0 trung, correctIndex hop le (390 cau hoi) |
+| **M3** | Seeder: 39 Lesson doc lap + 3 Roadmap | ✅ CODE DONE | Roadmap: Co ban 12 (2 chang), Trung cap 15 (2 chang), Nang cao 12 (2 chang); Lesson co the chia se nhieu roadmap (ModuleItem tham chieu); guard marker 'Two Pointers' |
+| **M4** | Fix quiz matching + order | ✅ CODE DONE | Them 39 ModuleItem Quiz (order = lessonOrder+500, buoc nhay 1000 — truoc do cach 10 gay match sai); frontend: title 'Lo trinh hoc DSA' + startLesson kem courseId |
+| **M5** | Tests + E2E | ✅ CODE DONE | DbSeederTests viet lai 7 test (39 lesson, 3 roadmap 12/15/12, 2 module/roadmap, quiz 10 cau lien ket, khong nhan doi) — 154/154 backend; Vitest 1002/1002; typecheck CLEAN; build SUCCESS; E2E: 3 roadmap, moi lesson quiz rieng (12/15/12), content 4-4.4k chars |
+### Phase 3.0.1 Bo sung lesson 40 - DP Patterns (2026-08-04)
+| Buoc | Noi dung | Trang thai | Chi tiet |
+| :--- | :--- | :--- | :--- |
+| **F1** | Phat hien thieu lesson 40 | ✅ CODE DONE | Plan goc 40 lesson (R3 13 bai) — thieu 'DP Patterns (Interval/Bitmask/Tree)' do gop nham vao DP 1D/2D |
+| **F2** | Viet lesson 40 | ✅ CODE DONE | plan/content-drafts/v2/lesson-40/: content 6 muc + quiz 10 cau (Interval/Bitmask/Tree DP) |
+| **F3** | Ghep seeder | ✅ CODE DONE | quizL40 + lesson40 + r3m1 items (order 4000/4500, buoc 1000); fix Loi 189 (quiz block vi tri AddRange) + Loi 190 (quizL..Id ky tu) |
+| **F4** | Verify | ✅ CODE DONE | DbSeederTests 7/7 PASS (40 lesson, R3=13); E2E: 3 roadmap 12/15/13, moi lesson quiz rieng 10 cau; dotnet 154/154 PASS |
+### Phase 3.1 Review code + tinh nang toan bo (2026-08-04)
+| Buoc | Noi dung | Trang thai | Chi tiet |
+| :--- | :--- | :--- | :--- |
+| **RV1** | Review DbSeeder.cs | ✅ DONE | 40 lesson blocks + 40 quiz lookups + 80 module items dung; 12 quiz goc giu; khong con var qK cu |
+| **RV2** | Fix bug guard | ✅ DONE | Loi 191: == -> Contains + count>=40 (truoc: reset toan bo moi restart) |
+| **RV3** | Fix title rong | ✅ DONE | Loi 192: quizL30 overrideTitle |
+| **RV4** | Verify | ✅ DONE | Restart 2 lan du lieu giu nguyen; dotnet 154/154; E2E 3 roadmaps 12/15/13 |
+### Phase 3.1.1 Review lan 2 - Fix thu tu chang (2026-08-04)
+| Buoc | Noi dung | Trang thai | Chi tiet |
+| :--- | :--- | :--- | :--- |
+| **RV2-1** | Phat hien tron thu tu chang | ✅ DONE | CourseController sort theo (module.OrderIndex, item.OrderIndex); LessonStudyView bo sort lai |
+| **RV2-2** | Verify | ✅ DONE | E2E: chang 1 -> chang 2 dung thu tu; Student khong premium vao roadmap + lesson OK; dotnet 154/154; typecheck CLEAN; lesson tests 51/51 |
+### Phase 3.2 Review toàn diện 62 tiến trình (2026-08-04)
+| Buoc | Noi dung | Trang thai | Chi tiet |
+| :--- | :--- | :--- | :--- |
+| **RV3-1** | Review 36/36 backend controllers | `✅ DONE` | 13 P0 + ~45 P1, chi tiet plan/reviews/backend/REVIEW_RESULTS.md |
+| **RV3-2** | Review 27/27 frontend modules | `✅ DONE` | 5 P0 + ~40 P1, chi tiet REVIEW_RESULTS.md |
+| **RV3-3** | Tong hop + lo trinh sua | `✅ DONE` | plan/reviews/REVIEW_SUMMARY.md — 4 dot A-D |
+| **RV3-4** | Fix Do A (P0) | `❌ SPEC ONLY` | Chua bat dau, can nguoi dung xac nhan |
+### Phase 3.3 Fix 18 loi P0 (2026-08-04)
+| Buoc | Noi dung | Trang thai | Chi tiet |
+| :--- | :--- | :--- | :--- |
+| **FIX-1** | JwtHelper/JwtSigningConfig (Lo 194) | `✅ DONE` | Secret tu cau hinh, base64url + FixedTimeEquals + exp bat buoc; issuer dong bo; E2E login/me OK |
+| **FIX-2** | StatelessAuth (Lo 195-196) | `✅ DONE` | Bo ForceAddRefreshToken; [RequireJwtRole] + userId tu token; frontend statelessAuthApi/userProgressApi gui token |
+| **FIX-3** | AdminUsers/Users/Course IDOR (Lo 197-199) | `✅ DONE` | Admin-only {id}/progress; ownership AddModule/Item; clamp pagination |
+| **FIX-4** | StatelessPayment/Gamification (Lo 200-201) | `✅ DONE` | Auth toan bo + simulate-webhook dev-only; xoa secret webhook client; frontend statelessPaymentApi gui token |
+| **FIX-5** | QuizController route + LessonReview (Lo 202-203) | `✅ DONE` | Xoa stub; RequireJwtRole("Admin") |
+| **FIX-6** | Frontend P0 (Lo 204-207) | `✅ DONE` | html-playground bo allow-same-origin; parseEmojiToSvg escape HTML; export-share finally; codelabs route |
+| **FIX-7** | Verify | `✅ DONE` | dotnet 154/154 · frontend 1002/1002 · vue-tsc CLEAN · E2E: khong token 401, token gia 401, XP cau, 3 roadmaps giu nguyen |
+### Phase 3.4 Fix 15 P1 bao mat (Doat B) (2026-08-04)
+| Buoc | Noi dung | Trang thai | Chi tiet |
+| :--- | :--- | :--- | :--- |
+| **B1-B7** | Payments/Codelab/Quiz/Lesson/Theory/Graph/Embed/Upload/Auth | `✅ DONE` | Chi tiet errors.md Lo 210-221 + 2 bug phu (ToString LINQ, principal claim) |
+| **FIX-B** | 2 migration moi (CodelabHintReveal, QuizXpGrant) | `✅ DONE` | Chay tu dong qua Migrate() khi restart |
+| **E2E-B** | Xac minh | `✅ DONE` | Farm XP DB/bank deu 0 tu lan 2; quiz an dap an public / du khi co token; codelab khong leak; lesson publish truy cap OK; 3 roadmaps giu |
+| **REGRESS** | dotnet 154/154 · vitest 1002/1002 · vue-tsc CLEAN | `✅ DONE` | — |
+### Phase 3.5 Fix 15 P1 logic (Doat C) (2026-08-04)
+| Buoc | Noi dung | Trang thai | Chi tiet |
+| :--- | :--- | :--- | :--- |
+| **C1-C6** | Lesson flow/Courses/Gamification/Docs/dsa-modules/user-progress/auth/e-lecture | `✅ DONE` | errors.md Lo 222-234 + 2 bug phu; phat hien 1 bug lon: lesson progress API chua tung ton tai (Lo 222) — da xay endpoint + migration |
+| **E2E-C** | Xac minh | `✅ DONE` | POST/GET progress OK; bestScore giu max (9->5 = 9); roadmaps 3 |
+| **REGRESS** | dotnet 154/154 · vitest 1002/1002 · vue-tsc CLEAN | `✅ DONE` | 5 test cap nhat theo hanh vi moi (chong farm, bo fallback, badge algorithm) |
+### Phase 3.6 Fix P2/P3 + don dead code (Doat D) (2026-08-04)
+| Buoc | Noi dung | Trang thai | Chi tiet |
+| :--- | :--- | :--- | :--- |
+| **D1** | Classroom route + DI (tinh nang classroom hoat dong LAN DAU) + Notifications route | `✅ DONE` | errors.md Lo 235-236; E2E OK |
+| **D2** | Xoa ~2500 dong dead code (8 module/component) | `✅ DONE` | Lo 240; vitest giam 76 files (spec dead bi xoa cung) |
+| **D3** | N+1 GetCourses + clamp + guards | `✅ DONE` | Lo 237-239 |
+| **REGRESS** | dotnet 154/154 · vitest 982/982 · vue-tsc CLEAN · E2E classrooms/notifications/courses OK | `✅ DONE` | — |
+### Phase 3.7 Fix P1/P2 con sot + bug engine that (2026-08-05)
+| Buoc | Noi dung | Trang thai | Chi tiet |
+| :--- | :--- | :--- | :--- |
+| **E1-E5** | Hash BCrypt dong bo / Classroom join-kick-code / Admin lesson / stop() playUntil / deep-watch topology / lock chu quyen / N+1 + tie-break + timeout | `✅ DONE` | errors.md Lo 241-248 + 5 phu |
+| **Phat hien** | "Flaky test" SortingAnimationEngine that ra la bug THAT (delta am) | `✅ DONE` | Clamp delta; full suite on dinh 982/982 |
+| **REGRESS** | dotnet 154/154 · vitest 982/982 · vue-tsc CLEAN · E2E: login/analytics/badges/rank/roadmaps/classrooms OK | `✅ DONE` | — |
+### Phase 3.8 Fix P1/P2 con sot (2026-08-05)
+| Buoc | Noi dung | Trang thai | Chi tiet |
+| :--- | :--- | :--- | :--- |
+| **F1-F3** | Register validate-truoc + demo-credentials dev-only + Classroom capacity/race/case + Upload limits + cache null + TheoryArticle | `✅ DONE` | errors.md Lo 249-255 |
+| **REGRESS** | dotnet 154/154 · E2E: login/register-400/roadmaps/classrooms/analytics OK · migration moi chay tu dong | `✅ DONE` | — |
+### 2026-08-06: UX Audit 25 modules + Fix P1/P2
+| Buoc | Noi dung | Trang thai | Chi tiet |
+| :--- | :--- | :--- | :--- |
+| **AUDIT** | 25 sub-agents danh gia UX/code quality tung module; thay ~225 icon emoji/unicode/inline-svg -> BaseIcon/SVG feather | DONE | UX 5.5-8.5/10; chi tiet trong conversation |
+| **F1-F7** | Fix error silent fallback / keyboard double-trigger / XSS v-html / BFS-DFS-Dijkstra activation / pencil icon / embed origin whitelist / quiz-realtime error | DONE | errors.md Lo 256-262 |
+| **REGRESS** | vue-tsc CLEAN; vitest 77 files / 992/992 PASS | DONE | - |
+### Phase 3.9 Review lai toan bo + fix regression (2026-08-05)
+| Buoc | Noi dung | Trang thai | Chi tiet |
+| :--- | :--- | :--- | :--- |
+| **RV-FULL** | 4 agent review song song toan bo code da fix (auth/payment-quiz/lesson-classroom-codelab/frontend) | `✅ DONE` | errors.md Lo 256-266: 4 P0 regression (emojiParser, build fail, double-XP, backdoor) + 6 P1 + 6 P2 |
+| **FIX-R** | Da xu ly toan bo | `✅ DONE` | E2E: backdoor 401, sub khop DB, farm XP = 0, roadmaps 3 |
+| **REGRESS** | dotnet 154/154 · vitest 982/982 · vue-tsc CLEAN · E2E OK | `✅ DONE` | 1 spec cap nhat (useCourseStore mock API) |

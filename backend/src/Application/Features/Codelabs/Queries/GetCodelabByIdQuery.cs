@@ -97,6 +97,8 @@ namespace VisualizationDSA.Application.Features.Codelabs.Queries
                 Examples = codelab.Examples,
                 Tags = codelab.Tags,
                 TestCases = codelab.TestCases
+                    // Ẩn testcase IsHidden khỏi GET — chống gian lận khi biết đáp án ẩn.
+                    .Where(tc => !tc.IsHidden)
                     .OrderBy(tc => tc.OrderIndex)
                     .Select(tc => new CodelabTestCaseDto
                     {
@@ -121,7 +123,8 @@ namespace VisualizationDSA.Application.Features.Codelabs.Queries
                     .Select(h => new CodelabHintDto
                     {
                         Id = h.Id,
-                        Content = h.Content,
+                        // Hint trả phí không được lộ Content qua GET (phải trả XP để mở).
+                        Content = h.XpCost > 0 ? string.Empty : h.Content,
                         IsTiered = h.IsTiered,
                         XpCost = h.XpCost,
                         OrderIndex = h.OrderIndex

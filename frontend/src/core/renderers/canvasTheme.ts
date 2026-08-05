@@ -1,29 +1,35 @@
+function getCssVar(name: string, fallback: string): string {
+  if (typeof document === 'undefined') return fallback;
+  const val = getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+  return val || fallback;
+}
 
+function initColors() {
+  return {
+    default:  getCssVar('--color-accent-primary', '#4255ff'),
+    compare:  getCssVar('--color-accent-primary-light', '#6b7bff'),
+    swap:     getCssVar('--color-accent-red', '#f87171'),
+    sorted:   getCssVar('--color-accent-green', '#34d399'),
+    text:     getCssVar('--color-text-primary', '#d9dde8'),
+    muted:    getCssVar('--color-text-muted', '#6b7385'),
+    bgDark:   getCssVar('--canvas-bg', '#0d1020'),
+    gridDark: getCssVar('--canvas-grid-color', 'rgba(66, 85, 255, 0.04)'),
+  };
+}
 
-export const CANVAS_COLORS = {
-  
-  default: '#38BDF8', 
-  compare: '#FBBF24', 
-  swap:    '#FB7185', 
-  sorted:  '#34D399', 
-  text:    '#F1F5F9', 
-  muted:   '#64748B', 
+export const CANVAS_COLORS = initColors();
 
-  
-  bgDark:  '#080c14',
-  gridDark: 'rgba(6, 182, 212, 0.03)',
-};
+export function refreshCanvasColors() {
+  const c = initColors();
+  Object.assign(CANVAS_COLORS, c);
+}
 
 export const CANVAS_LAYOUT = {
   margin: 30,
-  marginBottom: 100, 
+  marginBottom: 100,
   paddingTop: 45,
   borderRadius: 6,
 };
-
-
-
-
 
 export function hexToRgba(hex: string, alpha: number): string {
   const clean = hex.replace('#', '');

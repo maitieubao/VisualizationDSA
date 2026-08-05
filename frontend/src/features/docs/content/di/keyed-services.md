@@ -102,7 +102,7 @@ Giả sử bạn bán phần mềm quản lý cho 2 siêu thị: Vinmart và Coo
 - Vinmart yêu cầu lưu dữ liệu vào cơ sở dữ liệu `VinmartDB`.
 - Coopmart yêu cầu lưu vào cơ sở dữ liệu `CoopDB`.
 
-Họ cùng dùng chung một bộ Source code, cùng chung một Interface là `IDbContext`.
+Họ cùng dùng chung một bộ Source code, cùng chung một Interface là `IDatabase`.
 
 **Cách .NET 8 xử lý cực ngọt ngào:**
 
@@ -140,3 +140,32 @@ public class TenantController
 - Dùng attribute **`[FromKeyedServices("MyKey")]`** để yêu cầu Container bơm chính xác đối tượng mong muốn.
 - Cuối cùng, nếu không rành .NET 8, bạn vẫn hoàn toàn có thể giải quyết bài toán đa thực thi (Multiple implementations) bằng Mẫu thiết kế [Strategy Pattern](/docs/patterns/strategy) hoặc [Factory Delegate](/docs/di/advanced).
 :::
+
+---
+
+## Next Steps {#next-steps}
+
+Bạn đã nắm được cách đánh Chìa khóa để Container tiêm đúng Implementation mình muốn. Để hiểu rõ hơn bức tranh tổng thể của DI, hãy khám phá những bài tiếp theo:
+
+<div class="vt-box-container next-steps">
+  <a class="vt-box" href="/docs/patterns/strategy">
+    <p class="next-steps-link">Strategy Pattern</p>
+    <p class="next-steps-caption">Bài toán đa thực thi cho cùng một Interface được giải quyết bằng cách nào trước khi Keyed Services ra đời.</p>
+  </a>
+  <a class="vt-box" href="/docs/di/advanced">
+    <p class="next-steps-link">Các mẫu nâng cao trong DI</p>
+    <p class="next-steps-caption">Factory Delegate, Method/Property Injection và các kỹ thuật tiêm tiên tiến khác trong ASP.NET Core.</p>
+  </a>
+  <a class="vt-box" href="/docs/di/lifecycles">
+    <p class="next-steps-link">Vòng đời (Lifecycles) trong DI</p>
+    <p class="next-steps-caption">Phân biệt Singleton, Scoped và Transient để đăng ký dịch vụ kèm Key đúng đắn.</p>
+  </a>
+</div>
+
+## 📚 Tham khảo lý thuyết
+
+- Sách **Dependency Injection in .NET** (Mark Seemann) — Nền tảng kinh điển về DI, IoC Container và cách tổ chức Composition Root; là cơ sở lý thuyết cho toàn bộ nhóm bài DI/IoC.
+- Microsoft Learn — [Dependency injection in .NET](https://learn.microsoft.com/en-us/dotnet/core/extensions/dependency-injection): đăng ký và tiêm dịch vụ thông qua `IServiceCollection`.
+- Microsoft Learn — [Keyed services](https://learn.microsoft.com/en-us/dotnet/core/extensions/dependency-injection#keyed-services): tài liệu chính thức về đăng ký theo chìa khóa, `AddKeyedTransient/Scoped/Singleton`, `[FromKeyedServices]` và `GetKeyedService`.
+- Wikipedia — [Dependency injection](https://en.wikipedia.org/wiki/Dependency_injection): định nghĩa và các hình thức tiêm phụ thuộc, đặt Keyed Services vào đúng bối cảnh của DI.
+- Martin Fowler — [Inversion of Control Containers and the Dependency Injection pattern](https://martinfowler.com/articles/injection.html): bài viết kinh điển phân biệt IoC Container với mẫu DI.

@@ -71,7 +71,7 @@ flowchart TD
 
 | Vị trí trong mảng | Node | Con trái | Con phải | Cha |
 | :--- | :--- | :--- | :--- | :--- |
-| `i` | `arr[i]` | `arr[2*i + 1]` | `arr[2*i + 2]` | `arr[(i-1)/2]` (hoặc `arr[i/2 - 1]`) |
+| `i` | `arr[i]` | `arr[2*i + 1]` | `arr[2*i + 2]` | `arr[(i-1)/2]` |
 
 **Ví dụ:** Heap `[5, 7, 10, 15, 20, 25, 30]`
 
@@ -444,11 +444,11 @@ public int[] TopKFrequent(int[] nums, int k)
         if (minHeap.Count > k) minHeap.Dequeue(); // Loại bỏ phần tử nhỏ nhất
     }
     
-    return minHeap.Unpack().ToArray(); // Kết quả là K phần tử tần suất cao nhất
+    return minHeap.UnorderedItems.Select(x => x.Element).ToArray(); // Kết quả là K phần tử tần suất cao nhất
 }
 ```
 
-### 8.3. Heap Sort (Sắp xếp bằng Heap) - O(N log N) ổn định
+### 8.3. Heap Sort (Sắp xếp bằng Heap) - O(N log N)
 ```csharp
 public static void HeapSort(int[] arr)
 {
@@ -558,12 +558,24 @@ public ListNode MergeKLists(ListNode[] lists)
 Heap là nền tảng cho Priority Queue, nhưng nó còn nhiều biến thể nâng cao như **Fibonacci Heap** (O(1) Decrease-Key dùng cho Dijkstra), **Binomial Heap**, hay **d-ary Heap** (tối ưu cache). Để hiểu sâu hơn về cấu trúc dữ liệu cây, hãy khám phá:
 
 <div class="vt-box-container next-steps">
-  <a class="vt-box" href="/docs/trees/segment-tree">
-    <p class="next-steps-link">Segment Tree (Cây đoạn)</p>
-    <p class="next-steps-caption">Giải quyết bài toán truy vấn đoạn [L, R] trong O(log N).</p>
+  <a class="vt-box" href="/docs/sorting/heap-sort">
+    <p class="next-steps-link">Sắp xếp Đống (Heap Sort)</p>
+    <p class="next-steps-caption">Ứng dụng trực tiếp của Max-Heap để sắp xếp mảng trong O(N log N).</p>
   </a>
-  <a class="vt-box" href="/docs/trees/fenwick-tree">
-    <p class="next-steps-link">Fenwick Tree (Binary Indexed Tree)</p>
-    <p class="next-steps-caption">Phiên bản gọn gàng của Segment Tree cho prefix sums.</p>
+  <a class="vt-box" href="/docs/tree-graph/avl-tree">
+    <p class="next-steps-link">Cây AVL tự cân bằng</p>
+    <p class="next-steps-caption">Khám phá cấu trúc cây tự cân bằng để duy trì thao tác O(log N) khi dữ liệu thay đổi liên tục.</p>
   </a>
 </div>
+
+## 📚 Tham khảo lý thuyết {#references}
+
+Các kiến thức lý thuyết trong bài được tổng hợp và đối chiếu từ những nguồn học thuật sau:
+
+- **Cormen, T. H., Leiserson, C. E., Rivest, R. L., & Stein, C., *Introduction to Algorithms* (CLRS), 3rd Edition, MIT Press, 2009** — Chương 6 *Heapsort*: Heap Property, Build-Heap O(N), Extract-Min/Max O(log N).
+- **Dasgupta, S., Papadimitriou, C. H., & Vazirani, U. V., *Algorithms*, McGraw-Hill, 2006** — Chương về Priority Queues và vai trò của Heap trong Dijkstra.
+- **Wikipedia, *Heap (data structure)*** — Định nghĩa Binary Heap, biểu diễn mảng (con trái 2i+1, con phải 2i+2, cha (i-1)/2) và các thao tác: https://en.wikipedia.org/wiki/Heap_(data_structure)
+- **Wikipedia, *Priority queue*** — So sánh các cách triển khai Priority Queue và độ phức tạp: https://en.wikipedia.org/wiki/Priority_queue
+- **Microsoft Learn, *PriorityQueue<TElement,TPriority> Class*** — API chuẩn của .NET 6+ cho Hàng đợi ưu tiên: https://learn.microsoft.com/en-us/dotnet/api/system.collections.generic.priorityqueue-2
+- **GeeksforGeeks, *Heap Data Structure*** — Minh họa Insert/Extract (Sift Up/Sift Down), Build Heap và Heap Sort: https://www.geeksforgeeks.org/heap-data-structure/
+- **MIT OpenCourseWare, *6.006 Introduction to Algorithms, Spring 2020*** — Bài giảng về Heap Sort và Priority Queues: https://ocw.mit.edu/courses/6-006-introduction-to-algorithms-spring-2020/

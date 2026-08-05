@@ -40,7 +40,9 @@ export function handleMouseDown(
   dragState: Ref<DragState>,
   edgeDrawState: Ref<EdgeDrawState>,
   emitWeightInput: (payload: { edgeId: string; x: number; y: number; currentWeight: number }) => void,
-  canvasElement: HTMLCanvasElement | null
+  canvasElement: HTMLCanvasElement | null,
+  zoomLevel = 1,
+  panOffset = { x: 0, y: 0 }
 ) {
   if (store.isAlgorithmMode) {
     const hitNode = GraphGeometryEngine.hitTestNode(pos, nodes);
@@ -69,17 +71,22 @@ export function handleMouseDown(
       if (fromNode && toNode && canvasElement) {
         const mid = GraphGeometryEngine.edgeMidpoint(fromNode, toNode);
         const rect = canvasElement.getBoundingClientRect();
-        const screenX = rect.left + mid.x * (rect.width / canvasElement.width);
-        const screenY = rect.top + mid.y * (rect.height / canvasElement.height);
+        const screenX = rect.left + (mid.x * zoomLevel + panOffset.x) * (rect.width / canvasElement.width);
+        const screenY = rect.top + (mid.y * zoomLevel + panOffset.y) * (rect.height / canvasElement.height);
         emitWeightInput({ edgeId: hitEdge.id, x: screenX, y: screenY, currentWeight: hitEdge.weight });
       }
       store.selectEdge(hitEdge.id);
     }
   } else if (mode === 'DELETE') {
     const hitNode = GraphGeometryEngine.hitTestNode(pos, nodes);
-    if (hitNode) return store.deleteNode(hitNode.id);
+    if (hitNode) {
+      if (window.confirm(`Xóa đỉnh ${hitNode.label}?`)) store.deleteNode(hitNode.id);
+      return;
+    }
     const hitEdge = GraphGeometryEngine.hitTestEdge(pos, edges, nodes);
-    if (hitEdge) store.deleteEdge(hitEdge.id);
+    if (hitEdge) {
+      if (window.confirm('Xóa cạnh đã chọn?')) store.deleteEdge(hitEdge.id);
+    }
   }
 }
 

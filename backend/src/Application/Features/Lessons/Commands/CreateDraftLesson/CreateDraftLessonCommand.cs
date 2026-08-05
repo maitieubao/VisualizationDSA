@@ -8,6 +8,7 @@ namespace VisualizationDSA.Application.Features.Lessons.Commands.CreateDraftLess
     {
         public Guid TeacherId { get; set; }
         public Guid CourseId { get; set; }
+        public Guid? ModuleId { get; set; }
         public string Title { get; set; } = string.Empty;
         public string ContentMd { get; set; } = string.Empty;
         public string SandboxType { get; set; } = string.Empty;

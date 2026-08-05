@@ -156,7 +156,9 @@ describe('useGamificationStore', () => {
       store.earnXPLocal(200);
       store.earnXPLocal(200);
       
-      
+      // Badge yêu cầu hoàn thành thuật toán (requiredAlgorithmId) — phải khai báo
+      // để mở khóa (hành vi chống unlock sai thiết kế sư phạm).
+      store.completedAlgorithms.push('quicksort', 'sorting');
       store.setStreakForTesting(3);
       store.checkAndUnlockBadges();
       expect(store.unlockedBadges.length).toBeGreaterThan(0);
@@ -166,6 +168,7 @@ describe('useGamificationStore', () => {
       const store = useGamificationStore();
       store.earnXPLocal(200);
       store.earnXPLocal(200);
+      store.completedAlgorithms.push('quicksort', 'sorting');
       store.setStreakForTesting(3);
       store.checkAndUnlockBadges();
       if (store.unlockedBadges.length > 0) {

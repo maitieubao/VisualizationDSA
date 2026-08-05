@@ -45,8 +45,9 @@ namespace VisualizationDSA.Infrastructure.Repositories
                 .Select(u => u.TotalXP)
                 .FirstOrDefaultAsync();
 
-            
-            return await _context.Users.CountAsync(u => u.TotalXP > userXp) + 1;
+            // Tie-break ổn định: cùng XP thì user có Id nhỏ hơn xếp trước
+            // (trước đây Count(TotalXP > xp) → cùng XP xếp ngẫu nhiên giữa 2 lần gọi).
+            return await _context.Users.CountAsync(u => u.TotalXP > userXp || (u.TotalXP == userXp && u.Id < id)) + 1;
         }
 
         public async Task<UserProgressDomainModel?> GetUserProgressDomainModelAsync(Guid userId)

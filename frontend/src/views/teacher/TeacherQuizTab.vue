@@ -101,11 +101,6 @@
     </form>
 
     
-    <div v-if="activeFormType === 'excel'" class="mb-8 animate-fade-in">
-      <ExcelQuizImporter @import-success="onImportSuccess" />
-    </div>
-
-    
     <div class="quizzes-list-container">
       <h3 class="subsection-heading mb-4">Danh sách bài trắc nghiệm đang hoạt động</h3>
       <div v-if="loadingQuizzes" class="loading-state">
@@ -255,7 +250,6 @@
 <script setup lang="ts">
 import { ref, reactive } from 'vue';
 import { useTeacherApi } from './useTeacherApi';
-import ExcelQuizImporter from '../../features/quiz/components/ExcelQuizImporter.vue';
 
 const { BASE_URL, getAuthHeaders, formatTopic, formatDifficulty } = useTeacherApi();
 
@@ -414,10 +408,6 @@ async function saveInlineQuiz(quizId: string): Promise<void> {
   finally { savingDetail.value[quizId] = false; }
 }
 
-function onImportSuccess(): void {
-  alert('Nhập danh sách trắc nghiệm từ Excel thành công!');
-  activeFormType.value = 'none'; loadQuizzes(); loadAnalytics();
-}
 
 
 defineExpose({ loadQuizzes, loadAnalytics, quizzesList });

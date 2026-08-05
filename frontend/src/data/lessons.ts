@@ -90,6 +90,7 @@ function partition(arr, low, high) {
   
   return arr;
 }`,
+      entryFunction: 'quickSort',
       solution: `function quickSort(arr, low = 0, high = arr.length - 1) {
   if (low < high) {
     const pi = partition(arr, low, high);
@@ -112,10 +113,10 @@ function partition(arr, low, high) {
   return i + 1;
 }`,
       testCases: [
-        { input: '[3, 6, 8, 10, 1, 2, 1]', expectedOutput: '[1, 1, 2, 3, 6, 8, 10]' },
-        { input: '[5, 2, 9, 1, 5, 6]', expectedOutput: '[1, 2, 5, 5, 6, 9]' },
-        { input: '[10, -2, 4, 0]', expectedOutput: '[-2, 0, 4, 10]' },
-        { input: '[]', expectedOutput: '[]', isHidden: true }
+        { input: '[[3, 6, 8, 10, 1, 2, 1]]', expectedOutput: '[1, 1, 2, 3, 6, 8, 10]' },
+        { input: '[[5, 2, 9, 1, 5, 6]]', expectedOutput: '[1, 2, 5, 5, 6, 9]' },
+        { input: '[[10, -2, 4, 0]]', expectedOutput: '[-2, 0, 4, 10]' },
+        { input: '[[]]', expectedOutput: '[]', isHidden: true }
       ]
     }
   }

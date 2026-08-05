@@ -47,4 +47,28 @@ describe('GraphAlgorithmSimulator', () => {
     expect(finalFrame.distances?.['node_B']).toBe(5);
     expect(finalFrame.distances?.['node_C']).toBe(15);
   });
+
+  it('BFS traverses undirected edges in both directions from the middle node', () => {
+    // Cạnh chỉ được lưu 1 chiều (A→B, B→C) nhưng đồ thị là vô hướng,
+    // nên BFS bắt đầu từ B phải tới được cả A và C.
+    const result = GraphAlgorithmSimulator.simulate('BFS', mockNodes, mockEdges, 'node_B');
+    const finalFrame = result.frames[result.frames.length - 1];
+    expect(finalFrame.visitedNodes).toContain('node_A');
+    expect(finalFrame.visitedNodes).toContain('node_C');
+  });
+
+  it('DFS traverses undirected edges in both directions from the middle node', () => {
+    const result = GraphAlgorithmSimulator.simulate('DFS', mockNodes, mockEdges, 'node_B');
+    const finalFrame = result.frames[result.frames.length - 1];
+    expect(finalFrame.visitedNodes).toContain('node_A');
+    expect(finalFrame.visitedNodes).toContain('node_C');
+  });
+
+  it('Dijkstra traverses undirected edges in both directions from the middle node', () => {
+    const result = GraphAlgorithmSimulator.simulate('DIJKSTRA', mockNodes, mockEdges, 'node_B');
+    const finalFrame = result.frames[result.frames.length - 1];
+    // Với đồ thị vô hướng, từ B phải tính được khoảng cách tới A (5) và C (10).
+    expect(finalFrame.distances?.['node_A']).toBe(5);
+    expect(finalFrame.distances?.['node_C']).toBe(10);
+  });
 });

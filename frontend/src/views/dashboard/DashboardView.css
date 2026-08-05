@@ -13,8 +13,8 @@
   margin-bottom: 2rem;
   padding: 2rem;
   border-radius: 16px;
-  background: linear-gradient(135deg, rgba(66, 85, 255, 0.12), rgba(168, 85, 247, 0.08));
-  border: 1px solid var(--glass-border, rgba(66, 85, 255, 0.2));
+  background: var(--color-accent-primary-dim, rgba(66, 85, 255, 0.08));
+  border: 1px solid var(--glass-border, rgba(66, 85, 255, 0.15));
   animation: fadeSlideIn 0.5s ease;
 }
 
@@ -30,10 +30,7 @@
 }
 
 .greeting-banner__name {
-  background: linear-gradient(135deg, var(--color-accent-primary, #4255ff), #a855f7);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  color: var(--color-accent-primary, #4255ff);
 }
 
 .greeting-banner__sub {
@@ -103,7 +100,7 @@
   height: 28px;
   min-width: 28px;
   border-radius: 8px;
-  background: linear-gradient(135deg, rgba(66, 85, 255, 0.2), rgba(168, 85, 247, 0.15));
+  background: var(--color-accent-primary-dim, rgba(66, 85, 255, 0.12));
   color: var(--color-accent-primary-text, #7b89f4);
   font-size: 0.75rem;
   font-weight: 700;
@@ -266,7 +263,7 @@
 }
 
 .quicklink--teacher {
-  border: 1px solid rgba(234, 179, 8, 0.2);
+  border: 1px solid rgba(66, 85, 255, 0.2);
 }
 
 .quicklink__icon {

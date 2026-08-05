@@ -199,5 +199,21 @@ Bởi vì nếu họ gộp lại, các mảng Tĩnh (Array) như `int[] arr = ne
 - Interface Segregation Principle (ISP) chống lại các "Fat Interface". Yêu cầu chia nhỏ Giao diện theo từng nhóm hành vi riêng biệt (Role Interfaces).
 - Dấu hiệu vi phạm: Lớp con phải viết các hàm rỗng (Dummy) hoặc ném lỗi `NotImplementedException` chỉ để chiều lòng Compiler.
 - Lợi ích: Lớp nào cần cái gì thì `implement` cái đó (Đa kế thừa). Sửa đổi một Interface nhỏ sẽ không bao giờ làm vỡ Code của các Lớp không liên quan.
-- ISP là hệ quả trực tiếp của LSP: Nhờ có ISP, Lớp con không bao giờ hứa hẹn những thứ nó không làm được, do đó không bao giờ vi phạm LSP.
+- ISP có mối quan hệ chặt chẽ với LSP: Nhờ có ISP, Lớp không bao giờ bị ép hứa hẹn những thứ nó không làm được, từ đó tránh được việc vi phạm LSP.
 :::
+
+---
+
+## Next Steps {#next-steps}
+
+- [Nguyên lý Dependency Inversion (DIP)](/docs/solid/dip): Nguyên lý cuối cùng của SOLID giúp các Module cấp cao dựa vào trừu tượng thay vì chi tiết cụ thể.
+- [Nguyên lý Open-Closed (OCP)](/docs/solid/ocp): Xây dựng hệ thống mở rộng được mà không cần sửa đổi mã nguồn đã có.
+- [Interface trong OOP](/docs/oop/interface): Ôn lại nền tảng Interface – hợp đồng hành vi – để hiểu sâu hơn cách ISP tách nhỏ các hợp đồng.
+
+## 📚 Tham khảo lý thuyết
+
+- Sách **Clean Code** (Robert C. Martin) – Nguyên tắc xây dựng các Interface nhỏ, chuyên biệt để tránh sự phụ thuộc thừa.
+- Sách **Clean Architecture** (Robert C. Martin) – Phân tích Interface Segregation Principle trong bộ nguyên lý SOLID.
+- Wikipedia – [Interface segregation principle](https://en.wikipedia.org/wiki/Interface_segregation_principle) và [SOLID](https://en.wikipedia.org/wiki/SOLID).
+- Microsoft Learn – [Interfaces in C#](https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/types/interfaces).
+- GeeksforGeeks – Interface Segregation Principle in C# (tài liệu về Fat Interface và kỹ thuật tách nhỏ interface).

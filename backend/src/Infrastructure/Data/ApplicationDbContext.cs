@@ -47,6 +47,8 @@ namespace VisualizationDSA.Infrastructure.Data
         public DbSet<CodelabTestCase> CodelabTestCases { get; set; }
         public DbSet<CodelabTemplate> CodelabTemplates { get; set; }
         public DbSet<CodelabHint> CodelabHints { get; set; }
+        public DbSet<CodelabHintReveal> CodelabHintReveals { get; set; }
+        public DbSet<QuizXpGrant> QuizXpGrants { get; set; }
         public DbSet<CodelabSubmission> CodelabSubmissions { get; set; }
 
 
@@ -252,6 +254,18 @@ namespace VisualizationDSA.Infrastructure.Data
                     .WithMany(c => c.Submissions)
                     .HasForeignKey(e => e.CodelabId)
                     .OnDelete(DeleteBehavior.Cascade);
+            });
+
+            // Chống join trùng lặp khi 2 request đồng thời (race) cùng 1 học viên + lớp.
+            modelBuilder.Entity<ClassroomEnrollment>(entity =>
+            {
+                entity.HasIndex(e => new { e.ClassroomId, e.StudentId }).IsUnique();
+            });
+
+            // Chống race double-deduct XP khi reveal hint trả phí 2 request song song.
+            modelBuilder.Entity<CodelabHintReveal>(entity =>
+            {
+                entity.HasIndex(e => new { e.UserId, e.CodelabHintId }).IsUnique();
             });
             base.OnModelCreating(modelBuilder);
 

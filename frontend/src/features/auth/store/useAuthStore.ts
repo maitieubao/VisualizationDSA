@@ -11,7 +11,11 @@
 import { defineStore } from 'pinia';
 import { ref, computed } from 'vue';
 import * as authApi from '../services/authApi';
-import { setSession, clearSession, getSavedRefreshToken } from './authSessionHelpers';
+import {
+  setSession, clearSession, getSavedRefreshToken,
+  REFRESH_TOKEN_KEY, ACCESS_EXPIRES_KEY, STATELESS_USER_ID_KEY,
+  ADMIN_ACCESS_TOKEN_KEY, ADMIN_REFRESH_TOKEN_KEY, ADMIN_USER_ID_KEY, ADMIN_USER_DATA_KEY,
+} from './authSessionHelpers';
 import { statelessAuthApi } from '../services/statelessAuthApi';
 import type { StatelessUserDto, StatelessAuthResponse } from '../services/statelessAuthApi';
 
@@ -41,8 +45,13 @@ export const useAuthStore = defineStore('auth', () => {
     refreshTimer.value = setTimeout(async () => {
       const saved = getSavedRefreshToken();
       if (!saved) return;
-      try { setSession(await authApi.refreshAccessToken(saved), accessToken, currentUser, _scheduleRefresh); }
-      catch { clearSession(accessToken, currentUser, refreshTimer); }
+      try {
+        // Đi qua refreshAccessToken() của store: tự chọn đúng mode (stateless/classic)
+        // và dùng chung dedupe refreshPromise — tránh 2 request song song/đường chéo mode.
+        await refreshAccessToken();
+      } catch {
+        clearSession(accessToken, currentUser, refreshTimer);
+      }
     }, delay);
   }
 
@@ -50,7 +59,7 @@ export const useAuthStore = defineStore('auth', () => {
 
   
   async function init(): Promise<void> {
-    const savedUserId = localStorage.getItem('vdsa_stateless_user_id');
+    const savedUserId = localStorage.getItem(STATELESS_USER_ID_KEY);
     if (savedUserId) {
       await statelessInit();
       await loadStatelessProfile();
@@ -94,7 +103,7 @@ export const useAuthStore = defineStore('auth', () => {
 
     refreshPromise = (async () => {
       const savedRefresh = getSavedRefreshToken();
-      const savedUserId = localStorage.getItem('vdsa_stateless_user_id');
+      const savedUserId = localStorage.getItem(STATELESS_USER_ID_KEY);
 
       if (!savedRefresh) {
         throw new Error('No refresh token available');
@@ -115,9 +124,9 @@ export const useAuthStore = defineStore('auth', () => {
       } catch (err) {
         
         if (savedUserId || isStatelessMode.value) {
-          localStorage.removeItem('vdsa_refresh_token');
-          localStorage.removeItem('vdsa_access_expires');
-          localStorage.removeItem('vdsa_stateless_user_id');
+          localStorage.removeItem(REFRESH_TOKEN_KEY);
+          localStorage.removeItem(ACCESS_EXPIRES_KEY);
+          localStorage.removeItem(STATELESS_USER_ID_KEY);
           accessToken.value = null;
           currentUser.value = null;
           statelessUser.value = null;
@@ -157,9 +166,9 @@ export const useAuthStore = defineStore('auth', () => {
       bio: response.user.bio,
       university: response.user.university,
     };
-    localStorage.setItem('vdsa_refresh_token', response.refreshToken);
-    localStorage.setItem('vdsa_access_expires', String(Date.now() + response.expiresIn * 1000));
-    localStorage.setItem('vdsa_stateless_user_id', response.user.id);
+    localStorage.setItem(REFRESH_TOKEN_KEY, response.refreshToken);
+    localStorage.setItem(ACCESS_EXPIRES_KEY, String(Date.now() + response.expiresIn * 1000));
+    localStorage.setItem(STATELESS_USER_ID_KEY, response.user.id);
   }
 
   async function statelessLogin(email: string, password: string): Promise<void> {
@@ -191,14 +200,14 @@ export const useAuthStore = defineStore('auth', () => {
     currentUser.value = null;
     statelessUser.value = null;
     isStatelessMode.value = false;
-    localStorage.removeItem('vdsa_refresh_token');
-    localStorage.removeItem('vdsa_access_expires');
-    localStorage.removeItem('vdsa_stateless_user_id');
+    localStorage.removeItem(REFRESH_TOKEN_KEY);
+    localStorage.removeItem(ACCESS_EXPIRES_KEY);
+    localStorage.removeItem(STATELESS_USER_ID_KEY);
   }
 
   async function statelessInit(): Promise<void> {
     const savedRefresh = getSavedRefreshToken();
-    const savedUserId = localStorage.getItem('vdsa_stateless_user_id');
+    const savedUserId = localStorage.getItem(STATELESS_USER_ID_KEY);
     if (!savedRefresh || !savedUserId) return;
 
     try {
@@ -206,17 +215,17 @@ export const useAuthStore = defineStore('auth', () => {
       _applyStatelessAuth(response);
     } catch {
       
-      localStorage.removeItem('vdsa_refresh_token');
-      localStorage.removeItem('vdsa_access_expires');
-      localStorage.removeItem('vdsa_stateless_user_id');
+      localStorage.removeItem(REFRESH_TOKEN_KEY);
+      localStorage.removeItem(ACCESS_EXPIRES_KEY);
+      localStorage.removeItem(STATELESS_USER_ID_KEY);
     }
   }
 
   async function loadStatelessProfile(): Promise<void> {
-    const userId = statelessUser.value?.id ?? localStorage.getItem('vdsa_stateless_user_id');
+    const userId = statelessUser.value?.id ?? localStorage.getItem(STATELESS_USER_ID_KEY);
     if (!userId) return;
     try {
-      statelessUser.value = await statelessAuthApi.getMe(userId);
+      statelessUser.value = await statelessAuthApi.getMe();
       if (currentUser.value) {
         currentUser.value.totalXP = statelessUser.value.totalXP;
         currentUser.value.currentLevel = statelessUser.value.currentLevel;
@@ -229,11 +238,9 @@ export const useAuthStore = defineStore('auth', () => {
   }
 
   async function updateProfile(username: string, nickname?: string, bio?: string, university?: string): Promise<void> {
-    const userId = currentUser.value?.id;
-    if (!userId) return;
     isLoading.value = true; authError.value = null;
     try {
-      const updatedUser = await statelessAuthApi.updateProfile(userId, username, nickname, bio, university);
+      const updatedUser = await statelessAuthApi.updateProfile(username, nickname, bio, university);
       statelessUser.value = updatedUser;
       if (currentUser.value) {
         currentUser.value.username = updatedUser.username;
@@ -250,11 +257,9 @@ export const useAuthStore = defineStore('auth', () => {
   }
 
   async function changePassword(currentPassword: string, newPassword: string): Promise<void> {
-    const userId = currentUser.value?.id;
-    if (!userId) throw new Error('Yêu cầu đăng nhập để đổi mật khẩu.');
     isLoading.value = true; authError.value = null;
     try {
-      await statelessAuthApi.changePassword(userId, currentPassword, newPassword);
+      await statelessAuthApi.changePassword(currentPassword, newPassword);
     } catch (err: unknown) {
       authError.value = err instanceof Error ? err.message : 'Đổi mật khẩu thất bại.';
       throw err;
@@ -266,7 +271,7 @@ export const useAuthStore = defineStore('auth', () => {
   const impersonateTrigger = ref(0);
   const isImpersonating = computed(() => {
     const _ = impersonateTrigger.value;
-    return localStorage.getItem('vdsa_admin_access_token') !== null;
+    return localStorage.getItem(ADMIN_ACCESS_TOKEN_KEY) !== null;
   });
 
   async function startImpersonating(userId: string): Promise<void> {
@@ -287,14 +292,14 @@ export const useAuthStore = defineStore('auth', () => {
   function impersonate(response: StatelessAuthResponse): void {
     
     const currentAccessToken = accessToken.value;
-    const currentRefreshToken = localStorage.getItem('vdsa_refresh_token');
-    const currentUserId = localStorage.getItem('vdsa_stateless_user_id');
+    const currentRefreshToken = localStorage.getItem(REFRESH_TOKEN_KEY);
+    const currentUserId = localStorage.getItem(STATELESS_USER_ID_KEY);
     const currentUserData = JSON.stringify(currentUser.value);
 
-    if (currentAccessToken) localStorage.setItem('vdsa_admin_access_token', currentAccessToken);
-    if (currentRefreshToken) localStorage.setItem('vdsa_admin_refresh_token', currentRefreshToken);
-    if (currentUserId) localStorage.setItem('vdsa_admin_user_id', currentUserId);
-    if (currentUserData) localStorage.setItem('vdsa_admin_user_data', currentUserData);
+    if (currentAccessToken) localStorage.setItem(ADMIN_ACCESS_TOKEN_KEY, currentAccessToken);
+    if (currentRefreshToken) localStorage.setItem(ADMIN_REFRESH_TOKEN_KEY, currentRefreshToken);
+    if (currentUserId) localStorage.setItem(ADMIN_USER_ID_KEY, currentUserId);
+    if (currentUserData) localStorage.setItem(ADMIN_USER_DATA_KEY, currentUserData);
 
     
     _applyStatelessAuth(response);
@@ -302,10 +307,10 @@ export const useAuthStore = defineStore('auth', () => {
   }
 
   function stopImpersonating(): void {
-    const adminAccessToken = localStorage.getItem('vdsa_admin_access_token');
-    const adminRefreshToken = localStorage.getItem('vdsa_admin_refresh_token');
-    const adminUserId = localStorage.getItem('vdsa_admin_user_id');
-    const adminUserDataStr = localStorage.getItem('vdsa_admin_user_data');
+    const adminAccessToken = localStorage.getItem(ADMIN_ACCESS_TOKEN_KEY);
+    const adminRefreshToken = localStorage.getItem(ADMIN_REFRESH_TOKEN_KEY);
+    const adminUserId = localStorage.getItem(ADMIN_USER_ID_KEY);
+    const adminUserDataStr = localStorage.getItem(ADMIN_USER_DATA_KEY);
 
     if (!adminAccessToken || !adminRefreshToken || !adminUserId || !adminUserDataStr) {
       return;
@@ -313,22 +318,41 @@ export const useAuthStore = defineStore('auth', () => {
 
     
     accessToken.value = adminAccessToken;
-    localStorage.setItem('vdsa_refresh_token', adminRefreshToken);
-    localStorage.setItem('vdsa_stateless_user_id', adminUserId);
+    localStorage.setItem(REFRESH_TOKEN_KEY, adminRefreshToken);
+    localStorage.setItem(STATELESS_USER_ID_KEY, adminUserId);
     
     try {
-      const adminUser = JSON.parse(adminUserDataStr);
+      const adminUser = JSON.parse(adminUserDataStr) as authApi.AuthUserDto;
       currentUser.value = adminUser;
-      statelessUser.value = adminUser;
+      // statelessUser cần đúng shape StatelessUserDto (badges mảng có kiểu) — map thủ công.
+      statelessUser.value = {
+        id: adminUser.id,
+        email: adminUser.email,
+        username: adminUser.username,
+        totalXP: adminUser.totalXP,
+        currentLevel: adminUser.currentLevel,
+        streakDays: adminUser.streakDays,
+        createdAt: adminUser.createdAt ?? new Date().toISOString(),
+        badges: ((adminUser.badges ?? []) as Record<string, unknown>[]).map(b => ({
+          id: String(b?.id ?? ''),
+          name: String(b?.name ?? ''),
+          description: String(b?.description ?? ''),
+          icon: String(b?.icon ?? ''),
+          color: String(b?.color ?? ''),
+          earnedAt: String(b?.earnedAt ?? new Date().toISOString()),
+        })) ?? [],
+        isPremium: adminUser.isPremium,
+        role: adminUser.role ?? 'Student',
+      };
     } catch {
       
     }
 
     
-    localStorage.removeItem('vdsa_admin_access_token');
-    localStorage.removeItem('vdsa_admin_refresh_token');
-    localStorage.removeItem('vdsa_admin_user_id');
-    localStorage.removeItem('vdsa_admin_user_data');
+    localStorage.removeItem(ADMIN_ACCESS_TOKEN_KEY);
+    localStorage.removeItem(ADMIN_REFRESH_TOKEN_KEY);
+    localStorage.removeItem(ADMIN_USER_ID_KEY);
+    localStorage.removeItem(ADMIN_USER_DATA_KEY);
 
     isStatelessMode.value = true;
     impersonateTrigger.value++;

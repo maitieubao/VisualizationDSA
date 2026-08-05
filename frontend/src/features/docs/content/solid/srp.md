@@ -204,3 +204,30 @@ Ví dụ: `CalculateTax()` và `CalculateDiscount()` đều là nghiệp vụ t�
 - Việc chia nhỏ giúp Code có khả năng Unit Test tuyệt vời (Bạn có thể Mock/Giả lập cái EmailService để test riêng phần Tính thuế).
 - Hãy bắt đầu phân tách thành 3 Lớp tiêu chuẩn: **Logic Toán học (Business)**, **Lưu trữ (Data/Repository)**, và **Giao tiếp ngoại vi (Email/API/Logger)**.
 :::
+
+---
+
+## 📚 Tham khảo lý thuyết
+
+- **Robert C. Martin (Uncle Bob)** - *Clean Code: A Handbook of Agile Software Craftsmanship* (Chương 2 & Chương 3 về Functions và SOLID), *Clean Architecture: A Craftsman's Guide to Software Structure and Design*.
+- **Robert C. Martin** - Bài viết gốc [*The Single Responsibility Principle*](https://blog.cleancoder.com/uncle-bob/2014/05/08/SingleReponsibilityPrinciple.html).
+- **Wikipedia** - [SOLID](https://en.wikipedia.org/wiki/SOLID), mục [Single-responsibility principle](https://en.wikipedia.org/wiki/Single-responsibility_principle).
+- **Microsoft Learn** - [Architectural Principles](https://learn.microsoft.com/en-us/dotnet/architecture/modern-web-apps-azure/architectural-principles).
+- **GeeksforGeeks** - *Single Responsibility Principle in Java with Examples*.
+
+---
+
+## Next Steps {#next-steps}
+
+Bạn đã nắm vững nguyên lý đầu tiên của bộ SOLID. Để tiếp tục hành trình, hãy khám phá:
+
+<div class="vt-box-container next-steps">
+  <a class="vt-box" href="/docs/solid/ocp">
+    <p class="next-steps-link">Open-Closed Principle (OCP)</p>
+    <p class="next-steps-caption">Nguyên lý thứ hai của SOLID — mở rộng hành vi mà không sửa đổi mã nguồn đã tồn tại.</p>
+  </a>
+  <a class="vt-box" href="/docs/di/basics">
+    <p class="next-steps-link">Cơ bản về DI & IoC</p>
+    <p class="next-steps-caption">Đi sâu vào Dependency Injection — kỹ thuật tiêm phụ thuộc vừa được áp dụng trong bài.</p>
+  </a>
+</div>

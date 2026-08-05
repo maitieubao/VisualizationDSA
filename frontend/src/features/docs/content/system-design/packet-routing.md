@@ -90,6 +90,77 @@ User ──request──> Load Balancer ──packet──> Server A/B
 
 Load Balancer tạo gói tin và quyết định server nhận dựa trên chiến lược Round-Robin.
 
+## Định tuyến trong mạng thực tế {#real-network-routing}
+
+Trong một hệ thống phân tán lớn, gói tin không chỉ di chuyển từ Load Balancer đến server đích mà còn phải đi qua **nhiều router** trung gian. Quá trình này được điều khiển bởi hai chức năng riêng biệt:
+
+- **Bảng định tuyến (routing table):** dữ liệu được xây dựng và cập nhật để biết "đến đích bằng đường nào".
+- **Chuyển tiếp (forwarding):** hành động tra bảng định tuyến và đẩy gói tin ra cổng / hop kế tiếp.
+
+| Khái niệm | Mô tả |
+| :--- | :--- |
+| **Routing** | Quá trình tính toán đường đi và xây dựng bảng định tuyến |
+| **Forwarding** | Quá trình tra bảng định tuyến và chuyển gói tin tới hop kế tiếp |
+| **Hop** | Mỗi bước nhảy từ router này sang router kế tiếp |
+
+### Hai họ thuật toán định tuyến {#routing-algorithms}
+
+Các router trao đổi thông tin với nhau để hội tụ bảng định tuyến theo một trong hai cách:
+
+| Tiêu chí | Distance Vector | Link State |
+| :--- | :--- | :--- |
+| Thông tin trao đổi | Bảng khoảng cách tới mọi đích | Bản đồ toàn cục của các liên kết |
+| Kiến thức về mạng | Chỉ biết qua hàng xóm | Mọi router cùng biết toàn bộ cấu trúc mạng |
+| Giao thức ví dụ | RIP, BGP | OSPF, IS-IS |
+| Thuật toán lõi | Bellman-Ford (cộng dồn khoảng cách) | Dijkstra (đường đi ngắn nhất) |
+
+**OSPF** (Open Shortest Path First) là giao thức **link state** phổ biến trong mạng nội bộ (interior): mỗi router phát bản đồ liên kết của mình, sau đó dùng **Dijkstra** để tính đường đi ngắn nhất tới mọi đích. **BGP** (Border Gateway Protocol) là giao thức **distance vector** giữa các hệ thống tự trị (inter-domain) — đường đi của gói tin trên Internet được quyết định phần lớn bởi BGP.
+
+### Ví dụ chuyển tiếp gói tin {#forwarding-example}
+
+```mermaid
+flowchart TD
+    A[Gói tin đến router] --> B{Tra bảng định tuyến}
+    B -->|Tìm thấy| C[Chuyển tiếp tới hop kế tiếp]
+    B -->|Không tìm thấy| D[Trả về lỗi No Route]
+    C --> E[Gói tin tiếp tục hành trình tới đích]
+```
+
+Ví dụ code C# chạy được — router giữ một bảng định tuyến đơn giản và thực hiện chuyển tiếp (forwarding):
+
+```csharp
+// Mô phỏng chuyển tiếp gói tin dựa trên bảng định tuyến
+public class Router
+{
+    private readonly Dictionary<string, string> _routingTable = new()
+    {
+        { "ServerB", "Router2" },
+        { "ServerC", "Router3" }
+    };
+
+    // Forwarding: tra bảng định tuyến để tìm hop kế tiếp
+    public string Forward(string targetId) =>
+        _routingTable.TryGetValue(targetId, out var nextHop)
+            ? nextHop
+            : throw new InvalidOperationException($"No route to {targetId}");
+}
+
+// Sử dụng
+var router = new Router();
+Console.WriteLine(router.Forward("ServerC")); // Router3
+```
+
+Liên hệ với thuật toán Dijkstra: chi tiết về cách Dijkstra tìm đường đi ngắn nhất được trình bày trong bài [Thuật toán Dijkstra](/docs/tree-graph/dijkstra).
+
+## Tham khảo lý thuyết {#references}
+
+- **Computer Networking: A Top-Down Approach** — Kurose & Ross: chương Network Layer — data plane (chuyển tiếp, bảng định tuyến) và control plane (OSPF, BGP).
+- **Designing Data-Intensive Applications** — Martin Kleppmann: chương về mạng, độ trễ và truyền dữ liệu trong hệ thống phân tán.
+- Wikipedia — [Routing](https://en.wikipedia.org/wiki/Routing), [Packet forwarding](https://en.wikipedia.org/wiki/Packet_forwarding).
+- Cisco Networking Basics — khái niệm bảng định tuyến và chuyển tiếp gói tin.
+- GeeksforGeeks — Difference between Distance Vector Routing and Link State Routing.
+- RFC 2328 — Open Shortest Path First (OSPF) v2.
+
 ## Next Steps {#next-steps}
 
 <div class="vt-box-container next-steps">

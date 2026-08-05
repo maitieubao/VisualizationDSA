@@ -79,6 +79,8 @@ builder.Services.AddSingleton<ICacheManager, RedisCacheManager>();
 // Khởi tạo rất nặng và tốn thời gian nên chỉ tạo 1 lần.
 ```
 
+**Lưu ý về HttpClient:** Đừng bao giờ tự `new HttpClient()` khắp nơi trong code (tạo mới mỗi Request sẽ làm cạn kiệt Socket) mà cũng đừng nhốt nó thành Singleton (cấu hình DNS sẽ không bao giờ được làm mới). Hãy dùng `IHttpClientFactory` — được đăng ký sẵn vào DI Container qua `builder.Services.AddHttpClient()` — vì nó quản lý và tái sử dụng `HttpMessageHandler` theo vòng đời đúng đắn.
+
 ---
 
 ## 3. Hoạt ảnh Request Flow (Mermaid Trace) {#visualizer}
@@ -146,7 +148,7 @@ Ai được phép tiêm ai? (Ai bọc được ai?)
 | **Scoped** | ✅ Tốt | ✅ Tốt | ✅ Tốt |
 | **Transient** | ✅ Tốt | ✅ Tốt | ✅ Tốt |
 
-*(Rất may mắn, kể từ ASP.NET Core 2.0 trở đi, Microsoft đã bổ sung tính năng Tự Động Quét Lỗi Captive Dependency trong quá trình khởi động `Development`. Trình biên dịch sẽ lập tức báo lỗi Đỏ rực ngăn không cho Server chạy nếu bạn lỡ tay tiêm lộn xộn!)*
+*(Rất may mắn, kể từ ASP.NET Core 2.0 trở đi, Microsoft đã bổ sung tính năng Tự Động Quét Lỗi Captive Dependency trong quá trình khởi động ở môi trường `Development`. DI Container sẽ lập tức ném ra ngoại lệ (throw) ngay lúc khởi động, ngăn không cho Server chạy nếu bạn lỡ tay tiêm lộn xộn!)*
 
 :::tip Tóm tắt nhanh (Key Takeaways)
 - Vòng đời DI kiểm soát sự phát nổ của RAM trong máy chủ Web.
@@ -155,3 +157,19 @@ Ai được phép tiêm ai? (Ai bọc được ai?)
 - **Singleton:** Lãnh chúa độc tôn. Dùng cho Bộ Đệm (Cache), Cấu hình (Config). Phải tự viết Code chống Đa luồng (Thread-safe) cực cẩn thận.
 - TUYỆT ĐỐI không Inject Scoped vào Singleton. Nếu không, máy chủ của bạn sẽ sập trong ngày đầu tiên lên Production.
 :::
+
+---
+
+## Next Steps {#next-steps}
+
+- [Cơ bản về DI & IoC](/docs/di/basics): Quay lại nền tảng, hiểu cách DI Container đăng ký hợp đồng (Interface) và tự động lắp ráp hệ thống.
+- [Các mẫu nâng cao trong DI](/docs/di/advanced): Khám phá Constructor Injection, Factory/Delegate registration và các kỹ thuật tiêm tiên tiến khác.
+- [Keyed Services (.NET 8)](/docs/di/keyed-services): Đăng ký nhiều cài đặt cho cùng một hợp đồng và chọn đúng cái cần thiết khi runtime.
+
+## 📚 Tham khảo lý thuyết
+
+- Sách **Dependency Injection in .NET** (Mark Seemann) — Tác phẩm kinh điển giải thích triệt để các khái niệm Lifetime, Composition Root và Captive Dependency.
+- Microsoft Learn — [Dependency injection in .NET](https://learn.microsoft.com/en-us/dotnet/core/extensions/dependency-injection): tài liệu chính thức về vòng đời `Transient`, `Scoped`, `Singleton` trong .NET.
+- Microsoft Learn — [Dependency injection guidelines](https://learn.microsoft.com/en-us/dotnet/core/extensions/dependency-injection-guidelines): khuyến nghị chính thức về Captive Dependency, scoped trong singleton và kiểm soát vòng đời service.
+- Wikipedia — [Dependency injection](https://en.wikipedia.org/wiki/Dependency_injection): tổng quan lý thuyết về DI và các kiểu tiêm phụ thuộc.
+- Martin Fowler — [Inversion of Control Containers and the Dependency Injection pattern](https://martinfowler.com/articles/injection.html): bài kinh điển phân tích sâu về IoC Container và mối quan hệ với DI.

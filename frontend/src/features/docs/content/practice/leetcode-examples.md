@@ -262,3 +262,16 @@ Kỹ năng giải mã thuật toán của bạn đã chạm đỉnh. Giờ là l
     <p class="next-steps-caption">Bức tranh toàn cảnh và con đường trở thành Senior.</p>
   </a>
 </div>
+
+## 📚 Tham khảo lý thuyết {#references}
+
+Dưới đây là các nguồn tài liệu kinh điển và chính thống được dùng để biên soạn bài viết này, giúp bạn tự nghiên cứu sâu hơn nếu muốn:
+
+- **Đề bài và lời giải chuẩn của 5 bài toán LeetCode:** [Two Sum #1](https://leetcode.com/problems/two-sum/), [Valid Parentheses #20](https://leetcode.com/problems/valid-parentheses/), [Maximum Subarray #53](https://leetcode.com/problems/maximum-subarray/), [Number of Islands #200](https://leetcode.com/problems/number-of-islands/), [Merge Intervals #56](https://leetcode.com/problems/merge-intervals/).
+- **Two Sum dùng Bảng băm (Hash Table) để đạt thời gian O(N):** Cormen, Leiserson, Rivest & Stein, *Introduction to Algorithms* (CLRS), 3rd Edition (MIT Press) - Chương 11 (Hash Tables) và [Wikipedia - Hash table](https://en.wikipedia.org/wiki/Hash_table).
+- **Ngăn xếp (Stack) LIFO cho bài Valid Parentheses:** [Wikipedia - Stack (abstract data type)](https://en.wikipedia.org/wiki/Stack_(abstract_data_type)).
+- **Kadane's Algorithm cho bài Maximum Subarray:** [Wikipedia - Maximum subarray problem](https://en.wikipedia.org/wiki/Maximum_subarray_problem) và [GeeksforGeeks - Largest Sum Contiguous Subarray](https://www.geeksforgeeks.org/largest-sum-contiguous-subarray/).
+- **Thuật toán Loang (Flood Fill) kết hợp DFS cho bài Number of Islands:** [Wikipedia - Flood fill](https://en.wikipedia.org/wiki/Flood_fill).
+- **Merge Intervals và kỹ thuật sắp xếp nền tảng:** Cormen, Leiserson, Rivest & Stein, *Introduction to Algorithms* (CLRS), 3rd Edition (MIT Press) - Chương 2 (Getting Started).
+- **Tối ưu hiệu năng với Span&lt;T&gt;/Memory&lt;T&gt; trong C#:** tài liệu chính thức *Microsoft Learn* (mục Memory &amp; Spans) và Jon Skeet, *C# in Depth*.
+- **Rèn luyện tư duy giải đề phỏng vấn thuật toán:** Gayle Laakmann McDowell, *Cracking the Coding Interview* và Aditya Bhargava, *Grokking Algorithms*.

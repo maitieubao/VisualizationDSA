@@ -21,7 +21,7 @@
           <span class="w-2 h-2 rounded-full bg-accent animate-pulse"></span>
           VISUALGO-MODE 60FPS
         </span>
-        <span class="text-text-muted text-[9px]">Space: Play/Pause | ← →: Step</span>
+        <span class="text-text-muted text-[9px]">Space: Play/Pause | <BaseIcon name="arrow-left" class="w-2.5 h-2.5 inline align-middle" /> <BaseIcon name="arrow-right" class="w-2.5 h-2.5 inline align-middle" />: Step</span>
         <button
           class="w-5 h-5 flex items-center justify-center rounded text-text-secondary hover:text-accent hover:bg-bg-hover transition-all cursor-pointer"
           title="Xem lại hướng dẫn"
@@ -56,7 +56,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, defineComponent, h, onMounted, onUnmounted } from 'vue';
+import { ref, computed, defineComponent, h, watch, onMounted, onUnmounted } from 'vue';
 import { ArrayBarVisualizer } from '../../features/algorithm-sandbox';
 import SortingDrawerTrace from '../../features/algorithm-sandbox/components/SortingDrawerTrace.vue';
 import { VcrDockBar } from '../../features/vcr-player';
@@ -103,6 +103,15 @@ onMounted(() => {
 
 onUnmounted(() => {
   window.removeEventListener('keydown', handleKeydown);
+  // Dọn dẹp state của store dùng chung khi rời route:
+  // dừng timer VCR + xóa customCompileFn để không "hijack" compile của feature khác
+  vcrStore.pause();
+  vcrStore.customCompileFn = null;
+});
+
+// Dừng phát khi rời tab sorting (KeepAlive giữ component sống, timer VCR vẫn chạy nền)
+watch(activeTab, (tab) => {
+  if (tab !== 'sorting') vcrStore.pause();
 });
 
 const tabs = [

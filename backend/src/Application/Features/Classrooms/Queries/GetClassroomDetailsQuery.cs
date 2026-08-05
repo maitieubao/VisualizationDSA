@@ -20,7 +20,7 @@ namespace VisualizationDSA.Application.Features.Classrooms.Queries
     {
         public Guid Id { get; set; }
         public string Name { get; set; } = string.Empty;
-        public string Code { get; set; } = string.Empty;
+        public string? Code { get; set; }
         public Guid OwnerTeacherId { get; set; }
         public string OwnerTeacherName { get; set; } = string.Empty;
         public Guid? CourseId { get; set; }
@@ -83,9 +83,10 @@ namespace VisualizationDSA.Application.Features.Classrooms.Queries
             {
                 Id = classroom.Id,
                 Name = classroom.Name,
-                Code = classroom.InviteCode,
+                // Invite code CHỈ trả cho chủ sở hữu — học viên có thể phát tán code ra ngoài.
+                Code = isOwner ? classroom.InviteCode : null,
                 OwnerTeacherId = classroom.OwnerTeacherId,
-                OwnerTeacherName = classroom.OwnerTeacher.Username,
+                OwnerTeacherName = classroom.OwnerTeacher?.Username ?? "Unknown",
                 CourseId = classroom.CourseId,
                 IsOwner = isOwner,
                 IsEnrolled = isEnrolled

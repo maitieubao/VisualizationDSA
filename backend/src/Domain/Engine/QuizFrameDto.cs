@@ -46,6 +46,27 @@ namespace VisualizationDSA.Domain.Engine
         public string Explanation { get; set; } = string.Empty;
     }
 
+    /// <summary>DTO công khai cho GET quiz — KHÔNG chứa đáp án (CorrectIndex/Explanation) để chống lộ đề.</summary>
+    public class StatelessQuizPublicDto
+    {
+        public string Id { get; set; } = string.Empty;
+        public string Title { get; set; } = string.Empty;
+        public string Topic { get; set; } = string.Empty;
+        public string Difficulty { get; set; } = "medium";
+        public int XpReward { get; set; }
+        public List<StatelessQuestionPublicDto> Questions { get; set; } = new();
+    }
+
+    public class StatelessQuestionPublicDto
+    {
+        public string Id { get; set; } = string.Empty;
+        public string Text { get; set; } = string.Empty;
+        public List<string> Options { get; set; } = new();
+        // Chỉ được điền khi có token hợp lệ (lesson flow chấm điểm client-side).
+        public int? CorrectIndex { get; set; }
+        public string? Explanation { get; set; }
+    }
+
     
     
     

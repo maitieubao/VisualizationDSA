@@ -5,7 +5,8 @@
 
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:5055';
-const isStateless = import.meta.env.VITE_STATELESS_MODE === 'true' || true;
+// Chỉ dùng stateless mode khi được cấu hình tường minh (trước đây luôn true → mọi nhánh JWT chết).
+const isStateless = import.meta.env.VITE_STATELESS_MODE === 'true';
 
 
 
@@ -78,8 +79,10 @@ function getAuthHeaders(token: string): HeadersInit {
 
 export async function fetchUserProgress(token: string, userId?: string): Promise<UserProgressDto> {
   if (isStateless) {
-    const params = userId ? `?userId=${encodeURIComponent(userId)}` : '';
-    const response = await fetch(`${API_BASE}/api/v1/concepts/auth/progress${params}`);
+    // Người dùng được xác định từ token — userId query không còn được backend tin cậy.
+    const response = await fetch(`${API_BASE}/api/v1/concepts/auth/progress`, {
+      headers: getAuthHeaders(token),
+    });
     return handleResponse<UserProgressDto>(response);
   }
   const response = await fetch(`${API_BASE}/api/v1/users/me/progress`, {
@@ -100,8 +103,8 @@ export async function syncXPToServer(
   if (isStateless) {
     const response = await fetch(`${API_BASE}/api/v1/concepts/auth/award-xp`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ userId, amount: payload.amount, reason: payload.reason }),
+      headers: getAuthHeaders(token),
+      body: JSON.stringify({ amount: payload.amount, reason: payload.reason }),
     });
     return handleResponse<XPSyncResult>(response);
   }
@@ -121,16 +124,14 @@ export async function markModuleComplete(
   token: string,
   moduleId: string,
 ): Promise<void> {
-  if (isStateless) {
-    
-    return;
-  }
+  // Luôn persist qua endpoint JWT (UsersController.CompleteModule) —
+  // trước đây nhánh stateless return sớm → module không bao giờ được lưu.
   const response = await fetch(`${API_BASE}/api/v1/users/me/modules/${encodeURIComponent(moduleId)}`, {
     method: 'POST',
     headers: getAuthHeaders(token),
   });
   if (!response.ok && response.status !== 204) {
     const body = await response.json().catch(() => null);
-    throw new Error(body?.message ?? `HTTP ${response.status}`);
+    throw new ApiError(body?.message ?? `HTTP ${response.status}`, response.status);
   }
 }

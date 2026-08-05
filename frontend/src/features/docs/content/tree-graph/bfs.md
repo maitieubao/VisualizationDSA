@@ -9,7 +9,7 @@ description: Khám phá thuật toán loang màu như vết dầu trên mặt n�
 - Xây dựng tư duy **Duyệt theo Tầng (Level-order)**, lan tỏa như một giọt nước rơi xuống mặt hồ.
 - Thấu hiểu tại sao thuật toán này BẮT BUỘC phải sử dụng **Hàng đợi (Queue)** để quản lý đỉnh chờ.
 - Theo dõi Call Stack và mảng `Visited` qua bảng Trace chi tiết.
-- Nhận diện "Vương quốc" của BFS: Bài toán **Đường đi ngắn nhất (Shortest Path)** trên ma trận vô hướng/không trọng số.
+- Nhận diện "Vương quốc" của BFS: Bài toán **Đường đi ngắn nhất (Shortest Path)** trên đồ thị không trọng số (vô hướng hoặc có hướng).
 :::
 
 ## 1. Lời mở đầu: Vết dầu loang trên mặt nước {#introduction}
@@ -67,11 +67,14 @@ Cứ thế tiếp tục lấy D, E, F ra duyệt. Kết quả thứ tự thăm l
 
 ---
 
-## 3. Mã nguồn C# Căn bản {#code-example}
+## 3. Mã nguồn Căn bản {#code-example}
 
 Bạn có thể biểu diễn đồ thị bằng `Dictionary<int, List<int>>` (Danh sách kề).
 
-```csharp
+```playground:bfs
+```
+
+```dual:bfs
 public void BFS_Graph(Dictionary<int, List<int>> graph, int startNode)
 {
     // Hàng đợi quản lý các đỉnh đang chờ được duyệt
@@ -174,3 +177,21 @@ public int ShortestPathInMaze(int[][] grid, int[] start, int[] end)
 - Không bao giờ quên mảng `Visited` (hoặc HashSet), nếu không sẽ bị kẹt trong Vòng lặp Vô hạn (Infinite Loop) ở các Đồ thị có chu trình.
 - Khi cần tìm Đường đi CÓ ÍT BƯỚC NHẤT (Shortest Path in Unweighted Graph), BFS là giải pháp O(V + E) độc tôn. Đừng dùng DFS vì nó có thể đi vòng vèo mù quáng!
 :::
+
+## Next Steps {#next-steps}
+
+Bạn đã chinh phục "vết dầu loang" trên đồ thị rồi! Giờ hãy đối chiếu với người anh em triết lý đối lập, và mở rộng vũ khí của mình sang các thuật toán duyệt đồ thị cao cấp hơn.
+
+- [Duyệt theo chiều sâu (DFS)](/docs/tree-graph/dfs) — Người anh em "đâm lao", giúp bạn đối chiếu hai triết lý duyệt Công bằng vs Đâm sâu.
+- [Phát hiện chu trình (Cycle Detection)](/docs/tree-graph/cycle-detection) — Ứng dụng duyệt đồ thị để truy tìm vòng lặp vô hạn.
+- [Thuật toán Dijkstra](/docs/tree-graph/dijkstra) — Nâng cấp BFS khi đồ thị bắt đầu có trọng số trên cạnh.
+
+## 📚 Tham khảo lý thuyết {#references}
+
+Nguồn lý thuyết chính được dùng để biên soạn bài viết này:
+
+- **Cormen, T. H., Leiserson, C. E., Rivest, R. L., & Stein, C.** *Introduction to Algorithms* (4th ed., MIT Press, 2022) — Chương 20: *Elementary Graph Algorithms*, mục *Breadth-First Search*: chứng minh tính chất đường đi ngắn nhất và độ phức tạp O(V + E).
+- **Dasgupta, S., Papadimitriou, C. H., & Vazirani, U. V.** *Algorithms*, McGraw-Hill — Chương 3 giới thiệu BFS/DFS và ứng dụng tìm đường đi ngắn nhất trên đồ thị không trọng số.
+- **Wikipedia — [Breadth-first search](https://en.wikipedia.org/wiki/Breadth-first_search):** Giải thích cơ chế, mã giả và phân tích độ phức tạp.
+- **GeeksforGeeks — [Breadth First Search or BFS for a Graph](https://www.geeksforgeeks.org/breadth-first-search-or-bfs-for-a-graph/):** Ví dụ minh họa từng bước và các biến thể cài đặt.
+- **MIT OpenCourseWare — [6.006 Introduction to Algorithms](https://ocw.mit.edu/courses/6-006-introduction-to-algorithms-spring-2020/):** Bài giảng về Breadth-First Search trong môn nhập môn giải thuật.

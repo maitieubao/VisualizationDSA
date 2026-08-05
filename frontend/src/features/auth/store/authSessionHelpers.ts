@@ -1,8 +1,13 @@
 import type { Ref } from 'vue';
 import * as authApi from '../services/authApi';
 
-const REFRESH_TOKEN_KEY  = 'vdsa_refresh_token';
-const ACCESS_EXPIRES_KEY = 'vdsa_access_expires'; 
+export const REFRESH_TOKEN_KEY  = 'vdsa_refresh_token';
+export const ACCESS_EXPIRES_KEY = 'vdsa_access_expires'; 
+export const STATELESS_USER_ID_KEY = 'vdsa_stateless_user_id';
+export const ADMIN_ACCESS_TOKEN_KEY  = 'vdsa_admin_access_token';
+export const ADMIN_REFRESH_TOKEN_KEY = 'vdsa_admin_refresh_token';
+export const ADMIN_USER_ID_KEY       = 'vdsa_admin_user_id';
+export const ADMIN_USER_DATA_KEY     = 'vdsa_admin_user_data';
 
 
 

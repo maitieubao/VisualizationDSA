@@ -227,3 +227,29 @@ public class BadController
 - Phối hợp DI Container và Factory Pattern bằng cách tiêm **`Func<T>`**. Quyết định khởi tạo cái gì sẽ được hoãn lại cho đến lúc Runtime.
 - Tránh xa **Service Locator Pattern** (Tiêm `IServiceProvider`). Đừng bao giờ giấu giếm sự phụ thuộc bên trong các thân hàm!
 :::
+
+---
+
+## Next Steps {#next-steps}
+
+Bạn đã vượt qua giới hạn của DI Container với `Lazy<T>`, biến Container thành cỗ máy Factory nhờ `Func<T>` và học cách tránh xa Service Locator. Chặng tiếp theo là khám phá Keyed Services của .NET 8 — cách thanh lịch để tiêm nhiều thực thi cho cùng một Interface mà không cần tự tay viết Factory.
+
+<div class="vt-box-container next-steps">
+  <a class="vt-box" href="/docs/di/keyed-services">
+    <p class="next-steps-link">Keyed Services (.NET 8)</p>
+    <p class="next-steps-caption">Đăng ký nhiều Implementations cho cùng một Interface bằng những chiếc Chìa khóa.</p>
+  </a>
+  <a class="vt-box" href="/docs/di/lifecycles">
+    <p class="next-steps-link">Vòng đời (Lifecycles)</p>
+    <p class="next-steps-caption">Phân biệt Transient, Scoped, Singleton và tránh bẫy Captive Dependency khi kết hợp Lazy&lt;T&gt;.</p>
+  </a>
+</div>
+
+## 📚 Tham khảo lý thuyết {#references}
+
+Nguồn lý thuyết chính được dùng để biên soạn bài viết này:
+
+- **Mark Seemann – *Dependency Injection in .NET* (Manning Publications):** Cuốn sách kinh điển giải thích chi tiết các mẫu DI nâng cao như Lazy Injection, Factory Delegate và cách nhận diện Service Locator Anti-pattern.
+- **Microsoft Learn – *Dependency injection in .NET*:** Tài liệu chính thức của ASP.NET Core về DI Container, cách đăng ký Open Generic và mở rộng Container. (https://learn.microsoft.com/en-us/dotnet/core/extensions/dependency-injection)
+- **Martin Fowler – *Inversion of Control Containers and the Dependency injection pattern*:** Bài viết kinh điển phân tích lý do ưu tiên DI hơn Service Locator. (https://martinfowler.com/articles/injection.html)
+- **Wikipedia – *Dependency injection*:** Tổng quan về DI, mối quan hệ với IoC và các ví dụ minh họa. (https://en.wikipedia.org/wiki/Dependency_injection)

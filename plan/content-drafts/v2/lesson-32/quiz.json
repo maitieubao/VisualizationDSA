@@ -1,0 +1,93 @@
+{
+  "quizTitle": "Trắc nghiệm MST",
+  "topic": "graph",
+  "difficulty": 2,
+  "xpReward": 40,
+  "questions": [
+    {
+      "questionText": "Cây khung nhỏ nhất (MST) là gì?",
+      "options": [
+        "Tập cạnh nối mọi đỉnh, không chu trình, có tổng trọng số nhỏ nhất",
+        "Đường đi ngắn nhất giữa hai đỉnh bất kỳ",
+        "Đồ thị con chứa đúng một nửa số cạnh",
+        "Tập cạnh có tổng trọng số lớn nhất"
+      ],
+      "correctIndex": 0,
+      "explanation": "MST là cây khung (đủ V đỉnh, V-1 cạnh, liên thông, không chu trình) có tổng trọng số tối thiểu."
+    },
+    {
+      "questionText": "MST của đồ thị có V đỉnh chứa bao nhiêu cạnh?",
+      "options": ["V", "V-1", "V+1", "2V"],
+      "correctIndex": 1,
+      "explanation": "Mọi cây có V đỉnh đều có đúng V-1 cạnh; thêm một cạnh bất kỳ sẽ tạo ra chu trình."
+    },
+    {
+      "questionText": "Ý tưởng chính của thuật toán Kruskal là gì?",
+      "options": [
+        "Xuất phát từ một đỉnh rồi lan dần ra",
+        "Sắp xếp cạnh theo trọng số tăng dần và chọn cạnh không tạo chu trình",
+        "Chạy BFS từ đỉnh có bậc cao nhất",
+        "Chia đồ thị thành hai phần bằng nhau"
+      ],
+      "correctIndex": 1,
+      "explanation": "Kruskal duyệt cạnh đã sắp xếp tăng dần, giữ cạnh nối hai thành phần khác nhau (kiểm tra bằng Union-Find) tới khi đủ V-1 cạnh."
+    },
+    {
+      "questionText": "Cấu trúc dữ liệu nào hỗ trợ Kruskal kiểm tra cạnh có tạo chu trình hay không?",
+      "options": ["Min-heap", "Bảng băm", "Union-Find", "Hàng đợi FIFO"],
+      "correctIndex": 2,
+      "explanation": "Union-Find trả lời hai đầu cạnh có cùng tập hay không trong O(α(N)); nếu khác tập thì cạnh an toàn và được gộp lại."
+    },
+    {
+      "questionText": "Prim giống Dijkstra nhưng khác nhau ở tiêu chí cập nhật nào?",
+      "options": [
+        "Prim dùng stack, Dijkstra dùng queue",
+        "Prim cập nhật dist theo cạnh nhẹ nhất nối tới cây, Dijkstra theo tổng khoảng cách từ nguồn",
+        "Prim chỉ chạy trên đồ thị có hướng",
+        "Prim không cần mảng visited"
+      ],
+      "correctIndex": 1,
+      "explanation": "Cả hai đều chọn đỉnh nhỏ nhất từ heap, nhưng dist của Prim là trọng số cạnh nhẹ nhất tới cây, còn dist của Dijkstra là tổng từ đỉnh nguồn."
+    },
+    {
+      "questionText": "Với đồ thị dày đặc (E gần bằng V²), thuật toán nào phù hợp hơn?",
+      "options": ["Kruskal", "Prim", "Bellman-Ford", "Floyd-Warshall"],
+      "correctIndex": 1,
+      "explanation": "Prim với heap chạy O(E log V); khi E ≈ V² thì log V nhỏ hơn log E nên Prim nhỉnh hơn Kruskal O(E log E)."
+    },
+    {
+      "questionText": "Cut property (tính chất lát cắt) phát biểu như thế nào?",
+      "options": [
+        "Cạnh dài nhất băng qua lát cắt luôn bị loại",
+        "Cạnh nhẹ nhất băng qua một lát cắt bất kỳ luôn thuộc một MST nào đó",
+        "MST luôn chứa mọi cạnh của đồ thị",
+        "Mọi cây khung đều có cùng trọng số"
+      ],
+      "correctIndex": 1,
+      "explanation": "Nếu cạnh nhẹ nhất qua lát cắt không nằm trong MST, thay cạnh khác qua lát cắt bằng nó sẽ ra cây nhỏ hơn — mâu thuẫn; tính chất này bảo đảm tính đúng của Kruskal và Prim."
+    },
+    {
+      "questionText": "Đồ thị 4 đỉnh A, B, C, D có cạnh AB = 1, BC = 2, CD = 3, DA = 4, AC = 5. Tổng trọng số của MST là bao nhiêu?",
+      "options": ["6", "10", "11", "15"],
+      "correctIndex": 0,
+      "explanation": "Kruskal chọn AB(1), BC(2), CD(3); DA(4) và AC(5) đều tạo chu trình nên bị bỏ; tổng trọng số = 1 + 2 + 3 = 6."
+    },
+    {
+      "questionText": "Đồ thị không liên thông, Kruskal chạy tới hết cạnh nhưng chưa đủ V-1 cạnh. Kết luận đúng là gì?",
+      "options": [
+        "Đồ thị có nhiều MST",
+        "Không tồn tại MST vì không thể nối mọi đỉnh",
+        "MST có ít hơn V-1 cạnh là bình thường",
+        "Phải chạy thêm Prim để bù"
+      ],
+      "correctIndex": 1,
+      "explanation": "MST yêu cầu nối mọi đỉnh; đồ thị không liên thông không thể có cây khung, Kruskal chỉ tạo được một rừng cây."
+    },
+    {
+      "questionText": "Với đồ thị 4 đỉnh ở trên, cạnh nào bị bỏ qua đầu tiên vì tạo chu trình khi chạy Kruskal?",
+      "options": ["AB", "CD", "DA", "AC"],
+      "correctIndex": 2,
+      "explanation": "Sau khi thêm AB(1), BC(2), CD(3), xét DA(4): D và A đã cùng thành phần qua đường D-C-B-A nên bị bỏ trước; AC(5) bị bỏ sau đó."
+    }
+  ]
+}

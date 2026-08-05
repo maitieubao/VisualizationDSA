@@ -13,8 +13,8 @@ using VisualizationDSA.WebApi.Filters;
 namespace VisualizationDSA.WebApi.Controllers
 {
     [ApiController]
-    [Route("api/v1/classrooms")]
-    [Authorize]
+    [Route("api/v{version:apiVersion}/classrooms")]
+    [RequireJwtRole]
     public class ClassroomProgressController : ControllerBase
     {
         private readonly IClassroomProgressService _progressService;
@@ -31,7 +31,7 @@ namespace VisualizationDSA.WebApi.Controllers
             _context = context;
         }
 
-        [HttpGet("{classroomId}/my-progress")]
+        [HttpGet("{classroomId:guid}/my-progress")]
         public async Task<IActionResult> GetMyProgress(Guid classroomId)
         {
             var userIdStr = JwtHelper.ExtractSubFromToken(Request);
@@ -42,7 +42,7 @@ namespace VisualizationDSA.WebApi.Controllers
             return Ok(summary);
         }
 
-        [HttpGet("{classroomId}/unlocked-items")]
+        [HttpGet("{classroomId:guid}/unlocked-items")]
         public async Task<IActionResult> GetUnlockedItems(Guid classroomId)
         {
             var userIdStr = JwtHelper.ExtractSubFromToken(Request);

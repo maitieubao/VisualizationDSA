@@ -1,0 +1,103 @@
+{
+  "quizTitle": "Trắc nghiệm Interval Problems",
+  "topic": "dsa",
+  "difficulty": 2,
+  "xpReward": 40,
+  "questions": [
+    {
+      "questionText": "Hai khoảng [a, b] và [c, d] chồng nhau khi nào?",
+      "options": [
+        "a ≤ d và c ≤ b",
+        "a ≤ c và b ≤ d",
+        "a ≥ c và b ≥ d",
+        "a < b và c < d"
+      ],
+      "correctIndex": 0,
+      "explanation": "Hai khoảng chồng nhau khi điểm bắt đầu của khoảng này không vượt quá điểm kết thúc của khoảng kia: a ≤ d và c ≤ b."
+    },
+    {
+      "questionText": "Trước khi gộp các khoảng (merge intervals), việc đầu tiên phải làm là gì?",
+      "options": [
+        "Sắp xếp tăng dần theo điểm bắt đầu",
+        "Sắp xếp giảm dần theo độ dài khoảng",
+        "Loại bỏ các khoảng trùng lặp hoàn toàn",
+        "Tính tổng độ dài tất cả khoảng"
+      ],
+      "correctIndex": 0,
+      "explanation": "Sau khi sắp theo start, các khoảng chồng nhau sẽ đứng liền kề nên chỉ cần quét một lượt là gộp được hết."
+    },
+    {
+      "questionText": "Với current = [1, 4] và khoảng kế tiếp [3, 6], điều kiện để gộp chúng là gì?",
+      "options": [
+        "4 < 3",
+        "3 ≤ 4",
+        "6 ≤ 4",
+        "1 ≤ 3"
+      ],
+      "correctIndex": 1,
+      "explanation": "Khoảng kế tiếp chồng lên current khi start của nó không lớn hơn end của current: 3 ≤ 4, nên gộp thành [1, 6]."
+    },
+    {
+      "questionText": "Hai khoảng [1, 3] và [3, 5] có được coi là chồng nhau không?",
+      "options": [
+        "Không, vì chúng chỉ chạm nhau tại điểm 3",
+        "Có, vì dấu bằng trong điều kiện chồng nhau vẫn tính là chồng",
+        "Không, vì chúng không dùng chung một điểm trong",
+        "Có, nhưng chỉ khi cả hai có độ dài bằng nhau"
+      ],
+      "correctIndex": 1,
+      "explanation": "Điều kiện chồng nhau dùng dấu ≤: 1 ≤ 5 và 3 ≤ 3 đều đúng nên [1, 3] và [3, 5] được tính là chồng nhau và gộp được."
+    },
+    {
+      "questionText": "Gộp các khoảng [[1, 3], [2, 6], [8, 10], [15, 18]] cho kết quả nào?",
+      "options": [
+        "[[1, 6], [8, 10], [15, 18]]",
+        "[[1, 3], [2, 6], [8, 10], [15, 18]]",
+        "[[1, 10], [15, 18]]",
+        "[[1, 18]]"
+      ],
+      "correctIndex": 0,
+      "explanation": "[1, 3] và [2, 6] chồng nhau (2 ≤ 3) nên gộp thành [1, 6]; [8, 10] và [15, 18] không chồng với khoảng nào nên giữ nguyên."
+    },
+    {
+      "questionText": "Chèn khoảng [4, 8] vào danh sách đã sắp xếp [[1, 3], [6, 9]] cho kết quả nào?",
+      "options": [
+        "[[1, 3], [4, 8], [6, 9]]",
+        "[[1, 3], [4, 9]]",
+        "[[1, 8], [6, 9]]",
+        "[[1, 9]]"
+      ],
+      "correctIndex": 1,
+      "explanation": "[4, 8] chồng với [6, 9] (6 ≤ 8) nên gộp thành [4, 9]; [1, 3] tách biệt nên kết quả là [[1, 3], [4, 9]]."
+    },
+    {
+      "questionText": "Cần xóa ít nhất bao nhiêu khoảng trong [[1, 2], [2, 3], [3, 4], [1, 3]] để phần còn lại không chồng nhau?",
+      "options": ["0", "1", "2", "3"],
+      "correctIndex": 1,
+      "explanation": "Sắp theo end và giữ khoảng kết thúc sớm: giữ [1, 2], [2, 3], [3, 4]; [1, 3] chồng với cả [1, 2] và [2, 3] nên bị xóa — chỉ cần xóa 1 khoảng."
+    },
+    {
+      "questionText": "Các điểm trên trục số: [1, 6], [2, 8], [7, 12], [10, 16]. Cần tối thiểu bao nhiêu mũi tên để bắn trúng tất cả các điểm?",
+      "options": ["1", "2", "3", "4"],
+      "correctIndex": 1,
+      "explanation": "Sắp theo end: bắn mũi tên tại 6 trúng [1, 6] và [2, 8]; [7, 12] có start 7 > 6 nên bắn mũi tên mới tại 12, trúng cả [10, 16] — tổng 2 mũi tên."
+    },
+    {
+      "questionText": "Các cuộc họp [[0, 30], [5, 10], [15, 20]] cần tối thiểu bao nhiêu phòng họp?",
+      "options": ["1", "2", "3", "4"],
+      "correctIndex": 1,
+      "explanation": "Quét sự kiện: tại thời điểm 5 có 2 cuộc họp đồng thời ([0, 30] và [5, 10]) — đây là mức chồng chéo tối đa nên cần 2 phòng."
+    },
+    {
+      "questionText": "Gộp các khoảng [[1, 4], [2, 3], [3, 5]] cho kết quả nào?",
+      "options": [
+        "[[1, 4], [3, 5]]",
+        "[[1, 5]]",
+        "[[1, 3], [3, 5]]",
+        "[[2, 5]]"
+      ],
+      "correctIndex": 1,
+      "explanation": "[2, 3] nằm hoàn toàn trong [1, 4] nên end giữ nguyên 4; [3, 5] chồng (3 ≤ 4) nên end = max(4, 5) = 5; kết quả [[1, 5]] — phải dùng max(end) thay vì gán trực tiếp."
+    }
+  ]
+}

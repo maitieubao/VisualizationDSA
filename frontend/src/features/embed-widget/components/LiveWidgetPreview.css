@@ -20,7 +20,7 @@
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  background: #06b6d4;
+  background: var(--color-accent-primary);
   box-shadow: 0 0 8px rgba(6, 182, 212, 0.5);
 }
 
@@ -29,13 +29,13 @@
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.5px;
-  color: #94a3b8;
+  color: var(--color-text-muted);
 }
 
 .preview-dimensions {
   font-size: 11px;
   font-family: 'JetBrains Mono', monospace;
-  color: #64748b;
+  color: var(--color-text-secondary);
 }
 
 .preview-viewport {
@@ -51,9 +51,9 @@
   box-shadow: 0 0 40px rgba(0, 0, 0, 0.6), 0 0 20px rgba(6, 182, 212, 0.08);
   overflow: hidden;
   border: 1px solid rgba(6, 182, 212, 0.15);
-  --preview-bg-dark: #0f172a;
-  --preview-bg-light: #f1f5f9;
-  --preview-text-light: #1e293b;
+  --preview-bg-dark: var(--color-bg-primary);
+  --preview-bg-light: var(--color-bg-hover);
+  --preview-text-light: var(--color-bg-surface);
 }
 
 .preview-inner {
@@ -96,7 +96,7 @@
   width: 16px;
   height: 16px;
   border-radius: 4px;
-  background: #06b6d4;
+  background: var(--color-accent-primary);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -108,7 +108,7 @@
 .sim-logo-text {
   font-size: 9px;
   font-weight: 700;
-  color: #e2e8f0;
+  color: var(--color-bg-hover);
 }
 
 .theme-light .sim-logo-text {
@@ -118,7 +118,7 @@
 .sim-algo-label {
   font-size: 8px;
   font-family: 'JetBrains Mono', monospace;
-  color: #06b6d4;
+  color: var(--color-accent-primary);
   text-transform: uppercase;
 }
 
@@ -142,14 +142,14 @@
 
 .sim-bar {
   flex: 1;
-  background: linear-gradient(to top, #06b6d4, #22d3ee);
+  background: var(--color-accent-primary);
   border-radius: 2px 2px 0 0;
   min-height: 4px;
   transition: height 0.3s ease;
 }
 
 .theme-light .sim-bar {
-  background: linear-gradient(to top, #0891b2, #06b6d4);
+  background: #0891b2;
 }
 
 .sim-vcr {
@@ -170,17 +170,17 @@
   border-radius: 4px;
   background: rgba(255, 255, 255, 0.06);
   font-size: 7px;
-  color: #94a3b8;
+  color: var(--color-text-muted);
 }
 
 .sim-vcr-play {
   background: rgba(6, 182, 212, 0.2);
-  color: #06b6d4;
+  color: var(--color-accent-primary);
 }
 
 .theme-light .sim-vcr-btn {
   background: rgba(0, 0, 0, 0.06);
-  color: #64748b;
+  color: var(--color-text-secondary);
 }
 
 .theme-light .sim-vcr-play {
@@ -203,7 +203,7 @@
   top: 0;
   width: 40%;
   height: 100%;
-  background: #06b6d4;
+  background: var(--color-accent-primary);
   border-radius: 2px;
 }
 
@@ -220,7 +220,7 @@
   padding: 2px 6px;
   border-radius: 4px;
   background: rgba(6, 182, 212, 0.1);
-  color: #06b6d4;
+  color: var(--color-accent-primary);
   border: 1px solid rgba(6, 182, 212, 0.2);
 }
 

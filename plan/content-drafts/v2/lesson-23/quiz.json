@@ -1,0 +1,88 @@
+{
+  "quizTitle": "Trắc nghiệm Chia để trị",
+  "topic": "sorting",
+  "difficulty": 2,
+  "xpReward": 40,
+  "questions": [
+    {
+      "questionText": "Chia để trị (Divide and Conquer) gồm ba giai đoạn nào theo đúng thứ tự?",
+      "options": ["Chia - Trị - Gộp", "Trị - Chia - Gộp", "Gộp - Chia - Trị", "Chia - Gộp - Trị"],
+      "correctIndex": 0,
+      "explanation": "Ba giai đoạn chuẩn theo CLRS: Divide (chia bài toán con), Conquer (giải đệ quy), Combine (gộp lời giải)."
+    },
+    {
+      "questionText": "Trong Merge Sort, vì sao mảng chỉ còn một phần tử thì dừng đệ quy?",
+      "options": [
+        "Vì không còn bộ nhớ để chia tiếp",
+        "Vì mảng một phần tử luôn được coi là đã sắp xếp",
+        "Vì phần tử đó là pivot",
+        "Vì cần bảo toàn tính ổn định"
+      ],
+      "correctIndex": 1,
+      "explanation": "Đây là base case: một phần tử không có thứ tự nào để vi phạm nên luôn xem như đã sắp xếp."
+    },
+    {
+      "questionText": "Binary Search chỉ chạy đúng khi dữ liệu đầu vào thỏa điều kiện gì?",
+      "options": [
+        "Mảng có ít hơn 1000 phần tử",
+        "Mảng đã được sắp xếp",
+        "Mảng chỉ chứa số dương",
+        "Mảng không chứa phần tử trùng"
+      ],
+      "correctIndex": 1,
+      "explanation": "Binary Search dựa vào so sánh với phần tử giữa để loại bỏ một nửa không gian tìm kiếm, nên mảng phải được sắp xếp sẵn."
+    },
+    {
+      "questionText": "Độ phức tạp thời gian của Merge Sort trong mọi trường hợp là gì?",
+      "options": ["O(n)", "O(n log n)", "O(n²)", "O(log n)"],
+      "correctIndex": 1,
+      "explanation": "Merge Sort luôn chia đôi mảng qua log2(n) tầng và mỗi tầng trộn hết n phần tử nên mọi trường hợp đều là O(n log n)."
+    },
+    {
+      "questionText": "Nhược điểm chính về bộ nhớ của Merge Sort so với Quick Sort là gì?",
+      "options": [
+        "Cần mảng phụ kích thước O(n) để trộn",
+        "Cần ngăn xếp đệ quy O(n²)",
+        "Không thể chạy trên dữ liệu lớn",
+        "Tốn O(n log n) bộ nhớ do đệ quy"
+      ],
+      "correctIndex": 0,
+      "explanation": "Bước trộn bắt buộc tạo mảng phụ chứa dữ liệu hai nửa nên không gian là O(n), còn Quick Sort sắp xếp tại chỗ."
+    },
+    {
+      "questionText": "Quick Sort suy thoái xuống O(n²) trong tình huống nào?",
+      "options": [
+        "Mảng toàn phần tử giống nhau và pivot ở giữa",
+        "Pivot luôn chia mảng thành hai phần mất cân bằng, ví dụ mảng đã sắp xếp với pivot cuối",
+        "Mảng có số phần tử chẵn",
+        "Mảng chứa số âm"
+      ],
+      "correctIndex": 1,
+      "explanation": "Khi pivot luôn là phần tử cuối trên mảng đã sắp xếp, một bên lúc nào cũng rỗng nên cây đệ quy dài n tầng, tổng chi phí là O(n²)."
+    },
+    {
+      "questionText": "Áp dụng Master Theorem cho T(n) = 2T(n/2) + O(n), kết quả là gì?",
+      "options": ["O(n)", "O(n log n)", "O(log n)", "O(n²)"],
+      "correctIndex": 1,
+      "explanation": "a = 2 bằng b^d = 2^1 nên theo trường hợp cân bằng của Master Theorem, kết quả là O(n^d log n) = O(n log n)."
+    },
+    {
+      "questionText": "Trong Merge Sort, hai nửa đã sắp xếp [3, 27, 38] và [9, 10, 82] được trộn thành mảng nào?",
+      "options": ["[3, 9, 27, 38, 10, 82]", "[3, 9, 10, 27, 38, 82]", "[3, 27, 38, 9, 10, 82]", "[9, 3, 10, 27, 38, 82]"],
+      "correctIndex": 1,
+      "explanation": "Trộn kiểu dây kéo: 3, 9, 10, 27, 38 rồi hốt nốt 82 — hai nửa đã sắp xếp nên kết quả cũng sắp xếp."
+    },
+    {
+      "questionText": "Tìm giá trị 9 trong mảng [1, 3, 5, 7, 9, 11] bằng Binary Search, các giá trị được so sánh theo thứ tự nào?",
+      "options": ["7 rồi 9", "5 rồi 9", "9 ngay lần đầu", "3 rồi 9"],
+      "correctIndex": 1,
+      "explanation": "Mid đầu là chỉ số 2 (giá trị 5) nhỏ hơn 9 nên chuyển sang nửa phải; mid tiếp theo là chỉ số 4 (giá trị 9), tìm thấy sau hai phép so sánh."
+    },
+    {
+      "questionText": "Dùng Lomuto Partition với pivot là phần tử cuối cho mảng [10, 80, 30, 90, 40, 50, 70] (pivot 70), pivot nằm ở chỉ số nào sau khi partition?",
+      "options": ["3", "4", "5", "6"],
+      "correctIndex": 1,
+      "explanation": "Sau partition mảng thành [10, 30, 40, 50, 70, 80, 90]: mọi phần tử nhỏ hơn 70 nằm bên trái, pivot 70 đứng đúng vị trí chỉ số 4."
+    }
+  ]
+}

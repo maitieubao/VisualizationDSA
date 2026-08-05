@@ -98,7 +98,6 @@ export const useInputStore = defineStore('input', () => {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Accept-Encoding': 'gzip, br',
         },
         body: JSON.stringify({
           algorithmId,
@@ -108,12 +107,16 @@ export const useInputStore = defineStore('input', () => {
 
       if (!response.ok) {
         const errData = await response.json().catch(() => null);
-        throw new Error(errData?.message ?? `HTTP Error ${response.status}`);
+        throw new Error(`HTTP ${response.status}: ${errData?.message ?? 'Lỗi máy chủ'}`);
       }
 
       const result = await response.json();
       animationStore.loadResult(result);
-    } catch {
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Lỗi không xác định';
+      apiErrorMessage.value = message.startsWith('HTTP')
+        ? `Máy chủ báo lỗi (${message}). Đang chạy mô phỏng mẫu cục bộ.`
+        : 'Không kết nối được máy chủ — đang chạy mô phỏng mẫu cục bộ.';
       const fallbackResult = generateDummyBubbleSortResult(parsedArray.value);
       animationStore.loadResult(fallbackResult);
     } finally {

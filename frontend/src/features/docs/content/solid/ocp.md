@@ -177,7 +177,7 @@ Bạn đã thêm được tính năng mới mà không phải chạm vào bất 
 
 OCP là tuyệt vời, nhưng hãy cẩn trọng với việc Tối ưu hóa Sớm (Premature Optimization).
 - Nếu ứng dụng của bạn CHẮC CHẮN chỉ có đúng 2 loại Khách hàng (Member và Guest) và không bao giờ có ý định sinh thêm loại thứ 3. Việc dùng `if/else` lại tốt hơn vì nó quá nhanh và dễ đọc. Việc ép buộc đẻ ra 1 đống Interface và Factory Pattern lúc này sẽ làm dự án trở nên cồng kềnh, phức tạp hóa không cần thiết.
-- Quy tắc bàn tay phải (Rule of Three): Nếu bạn thấy một khối `if/else` hoặc `switch` lặp đi lặp lại **lần thứ 3** khi yêu cầu thay đổi, ĐÓ LÀ LÚC BẠN PHẢI REFRACTOR sang OCP.
+- Quy tắc số 3 (Rule of Three): Nếu bạn thấy một khối `if/else` hoặc `switch` lặp đi lặp lại **lần thứ 3** khi yêu cầu thay đổi, ĐÓ LÀ LÚC BẠN PHẢI REFACTOR sang OCP.
 
 :::tip Tóm tắt nhanh (Key Takeaways)
 - OCP là nguyên lý chống lại sự suy thoái của mã nguồn: Thêm tính năng mới bằng cách tạo File mới, thay vì đi sửa đổi File cũ.
@@ -185,3 +185,31 @@ OCP là tuyệt vời, nhưng hãy cẩn trọng với việc Tối ưu hóa S�
 - Cách khắc phục: Trích xuất các logic phân nhánh ra thành các Class độc lập tuân theo chung một `Interface` (Tính Đa Hình). 
 - OCP chính là nền tảng cốt lõi của hàng loạt Design Patterns nổi tiếng như Strategy, Factory Method, và State Pattern.
 :::
+
+## Next Steps {#next-steps}
+
+Bạn đã nắm vững cách dùng Interface và Tính Đa hình để "Mở cho mở rộng, Đóng cho sửa đổi". Tiếp theo, hãy khám phá các nguyên lý liền kề và mẫu thiết kế được khai sinh từ chính tư duy OCP.
+
+<div class="vt-box-container next-steps">
+  <a class="vt-box" href="/docs/solid/lsp">
+    <p class="next-steps-link">Nguyên lý Thay thế Liskov (LSP)</p>
+    <p class="next-steps-caption">Đảm bảo lớp con có thể thay thế an toàn cho lớp cha mà không phá vỡ hành vi hệ thống.</p>
+  </a>
+  <a class="vt-box" href="/docs/solid/dip">
+    <p class="next-steps-link">Nguyên lý Đảo ngược Phụ thuộc (DIP)</p>
+    <p class="next-steps-caption">Đưa tư duy trừu tượng hóa lên đỉnh cao: phụ thuộc vào Interface thay vì chi tiết triển khai.</p>
+  </a>
+  <a class="vt-box" href="/docs/patterns/strategy">
+    <p class="next-steps-link">Strategy Pattern</p>
+    <p class="next-steps-caption">Mẫu thiết kế được khai sinh từ OCP — đóng gói từng thuật toán thành đối tượng có thể hoán đổi linh hoạt.</p>
+  </a>
+</div>
+
+## 📚 Tham khảo lý thuyết {#references}
+
+Các kiến thức lý thuyết trong bài được tổng hợp và đối chiếu từ những nguồn học thuật sau:
+
+- **Nguyên lý Open-Closed (OCP) và triết lý "Mở cho mở rộng, Đóng cho sửa đổi":** Robert C. Martin (Uncle Bob), *Clean Code: A Handbook of Agile Software Craftsmanship* (Prentice Hall, 2008) và *Clean Architecture: A Craftsman's Guide to Software Structure and Design* (Prentice Hall, 2017) — Chương 8 *The Open-Closed Principle (OCP)*.
+- **Khái niệm gốc do Bertrand Meyer giới thiệu năm 1988:** Bertrand Meyer, *Object-Oriented Software Construction* (Prentice Hall, 1988); Wikipedia, *Open–closed principle* — https://en.wikipedia.org/wiki/Open%E2%80%93closed_principle
+- **Bộ nguyên lý SOLID nói chung:** Wikipedia, *SOLID* — https://en.wikipedia.org/wiki/SOLID và Microsoft Learn — *SOLID Design Principles* (hướng dẫn kiến trúc .NET).
+- **Strategy Pattern và cách áp dụng OCP vào các mẫu thiết kế:** Microsoft Learn — *Design patterns in .NET* và GeeksforGeeks, *Open Closed Principle* (chuyên mục Design Pattern).

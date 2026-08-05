@@ -132,12 +132,22 @@ namespace VisualizationDSA.Infrastructure.Services
             }
 
             
-            if (order.Status == "Completed")
+            if (order.Status != "Pending")
             {
-                return true;
+                
+                return false;
             }
 
             
+            
+            var expectedBankAccount = _configuration["SePay:BankAccount"];
+            if (!string.IsNullOrEmpty(expectedBankAccount) &&
+                !string.Equals(payload.AccountNumber, expectedBankAccount, StringComparison.Ordinal))
+            {
+                
+                return false;
+            }
+
             
             if (payload.TransferAmount < order.Amount)
             {

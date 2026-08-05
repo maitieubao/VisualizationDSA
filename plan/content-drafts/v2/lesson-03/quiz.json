@@ -1,0 +1,98 @@
+{
+  "quizTitle": "Trắc nghiệm Chuỗi cơ bản",
+  "topic": "dsa",
+  "difficulty": 1,
+  "xpReward": 40,
+  "questions": [
+    {
+      "questionText": "Đặc điểm quan trọng nhất của chuỗi (string) trong hầu hết ngôn ngữ lập trình là gì?",
+      "options": [
+        "Có thể thay đổi trực tiếp từng ký tự",
+        "Bất biến (immutable) — mỗi thao tác thay đổi tạo chuỗi mới",
+        "Luôn lưu trữ trong vùng nhớ Stack",
+        "Không thể so sánh bằng nhau"
+      ],
+      "correctIndex": 1,
+      "explanation": "Chuỗi là bất biến: phép nối hay thay ký tự đều tạo đối tượng chuỗi mới, chuỗi cũ không bị sửa."
+    },
+    {
+      "questionText": "Nối chuỗi N lần bằng phép += bên trong vòng lặp có độ phức tạp là bao nhiêu?",
+      "options": ["O(N)", "O(N log N)", "O(N²)", "O(1)"],
+      "correctIndex": 2,
+      "explanation": "Mỗi lần nối copy toàn bộ chuỗi hiện tại: 1 + 2 + ... + N lần copy, tổng cộng là O(N²)."
+    },
+    {
+      "questionText": "Chuỗi palindrome là gì?",
+      "options": [
+        "Chuỗi chỉ gồm các chữ cái in hoa",
+        "Chuỗi đọc xuôi và đọc ngược giống hệt nhau",
+        "Chuỗi có độ dài chẵn",
+        "Chuỗi không chứa khoảng trắng"
+      ],
+      "correctIndex": 1,
+      "explanation": "Palindrome đối xứng: đọc từ trái sang phải hay từ phải sang trái đều cho kết quả giống nhau."
+    },
+    {
+      "questionText": "Hai chuỗi được gọi là anagram của nhau khi nào?",
+      "options": [
+        "Có độ dài bằng nhau bất kể nội dung",
+        "Cùng bắt đầu bằng một ký tự",
+        "Có cùng tập ký tự với cùng tần suất xuất hiện",
+        "Có chứa các ký tự in hoa"
+      ],
+      "correctIndex": 2,
+      "explanation": "Anagram đòi hỏi tần suất mỗi ký tự của hai chuỗi giống hệt nhau, chỉ khác thứ tự sắp xếp."
+    },
+    {
+      "questionText": "Chuỗi nào sau đây là palindrome?",
+      "options": ["hello", "racecar", "world", "visual"],
+      "correctIndex": 1,
+      "explanation": "racecar đọc ngược vẫn là racecar, các phương án còn lại không đối xứng."
+    },
+    {
+      "questionText": "Chuỗi listen và silent có phải là anagram của nhau không?",
+      "options": [
+        "Có, vì chúng có cùng tần suất ký tự",
+        "Không, vì độ dài khác nhau",
+        "Không, vì ký tự đầu khác nhau",
+        "Chỉ đúng khi viết hoa toàn bộ"
+      ],
+      "correctIndex": 0,
+      "explanation": "Cả hai đều có 1 chữ l, 1 chữ i, 1 chữ s, 1 chữ t, 1 chữ e, 1 chữ n nên bảng đếm tần suất giống hệt nhau."
+    },
+    {
+      "questionText": "Trước khi so sánh hai chuỗi nhập từ người dùng, ta nên normalize bằng cách nào?",
+      "options": [
+        "Chỉ xóa khoảng trắng ở giữa chuỗi",
+        "Chuyển về cùng kiểu chữ (thường hoặc hoa) và cắt khoảng trắng thừa",
+        "Thêm ký tự đặc biệt vào cuối chuỗi",
+        "Không cần làm gì, so sánh trực tiếp"
+      ],
+      "correctIndex": 1,
+      "explanation": "Normalize (lowercase + trim) giúp Hello và hello trở nên tương đương, tránh sai sót do chữ hoa chữ thường hoặc khoảng trắng."
+    },
+    {
+      "questionText": "Đảo ngược chuỗi abcde bằng hai con trỏ, sau lần hoán đổi đầu tiên chuỗi trở thành gì?",
+      "options": ["edcba", "ebcda", "aecdb", "abced"],
+      "correctIndex": 1,
+      "explanation": "Hai con trỏ đổi vị trí ký tự đầu a với ký tự cuối e, phần giữa bcd giữ nguyên nên chuỗi thành ebcda."
+    },
+    {
+      "questionText": "Đếm tần suất ký tự của chuỗi aabbbcc, ký tự nào xuất hiện nhiều nhất và bao nhiêu lần?",
+      "options": ["a với 2 lần", "b với 3 lần", "c với 2 lần", "Tất cả xuất hiện bằng nhau"],
+      "correctIndex": 1,
+      "explanation": "a xuất hiện 2 lần, b xuất hiện 3 lần, c xuất hiện 2 lần nên b là ký tự xuất hiện nhiều nhất."
+    },
+    {
+      "questionText": "Sau khi bỏ khoảng trắng và viết thường, chuỗi A man a plan a canal Panama có phải palindrome không?",
+      "options": [
+        "Có, chuỗi sau normalize đối xứng hoàn toàn",
+        "Không, vì có chứa ký tự in hoa",
+        "Không, vì độ dài là số chẵn",
+        "Không, vì có chứa khoảng trắng"
+      ],
+      "correctIndex": 0,
+      "explanation": "Sau normalize được amanaplanacanalpanama, đọc ngược vẫn giống hệt nên đây là palindrome."
+    }
+  ]
+}

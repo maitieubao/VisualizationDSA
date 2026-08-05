@@ -29,6 +29,89 @@
 @import "tailwindcss";
 
 
+/*
+ * BRIDGE DESIGN TOKENS (Tailwind v4 CSS-first config)
+ * ====================================================
+ * Tailwind v4 không tự nạp tailwind.config.js (JS config) — phải khai báo
+ * token bằng @theme. Dùng `@theme inline` để utility tham chiếu TRỰC TIẾP
+ * biến runtime trong styles/theme.css (--color-bg-surface, --color-text-* ...),
+ * nhờ đó đổi theme sáng/tối vẫn hoạt động đúng (không bị đóng băng giá trị).
+ * Danh sách token phải khớp với tailwind.config.js (theme.extend).
+ */
+@theme inline {
+  --font-display: var(--font-display);
+  --font-sans:    var(--font-sans);
+  --font-mono:    var(--font-mono);
+
+  --color-bg-primary:   var(--color-bg-primary);
+  --color-bg-secondary: var(--color-bg-secondary);
+  --color-bg-surface:   var(--color-bg-surface);
+  --color-bg-hover:     var(--color-bg-hover);
+  --color-bg-active:    var(--color-bg-active);
+  --color-bg-base:      var(--color-bg-base);
+  --color-bg-tertiary:  var(--color-bg-tertiary);
+
+  --color-text-primary:   var(--color-text-primary);
+  --color-text-heading:   var(--color-text-heading);
+  --color-text-secondary: var(--color-text-secondary);
+  --color-text-muted:     var(--color-text-muted);
+  --color-text-disabled:  var(--color-text-disabled);
+  --color-text-inverse:   var(--color-text-inverse);
+
+  --color-accent:                var(--color-accent-primary);
+  --color-accent-secondary:      var(--color-accent-secondary);
+  --color-accent-primary:        var(--color-accent-primary);
+  --color-accent-primary-light:  var(--color-accent-primary-light);
+  --color-accent-primary-dark:   var(--color-accent-primary-dark);
+  --color-accent-primary-text:   var(--color-accent-primary-text);
+  --color-accent-primary-glow:   var(--color-accent-primary-glow);
+  --color-accent-primary-dim:    var(--color-accent-primary-dim);
+  --color-accent-green:          var(--color-accent-green);
+  --color-accent-green-light:    var(--color-accent-green-light);
+  --color-accent-green-glow:     var(--color-accent-green-glow);
+  --color-accent-green-dim:      var(--color-accent-green-dim);
+  --color-accent-cyan:           var(--color-accent-cyan);
+  --color-accent-cyan-light:     var(--color-accent-cyan-light);
+  --color-accent-cyan-glow:      var(--color-accent-cyan-glow);
+  --color-accent-cyan-dim:       var(--color-accent-cyan-dim);
+  --color-accent-purple:         var(--color-accent-purple);
+  --color-accent-purple-light:   var(--color-accent-purple-light);
+  --color-accent-purple-glow:    var(--color-accent-purple-glow);
+  --color-accent-purple-dim:     var(--color-accent-purple-dim);
+  --color-accent-emerald:        var(--color-accent-emerald);
+  --color-accent-emerald-light:  var(--color-accent-emerald-light);
+  --color-accent-emerald-glow:   var(--color-accent-emerald-glow);
+  --color-accent-emerald-dim:    var(--color-accent-emerald-dim);
+  --color-accent-red:            var(--color-accent-red);
+  --color-accent-red-light:      var(--color-accent-red-light);
+  --color-accent-red-glow:       var(--color-accent-red-glow);
+  --color-accent-red-dim:        var(--color-accent-red-dim);
+  --color-accent-yellow:         var(--color-accent-yellow);
+  --color-accent-yellow-light:   var(--color-accent-yellow-light);
+  --color-accent-yellow-glow:    var(--color-accent-yellow-glow);
+  --color-accent-yellow-dim:     var(--color-accent-yellow-dim);
+
+  --color-border-subtle:  var(--color-border-subtle);
+  --color-border-default: var(--color-border-default);
+  --color-border-strong:  var(--color-border-strong);
+  --color-border-accent:  var(--color-border-accent);
+  --color-border-color:   var(--color-border-color);
+
+  --radius:      var(--radius-md);
+  --radius-none: var(--radius-none);
+  --radius-sm:   var(--radius-sm);
+  --radius-md:   var(--radius-md);
+  --radius-lg:   var(--radius-lg);
+  --radius-xl:   var(--radius-xl);
+  --radius-2xl:  var(--radius-2xl);
+
+  --shadow-sm: var(--shadow-sm);
+  --shadow-md: var(--shadow-md);
+  --shadow-lg: var(--shadow-lg);
+  --shadow-xl: var(--shadow-xl);
+}
+
+
 
 
 *,
@@ -179,11 +262,9 @@ body {
 
 .text-accent   { color: var(--color-accent-primary); }
 .text-success  { color: var(--color-accent-green); }
-.text-info     { color: var(--color-accent-blue); }
+.text-info     { color: var(--color-accent-primary); }
 .text-warning  { color: var(--color-accent-yellow); }
 .text-danger   { color: var(--color-accent-red); }
-.text-cyan     { color: var(--color-accent-cyan); }
-.text-purple   { color: var(--color-accent-purple); }
 .text-muted    { color: var(--color-text-muted); }
 .text-secondary { color: var(--color-text-secondary); }
 

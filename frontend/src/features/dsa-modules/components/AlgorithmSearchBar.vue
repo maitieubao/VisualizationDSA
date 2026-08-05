@@ -17,9 +17,7 @@
       <div class="p-4 flex items-center gap-2 text-xs font-mono dash-text-secondary relative">
         <span class="dash-text-accent font-bold shrink-0">$ find</span>
         <div class="relative w-full flex items-center">
-          <svg class="absolute left-0 w-3.5 h-3.5 text-text-muted" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-          </svg>
+          <BaseIcon name="search" class="absolute left-0 w-3.5 h-3.5 text-text-muted" />
           <input
             :value="searchQuery"
             type="text"

@@ -1,18 +1,16 @@
 using System;
-using System.Security.Claims;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using VisualizationDSA.Application.DTOs;
 using MediatR;
 using VisualizationDSA.Application.Features.Lessons.Commands.ProcessReview;
+using VisualizationDSA.WebApi.Filters;
 
 namespace VisualizationDSA.WebApi.Controllers
 {
     [ApiController]
-    [Route("api/admin/reviews")]
-    [Authorize(Roles = "Admin")]
+    [Route("api/v{version:apiVersion}/admin/reviews")]
+    [RequireJwtRole("Admin")]
     public class LessonReviewController : ControllerBase
     {
         private readonly IMediator _mediator;
@@ -25,7 +23,8 @@ namespace VisualizationDSA.WebApi.Controllers
         [HttpPost("{id}/process")]
         public async Task<IActionResult> ProcessReview(Guid id, [FromBody] ReviewDecisionDto dto)
         {
-            var adminIdStr = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            // AdminId lấy từ token stateless (thống nhất với toàn bộ hệ thống).
+            var adminIdStr = JwtHelper.ExtractSubFromToken(Request);
             if (!Guid.TryParse(adminIdStr, out var adminId))
             {
                 return Unauthorized();

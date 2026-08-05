@@ -2,13 +2,13 @@
   <Transition name="vcr-banner-fade" mode="out-in">
     <div v-if="actionType && explanation" :key="frameKey" class="vcr-banner vcr-frame-enter">
       <span class="vcr-banner__action">{{ actionType }}</span>
-      <span class="vcr-banner__text" v-html="parseEmojiToSvg(explanation)"></span>
+      <span class="vcr-banner__text" v-html="parseEmojiToSvg(escapeHtmlText(explanation))"></span>
     </div>
   </Transition>
 </template>
 
 <script setup lang="ts">
-import { parseEmojiToSvg } from '../utils/emojiParser';
+import { parseEmojiToSvg, escapeHtmlText } from '../utils/emojiParser';
 
 defineProps<{
   actionType: string;

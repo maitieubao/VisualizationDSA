@@ -266,3 +266,20 @@ Bạn không cần phải có bằng Tiến sĩ mới biết code của mình c�
 - Đừng để ngôn ngữ tự nhiên (hoặc Toán học) đánh lừa bạn trong OOP. Một "Đà điểu" là "Chim" trong sinh học, nhưng không nên kế thừa trong Code nếu "Chim" mặc định phải biết Bay.
 - Đừng bao giờ tạo ra một cây phả hệ (Inheritance Tree) quá sâu. Hãy ưu tiên dùng Interface (Trừu tượng hóa Hành vi) thay vì Kế thừa Class (Trừu tượng hóa Trạng thái).
 :::
+
+---
+
+## Next Steps {#next-steps}
+
+- [Interface Segregation (ISP)](/docs/solid/isp): Khi một Interface trở nên "quá béo", hãy tách nhỏ để Lớp con không bị ép phải giữ những lời hứa mà nó không thể thực hiện.
+- [Dependency Inversion (DIP)](/docs/solid/dip): Dựa vào Trừu tượng thay vì Chi tiết, đảm bảo Lớp con có thể thay thế Lớp cha mà không rạn nứt tầng phụ thuộc.
+- [Tính Kế thừa (Inheritance)](/docs/oop/inheritance): Hiểu rõ bản chất "IS-A" và cái bẫy Lớp Cơ Sở Mỏng Manh trước khi dựng cây phả hệ.
+
+## 📚 Tham khảo lý thuyết
+
+- Sách **Clean Code** (Robert C. Martin) — Tư duy kế thừa và Đa hình, nền tảng của nguyên lý LSP.
+- Sách **Clean Architecture** (Robert C. Martin) — Bàn luận về tính đúng đắn (Correctness) khi thay thế Lớp con cho Lớp cha trong kiến trúc phần mềm.
+- Wikipedia — [Liskov substitution principle](https://en.wikipedia.org/wiki/Liskov_substitution_principle).
+- Wikipedia — [SOLID](https://en.wikipedia.org/wiki/SOLID).
+- Microsoft Learn — [Interfaces in C#](https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/types/interfaces) (cơ chế Hợp đồng giúp thiết kế thay thế an toàn).
+- GeeksforGeeks — Liskov Substitution Principle (OOP) — minh họa bài toán kinh điển Hình Vuông/Hình Chữ Nhật.

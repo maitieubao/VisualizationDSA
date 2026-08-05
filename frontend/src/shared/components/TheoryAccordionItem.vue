@@ -70,7 +70,7 @@
             <span class="completion-text">Bạn đã sẵn sàng học tiếp?</span>
           </div>
           <button class="next-pillar-btn mt-2" @click="$emit('nextPillar')">
-            Học tiếp: {{ nextPillarName }} ➔
+            Học tiếp: {{ nextPillarName }} <BaseIcon name="arrow-right" class="w-3.5 h-3.5 inline ml-1 align-middle" />
           </button>
         </div>
 

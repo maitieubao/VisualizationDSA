@@ -182,3 +182,22 @@ obj2.Speak(); // Output: "Tiếng nói của CHA" !!! (WHAT???)
 - **Overriding (Ghi đè):** Đa hình lúc phần mềm đang chạy (Runtime). Lớp con dẫm nát hàm của Lớp cha để làm theo cách của mình thông qua bộ đôi `virtual` và `override`.
 - Cẩn thận với từ khóa `new` (Method Hiding) ở lớp con. Nó sẽ giết chết tính Đa hình nếu bạn cố tình gán (Upcasting) đối tượng con vào một biến tham chiếu kiểu cha.
 :::
+
+---
+
+## Next Steps {#next-steps}
+
+- [Tính Trừu tượng (Abstraction)](/docs/oop/abstraction): Khám phá cách Abstract Class tạo nền móng vững chắc để Đa hình hoạt động trơn tru lúc Runtime.
+- [Nguyên lý Open-Closed (OCP)](/docs/solid/ocp): Đa hình chính là chìa khóa giúp hệ thống "mở" cho việc mở rộng nhưng "đóng" với việc sửa đổi.
+- [Nguyên lý Liskov Substitution (LSP)](/docs/solid/lsp): Hiểu ranh giới khi thay thế Lớp cha bằng Lớp con mà không phá vỡ hành vi của chương trình.
+- [Strategy Pattern](/docs/patterns/strategy): Nhìn thấy Đa hình được ứng dụng trong thực chiến để tráo đổi thuật toán linh hoạt.
+
+## 📚 Tham khảo lý thuyết {#references}
+
+- Sách **Clean Code** (Robert C. Martin) — Nghệ thuật tổ chức hành vi qua Đa hình để tránh chuỗi `if/else` dài lê thê.
+- Sách **Clean Architecture** (Robert C. Martin) — Vai trò của Đa hình trong việc đảo chiều phụ thuộc (Dependency Inversion) giữa các tầng.
+- Sách **Head First Object-Oriented Analysis and Design** (O'Reilly) — Phân biệt Overloading (thời gian biên dịch) và Overriding (thời gian chạy) qua các tình huống thực tế.
+- Microsoft Learn — [Polymorphism in C#](https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/object-oriented/polymorphism) và từ khóa [override](https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/keywords/override).
+- Wikipedia — [Polymorphism (computer science)](https://en.wikipedia.org/wiki/Polymorphism_(computer_science)) và [Method overriding](https://en.wikipedia.org/wiki/Method_overriding).
+- GeeksforGeeks — [C# Polymorphism](https://www.geeksforgeeks.org/c-polymorphism/) (Compile-time và Runtime Polymorphism).
+- MIT OCW — [6.031 Software Construction](https://ocw.mit.edu/courses/6-031-software-construction-spring-2017/) — Tài liệu về trừu tượng hóa và mô hình đối tượng, cơ chế dispatch động.

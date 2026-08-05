@@ -71,7 +71,7 @@
           
           <NotificationBell />
           
-          <span v-if="authStore.isPremium" class="premium-crown" title="Thành viên Premium">👑</span>
+          <span v-if="authStore.isPremium" class="premium-crown" title="Thành viên Premium"><BaseIcon name="crown" class="w-4 h-4" /></span>
           <div class="user-badge" :class="{ 'user-badge--premium': authStore.isPremium }" @click="$router.push('/profile')" title="Xem hồ sơ cá nhân">
             <div class="user-badge__avatar" :class="{ 'user-badge__avatar--premium': authStore.isPremium }">
               {{ authStore.userName.charAt(0).toUpperCase() }}

@@ -5,7 +5,12 @@
       v-if="item.children" 
       class="flex items-center justify-between px-2 py-1.5 cursor-pointer rounded-md transition-colors group"
       :class="isOpen ? '' : 'hover:bg-bg-hover'"
+      role="button"
+      tabindex="0"
+      :aria-expanded="isOpen"
       @click="toggle"
+      @keydown.enter="toggle"
+      @keydown.space.prevent="toggle"
     >
       <span 
         class="text-sm font-medium select-none"
@@ -13,13 +18,11 @@
       >
         {{ item.title }}
       </span>
-      <svg 
+      <BaseIcon 
+        name="chevron-right"
         class="w-4 h-4 text-text-muted transition-transform duration-200"
         :class="isOpen ? 'rotate-90 text-accent-primary' : ''"
-        fill="none" viewBox="0 0 24 24" stroke="currentColor"
-      >
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
-      </svg>
+      />
     </div>
 
     
@@ -55,6 +58,7 @@
 <script setup lang="ts">
 import { ref, watch, onMounted } from 'vue';
 import type { NavItem } from '../types/docs.types';
+import BaseIcon from '@/shared/components/BaseIcon.vue';
 
 const props = defineProps<{
   item: NavItem;

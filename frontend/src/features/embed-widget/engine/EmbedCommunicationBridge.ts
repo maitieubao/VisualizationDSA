@@ -10,13 +10,22 @@ import type { EmbedMessage } from '../types/embed-widget.types';
 
 export type EmbedMessageListener = (msg: EmbedMessage, origin: string) => void;
 
+/** Origin của chính trang đang chạy (an toàn mặc định thay vì '*'). */
+function getSelfOrigin(): string {
+  if (typeof window !== 'undefined' && window.location?.origin) {
+    return window.location.origin;
+  }
+  return '';
+}
+
 export class EmbedCommunicationBridge {
   private allowedOrigins: string[];
   private listeners: Set<EmbedMessageListener> = new Set();
   private windowMessageEventHandler: ((event: MessageEvent) => void) | null = null;
 
-  constructor(allowedOrigins: string[] = ['*']) {
-    this.allowedOrigins = allowedOrigins;
+  constructor(allowedOrigins?: string[]) {
+    // Mặc định chỉ tin origin của chính mình — KHÔNG dùng '*' (chặn XSS qua postMessage).
+    this.allowedOrigins = allowedOrigins ?? [getSelfOrigin()];
     this.initializeListener();
   }
 
@@ -55,9 +64,12 @@ export class EmbedCommunicationBridge {
   public sendMessage(
     targetWindow: Window,
     msg: EmbedMessage,
-    targetOrigin: string = '*',
+    targetOrigin?: string,
   ): void {
-    targetWindow.postMessage(msg, targetOrigin);
+    // Mặc định gửi tới origin đã được phép đầu tiên (an toàn hơn '*'),
+    // người gọi có thể truyền targetOrigin cụ thể nếu biết chính xác đối tác.
+    const safeOrigin = targetOrigin ?? this.allowedOrigins[0] ?? getSelfOrigin();
+    targetWindow.postMessage(msg, safeOrigin);
   }
 
   

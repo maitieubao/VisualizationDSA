@@ -73,7 +73,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch, onMounted, onUnmounted, nextTick } from 'vue';
+import { ref, computed, watch, onMounted, onUnmounted, onActivated, onDeactivated, nextTick } from 'vue';
 import { useAlgorithmStore } from '../store/useAlgorithmStore';
 import { useAnimationStore } from '../../animation-engine/store/useAnimationStore';
 import { executeDSAAlgorithm } from '../services/dsaApi';
@@ -97,6 +97,10 @@ const animStore   = useAnimationStore();
 const inputText   = ref('5, 3, 8, 1, 9, 2, 7');
 const isExecuting = ref(false);
 
+// Component nằm trong KeepAlive: listener keydown sống khi chuyển tab.
+// Cờ này chặn phím tắt điều khiển playback khi view KHÔNG còn hiển thị.
+const isViewActive = ref(true);
+
 const isTheoryOpen = ref(false);
 const isDesktopWide = ref(false);
 const activeTheorySectionId = ref<string | null>(null);
@@ -114,7 +118,15 @@ onUnmounted(() => {
   window.removeEventListener('resize', checkWidth);
 });
 
-useDSAKeyboard(() => !!algoStore.currentAlgorithm, animStore as any);
+onActivated(() => { isViewActive.value = true; });
+
+onDeactivated(() => {
+  // Rời tab: dừng playback + vô hiệu hóa phím tắt (chống điều khiển chéo 2 player).
+  isViewActive.value = false;
+  animStore.pause();
+});
+
+useDSAKeyboard(() => isViewActive.value && !!algoStore.currentAlgorithm, animStore);
 
 const dsaTheoryDoc = computed<TheoryDocument | null>(() => {
   const algo = algoStore.currentAlgorithm;
@@ -176,15 +188,7 @@ function generateDefaultInput(algo: Algorithm): void {
   if (category === 'searching')       inputText.value = '2, 5, 8, 12, 16, 23, 38, 56, 72, 91, 23';
   else if (category === 'tree')       inputText.value = '50, 30, 70, 20, 40, 60, 80';
   else if (category === 'stack-queue') inputText.value = '10, 20, 30, 40, 50';
-  else if (category === 'graph') {
-    if (algo.id === 'bfs' || algo.id === 'dfs')
-      inputText.value = '0-1,0-2,1-3,1-4,2-5,2-6';
-    else if (algo.id === 'dijkstra' || algo.id === 'bellman-ford' || algo.id === 'a-star')
-      inputText.value = '0-1-4,0-2-2,1-2-5,1-3-10,2-3-3,3-4-1';
-    else if (algo.id === 'kruskal' || algo.id === 'prim')
-      inputText.value = '0-1-2,0-2-3,1-2-1,1-3-1,2-3-4,3-4-2';
-    else inputText.value = '0-1-1,0-2-4,1-2-2,1-3-6,2-3-3';
-  }
+  else if (category === 'graph')      inputText.value = '50, 30, 70, 20, 40, 60, 80, 10';
   else inputText.value = '5, 3, 8, 1, 9, 2, 7';
 }
 
@@ -192,26 +196,16 @@ async function executeVisualization(): Promise<void> {
   if (!algoStore.currentAlgorithm || isExecuting.value) return;
   isExecuting.value = true;
   try {
-    const data = inputText.value.split(',').map(s => parseInt(s.trim(), 10)).filter(n => !isNaN(n));
+    // Parse nghiêm ngặt: chỉ giữ token số nguyên đầy đủ (tránh parseInt('0-1-4') = 0
+    // làm hỏng toàn bộ đồ thị). Giao ước inputData là mảng giá trị node.
+    const data = inputText.value
+      .split(',')
+      .map((s) => s.trim())
+      .filter((s) => /^-?\d+$/.test(s))
+      .map((s) => Number(s));
     if (data.length === 0) return;
     const result = await executeDSAAlgorithm(algoStore.currentAlgorithm.id, data);
-    animStore.loadResult({
-      algorithmId: result.algorithmId,
-      pseudoCode: result.pseudoCode,
-      frames: result.frames.map(f => ({
-        stepId: f.stepId,
-        activeLine: f.activeLine,
-        explanation: f.explanation,
-        dataState: f.dataState,
-        highlights: {
-          compare: f.highlights?.compare ?? [],
-          swap: f.highlights?.swap ?? [],
-          sorted: f.highlights?.sorted ?? [],
-          dimmed: f.highlights?.dimmed ?? [],
-          active: f.highlights?.active ?? [],
-        },
-      })),
-    });
+    animStore.loadResult(result);
   } catch (error) { console.error('Lỗi thực thi trực quan hóa:', error); }
   finally { isExecuting.value = false; }
 }

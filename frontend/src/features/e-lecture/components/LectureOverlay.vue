@@ -5,14 +5,12 @@
         
         <div class="flex items-center justify-between">
           <div class="flex items-center gap-2">
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="text-[#06b6d4] w-4 h-4">
-              <path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5Z" /><path d="M6 6h10M6 10h10" />
-            </svg>
+            <BaseIcon name="book-open" class="text-[#06b6d4] w-4 h-4" />
             <span class="text-[11px] font-bold uppercase tracking-wider text-[#06b6d4]">E-Lecture</span>
             <span class="badge-bg text-[11px] font-semibold text-text-muted border border-slate-800 py-0.5 px-2 rounded-md">{{ lectureStore.slideProgress }}</span>
           </div>
-          <button class="exit-btn flex items-center justify-center w-7 h-7 rounded-lg border border-border-default text-text-muted cursor-pointer transition-all hover:text-text-primary hover:border-border-default" @click="lectureStore.exitLecture()" title="Thoát bài giảng (Esc)">
-            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12" /></svg>
+          <button class="exit-btn flex items-center justify-center w-7 h-7 rounded-lg border border-border-default text-text-muted cursor-pointer transition-all hover:text-text-primary hover:border-border-default" @click="lectureStore.exitLecture()" title="Thoát bài giảng (Esc)" aria-label="Thoát bài giảng (Esc)">
+            <BaseIcon name="x" class="w-3.5 h-3.5" />
           </button>
         </div>
 
@@ -28,8 +26,8 @@
         </div>
 
         
-        <div v-if="lectureStore.isWaitingForAnimation" class="flex items-center gap-2.5 p-3 py-2.5 bg-accent-cyan/8 border border-accent-cyan/20 rounded-[10px]">
-          <div class="w-4 h-4 border-2 border-accent-cyan/30 border-t-cyan-500 rounded-full animate-spin" />
+        <div v-if="lectureStore.isWaitingForAnimation" class="flex items-center gap-2.5 p-3 py-2.5 bg-accent-cyan/8 border border-accent-cyan/20 rounded-[10px]" role="status" aria-live="polite">
+          <div class="w-4 h-4 border-2 border-accent-cyan/30 border-t-cyan-500 rounded-full animate-spin" aria-hidden="true" />
           <span class="text-xs text-accent-cyan font-medium">Đang phát hoạt ảnh minh họa...</span>
         </div>
 

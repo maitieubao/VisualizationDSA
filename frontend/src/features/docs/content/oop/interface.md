@@ -192,3 +192,20 @@ Cách thiết kế này chính là nền tảng cốt lõi của [Dependency Inv
 - Nếu bạn gom nhóm theo Năng lực/Hành vi (CAN-DO) $\rightarrow$ Dùng **Interface**.
 - Hãy dùng Interface làm cầu nối trung gian giữa các Tầng (Layers) trong phần mềm để dễ dàng tráo đổi công nghệ và thực hiện Unit Test giả lập (Mocking).
 :::
+
+---
+
+## Next Steps {#next-steps}
+
+- [Nguyên lý Interface Segregation (ISP)](/docs/solid/isp): Khi nào một Interface trở nên "quá béo" và nên được tách nhỏ thành nhiều hợp đồng chuyên biệt.
+- [Dependency Inversion (DIP)](/docs/solid/dip): Dựa vào trừu tượng thay vì chi tiết để giữ các Module cấp cao độc lập với tầng triển khai.
+- [Dependency Injection (DI)](/docs/di/basics): Cơ chế tiêm hợp đồng (Interface) vào runtime để dễ dàng tráo đổi triển khai và Mocking trong kiểm thử.
+
+## 📚 Tham khảo lý thuyết
+
+- Sách **Clean Code** (Robert C. Martin) — Lập trình hướng Interface để giảm sự phụ thuộc cứng giữa các module.
+- Sách **Clean Architecture** (Robert C. Martin) — Khái niệm "Program to an interface, not an implementation".
+- Sách **Head First Object-Oriented Analysis and Design** (O'Reilly) — Phân biệt Abstract Class (IS-A) và Interface (CAN-DO) qua các tình huống thực tế.
+- Microsoft Learn — [Interfaces in C#](https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/types/interfaces) và Default Interface Methods trong C# 8.0.
+- Wikipedia — [Interface (object-oriented programming)](https://en.wikipedia.org/wiki/Interface_(object-oriented_programming)).
+- GeeksforGeeks — Interfaces in C# (tài liệu về khai báo interface, đa kế thừa giao diện).

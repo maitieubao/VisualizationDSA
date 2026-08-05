@@ -7,16 +7,16 @@
           class="vcr-controls__btn vcr-controls__btn--nav"
           :disabled="currentIndex <= 0"
           @click="$emit('prev')"
-        >◀ Prev</button>
+        ><BaseIcon name="arrow-left" class="w-3.5 h-3.5 inline mr-1" />Prev</button>
         <button
           class="vcr-controls__btn vcr-controls__btn--nav"
           :disabled="currentIndex >= totalFrames - 1"
           @click="$emit('next')"
-        >Next ▶</button>
+        >Next <BaseIcon name="arrow-right" class="w-3.5 h-3.5 inline ml-1" /></button>
         <button
           class="vcr-controls__btn vcr-controls__btn--nav"
           @click="$emit('reset')"
-        >⏮ Reset</button>
+        ><BaseIcon name="step-backward" class="w-3.5 h-3.5 inline mr-1" />Reset</button>
       </div>
       <div class="vcr-controls__indicator">
         Frame {{ currentIndex + 1 }} / {{ totalFrames }}
@@ -24,7 +24,7 @@
       <button
         class="vcr-controls__btn vcr-controls__btn--exit"
         @click="$emit('exit')"
-      >Exit VCR → Sandbox</button>
+      >Exit VCR <BaseIcon name="arrow-right" class="w-3.5 h-3.5 inline mx-1" /> Sandbox</button>
     </div>
   </div>
 </template>

@@ -16,7 +16,9 @@ export class GraphParser {
       const fromNode = nodes.find(n => n.id === edge.from);
       const toNode = nodes.find(n => n.id === edge.to);
       if (fromNode && toNode) {
+        // Đồ thị vô hướng (undirected): mỗi cạnh được thêm ở cả 2 chiều.
         adjacencyList[fromNode.label].push({ target: toNode.label, weight: edge.weight });
+        adjacencyList[toNode.label].push({ target: fromNode.label, weight: edge.weight });
       }
     }
     return { algorithmId, inputType: 'adjacency-list', nodes: nodes.map(n => n.label), adjacencyList };

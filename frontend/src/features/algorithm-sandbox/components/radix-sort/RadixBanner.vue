@@ -6,7 +6,9 @@
         <span class="r-title">{{ currentStepDescription }}</span>
       </div>
       <span class="r-phase" :class="isDistributePhase ? 'r-phase--dist' : 'r-phase--coll'">
-        {{ isDistributePhase ? '⬇ Phân Phối' : '⬆ Thu Hoạch' }}
+        <BaseIcon name="arrow-down" v-if="isDistributePhase" class="r-phase-ic" />
+        <BaseIcon name="arrow-up" v-else class="r-phase-ic" />
+        {{ isDistributePhase ? 'Phân Phối' : 'Thu Hoạch' }}
       </span>
     </div>
 
@@ -14,9 +16,9 @@
       <div class="r-row" style="gap:5px;flex-wrap:wrap">
         <span class="r-lbl">Chữ số:</span>
         <span class="r-chip" :class="activeDigitPlace === 1 ? 'r-chip--on' : ''">Đơn vị (1s)</span>
-        <span class="r-arrow">➔</span>
+        <BaseIcon name="arrow-right" class="r-arrow" />
         <span class="r-chip" :class="activeDigitPlace === 10 ? 'r-chip--on' : ''">Chục (10s)</span>
-        <span class="r-arrow">➔</span>
+        <BaseIcon name="arrow-right" class="r-arrow" />
         <span class="r-chip" :class="activeDigitPlace === 100 ? 'r-chip--on' : ''">Trăm (100s)</span>
       </div>
       <div class="r-row" style="gap:5px;flex-wrap:wrap">
@@ -26,12 +28,13 @@
       </div>
     </div>
 
-    <div class="r-explain">{{ miniStepExplanation }}</div>
+    <div class="r-explain" v-html="parseEmojiToSvg(miniStepExplanation)"></div>
   </div>
 </template>
 
 <script setup lang="ts">
 import { useRadixSortVisualizer } from '../../composables/useRadixSortVisualizer';
+import { parseEmojiToSvg } from '../../../../utils/emojiParser';
 import type { SortFrame } from '../../types/sorting.types';
 
 const props = defineProps<{ frame: SortFrame | null }>();
@@ -51,27 +54,34 @@ const {
 .r-banner {
   flex-shrink: 0;
   margin-bottom: 8px;
-  background: color-mix(in srgb, var(--color-bg-secondary) 85%, transparent);
-  border: 1px solid color-mix(in srgb, var(--color-accent-cyan) 15%, transparent);
-  border-radius: 14px;
+  background: var(--color-bg-secondary);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-lg);
   padding: 9px 13px;
   display: flex;
   flex-direction: column;
   gap: 5px;
-  backdrop-filter: blur(8px);
 }
 .r-title    { font-size: 14.5px; font-weight: 700; color: var(--color-text-primary); }
 .r-phase    { font-size: 11.5px; font-family: var(--font-mono); font-weight: 700; padding: 3px 9px; border-radius: 999px; border: 1px solid; text-transform: uppercase; white-space: nowrap; flex-shrink: 0; }
-.r-phase--dist { background: var(--color-accent-yellow-dim); color: var(--color-accent-yellow); border-color: color-mix(in srgb, var(--color-accent-yellow) 30%, transparent); }
-.r-phase--coll { background: var(--color-accent-green-dim);  color: var(--color-accent-green); border-color: color-mix(in srgb, var(--color-accent-green) 30%, transparent); }
+.r-phase--dist { background: var(--color-accent-yellow-dim); color: var(--color-accent-yellow); border-color: rgba(251, 191, 36, 0.3); }
+.r-phase--coll { background: var(--color-accent-green-dim);  color: var(--color-accent-green); border-color: rgba(16, 185, 129, 0.3); }
 
-.r-chip  { font-size: 11px; font-family: var(--font-mono); font-weight: 700; padding: 2px 6px; border-radius: 4px; border: 1px solid var(--color-border-subtle); background: color-mix(in srgb, var(--color-bg-primary) 50%, transparent); color: var(--color-text-muted); transition: all .3s; }
-.r-chip--on { background: var(--color-accent-cyan-dim); color: var(--color-accent-cyan); border-color: color-mix(in srgb, var(--color-accent-cyan) 35%, transparent); box-shadow: 0 0 6px var(--color-accent-cyan-glow); }
+.r-chip  { font-size: 11px; font-family: var(--font-mono); font-weight: 700; padding: 2px 6px; border-radius: 4px; border: 1px solid var(--color-border-subtle); background: var(--color-bg-primary); color: var(--color-text-muted); transition: all .3s; }
+.r-chip--on { background: var(--color-accent-cyan-dim); color: var(--color-accent-cyan); border-color: rgba(61, 153, 112, 0.35); box-shadow: 0 0 6px var(--color-accent-cyan-glow); }
 
 .r-arrow {
   color: var(--color-text-muted);
-  font-size: 9px;
+  width: 11px;
+  height: 11px;
   opacity: 0.5;
+}
+
+.r-phase-ic {
+  width: 11px;
+  height: 11px;
+  vertical-align: -1.5px;
+  margin-right: 3px;
 }
 
 .r-dot   { width: 9px; height: 9px; border-radius: 50%; border: 1px solid; display: inline-block; flex-shrink: 0; }

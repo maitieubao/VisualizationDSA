@@ -1,0 +1,68 @@
+{
+  "quizTitle": "Trắc nghiệm Sắp xếp nâng cao",
+  "topic": "sorting",
+  "difficulty": 1,
+  "xpReward": 40,
+  "questions": [
+    {
+      "questionText": "Độ phức tạp thời gian của Merge Sort trong trường hợp xấu nhất là gì?",
+      "options": ["O(N)", "O(N log N)", "O(N²)", "O(log N)"],
+      "correctIndex": 1,
+      "explanation": "Merge Sort luôn chẻ đôi mảng thành log(N) tầng và trộn O(N) mỗi tầng nên mọi trường hợp đều là O(N log N)."
+    },
+    {
+      "questionText": "Tình huống nào khiến Quick Sort suy thoái xuống O(N²)?",
+      "options": ["Mảng chứa số âm", "Pivot luôn rơi vào phần tử biên, ví dụ mảng đã sắp xếp", "Mảng có quá ít phần tử", "Mảng chứa nhiều số trùng lặp"],
+      "correctIndex": 1,
+      "explanation": "Khi pivot luôn là phần tử nhỏ nhất hoặc lớn nhất, mỗi partition chỉ loại được một phần tử nên tổng chi phí trở thành O(N²)."
+    },
+    {
+      "questionText": "Counting Sort thuộc nhóm thuật toán nào?",
+      "options": ["Dựa trên so sánh cặp phần tử", "Không dựa trên so sánh", "Ngẫu nhiên hóa", "Chỉ dùng được cho chuỗi ký tự"],
+      "correctIndex": 1,
+      "explanation": "Counting Sort đếm tần suất xuất hiện của từng giá trị thay vì so sánh hai phần tử với nhau."
+    },
+    {
+      "questionText": "Heap Sort cần bao nhiêu bộ nhớ phụ?",
+      "options": ["O(N)", "O(log N)", "O(1)", "O(N log N)"],
+      "correctIndex": 2,
+      "explanation": "Heap Sort sắp xếp tại chỗ trên chính mảng đầu vào, chỉ dùng phép tráo đổi nên bộ nhớ phụ là O(1)."
+    },
+    {
+      "questionText": "Vì sao Heap Sort thực tế chạy chậm hơn Quick Sort dù cùng độ phức tạp O(N log N)?",
+      "options": ["Heap Sort tạo nhiều mảng phụ", "Heap Sort nhảy cóc chỉ số (i sang 2i+1) gây trượt CPU cache", "Heap Sort không xử lý được mảng lớn", "Heap Sort bị giới hạn ở số nguyên"],
+      "correctIndex": 1,
+      "explanation": "Thao tác nhảy cóc liên tục giữa các chỉ số khiến tỉ lệ trượt cache cao, trong khi Quick Sort duyệt mảng tuần tự liền kề."
+    },
+    {
+      "questionText": "Radix Sort thường dùng thuật toán nào làm bước chia xô nội bộ cho từng chữ số?",
+      "options": ["Quick Sort", "Counting Sort", "Merge Sort", "Insertion Sort"],
+      "correctIndex": 1,
+      "explanation": "Radix Sort dùng Counting Sort vì nó ổn định (stable) — tính chất bắt buộc để giữ thứ tự của các vòng trước."
+    },
+    {
+      "questionText": "Thuật toán nào sau đây KHÔNG ổn định (stable)?",
+      "options": ["Merge Sort", "Counting Sort", "Quick Sort", "Radix Sort"],
+      "correctIndex": 2,
+      "explanation": "Quick Sort không ổn định vì quá trình partition hoán đổi có thể đảo thứ tự các phần tử bằng nhau; ba thuật toán còn lại đều ổn định."
+    },
+    {
+      "questionText": "Sắp xếp mảng [1, 5, 1000000000] bằng Counting Sort, mảng đếm cần khoảng bao nhiêu bộ nhớ (mỗi int 4 byte)?",
+      "options": ["48 byte", "4 GB", "40 MB", "400 KB"],
+      "correctIndex": 1,
+      "explanation": "Mảng đếm cần K + 1 phần tử với K = 1 tỷ, tức khoảng 4 tỷ byte bằng 4 GB — lãng phí cho chỉ 3 phần tử dữ liệu."
+    },
+    {
+      "questionText": "Mảng [5, 4, 3, 2, 1] dùng Quick Sort Lomuto với pivot luôn là phần tử cuối, độ phức tạp thời gian là gì?",
+      "options": ["O(N log N)", "O(N)", "O(N²)", "O(log N)"],
+      "correctIndex": 2,
+      "explanation": "Pivot luôn là phần tử nhỏ nhất nên partition chia cực lệch, đệ quy sâu N tầng và tổng chi phí là O(N²)."
+    },
+    {
+      "questionText": "Radix Sort với mảng [170, 45, 75, 90, 802, 24, 2, 66], sau vòng sắp theo hàng đơn vị, mảng trở thành gì?",
+      "options": ["[170, 90, 802, 2, 24, 45, 75, 66]", "[2, 24, 45, 66, 75, 90, 170, 802]", "[802, 2, 170, 90, 45, 75, 24, 66]", "[170, 45, 75, 90, 802, 24, 2, 66]"],
+      "correctIndex": 0,
+      "explanation": "Xếp vào xô theo chữ số đơn vị: xô 0 có 170, 90; xô 2 có 802, 2; xô 4 có 24; xô 5 có 45, 75; xô 6 có 66 — ghép lại đúng thứ tự."
+    }
+  ]
+}

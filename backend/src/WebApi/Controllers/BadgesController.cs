@@ -8,12 +8,14 @@ using VisualizationDSA.Application.Services;
 using VisualizationDSA.Domain.Entities;
 using VisualizationDSA.Domain.Interfaces;
 
+using VisualizationDSA.WebApi.Filters;
+
 namespace VisualizationDSA.WebApi.Controllers
 {
     [ApiVersion("1.0")]
     [ApiController]
     [Route("api/v{version:apiVersion}/[controller]")]
-    [Authorize]
+    [RequireJwtRole]
     public class BadgesController : ControllerBase
     {
         private readonly IUnitOfWork _unitOfWork;
@@ -37,19 +39,15 @@ namespace VisualizationDSA.WebApi.Controllers
         public async Task<ActionResult<IEnumerable<Badge>>> GetMyBadges()
         {
             var userId = GetCurrentUserId();
-            var user = await _unitOfWork.Users.GetByIdAsync(userId);
-            
+            // Load kèm UserBadges + Badge trong 1 query (khử N+1 truy vấn từng badge).
+            var user = await _unitOfWork.Users.GetByIdWithDetailsAsync(userId, track: false);
+
             if (user == null) return NotFound();
 
-            var badges = new List<Badge>();
-            foreach (var userBadge in user.UserBadges)
-            {
-                var badge = await _unitOfWork.Badges.GetByIdAsync(userBadge.BadgeId);
-                if (badge != null)
-                {
-                    badges.Add(badge);
-                }
-            }
+            var badges = user.UserBadges
+                .Where(ub => ub.Badge != null)
+                .Select(ub => ub.Badge!)
+                .ToList();
 
             return Ok(badges);
         }
@@ -64,7 +62,7 @@ namespace VisualizationDSA.WebApi.Controllers
 
         private Guid GetCurrentUserId()
         {
-            var userIdClaim = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+            var userIdClaim = JwtHelper.ExtractSubFromToken(Request);
             return Guid.Parse(userIdClaim!);
         }
     }

@@ -41,7 +41,7 @@
     </div>
 
     <div v-else-if="quizzesList.length === 0" class="empty-state">
-      <div class="text-5xl mb-4">❓</div>
+      <div class="text-5xl mb-4"><BaseIcon name="help-circle" class="w-12 h-12 text-text-muted mx-auto" /></div>
       <h3 class="text-xl font-bold text-white">Chưa có Quiz nào</h3>
       <p class="text-text-muted mt-2 max-w-md">Tạo Quiz đầu tiên để bắt đầu xây dựng ngân hàng câu hỏi</p>
       <button class="btn-primary mt-6" @click="createNewQuiz">
@@ -118,7 +118,7 @@
                             : 'bg-bg-secondary text-text-secondary border-border-subtle hover:border-border-default hover:bg-bg-surface'"
                         >
                           {{ opt }}
-                          <span v-if="oIdx === question.correctIndex" class="ml-2 text-sm">✓</span>
+                          <span v-if="oIdx === question.correctIndex" class="ml-2 text-sm"><BaseIcon name="check" class="w-3.5 h-3.5" /></span>
                         </button>
                       </div>
                       <div v-if="question.explanation" class="mt-3 p-3 rounded-lg bg-bg-secondary border border-border-subtle">

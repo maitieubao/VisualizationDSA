@@ -3,7 +3,7 @@
     
     <div class="flex items-center justify-between">
       <div class="flex items-center gap-3">
-        <div class="w-8 h-8 rounded-lg bg-accent flex items-center justify-center"><span class="text-text-primary font-bold text-sm">🏆</span></div>
+        <div class="w-8 h-8 rounded-lg bg-accent flex items-center justify-center"><BaseIcon name="trophy" class="w-4 h-4 text-text-primary" /></div>
         <div>
           <h2 class="text-base font-bold text-text-primary">Gamification Engine</h2>
           <p class="text-[10px] text-text-secondary">Streak • Badges • Leaderboard</p>
@@ -25,7 +25,7 @@
           class="px-3 py-1.5 rounded-lg text-xs font-medium transition-colors"
           :class="store.streakFreezesCount > 0 ? 'bg-accent-cyan/20 text-accent border border-accent-cyan/30 hover:bg-accent-cyan/30' : 'bg-bg-surface/50 text-text-disabled border border-border-default cursor-not-allowed'"
         >
-          ❄️ Freeze ({{ store.streakFreezesCount }})
+          <BaseIcon name="snowflake" class="w-3.5 h-3.5 inline mr-1" /> Freeze ({{ store.streakFreezesCount }})
         </button>
         <button @click="handleAwardXp()" class="px-3 py-1.5 rounded-lg text-xs font-medium bg-accent-green/20 text-accent-green border border-accent-green/30 hover:bg-accent-green/30 transition-colors">+50 XP Demo</button>
       </div>
@@ -67,7 +67,7 @@
             <div v-for="badge in store.backendBadges" :key="badge.id"
               class="flex items-center gap-2 px-2 py-1 rounded-lg"
               :class="badge.earnedAt ? 'bg-accent-green/10' : 'bg-bg-surface/50 opacity-50'">
-              <span class="text-sm">{{ badge.icon }}</span>
+              <span class="text-sm" v-html="parseEmojiToSvg(escapeHtmlText(badge.icon))"></span>
               <div class="flex-1 min-w-0">
                 <div class="text-[11px] font-medium text-text-primary truncate">{{ badge.name }}</div>
                 <div class="text-[9px] text-text-secondary truncate">{{ badge.description }}</div>
@@ -109,6 +109,7 @@
 <script setup lang="ts">
 import { onMounted } from 'vue';
 import { useGamificationStore } from '../store/useGamificationStore';
+import { parseEmojiToSvg, escapeHtmlText } from '../../../utils/emojiParser';
 import StreakFire from './StreakFire.vue';
 import BadgesCabinet from './BadgesCabinet.vue';
 import WeeklyLeaderboard from './WeeklyLeaderboard.vue';

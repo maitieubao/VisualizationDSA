@@ -52,6 +52,14 @@ function delay(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
+function getErrorMessage(error: unknown): string {
+  if (error instanceof Error) return error.message;
+  if (typeof error === 'object' && error !== null && 'message' in error) {
+    return String((error as { message: unknown }).message);
+  }
+  return String(error);
+}
+
 
 
 export const useUserProgressStore = defineStore('userProgress', () => {
@@ -110,10 +118,10 @@ export const useUserProgressStore = defineStore('userProgress', () => {
       
       const data = await fetchUserProgress(token, authStore.statelessUser?.id);
       _hydrateFromDto(data);
-    } catch (error: any) {
-      
-      
-      console.warn("⚠️ loadProgress thất bại (interceptor đã retry):", error?.message ?? error);
+    } catch (error: unknown) {
+      const message = getErrorMessage(error);
+      // Interceptor đã retry phía dưới; chỉ đánh dấu trạng thái lỗi để UI hiển thị.
+      console.warn("⚠️ loadProgress thất bại (interceptor đã retry):", message);
       isSyncError.value = true;
     }
   }
@@ -212,9 +220,22 @@ export const useUserProgressStore = defineStore('userProgress', () => {
   }
 
   
+  // Bảng ngưỡng level KHỚP backend (User.cs) — trước đây dùng sqrt(1 + XP/100) lệch level hiển thị.
+  const LEVEL_THRESHOLDS = [0, 100, 300, 600, 1000, 1500, 2200, 3000];
+
   function _recalculateLevel(): void {
-    const newLevel = 1 + Math.floor(Math.sqrt(totalXP.value / 100));
-    currentLevel.value = newLevel;
+    let level = 1;
+    for (let i = LEVEL_THRESHOLDS.length - 1; i >= 0; i--) {
+      if (totalXP.value >= LEVEL_THRESHOLDS[i]) { level = i + 1; break; }
+    }
+    currentLevel.value = level;
+
+    const current = LEVEL_THRESHOLDS[Math.min(level - 1, LEVEL_THRESHOLDS.length - 1)] ?? 0;
+    const next = LEVEL_THRESHOLDS[level] ?? LEVEL_THRESHOLDS[LEVEL_THRESHOLDS.length - 1];
+    xpToNextLevel.value = Math.max(0, next - totalXP.value);
+    levelProgressPercent.value = next > current
+      ? Math.min(100, Math.round(((totalXP.value - current) / (next - current)) * 100))
+      : 100;
   }
 
   

@@ -4,12 +4,19 @@ import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { setActivePinia, createPinia } from 'pinia';
 import { useCourseStore } from '../store/useCourseStore';
 import { COURSES } from '../../../data/courses';
+import { courseApi } from '../../../services/courseApi';
+
+// loadCourses giờ gọi API (API-first, fallback local) — mock để test hành vi local.
+vi.mock('../../../services/courseApi', () => ({
+  courseApi: { getCourses: vi.fn() },
+}));
 
 describe('useCourseStore — Khóa học', () => {
   beforeEach(() => {
     setActivePinia(createPinia());
     localStorage.clear();
     vi.useFakeTimers();
+    vi.mocked(courseApi.getCourses).mockResolvedValue(COURSES as never);
   });
 
   afterEach(() => {

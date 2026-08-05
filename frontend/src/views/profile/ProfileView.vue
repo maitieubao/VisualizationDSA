@@ -14,7 +14,7 @@
             <span>{{ authStore.isPremium ? 'PRO' : 'Standard' }}</span>
           </div>
           <button class="modal-close-btn" @click="closeModal" title="Đóng Cài Đặt (Esc)">
-            ✕
+            <BaseIcon name="close" class="w-3.5 h-3.5" />
           </button>
         </div>
       </div>

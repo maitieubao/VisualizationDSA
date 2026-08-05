@@ -5,6 +5,7 @@ using System;
 using System.Linq;
 using System.Threading.Tasks;
 using VisualizationDSA.Domain.Entities;
+using VisualizationDSA.Domain.Enums;
 using VisualizationDSA.Infrastructure.Data;
 using VisualizationDSA.WebApi.Filters;
 
@@ -30,6 +31,37 @@ namespace VisualizationDSA.WebApi.Controllers
             return course?.TeacherId == currentUserId;
         }
 
+        /// <summary>
+        /// Gate truy cập dùng chung cho GET và CompleteLesson:
+        /// 1) Bài chưa Published (Draft/PendingReview/...) hoặc course chưa publish chỉ Teacher/Admin/chủ sở hữu.
+        /// 2) Bài thuộc khóa Premium: mọi user không premium đều bị chặn (kể cả user bị xóa khỏi DB → null).
+        /// </summary>
+        private async Task<IActionResult?> CheckLessonAccessAsync(Lesson lesson, Course? course)
+        {
+            var userIdStr = JwtHelper.ExtractSubFromToken(Request);
+            User? user = null;
+            if (userIdStr != null && Guid.TryParse(userIdStr, out var parsedUserId))
+                user = await _dbContext.Users.FindAsync(parsedUserId);
+
+            var isTeacherOrAdmin = JwtHelper.IsTeacherOrAdmin(Request);
+            var isOwner = course != null && user != null && course.TeacherId == user.Id;
+
+            var isPublished = lesson.PublishStatus == LessonPublishStatus.Published
+                              && (course == null || course.IsPublished);
+            if (!isPublished && !isTeacherOrAdmin && !isOwner)
+            {
+                return NotFound(new { error = "LESSON_NOT_FOUND", message = "Không tìm thấy bài học." });
+            }
+
+            // Premium: chặn MỌI user không premium (user null — bị xóa — cũng bị chặn).
+            if (course != null && course.IsPremium && !isTeacherOrAdmin && !isOwner && (user == null || !user.IsPremium))
+            {
+                return StatusCode(403, new { error = "PREMIUM_REQUIRED", message = "Khóa học này yêu cầu tài khoản Premium để truy cập." });
+            }
+
+            return null;
+        }
+
         [HttpGet("{id}")]
         [RequireJwtRole]
         public async Task<IActionResult> GetLessonById(Guid id)
@@ -38,19 +70,26 @@ namespace VisualizationDSA.WebApi.Controllers
             if (moduleItem == null || moduleItem.Lesson == null) return NotFound(new { error = "LESSON_NOT_FOUND", message = "Không tìm thấy bài học." });
             var lesson = moduleItem.Lesson;
             var course = moduleItem.Module?.Course;
-            var userIdStr = JwtHelper.ExtractSubFromToken(Request);
-            if (course != null && course.IsPremium && userIdStr != null && Guid.TryParse(userIdStr, out var parsedId))
-            {
-                var user = await _dbContext.Users.FindAsync(parsedId);
-                if (user != null && !user.IsPremium && user.Role == "Student")
-                {
-                    return StatusCode(403, new { error = "PREMIUM_REQUIRED", message = "Khóa học này yêu cầu tài khoản Premium để truy cập." });
-                }
-            }
 
+            var accessBlock = await CheckLessonAccessAsync(lesson, course);
+            if (accessBlock != null) return accessBlock;
+
+            var userIdStr = JwtHelper.ExtractSubFromToken(Request);
             var status = "NotStarted";
             var lastActiveFrameIndex = 0;
             var lastScrollPercent = 0.0;
+
+            // Quiz liên kết nằm trên ModuleItem riêng (ItemType=Quiz) trong CÙNG module
+            // với lesson — không nằm trên Lesson item (LessonId item có QuizId=null).
+            // Khớp theo OrderIndex: quiz item của lesson N có order nằm ngay sau lesson item N.
+            var linkedQuizId = await _dbContext.ModuleItems
+                .Where(i => i.ModuleId == moduleItem.ModuleId
+                    && i.ItemType == ModuleItemType.Quiz
+                    && i.QuizId != null
+                    && i.OrderIndex > moduleItem.OrderIndex)
+                .OrderBy(i => i.OrderIndex)
+                .Select(i => i.QuizId)
+                .FirstOrDefaultAsync();
 
             if (userIdStr != null && Guid.TryParse(userIdStr, out var currentUserId))
             {
@@ -73,7 +112,7 @@ namespace VisualizationDSA.WebApi.Controllers
                 lesson.ContentMd,
                 lesson.SandboxType,
                 lesson.SandboxConfig,
-                moduleItem.QuizId,
+                QuizId = linkedQuizId,
                 lesson.XPReward,
                 moduleItem.OrderIndex,
                 status,
@@ -90,8 +129,14 @@ namespace VisualizationDSA.WebApi.Controllers
             if (userIdStr == null || !Guid.TryParse(userIdStr, out var userId))
                 return Unauthorized();
 
-            var lesson = await _dbContext.Lessons.FindAsync(lessonId);
-            if (lesson == null) return NotFound(new { error = "LESSON_NOT_FOUND", message = "Không tìm thấy bài học." });
+            var moduleItem = await _dbContext.ModuleItems.Include(m => m.Module).ThenInclude(m => m.Course).Include(m => m.Lesson).FirstOrDefaultAsync(i => i.LessonId == lessonId);
+            if (moduleItem == null || moduleItem.Lesson == null) return NotFound(new { error = "LESSON_NOT_FOUND", message = "Không tìm thấy bài học." });
+            var lesson = moduleItem.Lesson;
+            var course = moduleItem.Module?.Course;
+
+            // Gate premium + publish trước khi cho hoàn thành/nhận XP.
+            var accessBlock = await CheckLessonAccessAsync(lesson, course);
+            if (accessBlock != null) return accessBlock;
 
             var user = await _dbContext.Users.FindAsync(userId);
             if (user == null) return NotFound(new { error = "USER_NOT_FOUND" });
@@ -124,19 +169,19 @@ namespace VisualizationDSA.WebApi.Controllers
                 .Where(m => m.LessonId == lessonId && !m.IsDeleted)
                 .ToListAsync();
 
-            foreach (var moduleItem in moduleItems)
+            foreach (var mi in moduleItems)
             {
                 var itemProgress = await _dbContext.UserModuleItemProgresses
-                    .FirstOrDefaultAsync(p => p.UserId == userId && p.ModuleItemId == moduleItem.Id);
+                    .FirstOrDefaultAsync(p => p.UserId == userId && p.ModuleItemId == mi.Id);
                     
                 if (itemProgress == null)
                 {
-                    itemProgress = new UserModuleItemProgress(userId, moduleItem.Id);
+                    itemProgress = new UserModuleItemProgress(userId, mi.Id);
                     _dbContext.UserModuleItemProgresses.Add(itemProgress);
                 }
                 
                 itemProgress.UpdateProgress(activeFrame: 0, scrollPercent: 100, isCompleted: true, score: null);
-                await _progressRuleEngine.ProcessCompletionAsync(userId, moduleItem.Id);
+                await _progressRuleEngine.ProcessCompletionAsync(userId, mi.Id);
             }
 
             await _dbContext.SaveChangesAsync();

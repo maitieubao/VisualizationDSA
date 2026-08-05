@@ -4,7 +4,7 @@
       class="text-xs text-text-secondary hover:text-white px-2 py-1 rounded hover:bg-bg-active transition-colors"
       @click="$emit('back')"
     >
-      ← Quay lại
+      <BaseIcon name="arrow-left" class="w-3.5 h-3.5 inline mr-1 align-middle" /> Quay lại
     </button>
     <div class="flex-1 flex items-center gap-3">
       <span class="text-sm font-bold text-text-primary">{{ algorithm.name }}</span>
@@ -13,7 +13,7 @@
       </span>
       <span v-if="metadata" class="text-[11px] text-text-secondary flex items-center gap-2">
         <span class="flex items-center gap-1"><BaseIcon name="clock" class="w-3 h-3 text-text-secondary" /> {{ metadata.timeComplexity }}</span>
-        <span>·</span>
+        <span class="w-1 h-1 rounded-full bg-text-secondary/50" aria-hidden="true"></span>
         <span class="flex items-center gap-1"><BaseIcon name="database" class="w-3 h-3 text-text-secondary" /> {{ metadata.spaceComplexity }}</span>
       </span>
     </div>
@@ -22,7 +22,7 @@
       :class="{ 'bg-accent-primary-dim text-accent-primary border-accent-primary': isTheoryOpen }"
       @click="$emit('toggleTheory')"
     >
-      📚 Lý thuyết
+      <BaseIcon name="book-open" class="w-3.5 h-3.5 inline mr-1 align-middle" />Lý thuyết
     </button>
     <button
       class="text-xs bg-accent hover:bg-accent-light text-text-primary px-3 py-1.5 rounded-lg font-medium transition-colors"

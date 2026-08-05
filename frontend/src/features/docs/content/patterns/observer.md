@@ -169,8 +169,8 @@ var emailSvc = new EmailService(); // Bỏ Interface IObserver đi, viết Class
 var inventorySvc = new InventoryService();
 
 // Các phòng ban Bấm nút Đăng ký (Gắn hàm vào Phễu Event)
-processor.OnOrderCompleted += emailSvc.SendEmail;
-processor.OnOrderCompleted += inventorySvc.UpdateStock;
+processor.OnOrderCompleted += emailSvc.Update;
+processor.OnOrderCompleted += inventorySvc.Update;
 // Có thể gắn trực tiếp cả một Lambda Anonymous Function (Hàm vô danh)
 processor.OnOrderCompleted += (order) => Console.WriteLine("Báo sếp có tiền vào!"); 
 
@@ -180,8 +180,29 @@ processor.CompleteOrder(new Order { Id = "ORD01", Customer = "Messi" });
 
 :::tip Tóm tắt nhanh (Key Takeaways)
 - Observer Pattern gồm 2 phía: **Publisher** (Nguồn phát sinh dữ liệu) và **Subscriber** (Kẻ háo hức chờ dữ liệu).
-- Giải quyết triệt để tính trạng Tightly Coupled. Publisher KHÔNG CẦN BIẾT Subscriber là thằng nào, làm chức năng gì. 
+- Giải quyết triệt để tình trạng Tightly Coupled. Publisher KHÔNG CẦN BIẾT Subscriber là thằng nào, làm chức năng gì. 
 - Cơ chế GoF Cổ điển: Dùng Interface `IObserver` và mảng `List<IObserver>`.
 - Cơ chế C# Hiện đại: Dùng `event` và `Action<T>` để Subscribe bằng toán tử `+=`.
 - **Cẩn thận rò rỉ bộ nhớ (Memory Leak):** Nếu một Đối tượng đăng ký `+=` vào Event của hệ thống toàn cục, nhưng quên gỡ ra `-=` khi nó bị phá hủy (Dispose), bộ thu gom rác (Garbage Collector) sẽ không thể xóa nó được! (Lỗi *Lapsed Listener Problem*).
 :::
+
+---
+
+## Next Steps {#next-steps}
+
+Observer Pattern là nền tảng cho tư duy Event-Driven và gắn kết chặt chẽ với các nguyên lý SOLID. Hãy tiếp tục hành trình với những mẫu và nguyên lý có quan hệ huyết thống:
+
+- [Strategy Pattern](/docs/patterns/strategy): Một mẫu Hành vi khác của GoF — đóng gói thuật toán thành đối tượng hoán đổi linh hoạt ngay lúc runtime.
+- [Decorator Pattern](/docs/patterns/decorator): Bọc lớp đối tượng để thêm hành vi mới mà không cần sửa code gốc.
+- [Nguyên lý Open-Closed (OCP)](/docs/solid/ocp): Nền tảng khiến các mẫu Hành vi như Observer được "Mở cho mở rộng, Đóng cho sửa đổi".
+
+## 📚 Tham khảo lý thuyết {#references}
+
+Các kiến thức lý thuyết trong bài được tổng hợp và đối chiếu từ những nguồn học thuật sau:
+
+- **Observer Pattern và bộ 23 mẫu thiết kế gốc:** Erich Gamma, Richard Helm, Ralph Johnson, John Vlissides (Gang of Four), *Design Patterns: Elements of Reusable Object-Oriented Software* (Addison-Wesley, 1994).
+- **Giải thích trực quan về Observer bằng tình huống thực tế:** Eric Freeman & Elisabeth Robson, *Head First Design Patterns* (O'Reilly, 2004).
+- **Wikipedia, *Observer pattern*** — https://en.wikipedia.org/wiki/Observer_pattern
+- **Microsoft Learn, *Events in C#*** (cơ chế `event`/`Action<T>` và mối quan hệ với Observer) — https://learn.microsoft.com/en-us/dotnet/csharp/events-overview
+- **Refactoring.Guru, *Observer*** (cấu trúc, ví dụ và lưu ý về rò rỉ bộ nhớ) — https://refactoring.guru/design-patterns/observer
+- **SourceMaking, *Observer Design Pattern*** — https://sourcemaking.com/design_patterns/observer

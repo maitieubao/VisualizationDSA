@@ -3,19 +3,14 @@
     
     <div class="workspace-header">
       <div class="flex items-center gap-2">
-        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"
-          fill="none" stroke="currentColor" stroke-width="2.5" class="text-accent">
-          <rect x="2" y="3" width="20" height="14" rx="2" />
-          <line x1="8" y1="21" x2="16" y2="21" />
-          <line x1="12" y1="17" x2="12" y2="21" />
-        </svg>
+        <BaseIcon name="monitor" :stroke-width="2.5" class="text-accent" style="width:18px;height:18px" />
         <span class="text-xs font-bold uppercase tracking-wider text-text-secondary">
           Interactive Embed Widget Configurator
         </span>
       </div>
       <div class="flex items-center gap-2">
-        <span class="header-badge badge-theme">{{ store.selectedTheme }}</span>
-        <span class="header-badge badge-algo">{{ algorithmLabel }}</span>
+        <span class="header-badge badge-theme">{{ store.themeLabel }}</span>
+        <span class="header-badge badge-algo">{{ store.algorithmLabel }}</span>
       </div>
     </div>
 
@@ -39,21 +34,12 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue';
 import { useEmbedConfiguratorStore } from '../store/useEmbedConfiguratorStore';
-import { EMBED_ALGORITHM_OPTIONS } from '../types/embed-widget.types';
 import EmbedConfiguratorSidebar from './EmbedConfiguratorSidebar.vue';
 import LiveWidgetPreview from './LiveWidgetPreview.vue';
 import EmbedCodeSnippet from './EmbedCodeSnippet.vue';
 
 const store = useEmbedConfiguratorStore();
-
-const algorithmLabel = computed(() => {
-  const found = EMBED_ALGORITHM_OPTIONS.find(
-    (a) => a.id === store.selectedAlgorithm,
-  );
-  return found ? found.label : store.selectedAlgorithm;
-});
 </script>
 
 <style scoped>

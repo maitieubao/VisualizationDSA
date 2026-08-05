@@ -4,7 +4,7 @@
     <div class="flex items-center justify-between">
       <div class="flex items-center gap-3">
         <div class="w-8 h-8 rounded-lg bg-accent flex items-center justify-center">
-          <span class="text-text-primary font-bold text-sm">📝</span>
+          <BaseIcon name="clipboard-list" class="w-4 h-4 text-text-primary" />
         </div>
         <div>
           <h2 class="text-base font-bold text-text-primary">Ngân Hàng Trắc Nghiệm</h2>
@@ -23,6 +23,16 @@
     </div>
 
     
+    <div v-if="store.backendQuizError" class="flex items-center gap-2 px-3 py-2 rounded-lg bg-accent-red/10 border border-accent-red/30 text-xs text-accent-red" role="alert">
+      <BaseIcon name="warning" class="w-3.5 h-3.5 flex-shrink-0" />
+      <span class="flex-1">{{ store.backendQuizError }}</span>
+      <button v-if="!store.isBackendQuizMode" @click="store.loadQuizCatalog()"
+        class="px-2.5 py-1 rounded-md text-[11px] font-semibold bg-accent-red/20 border border-accent-red/40 hover:bg-accent-red/30 transition-colors">
+        Thử lại
+      </button>
+    </div>
+
+    
     <div v-if="store.isBackendQuizLoading" class="flex-1">
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         <SkeletonCard v-for="i in 6" :key="i" />
@@ -30,7 +40,7 @@
     </div>
 
     
-    <div v-else-if="store.backendQuizError && displayedQuizzes.length === 0" class="flex-1 flex items-center justify-center">
+    <div v-else-if="store.backendQuizError && displayedQuizzes.length === 0 && !store.isBackendQuizMode" class="flex-1 flex items-center justify-center">
       <div class="text-center">
         <span class="text-sm text-accent-red">{{ store.backendQuizError }}</span>
         <button @click="store.loadQuizCatalog()" class="block mx-auto mt-2 px-4 py-1.5 rounded-lg text-xs bg-accent/20 text-accent border border-accent/30 hover:bg-accent/30">
@@ -42,7 +52,7 @@
     
     <div v-else-if="store.backendResult" class="flex-1 flex flex-col items-center justify-center gap-4">
       <div class="rounded-2xl bg-bg-secondary/45 border border-border-subtle backdrop-blur-xl p-8 max-w-lg w-full text-center">
-        <div class="text-4xl mb-4">{{ store.backendResult.passed ? '🎉' : '😔' }}</div>
+        <div class="text-4xl mb-4"><BaseIcon :name="store.backendResult.passed ? 'trophy' : 'x-circle'" class="w-10 h-10 mx-auto" :class="store.backendResult.passed ? 'text-accent-yellow' : 'text-accent-red'" /></div>
         <h3 class="text-xl font-bold text-text-primary mb-2">
           {{ store.backendResult.passed ? 'Xuất sắc!' : 'Cần cải thiện' }}
         </h3>
@@ -53,15 +63,14 @@
           +{{ store.backendResult.xpAwarded }} XP
         </div>
         <div v-else-if="store.backendResult.passed" class="text-xs text-text-secondary mb-4 bg-bg-hover border border-border-subtle rounded-lg p-2.5">
-          💡 Bạn đã nhận XP tối đa cho bài quiz này. Làm lại để ôn tập sẽ không nhận thêm XP.
+          <BaseIcon name="bulb" class="w-3.5 h-3.5 inline mr-1 align-middle" />Bạn đã nhận XP tối đa cho bài quiz này. Làm lại để ôn tập sẽ không nhận thêm XP.
         </div>
-
         
         <div class="text-left mt-4 space-y-2">
           <div v-for="(qr, i) in store.backendResult.questionResults" :key="qr.questionId"
             class="p-3 rounded-lg" :class="qr.isCorrect ? 'bg-accent-green/10' : 'bg-accent-red/10'">
             <div class="flex items-center gap-2 mb-1">
-              <span class="text-sm">{{ qr.isCorrect ? '✓' : '✗' }}</span>
+              <span class="text-sm"><BaseIcon :name="qr.isCorrect ? 'check' : 'close'" class="w-3.5 h-3.5" /></span>
               <span class="text-xs font-medium text-text-primary">Câu {{ i + 1 }}</span>
             </div>
             <p class="text-[11px] text-text-secondary">{{ qr.explanation }}</p>
@@ -109,21 +118,21 @@
         <button @click="store.prevBackendQuestion()" :disabled="store.backendQuizIndex <= 0"
           class="px-4 py-2 rounded-lg text-xs font-medium transition-colors"
           :class="store.backendQuizIndex > 0 ? 'bg-bg-surface text-text-primary border border-border-default hover:bg-bg-surface/80' : 'bg-bg-surface/30 text-text-disabled cursor-not-allowed'">
-          ← Câu trước
+          <BaseIcon name="arrow-left" class="w-3.5 h-3.5 inline mr-1 align-middle" />Câu trước
         </button>
         <span class="text-xs text-text-secondary">{{ store.backendQuizProgress }}</span>
         <button v-if="store.activeBackendQuiz && store.backendQuizIndex < store.activeBackendQuiz.questions.length - 1"
           @click="store.nextBackendQuestion()"
           class="px-4 py-2 rounded-lg text-xs font-medium bg-accent/20 text-accent border border-accent/30 hover:bg-accent/30 transition-colors">
-          Câu tiếp →
+          Câu tiếp <BaseIcon name="arrow-right" class="w-3.5 h-3.5 inline ml-1 align-middle" />
         </button>
         <button v-else @click="store.submitBackendQuiz()"
-          :disabled="store.backendAnswers.some(a => a === null)"
+          :disabled="store.backendAnswers.some(a => a === null) || store.isBackendQuizSubmitting"
           class="px-4 py-2 rounded-lg text-xs font-medium transition-colors"
-          :class="store.backendAnswers.every(a => a !== null)
+          :class="store.backendAnswers.every(a => a !== null) && !store.isBackendQuizSubmitting
             ? 'bg-accent-green/20 text-accent-green border border-accent-green/30 hover:bg-accent-green/30'
             : 'bg-bg-surface/30 text-text-disabled cursor-not-allowed'">
-          Nộp bài ✓
+          {{ store.isBackendQuizSubmitting ? 'Đang gửi...' : 'Nộp bài' }} <BaseIcon v-if="!store.isBackendQuizSubmitting" name="check" class="w-3.5 h-3.5 inline ml-1 align-middle" />
         </button>
       </div>
     </div>
@@ -141,7 +150,7 @@
           :class="{ 'topic-tab--active': selectedTopic === topic }"
           @click="selectedTopic = topic"
         >
-          <span class="topic-tab__icon">{{ topicIcon(topic) }}</span>
+          <span class="topic-tab__icon"><BaseIcon :name="topicIcon(topic)" class="w-3.5 h-3.5" /></span>
           <span class="topic-tab__label">{{ topic }}</span>
           <span class="topic-tab__count">{{ countByTopic(topic) }}</span>
         </button>
@@ -162,7 +171,7 @@
 
       
       <div v-if="isUsingFallback" class="fallback-notice">
-        ⚠ Đang hiển thị quiz mẫu. Kết nối server để tải quiz đầy đủ.
+        <BaseIcon name="warning" class="w-3.5 h-3.5 inline mr-1 align-middle" />Đang hiển thị quiz mẫu. Kết nối server để tải quiz đầy đủ.
         <button @click="store.loadQuizCatalog()" class="fallback-notice__retry">Thử kết nối lại</button>
       </div>
 
@@ -208,7 +217,6 @@ const { fireQuizPass } = useConfetti();
 
 const selectedTopic = ref('Tất cả');
 const searchQuery = ref('');
-const isUsingFallback = ref(false);
 
 
 const FALLBACK_QUIZZES: StatelessQuizSummary[] = [
@@ -221,13 +229,11 @@ const FALLBACK_QUIZZES: StatelessQuizSummary[] = [
 ];
 
 const effectiveQuizzes = computed<StatelessQuizSummary[]>(() => {
-  if (store.quizCatalog.length > 0) {
-    isUsingFallback.value = false;
-    return store.quizCatalog;
-  }
-  isUsingFallback.value = true;
+  if (store.quizCatalog.length > 0) return store.quizCatalog;
   return FALLBACK_QUIZZES;
 });
+
+const isUsingFallback = computed(() => store.quizCatalog.length === 0);
 
 const availableTopics = computed(() => {
   const topics = new Set(effectiveQuizzes.value.map(q => q.topic));
@@ -241,14 +247,14 @@ function countByTopic(topic: string): number {
 
 function topicIcon(topic: string): string {
   const icons: Record<string, string> = {
-    'Tất cả': '📋',
-    'DSA': '📊',
-    'OOP': '🧱',
-    'SOLID': '🏗️',
-    'Patterns': '🎨',
-    'DI': '🔌',
+    'Tất cả': 'clipboard-list',
+    'DSA': 'chart-bar',
+    'OOP': 'oop',
+    'SOLID': 'construction',
+    'Patterns': 'palette',
+    'DI': 'di',
   };
-  return icons[topic] ?? '📝';
+  return icons[topic] ?? 'file-text';
 }
 
 const displayedQuizzes = computed(() => {

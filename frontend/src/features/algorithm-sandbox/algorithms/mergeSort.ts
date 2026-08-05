@@ -1,8 +1,13 @@
 import type { SortFrame, SubArray } from '../types/sorting.types';
 
+interface TrackedElement {
+  id: number;
+  value: number;
+}
+
 export function generateMergeSortFrames(inputArray: number[]): SortFrame[] {
   const frames: SortFrame[] = [];
-  const arr = [...inputArray];
+  const arr: TrackedElement[] = inputArray.map((val, idx) => ({ id: idx, value: val }));
   const sortedIndices: number[] = [];
   let step = 0;
   let comparisons = 0;
@@ -29,7 +34,8 @@ export function generateMergeSortFrames(inputArray: number[]): SortFrame[] {
   ) {
     frames.push({
       stepIndex: step++,
-      arrayState: [...arr],
+      arrayState: arr.map(e => e.value),
+      arrayStateWithIds: arr.map(e => ({ id: e.id, value: e.value })),
       comparingIndices: comp,
       pivotIndex: null,
       swappedIndices: swap,
@@ -45,33 +51,35 @@ export function generateMergeSortFrames(inputArray: number[]): SortFrame[] {
   }
 
   function merge(left: number, mid: number, right: number, lvl: number): void {
-    const leftArr = arr.slice(left, mid + 1);
-    const rightArr = arr.slice(mid + 1, right + 1);
+    // Bản sao có identity: mỗi phép ghi arr[k] mang theo id của phần tử nguồn
+    // → identity đi theo đúng phần tử qua mọi frame, kể cả khi giá trị trùng nhau
+    const leftArr: TrackedElement[] = arr.slice(left, mid + 1).map(e => ({ id: e.id, value: e.value }));
+    const rightArr: TrackedElement[] = arr.slice(mid + 1, right + 1).map(e => ({ id: e.id, value: e.value }));
     let i = 0, j = 0, k = left;
 
     while (i < leftArr.length && j < rightArr.length) {
       comparisons++;
-      emit(`So sánh L[${i}]=${leftArr[i]} với R[${j}]=${rightArr[j]}`, [left + i, mid + 1 + j], null, left, right, lvl, { left, mid, right, i, j, k, lvl, comparisons, writes });
-      if (leftArr[i] <= rightArr[j]) {
-        arr[k] = leftArr[i];
+      emit(`So sánh L[${i}]=${leftArr[i].value} với R[${j}]=${rightArr[j].value}`, [left + i, mid + 1 + j], null, left, right, lvl, { left, mid, right, i, j, k, lvl, comparisons, writes });
+      if (leftArr[i].value <= rightArr[j].value) {
+        arr[k] = { id: leftArr[i].id, value: leftArr[i].value };
         i++;
       } else {
-        arr[k] = rightArr[j];
+        arr[k] = { id: rightArr[j].id, value: rightArr[j].value };
         j++;
       }
       writes++;
-      emit(`Ghi đè arr[${k}] = ${arr[k]}`, null, [k, k], left, right, lvl, { left, mid, right, i, j, k, lvl, comparisons, writes });
+      emit(`Ghi đè arr[${k}] = ${arr[k].value}`, null, [k, k], left, right, lvl, { left, mid, right, i, j, k, lvl, comparisons, writes });
       k++;
     }
 
     while (i < leftArr.length) {
-      arr[k] = leftArr[i];
+      arr[k] = { id: leftArr[i].id, value: leftArr[i].value };
       writes++;
       emit(`Sao chép phần thừa L[${i}] → arr[${k}]`, null, [k, k], left, right, lvl, { left, mid, right, i, j, k, lvl, comparisons, writes });
       i++; k++;
     }
     while (j < rightArr.length) {
-      arr[k] = rightArr[j];
+      arr[k] = { id: rightArr[j].id, value: rightArr[j].value };
       writes++;
       emit(`Sao chép phần thừa R[${j}] → arr[${k}]`, null, [k, k], left, right, lvl, { left, mid, right, i, j, k, lvl, comparisons, writes });
       j++; k++;

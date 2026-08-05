@@ -52,12 +52,14 @@ export interface SortFrame {
   countArray?: number[];
   countingStep?: "count" | "accumulate" | "output";
   inputArray?: number[];
+  inputArrayWithIds?: Array<{ id: number; value: number }>;
   outputArray?: Array<number | null>;
   outputArrayWithIds?: Array<{ id: number; value: number } | null>;
 
   
   bucketSortBuckets?: number[][];
   bucketSortBucketsWithIds?: Array<Array<{ id: number; value: number }>>;
+  bucketRangeLabels?: string[];
   bucketStep?: "distribute" | "sort" | "collect";
   bucketSortActiveIdx?: number | null;
   bucketSortComparingBucketIndices?: [number, number] | null;

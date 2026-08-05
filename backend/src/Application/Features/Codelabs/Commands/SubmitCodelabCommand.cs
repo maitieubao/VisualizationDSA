@@ -89,7 +89,17 @@ namespace VisualizationDSA.Application.Features.Codelabs.Commands
                 var user = await _context.Users.FirstOrDefaultAsync(u => u.Id == request.UserId, cancellationToken);
                 if (user != null)
                 {
-                    user.AwardXP(codelab.XPReward); 
+                    // Chỉ thưởng XP LẦN ĐẦU đạt — chống farm XP bằng submit lặp lại.
+                    var previouslyPassed = await _context.CodelabSubmissions
+                        .AnyAsync(s => s.UserId == request.UserId
+                                    && s.CodelabId == request.CodelabId
+                                    && s.Status == SubmissionStatus.Accepted
+                                    && s.Id != submission.Id, cancellationToken);
+
+                    if (!previouslyPassed)
+                    {
+                        user.AwardXP(codelab.XPReward);
+                    }
                 }
                 
                 

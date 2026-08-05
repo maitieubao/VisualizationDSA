@@ -20,6 +20,6 @@
 
 <script setup lang="ts">
 defineProps<{
-  activeLoopVars: [string, any][];
+  activeLoopVars: [string, number][];
 }>();
 </script>

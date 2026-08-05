@@ -66,7 +66,7 @@
     </div>
 
     <div v-else-if="articles.length === 0" class="empty-state">
-      <div class="text-5xl mb-4">📚</div>
+      <div class="text-5xl mb-4"><BaseIcon name="book-open" class="w-12 h-12 text-text-muted mx-auto" /></div>
       <h3 class="text-xl font-bold text-white">Chưa có bài viết nào</h3>
       <p class="text-text-muted mt-2 max-w-md">Hãy tạo bài viết đầu tiên để bắt đầu xây dựng thư viện kiến thức</p>
       <button class="btn-primary mt-6" @click="createNewArticle">

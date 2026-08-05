@@ -63,17 +63,18 @@ export const useExportShareStore = defineStore('exportShare', () => {
     isExporting.value = true;
     exportProgress.value = 10;
 
-    try {
-      const interval = setInterval(() => {
-        if (exportProgress.value < 80) exportProgress.value += 15;
-      }, 80);
+    // Interval giả-lập tiến độ: bắt buộc clear trong finally để không rò rỉ timer
+    // khi export thất bại (trước đây chỉ clear ở nhánh thành công → leak vĩnh viễn).
+    const interval = setInterval(() => {
+      if (exportProgress.value < 80) exportProgress.value += 15;
+    }, 80);
 
+    try {
       const base64Png = await SVGToCanvasExporter.exportToPNG(
         svgElement,
         3,
       );
 
-      clearInterval(interval);
       exportProgress.value = 100;
 
       const link = document.createElement('a');
@@ -82,13 +83,10 @@ export const useExportShareStore = defineStore('exportShare', () => {
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
-
-      setTimeout(() => {
-        isExporting.value = false;
-        exportProgress.value = 0;
-      }, 500);
     } catch (err) {
       console.error('Lỗi hạ tầng trích xuất ảnh PNG 3x:', err);
+    } finally {
+      clearInterval(interval);
       isExporting.value = false;
       exportProgress.value = 0;
     }

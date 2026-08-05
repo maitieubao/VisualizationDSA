@@ -9,13 +9,13 @@
     </div>
 
     <div class="flex-1 relative flex flex-col min-h-0 overflow-hidden w-full">
-      <div v-if="editorLoadError" class="w-full h-full flex flex-col items-center justify-center p-6 text-center bg-bg-surface/30">
-        <span class="text-2xl mb-2">⚠️</span>
+      <div v-if="editorLoadError" role="alert" class="w-full h-full flex flex-col items-center justify-center p-6 text-center bg-bg-surface/30">
+        <BaseIcon name="warning" class="w-8 h-8 mb-2 text-accent-yellow" />
         <p class="text-xs font-semibold text-text-primary mb-1">Không thể tải Monaco Editor</p>
         <p class="text-[10px] text-text-secondary mb-4 max-w-xs leading-normal font-sans">
           Lỗi do xung đột tối ưu hóa module hoặc kết nối. Hãy reload lại trang.
         </p>
-        <button @click="reloadPage" class="px-3 py-1.5 rounded-lg text-xs bg-accent/25 text-accent border border-accent/30 hover:bg-accent/40 transition-colors font-sans cursor-pointer">
+        <button type="button" @click="reloadPage" class="px-3 py-1.5 rounded-lg text-xs bg-accent/25 text-accent border border-accent/30 hover:bg-accent/40 transition-colors font-sans cursor-pointer">
           Tải lại trang (F5)
         </button>
       </div>
@@ -25,7 +25,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, onBeforeUnmount } from "vue";
+import { ref, computed, watch, onMounted, onBeforeUnmount } from "vue";
 import * as monaco from "monaco-editor";
 import "monaco-editor/esm/vs/language/typescript/monaco.contribution";
 import "monaco-editor/min/vs/editor/editor.main.css";
@@ -54,6 +54,10 @@ interface MonacoWorkerEnvironment {
 const vcrStore = useVcrStore();
 const themeStore = useThemeStore();
 const monacoTheme = computed(() => themeStore.currentTheme === 'light' ? 'vs' : 'vs-dark');
+
+watch(monacoTheme, (theme) => {
+  editorInstance?.updateOptions({ theme });
+});
 const editorContainer = ref<HTMLDivElement | null>(null);
 const editorLoadError = ref(false);
 
@@ -64,11 +68,14 @@ function reloadPage() {
 let editorInstance: monaco.editor.IStandaloneCodeEditor | null = null;
 let syncerCoordinator: MonacoLineSyncerCoordinator | null = null;
 
-const activePreset = ref<"bubble" | "selection" | "insertion">("bubble");
+const activePreset = ref<PresetKey>("bubble");
 
-const PRESETS = {
+type PresetKey = "bubble" | "selection" | "insertion";
+
+const PRESETS: Record<PresetKey, { name: string; shortName: string; code: string }> = {
   bubble: {
     name: "Sắp xếp nổi bọt (Bubble Sort)",
+    shortName: "Bubble Sort",
     code: `// Thuật toán Sắp xếp nổi bọt
 for (let i = 0; i < array.length - 1; i++) {
   for (let j = 0; j < array.length - i - 1; j++) {
@@ -83,6 +90,7 @@ highlight(0);`,
   },
   selection: {
     name: "Sắp xếp chọn (Selection Sort)",
+    shortName: "Selection Sort",
     code: `// Thuật toán Sắp xếp chọn
 for (let i = 0; i < array.length - 1; i++) {
   let minIdx = i;
@@ -97,6 +105,7 @@ highlight(array.length - 1);`,
   },
   insertion: {
     name: "Sắp xếp chèn (Insertion Sort)",
+    shortName: "Insertion Sort",
     code: `// Thuật toán Sắp xếp chèn
 highlight(0);
 for (let i = 1; i < array.length; i++) {
@@ -137,6 +146,7 @@ onMounted(() => {
 });
 
 onBeforeUnmount(() => {
+  vcrStore.pause();
   syncerCoordinator?.destroy();
   editorInstance?.dispose();
 });

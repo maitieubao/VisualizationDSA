@@ -10,7 +10,7 @@
 }
 
 .codelab-editor-modal .modal-content {
-  background-color: #1e1e2e;
+  background-color: var(--color-bg-primary);
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 12px;
   width: 90%;
@@ -33,7 +33,7 @@
 .codelab-editor-modal .modal-header h3 {
   font-size: 16px;
   font-weight: 600;
-  color: #e2e8f0;
+  color: var(--color-bg-hover);
 }
 
 .codelab-editor-modal .modal-close {
@@ -43,7 +43,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #94a3b8;
+  color: var(--color-text-muted);
   background: transparent;
   border: none;
   cursor: pointer;
@@ -53,7 +53,7 @@
 
 .codelab-editor-modal .modal-close:hover {
   background: rgba(255, 255, 255, 0.05);
-  color: #e2e8f0;
+  color: var(--color-bg-hover);
 }
 
 .codelab-editor-modal .modal-body {
@@ -70,7 +70,7 @@
   display: block;
   font-size: 12px;
   font-weight: 600;
-  color: #94a3b8;
+  color: var(--color-text-muted);
   text-transform: uppercase;
   letter-spacing: 0.05em;
   margin-bottom: 6px;
@@ -80,16 +80,16 @@
   width: 100%;
   padding: 10px 14px;
   border-radius: 8px;
-  background-color: #0f0f1a;
+  background-color: var(--color-bg-primary);
   border: 1px solid rgba(255, 255, 255, 0.1);
-  color: #e2e8f0;
+  color: var(--color-bg-hover);
   font-size: 14px;
   outline: none;
   transition: border-color 0.2s;
 }
 
 .codelab-editor-modal .field-input:focus {
-  border-color: #6366f1;
+  border-color: var(--color-accent-primary);
 }
 
 .codelab-editor-modal .field-input::placeholder {
@@ -100,9 +100,9 @@
   width: 100%;
   padding: 10px 14px;
   border-radius: 8px;
-  background-color: #0f0f1a;
+  background-color: var(--color-bg-primary);
   border: 1px solid rgba(255, 255, 255, 0.1);
-  color: #e2e8f0;
+  color: var(--color-bg-hover);
   font-size: 14px;
   font-family: 'Fira Code', monospace;
   outline: none;
@@ -112,23 +112,23 @@
 }
 
 .codelab-editor-modal .field-textarea:focus {
-  border-color: #6366f1;
+  border-color: var(--color-accent-primary);
 }
 
 .codelab-editor-modal .field-select {
   width: 100%;
   padding: 10px 14px;
   border-radius: 8px;
-  background-color: #0f0f1a;
+  background-color: var(--color-bg-primary);
   border: 1px solid rgba(255, 255, 255, 0.1);
-  color: #e2e8f0;
+  color: var(--color-bg-hover);
   font-size: 14px;
   outline: none;
   cursor: pointer;
 }
 
 .codelab-editor-modal .field-select:focus {
-  border-color: #6366f1;
+  border-color: var(--color-accent-primary);
 }
 
 .codelab-editor-modal .row {
@@ -150,7 +150,7 @@
   border-radius: 8px;
   font-size: 13px;
   font-weight: 500;
-  color: #94a3b8;
+  color: var(--color-text-muted);
   background: transparent;
   border: 1px solid rgba(255, 255, 255, 0.1);
   cursor: pointer;
@@ -159,7 +159,7 @@
 
 .codelab-editor-modal .btn-cancel:hover {
   background: rgba(255, 255, 255, 0.03);
-  color: #e2e8f0;
+  color: var(--color-bg-hover);
 }
 
 .codelab-editor-modal .btn-save {
@@ -168,17 +168,17 @@
   font-size: 13px;
   font-weight: 500;
   color: white;
-  background: #6366f1;
+  background: var(--color-accent-primary);
   border: none;
   cursor: pointer;
   transition: all 0.15s;
 }
 
 .codelab-editor-modal .btn-save:hover {
-  background: #5558e6;
+  background: var(--color-accent-primary);
 }
 
 .codelab-editor-modal .btn-save:disabled {
-  background: #4340a0;
+  background: var(--color-accent-primary);
   cursor: not-allowed;
 }

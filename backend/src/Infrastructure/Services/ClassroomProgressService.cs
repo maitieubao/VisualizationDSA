@@ -25,7 +25,7 @@ namespace VisualizationDSA.Infrastructure.Services
         {
             
             var enrollment = await _context.ClassroomEnrollments
-                .FirstOrDefaultAsync(e => e.ClassroomId == classroomId && e.StudentId == studentId);
+                .FirstOrDefaultAsync(e => e.ClassroomId == classroomId && e.StudentId == studentId && e.Status == VisualizationDSA.Domain.Enums.EnrollmentStatus.Active);
 
             if (enrollment == null)
                 throw new UnauthorizedAccessException("Student not enrolled in this classroom");
@@ -129,7 +129,7 @@ namespace VisualizationDSA.Infrastructure.Services
         public async Task<ItemProgressResult> StartItemAsync(Guid classroomId, Guid moduleItemId, Guid studentId)
         {
             var enrollment = await _context.ClassroomEnrollments
-                .FirstOrDefaultAsync(e => e.ClassroomId == classroomId && e.StudentId == studentId);
+                .FirstOrDefaultAsync(e => e.ClassroomId == classroomId && e.StudentId == studentId && e.Status == VisualizationDSA.Domain.Enums.EnrollmentStatus.Active);
 
             if (enrollment == null)
                 return new ItemProgressResult { Success = false, Message = "Không đăng ký lớp học này" };
@@ -169,7 +169,7 @@ namespace VisualizationDSA.Infrastructure.Services
         public async Task<ItemProgressResult> UpdateProgressAsync(Guid classroomId, Guid moduleItemId, Guid studentId, int activeFrame, double scrollPercent)
         {
             var enrollment = await _context.ClassroomEnrollments
-                .FirstOrDefaultAsync(e => e.ClassroomId == classroomId && e.StudentId == studentId);
+                .FirstOrDefaultAsync(e => e.ClassroomId == classroomId && e.StudentId == studentId && e.Status == VisualizationDSA.Domain.Enums.EnrollmentStatus.Active);
 
             if (enrollment == null)
                 return new ItemProgressResult { Success = false, Message = "Không đăng ký lớp học này" };
@@ -200,7 +200,7 @@ namespace VisualizationDSA.Infrastructure.Services
         public async Task<ItemProgressResult> CompleteItemAsync(Guid classroomId, Guid moduleItemId, Guid studentId, int? score = null)
         {
             var enrollment = await _context.ClassroomEnrollments
-                .FirstOrDefaultAsync(e => e.ClassroomId == classroomId && e.StudentId == studentId);
+                .FirstOrDefaultAsync(e => e.ClassroomId == classroomId && e.StudentId == studentId && e.Status == VisualizationDSA.Domain.Enums.EnrollmentStatus.Active);
 
             if (enrollment == null)
                 return new ItemProgressResult { Success = false, Message = "Không đăng ký lớp học này" };

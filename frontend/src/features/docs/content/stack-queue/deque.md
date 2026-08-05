@@ -18,7 +18,7 @@ Bạn có thể tưởng tượng Deque giống như một hàng rạp chiếu p
 - **Xóa ở đầu (RemoveFirst):** $O(1)$
 - **Xóa ở cuối (RemoveLast):** $O(1)$
 
-Trong C#, từ .NET 6 trở lên, chúng ta đã có sẵn class tĩnh nhưng vô cùng mạnh mẽ: `LinkedList<T>` thường được dùng làm Deque trong các phiên bản cũ, nhưng .NET đã cung cấp cấu trúc tối ưu hơn để làm việc này. Mặc dù vậy, trong các bài toán thuật toán (LeetCode), người ta thường dùng `LinkedList<T>` hoặc một mảng tự chế để biểu diễn Deque.
+Trong C#, thư viện chuẩn không có sẵn lớp Deque chuyên dụng như `ArrayDeque` trong Java, nhưng `LinkedList<T>` (danh sách liên kết đôi) chính là cấu trúc sẵn có phù hợp nhất để đóng vai Deque, vì nó cho phép thêm/xóa ở cả hai đầu với độ phức tạp $O(1)$. Trong các bài toán thuật toán (LeetCode), người ta thường dùng `LinkedList<T>` hoặc tự dựng Deque bằng mảng vòng (Circular Array) để tối ưu tốc độ và bộ nhớ.
 
 ## Cài đặt cơ bản bằng C# {#code-example}
 
@@ -104,8 +104,18 @@ Khi người phỏng vấn hỏi bài toán liên quan đến "Cửa sổ trư�
 Đừng quên thực hành lại bài toán Sliding Window trên [LeetCode (Bài 239)](https://leetcode.com/problems/sliding-window-maximum/). Cấu trúc dữ liệu tuyến tính đã kết thúc, hãy bước sang thế giới rẽ nhánh phức tạp hơn: **Cây và Đồ thị (Trees & Graphs)**.
 
 <div class="vt-box-container next-steps">
-  <a class="vt-box" href="/docs/tree-graph/summary">
-    <p class="next-steps-link">Tổng quan về Tree và Graph</p>
+  <a class="vt-box" href="/docs/tree-graph/tree-graph-summary">
+    <p class="next-steps-link">Tổng hợp ứng dụng Cây & Đồ thị</p>
     <p class="next-steps-caption">Thế giới của dữ liệu phi tuyến tính.</p>
   </a>
 </div>
+
+## 📚 Tham khảo lý thuyết {#references}
+
+Nguồn lý thuyết chính được dùng để biên soạn bài viết này:
+
+- **Cormen, Leiserson, Rivest & Stein (CLRS) – *Introduction to Algorithms*, 3rd Edition (MIT Press):** Chương 10 *Elementary Data Structures* phân tích danh sách liên kết đôi, các thao tác Deque O(1) ở cả hai đầu và mối liên hệ với Stack/Queue.
+- **Wikipedia – [Double-ended queue](https://en.wikipedia.org/wiki/Double-ended_queue):** Khái niệm chuẩn về Deque, các phép toán AddFirst/AddLast/RemoveFirst/RemoveLast và so sánh với Stack/Queue.
+- **GeeksforGeeks – [Sliding Window Maximum (Maximum of all subarrays of size K)](https://www.geeksforgeeks.org/sliding-window-maximum-maximum-of-all-subarrays-of-size-k/):** Phân tích thuật toán Deque đơn điệu cho bài toán cửa sổ trượt.
+- **Microsoft Learn – [LinkedList&lt;T&gt; Class](https://learn.microsoft.com/en-us/dotnet/api/system.collections.generic.linkedlist-1):** Tài liệu chính thức của .NET về danh sách liên kết đôi được dùng làm Deque trong bài viết.
+- **LeetCode – [Problem 239: Sliding Window Maximum](https://leetcode.com/problems/sliding-window-maximum/):** Bài toán kinh điển minh họa sức mạnh của Deque trong Mục ứng dụng.

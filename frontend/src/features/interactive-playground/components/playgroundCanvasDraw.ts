@@ -1,6 +1,7 @@
-import { GraphGeometryEngine } from '../engine/GraphGeometryEngine';
+import { GraphGeometryEngine, type Point } from '../engine/GraphGeometryEngine';
 import type { NodeDTO, EdgeDTO } from '../store/usePlaygroundStore';
 
+export type GraphType = 'undirected' | 'directed';
 
 interface GraphAnimationFrame {
   visitedEdges?: string[];
@@ -20,7 +21,8 @@ export function drawPlayground(
   activeFrame?: GraphAnimationFrame | null,
   selectedAlgorithm?: string,
   hoveredNodeId?: string | null,
-  hoveredEdgeId?: string | null
+  hoveredEdgeId?: string | null,
+  graphType: GraphType = 'undirected'
 ) {
   const rootStyle = typeof window !== 'undefined' ? window.getComputedStyle(document.documentElement) : null;
   const labelBg = rootStyle?.getPropertyValue('--color-bg-active').trim() || '#1e293b';
@@ -46,12 +48,19 @@ export function drawPlayground(
       fromNode, toNode, fromNode.radius, toNode.radius
     );
 
-    
+    let edgeColor = '#475569';
+    if (isActiveEdge) edgeColor = '#F59E0B';
+    else if (isVisitedEdge) edgeColor = '#10B981';
+    else if (isSelected) edgeColor = '#0EA5E9';
+    else if (isHovered) edgeColor = '#F59E0B';
+
+    const lineWidth = (isSelected || isActiveEdge || isVisitedEdge || isHovered) ? 3 : 2;
+
     if (isHovered) {
       ctx.beginPath();
       ctx.moveTo(arrow.start.x, arrow.start.y);
       ctx.lineTo(arrow.end.x, arrow.end.y);
-      ctx.strokeStyle = 'rgba(245, 158, 11, 0.4)'; 
+      ctx.strokeStyle = 'rgba(245, 158, 11, 0.4)';
       ctx.lineWidth = 8;
       ctx.stroke();
     }
@@ -59,25 +68,13 @@ export function drawPlayground(
     ctx.beginPath();
     ctx.moveTo(arrow.start.x, arrow.start.y);
     ctx.lineTo(arrow.end.x, arrow.end.y);
-
-    let edgeColor = '#475569';
-    if (isActiveEdge) edgeColor = '#F59E0B'; 
-    else if (isVisitedEdge) edgeColor = '#10B981'; 
-    else if (isSelected) edgeColor = '#0EA5E9'; 
-    else if (isHovered) edgeColor = '#F59E0B'; 
-
     ctx.strokeStyle = edgeColor;
-    ctx.lineWidth = (isSelected || isActiveEdge || isVisitedEdge || isHovered) ? 3 : 2;
+    ctx.lineWidth = lineWidth;
     ctx.stroke();
 
-    const headLen = 12;
-    ctx.beginPath();
-    ctx.moveTo(arrow.end.x, arrow.end.y);
-    ctx.lineTo(arrow.end.x - headLen * Math.cos(arrow.angle - Math.PI / 6), arrow.end.y - headLen * Math.sin(arrow.angle - Math.PI / 6));
-    ctx.lineTo(arrow.end.x - headLen * Math.cos(arrow.angle + Math.PI / 6), arrow.end.y - headLen * Math.sin(arrow.angle + Math.PI / 6));
-    ctx.closePath();
-    ctx.fillStyle = edgeColor;
-    ctx.fill();
+    if (graphType === 'directed') {
+      GraphGeometryEngine.drawArrowhead(ctx, arrow, edgeColor, lineWidth);
+    }
 
     const mid = GraphGeometryEngine.edgeMidpoint(fromNode, toNode);
     ctx.font = 'bold 12px Inter, sans-serif';
@@ -105,6 +102,15 @@ export function drawPlayground(
       ctx.lineWidth = 2;
       ctx.stroke();
       ctx.setLineDash([]);
+
+      if (graphType === 'directed') {
+        const tempPlacement = GraphGeometryEngine.calculateArrowPlacement(
+          { x: fromNode.x, y: fromNode.y },
+          { x: targetX, y: targetY },
+          fromNode.radius, 10
+        );
+        GraphGeometryEngine.drawArrowhead(ctx, tempPlacement, '#38BDF8', 2);
+      }
     }
   }
 
@@ -130,7 +136,6 @@ export function drawPlayground(
       ctx.stroke();
     }
 
-    
     if (isHovered) {
       ctx.beginPath();
       ctx.arc(node.x, node.y, node.radius + 6, 0, Math.PI * 2);
@@ -145,16 +150,16 @@ export function drawPlayground(
     let nodeStroke = '#64748B';
 
     if (isActiveNode) {
-      nodeFill = '#F59E0B'; 
+      nodeFill = '#F59E0B';
       nodeStroke = '#FBBF24';
     } else if (isVisitedNode) {
-      nodeFill = '#10B981'; 
+      nodeFill = '#10B981';
       nodeStroke = '#34D399';
     } else if (isSelected) {
-      nodeFill = '#0EA5E9'; 
+      nodeFill = '#0EA5E9';
       nodeStroke = '#38BDF8';
     } else if (isHovered) {
-      nodeStroke = '#FBBF24'; 
+      nodeStroke = '#FBBF24';
     }
 
     ctx.fillStyle = nodeFill;
@@ -171,7 +176,6 @@ export function drawPlayground(
     ctx.textBaseline = 'middle';
     ctx.fillText(node.label, node.x, node.y);
 
-    
     if (selectedAlgorithm === 'DIJKSTRA' && activeFrame && activeFrame.distances) {
       const dVal = activeFrame.distances[node.id];
       const dText = dVal === Infinity || dVal === undefined ? 'd=∞' : `d=${dVal}`;

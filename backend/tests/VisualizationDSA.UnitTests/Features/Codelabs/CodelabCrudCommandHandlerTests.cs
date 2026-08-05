@@ -115,6 +115,59 @@ namespace VisualizationDSA.UnitTests.Features.Codelabs
         }
 
         [Fact]
+        public async Task UpdateCodelab_WithNewTemplatesAndHints_ShouldReplaceBoth()
+        {
+            var db = CreateDb();
+            var codelab = new Codelab("Old", "Desc", "code", 1, 50);
+            codelab.Templates.Add(new CodelabTemplate(codelab.Id, "csharp", "Console.WriteLine();"));
+            codelab.Hints.Add(new CodelabHint(codelab.Id, "old hint", false, 0, 0));
+            db.Codelabs.Add(codelab);
+            await db.SaveChangesAsync();
+
+            var handler = new UpdateCodelabCommandHandler(db);
+            await handler.Handle(new UpdateCodelabCommand
+            {
+                CodelabId = codelab.Id,
+                Title = "New Title",
+                Description = "New Desc",
+                InitialCode = "new code",
+                Difficulty = 1,
+                XPReward = 50,
+                AllowedLanguages = "python",
+                Templates = new System.Collections.Generic.List<CreateCodelabTemplateItem>
+                {
+                    new CreateCodelabTemplateItem { Language = "python", StarterCode = "def solve(): pass" },
+                    new CreateCodelabTemplateItem { Language = "java", StarterCode = "class Main {}" }
+                },
+                Hints = new System.Collections.Generic.List<CreateCodelabHintItem>
+                {
+                    new CreateCodelabHintItem { Content = "new hint", IsTiered = true, XpCost = 5, OrderIndex = 1 }
+                }
+            }, CancellationToken.None);
+
+            var saved = await db.Codelabs
+                .Include(c => c.Templates)
+                .Include(c => c.Hints)
+                .FirstAsync(c => c.Id == codelab.Id);
+
+            saved.Templates.Select(t => t.Language).Should().Equal("python", "java");
+            saved.Templates.First().BoilerplateCode.Should().Be("def solve(): pass");
+            saved.Hints.Should().ContainSingle(h => h.Content == "new hint" && h.XpCost == 5 && h.OrderIndex == 1);
+        }
+
+        [Fact]
+        public async Task UpdateCodelab_GivenMissing_ShouldThrow()
+        {
+            var db = CreateDb();
+
+            var handler = new UpdateCodelabCommandHandler(db);
+            var act = async () => await handler.Handle(
+                new UpdateCodelabCommand { CodelabId = Guid.NewGuid(), Title = "T" }, CancellationToken.None);
+
+            await act.Should().ThrowAsync<ArgumentException>().WithMessage("Codelab not found.");
+        }
+
+        [Fact]
         public async Task DeleteCodelab_ShouldSoftDeleteAndRemoveChildren()
         {
             var db = CreateDb();
@@ -131,6 +184,18 @@ namespace VisualizationDSA.UnitTests.Features.Codelabs
             (await db.Codelabs.CountAsync(c => c.Id == codelab.Id)).Should().Be(0);
             (await db.CodelabTestCases.CountAsync()).Should().Be(0);
             (await db.CodelabHints.CountAsync()).Should().Be(0);
+        }
+
+        [Fact]
+        public async Task DeleteCodelab_GivenMissing_ShouldThrow()
+        {
+            var db = CreateDb();
+
+            var handler = new DeleteCodelabCommandHandler(db);
+            var act = async () => await handler.Handle(
+                new DeleteCodelabCommand { CodelabId = Guid.NewGuid() }, CancellationToken.None);
+
+            await act.Should().ThrowAsync<ArgumentException>().WithMessage("Codelab not found.");
         }
 
         [Fact]

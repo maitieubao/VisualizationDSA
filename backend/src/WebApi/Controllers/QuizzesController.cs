@@ -8,12 +8,14 @@ using System.Threading.Tasks;
 using VisualizationDSA.Application.DTOs;
 using VisualizationDSA.Application.Services;
 
+using VisualizationDSA.WebApi.Filters;
+
 namespace VisualizationDSA.WebApi.Controllers
 {
     [ApiVersion("1.0")]
     [ApiController]
     [Route("api/v{version:apiVersion}/[controller]")]
-    [Authorize]
+    [RequireJwtRole]
     public class QuizzesController : ControllerBase
     {
         private readonly IQuizService _quizService;
@@ -48,8 +50,13 @@ namespace VisualizationDSA.WebApi.Controllers
         }
 
         [HttpPost("attempt")]
-        public async Task<ActionResult<QuizAttemptResult>> SubmitAttempt([FromBody] QuizAttemptRequest request)
+        public async Task<ActionResult<QuizAttemptResult>> SubmitAttempt([FromBody] QuizAttemptRequest? request)
         {
+            // Guard body null/thiếu answers → 400 thay vì NRE 500.
+            if (request == null || request.Answers == null || request.Answers.Length == 0)
+            {
+                return BadRequest(new { message = "Dữ liệu bài làm không hợp lệ." });
+            }
             var userId = GetCurrentUserId();
             var result = await _quizService.SubmitQuizAttemptAsync(userId, request);
             return Ok(result);
@@ -61,6 +68,10 @@ namespace VisualizationDSA.WebApi.Controllers
             [FromQuery] int pageNumber = 1, 
             [FromQuery] int pageSize = 10)
         {
+            // Clamp phân trang.
+            pageNumber = Math.Max(1, pageNumber);
+            pageSize = Math.Clamp(pageSize, 1, 100);
+
             var userId  = GetCurrentUserId();
             var result = await mediator.Send(new VisualizationDSA.Application.Features.Analytics.Queries.GetQuizHistory.GetQuizHistoryQuery
             {
@@ -73,8 +84,10 @@ namespace VisualizationDSA.WebApi.Controllers
 
         private Guid GetCurrentUserId()
         {
-            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            return Guid.Parse(userIdClaim!);
+            var userIdClaim = JwtHelper.ExtractSubFromToken(Request);
+            if (string.IsNullOrEmpty(userIdClaim) || !Guid.TryParse(userIdClaim, out var userId))
+                throw new UnauthorizedAccessException("User identity claim không hợp lệ hoặc bị thiếu.");
+            return userId;
         }
     }
 }

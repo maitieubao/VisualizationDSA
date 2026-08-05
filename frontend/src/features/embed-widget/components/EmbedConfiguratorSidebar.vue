@@ -7,8 +7,11 @@
         <button
           v-for="theme in themeOptions"
           :key="theme.id"
+          type="button"
           class="theme-btn"
           :class="{ active: store.selectedTheme === theme.id }"
+          :aria-pressed="store.selectedTheme === theme.id"
+          :aria-label="'Theme ' + theme.label"
           @click="store.setTheme(theme.id)"
         >
           {{ theme.label }}
@@ -18,8 +21,9 @@
 
     
     <div class="embed-settings-group">
-      <label class="embed-settings-label">Giải thuật nhúng</label>
+      <label class="embed-settings-label" for="embed-algo-select">Giải thuật nhúng</label>
       <select
+        id="embed-algo-select"
         class="embed-select"
         :value="store.selectedAlgorithm"
         @change="onAlgorithmChange"
@@ -36,27 +40,31 @@
 
     
     <div class="embed-settings-group">
-      <label class="embed-settings-label">Chiều rộng ({{ store.widgetWidth }}px)</label>
+      <label class="embed-settings-label" for="embed-width-range">Chiều rộng ({{ store.widgetWidth }}px)</label>
       <input
+        id="embed-width-range"
         type="range"
         class="embed-custom-range-slider"
         min="300"
         max="1400"
         step="10"
         :value="store.widgetWidth"
+        :aria-valuetext="store.widgetWidth + 'px'"
         @input="onWidthChange"
       />
     </div>
 
     <div class="embed-settings-group">
-      <label class="embed-settings-label">Chiều cao ({{ store.widgetHeight }}px)</label>
+      <label class="embed-settings-label" for="embed-height-range">Chiều cao ({{ store.widgetHeight }}px)</label>
       <input
+        id="embed-height-range"
         type="range"
         class="embed-custom-range-slider"
         min="200"
         max="900"
         step="10"
         :value="store.widgetHeight"
+        :aria-valuetext="store.widgetHeight + 'px'"
         @input="onHeightChange"
       />
     </div>
@@ -68,8 +76,12 @@
       <div class="toggle-row">
         <span class="toggle-label">VCR Controls</span>
         <button
+          type="button"
           class="toggle-switch"
           :class="{ on: store.showVcrControls }"
+          role="switch"
+          :aria-checked="store.showVcrControls"
+          aria-label="Bật/tắt VCR Controls"
           @click="store.toggleVcrControls()"
         >
           <span class="toggle-knob" />
@@ -79,8 +91,12 @@
       <div class="toggle-row">
         <span class="toggle-label">Watch Variables</span>
         <button
+          type="button"
           class="toggle-switch"
           :class="{ on: store.showWatchVariables }"
+          role="switch"
+          :aria-checked="store.showWatchVariables"
+          aria-label="Bật/tắt Watch Variables"
           @click="store.toggleWatchVariables()"
         >
           <span class="toggle-knob" />
@@ -90,8 +106,12 @@
       <div class="toggle-row">
         <span class="toggle-label">Interactive Mode</span>
         <button
+          type="button"
           class="toggle-switch"
           :class="{ on: store.isInteractive }"
+          role="switch"
+          :aria-checked="store.isInteractive"
+          aria-label="Bật/tắt Interactive Mode"
           @click="store.toggleInteractive()"
         >
           <span class="toggle-knob" />
@@ -100,7 +120,8 @@
     </div>
 
     
-    <button class="reset-btn" @click="store.resetConfigurator()">
+    <button type="button" class="reset-btn" @click="store.resetConfigurator()">
+      <BaseIcon name="refresh-ccw" class="w-3.5 h-3.5 inline mr-1 align-middle" />
       Đặt lại Mặc định
     </button>
   </div>

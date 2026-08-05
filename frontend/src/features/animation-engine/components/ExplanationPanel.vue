@@ -4,9 +4,7 @@
       <span class="explanation-panel__label">Explanation</span>
     </div>
     <div class="explanation-panel__body">
-      <p v-if="currentFrame" class="explanation-panel__text">
-        {{ currentFrame.explanation }}
-      </p>
+      <p v-if="currentFrame" class="explanation-panel__text" v-html="parseEmojiToSvg(escapeHtmlText(currentFrame.explanation))"></p>
       <p v-else class="explanation-panel__empty">
         Chưa có dữ liệu hoạt ảnh. Hãy nhấn Visualize để bắt đầu.
       </p>
@@ -17,6 +15,7 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { useAnimationStore } from '../store/useAnimationStore';
+import { parseEmojiToSvg, escapeHtmlText } from '../../../utils/emojiParser';
 
 const store = useAnimationStore();
 const currentFrame = computed(() => store.currentFrame);

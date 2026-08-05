@@ -9,9 +9,13 @@ export interface Course {
   title: string;
   description: string;
   category: 'Sorting' | 'Searching' | 'Tree/Graph' | 'OOP' | 'SOLID' | 'Design Patterns' | 'DI/IoC' | 'System Design';
-  difficulty: 'Easy' | 'Medium' | 'Hard';
+  /** Backend dùng Beginner/Intermediate/Advanced; dữ liệu local cũ dùng Easy/Medium/Hard. */
+  difficulty: 'Easy' | 'Medium' | 'Hard' | 'Beginner' | 'Intermediate' | 'Advanced';
   xpReward: number;
+  /** Backend trả về dưới dạng coverImageUrl; UI ưu tiên field này rồi mới fallback coverImage */
+  coverImageUrl?: string;
   coverImage?: string;
+  isPremium: boolean;
   lessons: LessonReference[];
   totalLessons: number;
   isPublished: boolean;

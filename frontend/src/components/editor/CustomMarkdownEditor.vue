@@ -204,6 +204,7 @@
 <script setup lang="ts">
 import { ref, computed, watch, nextTick, onMounted } from 'vue';
 import BaseIcon from '@/shared/components/BaseIcon.vue';
+import { parseEmojiToSvg } from '@/utils/emojiParser';
 
 interface Props {
   modelValue: string;
@@ -235,7 +236,7 @@ const placeholder = props.placeholder || 'Viết nội dung bằng Markdown...';
 function renderMarkdown(md: string): string {
   if (!md) return '<p class="text-text-muted italic">Nội dung trống...</p>';
   
-  return md
+  const result = md
     
     .replace(/```(\w+)?\n([\s\S]*?)```/g, (match, lang, code) => {
       const language = lang || 'text';
@@ -275,6 +276,8 @@ function renderMarkdown(md: string): string {
     .replace(/(<\/[hulpbq]>)\s*<\/p>/g, '$1')
     .replace(/<p>\s*(<pre>)/g, '$1')
     .replace(/(<\/pre>)\s*<\/p>/g, '$1');
+  
+  return parseEmojiToSvg(result);
 }
 
 function escapeHtml(text: string): string {

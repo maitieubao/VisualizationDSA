@@ -1,0 +1,113 @@
+{
+  "quizTitle": "Trắc nghiệm Trie",
+  "topic": "dsa",
+  "difficulty": 2,
+  "xpReward": 40,
+  "questions": [
+    {
+      "questionText": "Trie (cây tiền tố) được thiết kế để giải quyết tốt nhất bài toán nào?",
+      "options": [
+        "Tìm kiếm từ chính xác trong từ điển cố định",
+        "Truy vấn các từ theo tiền tố và autocomplete",
+        "Sắp xếp mảng số nguyên",
+        "Tìm đường đi ngắn nhất trên đồ thị"
+      ],
+      "correctIndex": 1,
+      "explanation": "Trie cho phép tìm mọi từ bắt đầu bằng một tiền tố trong O(L), điều mà hash set không làm được."
+    },
+    {
+      "questionText": "Trong Trie, mỗi node đại diện cho điều gì?",
+      "options": [
+        "Một từ hoàn chỉnh",
+        "Một ký tự duy nhất",
+        "Một tiền tố bất kỳ",
+        "Một bảng băm"
+      ],
+      "correctIndex": 1,
+      "explanation": "Mỗi node lưu một ký tự; chuỗi ký tự dọc đường đi từ gốc tới node đó chính là tiền tố."
+    },
+    {
+      "questionText": "Ý nghĩa của cờ isEnd trong node Trie là gì?",
+      "options": [
+        "Đánh dấu node gốc của cây",
+        "Đánh dấu nơi kết thúc một từ hợp lệ",
+        "Đếm số ký tự trong từ dài nhất",
+        "Lưu tần suất xuất hiện của từ"
+      ],
+      "correctIndex": 1,
+      "explanation": "isEnd = true cho biết đường đi tới node này tạo thành một từ hoàn chỉnh, phân biệt từ thật sự với tiền tố."
+    },
+    {
+      "questionText": "Độ phức tạp thời gian của thao tác insert một chuỗi độ dài L vào Trie là bao nhiêu?",
+      "options": [
+        "O(1)",
+        "O(L)",
+        "O(L log L)",
+        "O(N × L) với N là số từ đã có"
+      ],
+      "correctIndex": 1,
+      "explanation": "Insert chỉ đi xuống cây theo từng ký tự nên mất đúng O(L), không phụ thuộc số từ đã chèn."
+    },
+    {
+      "questionText": "Nhược điểm chính của Trie so với hash set là gì?",
+      "options": [
+        "Tìm kiếm chậm hơn nhiều lần",
+        "Tốn bộ nhớ hơn vì mỗi node giữ cấu trúc children",
+        "Không lưu được chuỗi dài",
+        "Không thể xóa từ"
+      ],
+      "correctIndex": 1,
+      "explanation": "Mỗi node mang một children (mảng hoặc bảng băm) nên chi phí bộ nhớ cao hơn hash set, nhất là khi ít tiền tố dùng chung."
+    },
+    {
+      "questionText": "Từ điển gồm app và apple. Kết quả của search('ap') là gì?",
+      "options": [
+        "true",
+        "false",
+        "true vì ap khớp tiền tố",
+        "Lỗi vì ap không nằm trong từ điển"
+      ],
+      "correctIndex": 1,
+      "explanation": "Đường đi a-p-p tồn tại nhưng node cuối không có isEnd vì 'ap' không phải từ hoàn chỉnh, nên search trả false."
+    },
+    {
+      "questionText": "Với hash set thông thường, muốn tìm mọi từ bắt đầu bằng prefix 'ab' thì phải làm gì?",
+      "options": [
+        "Duyệt toàn bộ tập hợp O(N) và so sánh từng từ",
+        "Dùng phép băm truy vấn trong O(1)",
+        "Không thể thực hiện được trong mọi trường hợp",
+        "Sắp xếp tập hợp rồi dùng tìm kiếm nhị phân"
+      ],
+      "correctIndex": 0,
+      "explanation": "Hash set không hỗ trợ truy vấn tiền tố nên phải duyệt hết N từ, trong khi Trie chỉ mất O(L)."
+    },
+    {
+      "questionText": "Lần lượt insert các từ cat, car, dog vào Trie rỗng. Tổng số node của cây (kể cả gốc) là bao nhiêu?",
+      "options": ["7", "8", "9", "10"],
+      "correctIndex": 1,
+      "explanation": "cat tạo 3 node; car dùng chung c và a rồi thêm 1 node r; dog tạo thêm 3 node; cộng gốc: 1 + 3 + 1 + 3 = 8."
+    },
+    {
+      "questionText": "Trie hiện chứa đúng từ app. Kết quả của search('apple') là gì?",
+      "options": [
+        "true vì app là tiền tố của apple",
+        "false vì đường đi a-p-p-l-e không tồn tại",
+        "true vì đủ ba ký tự a-p-p",
+        "Lỗi vì apple dài hơn app"
+      ],
+      "correctIndex": 1,
+      "explanation": "Search yêu cầu từng ký tự đều có node; trie chỉ có đến node 'p' thứ hai, thiếu l và e nên findNode trả null và search trả false."
+    },
+    {
+      "questionText": "Autocomplete với prefix 'car' trên một Trie lớn (N từ) chạy trong thời gian bao lâu?",
+      "options": [
+        "O(K) với K là số gợi ý",
+        "O(L + K) với L là độ dài prefix",
+        "O(N) với N là tổng số từ",
+        "O(N × L)"
+      ],
+      "correctIndex": 1,
+      "explanation": "Mất O(L) để đi tới node cuối của prefix rồi O(K) thu thập gợi ý bằng duyệt DFS nhánh con, không phụ thuộc tổng số từ."
+    }
+  ]
+}

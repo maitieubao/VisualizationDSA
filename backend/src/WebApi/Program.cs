@@ -27,6 +27,7 @@ using VisualizationDSA.WebApi.Middlewares;
 
 
 Log.Logger = new LoggerConfiguration()
+    .MinimumLevel.Override("Microsoft.EntityFrameworkCore.Database.Command", LogEventLevel.Information)
     .MinimumLevel.Override("Microsoft", LogEventLevel.Warning)
     .MinimumLevel.Override("System",    LogEventLevel.Warning)
     .WriteTo.Console(outputTemplate:
@@ -42,6 +43,7 @@ builder.Host.UseSerilog((context, services, configuration) =>
         .ReadFrom.Configuration(context.Configuration)   
         .ReadFrom.Services(services)                     
         .MinimumLevel.Override("Microsoft", LogEventLevel.Warning)
+        .MinimumLevel.Override("Microsoft.EntityFrameworkCore.Database.Command", LogEventLevel.Information)
         .MinimumLevel.Override("System",    LogEventLevel.Warning)
         .Enrich.FromLogContext()
         .Enrich.WithProperty("Application", "VisualizationDSA")
@@ -170,6 +172,13 @@ builder.Services.AddScoped<VisualizationDSA.Application.Interfaces.IApplicationD
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 
 
+// Dùng chung khóa ký JWT từ cấu hình cho hệ stateless (JwtHelper/StatelessAuthStrategy/AdminController).
+VisualizationDSA.Domain.JwtSigningConfig.Configure(builder.Configuration["Jwt:Key"]);
+
+// Tài khoản demo/admin mặc định CHỈ ở Development (tránh backdoor credential công khai ở production).
+VisualizationDSA.Domain.Strategies.StatelessAuthStrategy.EnableDemoAccounts = builder.Environment.IsDevelopment();
+
+
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IQuizService, QuizService>();
 builder.Services.AddScoped<IGamificationService, GamificationService>();
@@ -192,6 +201,9 @@ builder.Services.AddScoped<VisualizationDSA.Application.Services.IProgressRuleEn
 
 builder.Services.AddScoped<VisualizationDSA.Application.Services.IClassroomProgressService, VisualizationDSA.Infrastructure.Services.ClassroomProgressService>();
 builder.Services.AddScoped<VisualizationDSA.Application.Services.IClassroomUnlockRuleEngine, VisualizationDSA.Infrastructure.Services.ClassroomUnlockRuleEngine>();
+// ClassroomController phụ thuộc 2 service này — thiếu đăng ký → mọi endpoint classroom lỗi 409.
+builder.Services.AddScoped<VisualizationDSA.Application.Services.IClassroomGradingService, VisualizationDSA.Infrastructure.Services.ClassroomGradingService>();
+builder.Services.AddScoped<VisualizationDSA.Application.Services.IClassroomExcelExportService, VisualizationDSA.Infrastructure.Services.ClassroomExcelExportService>();
 
 
 builder.Services.AddAlgorithmStrategies();
@@ -365,7 +377,7 @@ try
         
         context.Database.Migrate();
         
-        var seeder = new DbSeeder(context);
+        var seeder = new DbSeeder(context, includeDemoAdmin: app.Environment.IsDevelopment());
         await seeder.SeedAsync();
         Console.WriteLine("[DB SEEDER SUCCESS]: Đã nạp thành công 11 khóa học và 12 bài Quiz!");
     }

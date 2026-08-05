@@ -197,3 +197,26 @@ Giải pháp: Chẻ 100 GB thành hàng ngàn cục 100 MB, sắp xếp riêng l
 - Tốc độ vô địch về độ ổn định $O(N \log N)$, không bao giờ bị dính thảm họa $O(N^2)$ như Quick Sort.
 - Rất ngốn RAM khi chạy đệ quy. Chuyên dùng cho External Sorting (Sắp xếp dữ liệu lưu trên đĩa cứng) thay vì trên RAM.
 :::
+
+## Next Steps {#next-steps}
+
+Nếu Quick Sort là nhà vô địch tốc độ trên RAM nhờ sắp xếp tại chỗ, thì bài tiếp theo sẽ giới thiệu cho bạn một chiến binh khác cũng cam kết luôn đạt $O(N \log N)$ ở mọi trường hợp như Merge Sort, nhưng lại không cần tới mảng phụ tốn RAM — **Sắp xếp Đống (Heap Sort)**.
+
+Sau khi học xong bộ ba Quick Sort, Merge Sort và Heap Sort, bạn hãy ghé bài **Tổng hợp thuật toán Sắp xếp** để có cái nhìn toàn cảnh và biết chọn thuật toán nào cho từng tình huống thực tế.
+
+<div class="vt-box-container next-steps">
+  <a class="vt-box" href="/docs/sorting/heap-sort">
+    <p class="next-steps-link">Sắp xếp Đống (Heap Sort)</p>
+    <p class="next-steps-caption">Thuật toán O(N log N) sắp xếp tại chỗ, không tốn RAM phụ.</p>
+  </a>
+</div>
+
+## 📚 Tham khảo lý thuyết {#references}
+
+Nguồn lý thuyết chính được dùng để biên soạn bài viết này:
+
+- **Cormen, Leiserson, Rivest, Stein (CLRS) – *Introduction to Algorithms*, 3rd Edition (MIT Press):** Chương 2 *Getting Started* (Mục 2.3 *Designing Algorithms*) — phân tích chi tiết thuật toán Merge Sort, kỹ thuật Chia để Trị, cây đệ quy (Recursion Tree) và chứng minh độ phức tạp $O(N \log N)$ cùng bộ nhớ phụ $O(N)$.
+- **Wikipedia – *Merge sort*:** Giải thích trực quan lịch sử ra đời (John von Neumann, 1945), thuật toán trộn hai dây (Merge), tính ổn định (Stable Sort) và bảng so sánh độ phức tạp với các thuật toán khác.
+- **Wikipedia – *External sorting*:** Nguồn tham khảo cho phần Dữ liệu Lớn — cơ chế sắp xếp ngoài dùng Merge Sort nhiều đường (K-way Merge) trên ổ cứng, nền tảng của các hệ thống MapReduce và lệnh `ORDER BY` trong SQL.
+- **GeeksforGeeks – *Merge Sort*:** Mô phỏng từng bước quá trình chia và trộn kèm ví dụ mảng số cụ thể, giúp đối chiếu trực quan với sơ đồ Mermaid trong bài.
+- **Microsoft Learn – *Array.Sort Method (.NET)*:** Tài liệu chính thống về cách .NET lựa chọn thuật toán sắp xếp (IntroSort kết hợp Heap Sort) trong thực tế, bối cảnh so sánh Merge Sort và Quick Sort ở mục Phân tích.

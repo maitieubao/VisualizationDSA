@@ -1,0 +1,118 @@
+{
+  "quizTitle": "Trắc nghiệm Queue & Deque",
+  "topic": "dsa",
+  "difficulty": 1,
+  "xpReward": 40,
+  "questions": [
+    {
+      "questionText": "Queue tuân theo nguyên tắc nào khi xử lý phần tử?",
+      "options": [
+        "LIFO — vào sau ra trước",
+        "FIFO — vào trước ra trước",
+        "Truy cập ngẫu nhiên theo chỉ số",
+        "LIFO — vào trước ra sau"
+      ],
+      "correctIndex": 1,
+      "explanation": "Queue hoạt động theo FIFO (First-In, First-Out): phần tử thêm vào trước sẽ được lấy ra trước, giống như xếp hàng mua vé."
+    },
+    {
+      "questionText": "Độ phức tạp thời gian của thao tác enqueue và dequeue trên Queue chuẩn là bao nhiêu?",
+      "options": [
+        "O(1)",
+        "O(log N)",
+        "O(N)",
+        "O(N²)"
+      ],
+      "correctIndex": 0,
+      "explanation": "Cả enqueue (thêm vào đuôi) và dequeue (lấy ra từ đầu) chỉ dịch chuyển con trỏ Front/Rear nên mỗi thao tác tốn O(1)."
+    },
+    {
+      "questionText": "Phép toán nào giúp Circular Queue quay vòng con trỏ từ ô cuối mảng về ô đầu?",
+      "options": [
+        "Phép trừ index - 1",
+        "Phép modulo (index + 1) % capacity",
+        "Phép chia integer index / capacity",
+        "Nhân đôi kích thước mảng"
+      ],
+      "correctIndex": 1,
+      "explanation": "Công thức (index + 1) % capacity khiến con trỏ vượt qua ô cuối sẽ quay về ô 0, biến mảng thẳng thành mảng vòng."
+    },
+    {
+      "questionText": "Điểm khác biệt cốt lõi giữa Deque và Queue thông thường là gì?",
+      "options": [
+        "Deque chỉ cho phép thêm vào đầu",
+        "Deque cho phép thêm và xóa phần tử ở cả hai đầu",
+        "Deque lưu phần tử theo thứ tự ngẫu nhiên",
+        "Deque chỉ dành cho số nguyên"
+      ],
+      "correctIndex": 1,
+      "explanation": "Deque (Double-ended Queue) hỗ trợ đủ bốn thao tác AddFirst, AddLast, RemoveFirst, RemoveLast với độ phức tạp O(1)."
+    },
+    {
+      "questionText": "Cấu trúc dữ liệu nào là trái tim của thuật toán duyệt theo chiều rộng BFS?",
+      "options": [
+        "Stack",
+        "Queue",
+        "Hash Table",
+        "Binary Heap"
+      ],
+      "correctIndex": 1,
+      "explanation": "BFS duyệt theo từng tầng và đỉnh nào được tìm thấy trước phải được duyệt trước — đúng bản chất FIFO của Queue."
+    },
+    {
+      "questionText": "Khi cài đặt Queue bằng mảng thông thường, thao tác dequeue tốn bao nhiêu thời gian?",
+      "options": [
+        "O(1)",
+        "O(N) — phải dời toàn bộ phần tử phía sau lên trước",
+        "O(log N)",
+        "O(N²)"
+      ],
+      "correctIndex": 1,
+      "explanation": "Xóa phần tử đầu mảng buộc phải dời tất cả phần tử còn lại sang trái một ô nên mất O(N), khác với Circular Queue hay Linked List."
+    },
+    {
+      "questionText": "Điểm khác nhau quan trọng giữa Priority Queue và Queue thường là gì?",
+      "options": [
+        "Priority Queue không cho xóa phần tử",
+        "Phần tử ra trước là phần tử có độ ưu tiên cao nhất, không phải phần tử đến sớm nhất",
+        "Priority Queue chỉ lưu được số nguyên",
+        "Priority Queue duyệt theo LIFO"
+      ],
+      "correctIndex": 1,
+      "explanation": "Priority Queue chọn phần tử theo độ ưu tiên thay vì thứ tự đến, thường được cài bằng Heap nên mỗi thao tác tốn O(log N)."
+    },
+    {
+      "questionText": "Circular Queue có capacity 4. Thực hiện enqueue 10, 20, 30 rồi dequeue một lần, sau đó enqueue 40 và 50. Giá trị nằm ở ô chỉ số 0 của mảng là bao nhiêu?",
+      "options": [
+        "10",
+        "20",
+        "40",
+        "50"
+      ],
+      "correctIndex": 3,
+      "explanation": "Sau enqueue 10, 20, 30 thì front = 0, rear = 2. Dequeue lấy 10, front = 1. Enqueue 40 ghi vào rear = 3. Enqueue 50: rear = (3 + 1) % 4 = 0 nên 50 quay vòng ghi vào ô 0."
+    },
+    {
+      "questionText": "Cho mảng [1, 3, -1, -3, 5, 3, 6, 7] và cửa sổ kích thước k = 3. Dùng Deque tìm giá trị lớn nhất của từng cửa sổ, kết quả là gì?",
+      "options": [
+        "[3, 3, 5, 5, 6, 7]",
+        "[1, 3, 5, 5, 6, 7]",
+        "[3, 5, 5, 6, 7, 7]",
+        "[3, -1, 5, 5, 6, 7]"
+      ],
+      "correctIndex": 0,
+      "explanation": "Các cửa sổ lần lượt là [1,3,-1], [3,-1,-3], [-1,-3,5], [-3,5,3], [5,3,6], [3,6,7] với max tương ứng là 3, 3, 5, 5, 6, 7."
+    },
+    {
+      "questionText": "Khi implement Queue bằng hai Stack, thời điểm nào phải chuyển toàn bộ dữ liệu từ stackIn sang stackOut?",
+      "options": [
+        "Mỗi lần enqueue",
+        "Khi stackOut rỗng và có thao tác dequeue",
+        "Khi stackIn đầy",
+        "Khi queue có hơn hai phần tử"
+      ],
+      "correctIndex": 1,
+      "explanation": "Khi dequeue mà stackOut rỗng, ta đổ toàn bộ stackIn sang stackOut làm đảo ngược thứ tự, phần tử lâu đời nhất nằm trên đỉnh để pop. Mỗi phần tử bị chuyển đúng một lần nên chi phí amortized là O(1)."
+    }
+  ]
+}

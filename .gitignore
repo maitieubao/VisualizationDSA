@@ -35,6 +35,9 @@ pnpm-debug.log*
 .env
 .env.local
 .env.*.local
+.env.development
+frontend/.env.development
+backend/src/WebApi/appsettings.Development.json
 
 # Gemini
 .gemini/

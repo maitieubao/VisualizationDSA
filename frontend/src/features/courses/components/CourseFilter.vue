@@ -9,9 +9,7 @@
         placeholder="Tìm kiếm khóa học..."
         class="w-full px-4 py-2 pl-10 bg-bg-secondary border border-border-subtle rounded-xl text-sm text-white placeholder-text-muted focus:outline-none focus:border-accent/50 transition-colors"
       />
-      <svg class="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-        <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-      </svg>
+      <BaseIcon name="search" class="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted" />
     </div>
 
     
@@ -42,7 +40,7 @@
           ? 'bg-accent text-white shadow-lg shadow-accent/30 border border-accent/50'
           : 'bg-bg-secondary text-text-muted hover:text-white border border-border-subtle hover:border-border-default hover:bg-bg-surface'"
       >
-        {{ diff === 'All' ? 'Tất cả' : (diff === 'Easy' ? 'Dễ' : diff === 'Medium' ? 'Trung bình' : 'Khó') }}
+        {{ diff === 'All' ? 'Tất cả' : (diff === 'Easy' || diff === 'Beginner' ? 'Dễ' : diff === 'Medium' || diff === 'Intermediate' ? 'Trung bình' : 'Khó') }}
       </button>
     </div>
   </div>

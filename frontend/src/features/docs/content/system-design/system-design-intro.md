@@ -28,7 +28,7 @@ Load Balancer là "người gác cổng" đón nhận mọi yêu cầu (request)
 - Yêu cầu thứ ba → Server A
 - Yêu cầu thứ bốn → Server B
 
-Chiến lược này đảm bảo tải được phân phối **đều đặn** giữa các server, tránh tình trạng một server bị quá tải trong khi server khác độc thẹt.
+Chiến lược này đảm bảo tải được phân phối **đều đặn** giữa các server, tránh tình trạng một server bị quá tải trong khi server khác "đói việc" (nhàn rỗi, không nhận yêu cầu nào).
 
 :::tip
 Round-Robin là chiến lược đơn giản nhất nhưng rất hiệu quả cho hầu hết các trường hợp. Đối với hệ thống lớn, các chiến lược phức tạp hơn như **Weighted Round-Robin**, **Least Connections** hoặc **IP Hash** có thể được sử dụng.
@@ -59,6 +59,53 @@ Mỗi yêu cầu từ người dùng được đóng gói thành một **gói ti
 
 Khi một gói tin đến được đích, nó được đánh dấu **ARRIVED** và dọn đi để giải phóng bộ nhớ.
 
+## Ví dụ: Mô phỏng Load Balancer Round-Robin {#example-code}
+
+Để hiểu rõ cơ chế phân phối yêu cầu, hãy xem một mô phỏng Round-Robin đơn giản bằng C#. Bộ cân bằng tải lưu danh sách server và luân phiên trả về server kế tiếp theo công thức `(index + 1) % số_server`:
+
+```csharp
+using System;
+using System.Collections.Generic;
+
+class RoundRobinLoadBalancer
+{
+    private readonly List<string> _servers;
+    private int _nextIndex;
+
+    public RoundRobinLoadBalancer(List<string> servers)
+    {
+        _servers = servers;
+        _nextIndex = 0;
+    }
+
+    public string Dispatch()
+    {
+        string server = _servers[_nextIndex];
+        _nextIndex = (_nextIndex + 1) % _servers.Count;
+        return server;
+    }
+}
+
+// Ví dụ sử dụng
+var servers = new List<string> { "SRV_A", "SRV_B" };
+var balancer = new RoundRobinLoadBalancer(servers);
+
+for (int i = 1; i <= 6; i++)
+{
+    Console.WriteLine($"Yêu cầu {i} → {balancer.Dispatch()}");
+}
+
+// Kết quả in ra:
+// Yêu cầu 1 → SRV_A
+// Yêu cầu 2 → SRV_B
+// Yêu cầu 3 → SRV_A
+// Yêu cầu 4 → SRV_B
+// Yêu cầu 5 → SRV_A
+// Yêu cầu 6 → SRV_B
+```
+
+Trong thực tế, một Load Balancer còn kết hợp thêm cơ chế **kiểm tra sức khỏe (health check)** để loại bỏ server FAILED khỏi danh sách luân phiên — bạn sẽ tìm hiểu chi tiết ở mục Next Steps bên dưới.
+
 ## Next Steps {#next-steps}
 
 Hãy cùng tìm hiểu sâu hơn về từng thành phần:
@@ -73,3 +120,14 @@ Hãy cùng tìm hiểu sâu hơn về từng thành phần:
     <p class="next-steps-caption">Cơ chế phát hiện lỗi và chuyển đổi tự động khi server gặp sự cố.</p>
   </a>
 </div>
+
+## 📚 Tham khảo lý thuyết {#references}
+
+Nguồn lý thuyết chính được dùng để biên soạn bài viết này:
+
+- **Martin Kleppmann – *Designing Data-Intensive Applications* (O'Reilly, 2017):** Cuốn sách nền tảng về hệ thống phân tán, độ tin cậy (Reliability), khả năng mở rộng (Scalability) và khả năng duy trì (Maintainability).
+- **Alex Xu – *System Design Interview – An Insider's Guide* (Vol. 1 & 2):** Bộ sách hướng dẫn thiết kế hệ thống quy mô lớn, bao gồm các bài toán Load Balancer, Caching, Message Queue và Database Replication.
+- **Brendan Burns – *Designing Distributed Systems* (O'Reilly, 2018):** Các mẫu thiết kế vận hành cho hệ thống phân tán như Sidecar, Choreography và Replicated Load-Balanced Services.
+- **Wikipedia – *Load balancing (computing)*:** Tổng quan về các thuật toán cân bằng tải như Round-Robin, Least Connections, Weighted Round-Robin. (https://en.wikipedia.org/wiki/Load_balancing_(computing))
+- **Microsoft Learn – *Azure Architecture Center – Load-balancing options*:** Hướng dẫn chính thức của Microsoft về các lựa chọn cân bằng tải và mô hình kích hoạt (active-active / active-passive). (https://learn.microsoft.com/en-us/azure/architecture/guide/technology-choices/load-balancing-overview)
+- **GeeksforGeeks – *What is Load Balancer & Load Balancing?*:** Bài viết tổng quan về vai trò, lợi ích và các chiến lược cân bằng tải phổ biến.

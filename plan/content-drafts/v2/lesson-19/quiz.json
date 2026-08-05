@@ -1,0 +1,103 @@
+{
+  "quizTitle": "Trắc nghiệm Heap & Priority Queue",
+  "topic": "dsa",
+  "difficulty": 2,
+  "xpReward": 40,
+  "questions": [
+    {
+      "questionText": "Trong một min-heap, phần tử ở root (gốc) là phần tử như thế nào?",
+      "options": [
+        "Phần tử nhỏ nhất trong heap",
+        "Phần tử lớn nhất trong heap",
+        "Phần tử được chèn vào đầu tiên",
+        "Một phần tử bất kỳ"
+      ],
+      "correctIndex": 0,
+      "explanation": "Min-heap đảm bảo mỗi cha nhỏ hơn hoặc bằng con nên root luôn chứa giá trị nhỏ nhất của toàn heap."
+    },
+    {
+      "questionText": "Tính chất heap property của max-heap là gì?",
+      "options": [
+        "Cha luôn nhỏ hơn hoặc bằng con",
+        "Cha luôn lớn hơn hoặc bằng con",
+        "Cây con trái luôn chứa giá trị nhỏ hơn cây con phải",
+        "Mọi node lá đều có giá trị bằng nhau"
+      ],
+      "correctIndex": 1,
+      "explanation": "Max-heap yêu cầu giá trị mỗi cha lớn hơn hoặc bằng con, nhờ đó root chứa phần tử lớn nhất của heap."
+    },
+    {
+      "questionText": "Độ phức tạp của thao tác peek (xem phần tử đầu heap) là bao nhiêu?",
+      "options": ["O(1)", "O(log N)", "O(N)", "O(N log N)"],
+      "correctIndex": 0,
+      "explanation": "Peek chỉ đọc mảng tại chỉ số 0, vị trí của root, nên thời gian không đổi O(1)."
+    },
+    {
+      "questionText": "Trong biểu diễn mảng của heap (mảng bắt đầu chỉ số 0), con trái của nút tại chỉ số i nằm ở đâu?",
+      "options": [
+        "Chỉ số 2*i",
+        "Chỉ số 2*i + 1",
+        "Chỉ số 2*i + 2",
+        "Chỉ số (i - 1) / 2"
+      ],
+      "correctIndex": 1,
+      "explanation": "Cây nhị phân hoàn chỉnh lưu trong mảng: con trái tại 2*i + 1, con phải tại 2*i + 2, cha tại (i - 1)/2."
+    },
+    {
+      "questionText": "Chèn giá trị 8 vào min-heap [5, 7, 10, 15, 20, 25, 30]. Mảng sau khi sift up là gì?",
+      "options": [
+        "[5, 7, 10, 8, 20, 25, 30, 15]",
+        "[5, 8, 10, 7, 20, 25, 30, 15]",
+        "[5, 7, 8, 10, 20, 25, 30, 15]",
+        "[5, 7, 10, 15, 20, 25, 30, 8]"
+      ],
+      "correctIndex": 0,
+      "explanation": "8 được thêm vào cuối mảng, sift up: 8 nhỏ hơn cha 15 nên đổi chỗ, rồi 8 lớn hơn cha mới 7 nên dừng; kết quả là [5, 7, 10, 8, 20, 25, 30, 15]."
+    },
+    {
+      "questionText": "Sau khi thực hiện remove top trên min-heap [5, 7, 8, 15, 20, 25, 30], phần tử nào trở thành root mới?",
+      "options": ["7", "8", "15", "30"],
+      "correctIndex": 0,
+      "explanation": "Phần tử cuối 30 được kéo lên root rồi sift down: đổi chỗ với con nhỏ nhất là 7 nên root mới là 7, heap còn lại là [7, 15, 8, 30, 20, 25]."
+    },
+    {
+      "questionText": "Để tìm K phần tử lớn nhất (top K) trong một luồng dữ liệu rất lớn, cách làm hiệu quả là gì?",
+      "options": [
+        "Giữ một min-heap kích thước K, loại bỏ phần tử nhỏ nhất khi heap vượt quá K",
+        "Giữ một max-heap kích thước K, loại bỏ phần tử lớn nhất khi heap vượt quá K",
+        "Sắp xếp lại toàn bộ dữ liệu mỗi khi có phần tử mới",
+        "Lưu toàn bộ dữ liệu vào ma trận kề rồi tìm K lần"
+      ],
+      "correctIndex": 0,
+      "explanation": "Min-heap kích thước K giữ K phần tử lớn nhất đã gặp; root của nó là phần tử nhỏ nhất trong nhóm, chính là phần tử lớn thứ K."
+    },
+    {
+      "questionText": "Thực hiện extract (lấy root) trên min-heap [7, 15, 8, 30, 20, 25]. Heap sau thao tác là gì?",
+      "options": [
+        "[8, 15, 25, 30, 20]",
+        "[15, 8, 25, 30, 20]",
+        "[8, 15, 30, 25, 20]",
+        "[15, 25, 8, 30, 20]"
+      ],
+      "correctIndex": 0,
+      "explanation": "Lấy 7 ra, kéo phần tử cuối 25 lên root thành [25, 15, 8, 30, 20], sift down đổi 25 với con nhỏ nhất là 8 → [8, 15, 25, 30, 20]; 25 lúc này không còn con trong giới hạn nên dừng."
+    },
+    {
+      "questionText": "Phát biểu nào ĐÚNG về Heap Sort?",
+      "options": [
+        "Luôn O(N log N) thời gian, O(1) bộ nhớ phụ và không ổn định",
+        "Xấu nhất O(N²) khi dữ liệu đã được sắp xếp sẵn",
+        "Cần mảng phụ kích thước N nên không sắp xếp tại chỗ",
+        "Luôn chạy nhanh hơn Quick Sort nhờ cache locality tốt"
+      ],
+      "correctIndex": 0,
+      "explanation": "Heap sort xây max-heap rồi trích xuất root N lần, mỗi lần O(log N) nên luôn O(N log N); nó sắp xếp ngay trên mảng gốc (O(1) bộ nhớ phụ) nhưng không ổn định và cache locality kém hơn Quick Sort."
+    },
+    {
+      "questionText": "Luồng số đến lần lượt: 2, 5, 1, 6, 3, được duy trì bằng kỹ thuật hai heap (max-heap nửa nhỏ, min-heap nửa lớn). Median cuối cùng của luồng là bao nhiêu?",
+      "options": ["2", "3", "4", "5"],
+      "correctIndex": 1,
+      "explanation": "Sắp xếp dãy được 1, 2, 3, 5, 6; với 5 số lẻ, median là phần tử giữa là 3 — kỹ thuật hai heap cho phép lấy median trong O(1) sau mỗi lần chèn O(log N)."
+    }
+  ]
+}

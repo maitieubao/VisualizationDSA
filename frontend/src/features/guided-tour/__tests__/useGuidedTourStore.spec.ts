@@ -171,18 +171,18 @@ describe('useGuidedTourStore', () => {
       const store = useGuidedTourStore();
       
       const testCases = [
-        { path: '/sorting', expectedLength: 12, firstTitle: '1. Bộ chuyển đổi Sandbox / Bài học 🔄' },
-        { path: '/code-ide', expectedLength: 12, firstTitle: '1. Monaco Code Editor 💻' },
-        { path: '/solid', expectedLength: 12, firstTitle: '1. Trực quan hóa Nguyên lý SOLID 🏗️' },
-        { path: '/oop', expectedLength: 12, firstTitle: '1. Trực quan hóa Hướng đối tượng 📐' },
-        { path: '/graph', expectedLength: 12, firstTitle: '1. Sân chơi Đồ thị & Cây 🌳' },
-        { path: '/di', expectedLength: 12, firstTitle: '1. Dependency Injection & IoC Container 🧪' },
-        { path: '/patterns', expectedLength: 12, firstTitle: '1. Bộ sưu tập Design Patterns 🎭' },
-        { path: '/state', expectedLength: 12, firstTitle: '1. Giám sát Trạng thái & Đệ quy 🔍' },
-        { path: '/system', expectedLength: 12, firstTitle: '1. Thiết kế Hệ thống phân tán 🌐' },
-        { path: '/quiz', expectedLength: 12, firstTitle: '1. Trắc nghiệm kiến thức nâng cao 📝' },
-        { path: '/compare', expectedLength: 12, firstTitle: '1. So sánh hiệu năng thuật toán 🆚' },
-        { path: '/concurrency', expectedLength: 12, firstTitle: '1. Trực quan hóa Đa luồng 🧵' },
+        { path: '/sorting', expectedLength: 12, firstTitle: '1. Bộ chuyển đổi Sandbox / Bài học' },
+        { path: '/code-ide', expectedLength: 12, firstTitle: '1. Monaco Code Editor' },
+        { path: '/solid', expectedLength: 12, firstTitle: '1. Trực quan hóa Nguyên lý SOLID' },
+        { path: '/oop', expectedLength: 12, firstTitle: '1. Trực quan hóa Hướng đối tượng' },
+        { path: '/graph', expectedLength: 12, firstTitle: '1. Sân chơi Đồ thị & Cây' },
+        { path: '/di', expectedLength: 12, firstTitle: '1. Dependency Injection & IoC Container' },
+        { path: '/patterns', expectedLength: 12, firstTitle: '1. Bộ sưu tập Design Patterns' },
+        { path: '/state', expectedLength: 12, firstTitle: '1. Giám sát Trạng thái & Đệ quy' },
+        { path: '/system', expectedLength: 12, firstTitle: '1. Thiết kế Hệ thống phân tán' },
+        { path: '/quiz', expectedLength: 12, firstTitle: '1. Trắc nghiệm kiến thức nâng cao' },
+        { path: '/compare', expectedLength: 12, firstTitle: '1. So sánh hiệu năng thuật toán' },
+        { path: '/concurrency', expectedLength: 12, firstTitle: '1. Trực quan hóa Đa luồng' },
       ];
 
       testCases.forEach(({ path, expectedLength, firstTitle }) => {

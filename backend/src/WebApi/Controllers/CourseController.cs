@@ -39,7 +39,9 @@ namespace VisualizationDSA.WebApi.Controllers
         [HttpGet("courses")]
         public async Task<IActionResult> GetCourses([FromQuery] string? category, [FromQuery] string? difficulty, [FromQuery] string? userId)
         {
-            var query = _dbContext.Courses.AsQueryable();
+            var query = _dbContext.Courses
+                .Where(c => !c.IsDeleted)
+                .AsQueryable();
 
             if (!string.IsNullOrWhiteSpace(category) && Enum.TryParse<CourseCategory>(category, true, out var catEnum))
             {
@@ -75,20 +77,39 @@ namespace VisualizationDSA.WebApi.Controllers
                 targetUserId = parsedId;
             }
 
+            // Gom toàn bộ lessonId của mọi khóa → 1 query progress (khử N+1).
+            var allLessonIds = courses
+                .SelectMany(c => c.Modules)
+                .SelectMany(m => m.Items)
+                .Where(i => i.ItemType == ModuleItemType.Lesson && i.LessonId.HasValue && !i.IsDeleted)
+                .Select(i => i.LessonId!.Value)
+                .Distinct()
+                .ToList();
+
+            HashSet<Guid> completedLessonIds = new();
+            if (targetUserId.HasValue && allLessonIds.Count > 0)
+            {
+                var completed = await _dbContext.UserLessonProgresses
+                    .Where(p => p.UserId == targetUserId.Value
+                             && p.Status == "Completed"
+                             && allLessonIds.Contains(p.LessonId))
+                    .Select(p => p.LessonId)
+                    .ToListAsync();
+                completedLessonIds = completed.ToHashSet();
+            }
+
             var result = new List<object>();
             foreach (var c in courses)
             {
-                int totalLessons = c.Modules.SelectMany(m => m.Items).Count(i => i.ItemType == ModuleItemType.Lesson);
-                int completedLessons = 0;
-                double progressPercent = 0;
-
-                if (targetUserId.HasValue && totalLessons > 0)
-                {
-                    var lessonIds = c.Modules.SelectMany(m => m.Items).Where(i => i.ItemType == ModuleItemType.Lesson && i.LessonId.HasValue).Select(i => i.LessonId!.Value).ToList();
-                    completedLessons = await _dbContext.UserLessonProgresses
-                        .CountAsync(p => p.UserId == targetUserId.Value && lessonIds.Contains(p.LessonId) && p.Status == "Completed");
-                    progressPercent = Math.Round(((double)completedLessons / totalLessons) * 100, 1);
-                }
+                int totalLessons = c.Modules.SelectMany(m => m.Items).Count(i => i.ItemType == ModuleItemType.Lesson && !i.IsDeleted);
+                int completedLessons = totalLessons == 0
+                    ? 0
+                    : c.Modules.SelectMany(m => m.Items)
+                        .Where(i => i.ItemType == ModuleItemType.Lesson && i.LessonId.HasValue && !i.IsDeleted)
+                        .Count(i => completedLessonIds.Contains(i.LessonId!.Value));
+                double progressPercent = totalLessons > 0
+                    ? Math.Round(((double)completedLessons / totalLessons) * 100, 1)
+                    : 0;
 
                 result.Add(new
                 {
@@ -122,6 +143,19 @@ namespace VisualizationDSA.WebApi.Controllers
                 return NotFound(new { error = "COURSE_NOT_FOUND", message = "Không tìm thấy khóa học." });
             }
 
+            // GATE publish + premium cho GetCourseById — trước đây student đoán GUID nhận đủ
+            // ContentMd/SandboxConfig của mọi lesson (kể cả bài Draft trong course Premium).
+            var isTeacherOrAdmin = JwtHelper.IsTeacherOrAdmin(Request);
+            var userIdStrForGate = JwtHelper.ExtractSubFromToken(Request);
+            var isOwner = userIdStrForGate != null
+                          && Guid.TryParse(userIdStrForGate, out var ownerCheckId)
+                          && course.TeacherId == ownerCheckId;
+
+            if (!course.IsPublished && !isTeacherOrAdmin && !isOwner)
+            {
+                return NotFound(new { error = "COURSE_NOT_FOUND", message = "Không tìm thấy khóa học." });
+            }
+
             var currentUserIdStr = JwtHelper.ExtractSubFromToken(Request);
             Guid? targetUserId = null;
 
@@ -142,9 +176,33 @@ namespace VisualizationDSA.WebApi.Controllers
             }
 
             var lessonsList = new List<object>();
-            foreach (var item in course.Modules.SelectMany(m => m.Items).Where(i => i.ItemType == ModuleItemType.Lesson).OrderBy(i => i.OrderIndex))
+            // Quiz liên kết nằm trên ModuleItem riêng (ItemType=Quiz) cùng module với lesson.
+            // Khớp theo OrderIndex: quiz item của lesson N có order nằm ngay sau lesson item N.
+            var quizItemsByModule = course.Modules
+                .SelectMany(m => m.Items)
+                .Where(i => i.ItemType == ModuleItemType.Quiz && i.QuizId.HasValue)
+                .GroupBy(i => i.ModuleId)
+                .ToDictionary(
+                    g => g.Key,
+                    g => g.OrderBy(i => i.OrderIndex).Select(i => (Id: i.QuizId, Order: i.OrderIndex)).ToList());
+            // Sắp theo (module OrderIndex, item OrderIndex) — mỗi chặng đếm OrderIndex lại từ 1000
+            // nên sort toàn cục theo OrderIndex sẽ trộn thứ tự giữa các chặng.
+            var orderedLessonItems = course.Modules
+                .SelectMany(m => m.Items.Select(i => new { Item = i, ModuleOrder = m.OrderIndex }))
+                .Where(x => x.Item.ItemType == ModuleItemType.Lesson)
+                .OrderBy(x => x.ModuleOrder)
+                .ThenBy(x => x.Item.OrderIndex)
+                .Select(x => x.Item)
+                .ToList();
+            foreach (var item in orderedLessonItems)
             {
                 var l = item.Lesson;
+                // Lọc bài chưa Published cho user không phải Teacher/Admin/chủ sở hữu.
+                if (!isTeacherOrAdmin && !isOwner && l.PublishStatus != VisualizationDSA.Domain.Enums.LessonPublishStatus.Published)
+                {
+                    continue;
+                }
+
                 var status = "NotStarted";
                 if (targetUserId.HasValue)
                 {
@@ -156,6 +214,12 @@ namespace VisualizationDSA.WebApi.Controllers
                     }
                 }
 
+                Guid? linkedQuizId = null;
+                if (quizItemsByModule.TryGetValue(item.ModuleId, out var quizCandidates))
+                {
+                    linkedQuizId = quizCandidates.FirstOrDefault(q => q.Order > item.OrderIndex).Id;
+                }
+
                 lessonsList.Add(new
                 {
                     l.Id,
@@ -163,7 +227,7 @@ namespace VisualizationDSA.WebApi.Controllers
                     l.ContentMd,
                     l.SandboxType,
                     l.SandboxConfig,
-                    item.QuizId,
+                    QuizId = linkedQuizId,
                     l.XPReward,
                     OrderIndex = item.OrderIndex,
                     status
@@ -191,14 +255,20 @@ namespace VisualizationDSA.WebApi.Controllers
             var userIdStr = JwtHelper.ExtractSubFromToken(Request);
             if (userIdStr == null || !Guid.TryParse(userIdStr, out var teacherId)) return Unauthorized();
 
+            // Enum rỗng/lạ → 400 thay vì FormatException 500.
+            if (!Enum.TryParse<CourseCategory>(dto.Category, true, out var category))
+                return BadRequest(new { error = "INVALID_CATEGORY", message = "Danh mục khóa học không hợp lệ." });
+            if (!Enum.TryParse<CourseDifficulty>(dto.Difficulty, true, out var difficulty))
+                return BadRequest(new { error = "INVALID_DIFFICULTY", message = "Độ khó không hợp lệ." });
+
             var command = new CreateCourseCommand(
                 teacherId,
                 dto.Title,
                 dto.Description,
                 dto.Thumbnail,
                 dto.ExpectedTime,
-                dto.Category,
-                dto.Difficulty,
+                category.ToString(),
+                difficulty.ToString(),
                 dto.IsPremium,
                 dto.IsPublished
             );
@@ -211,6 +281,14 @@ namespace VisualizationDSA.WebApi.Controllers
         [RequireJwtRole("Teacher,Admin")]
         public async Task<IActionResult> AddModule(Guid courseId, [FromBody] AddModuleDto dto)
         {
+            // Chống IDOR: teacher chỉ được sửa khóa học do chính mình tạo (Admin được phép).
+            var userIdStr = JwtHelper.ExtractSubFromToken(Request);
+            if (userIdStr == null || !Guid.TryParse(userIdStr, out var currentUserId)) return Unauthorized();
+
+            var course = await _dbContext.Courses.FindAsync(courseId);
+            if (course == null) return NotFound(new { error = "COURSE_NOT_FOUND", message = "Không tìm thấy khóa học." });
+            if (!IsOwnerOrAdmin(course, currentUserId)) return StatusCode(403, new { error = "FORBIDDEN", message = "Bạn không có quyền chỉnh sửa khóa học này." });
+
             var command = new AddModuleCommand(courseId, dto.Title, dto.Description, dto.OrderIndex);
             var resultId = await _mediator.Send(command);
             return Ok(new { message = "Thêm module thành công!", moduleId = resultId });
@@ -220,9 +298,22 @@ namespace VisualizationDSA.WebApi.Controllers
         [RequireJwtRole("Teacher,Admin")]
         public async Task<IActionResult> AddModuleItem(Guid moduleId, [FromBody] AddModuleItemDto dto)
         {
+            // Chống IDOR: kiểm tra quyền sở hữu khóa học chứa module trước khi thêm item.
+            var userIdStr = JwtHelper.ExtractSubFromToken(Request);
+            if (userIdStr == null || !Guid.TryParse(userIdStr, out var currentUserId)) return Unauthorized();
+
+            var module = await _dbContext.CourseModules.FindAsync(moduleId);
+            if (module == null) return NotFound(new { error = "MODULE_NOT_FOUND", message = "Không tìm thấy module." });
+            var course = await _dbContext.Courses.FindAsync(module.CourseId);
+            if (course == null) return NotFound(new { error = "COURSE_NOT_FOUND", message = "Không tìm thấy khóa học." });
+            if (!IsOwnerOrAdmin(course, currentUserId)) return StatusCode(403, new { error = "FORBIDDEN", message = "Bạn không có quyền chỉnh sửa khóa học này." });
+
+            if (!Enum.TryParse<ModuleItemType>(dto.ItemType, true, out var itemType))
+                return BadRequest(new { error = "INVALID_ITEM_TYPE", message = "Loại item không hợp lệ." });
+
             var command = new AddModuleItemCommand(
                 moduleId, 
-                Enum.Parse<ModuleItemType>(dto.ItemType), 
+                itemType, 
                 dto.LessonId, 
                 dto.QuizId, 
                 dto.CodelabId, 
@@ -284,10 +375,16 @@ namespace VisualizationDSA.WebApi.Controllers
             var userIdStr = JwtHelper.ExtractSubFromToken(Request);
             if (userIdStr == null || !Guid.TryParse(userIdStr, out var currentUserId)) return Unauthorized();
 
+            // Admin (không phải chủ sở hữu) được phép tạo bài — handler chỉ chấp nhận owner id.
+            var course = await _dbContext.Courses.FindAsync(courseId);
+            if (course == null) return NotFound(new { error = "COURSE_NOT_FOUND", message = "Không tìm thấy khóa học." });
+            if (!IsOwnerOrAdmin(course, currentUserId)) return StatusCode(403, new { error = "FORBIDDEN", message = "Bạn không có quyền chỉnh sửa khóa học này." });
+
             var command = new VisualizationDSA.Application.Features.Lessons.Commands.CreateDraftLesson.CreateDraftLessonCommand
             {
-                TeacherId = currentUserId,
+                TeacherId = course.TeacherId,
                 CourseId = courseId,
+                ModuleId = dto.ModuleId,
                 Title = dto.Title,
                 ContentMd = dto.ContentMd,
                 SandboxType = dto.SandboxType,
@@ -307,9 +404,13 @@ namespace VisualizationDSA.WebApi.Controllers
             var userIdStr = JwtHelper.ExtractSubFromToken(Request);
             if (userIdStr == null || !Guid.TryParse(userIdStr, out var currentUserId)) return Unauthorized();
 
+            var moduleItem = await _dbContext.ModuleItems.Include(m => m.Module).ThenInclude(m => m.Course).FirstOrDefaultAsync(i => i.LessonId == id);
+            if (moduleItem?.Module?.Course == null) return NotFound(new { error = "LESSON_NOT_FOUND", message = "Không tìm thấy bài giảng." });
+            if (!IsOwnerOrAdmin(moduleItem.Module.Course, currentUserId)) return StatusCode(403, new { error = "FORBIDDEN", message = "Bạn không có quyền chỉnh sửa bài giảng này." });
+
             var command = new VisualizationDSA.Application.Features.Lessons.Commands.UpdateLesson.UpdateLessonCommand
             {
-                TeacherId = currentUserId,
+                TeacherId = moduleItem.Module.Course.TeacherId,
                 LessonId = id,
                 Title = dto.Title,
                 ContentMd = dto.ContentMd,
@@ -329,9 +430,13 @@ namespace VisualizationDSA.WebApi.Controllers
             var userIdStr = JwtHelper.ExtractSubFromToken(Request);
             if (userIdStr == null || !Guid.TryParse(userIdStr, out var currentUserId)) return Unauthorized();
 
+            var moduleItem = await _dbContext.ModuleItems.Include(m => m.Module).ThenInclude(m => m.Course).FirstOrDefaultAsync(i => i.LessonId == id);
+            if (moduleItem?.Module?.Course == null) return NotFound(new { error = "LESSON_NOT_FOUND", message = "Không tìm thấy bài giảng." });
+            if (!IsOwnerOrAdmin(moduleItem.Module.Course, currentUserId)) return StatusCode(403, new { error = "FORBIDDEN", message = "Bạn không có quyền xóa bài giảng này." });
+
             var command = new VisualizationDSA.Application.Features.Lessons.Commands.DeleteLesson.DeleteLessonCommand
             {
-                TeacherId = currentUserId,
+                TeacherId = moduleItem.Module.Course.TeacherId,
                 LessonId = id
             };
 
@@ -467,6 +572,7 @@ namespace VisualizationDSA.WebApi.Controllers
         public string SandboxType { get; set; } = string.Empty;
         public string SandboxConfig { get; set; } = "{}";
         public Guid? QuizId { get; set; }
+        public Guid? ModuleId { get; set; }
         public int XPReward { get; set; } = 20;
         public int OrderIndex { get; set; }
     }

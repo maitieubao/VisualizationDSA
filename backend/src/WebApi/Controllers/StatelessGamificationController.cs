@@ -73,8 +73,10 @@ namespace VisualizationDSA.WebApi.Controllers
         
         
         [HttpPost("award-xp")]
+        [VisualizationDSA.WebApi.Filters.RequireJwtRole("Teacher,Admin")]
         public async Task<IActionResult> AwardXp([FromBody] AwardXpRequest request)
         {
+            // Chỉ Teacher/Admin (hoặc luồng nội bộ) được cấp XP — chống tự cày XP vô hạn.
             if (request.Amount <= 0 || request.Amount > 500)
                 return BadRequest(new { error = "INVALID_AMOUNT", message = "XP phải trong khoảng 1-500." });
 

@@ -86,6 +86,8 @@ public void SelectionSort(int[] arr)
 | **Thời gian (Mọi trường hợp)** | **O(N²)** - Cho dù mảng đã được sắp xếp sẵn (Best Case) hay lộn xộn (Worst Case), thuật toán vẫn luôn luôn thực hiện 2 vòng lặp lồng nhau để rà quét toàn bộ mảng. Rất chậm! |
 | **Không gian bộ nhớ** | **O(1)** - Sắp xếp tại chỗ (In-place). |
 | **Số lần Hoán đổi (Swap)** | **O(N)** - Đây là điểm sáng hiếm hoi! Selection Sort thực hiện tối đa N lần hoán đổi. |
+| **Số lần So sánh (Compare)** | **N(N-1)/2** - Luôn cố định bất kể dữ liệu đã sắp xếp hay lộn xộn, bởi vì ở mỗi bước thuật toán vẫn bắt buộc phải rà quét toàn bộ phần mảng chưa sắp xếp để tìm phần tử nhỏ nhất. |
+| **Tính ổn định (Stable)** | **Không** - Selection Sort là thuật toán **không ổn định** (unstable): khi có nhiều phần tử bằng nhau, thao tác hoán đổi có thể làm thay đổi thứ tự tương đối ban đầu của chúng. Ví dụ, với mảng `[5a, 3, 5b, 1]`, sau khi hoán đổi phần tử nhỏ nhất `1` lên đầu ta được `[1, 3, 5b, 5a]` — thứ tự của hai phần tử `5a` và `5b` đã bị đảo ngược. |
 
 :::warning Tại sao ít ai dùng Selection Sort?
 Thuật toán này thường chỉ xuất hiện trong sách giáo khoa để minh họa cho sinh viên mới học lập trình vì thời gian chạy luôn là O(N²) không thể cứu vãn.
@@ -95,5 +97,28 @@ Tuy nhiên, nếu bạn đang làm việc trong một hệ thống phần cứng
 :::tip Tóm tắt nhanh (Key Takeaways)
 - Luôn luôn chia mảng làm 2 phần: đã sắp xếp (bên trái) và chưa sắp xếp (bên phải).
 - Đi tìm số nhỏ nhất bên phải và quăng nó vào cuối của bên trái.
-- Độ phức tạp luôn là O(N²), nhưng bù lại số lượng phép ghi/đổi chỗ (swap) cực kỳ ít (chỉ tối đa N lần).
+- Độ phức tạp luôn là O(N²) cho mọi trường hợp, nhưng bù lại số lượng phép ghi/đổi chỗ (swap) cực kỳ ít (chỉ tối đa N lần).
+- Số lần so sánh luôn cố định là N(N-1)/2 và Selection Sort **không ổn định** (unstable).
 :::
+
+## Next Steps {#next-steps}
+
+Đừng chỉ đọc lý thuyết! Hãy truy cập bảng điều khiển tương tác (Sandbox) bên phải màn hình, bấm nút "Play" và xem từng bước thuật toán tìm phần tử nhỏ nhất rồi hoán đổi nó về đúng vị trí để thực sự củng cố kiến thức này.
+
+Sau khi đã nắm vững Selection Sort, chúng ta sẽ bước sang một thuật toán sắp xếp cùng nhóm đơn giản nhưng linh hoạt hơn rất nhiều trong thực tế: **Sắp xếp Chèn (Insertion Sort)**.
+
+<div class="vt-box-container next-steps">
+  <a class="vt-box" href="/docs/sorting/insertion-sort">
+    <p class="next-steps-link">Sắp xếp Chèn (Insertion Sort)</p>
+    <p class="next-steps-caption">Hiệu quả hơn với dữ liệu gần như đã sắp xếp, và là thuật toán ổn định.</p>
+  </a>
+</div>
+
+## 📚 Tham khảo lý thuyết
+
+Các kiến thức lý thuyết trong bài được tổng hợp và đối chiếu từ những nguồn học thuật sau:
+
+- **Ý tưởng thuật toán, phân tích độ phức tạp O(N²) ở mọi trường hợp và số lần so sánh N(N-1)/2:** Cormen, T. H., Leiserson, C. E., Rivest, R. L., & Stein, C., *Introduction to Algorithms* (CLRS), 3rd Edition, MIT Press, 2009 — Chương 2.2 *Analyzing algorithms*.
+- **Độ phức tạp, bộ nhớ O(1) tại chỗ (in-place) và cách chứng minh số lần hoán đổi O(N):** Dasgupta, S., Papadimitriou, C., & Vazirani, U., *Algorithms*, McGraw-Hill, 2008 — Chương 2 *Basics of Algorithms*.
+- **Tổng quan, tính không ổn định (unstable) và bảng so sánh độ phức tạp của Selection Sort:** Wikipedia, *Selection sort* — https://en.wikipedia.org/wiki/Selection_sort
+- **Cài đặt tham khảo và giải thích trực quan từng bước:** GeeksforGeeks, *Selection Sort Algorithm* — https://www.geeksforgeeks.org/selection-sort/

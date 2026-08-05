@@ -32,6 +32,7 @@ export class StreakCalculator {
     lastActiveDate: string,
     currentStreak: number,
     todayDateStr: string,
+    streakFreezesCount: number = 0,
   ): StreakResult {
     if (lastActiveDate === todayDateStr) {
       return { nextStreak: currentStreak, shouldUpdate: false };
@@ -41,12 +42,21 @@ export class StreakCalculator {
       return { nextStreak: 1, shouldUpdate: true };
     }
 
+    // Tính "hôm qua" bằng formatter LOCAL giống getAdjustedDate (tránh lệch timezone UTC).
     const yesterday = new Date(todayDateStr);
     yesterday.setDate(yesterday.getDate() - 1);
-    const yesterdayStr = yesterday.toISOString().split('T')[0];
+    const yyyy = yesterday.getFullYear();
+    const mm = String(yesterday.getMonth() + 1).padStart(2, '0');
+    const dd = String(yesterday.getDate()).padStart(2, '0');
+    const yesterdayStr = `${yyyy}-${mm}-${dd}`;
 
     if (lastActiveDate === yesterdayStr) {
       return { nextStreak: currentStreak + 1, shouldUpdate: true };
+    }
+
+    // Nghỉ lỡ 1 ngày: dùng Streak Freeze (nếu còn) — giữ nguyên streak thay vì reset về 1.
+    if (streakFreezesCount > 0 && currentStreak > 1) {
+      return { nextStreak: currentStreak, shouldUpdate: true, freezeUsed: true };
     }
 
     return { nextStreak: 1, shouldUpdate: true };

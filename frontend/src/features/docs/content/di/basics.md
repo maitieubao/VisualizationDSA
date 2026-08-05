@@ -180,3 +180,28 @@ controller.RegisterUser("test@mail.com");
 - Tác dụng cốt lõi 2: Mở đường cho Unit Test bằng kỹ thuật Mocks/Stubs.
 - Để sử dụng DI thành thạo, bạn bắt buộc phải hiểu rành rẽ về các Vòng đời (Lifecycles) của Container. Xem lại bài [DI Lifecycles](/docs/di/lifecycles) để tránh lỗi bắt cóc phụ thuộc (Captive Dependency).
 :::
+
+## Next Steps {#next-steps}
+
+Bạn đã hiểu cách Container nhồi cơm vào miệng Controller. Chặng tiếp theo là tìm hiểu cách Container **canh giờ cho ăn** (Vòng đời dịch vụ) và các chiêu thức nâng cao khi ứng dụng lớn dần.
+
+<div class="vt-box-container next-steps">
+  <a class="vt-box" href="/docs/di/lifecycles">
+    <p class="next-steps-link">Vòng đời (Lifecycles)</p>
+    <p class="next-steps-caption">Phân biệt Transient, Scoped, Singleton và tránh bẫy Captive Dependency.</p>
+  </a>
+  <a class="vt-box" href="/docs/di/advanced">
+    <p class="next-steps-link">Các mẫu nâng cao</p>
+    <p class="next-steps-caption">Factory, Lazy&lt;T&gt; và những Anti-pattern cần tránh khi dùng DI Container.</p>
+  </a>
+</div>
+
+## 📚 Tham khảo lý thuyết {#references}
+
+Nguồn lý thuyết chính được dùng để biên soạn bài viết này:
+
+- **Mark Seemann – *Dependency Injection in .NET* (Manning Publications):** Cuốn sách kinh điển định nghĩa DI là tập hợp các kỹ thuật (Constructor/Setter/Interface Injection) để hiện thực hóa nguyên lý IoC.
+- **Robert C. Martin – *Clean Architecture* (Prentice Hall, 2017):** Chương về Dependency Inversion Principle (DIP) và vai trò của các biên giới kiến trúc trong việc tách rời các module.
+- **Microsoft Learn – *Dependency injection in .NET*:** Tài liệu chính thức của ASP.NET Core về DI Container, các phương thức đăng ký `AddTransient`/`AddScoped`/`AddSingleton` và vòng đời dịch vụ. (https://learn.microsoft.com/en-us/dotnet/core/extensions/dependency-injection)
+- **Martin Fowler – *Inversion of Control Containers and the Dependency Injection pattern*:** Bài viết kinh điển phân biệt IoC Container và 3 hình thức DI (Constructor, Setter, Interface Injection). (https://martinfowler.com/articles/injection.html)
+- **Wikipedia – *Dependency injection*:** Tổng quan về DI, mối quan hệ với IoC và các ví dụ minh họa. (https://en.wikipedia.org/wiki/Dependency_injection)

@@ -1,11 +1,5 @@
 <template>
-  
-
-
-
-
-
-  <div class="radix-root" style="min-width: 620px">
+  <div class="radix-root">
     <RadixBanner :frame="frame" />
     <RadixArray :frame="frame" />
     <RadixConnector :frame="frame" />
@@ -26,16 +20,12 @@ defineProps<{ frame: SortFrame | null }>();
 </script>
 
 <style scoped>
-
-
-
-
 .radix-root {
   display: flex;
   flex-direction: column;
-  gap: 0;                   
+  gap: 0;
   width: 100%;
-  height: 100%;             
+  height: 100%;
   padding: 10px 14px 12px;
   overflow-y: auto;
   box-sizing: border-box;

@@ -1,17 +1,17 @@
 import { defineStore } from 'pinia';
 import { ref, computed } from 'vue';
 import { COURSES } from '../../../data/courses';
+import { courseApi } from '../../../services/courseApi';
 import type { Course, CourseProgress } from '../types/course.types';
 import { useAuthStore } from '../../auth/store/useAuthStore';
-import { useLessonStore } from '../../lesson/store/useLessonStore';
 
 export const useCourseStore = defineStore('course', () => {
   const authStore = useAuthStore();
-  const lessonStore = useLessonStore();
 
   
   const courses = ref<Course[]>([]);
   const isLoading = ref<boolean>(false);
+  const error = ref<string>('');
   const selectedCategory = ref<string>('All');
   const selectedDifficulty = ref<string>('All');
   const searchQuery = ref<string>('');
@@ -48,13 +48,23 @@ export const useCourseStore = defineStore('course', () => {
 
   
 
-  function loadCourses() {
+  async function loadCourses() {
     isLoading.value = true;
-    
-    setTimeout(() => {
+    error.value = '';
+    try {
+      const apiCourses = await courseApi.getCourses();
+      const mapped = apiCourses.map(c => ({
+        ...c,
+        coverImage: c.coverImageUrl ?? c.coverImage,
+      }));
+      courses.value = mapped.filter(c => c.isPublished);
+    } catch (err) {
+      console.warn('Không tải được khóa học từ máy chủ, dùng dữ liệu cục bộ:', err);
+      error.value = 'Không kết nối được máy chủ — đang hiển thị danh sách khóa học cục bộ.';
       courses.value = COURSES.filter(c => c.isPublished);
+    } finally {
       isLoading.value = false;
-    }, 300);
+    }
   }
 
   function getCourseById(id: string): Course | undefined {
@@ -75,28 +85,36 @@ export const useCourseStore = defineStore('course', () => {
     }
 
     
+    // Lưu ý: API list `/concepts/courses` KHÔNG trả lessons (chỉ totalLessons) —
+    // phải null-safe để tránh crash khi iterate.
+    const lessons = course.lessons ?? [];
     let completedCount = 0;
     const completedLessonIds: string[] = [];
     let xpEarned = 0;
 
-    for (const lesson of course.lessons) {
+    for (const lesson of lessons) {
       
       const key = `lesson_progress_${lesson.id}`;
       const saved = localStorage.getItem(key);
       if (saved) {
         try {
           const data = JSON.parse(saved);
-          if (data.codelabCompleted && data.xpAwarded >= course.xpReward / course.totalLessons) {
+          // Bài được coi là hoàn thành khi: cờ completed (lưu bởi lesson flow — bao gồm
+          // cả bài không có codelab) HOẶC codelabCompleted (dữ liệu cũ).
+          const isDone = data.completed === true || data.codelabCompleted === true;
+          if (isDone) {
             completedCount++;
             completedLessonIds.push(lesson.id);
-            xpEarned += data.xpAwarded;
+            xpEarned += data.xpAwarded ?? 0;
           }
-        } catch (e) {  }
+        } catch (e) {
+          console.warn(`Không đọc được dữ liệu tiến độ lesson "${lesson.id}" từ localStorage:`, e);
+        }
       }
     }
 
-    const progressPercent = course.totalLessons > 0
-      ? Math.round((completedCount / course.totalLessons) * 100)
+    const progressPercent = (course.totalLessons > 0 ? course.totalLessons : lessons.length) > 0
+      ? Math.round((completedCount / (course.totalLessons > 0 ? course.totalLessons : lessons.length)) * 100)
       : 0;
 
     return {
@@ -133,7 +151,7 @@ export const useCourseStore = defineStore('course', () => {
     if (!saved) return 'not-started';
     try {
       const data = JSON.parse(saved);
-      if (data.codelabCompleted) return 'completed';
+      if (data.completed === true || data.codelabCompleted === true) return 'completed';
       if (data.hasWatchedVisualizer || data.quizScore !== null) return 'in-progress';
       return 'not-started';
     } catch {
@@ -167,24 +185,26 @@ export const useCourseStore = defineStore('course', () => {
 
   function getFirstUncompletedLesson(courseId: string): string | null {
     const course = getCourseById(courseId);
-    if (!course || course.lessons.length === 0) return null;
+    const lessons = course?.lessons ?? [];
+    if (lessons.length === 0) return null;
 
-    for (const lesson of course.lessons) {
+    for (const lesson of lessons) {
       const status = getLessonStatus(lesson.id);
       if (status === 'in-progress') return lesson.id;
     }
 
-    for (const lesson of course.lessons) {
+    for (const lesson of lessons) {
       const status = getLessonStatus(lesson.id);
       if (status === 'not-started') return lesson.id;
     }
 
-    return course.lessons[0]?.id ?? null;
+    return lessons[0]?.id ?? null;
   }
 
   return {
     courses,
     isLoading,
+    error,
     selectedCategory,
     selectedDifficulty,
     searchQuery,

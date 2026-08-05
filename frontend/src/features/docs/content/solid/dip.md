@@ -198,3 +198,19 @@ builder.Services.AddScoped<Store>();
 - DIP là tiền đề để thực hiện **Dependency Injection (DI)**, giúp hệ thống lỏng lẻo (Loosely Coupled) và dễ dàng Unit Test nhờ khả năng dùng Mock Objects.
 - Hoàn tất 5 chữ cái SOLID: SRP giúp Class chuyên biệt, OCP giúp dễ mở rộng, LSP đảm bảo an toàn kế thừa, ISP cắt nhỏ giao diện, và DIP kết nối tất cả chúng lại bằng tiêm sự phụ thuộc!
 :::
+
+---
+
+## Next Steps {#next-steps}
+
+- [Dependency Injection (DI) & IoC](/docs/di/basics): Cơ chế tiêm hợp đồng (Interface) vào Module cấp cao và cách IoC Container tự động lắp ráp toàn bộ hệ thống.
+- [Vòng đời (Lifecycles) trong DI](/docs/di/lifecycles): Hiểu rõ Singleton, Scoped và Transient để đăng ký dịch vụ đúng đắn trong ASP.NET Core.
+- [Các mẫu nâng cao trong DI](/docs/di/advanced): Khám phá Constructor Injection, Method Injection, Property Injection và các kỹ thuật tiêm tiên tiến khác.
+
+## 📚 Tham khảo lý thuyết
+
+- Sách **Clean Code** (Robert C. Martin) — Lập trình hướng trừu tượng (Program to an interface, not an implementation) để giảm sự phụ thuộc cứng giữa các module.
+- Sách **Clean Architecture** (Robert C. Martin) — Phân tích chi tiết hai quy tắc của DIP: Module cấp cao và cấp thấp đều phụ thuộc vào trừu tượng.
+- Wikipedia — [Dependency inversion principle](https://en.wikipedia.org/wiki/Dependency_inversion_principle) và [SOLID](https://en.wikipedia.org/wiki/SOLID).
+- Microsoft Learn — [Dependency injection in .NET](https://learn.microsoft.com/en-us/dotnet/core/extensions/dependency-injection): đăng ký và tiêm dịch vụ thông qua `IServiceCollection`.
+- GeeksforGeeks — Dependency Inversion Principle (SOLID): giải thích lý thuyết kèm ví dụ code minh họa.

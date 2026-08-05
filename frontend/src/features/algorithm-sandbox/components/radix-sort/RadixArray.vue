@@ -71,22 +71,22 @@ const {
   position: relative; user-select: none;
 }
 .r-cell--idle {
-  border-color: color-mix(in srgb, var(--color-accent-cyan) 40%, transparent);
-  background: linear-gradient(135deg, color-mix(in srgb, var(--color-accent-blue-glow) 50%, transparent), var(--color-accent-cyan-dim));
+  border-color: rgba(61, 153, 112, 0.4);
+  background: var(--color-accent-cyan-dim);
   color: var(--color-accent-cyan);
 }
 .r-cell--dist {
   border-color: var(--color-accent-yellow);
-  background: linear-gradient(135deg, color-mix(in srgb, var(--color-accent-yellow-glow) 70%, transparent), var(--color-accent-yellow-dim));
-  color: var(--color-accent-yellow-light);
+  background: var(--color-accent-yellow-dim);
+  color: var(--color-accent-yellow);
   box-shadow: 0 0 18px var(--color-accent-yellow-glow);
   transform: scale(1.04) translateY(-2px);
   z-index: 2;
 }
 .r-cell--coll {
   border-color: var(--color-accent-green);
-  background: linear-gradient(135deg, color-mix(in srgb, var(--color-accent-green-glow) 70%, transparent), var(--color-accent-green-dim));
-  color: var(--color-accent-green-light);
+  background: var(--color-accent-green-dim);
+  color: var(--color-accent-green);
   box-shadow: 0 0 18px var(--color-accent-green-glow);
   transform: scale(1.04) translateY(-2px);
   z-index: 2;
@@ -94,7 +94,7 @@ const {
 .r-cell--placeholder {
   border-style: dashed !important;
   border-color: var(--color-border-subtle) !important;
-  background: color-mix(in srgb, var(--color-bg-primary) 10%, transparent) !important;
+  background: rgba(19, 22, 20, 0.1) !important;
   color: var(--color-text-muted) !important;
   box-shadow: none !important;
   transform: none !important;
@@ -113,7 +113,6 @@ const {
 .r-hot      { font-weight: 900; color: var(--color-accent-cyan); transition: all .3s; display: inline-block; }
 .r-hot--on  { color: var(--color-accent-yellow); transform: scale(1.2); filter: drop-shadow(0 0 8px var(--color-accent-yellow-glow)); text-decoration: underline 2px; }
 .r-idx      { font-family: var(--font-mono); opacity: .35; font-size: 9.5px; margin-top: 2px; color: var(--color-text-muted); }
-
 
 .sort-list-move         { transition: transform .4s cubic-bezier(.25,.8,.25,1); }
 .sort-list-enter-from   { opacity: 0; transform: translateY(-8px) scale(.92); }

@@ -183,6 +183,8 @@ Nhiều lập trình viên (đặc biệt là dân Game Dev dùng Unity) nghiệ
 2. **Kẻ thù của Unit Test:** Bạn không thể nào Test giả lập (Mock) một cái Singleton được. Hàm `Instance` bị gắn cứng (Static) vào Class. Nếu Singleton đó có kết nối Database, mỗi lần chạy Test bạn bắt buộc phải cắm cáp mạng vào Database thật.
 3. **Giấu nhẹm sự phụ thuộc (Hidden Dependency):** Class `Store` gọi lén `Logger.Instance` ở dòng thứ 500. Lập trình viên khác nhìn vào khai báo Class `Store` sẽ hoàn toàn không biết nó cần dùng đến `Logger`. 
 
+**Vậy có nên dùng `static class` (Class tĩnh) để thay thế không?** Cả hai đều chỉ tồn tại một bản duy nhất trong bộ nhớ, nhưng Static Class còn cứng nhắc hơn: nó không thể triển khai Interface, không thể truyền như một đối số, không thể tham gia Kế thừa, và cũng khó Unit Test chẳng kém Singleton. Điểm lợi duy nhất của Singleton (qua Property `Instance`) là nó vẫn là một đối tượng thật sự — có thể implement Interface và được đưa vào hệ thống Dependency Injection để quản lý vòng đời, mở đường cho việc thay thế bằng Mock khi Test.
+
 **Giải pháp của Kiến trúc hiện đại (Modern Architecture):**
 Đừng tự viết Class Singleton nữa! Hãy viết các Class bình thường, sau đó sử dụng **Dependency Injection (DI) Container** (như trong ASP.NET Core). 
 
@@ -196,3 +198,33 @@ Framework sẽ tự động quản lý vòng đời duy nhất của nó và Ti�
 - Để chống Đa luồng: Dùng **Double-Check Locking** hoặc cách tốt nhất ở C# là dùng **`Lazy<T>`**.
 - Lạm dụng Singleton sẽ biến nó thành Biến toàn cục (Global Variable), gây nát Unit Test. Hãy ưu tiên quản lý vòng đời Singleton bằng **Dependency Injection**.
 :::
+
+## Next Steps {#next-steps}
+
+Bạn đã chinh phục xong vị "Tổng thống duy nhất" của thế giới lập trình và hiểu rõ tại sao mẫu này cần được đưa vào tầm kiểm soát của các Container hiện đại. Tiếp theo, hãy khám phá các mẫu thiết kế đồng minh trong đại gia đình GoF cùng cơ chế Dependency Injection — nơi vòng đời của Singleton được quản lý một cách khoa học thay vì tự dựng trâu:
+
+<div class="vt-box-container next-steps">
+  <a class="vt-box" href="/docs/patterns/factory">
+    <p class="next-steps-link">Factory Method</p>
+    <p class="next-steps-caption">Chuyển giao trách nhiệm "new" đối tượng cho Nhà máy chuyên trách — cặp bài trùng Creational với Singleton.</p>
+  </a>
+  <a class="vt-box" href="/docs/patterns/observer">
+    <p class="next-steps-link">Observer Pattern</p>
+    <p class="next-steps-caption">Thiết lập quan hệ Một - Nhiều để các đối tượng phụ thuộc tự động cập nhật khi trạng thái thay đổi.</p>
+  </a>
+  <a class="vt-box" href="/docs/di/basics">
+    <p class="next-steps-link">Dependency Injection & IoC</p>
+    <p class="next-steps-caption">Đưa vòng đời Singleton vào tay DI Container — giải pháp hiện đại thay cho việc tự viết Singleton bằng tay.</p>
+  </a>
+</div>
+
+## 📚 Tham khảo lý thuyết {#references}
+
+Các kiến thức lý thuyết trong bài được tổng hợp và đối chiếu từ những nguồn học thuật sau:
+
+- **Định nghĩa chuẩn về Singleton và phân loại Creational Patterns:** Erich Gamma, Richard Helm, Ralph Johnson & John Vlissides (Gang of Four), *Design Patterns: Elements of Reusable Object-Oriented Software* (Addison-Wesley, 1994) — Chương 3 *Creational Patterns*.
+- **Giải thích dễ hiểu kèm ví dụ trực quan về Singleton, sự khác biệt với Static Class và các kỹ thuật Thread-Safe:** Eric Freeman & Elisabeth Robson, *Head First Design Patterns* (O'Reilly Media) — Chương 5 *The Singleton Pattern*.
+- **Singleton Pattern:** Wikipedia — https://en.wikipedia.org/wiki/Singleton_pattern
+- **Hướng dẫn Singleton với mã nguồn đầy đủ (C++, C#, Java, Python) và tranh luận về Anti-pattern:** Refactoring.Guru — https://refactoring.guru/design-patterns/singleton
+- **Tổng quan Design Patterns trong .NET và cơ chế Dependency Injection:** Microsoft Learn — *Design patterns in .NET* và *Dependency injection in ASP.NET Core*.
+- **Giới thiệu Singleton Pattern và những vấn đề tiềm ẩn:** SourceMaking — *Singleton Design Pattern* — https://sourcemaking.com/design_patterns/singleton

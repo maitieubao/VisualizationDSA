@@ -14,9 +14,9 @@
 
     
     <div v-if="frame?.graphNodes?.length" class="absolute top-3 right-3 flex flex-col gap-1 z-10">
-      <button @click="zoomIn" class="w-8 h-8 rounded-lg flex items-center justify-center text-sm font-bold text-text-primary hover:bg-bg-hover transition" style="background:rgba(15,23,42,0.8);backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,0.05)" title="Phóng to">+</button>
-      <button @click="zoomOut" class="w-8 h-8 rounded-lg flex items-center justify-center text-sm font-bold text-text-primary hover:bg-bg-hover transition" style="background:rgba(15,23,42,0.8);backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,0.05)" title="Thu nhỏ">−</button>
-      <button @click="resetView" class="w-8 h-8 rounded-lg flex items-center justify-center text-xs font-bold text-text-primary hover:bg-bg-hover transition" style="background:rgba(15,23,42,0.8);backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,0.05)" title="Đặt lại">⟳</button>
+      <button @click="zoomIn" class="w-8 h-8 rounded-lg flex items-center justify-center text-sm font-bold text-text-primary hover:bg-bg-hover transition" style="background:rgba(15,23,42,0.8);backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,0.05)" title="Phóng to" aria-label="Phóng to"><BaseIcon name="plus" class="w-4 h-4" /></button>
+      <button @click="zoomOut" class="w-8 h-8 rounded-lg flex items-center justify-center text-sm font-bold text-text-primary hover:bg-bg-hover transition" style="background:rgba(15,23,42,0.8);backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,0.05)" title="Thu nhỏ" aria-label="Thu nhỏ"><BaseIcon name="minus" class="w-4 h-4" /></button>
+      <button @click="resetView" class="w-8 h-8 rounded-lg flex items-center justify-center text-xs font-bold text-text-primary hover:bg-bg-hover transition" style="background:rgba(15,23,42,0.8);backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,0.05)" title="Đặt lại" aria-label="Đặt lại"><BaseIcon name="refresh-cw" class="w-3.5 h-3.5" /></button>
     </div>
 
     

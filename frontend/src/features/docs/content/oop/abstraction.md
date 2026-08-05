@@ -198,3 +198,22 @@ Nhờ tính Trừu tượng, thằng `PdfParser` không phải viết lại logi
 - Hàm `abstract` là hàm Không có nội dung (Không có ngoặc nhọn `{}`). Nó mang tính chất BẮT BUỘC (Ép các Lớp con phải `override` và tự viết ruột cho nó).
 - Sự kết hợp giữa hàm có ruột (Concrete) và hàm rỗng (Abstract) bên trong cùng một Abstract Class tạo nên tuyệt kỹ [Template Method Pattern](https://en.wikipedia.org/wiki/Template_method_pattern) - nền tảng của mọi Framework.
 :::
+
+---
+
+## Next Steps {#next-steps}
+
+- [Tính Đa hình (Polymorphism)](/docs/oop/polymorphism): Vì sao Lớp cha có thể "gọi hộ" code của Lớp con lúc Runtime, biến Abstract Method thành vũ khí đa hình.
+- [Interface](/docs/oop/interface): So sánh Abstract Class (gom nhóm theo huyết thống IS-A) và Interface (gom nhóm theo năng lực CAN-DO) để chọn đúng công cụ trừu tượng hóa.
+- [Tính Kế thừa (Inheritance)](/docs/oop/inheritance): Ôn lại gốc rễ của chuỗi cha-con, nơi Abstract Class phát huy sức mạnh.
+- [Dependency Inversion (DIP)](/docs/solid/dip): Khám phá cách trừu tượng hóa giúp Module cấp cao không còn phụ thuộc vào chi tiết cài đặt.
+
+## 📚 Tham khảo lý thuyết
+
+- Sách **Clean Code** (Robert C. Martin) — Triết lý ẩn giấu chi tiết cài đặt và phơi bày đúng những gì cần thiết cho client.
+- Sách **Clean Architecture** (Robert C. Martin) — Trừu tượng hóa các chính sách nghiệp vụ để hệ thống bền vững trước sự thay đổi của công nghệ.
+- Sách **Head First Object-Oriented Analysis and Design** (O'Reilly) — Phân tích và thiết kế hướng đối tượng trực quan, phân biệt rõ trừu tượng hóa hành vi.
+- Microsoft Learn — [Tutorial: Object oriented programming in C#](https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/tutorials/oop) và `abstract` keyword.
+- Wikipedia — [Abstraction (computer science)](https://en.wikipedia.org/wiki/Abstraction_(computer_science)).
+- GeeksforGeeks — [Abstraction in C#](https://www.geeksforgeeks.org/abstraction-in-c-sharp/).
+- MIT OpenCourseWare — 6.005 Software Construction (https://ocw.mit.edu).

@@ -36,8 +36,8 @@
         >
           <div class="flex items-center gap-3 flex-1 min-w-0">
             <div class="flex items-center justify-center w-8 h-8 rounded-lg" :class="getModuleStatusClass(module)">
-              <span v-if="isModuleCompleted(module)" class="text-accent-green text-lg">✓</span>
-              <span v-else-if="isModuleLocked(module)" class="text-text-muted">🔒</span>
+              <span v-if="isModuleCompleted(module)" class="text-accent-green text-lg"><BaseIcon name="check" class="w-4 h-4" /></span>
+              <span v-else-if="isModuleLocked(module)" class="text-text-muted"><BaseIcon name="lock" class="w-3.5 h-3.5" /></span>
               <span v-else class="text-accent font-bold text-sm">{{ getModuleIndex(module.id) + 1 }}</span>
             </div>
             <div class="flex-1 min-w-0">

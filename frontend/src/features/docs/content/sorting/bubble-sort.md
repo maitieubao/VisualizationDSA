@@ -106,3 +106,12 @@ Sau khi đã nắm vững, chúng ta sẽ bước sang một phiên bản sắp 
     <p class="next-steps-caption">Sức mạnh của thuật toán Chia để trị (Divide and Conquer).</p>
   </a>
 </div>
+
+## Tham khảo lý thuyết {#references}
+
+Dưới đây là các nguồn tài liệu kinh điển và chính thống được dùng để biên soạn bài viết này, giúp bạn tự nghiên cứu sâu hơn nếu muốn:
+
+- **Khái niệm Bubble Sort, nguyên lý nổi bọt và minh họa từng bước:** [Bubble sort - Wikipedia](https://en.wikipedia.org/wiki/Bubble_sort). Nguồn chính về mô tả thuật toán, bảng độ phức tạp và tính ổn định (stable) của thuật toán.
+- **Cải tiến cờ `isSwapped` giúp đạt O(N) ở trường hợp tốt nhất:** GeeksforGeeks - [Bubble Sort](https://www.geeksforgeeks.org/bubble-sort/). Bài viết phân tích chi tiết biến thể tối ưu dừng sớm khi mảng đã sắp xếp xong.
+- **Nền tảng phân tích độ phức tạp Big O và tính ổn định trong sắp xếp:** Cormen, Leiserson, Rivest & Stein, *Introduction to Algorithms* (CLRS) - Chương về Sắp xếp (Bubble Sort xuất hiện trong bài tập 2-2 của sách).
+- **Bối cảnh thực tế: vì sao hiếm khi dùng Bubble Sort trong sản xuất:** Microsoft Learn - [Array.Sort Method (.NET)](https://learn.microsoft.com/en-us/dotnet/api/system.array.sort). Tài liệu giải thích cách .NET dùng thuật toán lai IntroSort nhanh hơn đáng kể so với O(N²).

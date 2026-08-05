@@ -33,7 +33,9 @@ namespace VisualizationDSA.Application.Features.Classrooms.Commands.KickStudent
             if (enrollment == null)
                 throw new ArgumentException("Student not in this classroom.");
 
-            _context.ClassroomEnrollments.Remove(enrollment);
+            // SOFT-KICK: giữ bản ghi với trạng thái Kicked (bảo toàn lịch sử + chặn join lại).
+            // Trước đây Remove() xóa cứng → học viên bị kick join lại được ngay.
+            enrollment.Kick(request.TeacherId, "Bị giáo viên xóa khỏi lớp");
             await _context.SaveChangesAsync(cancellationToken);
 
             return Unit.Value;

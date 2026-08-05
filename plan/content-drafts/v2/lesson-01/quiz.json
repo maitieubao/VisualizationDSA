@@ -1,0 +1,78 @@
+{
+  "quizTitle": "Trắc nghiệm Big O & Độ phức tạp",
+  "topic": "dsa",
+  "difficulty": 1,
+  "xpReward": 40,
+  "questions": [
+    {
+      "questionText": "Ký hiệu Big O dùng để đo lường điều gì?",
+      "options": [
+        "Thời gian chạy tuyệt đối tính bằng giây trên máy cụ thể",
+        "Xu hướng tăng trưởng của thời gian chạy khi N tăng",
+        "Số dòng code cần viết cho thuật toán",
+        "Mức tiêu thụ điện năng của máy tính"
+      ],
+      "correctIndex": 1,
+      "explanation": "Big O mô tả tốc độ tăng trưởng (asymptotic growth) của thời gian hoặc bộ nhớ, không phụ thuộc máy tính cụ thể."
+    },
+    {
+      "questionText": "Biểu thức 3N² + 5N + 10 có độ phức tạp Big O là gì?",
+      "options": ["O(N)", "O(N²)", "O(N³)", "O(N log N)"],
+      "correctIndex": 1,
+      "explanation": "Bỏ hằng số 3 và số hạng bậc thấp 5N + 10, giữ bậc cao nhất N² nên kết quả là O(N²)."
+    },
+    {
+      "questionText": "Tìm kiếm nhị phân trên mảng đã sắp xếp có độ phức tạp thời gian là bao nhiêu?",
+      "options": ["O(1)", "O(N)", "O(log N)", "O(N²)"],
+      "correctIndex": 2,
+      "explanation": "Mỗi bước thuật toán loại bỏ một nửa không gian tìm kiếm nên chỉ cần log2(N) bước."
+    },
+    {
+      "questionText": "Hai vòng lặp lồng nhau, mỗi vòng chạy N lần, có độ phức tạp là gì?",
+      "options": ["O(N)", "O(N log N)", "O(N²)", "O(2N)"],
+      "correctIndex": 2,
+      "explanation": "Số lần lặp tổng cộng là N x N = N², tương ứng O(N²)."
+    },
+    {
+      "questionText": "Với N = 1.000.000, thuật toán O(log N) cần khoảng bao nhiêu bước so với O(N)?",
+      "options": [
+        "20 bước thay vì 1 triệu bước",
+        "1 triệu bước thay vì 20 bước",
+        "500 nghìn bước thay vì 1 triệu bước",
+        "Bằng nhau về số bước"
+      ],
+      "correctIndex": 0,
+      "explanation": "log2(1.000.000) xấp xỉ 20, trong khi O(N) cần đúng 1 triệu bước."
+    },
+    {
+      "questionText": "Một hàm sắp xếp mảng bằng thuật toán O(N log N) rồi duyệt mảng một lần O(N), độ phức tạp tổng là gì?",
+      "options": ["O(N)", "O(N log N)", "O(N²)", "O(N + log N)"],
+      "correctIndex": 1,
+      "explanation": "Tổng là O(N log N + N); giữ bậc cao nhất nên kết quả là O(N log N)."
+    },
+    {
+      "questionText": "Một thuật toán tạo thêm mảng mới có N phần tử để lưu kết quả, độ phức tạp không gian là bao nhiêu?",
+      "options": ["O(1)", "O(log N)", "O(N)", "O(N²)"],
+      "correctIndex": 2,
+      "explanation": "Bộ nhớ phụ tỉ lệ thuận với N vì cần lưu N phần tử kết quả."
+    },
+    {
+      "questionText": "Với N = 1000, thuật toán O(N²) thực hiện khoảng bao nhiêu phép toán?",
+      "options": ["1.000", "10.000", "100.000", "1.000.000"],
+      "correctIndex": 3,
+      "explanation": "1000 x 1000 = 1.000.000 phép toán, đúng định nghĩa độ phức tạp bậc hai."
+    },
+    {
+      "questionText": "Tìm số 12 trong mảng đã sắp xếp [2, 5, 8, 12, 20] bằng tìm kiếm nhị phân: cần bao nhiêu lần so sánh?",
+      "options": ["1", "2", "3", "4"],
+      "correctIndex": 1,
+      "explanation": "Lần 1 so phần tử giữa là 8 (nhỏ hơn 12 nên loại nửa trái); lần 2 so phần tử giữa mới là 12, tìm thấy — tổng cộng 2 lần so sánh."
+    },
+    {
+      "questionText": "Đoạn code for (let i = 0; i < N; i += 2) chạy N/2 lần có độ phức tạp là gì?",
+      "options": ["O(N/2)", "O(N)", "O(log N)", "O(N²)"],
+      "correctIndex": 1,
+      "explanation": "Hằng số 1/2 bị bỏ đi trong Big O, nên N/2 vẫn quy về O(N)."
+    }
+  ]
+}

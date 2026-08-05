@@ -26,7 +26,7 @@
               <span class="sim-logo-icon">V</span>
               <span class="sim-logo-text">VisualizationDSA</span>
             </div>
-            <span class="sim-algo-label">{{ algorithmLabel }}</span>
+            <span class="sim-algo-label">{{ store.algorithmLabel }}</span>
           </div>
 
           
@@ -43,9 +43,9 @@
 
           
           <div v-if="store.showVcrControls" class="sim-vcr">
-            <div class="sim-vcr-btn">⏮</div>
-            <div class="sim-vcr-btn sim-vcr-play">▶</div>
-            <div class="sim-vcr-btn">⏭</div>
+            <div class="sim-vcr-btn"><BaseIcon name="step-backward" class="w-3 h-3" /></div>
+            <div class="sim-vcr-btn sim-vcr-play"><BaseIcon name="play" class="w-3 h-3" /></div>
+            <div class="sim-vcr-btn"><BaseIcon name="step-forward" class="w-3 h-3" /></div>
             <div class="sim-vcr-slider" />
           </div>
 
@@ -64,7 +64,6 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { useEmbedConfiguratorStore } from '../store/useEmbedConfiguratorStore';
-import { EMBED_ALGORITHM_OPTIONS } from '../types/embed-widget.types';
 
 const store = useEmbedConfiguratorStore();
 
@@ -81,13 +80,6 @@ const scaledWidth = computed(() => Math.round(store.widgetWidth * scale.value));
 const scaledHeight = computed(() => Math.round(store.widgetHeight * scale.value));
 
 const themeClass = computed(() => `theme-${store.selectedTheme}`);
-
-const algorithmLabel = computed(() => {
-  const found = EMBED_ALGORITHM_OPTIONS.find(
-    (a) => a.id === store.selectedAlgorithm,
-  );
-  return found ? found.label : store.selectedAlgorithm;
-});
 
 const barHeights = [30, 55, 20, 75, 45, 90, 35, 60, 50, 80];
 </script>

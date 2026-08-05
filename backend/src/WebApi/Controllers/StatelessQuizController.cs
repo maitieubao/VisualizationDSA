@@ -60,12 +60,84 @@ namespace VisualizationDSA.WebApi.Controllers
         
         
         [HttpGet("{quizId}")]
-        public IActionResult GetById(string quizId)
+        public async Task<IActionResult> GetById(string quizId)
         {
+            // Token hợp lệ → trả đủ đáp án (lesson flow chấm điểm trên client sau khi học viên đăng nhập);
+            // công khai → chỉ trả câu hỏi (chống lộ đề trước khi làm bài).
+            var authenticated = JwtHelper.RequireToken(Request) == null;
+
             var quiz = _quizBank.GetQuizById(quizId);
-            if (quiz == null)
+            if (quiz != null)
+            {
+                return Ok(ToPublicDto(quiz, authenticated));
+            }
+
+            // Fallback: quiz được seed/tạo từ DB (GUID) — bank in-memory chỉ chứa quiz mặc định.
+            // Parse Guid trước để tránh phụ thuộc cách EF translate Id.ToString() trên SQLite.
+            var dbQuiz = Guid.TryParse(quizId, out var quizGuid)
+                ? await _dbContext.Quizzes
+                    .Include(q => q.Questions)
+                    .FirstOrDefaultAsync(q => q.Id == quizGuid)
+                : await _dbContext.Quizzes
+                    .Include(q => q.Questions)
+                    .FirstOrDefaultAsync(q => q.Title == quizId);
+            if (dbQuiz == null)
                 return NotFound(new { error = "QUIZ_NOT_FOUND", quizId, supportedQuizzes = _quizBank.GetAllQuizzes().Select(q => q.Id) });
-            return Ok(quiz);
+
+            return Ok(new StatelessQuizPublicDto
+            {
+                Id = dbQuiz.Id.ToString(),
+                Title = dbQuiz.Title,
+                Topic = dbQuiz.Topic,
+                Difficulty = dbQuiz.Difficulty.ToString(),
+                XpReward = dbQuiz.XPReward,
+                Questions = dbQuiz.Questions
+                    .Select(q => authenticated
+                        ? new StatelessQuestionPublicDto
+                        {
+                            Id = q.Id.ToString(),
+                            Text = q.Question,
+                            Options = q.Options.ToList(),
+                            CorrectIndex = q.CorrectIndex,
+                            Explanation = q.Explanation
+                        }
+                        : new StatelessQuestionPublicDto
+                        {
+                            Id = q.Id.ToString(),
+                            Text = q.Question,
+                            Options = q.Options.ToList()
+                        })
+                    .ToList()
+            });
+        }
+
+        private static StatelessQuizPublicDto ToPublicDto(StatelessQuizDto quiz, bool authenticated)
+        {
+            return new StatelessQuizPublicDto
+            {
+                Id = quiz.Id,
+                Title = quiz.Title,
+                Topic = quiz.Topic,
+                Difficulty = quiz.Difficulty,
+                XpReward = quiz.XpReward,
+                Questions = quiz.Questions
+                    .Select(q => authenticated
+                        ? new StatelessQuestionPublicDto
+                        {
+                            Id = q.Id,
+                            Text = q.Text,
+                            Options = q.Options.ToList(),
+                            CorrectIndex = q.CorrectIndex,
+                            Explanation = q.Explanation
+                        }
+                        : new StatelessQuestionPublicDto
+                        {
+                            Id = q.Id,
+                            Text = q.Text,
+                            Options = q.Options.ToList()
+                        })
+                    .ToList()
+            };
         }
 
         
@@ -75,7 +147,8 @@ namespace VisualizationDSA.WebApi.Controllers
         [HttpGet("topic/{topic}")]
         public IActionResult GetByTopic(string topic)
         {
-            var quizzes = _quizBank.GetQuizzesByTopic(topic);
+            var authenticated = JwtHelper.RequireToken(Request) == null;
+            var quizzes = _quizBank.GetQuizzesByTopic(topic).Select(q => ToPublicDto(q, authenticated));
             return Ok(quizzes);
         }
 
@@ -89,17 +162,96 @@ namespace VisualizationDSA.WebApi.Controllers
         {
             try
             {
-                var result = _quizBank.EvaluateAttempt(request);
+                // Quiz từ DB (seed/giảng viên tạo) → chấm trực tiếp từ câu hỏi trong DB;
+                // quiz bank in-memory → chấm qua QuizBankStrategy.
+                var dbQuiz = Guid.TryParse(request.QuizId, out var quizGuid)
+                    ? await _dbContext.Quizzes
+                        .Include(q => q.Questions)
+                        .FirstOrDefaultAsync(q => q.Id == quizGuid)
+                    : await _dbContext.Quizzes
+                        .Include(q => q.Questions)
+                        .FirstOrDefaultAsync(q => q.Title == request.QuizId);
 
-                
-                var quiz = await _dbContext.Quizzes
-                    .FirstOrDefaultAsync(q => q.Title == request.QuizId || q.Id.ToString() == request.QuizId);
+                StatelessQuizAttemptResult result;
+                if (dbQuiz != null)
+                {
+                    if (request.Answers.Count != dbQuiz.Questions.Count)
+                        return BadRequest(new { error = "ANSWER_COUNT_MISMATCH", message = $"Số câu trả lời ({request.Answers.Count}) không khớp số câu hỏi ({dbQuiz.Questions.Count})." });
+
+                    var results = new List<StatelessQuestionResult>();
+                    int score = 0;
+                    // Giữ đúng thứ tự câu hỏi như GET trả về (index khớp request.Answers).
+                    var questions = dbQuiz.Questions.ToList();
+                    for (int i = 0; i < questions.Count; i++)
+                    {
+                        var q = questions[i];
+                        var isCorrect = request.Answers[i] == q.CorrectIndex;
+                        if (isCorrect) score++;
+                        results.Add(new StatelessQuestionResult
+                        {
+                            QuestionId = q.Id.ToString(),
+                            IsCorrect = isCorrect,
+                            CorrectIndex = q.CorrectIndex,
+                            Explanation = q.Explanation
+                        });
+                    }
+
+                    var passed = score >= (int)Math.Ceiling(questions.Count * 0.7);
+                    result = new StatelessQuizAttemptResult
+                    {
+                        Score = score,
+                        MaxScore = questions.Count,
+                        Passed = passed,
+                        XpAwarded = passed ? dbQuiz.XPReward : 0,
+                        QuestionResults = results
+                    };
+                }
+                else
+                {
+                    result = _quizBank.EvaluateAttempt(request);
+
+                    // Quiz bank (in-memory, không có Guid) — trước đây không bao giờ cấp XP thật dù UI báo.
+                    // Cấp XP lần đầu đạt + ghi QuizXpGrant để chống farm khi submit lặp lại.
+                    if (result.Passed && result.XpAwarded > 0)
+                    {
+                        var bankUserIdStr = JwtHelper.ExtractSubFromToken(Request);
+                        User? bankUser = null;
+                        if (Guid.TryParse(bankUserIdStr, out var bankUid))
+                            bankUser = await _dbContext.Users.FirstOrDefaultAsync(u => u.Id == bankUid);
+
+                        if (bankUser != null)
+                        {
+                            var alreadyGranted = await _dbContext.QuizXpGrants
+                                .AnyAsync(g => g.UserId == bankUser.Id && g.QuizKey == request.QuizId);
+
+                            if (!alreadyGranted)
+                            {
+                                bankUser.AwardXP(result.XpAwarded);
+                                bankUser.RecordActivity();
+                                _dbContext.QuizXpGrants.Add(new VisualizationDSA.Domain.Entities.QuizXpGrant(bankUser.Id, request.QuizId));
+                                await _dbContext.SaveChangesAsync();
+                            }
+                            else
+                            {
+                                result.XpAwarded = 0;
+                            }
+                        }
+                        else
+                        {
+                            result.XpAwarded = 0;
+                        }
+                    }
+                }
+
+                var quiz = dbQuiz;
                 if (quiz != null)
                 {
                     var userIdStr = JwtHelper.ExtractSubFromToken(Request);
-                    var user = userIdStr != null
-                        ? await _dbContext.Users.FirstOrDefaultAsync(u => u.Id.ToString() == userIdStr)
-                        : null;
+                    // Guid.TryParse + so sánh theo Id (Guid) — KHÔNG dùng ToString() trong LINQ
+                    // (EF Core không translate được trên SQLite → luôn không khớp).
+                    User? user = null;
+                    if (Guid.TryParse(userIdStr, out var parsedUid))
+                        user = await _dbContext.Users.FirstOrDefaultAsync(u => u.Id == parsedUid);
 
                     if (user != null)
                     {

@@ -9,7 +9,7 @@
       <div
         class="absolute inset-0 transition-all duration-300"
         :class="spotlightStyle ? 'bg-transparent' : 'bg-bg-secondary backdrop-blur-[2px]'"
-        @click="handleBackdropClick"
+        aria-hidden="true"
       />
 
       
@@ -18,7 +18,7 @@
         class="spotlight-highlight absolute border-2 border-accent-cyan/80 rounded-xl transition-all duration-300 pointer-events-none"
         :style="spotlightStyle"
       >
-        <span class="absolute -top-6 left-0 bg-accent-cyan text-slate-950 text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-t-md shadow-lg shadow-accent-cyan/20 animate-pulse">
+        <span class="absolute -top-6 left-0 bg-accent-cyan text-slate-950 text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-t-md shadow-lg shadow-accent-cyan/20 animate-pulse" aria-hidden="true">
           Tiêu điểm
         </span>
       </div>
@@ -38,6 +38,9 @@
           :key="tourStore.currentStepIndex"
           class="dialog-card p-6 rounded-2xl border border-border-subtle shadow-2xl flex flex-col gap-4 text-left transition-all duration-300"
           :style="[cardStyle, defaultCardStyle]"
+          role="dialog"
+          aria-modal="true"
+          aria-label="Hướng dẫn sử dụng giao diện"
         >
           
           <div class="flex gap-4 items-start">
@@ -53,14 +56,14 @@
                 </span>
                 
                 
-                <div v-if="isTyping" class="voice-wave flex items-end gap-0.5 h-3 ml-2">
+                <div v-if="isTyping" class="voice-wave flex items-end gap-0.5 h-3 ml-2" aria-hidden="true">
                   <span class="w-0.5 bg-accent-cyan animate-bar1"></span>
                   <span class="w-0.5 bg-accent-cyan animate-bar2"></span>
                   <span class="w-0.5 bg-accent-cyan animate-bar3"></span>
                   <span class="w-0.5 bg-accent-cyan animate-bar4"></span>
                 </div>
 
-                <div class="flex gap-1 ml-auto">
+                <div class="flex gap-1 ml-auto" aria-hidden="true">
                   <span
                     v-for="(_, idx) in tourStore.currentSteps"
                     :key="idx"
@@ -72,12 +75,11 @@
 
               
               <div class="flex flex-col gap-1.5 mt-1">
-                <h3 class="text-base font-bold text-text-primary tracking-tight">
-                  {{ currentStep.title }}
+                <h3 class="text-base font-bold text-text-primary tracking-tight flex items-start gap-1.5">
+                  <BaseIcon v-if="currentStep.icon" :name="currentStep.icon" class="w-4 h-4 text-accent-cyan flex-shrink-0 mt-0.5" />
+                  <span class="min-w-0">{{ currentStep.title }}</span>
                 </h3>
-                <p class="text-xs text-text-secondary leading-relaxed break-words">
-                  {{ typedDescription }}
-                </p>
+                <p class="text-xs text-text-secondary leading-relaxed break-words" v-html="parseEmojiToSvg(typedDescription)"></p>
               </div>
             </div>
           </div>
@@ -98,7 +100,8 @@
               :disabled="tourStore.isExecutingScript"
               @click="tourStore.runCurrentStepScript()"
             >
-              <span>{{ tourStore.isExecutingScript ? 'Đang chạy...' : 'Xem Trợ lý Thao tác ⚡' }}</span>
+              <span>{{ tourStore.isExecutingScript ? 'Đang chạy...' : 'Xem Trợ lý Thao tác' }}</span>
+              <BaseIcon v-if="!tourStore.isExecutingScript" name="zap" class="w-3.5 h-3.5" />
             </button>
 
             <div class="flex gap-2">
@@ -114,7 +117,7 @@
                 @click="tourStore.nextStep()"
               >
                 <span>{{ isLastStep ? 'Hoàn tất' : 'Tiếp tục' }}</span>
-                <span class="text-[10px] font-mono">{{ isLastStep ? '✓' : '→' }}</span>
+                <span class="text-[10px] font-mono"><BaseIcon v-if="isLastStep" name="check" class="w-3 h-3" /><BaseIcon v-else name="arrow-right" class="w-3 h-3" /></span>
               </button>
             </div>
           </div>
@@ -127,6 +130,7 @@
 <script setup lang="ts">
 import { computed, ref, watch, onMounted, onBeforeUnmount } from 'vue';
 import { useGuidedTourStore } from '../store/useGuidedTourStore';
+import { parseEmojiToSvg } from '../../../utils/emojiParser';
 import VirtualMascot from './VirtualMascot.vue';
 import VirtualPointer from './VirtualPointer.vue';
 
@@ -146,7 +150,7 @@ const defaultCardStyle = {
 
 const typedDescription = ref('');
 const isTyping = ref(false);
-let typingInterval: any = null;
+let typingInterval: ReturnType<typeof setInterval> | null = null;
 
 const startTypewriter = (text: string) => {
   if (typingInterval) clearInterval(typingInterval);
@@ -159,14 +163,10 @@ const startTypewriter = (text: string) => {
       idx++;
     } else {
       isTyping.value = false;
-      clearInterval(typingInterval);
+      if (typingInterval) { clearInterval(typingInterval); typingInterval = null; }
     }
   }, 15);
 };
-
-function handleBackdropClick() {
-  
-}
 
 function updateSpotlight(skipScroll = false) {
   const step     = tourStore.currentSteps[tourStore.currentStepIndex];
@@ -285,12 +285,20 @@ const handleResize = () => {
   updateSpotlight(true);
 };
 
+function handleKeydown(event: KeyboardEvent) {
+  if (event.key === 'Escape' && tourStore.isActive) {
+    tourStore.skipTour();
+  }
+}
+
 onMounted(() => {
   window.addEventListener('resize', handleResize);
+  window.addEventListener('keydown', handleKeydown);
 });
 
 onBeforeUnmount(() => {
   window.removeEventListener('resize', handleResize);
+  window.removeEventListener('keydown', handleKeydown);
   if (typingInterval) clearInterval(typingInterval);
 });
 </script>

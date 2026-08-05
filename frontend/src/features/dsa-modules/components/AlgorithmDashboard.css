@@ -3,13 +3,13 @@
   0%, 100% { 
     background: rgba(6, 182, 212, 0.03); 
     border-color: rgba(6, 182, 212, 0.15); 
-    color: #64748b;
+    color: var(--color-text-muted);
     transform: scale(1); 
   }
   10%, 25% { 
     background: rgba(34, 211, 238, 0.2); 
-    border-color: #22d3ee; 
-    color: #22d3ee;
+    border-color: var(--color-accent-primary); 
+    color: var(--color-accent-primary);
     transform: scale(1.1); 
     box-shadow: 0 0 6px rgba(34, 211, 238, 0.35); 
   }
@@ -28,7 +28,7 @@
     background: rgba(6, 182, 212, 0.03); 
   }
   8%, 18% { 
-    border-color: #eab308; 
+    border-color: var(--color-accent-yellow); 
     background: rgba(234, 179, 8, 0.1);
     box-shadow: 0 0 5px rgba(234, 179, 8, 0.3); 
   }
@@ -116,15 +116,15 @@
 
 @keyframes bstPulseRoot {
   0%, 100% { border-color: rgba(6, 182, 212, 0.15); background: transparent; }
-  10%, 25% { border-color: #22d3ee; background: rgba(34, 211, 238, 0.2); box-shadow: 0 0 4px #22d3ee; }
+  10%, 25% { border-color: var(--color-accent-primary); background: rgba(34, 211, 238, 0.2); box-shadow: 0 0 4px var(--color-accent-primary); }
 }
 @keyframes bstPulseLeft {
   0%, 30%, 100% { border-color: rgba(6, 182, 212, 0.15); background: transparent; }
-  40%, 55% { border-color: #22d3ee; background: rgba(34, 211, 238, 0.2); box-shadow: 0 0 4px #22d3ee; }
+  40%, 55% { border-color: var(--color-accent-primary); background: rgba(34, 211, 238, 0.2); box-shadow: 0 0 4px var(--color-accent-primary); }
 }
 @keyframes bstPulseRight {
   0%, 60%, 100% { border-color: rgba(6, 182, 212, 0.15); background: transparent; }
-  70%, 85% { border-color: #22d3ee; background: rgba(34, 211, 238, 0.2); box-shadow: 0 0 4px #22d3ee; }
+  70%, 85% { border-color: var(--color-accent-primary); background: rgba(34, 211, 238, 0.2); box-shadow: 0 0 4px var(--color-accent-primary); }
 }
 .group:hover .bst-root { animation: bstPulseRoot 2.5s infinite; }
 .group:hover .bst-left { animation: bstPulseLeft 2.5s infinite; }
@@ -133,11 +133,11 @@
 
 @keyframes bfsPulseRoot {
   0%, 100% { border-color: rgba(6, 182, 212, 0.15); background: transparent; }
-  10%, 30% { border-color: #22d3ee; background: rgba(34, 211, 238, 0.2); box-shadow: 0 0 4px #22d3ee; }
+  10%, 30% { border-color: var(--color-accent-primary); background: rgba(34, 211, 238, 0.2); box-shadow: 0 0 4px var(--color-accent-primary); }
 }
 @keyframes bfsPulseChild {
   0%, 40%, 100% { border-color: rgba(6, 182, 212, 0.15); background: transparent; }
-  50%, 75% { border-color: #22d3ee; background: rgba(34, 211, 238, 0.2); box-shadow: 0 0 4px #22d3ee; }
+  50%, 75% { border-color: var(--color-accent-primary); background: rgba(34, 211, 238, 0.2); box-shadow: 0 0 4px var(--color-accent-primary); }
 }
 .group:hover .bfs-root { animation: bfsPulseRoot 2.4s infinite; }
 .group:hover .bfs-child { animation: bfsPulseChild 2.4s infinite; }
@@ -145,15 +145,15 @@
 
 @keyframes dfsPulseRoot {
   0%, 100% { border-color: rgba(6, 182, 212, 0.15); background: transparent; }
-  5%, 20% { border-color: #22d3ee; background: rgba(34, 211, 238, 0.2); box-shadow: 0 0 4px #22d3ee; }
+  5%, 20% { border-color: var(--color-accent-primary); background: rgba(34, 211, 238, 0.2); box-shadow: 0 0 4px var(--color-accent-primary); }
 }
 @keyframes dfsPulseLeft {
   0%, 25%, 100% { border-color: rgba(6, 182, 212, 0.15); background: transparent; }
-  35%, 55% { border-color: #22d3ee; background: rgba(34, 211, 238, 0.2); box-shadow: 0 0 4px #22d3ee; }
+  35%, 55% { border-color: var(--color-accent-primary); background: rgba(34, 211, 238, 0.2); box-shadow: 0 0 4px var(--color-accent-primary); }
 }
 @keyframes dfsPulseRight {
   0%, 60%, 100% { border-color: rgba(6, 182, 212, 0.15); background: transparent; }
-  70%, 90% { border-color: #22d3ee; background: rgba(34, 211, 238, 0.2); box-shadow: 0 0 4px #22d3ee; }
+  70%, 90% { border-color: var(--color-accent-primary); background: rgba(34, 211, 238, 0.2); box-shadow: 0 0 4px var(--color-accent-primary); }
 }
 .group:hover .dfs-root { animation: dfsPulseRoot 2.8s infinite; }
 .group:hover .dfs-left { animation: dfsPulseLeft 2.8s infinite; }
@@ -162,23 +162,23 @@
 
 @keyframes dijPulseNodeStart {
   0%, 100% { border-color: rgba(6, 182, 212, 0.15); background: transparent; }
-  5%, 20% { border-color: #22d3ee; background: rgba(34, 211, 238, 0.2); box-shadow: 0 0 4.5px #22d3ee; }
+  5%, 20% { border-color: var(--color-accent-primary); background: rgba(34, 211, 238, 0.2); box-shadow: 0 0 4.5px var(--color-accent-primary); }
 }
 @keyframes dijPulseLineTop {
-  22%, 40% { background: #22d3ee; }
+  22%, 40% { background: var(--color-accent-primary); }
   0%, 20%, 42%, 100% { background: rgba(15, 23, 42, 0.3); }
 }
 @keyframes dijPulseNodeMid {
   0%, 35%, 100% { border-color: rgba(6, 182, 212, 0.15); background: transparent; }
-  45%, 60% { border-color: #22d3ee; background: rgba(34, 211, 238, 0.2); box-shadow: 0 0 4.5px #22d3ee; }
+  45%, 60% { border-color: var(--color-accent-primary); background: rgba(34, 211, 238, 0.2); box-shadow: 0 0 4.5px var(--color-accent-primary); }
 }
 @keyframes dijPulseLineMid {
-  62%, 80% { background: #22d3ee; }
+  62%, 80% { background: var(--color-accent-primary); }
   0%, 60%, 82%, 100% { background: rgba(15, 23, 42, 0.3); }
 }
 @keyframes dijPulseNodeEnd {
   0%, 75%, 100% { border-color: rgba(6, 182, 212, 0.15); background: transparent; }
-  85%, 98% { border-color: #22d3ee; background: rgba(34, 211, 238, 0.2); box-shadow: 0 0 4.5px #22d3ee; }
+  85%, 98% { border-color: var(--color-accent-primary); background: rgba(34, 211, 238, 0.2); box-shadow: 0 0 4.5px var(--color-accent-primary); }
 }
 .group:hover .dij-node-start { animation: dijPulseNodeStart 3s infinite; }
 .group:hover .dij-line-top { animation: dijPulseLineTop 3s infinite; }

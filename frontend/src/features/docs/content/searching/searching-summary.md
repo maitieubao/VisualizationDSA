@@ -17,6 +17,40 @@ Dưới đây là bức tranh tổng thể về 3 kỹ thuật Tìm kiếm và D
 | **Binary Search** (Tìm kiếm Nhị phân) | O(log N) | O(1) | **Bắt buộc Đã sắp xếp** | Mảng dữ liệu cực lớn, mảng tĩnh (ít biến động), tìm kiếm trong cơ sở dữ liệu có Index (Chỉ mục). |
 | **Sliding Window** (Cửa sổ trượt) | O(N) | O(1) | Mảng số nguyên, chuỗi (String) | Các bài toán tìm "Dãy con", "Chuỗi con" (Sub-array/Substring) liên tiếp nhau. |
 
+## Sơ đồ Lựa chọn Thuật toán {#decision-tree}
+
+Khi gặp một bài toán tìm kiếm, hãy lần lượt hỏi ngược lại 3 câu hỏi theo thứ tự sau:
+
+```mermaid
+flowchart TD
+    A["Dữ liệu đã sắp xếp sẵn?"] -->|Có| B["Binary Search<br/>O(log N)"]
+    A -->|Không| C["Cần tìm dãy con / chuỗi con<br/>liên tiếp dài hay ngắn nhất?"]
+    C -->|Có| D["Sliding Window<br/>O(N)"]
+    C -->|Không| E["Linear Search<br/>O(N)"]
+```
+
+## Ví dụ Minh họa bằng Code {#code-example}
+
+Binary Search trên mảng đã sắp xếp trong C#:
+
+```csharp
+// Tìm kiếm nhị phân trên mảng đã sắp xếp — O(log N), O(1) không gian
+public static int BinarySearch(int[] sortedArray, int target)
+{
+    int left = 0, right = sortedArray.Length - 1;
+
+    while (left <= right)
+    {
+        int mid = left + (right - left) / 2; // tránh tràn số khi left + right quá lớn
+        if (sortedArray[mid] == target) return mid;
+        if (sortedArray[mid] < target) left = mid + 1;
+        else right = mid - 1;
+    }
+
+    return -1; // không tìm thấy
+}
+```
+
 ## Nhận diện "Mùi" bài toán (Pattern Matching) {#pattern-matching}
 
 Để trở thành một lập trình viên nhạy bén, bạn cần phải có khả năng "ngửi" thấy mùi của thuật toán đằng sau những câu chữ yêu cầu. 
@@ -60,3 +94,16 @@ Tiếp theo, chúng ta sẽ bẻ cong cấu trúc dữ liệu, xếp chúng đè
     <p class="next-steps-caption">Cấu trúc vào sau ra trước, chìa khóa của bộ nhớ thực thi và lệnh Undo.</p>
   </a>
 </div>
+
+## 📚 Tham khảo lý thuyết {#references}
+
+Dưới đây là các nguồn tài liệu kinh điển và chính thống được dùng để biên soạn bài viết này, giúp bạn tự nghiên cứu sâu hơn nếu muốn:
+
+- **Phân tích độ phức tạp Big O của Linear Search, Binary Search và Sliding Window:** Cormen, Leiserson, Rivest & Stein, *Introduction to Algorithms* (CLRS), 3rd Edition (MIT Press) - Chương 2 (Getting Started) và Chương 12 về Binary Search Trees.
+- **Khái niệm tìm kiếm tuần tự (Linear Search) và nhị phân (Binary Search), độ phức tạp O(N) / O(log N):** [Wikipedia - Linear search](https://en.wikipedia.org/wiki/Linear_search) và [Wikipedia - Binary search algorithm](https://en.wikipedia.org/wiki/Binary_search_algorithm).
+- **Kỹ thuật Sliding Window áp dụng cho dãy con / chuỗi con liên tiếp:** [GeeksforGeeks - Sliding Window Technique](https://www.geeksforgeeks.org/window-sliding-technique/).
+- **Kỹ thuật Two Pointers (Hai con trỏ) cho mảng đã sắp xếp:** [GeeksforGeeks - Two Pointers Technique](https://www.geeksforgeeks.org/two-pointers-technique/).
+- **Database Indexing dùng B-Tree và Binary Search để truy vấn O(log N):** [Wikipedia - B-tree](https://en.wikipedia.org/wiki/B-tree).
+- **TCP Sliding Window trong giao thức truyền mạng:** [Wikipedia - Transmission Control Protocol](https://en.wikipedia.org/wiki/Transmission_Control_Protocol#Flow_control).
+
+

@@ -1,0 +1,68 @@
+{
+  "quizTitle": "Trắc nghiệm Backtracking",
+  "topic": "dsa",
+  "difficulty": 2,
+  "xpReward": 40,
+  "questions": [
+    {
+      "questionText": "Backtracking là kỹ thuật tìm kiếm dựa trên việc duyệt cấu trúc nào?",
+      "options": ["Cây không gian trạng thái bằng DFS", "Hàng đợi theo tầng BFS", "Cây nhị phân cân bằng", "Bảng băm tối ưu"],
+      "correctIndex": 0,
+      "explanation": "Backtracking mở rộng DFS: đi sâu theo từng lựa chọn, gặp ngõ cụt thì lùi lại và thử nhánh khác."
+    },
+    {
+      "questionText": "Bước nào bắt buộc phải có sau mỗi lần đệ quy để thử lựa chọn tiếp theo?",
+      "options": ["Unchoose — hủy bỏ lựa chọn", "Sắp xếp lại dữ liệu", "Tăng biến đếm", "Xóa toàn bộ state"],
+      "correctIndex": 0,
+      "explanation": "Unchoose trả state về trạng thái trước khi chọn; nếu thiếu bước này, các nhánh sau bị ô nhiễm dữ liệu."
+    },
+    {
+      "questionText": "Sinh toàn bộ tập con của tập n phần tử cần bao nhiêu phép thử trong trường hợp xấu nhất?",
+      "options": ["O(n)", "O(n²)", "O(2^n)", "O(n!)"],
+      "correctIndex": 2,
+      "explanation": "Mỗi phần tử có 2 lựa chọn (lấy hoặc không lấy) nên tổng số tập con là 2^n."
+    },
+    {
+      "questionText": "Sinh toàn bộ hoán vị của n phần tử có độ phức tạp thời gian là bao nhiêu?",
+      "options": ["O(2^n)", "O(n log n)", "O(n!)", "O(n²)"],
+      "correctIndex": 2,
+      "explanation": "Số hoán vị của n phần tử là n! nên thời gian xấu nhất là O(n!)."
+    },
+    {
+      "questionText": "Trong template backtrack(state), base case có vai trò gì?",
+      "options": ["Xác định trạng thái đủ để ghi nhận lời giải", "Tăng tốc vòng lặp", "Khởi tạo mảng visited", "Sắp xếp các lựa chọn"],
+      "correctIndex": 0,
+      "explanation": "Base case kiểm tra trạng thái đã đầy đủ, nếu đúng thì lưu lời giải và dừng đệ quy xuống sâu hơn."
+    },
+    {
+      "questionText": "Trong bài N-Queens, khi đặt quân hậu thứ k, điều kiện để pruning nhánh hiện tại là gì?",
+      "options": ["Hậu mới đụng hàng, cột hoặc đường chéo của hậu trước", "Bảng cờ chưa đầy", "Số hậu đã đặt nhỏ hơn n", "Hậu nằm ở góc bảng"],
+      "correctIndex": 0,
+      "explanation": "Hai hậu tấn công nhau khi cùng hàng, cùng cột hoặc cùng đường chéo; phát hiện sớm giúp bỏ cả nhánh."
+    },
+    {
+      "questionText": "Trong bài generate parentheses, lúc nào được phép thêm dấu đóng ')' vào chuỗi?",
+      "options": ["Khi số dấu đóng nhỏ hơn số dấu mở", "Khi số dấu mở nhỏ hơn n", "Khi chuỗi đạt độ dài 2n", "Luôn luôn được thêm"],
+      "correctIndex": 0,
+      "explanation": "Chuỗi ngoặc hợp lệ yêu cầu close < open tại mọi thời điểm; khi open < n mới được thêm dấu mở."
+    },
+    {
+      "questionText": "Cho tập 4 phần tử, số tập con khác nhau (kể cả tập rỗng) là bao nhiêu?",
+      "options": ["8", "12", "16", "24"],
+      "correctIndex": 2,
+      "explanation": "Số tập con của tập n phần tử là 2^n; với n = 4 ta có 16 tập con."
+    },
+    {
+      "questionText": "Cho nums = [1, 2, 2] và thuật toán subsets không xử lý trùng. Số tập con DUY NHẤT sau khi khử trùng là bao nhiêu?",
+      "options": ["8", "6", "4", "3"],
+      "correctIndex": 1,
+      "explanation": "Trong 8 tập con thô, cặp [2] và [1, 2] xuất hiện hai lần; còn lại 6 tập con duy nhất."
+    },
+    {
+      "questionText": "Bài N-Queens với bảng 4x4 có đúng bao nhiêu cách xếp thỏa mãn?",
+      "options": ["1", "2", "4", "8"],
+      "correctIndex": 1,
+      "explanation": "Bảng 4x4 chỉ có 2 lời giải, hai lời giải là phản chiếu qua trục đứng của nhau; pruning cắt bỏ toàn bộ nhánh sai."
+    }
+  ]
+}

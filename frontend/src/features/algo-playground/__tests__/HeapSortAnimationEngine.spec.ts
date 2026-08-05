@@ -1,0 +1,108 @@
+// @vitest-environment jsdom
+import { describe, it, expect, vi } from 'vitest';
+import { HeapSortAnimationEngine } from '../engine/HeapSortAnimationEngine';
+import type { CanvasStateSnapshot } from '../../../core/CompilerStepExecutor';
+
+function makeCtx(): Record<string, unknown> {
+  const ctx: Record<string, unknown> = {
+    clearRect: vi.fn(),
+    fillRect: vi.fn(),
+    beginPath: vi.fn(),
+    closePath: vi.fn(),
+    moveTo: vi.fn(),
+    lineTo: vi.fn(),
+    arcTo: vi.fn(),
+    arc: vi.fn(),
+    fill: vi.fn(),
+    stroke: vi.fn(),
+    fillText: vi.fn(),
+    save: vi.fn(),
+    restore: vi.fn(),
+    measureText: vi.fn(() => ({ width: 0 })),
+  };
+  return ctx;
+}
+
+function makeHeapSnap(overrides: Partial<CanvasStateSnapshot> = {}): CanvasStateSnapshot {
+  return {
+    array: [12, 11, 13, 5, 6, 7],
+    heapState: { phase: 'extract', heapSize: 4, activeIdx: 0, siftPath: [0, 1, 3] },
+    highlightedIndices: [5],
+    comparingIndices: [1, 2],
+    ...overrides,
+  };
+}
+
+describe('HeapSortAnimationEngine', () => {
+  it('canHandle only accepts snapshots carrying heapState', () => {
+    expect(HeapSortAnimationEngine.canHandle(makeHeapSnap())).toBe(true);
+    expect(HeapSortAnimationEngine.canHandle({ array: [1, 2, 3] })).toBe(false);
+  });
+
+  it('draw renders build and extract phases without throwing', () => {
+    const engine = HeapSortAnimationEngine.instance();
+    const ctx = makeCtx() as unknown as CanvasRenderingContext2D;
+
+    const extract = makeHeapSnap();
+    expect(() => engine.draw(ctx, 400, 300, extract)).not.toThrow();
+    expect(ctx.clearRect).toHaveBeenCalled();
+
+    const build = makeHeapSnap({
+      heapState: { phase: 'build', heapSize: 6, activeIdx: 2, siftPath: [2, 5] },
+      highlightedIndices: [],
+      comparingIndices: [5, 2],
+    });
+    expect(() => engine.draw(ctx, 400, 300, build)).not.toThrow();
+  });
+
+  it('draw animates swap frames with prev snapshot without throwing', () => {
+    const engine = HeapSortAnimationEngine.instance();
+    const ctx = makeCtx() as unknown as CanvasRenderingContext2D;
+    const prev = makeHeapSnap({
+      array: [13, 11, 12, 5, 6, 7],
+      heapState: { phase: 'build', heapSize: 6, activeIdx: 0, siftPath: [0, 2] },
+      swappingIndices: [0, 2],
+    });
+    const curr = makeHeapSnap({
+      array: [12, 11, 13, 5, 6, 7],
+      heapState: { phase: 'build', heapSize: 6, activeIdx: 2, siftPath: [0, 2] },
+      swappingIndices: [0, 2],
+    });
+    expect(() => engine.draw(ctx, 400, 300, curr, prev, 0.5)).not.toThrow();
+  });
+
+  it('draw tolerates single-element and full-heap states', () => {
+    const engine = HeapSortAnimationEngine.instance();
+    const ctx = makeCtx() as unknown as CanvasRenderingContext2D;
+    const snap = makeHeapSnap({
+      array: [42],
+      heapState: { phase: 'build', heapSize: 1, activeIdx: 0, siftPath: [0] },
+      highlightedIndices: [],
+      comparingIndices: undefined,
+    });
+    expect(() => engine.draw(ctx, 400, 300, snap)).not.toThrow();
+  });
+
+  it('captionFor narrates compare, swap and phase actions in Vietnamese', () => {
+    // Compare
+    const cmp = makeHeapSnap({ comparingIndices: [1, 0] });
+    expect(HeapSortAnimationEngine.captionFor(cmp)).toContain('So sánh 11');
+    expect(HeapSortAnimationEngine.captionFor(cmp)).toContain('giữ 12');
+
+    // Swap extract (root → cuối)
+    const sw = makeHeapSnap({
+      heapState: { phase: 'extract', heapSize: 4, activeIdx: 0, siftPath: [0] },
+      swappingIndices: [0, 4],
+    });
+    const swCaption = HeapSortAnimationEngine.captionFor(sw);
+    expect(swCaption).toContain('Đổi chỗ 12 và 6');
+    expect(swCaption).toContain('root về cuối mảng');
+
+    // Build phase
+    const build = makeHeapSnap({
+      heapState: { phase: 'build', heapSize: 6, activeIdx: 2, siftPath: [2] },
+      comparingIndices: undefined,
+    });
+    expect(HeapSortAnimationEngine.captionFor(build)).toContain('Vun đống tại node 2');
+  });
+});

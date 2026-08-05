@@ -50,17 +50,17 @@ flowchart LR
         A2[10] --- B2[20]
         Front2((Front)) --> A2
         Rear2((Rear)) --> B2
-        style A2 fill:#10b981,color:#fff
-        style B2 fill:#3b82f6,color:#fff
+        style A2 fill:#3d9970,color:#fff
+        style B2 fill:#c9a227,color:#fff
     end
     
-    subgraph S3 [3. Dequeue (Lấy 10 ra)]
+    subgraph S3 ["3. Dequeue (Lấy 10 ra)"]
         direction LR
         Pop((Lấy 10)) -.-> A3[20]
         Front3((Front)) --> A3
         Rear3((Rear)) --> A3
-        style Pop fill:#ef4444,color:#fff
-        style A3 fill:#3b82f6,color:#fff
+        style Pop fill:#b85c5c,color:#fff
+        style A3 fill:#c9a227,color:#fff
     end
     
     S1 ==> S2 ==> S3
@@ -92,7 +92,7 @@ Nhưng nếu cứ thế, `Rear` vươn tới cuối mảng (Hết sức chứa) 
 
 ```mermaid
 flowchart TD
-    subgraph Bước 1: Mảng bình thường đã đầy đuôi
+    subgraph Q1 ["Bước 1: Mảng bình thường đã đầy đuôi"]
         direction LR
         F1((Front)) --> A[Index 0: Trống]
         A --> B[Index 1: 20]
@@ -100,21 +100,26 @@ flowchart TD
         R1((Rear)) --> C
     end
     
-    subgraph Bước 2: Hàng đợi Vòng chèn phần tử mới vào đầu
+    subgraph Q2 ["Bước 2: Hàng đợi Vòng chèn phần tử mới vào đầu"]
         direction LR
         F2((Front)) --> B2[Index 1: 20]
         B2 --> C2[Index 2: 30]
         C2 -.Vòng ngược.-> A2[Index 0: 40]
         R2((Rear)) --> A2
-        style A2 fill:#10b981,color:#fff
+        style A2 fill:#3d9970,color:#fff
     end
     
-    Bước 1 ==> Bước 2
+    Q1 ==> Q2
 ```
 
-### Mã nguồn C# cài đặt Circular Queue
+### Mã nguồn cài đặt Circular Queue
 
-```csharp
+Bạn có thể xem Queue hoạt động trực quan trong Playground bên dưới.
+
+```playground:queue
+```
+
+```dual:queue
 public class CircularQueue 
 {
     private int[] arr;
@@ -155,6 +160,12 @@ public class CircularQueue
 ```
 Nhờ thuật toán này, toàn bộ Enqueue và Dequeue trên Array đều lấy lại được sức mạnh **O(1)** hoàn hảo. Thư viện `Queue<T>` trong C# thực chất chính là được cài đặt ngầm bằng mảng vòng (Circular Array) kết hợp với kỹ thuật Tự động x2 kích thước (Dynamic Resizing)!
 
+:::note Biến thể phổ biến của Queue
+Ngoài Circular Queue, có hai biến thể đáng chú ý:
+- **Deque (Hàng đợi hai đầu):** Cho phép thêm và xóa ở CẢ HAI đầu hàng (Front lẫn Rear) với độ phức tạp $O(1)$. Trong C# bạn có thể dùng `LinkedList<T>` (danh sách liên kết đôi) hoặc tự cài bằng mảng vòng. *(Có bài viết riêng: [Hàng đợi hai đầu (Deque)](/docs/stack-queue/deque)).*
+- **PriorityQueue (Hàng đợi ưu tiên):** Mỗi phần tử đi kèm một Độ ưu tiên (Priority). Thao tác `Dequeue()` luôn lấy phần tử có độ ưu tiên cao nhất ra trước, thay vì tuân theo FIFO. Ngôn ngữ C# hỗ trợ chuẩn từ .NET 6 trở đi với `PriorityQueue<TElement, TPriority>`.
+:::
+
 ---
 
 ## 5. Ứng dụng đỉnh cao: Duyệt theo chiều rộng (BFS) {#bfs-intro}
@@ -170,3 +181,19 @@ Trong BFS, từ một Đỉnh gốc, bạn sẽ phải tham quan toàn bộ bạ
 - Nếu bắt buộc dùng Mảng để tối ưu CPU Cache, hãy dùng kỹ thuật Mảng vòng (Circular Array) với công thức `(index + 1) % capacity`.
 - Trong C#, bạn chỉ cần dùng thư viện chuẩn `Queue<T>` (được tối ưu hóa hoàn hảo) là đủ để chinh chiến mọi bài toán BFS.
 :::
+
+## Next Steps {#next-steps}
+
+- [Ngăn xếp (Stack)](/docs/stack-queue/stack) — Cấu trúc LIFO đối nghịch, giúp bạn đối chiếu hai triết lý sắp hàng.
+- [Hàng đợi hai đầu (Deque)](/docs/stack-queue/deque) — Mở rộng Queue khi cần thêm/xóa ở cả hai đầu.
+- [Duyệt theo chiều rộng (BFS)](/docs/tree-graph/bfs) — Ứng dụng kinh điển nhất của Queue trên đồ thị.
+- [Tổng hợp ứng dụng Stack & Queue](/docs/stack-queue/stack-queue-summary) — Bản đồ tư duy chốt toàn bộ nhóm cấu trúc tuyến tính.
+
+## 📚 Tham khảo lý thuyết
+
+- **Cormen, T. H., Leiserson, C. E., Rivest, R. L., & Stein, C. (2022).** *Introduction to Algorithms* (4th ed.). MIT Press. — Chương 10: Cấu trúc dữ liệu cơ bản, bao gồm Queue và Circular Queue.
+- **Dasgupta, S., Papadimitriou, C. H., & Vazirani, U. V.** *Algorithms*. McGraw-Hill. — Phần giới thiệu các cấu trúc dữ liệu cơ bản.
+- **Wikipedia — Queue (abstract data type):** https://en.wikipedia.org/wiki/Queue_(abstract_data_type)
+- **Microsoft Learn — `Queue<T>` Class:** https://learn.microsoft.com/en-us/dotnet/api/system.collections.generic.queue-1
+- **Microsoft Learn — `PriorityQueue<TElement, TPriority>` (.NET 6+):** https://learn.microsoft.com/en-us/dotnet/api/system.collections.generic.priorityqueue-2
+- **GeeksforGeeks — Queue Data Structure:** https://www.geeksforgeeks.org/queue-data-structure/

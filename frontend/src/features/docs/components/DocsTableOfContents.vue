@@ -8,6 +8,7 @@
             :href="'#' + heading.id"
             class="block py-[4px] px-3 text-[13px] border-l-2 transition-colors leading-snug"
             :class="activeId === heading.id ? 'border-accent-primary text-text-primary font-medium bg-accent-primary/5' : 'border-transparent text-text-muted hover:text-text-primary hover:border-border-default'"
+            :aria-current="activeId === heading.id ? 'true' : undefined"
             @click.prevent="scrollTo(heading.id)"
           >
             {{ heading.title }}

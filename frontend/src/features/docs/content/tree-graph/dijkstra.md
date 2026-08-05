@@ -180,7 +180,10 @@ Việc sử dụng Hàng đợi ưu tiên (Min-Heap) là chìa khóa để giả
 
 Kể từ phiên bản .NET 6, Microsoft đã chính thức cung cấp cấu trúc `PriorityQueue<TElement, TPriority>`. Đây là một mảnh ghép còn thiếu suốt mười mấy năm trời của hệ sinh thái .NET, giúp việc cài đặt Dijkstra giờ đây ngắn gọn và thanh lịch không kém gì C++ hay Python.
 
-```csharp
+```playground:dijkstra
+```
+
+```dual:dijkstra
 using System;
 using System.Collections.Generic;
 
@@ -265,3 +268,21 @@ Nếu đồ thị của bạn có khả năng chứa cạnh âm (Ví dụ: Giao 
 - Độ phức tạp thời gian: $O((V + E) \log V)$ - Tốc độ bàn thờ cho đồ thị dương.
 - Yếu điểm chí mạng: Sẽ xuất ra kết quả **SAI** nếu đồ thị chứa Cạnh Âm.
 :::
+
+---
+
+## Next Steps {#next-steps}
+
+- Ôn lại [Duyệt theo chiều rộng (BFS)](/docs/tree-graph/bfs) — nền tảng tìm đường đi ngắn nhất mà Dijkstra kế thừa và nâng cấp.
+- Khám phá [Duyệt theo chiều sâu (DFS)](/docs/tree-graph/dfs) để so sánh hai triết lý duyệt đồ thị trái ngược nhau.
+- Với đồ thị có trọng số âm, hãy tìm hiểu thuật toán **Bellman-Ford** — vị cứu tinh duy nhất khi Dijkstra bó tay trước cạnh âm.
+- Tổng kết toàn bộ nhóm tại [Tổng hợp ứng dụng Cây & Đồ thị](/docs/tree-graph/tree-graph-summary).
+
+## Tham khảo lý thuyết {#references}
+
+- Thomas H. Cormen, Charles E. Leiserson, Ronald L. Rivest, Clifford Stein, *Introduction to Algorithms* (CLRS), 3rd Edition — Chương 24: Single-Source Shortest Paths.
+- Sanjoy Dasgupta, Christos H. Papadimitriou, Umesh Vazirani, *Algorithms* (2006) — Chương 4: Shortest Paths in Graphs.
+- Wikipedia — mục Dijkstra's algorithm: https://en.wikipedia.org/wiki/Dijkstra%27s_algorithm
+- GeeksforGeeks — bài viết Dijkstra's Shortest Path Algorithm (mục cài đặt bằng Priority Queue).
+- Microsoft Learn — tài liệu `PriorityQueue<TElement, TPriority>` Class (.NET): https://learn.microsoft.com/dotnet/api/system.collections.generic.priorityqueue-2
+- MIT OpenCourseWare 6.006 — Introduction to Algorithms, bài giảng Single-Source Shortest Paths.

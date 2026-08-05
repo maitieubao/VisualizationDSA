@@ -5,11 +5,7 @@
       style="border-color: rgba(255, 255, 255, 0.05); background: rgba(30, 41, 59, 0.4);"
     >
       <div class="flex items-center gap-2">
-        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24"
-          fill="none" stroke="currentColor" stroke-width="2" class="text-text-secondary">
-          <polyline points="4 17 10 11 4 5" />
-          <line x1="12" y1="19" x2="20" y2="19" />
-        </svg>
+        <BaseIcon name="terminal" class="w-3 h-3 text-text-secondary" />
         <span class="text-xs font-medium text-text-secondary uppercase tracking-wider">
           Compiler Console
         </span>

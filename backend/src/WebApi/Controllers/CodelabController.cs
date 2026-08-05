@@ -11,7 +11,7 @@ namespace VisualizationDSA.WebApi.Controllers
 {
     [ApiController]
     [Route("api/v1/codelabs")]
-    [Authorize]
+    [RequireJwtRole]
     public class CodelabController : ControllerBase
     {
         private readonly IMediator _mediator;
@@ -50,7 +50,7 @@ namespace VisualizationDSA.WebApi.Controllers
         }
 
         [HttpPost]
-        [Authorize(Roles = "Teacher,Admin")]
+        [RequireJwtRole("Teacher,Admin")]
         public async Task<IActionResult> CreateCodelab([FromBody] CreateCodelabCommand command)
         {
             var id = await _mediator.Send(command);
@@ -58,7 +58,7 @@ namespace VisualizationDSA.WebApi.Controllers
         }
 
         [HttpPut("{id}")]
-        [Authorize(Roles = "Teacher,Admin")]
+        [RequireJwtRole("Teacher,Admin")]
         public async Task<IActionResult> UpdateCodelab(Guid id, [FromBody] UpdateCodelabCommand command)
         {
             command.CodelabId = id;
@@ -67,7 +67,7 @@ namespace VisualizationDSA.WebApi.Controllers
         }
 
         [HttpDelete("{id}")]
-        [Authorize(Roles = "Teacher,Admin")]
+        [RequireJwtRole("Teacher,Admin")]
         public async Task<IActionResult> DeleteCodelab(Guid id)
         {
             await _mediator.Send(new DeleteCodelabCommand { CodelabId = id });
@@ -75,7 +75,7 @@ namespace VisualizationDSA.WebApi.Controllers
         }
 
         [HttpPost("{id}/testcases")]
-        [Authorize(Roles = "Teacher,Admin")]
+        [RequireJwtRole("Teacher,Admin")]
         public async Task<IActionResult> AddTestCase(Guid id, [FromBody] AddTestCaseCommand command)
         {
             command.CodelabId = id;
@@ -84,7 +84,7 @@ namespace VisualizationDSA.WebApi.Controllers
         }
 
         [HttpPut("{id}/testcases/{testCaseId}")]
-        [Authorize(Roles = "Teacher,Admin")]
+        [RequireJwtRole("Teacher,Admin")]
         public async Task<IActionResult> UpdateTestCase(Guid id, Guid testCaseId, [FromBody] UpdateTestCaseCommand command)
         {
             command.TestCaseId = testCaseId;
@@ -93,7 +93,7 @@ namespace VisualizationDSA.WebApi.Controllers
         }
 
         [HttpDelete("{id}/testcases/{testCaseId}")]
-        [Authorize(Roles = "Teacher,Admin")]
+        [RequireJwtRole("Teacher,Admin")]
         public async Task<IActionResult> DeleteTestCase(Guid id, Guid testCaseId)
         {
             await _mediator.Send(new DeleteTestCaseCommand { CodelabId = id, TestCaseId = testCaseId });
@@ -101,7 +101,7 @@ namespace VisualizationDSA.WebApi.Controllers
         }
 
         [HttpPost("{id}/templates")]
-        [Authorize(Roles = "Teacher,Admin")]
+        [RequireJwtRole("Teacher,Admin")]
         public async Task<IActionResult> AddTemplate(Guid id, [FromBody] AddTemplateCommand command)
         {
             command.CodelabId = id;
@@ -110,7 +110,7 @@ namespace VisualizationDSA.WebApi.Controllers
         }
 
         [HttpPut("{id}/templates/{templateId}")]
-        [Authorize(Roles = "Teacher,Admin")]
+        [RequireJwtRole("Teacher,Admin")]
         public async Task<IActionResult> UpdateTemplate(Guid id, Guid templateId, [FromBody] UpdateTemplateCommand command)
         {
             command.TemplateId = templateId;
@@ -119,7 +119,7 @@ namespace VisualizationDSA.WebApi.Controllers
         }
 
         [HttpDelete("{id}/templates/{templateId}")]
-        [Authorize(Roles = "Teacher,Admin")]
+        [RequireJwtRole("Teacher,Admin")]
         public async Task<IActionResult> DeleteTemplate(Guid id, Guid templateId)
         {
             await _mediator.Send(new DeleteTemplateCommand { CodelabId = id, TemplateId = templateId });
@@ -127,7 +127,7 @@ namespace VisualizationDSA.WebApi.Controllers
         }
 
         [HttpPost("{id}/hints")]
-        [Authorize(Roles = "Teacher,Admin")]
+        [RequireJwtRole("Teacher,Admin")]
         public async Task<IActionResult> AddHint(Guid id, [FromBody] AddHintCommand command)
         {
             command.CodelabId = id;
@@ -136,7 +136,7 @@ namespace VisualizationDSA.WebApi.Controllers
         }
 
         [HttpPut("{id}/hints/{hintId}")]
-        [Authorize(Roles = "Teacher,Admin")]
+        [RequireJwtRole("Teacher,Admin")]
         public async Task<IActionResult> UpdateHint(Guid id, Guid hintId, [FromBody] UpdateHintCommand command)
         {
             command.HintId = hintId;
@@ -145,7 +145,7 @@ namespace VisualizationDSA.WebApi.Controllers
         }
 
         [HttpDelete("{id}/hints/{hintId}")]
-        [Authorize(Roles = "Teacher,Admin")]
+        [RequireJwtRole("Teacher,Admin")]
         public async Task<IActionResult> DeleteHint(Guid id, Guid hintId)
         {
             await _mediator.Send(new DeleteHintCommand { CodelabId = id, HintId = hintId });

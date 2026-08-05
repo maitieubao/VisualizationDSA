@@ -38,10 +38,11 @@ namespace VisualizationDSA.Application.Features.Classrooms.Queries.GetStudentCla
                     Id = e.Classroom.Id,
                     Name = e.Classroom.Name,
                     Description = e.Classroom.Description,
-                    InviteCode = e.Classroom.InviteCode,
+                    // KHÔNG trả InviteCode cho học viên (chống phát tán code ra ngoài).
+                    InviteCode = null,
                     CreatedAt = e.Classroom.CreatedAt,
                     OwnerTeacherName = e.Classroom.OwnerTeacher?.Username ?? e.Classroom.OwnerTeacher?.Email ?? "Unknown",
-                    StudentCount = e.Classroom.Enrollments.Count
+                    StudentCount = e.Classroom.Enrollments.Count(x => x.Status == VisualizationDSA.Domain.Enums.EnrollmentStatus.Active)
                 });
             }
             return result;

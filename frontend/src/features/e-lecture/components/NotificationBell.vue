@@ -8,10 +8,7 @@
       aria-label="Thông báo"
       @click="toggleDropdown"
     >
-      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-        <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
-        <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
-      </svg>
+      <BaseIcon name="bell" class="w-[15px] h-[15px]" aria-hidden="true" />
       
       <span v-if="notificationStore.hasUnread" class="bell-badge">
         {{ notificationStore.unreadCount > 9 ? '9+' : notificationStore.unreadCount }}
@@ -49,7 +46,7 @@
         </div>
 
         <div v-else class="dropdown-empty">
-          <span class="dropdown-empty__icon">🔔</span>
+          <span class="dropdown-empty__icon"><BaseIcon name="bell" class="w-6 h-6" /></span>
           <p>Chưa có thông báo nào.</p>
         </div>
       </div>
@@ -60,8 +57,8 @@
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted } from 'vue';
 import { useRouter } from 'vue-router';
-import { useNotificationStore } from '../../e-lecture/store/useNotificationStore';
-import type { NotificationDto } from '../../e-lecture/services/notificationApi';
+import { useNotificationStore } from '../store/useNotificationStore';
+import type { NotificationDto } from '../services/notificationApi';
 
 const notificationStore = useNotificationStore();
 const router = useRouter();

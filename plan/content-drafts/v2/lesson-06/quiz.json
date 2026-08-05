@@ -1,0 +1,68 @@
+{
+  "quizTitle": "Trắc nghiệm Stack",
+  "topic": "dsa",
+  "difficulty": 1,
+  "xpReward": 40,
+  "questions": [
+    {
+      "questionText": "Stack hoạt động theo nguyên tắc nào?",
+      "options": ["LIFO — phần tử vào sau được lấy ra trước", "FIFO — phần tử vào trước được lấy ra trước", "Truy cập ngẫu nhiên theo chỉ số O(1)", "Sắp xếp phần tử theo giá trị khi push"],
+      "correctIndex": 0,
+      "explanation": "Phần tử push sau cùng luôn là phần tử pop đầu tiên; FIFO là đặc trưng của Queue."
+    },
+    {
+      "questionText": "Thao tác peek trên stack có tác dụng gì?",
+      "options": ["Xóa phần tử ở đáy stack", "Xem phần tử ở đỉnh mà không xóa nó", "Đếm số phần tử đang có", "Thêm phần tử vào đáy stack"],
+      "correctIndex": 1,
+      "explanation": "Peek chỉ đọc phần tử đỉnh, stack không thay đổi; pop mới vừa lấy vừa xóa."
+    },
+    {
+      "questionText": "Độ phức tạp thời gian của các thao tác push, pop, peek trên stack là bao nhiêu?",
+      "options": ["O(1) cho cả ba thao tác", "O(N) cho cả ba thao tác", "O(log N) cho cả ba thao tác", "Push O(N), pop O(1)"],
+      "correctIndex": 0,
+      "explanation": "Mọi thao tác chỉ tác động lên đỉnh stack nên đều mất thời gian hằng số O(1)."
+    },
+    {
+      "questionText": "Điều gì xảy ra khi gọi pop hoặc peek trên một stack rỗng?",
+      "options": ["Trả về null một cách an toàn", "Xảy ra lỗi underflow — thao tác bất hợp lệ", "Stack tự động tạo một phần tử rỗng mới", "Trả về phần tử được push đầu tiên"],
+      "correctIndex": 1,
+      "explanation": "Không tồn tại phần tử đỉnh để lấy; cần kiểm tra độ rỗng trước khi pop hoặc peek."
+    },
+    {
+      "questionText": "Thuật toán kiểm tra chuỗi ngoặc hợp lệ dùng stack theo cách nào?",
+      "options": ["Push ngoặc mở, gặp ngoặc đóng thì pop và so khớp, kết thúc stack phải rỗng", "Pop mọi ký tự rồi đếm số lần xuất hiện", "Push toàn bộ ký tự rồi duyệt ngược lại", "Dùng stack chỉ để lưu số lượng ngoặc"],
+      "correctIndex": 0,
+      "explanation": "Ngoặc mở gần nhất phải khớp với ngoặc đóng gần nhất — đúng bản chất LIFO; sót ngoặc mở cuối chuỗi là sai."
+    },
+    {
+      "questionText": "Vì sao đệ quy sâu gây lỗi StackOverflow trong khi vòng lặp while lên tới hàng tỷ lần vẫn chạy được?",
+      "options": ["Vì vòng lặp sử dụng nhiều bộ nhớ hơn đệ quy", "Vì mỗi lần gọi hàm đẩy một stack frame vào call stack có kích thước giới hạn", "Vì đệ quy chạy chậm hơn vòng lặp rất nhiều", "Vì hàm đệ quy không bao giờ trả về kết quả"],
+      "correctIndex": 1,
+      "explanation": "Call stack của mỗi thread rất nhỏ (khoảng vài MB); đệ quy không dừng đẩy hàng triệu frame đến khi tràn, còn vòng lặp chỉ dùng vài biến cố định."
+    },
+    {
+      "questionText": "Để cài đặt chức năng undo/redo trong trình soạn thảo, cấu trúc hợp lý nhất là gì?",
+      "options": ["Hai stack: một lưu hành động đã làm (undo), một lưu hành động đã hoàn tác (redo)", "Một mảng đánh dấu thứ tự hành động", "Một queue duy nhất cho cả hai chiều", "Hai con trỏ trỏ vào đầu một mảng"],
+      "correctIndex": 0,
+      "explanation": "Undo pop stack hành động; hành động vừa pop được push sang stack redo, đảo ngược hoàn toàn quá trình."
+    },
+    {
+      "questionText": "Thực hiện liên tiếp: push 1, push 2, push 3, pop, pop, push 4, push 5. Phần tử ở đỉnh stack cuối cùng là gì?",
+      "options": ["5", "4", "2", "3"],
+      "correctIndex": 0,
+      "explanation": "Hai lần pop loại 3 rồi 2; stack còn [1], push 4 → [1, 4], push 5 → [1, 4, 5], phần tử đỉnh là 5."
+    },
+    {
+      "questionText": "Cho mảng [4, 5, 2, 25]. Dùng monotonic stack, mảng Next Greater Element tương ứng là gì?",
+      "options": ["[25, 25, 25, -1]", "[5, 2, 25, -1]", "[5, 25, 25, -1]", "[-1, -1, -1, -1]"],
+      "correctIndex": 2,
+      "explanation": "4 có 5 bên phải; 5 có 25; 2 có 25; 25 không có phần tử lớn hơn bên phải nên là -1."
+    },
+    {
+      "questionText": "Cho histogram với các cột cao lần lượt [2, 1, 5, 6, 2, 3]. Hình chữ nhật lớn nhất có thể vẽ được có diện tích bao nhiêu?",
+      "options": ["12", "6", "16", "10"],
+      "correctIndex": 3,
+      "explanation": "Cặp cột cao 5 và 6 kề nhau cho hình chữ nhật 2 × 5 = 10, lớn nhất trong mọi khả năng mở rộng."
+    }
+  ]
+}

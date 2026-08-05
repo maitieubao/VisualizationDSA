@@ -1,15 +1,16 @@
 import type { SortFrame } from '../types/sorting.types';
 
-let globalIdCounter = 10000;
-
-function nextId(): number {
-  return globalIdCounter++;
-}
+// Counter cục bộ theo batch: id chỉ cần duy nhất trong một lần chạy animation,
+// không cần (và không nên) giữ ở module scope — tránh trôi vô hạn qua nhiều lần chạy.
+const FALLBACK_ID_BASE = 10000;
 
 export function enrichFramesWithIds(frames: SortFrame[]): void {
   if (frames.length === 0) return;
 
   if (frames[0].arrayStateWithIds && frames[0].arrayStateWithIds.length > 0) return;
+
+  let fallbackIdCounter = FALLBACK_ID_BASE;
+  const nextId = (): number => fallbackIdCounter++;
 
   const n = frames[0].arrayState.length;
   const initialIds = Array.from({ length: n }, (_, i) => i);

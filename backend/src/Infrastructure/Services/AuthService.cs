@@ -30,18 +30,19 @@ namespace VisualizationDSA.Infrastructure.Services
 
         public async Task<AuthResponse> RegisterAsync(RegisterRequest request)
         {
+            // Message chung chung — không lộ email/username nào đã tồn tại (chống user enumeration).
             
             var existingUsers = await _unitOfWork.Users.FindAsync(u => u.Email == request.Email);
             if (existingUsers.Any())
             {
-                throw new ArgumentException("Email này đã được sử dụng bởi tài khoản khác.");
+                throw new ArgumentException("Đăng ký không thành công. Vui lòng kiểm tra lại thông tin.");
             }
 
             
             var existingByUsername = await _unitOfWork.Users.FindAsync(u => u.Username == request.Username);
             if (existingByUsername.Any())
             {
-                throw new ArgumentException("Username này đã được sử dụng bởi tài khoản khác.");
+                throw new ArgumentException("Đăng ký không thành công. Vui lòng kiểm tra lại thông tin.");
             }
 
             
@@ -69,6 +70,12 @@ namespace VisualizationDSA.Infrastructure.Services
 
             
             if (user == null || !VerifyPassword(request.Password, user.PasswordHash))
+            {
+                throw new UnauthorizedAccessException("Email hoặc mật khẩu không đúng.");
+            }
+
+            // Tài khoản bị khóa (IsActive=false) không được đăng nhập — message chung chống enumeration.
+            if (!user.IsActive)
             {
                 throw new UnauthorizedAccessException("Email hoặc mật khẩu không đúng.");
             }

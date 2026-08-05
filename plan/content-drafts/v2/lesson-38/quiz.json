@@ -1,0 +1,103 @@
+{
+  "quizTitle": "Trắc nghiệm Cấu trúc dữ liệu nâng cao",
+  "topic": "dsa",
+  "difficulty": 2,
+  "xpReward": 40,
+  "questions": [
+    {
+      "questionText": "Khi bộ nhớ cache LRU đầy, phần tử nào bị đuổi ra?",
+      "options": [
+        "Phần tử được thêm vào sớm nhất",
+        "Phần tử ít được sử dụng gần đây nhất",
+        "Phần tử có giá trị lớn nhất",
+        "Phần tử được truy cập nhiều nhất"
+      ],
+      "correctIndex": 1,
+      "explanation": "LRU (Least Recently Used) luôn xóa phần tử có thời điểm truy cập xa nhất trong quá khứ."
+    },
+    {
+      "questionText": "Bloom Filter có thể đưa ra kết luận sai kiểu nào?",
+      "options": [
+        "Báo không có trong khi thực tế có",
+        "Báo có trong khi thực tế không có",
+        "Cả hai kiểu sai đều có thể xảy ra",
+        "Bloom Filter không bao giờ sai"
+      ],
+      "correctIndex": 1,
+      "explanation": "Các bit bật có thể là do phần tử khác gây nên, nên false positive xảy ra; còn false negative thì không thể."
+    },
+    {
+      "questionText": "Điều nào sau đây KHÔNG BAO GIỜ xảy ra với Bloom Filter?",
+      "options": [
+        "Trả lời có cho phần tử chưa được chèn",
+        "Trả lời không cho phần tử đã được chèn",
+        "Gán nhiều bit bằng 1 khi chèn một phần tử",
+        "Cần nhiều hàm băm khác nhau"
+      ],
+      "correctIndex": 1,
+      "explanation": "Phần tử đã chèn chắc chắn bật đủ k bit nên truy vấn luôn trả về có; nói không cho phần tử đã tồn tại là false negative — không thể xảy ra."
+    },
+    {
+      "questionText": "Skip List tìm kiếm một giá trị trung bình mất bao lâu?",
+      "options": ["O(1)", "O(log n)", "O(n)", "O(n log n)"],
+      "correctIndex": 1,
+      "explanation": "Các tầng trên giúp bỏ qua khoảng nửa số phần tử mỗi bước, nên trung bình chỉ cần O(log n) bước."
+    },
+    {
+      "questionText": "Để cả thao tác lấy và chèn của LRU đều đạt O(1), ta kết hợp những cấu trúc nào?",
+      "options": [
+        "Bảng băm và danh sách liên kết đôi",
+        "Mảng động và con trỏ",
+        "Cây nhị phân và hàng đợi",
+        "Hai ngăn xếp"
+      ],
+      "correctIndex": 0,
+      "explanation": "Bảng băm tra cứu vị trí node trong O(1), danh sách liên kết đôi chèn/xóa node trong O(1) nhờ con trỏ trước-sau."
+    },
+    {
+      "questionText": "Khác với LRU, LFU quyết định phần tử bị đuổi dựa trên tiêu chí gì?",
+      "options": [
+        "Kích thước của phần tử",
+        "Tần suất truy cập, nếu bằng nhau thì theo thời gian gần đây",
+        "Thứ tự nhập vào cache",
+        "Giá trị của khóa"
+      ],
+      "correctIndex": 1,
+      "explanation": "LFU đếm số lần truy cập của từng phần tử, xóa phần tử ít dùng nhất; cùng tần suất thì áp dụng quy tắc LRU để chọn."
+    },
+    {
+      "questionText": "Skip List được dùng trong hệ thống thực tế nào dưới đây?",
+      "options": [
+        "Sorted set của Redis",
+        "Bảng băm của Python",
+        "Ngăn xếp của trình duyệt",
+        "Bộ đếm tham chiếu"
+      ],
+      "correctIndex": 0,
+      "explanation": "Redis dùng Skip List cho cấu trúc sorted set nhờ tìm kiếm có thứ tự O(log n) trung bình và dễ triển khai đồng bộ."
+    },
+    {
+      "questionText": "Bloom Filter có m bit và k hàm băm, khi chèn một chuỗi thì bao nhiêu bit bị đặt thành 1?",
+      "options": ["1 bit", "k bit", "m bit", "k ÷ 2 bit"],
+      "correctIndex": 1,
+      "explanation": "Mỗi hàm băm cho một chỉ số, cả k hàm cùng bật k bit tương ứng trong mảng."
+    },
+    {
+      "questionText": "Trong LFU, khi một phần tử ở bucket tần suất 1 được truy cập thêm một lần, ta xử lý như thế nào?",
+      "options": [
+        "Giữ nguyên trong bucket cũ",
+        "Chuyển sang bucket tần suất 2",
+        "Xóa nó khỏi cache ngay",
+        "Đưa nó lên đầu bucket tần suất 1"
+      ],
+      "correctIndex": 1,
+      "explanation": "Mỗi lần truy cập tăng tần suất lên 1, phần tử phải rời bucket cũ và nối vào cuối bucket tần suất mới."
+    },
+    {
+      "questionText": "Trong Skip List, mỗi node được thăng lên tầng cao hơn với xác suất 1/2. Xác suất để một node xuất hiện ở tầng 4 (được thăng 3 lần liên tiếp) là bao nhiêu?",
+      "options": ["1/4", "1/8", "1/16", "1/2"],
+      "correctIndex": 1,
+      "explanation": "Ba lần thăng liên tiếp, mỗi lần xác suất 1/2 nên kết quả là (1/2)³ = 1/8."
+    }
+  ]
+}

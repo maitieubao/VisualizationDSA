@@ -1,0 +1,68 @@
+{
+  "quizTitle": "Trắc nghiệm DP cơ bản",
+  "topic": "dsa",
+  "difficulty": 1,
+  "xpReward": 40,
+  "questions": [
+    {
+      "questionText": "Một bài toán cần có hai đặc tính gì để áp dụng quy hoạch động?",
+      "options": ["Đệ quy và vòng lặp", "Overlapping subproblems và optimal substructure", "Dữ liệu được sắp xếp và không trùng lặp", "Tham lam và chia để trị"],
+      "correctIndex": 1,
+      "explanation": "Các bài toán con phải chồng lấn nhau (được gọi lại nhiều lần) và lời giải tối ưu phải xây dựng từ lời giải con tối ưu."
+    },
+    {
+      "questionText": "Top-down memoization hoạt động theo hướng nào?",
+      "options": ["Đệ quy từ trên xuống kèm lưu kết quả đã tính", "Lấp bảng từ các trường hợp cơ sở lên", "Sinh mọi tổ hợp rồi chọn tối ưu", "Liên tục chia đôi dữ liệu đầu vào"],
+      "correctIndex": 0,
+      "explanation": "Top-down giữ cấu trúc đệ quy của bài toán gốc nhưng lưu (memoize) kết quả từng trạng thái để tái sử dụng."
+    },
+    {
+      "questionText": "Công thức truy hồi đúng của dãy Fibonacci là gì?",
+      "options": ["dp[i] = dp[i-1] + 1", "dp[i] = dp[i-1] + dp[i-2]", "dp[i] = max(dp[i-1], dp[i-2])", "dp[i] = dp[i-1] * 2"],
+      "correctIndex": 1,
+      "explanation": "Mỗi số Fibonacci bằng tổng hai số đứng trước, với base dp[0] = 0 và dp[1] = 1."
+    },
+    {
+      "questionText": "Trong bottom-up tabulation, bảng được lấp theo thứ tự nào?",
+      "options": ["Từ bài toán gốc xuống các bài toán con", "Từ các trường hợp cơ sở lên bài toán gốc", "Ngẫu nhiên, miễn đủ các ô", "Chỉ lấp các ô ở vị trí chẵn"],
+      "correctIndex": 1,
+      "explanation": "Bottom-up bắt đầu từ base case rồi tăng dần kích thước bài toán con để mỗi ô luôn đọc được giá trị đã tính trước đó."
+    },
+    {
+      "questionText": "Leo cầu thang: mỗi bước đi được 1 hoặc 2 bậc. Số cách leo lên bậc thứ 3 là bao nhiêu?",
+      "options": ["2", "3", "4", "5"],
+      "correctIndex": 1,
+      "explanation": "Các cách leo: 1+1+1, 1+2, 2+1 — tổng cộng 3 cách, đúng bằng dp[3] = dp[2] + dp[1] = 2 + 1."
+    },
+    {
+      "questionText": "House Robber với dãy nhà [2, 7, 9, 3, 1], tổng tiền trộm được tối đa là bao nhiêu?",
+      "options": ["10", "12", "13", "15"],
+      "correctIndex": 1,
+      "explanation": "Trộm nhà giá trị 2, 9 và 1: 2 + 9 + 1 = 12; dp[4] = max(dp[3], dp[2] + 1) = max(11, 12) = 12."
+    },
+    {
+      "questionText": "Coin Change với các đồng xu [1, 2, 5] và amount = 11, số đồng xu tối thiểu là bao nhiêu?",
+      "options": ["3", "4", "5", "2"],
+      "correctIndex": 0,
+      "explanation": "Phương án tối ưu là 11 = 5 + 5 + 1, cần 3 đồng; không thể ít hơn vì đồng xu lớn nhất chỉ là 5."
+    },
+    {
+      "questionText": "Đệ quy ngây thơ tính Fibonacci không dùng memoization có độ phức tạp thời gian là gì?",
+      "options": ["O(N)", "O(log N)", "O(2^N)", "O(N²)"],
+      "correctIndex": 2,
+      "explanation": "Mỗi lần gọi lại rẽ nhánh thành hai lần gọi nhỏ hơn nên tổng số lần gọi tăng theo cấp số nhân O(2^N)."
+    },
+    {
+      "questionText": "House Robber với dãy nhà [3, 1, 1, 3] cho kết quả tối ưu là bao nhiêu?",
+      "options": ["6", "5", "4", "7"],
+      "correctIndex": 0,
+      "explanation": "dp: 3 → max(3,1) = 3 → max(3, 3+1) = 4 → max(4, 3+3) = 6; trộm nhà đầu và nhà cuối."
+    },
+    {
+      "questionText": "Với giá cổ phiếu [7, 1, 5, 3, 6, 4], lợi nhuận tối đa khi mua rồi bán một lần là bao nhiêu?",
+      "options": ["5", "6", "4", "3"],
+      "correctIndex": 0,
+      "explanation": "Mua ngày thứ hai với giá 1 và bán ngày thứ năm với giá 6: lợi nhuận 6 - 1 = 5, không phương án nào tốt hơn."
+    }
+  ]
+}

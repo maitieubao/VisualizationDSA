@@ -1,0 +1,78 @@
+{
+  "quizTitle": "Trắc nghiệm Bit Manipulation & Số học",
+  "topic": "dsa",
+  "difficulty": 2,
+  "xpReward": 40,
+  "questions": [
+    {
+      "questionText": "Kết quả của phép 5 & 3 là bao nhiêu?",
+      "options": ["1", "7", "4", "6"],
+      "correctIndex": 0,
+      "explanation": "5 là 0101, 3 là 0011; AND từng bit cho 0001, tức là 1."
+    },
+    {
+      "questionText": "Tính chất nào sau đây luôn đúng với phép XOR?",
+      "options": ["a ^ a = 1", "a ^ a = 0", "a ^ a = a", "a ^ a = 2a"],
+      "correctIndex": 1,
+      "explanation": "Hai bit giống nhau XOR cho 0 nên a ^ a = 0; kết hợp a ^ 0 = a giúp triệt tiêu cặp trùng."
+    },
+    {
+      "questionText": "Phép dịch trái x << 3 tương đương với phép toán số học nào?",
+      "options": ["Chia nguyên x cho 3", "Nhân x với 3", "Nhân x với 8", "Cộng x với 3"],
+      "correctIndex": 2,
+      "explanation": "Mỗi lần dịch trái 1 bit là nhân đôi giá trị, dịch 3 bit tương đương nhân với 2³ = 8."
+    },
+    {
+      "questionText": "Cách chuẩn để kiểm tra bit thứ k (tính từ 0) của số x có bằng 1 hay không?",
+      "options": [
+        "x & (1 << k) bằng 0",
+        "(x >> k) & 1",
+        "x | (1 << k)",
+        "x ^ (1 << k)"
+      ],
+      "correctIndex": 1,
+      "explanation": "Dịch phải k bit đưa bit cần kiểm tra xuống vị trí thấp nhất, AND với 1 trả về đúng 0 hoặc 1."
+    },
+    {
+      "questionText": "Mảng [2, 3, 2, 5, 3] chứa các số xuất hiện đúng hai lần ngoại trừ một số xuất hiện một lần. Số đó là?",
+      "options": ["2", "3", "5", "6"],
+      "correctIndex": 2,
+      "explanation": "XOR toàn bộ: 2^2 = 0, 3^3 = 0, còn lại 0^5 = 5 — hai phần tử trùng triệt tiêu nhau."
+    },
+    {
+      "questionText": "Với x là số nguyên dương, điều kiện đúng để x là luỹ thừa của 2 là gì?",
+      "options": [
+        "(x & (x - 1)) === 0",
+        "(x & (x + 1)) === 0",
+        "(x | (x - 1)) === 0",
+        "(x ^ (x - 1)) === 0"
+      ],
+      "correctIndex": 0,
+      "explanation": "Luỹ thừa của 2 chỉ có một bit 1; x - 1 sẽ làm bit đó trở thành 0 nên x & (x - 1) triệt tiêu."
+    },
+    {
+      "questionText": "Ước chung lớn nhất gcd(48, 18) tính theo thuật toán Euclid bằng bao nhiêu?",
+      "options": ["6", "12", "18", "3"],
+      "correctIndex": 0,
+      "explanation": "48 mod 18 = 12; 18 mod 12 = 6; 12 mod 6 = 0, số dư cuối khác 0 là 6 nên gcd = 6."
+    },
+    {
+      "questionText": "Toggle (đảo) bit thứ 1 (tính từ 0) của số 5 (101) cho kết quả nào?",
+      "options": ["3", "4", "7", "13"],
+      "correctIndex": 2,
+      "explanation": "Toggle dùng x ^ (1 << k): 101 ^ 010 = 111, tức là 7."
+    },
+    {
+      "questionText": "fastPower(2, 10, 7) — tính 2^10 rồi lấy phần dư khi chia cho 7 — trả về bao nhiêu?",
+      "options": ["4", "3", "1", "2"],
+      "correctIndex": 3,
+      "explanation": "2^10 = 1024; 1024 chia 7 được 146 dư 2, nên kết quả là 2."
+    },
+    {
+      "questionText": "Sử dụng sàng Eratosthenes, có bao nhiêu số nguyên tố nhỏ hơn 20?",
+      "options": ["9", "8", "7", "10"],
+      "correctIndex": 1,
+      "explanation": "Các số nguyên tố nhỏ hơn 20 là 2, 3, 5, 7, 11, 13, 17, 19 — đếm được 8 số."
+    }
+  ]
+}

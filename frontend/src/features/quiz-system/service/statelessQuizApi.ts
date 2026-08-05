@@ -6,6 +6,19 @@
 
 const BASE_URL = import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:5055';
 
+import { useAuthStore } from '../../auth/store/useAuthStore';
+
+/** Lấy access token đang hoạt động. */
+function getAuthToken(): string | null {
+  try {
+    const fromStore = useAuthStore().getAccessToken();
+    if (fromStore) return fromStore;
+  } catch {
+    // Pinia chưa active (test edge)
+  }
+  return localStorage.getItem('token');
+}
+
 export interface StatelessQuizSummary {
   id: string;
   title: string;
@@ -62,7 +75,12 @@ export const statelessQuizApi = {
 
   
   async getQuizById(quizId: string): Promise<StatelessQuizDetail> {
-    const res = await fetch(`${BASE_URL}/api/v1/concepts/quiz/${encodeURIComponent(quizId)}`);
+    // Gửi token để nhận đầy đủ đáp án (lesson flow chấm điểm client-side);
+    // không có token → backend chỉ trả câu hỏi (ẩn đáp án).
+    const token = getAuthToken();
+    const headers: Record<string, string> = {};
+    if (token) headers['Authorization'] = `Bearer ${token}`;
+    const res = await fetch(`${BASE_URL}/api/v1/concepts/quiz/${encodeURIComponent(quizId)}`, { headers });
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     return res.json();
   },

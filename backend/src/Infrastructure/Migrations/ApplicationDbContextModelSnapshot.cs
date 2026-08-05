@@ -214,9 +214,10 @@ namespace Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("ClassroomId");
-
                     b.HasIndex("StudentId");
+
+                    b.HasIndex("ClassroomId", "StudentId")
+                        .IsUnique();
 
                     b.ToTable("ClassroomEnrollments");
                 });
@@ -558,6 +559,31 @@ namespace Infrastructure.Migrations
                     b.HasIndex("CodelabId");
 
                     b.ToTable("CodelabHints");
+                });
+
+            modelBuilder.Entity("VisualizationDSA.Domain.Entities.CodelabHintReveal", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid>("CodelabHintId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("RevealedAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CodelabHintId");
+
+                    b.HasIndex("UserId", "CodelabHintId")
+                        .IsUnique();
+
+                    b.ToTable("CodelabHintReveals");
                 });
 
             modelBuilder.Entity("VisualizationDSA.Domain.Entities.CodelabSubmission", b =>
@@ -1210,6 +1236,27 @@ namespace Infrastructure.Migrations
                     b.ToTable("QuizQuestions");
                 });
 
+            modelBuilder.Entity("VisualizationDSA.Domain.Entities.QuizXpGrant", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("GrantedAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("QuizKey")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("QuizXpGrants");
+                });
+
             modelBuilder.Entity("VisualizationDSA.Domain.Entities.RefreshToken", b =>
                 {
                     b.Property<Guid>("Id")
@@ -1551,8 +1598,17 @@ namespace Infrastructure.Migrations
                     b.Property<Guid>("LessonId")
                         .HasColumnType("TEXT");
 
+                    b.Property<int>("BestScore")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<bool>("CodelabCompleted")
+                        .HasColumnType("INTEGER");
+
                     b.Property<DateTime?>("CompletedAt")
                         .HasColumnType("TEXT");
+
+                    b.Property<bool>("HasWatchedVisualizer")
+                        .HasColumnType("INTEGER");
 
                     b.Property<int>("LastActiveFrameIndex")
                         .ValueGeneratedOnAdd()
@@ -1563,6 +1619,9 @@ namespace Infrastructure.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("REAL")
                         .HasDefaultValue(0.0);
+
+                    b.Property<int?>("QuizScore")
+                        .HasColumnType("INTEGER");
 
                     b.Property<string>("Status")
                         .IsRequired()
@@ -1806,6 +1865,17 @@ namespace Infrastructure.Migrations
                         .IsRequired();
 
                     b.Navigation("Codelab");
+                });
+
+            modelBuilder.Entity("VisualizationDSA.Domain.Entities.CodelabHintReveal", b =>
+                {
+                    b.HasOne("VisualizationDSA.Domain.Entities.CodelabHint", "CodelabHint")
+                        .WithMany()
+                        .HasForeignKey("CodelabHintId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("CodelabHint");
                 });
 
             modelBuilder.Entity("VisualizationDSA.Domain.Entities.CodelabSubmission", b =>

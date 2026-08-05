@@ -27,7 +27,7 @@
   font-family: 'JetBrains Mono', monospace;
   font-size: 18px;
   font-weight: 700;
-  color: #06b6d4;
+  color: var(--color-accent-primary);
   text-shadow: 0 0 10px rgba(6, 182, 212, 0.2);
   text-align: center;
 }
@@ -35,9 +35,9 @@
 .export-action-btn {
   padding: 12px 24px;
   border-radius: 12px;
-  border: 1px solid #06b6d4;
+  border: 1px solid var(--color-accent-primary);
   background: rgba(6, 182, 212, 0.1);
-  color: #06b6d4;
+  color: var(--color-accent-primary);
   font-family: 'JetBrains Mono', monospace;
   font-size: 12px;
   font-weight: 700;
@@ -71,7 +71,7 @@
   font-family: 'JetBrains Mono', monospace;
   font-size: 11px;
   font-weight: 600;
-  color: #94a3b8;
+  color: var(--color-text-muted);
   text-transform: uppercase;
   letter-spacing: 0.08em;
 }
@@ -79,9 +79,9 @@
 .generate-link-btn {
   padding: 10px 20px;
   border-radius: 10px;
-  border: 1px solid #f59e0b;
+  border: 1px solid var(--color-accent-yellow);
   background: rgba(245, 158, 11, 0.08);
-  color: #f59e0b;
+  color: var(--color-accent-yellow);
   font-family: 'JetBrains Mono', monospace;
   font-size: 12px;
   font-weight: 700;
@@ -102,7 +102,7 @@
 .overflow-error {
   font-family: 'JetBrains Mono', monospace;
   font-size: 11px;
-  color: #ef4444;
+  color: var(--color-accent-red);
   text-shadow: 0 0 6px rgba(239, 68, 68, 0.2);
   padding: 8px 12px;
   border-radius: 8px;
@@ -124,7 +124,7 @@
   flex: 1;
   font-family: 'JetBrains Mono', monospace;
   font-size: 11px;
-  color: #06b6d4;
+  color: var(--color-accent-primary);
   word-break: break-all;
 }
 
@@ -133,7 +133,7 @@
   border-radius: 8px;
   border: 1px solid rgba(255, 255, 255, 0.1);
   background: rgba(255, 255, 255, 0.05);
-  color: #e2e8f0;
+  color: var(--color-bg-hover);
   font-family: 'JetBrains Mono', monospace;
   font-size: 10px;
   font-weight: 700;
@@ -147,8 +147,8 @@
 }
 
 .copy-btn.copied {
-  color: #10b981;
-  border-color: #10b981;
+  color: var(--color-accent-green);
+  border-color: var(--color-accent-green);
   background: rgba(16, 185, 129, 0.1);
 }
 
@@ -157,7 +157,7 @@
   border-radius: 10px;
   border: 1px solid rgba(255, 255, 255, 0.06);
   background: rgba(255, 255, 255, 0.03);
-  color: #94a3b8;
+  color: var(--color-text-muted);
   font-family: 'JetBrains Mono', monospace;
   font-size: 12px;
   font-weight: 600;
@@ -167,5 +167,5 @@
 
 .close-btn:hover {
   background: rgba(255, 255, 255, 0.08);
-  color: #e2e8f0;
+  color: var(--color-bg-hover);
 }

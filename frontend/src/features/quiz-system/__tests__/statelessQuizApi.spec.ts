@@ -91,7 +91,8 @@ describe('statelessQuizApi — Quiz Không Trạng Thái (Backend)', () => {
 
       const result = await statelessQuizApi.getQuizById('quiz-1');
 
-      expect(fetchMock).toHaveBeenCalledWith(`${BASE_URL}/concepts/quiz/quiz-1`);
+      // Fetch giờ kèm options headers (gửi token để nhận đáp án khi đã đăng nhập).
+      expect(fetchMock).toHaveBeenCalledWith(`${BASE_URL}/concepts/quiz/quiz-1`, expect.objectContaining({ headers: expect.anything() }));
       expect(result.questions).toHaveLength(1);
     });
 
@@ -101,7 +102,7 @@ describe('statelessQuizApi — Quiz Không Trạng Thái (Backend)', () => {
 
       await statelessQuizApi.getQuizById('quiz id/1');
 
-      expect(fetchMock).toHaveBeenCalledWith(`${BASE_URL}/concepts/quiz/quiz%20id%2F1`);
+      expect(fetchMock).toHaveBeenCalledWith(`${BASE_URL}/concepts/quiz/quiz%20id%2F1`, expect.objectContaining({ headers: expect.anything() }));
     });
   });
 

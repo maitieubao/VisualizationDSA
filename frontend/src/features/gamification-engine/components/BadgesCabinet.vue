@@ -14,7 +14,7 @@
           class="w-16 h-16 rounded-full flex items-center justify-center text-2xl"
           :class="isUnlocked(badge.id) ? 'badge-image-unlocked' : 'badge-image-locked'"
         >
-          {{ badge.icon }}
+          <BaseIcon :name="badge.icon" class="w-8 h-8" />
         </div>
         <span
           class="text-[10px] text-center leading-tight"

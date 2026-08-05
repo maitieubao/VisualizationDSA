@@ -42,6 +42,7 @@ export const useAlgorithmStore = defineStore('algorithm', () => {
       
       algorithms.value = [...backendAlgos, ...missingFromBackend];
     } catch {
+      error.value = 'Không tải được danh sách từ máy chủ — đang hiển thị dữ liệu cục bộ.';
       algorithms.value = ALGORITHM_CATALOG;
     } finally {
       isLoading.value = false;
@@ -58,6 +59,7 @@ export const useAlgorithmStore = defineStore('algorithm', () => {
       if (!response.ok) throw new Error('Không thể tải siêu dữ liệu chi tiết của giải thuật.');
       metadata.value = await response.json();
     } catch {
+      error.value = 'Không tải được chi tiết giải thuật từ máy chủ — đang hiển thị dữ liệu cục bộ.';
       metadata.value = LOCAL_METADATA[algoId] ?? null;
     } finally {
       isLoading.value = false;
@@ -67,6 +69,7 @@ export const useAlgorithmStore = defineStore('algorithm', () => {
   function selectAlgorithm(algo: Algorithm, mode: 'simulation' | 'theory' = 'simulation'): void {
     currentAlgorithm.value = algo;
     metadata.value = LOCAL_METADATA[algo.id] ?? null;
+    error.value = '';
     viewMode.value = mode;
   }
 

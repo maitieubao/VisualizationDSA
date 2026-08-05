@@ -20,11 +20,11 @@ Hãy tưởng tượng bạn đang quản lý một dãy số bán hàng hàng n
 1. **"Tổng doanh số từ ngày 2 đến ngày 4 là bao nhiêu?"** → `Query(1, 3)` = 20 + 30 + 40 = 90.
 2. **"Ngày 3 doanh số thay đổi thành 35, cập nhật lại."** → `Update(2, 35)`.
 
-**Cách ngây giản:** Duyệt từ L đến R để tính tổng → **O(N)** cho mỗi query. Với hàng ngàn query, hệ thống chậm đến chết!
+**Cách ngây thơ:** Duyệt từ L đến R để tính tổng → **O(N)** cho mỗi query. Với hàng ngàn query, hệ thống chậm đến chết!
 
 **Segment Tree** ra đời để giải quyết vấn đề này:
 - **Query [L, R]:** **O(log N)** thay vì O(N).
-- **Update (point):** **O(log N)** thay vì O(1) nhưng truy vấn nhanh hơn nhiều lần.
+- **Update (point):** **O(log N)** (chậm hơn mảng thường O(1) một chút) nhưng bù lại truy vấn nhanh hơn rất nhiều lần.
 
 ---
 
@@ -358,11 +358,13 @@ flowchart TB
         Q2["[3,5] giao [1,3]? Có -> chia"]
         Q3["[0,1] giao [1,3]? Có -> chia"]
         Q4["[2,2] trong [1,3]? Có -> trả 5"]
-        Q5["[3,4] trong [1,3]? Có -> trả 16"]
-        Q6["[5,5] ngoài [1,3]? Không -> trả 0"]
-        Q7["[0,0] ngoài [1,3]? Không -> trả 0"]
+        Q5["[3,4] giao [1,3]? Có -> chia"]
+        Q6["[5,5] ngoài [1,3]? Có -> trả 0"]
+        Q7["[0,0] ngoài [1,3]? Có -> trả 0"]
         Q8["[1,1] trong [1,3]? Có -> trả 3"]
-        
+        Q9["[3,3] trong [1,3]? Có -> trả 7"]
+        Q10["[4,4] ngoài [1,3]? Có -> trả 0"]
+
         Q0 --> Q1
         Q0 --> Q2
         Q1 --> Q3
@@ -371,15 +373,16 @@ flowchart TB
         Q2 --> Q6
         Q3 --> Q7
         Q3 --> Q8
-        
+        Q5 --> Q9
+        Q5 --> Q10
+
         style Q4 fill:#10b981,color:#fff
         style Q8 fill:#10b981,color:#fff
-        style Q5 fill:#10b981,color:#fff
+        style Q9 fill:#10b981,color:#fff
     end
 ```
 
-**Kết quả:** 0 (từ [0,0]) + 3 (từ [1,1]) + 5 (từ [2,2]) + 16 (từ [3,4]) = 24
-> **Lỗi!** [3,4] = 7+9 = 16, nhưng chỉ cần [3,3] = 7. Lazy/Query cần kiểm tra chặt hơn.
+**Kết quả:** 0 (từ [0,0]) + 3 (từ [1,1]) + 5 (từ [2,2]) + 7 (từ [3,3]) + 0 (từ [4,4]) + 0 (từ [5,5]) = **15**.
 
 ---
 
@@ -492,3 +495,16 @@ Segment Tree là công cụ mạnh cho truy vấn đoạn. Để hoàn thiện k
     <p class="next-steps-caption">Cấu trúc dữ liệu cho truy cập phần tử min/max trong O(1).</p>
   </a>
 </div>
+
+---
+
+## 📚 Tham khảo lý thuyết {#references}
+
+Dưới đây là các nguồn tài liệu kinh điển và chính thống được dùng để biên soạn bài viết này, giúp bạn tự nghiên cứu sâu hơn nếu muốn:
+
+- **Segment Tree — khái niệm và phân tích độ phức tạp:** [Segment tree - Wikipedia](https://en.wikipedia.org/wiki/Segment_tree).
+- **Cài đặt Segment Tree bằng C++ (Build, Query, Update):** GeeksforGeeks - [Segment Tree | Set 1 (Sum of given range)](https://www.geeksforgeeks.org/segment-tree-set-1-sum-of-given-range/).
+- **Lazy Propagation cho Range Update:** GeeksforGeeks - [Lazy Propagation in Segment Tree](https://www.geeksforgeeks.org/lazy-propagation-in-segment-tree/).
+- **Giải thích sâu về Segment Tree, Lazy Propagation và các biến thể:** CP-Algorithms - [Segment Tree](https://cp-algorithms.com/data_structures/segment_tree.html).
+- **Nền tảng phân tích thuật toán trên cây nhị phân và truy vấn trên khoảng:** Cormen, Leiserson, Rivest & Stein, *Introduction to Algorithms* (CLRS), 3rd ed. (phần liên quan đến cấu trúc dữ liệu dạng cây và Interval Tree).
+- **Khóa học thuật toán căn bản:** MIT OpenCourseWare 6.006 — *Introduction to Algorithms* (tài liệu khóa học).

@@ -16,7 +16,7 @@
     </div>
 
     <div v-else-if="classrooms.length === 0" class="empty-state py-16 text-center bg-bg-secondary/40 border border-border-subtle border-dashed rounded-3xl">
-      <div class="text-6xl mb-4">🎓</div>
+      <div class="text-6xl mb-4"><BaseIcon name="academic" class="w-16 h-16" /></div>
       <h2 class="text-xl font-bold text-text-primary mb-2">Bạn chưa tham gia lớp học nào</h2>
       <p class="text-text-secondary text-sm mb-6 max-w-md mx-auto">
         Hãy nhập mã mời từ giảng viên để tham gia lớp học. Bạn cũng có thể khám phá các khóa học công khai.
@@ -65,8 +65,8 @@
             <BaseIcon name="user" class="w-3 h-3 inline mr-1 align-middle" />
             {{ c.studentCount }} học viên
           </span>
-          <span class="text-accent font-bold group-hover:translate-x-1 transition-transform">
-            Mở lớp →
+          <span class="text-accent font-bold group-hover:translate-x-1 transition-transform flex items-center gap-1">
+            Mở lớp <BaseIcon name="arrow-right" class="w-3.5 h-3.5" />
           </span>
         </div>
       </router-link>

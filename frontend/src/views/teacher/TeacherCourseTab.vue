@@ -157,7 +157,7 @@
                 <td><span class="topic-badge" :class="'topic-' + c.category">{{ formatTopic(c.category) }}</span></td>
                 <td><span class="diff-badge" :class="'diff-' + c.difficulty?.toLowerCase()">{{ formatDifficulty(c.difficulty?.toLowerCase()) }}</span></td>
                 <td class="font-bold">
-                  <span v-if="c.isPremium" class="text-accent-yellow">👑 Premium</span>
+                  <span v-if="c.isPremium" class="text-accent-yellow"><BaseIcon name="crown" class="w-3.5 h-3.5 inline mr-1 align-middle" />Premium</span>
                   <span v-else class="text-text-muted">Miễn phí</span>
                 </td>
                 <td class="font-mono text-text-secondary">{{ c.totalLessons }} bài</td>
@@ -195,7 +195,7 @@
                           <span class="text-xs text-accent font-mono mr-2">#{{ l.orderIndex }}</span>
                           <span class="text-sm font-bold text-white">{{ l.title }}</span>
                           <div class="flex gap-3 text-xs text-text-muted mt-1">
-                            <span>⚡ {{ l.xpReward }} XP</span>
+                            <span class="flex items-center gap-1"><BaseIcon name="zap" class="w-3 h-3" /> {{ l.xpReward }} XP</span>
                             <span v-if="l.sandboxType" class="text-accent uppercase text-[10px] font-bold">{{ l.sandboxType }}</span>
                             <span v-if="l.quizId" class="text-accent-purple text-[10px]">Có liên kết quiz</span>
                           </div>

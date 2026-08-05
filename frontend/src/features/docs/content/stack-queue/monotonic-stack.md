@@ -7,7 +7,7 @@ description: Khám phá kỹ thuật nâng cao kết hợp giữa Stack và vi�
 
 Bạn đã nắm vững cách Stack hoạt động (LIFO). Vậy thì **Monotonic Stack (Ngăn xếp Đơn điệu)** thực chất chỉ là một chiếc Stack bình thường, nhưng bị áp đặt thêm một quy tắc nghiêm ngặt: **Các phần tử nằm trong Stack phải luôn giữ một trật tự tăng dần hoặc giảm dần (đơn điệu).**
 
-Nghe có vẻ đơn giản, nhưng sự ràng buộc này lại sinh ra một "siêu năng lực": Nó có thể giúp bạn giải quyết mượt mà họ bài toán *"Tìm phần tử lớn hơn/nhỏ hơn đầu tiên ở bên trái/phải"* với độ phức tạp thời gian **O(N)** thay vì O(N²).
+Nghe có vẻ đơn giản, nhưng sự ràng buộc này lại sinh ra một "siêu năng lực": Nó có thể giúp bạn giải quyết mượt mà cả họ bài toán *"Tìm phần tử lớn hơn/nhỏ hơn đầu tiên ở bên trái/phải"* với độ phức tạp thời gian **O(N)** thay vì O(N²).
 
 ## Nguyên lý hoạt động {#how-it-works}
 
@@ -61,11 +61,14 @@ graph TD
 | **Thời gian (Mọi trường hợp)** | **O(N)** - Mặc dù có vòng lặp `while` lồng bên trong vòng lặp `for`, nhưng nhìn kỹ lại: Mỗi phần tử chỉ được `Push` vào Stack đúng 1 lần, và bị `Pop` ra tối đa 1 lần. Thuật toán luôn kết thúc sau tối đa 2N phép toán. |
 | **Không gian bộ nhớ** | **O(N)** - Cần một Stack để lưu trữ tạm thời các chỉ số (index), và một mảng kết quả. |
 
-## Cài đặt bằng C# (Code Example) {#code-example}
+## Cài đặt (Code Example) {#code-example}
 
 Dưới đây là Code C# cho bài toán **Next Greater Element**:
 
-```csharp
+```playground:monotonic-stack
+```
+
+```dual:monotonic-stack
 public int[] FindNextGreaterElements(int[] array)
 {
     int n = array.Length;
@@ -107,8 +110,16 @@ Monotonic Stack là một minh chứng tuyệt vời cho việc chúng ta có th
 Đến đây, bạn đã chinh phục xong các loại tuyến tính. Hãy cùng bước sang bài **Tổng hợp: Bài tập Stack – Queue** để xâu chuỗi toàn bộ kỹ năng.
 
 <div class="vt-box-container next-steps">
-  <a class="vt-box" href="/docs/stack-queue/summary">
+  <a class="vt-box" href="/docs/stack-queue/stack-queue-summary">
     <p class="next-steps-link">Tổng hợp Ứng dụng Stack & Queue</p>
     <p class="next-steps-caption">Phân tích ưu nhược điểm và nhận diện các dạng bài tập Cấu trúc tuyến tính.</p>
   </a>
 </div>
+
+## 📚 Tham khảo lý thuyết
+
+- **CLRS** — *Introduction to Algorithms*, 3rd Edition (MIT Press): Chương về Cấu trúc dữ liệu cơ bản — Stack, Queue (Chương 10) và phân tích amortized cho ý tưởng "mỗi phần tử vào/ra Stack đúng một lần".
+- **GeeksforGeeks** — *Next Greater Element*: https://www.geeksforgeeks.org/next-greater-element/
+- **Wikipedia** — *Next greater element*: https://en.wikipedia.org/wiki/Next_greater_element
+- **MIT OpenCourseWare** — *6.006 Introduction to Algorithms*: https://ocw.mit.edu/courses/6-006-introduction-to-algorithms-spring-2020/
+- **Microsoft Learn** — *Stack<T> Class (.NET)*: https://learn.microsoft.com/en-us/dotnet/api/system.collections.generic.stack-1

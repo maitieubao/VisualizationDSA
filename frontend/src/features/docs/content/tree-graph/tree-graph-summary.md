@@ -17,7 +17,34 @@ Bài viết này sẽ đóng vai trò như một chiếc la bàn, giúp bạn "�
 | **Cấu trúc lõi**| Hàng đợi (Queue) | Ngăn xếp (Stack) hoặc Đệ quy (Recursion) |
 | **Không gian bộ nhớ** | Tốn kém nếu Đồ thị rất "rộng" (nhiều hàng xóm ở mỗi tầng) | Tốn kém nếu Đồ thị rất "sâu" (đi được rất xa mới chạm đáy) |
 | **Rủi ro sập hệ thống**| Hết bộ nhớ (Out of Memory) do Queue phình to | Tràn bộ nhớ (StackOverflow) nếu dùng Đệ quy cho đồ thị siêu sâu |
-| **Ưu điểm độc tôn**| **Luôn tìm ra đường đi ngắn nhất** (với mảng 2D/đồ thị ko trọng số) | Code đệ quy cực kỳ ngắn gọn, dễ triển khai |
+| **Ưu điểm độc tôn**| **Luôn tìm ra đường đi ngắn nhất** (với mảng 2D/đồ thị không trọng số) | Code đệ quy cực kỳ ngắn gọn, dễ triển khai |
+
+## Bảng so sánh tổng hợp: BST, AVL, BFS, DFS, Dijkstra {#master-comparison}
+
+| Cấu trúc / Thuật toán | Thời gian điển hình | Không gian | Khi nào dùng |
+| :--- | :--- | :--- | :--- |
+| **BST** | Thêm/Xóa/Tìm $O(\log N)$ trung bình, $O(N)$ tệ nhất | $O(N)$ | Dữ liệu động, cần thêm/xóa/tìm kiếm nhanh, không đòi hỏi cân bằng chặt |
+| **AVL** | Thêm/Xóa/Tìm luôn $O(\log N)$ | $O(N)$ | Giống BST nhưng cần bảo đảm worst-case $O(\log N)$ khi Insert/Delete diễn ra dày đặc |
+| **BFS** | $O(V + E)$ | $O(V)$ (hàng đợi) | Tìm đường đi ngắn nhất / số bước ít nhất trên đồ thị không trọng số |
+| **DFS** | $O(V + E)$ | $O(V)$ (ngăn xếp / đệ quy) | Liệt kê mọi đường đi, kiểm tra sự tồn tại, Backtracking, đếm vùng liên thông |
+| **Dijkstra** | $O((V + E) \log V)$ (với Binary Heap) | $O(V)$ | Tìm đường đi ngắn nhất trên đồ thị **có trọng số không âm** |
+
+Sơ đồ chọn lựa nhanh:
+
+```mermaid
+flowchart TD
+    A["Bài toán Cây / Đồ thị"] --> B{"Cần đường đi ngắn nhất?"}
+    B -- "Có, đồ thị không trọng số" --> C["BFS"]
+    B -- "Có, đồ thị có trọng số không âm" --> D["Dijkstra"]
+    B -- "Không" --> E{"Cần liệt kê tất cả / chỉ cần CÓ-KHÔNG?"}
+    E -- "Có" --> F["DFS + Backtracking"]
+    E -- "Không" --> G{"Dữ liệu động, cần thêm xóa tìm kiếm?"}
+    G -- "Chấp nhận O(log N) trung bình" --> H["BST"]
+    G -- "Cần O(log N) cả worst-case" --> I["AVL"]
+    G -- "Không" --> J["Cấu trúc hoặc thuật toán khác"]
+```
+
+> **Mẹo phỏng vấn:** Khi so sánh BST và AVL, hãy nêu đúng điểm mấu chốt — AVL trả giá bằng các phép xoay (Rotation) trong Insert/Delete để đổi lấy sự cân bằng chặt, còn BST giữ code đơn giản nhưng có thể suy biến thành danh sách liên kết nếu dữ liệu đầu vào đã được sắp xếp.
 
 ## Nhận diện "Mùi" bài toán (Pattern Matching) {#pattern-matching}
 
@@ -67,3 +94,11 @@ Và bây giờ, hãy tháo bỏ chiếc mũ "Thuật toán học", đội lên �
     <p class="next-steps-caption">Xây tường bảo vệ dữ liệu và nghệ thuật giấu kín sự phức tạp.</p>
   </a>
 </div>
+
+## 📚 Tham khảo lý thuyết
+
+- **Cormen, Leiserson, Rivest & Stein — *Introduction to Algorithms*, 4th Edition (CLRS), MIT Press**: Chương 12 (Binary Search Trees), Chương 13 (Red-Black Trees — cơ sở so sánh với AVL), Chương 20 & 22 (BFS, DFS), Chương 24 (Dijkstra).
+- **Dasgupta, Papadimitriou & Vazirani — *Algorithms*, McGraw-Hill**: Chương 3 & 4 (duyệt đồ thị và đường đi ngắn nhất).
+- **Wikipedia**: [Binary search tree](https://en.wikipedia.org/wiki/Binary_search_tree), [AVL tree](https://en.wikipedia.org/wiki/AVL_tree), [Breadth-first search](https://en.wikipedia.org/wiki/Breadth-first_search), [Depth-first search](https://en.wikipedia.org/wiki/Depth-first_search), [Dijkstra's algorithm](https://en.wikipedia.org/wiki/Dijkstra%27s_algorithm).
+- **MIT OpenCourseWare 6.006 — Introduction to Algorithms**: bài giảng về đồ thị, BFS/DFS và đường đi ngắn nhất.
+- **GeeksforGeeks**: các bài viết về BST, AVL Tree, BFS, DFS và thuật toán Dijkstra.

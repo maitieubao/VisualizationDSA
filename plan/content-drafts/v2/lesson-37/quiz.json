@@ -1,0 +1,88 @@
+{
+  "quizTitle": "Trắc nghiệm Thuật toán chuỗi nâng cao",
+  "topic": "dsa",
+  "difficulty": 2,
+  "xpReward": 40,
+  "questions": [
+    {
+      "questionText": "Cách so khớp mẫu ngây thơ (naive) có độ phức tạp xấu nhất là gì?",
+      "options": ["O(n+m)", "O(n×m)", "O(n log m)", "O(m log n)"],
+      "correctIndex": 1,
+      "explanation": "Naive thử mọi vị trí bắt đầu trong n-m+1 khả năng, mỗi lần so đến m ký tự, nên xấu nhất là O(n×m)."
+    },
+    {
+      "questionText": "Bảng LPS trong KMP lưu trữ thông tin gì tại mỗi vị trí i?",
+      "options": [
+        "Độ dài chuỗi con đối xứng dài nhất kết thúc tại i",
+        "Độ dài tiền tố thật sự dài nhất đồng thời là hậu tố của đoạn P[0..i]",
+        "Chỉ số ký tự tiếp theo cần so sánh trong văn bản",
+        "Số lần P[i] xuất hiện trong văn bản T"
+      ],
+      "correctIndex": 1,
+      "explanation": "LPS[i] cho biết đoạn đầu của mẫu dài bao nhiêu vẫn khớp ở cuối P[0..i], giúp dịch mẫu nhanh khi so khớp hỏng."
+    },
+    {
+      "questionText": "Rabin-Karp tăng tốc việc so khớp bằng kỹ thuật nào?",
+      "options": [
+        "So sánh đệ quy từng ký tự",
+        "Dùng bảng LPS để dịch mẫu",
+        "Băm cửa sổ trượt và tính băm cửa sổ kế tiếp trong O(1)",
+        "Dùng mảng hậu tố để truy vấn"
+      ],
+      "correctIndex": 2,
+      "explanation": "Rolling hash giúp băm cửa sổ mới suy từ cửa sổ cũ chỉ với phép toán O(1), thay vì băm lại toàn bộ m ký tự."
+    },
+    {
+      "questionText": "Thuật toán Manacher giải quyết bài toán nào trong O(n)?",
+      "options": [
+        "Tìm tiền tố chung dài nhất của hai chuỗi",
+        "Tìm chuỗi con đối xứng dài nhất",
+        "Đếm tần suất từng ký tự",
+        "Tìm lần xuất hiện đầu tiên của mẫu"
+      ],
+      "correctIndex": 1,
+      "explanation": "Manacher mở rộng quanh tâm và tái dùng thông tin phản chiếu, tìm palindrome dài nhất chỉ trong O(n)."
+    },
+    {
+      "questionText": "Bảng LPS của mẫu P = 'AABA' là gì?",
+      "options": ["[0, 1, 0, 1]", "[1, 0, 1, 0]", "[0, 0, 1, 2]", "[0, 1, 1, 2]"],
+      "correctIndex": 0,
+      "explanation": "Tại i=1 đoạn 'AA' có tiền tố 'A' trùng hậu tố 'A' nên bằng 1; tại i=3 đoạn 'AABA' khớp tiền tố-hậu tố 'A' nên bằng 1, kết quả là [0, 1, 0, 1]."
+    },
+    {
+      "questionText": "Tổng độ phức tạp thời gian của KMP trong trường hợp xấu nhất là bao nhiêu?",
+      "options": ["O(n×m)", "O(n+m)", "O(n²)", "O(m²)"],
+      "correctIndex": 1,
+      "explanation": "Mỗi ký tự văn bản được xét tuyến tính và con trỏ j chỉ dịch lui theo bảng LPS nên tổng công sức là O(n+m)."
+    },
+    {
+      "questionText": "Trong vòng lặp chính của KMP, khi T[i] khác P[j] và j > 0, ta làm gì?",
+      "options": [
+        "Tăng i và đặt j = 0",
+        "Đặt j = 0 và giữ nguyên i",
+        "Gán j = LPS[j-1] và giữ nguyên i",
+        "Tăng cả i lẫn j"
+      ],
+      "correctIndex": 2,
+      "explanation": "Phần cuối đã khớp trước đó trùng với một tiền tố của mẫu, nên ta dùng LPS để dịch mẫu mà không lùi i."
+    },
+    {
+      "questionText": "Bảng LPS của mẫu P = 'ABABAB' có giá trị như thế nào?",
+      "options": ["[0, 0, 1, 2, 3, 4]", "[0, 1, 2, 3, 4, 5]", "[1, 1, 1, 1, 1, 1]", "[0, 0, 0, 1, 2, 3]"],
+      "correctIndex": 0,
+      "explanation": "Các đoạn 'AB', 'ABA', 'ABAB', 'ABABA', 'ABABAB' lần lượt có tiền tố-hậu tố dài 0, 1, 2, 3, 4 nên LPS = [0, 0, 1, 2, 3, 4]."
+    },
+    {
+      "questionText": "Văn bản toàn ký tự giống nhau khiến mọi băm cửa sổ của Rabin-Karp trùng nhau — độ phức tạp xấu nhất là gì?",
+      "options": ["O(n+m)", "O(n×m)", "O(n)", "O(m)"],
+      "correctIndex": 1,
+      "explanation": "Khi collision xảy ra liên tục, mỗi cửa sổ phải so sánh thật đến m ký tự, tổng cộng O(n×m)."
+    },
+    {
+      "questionText": "Cho văn bản T = 'AAAAA' và mẫu P = 'AA', KMP đếm được bao nhiêu vị trí xuất hiện?",
+      "options": ["2", "3", "4", "5"],
+      "correctIndex": 2,
+      "explanation": "Mẫu 'AA' xuất hiện tại các vị trí bắt đầu 0, 1, 2, 3 — tổng cộng 4 lần, các lần trùng nhau vẫn được tính."
+    }
+  ]
+}

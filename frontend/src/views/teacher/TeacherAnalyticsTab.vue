@@ -55,11 +55,11 @@
               <tr class="border-b border-border-subtle text-text-muted text-xs uppercase tracking-wider">
                 <th class="pb-4 font-semibold min-w-[150px]">Học viên</th>
                 <th v-for="(title, id) in analyticsData.quizTitles" :key="id" class="pb-4 font-semibold text-center whitespace-nowrap min-w-[100px]" :title="title">
-                  <span class="text-accent">📝 Quiz</span><br/>
+                  <span class="text-accent"><BaseIcon name="clipboard-list" class="w-3 h-3 inline mr-1 align-middle" />Quiz</span><br/>
                   <span class="text-[10px] text-text-muted truncate max-w-[100px] inline-block">{{ title }}</span>
                 </th>
                 <th v-for="(title, id) in analyticsData.codelabTitles" :key="id" class="pb-4 font-semibold text-center whitespace-nowrap min-w-[100px]" :title="title">
-                  <span class="text-accent-green">💻 Code</span><br/>
+                  <span class="text-accent-green"><BaseIcon name="monitor" class="w-3 h-3 inline mr-1 align-middle" />Code</span><br/>
                   <span class="text-[10px] text-text-muted truncate max-w-[100px] inline-block">{{ title }}</span>
                 </th>
                 <th class="pb-4 font-semibold text-center text-accent-yellow min-w-[100px]">Tổng Điểm (XP)</th>

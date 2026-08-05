@@ -9,6 +9,8 @@ using System.Threading.Tasks;
 using VisualizationDSA.Application.DTOs;
 using VisualizationDSA.Application.Services;
 
+using VisualizationDSA.WebApi.Filters;
+
 namespace VisualizationDSA.WebApi.Controllers
 {
     [ApiVersion("1.0")]
@@ -30,7 +32,7 @@ namespace VisualizationDSA.WebApi.Controllers
         
         
         [HttpPost("order")]
-        [Authorize]
+        [RequireJwtRole]
         public async Task<ActionResult<OrderDto>> CreateOrder()
         {
             var userId = GetCurrentUserId();
@@ -54,7 +56,7 @@ namespace VisualizationDSA.WebApi.Controllers
         
         
         [HttpGet("orders/{orderId}/status")]
-        [Authorize]
+        [RequireJwtRole]
         public async Task<ActionResult<OrderDto>> GetOrderStatus(Guid orderId)
         {
             var userId = GetCurrentUserId();
@@ -77,51 +79,28 @@ namespace VisualizationDSA.WebApi.Controllers
         [AllowAnonymous]
         public async Task<IActionResult> ReceiveSePayWebhook([FromBody] SePayWebhookPayload payload)
         {
-            
-            var authHeader = Request.Headers["Authorization"].ToString();
-            var secretKey = _configuration["SePay:WebhookSecret"];
-            var signatureHeader = Request.Headers["X-SePay-Signature"].ToString();
-
-            if (!string.IsNullOrEmpty(secretKey) && !string.IsNullOrEmpty(signatureHeader))
+            // Fail-closed: bắt buộc xác thực qua Apikey (cơ chế chính của SePay).
+            // KHÔNG fallback sang cơ chế khác khi thiếu header — từ chối ngay.
+            var expectedApiKey = _configuration["SePay:ApiKey"];
+            if (string.IsNullOrEmpty(expectedApiKey))
             {
-                
-                var rawMessage = $"id={payload.Id}&amount={payload.TransferAmount}&code={payload.Code ?? string.Empty}";
-                using var hmac = new System.Security.Cryptography.HMACSHA256(System.Text.Encoding.UTF8.GetBytes(secretKey));
-                var computedHash = hmac.ComputeHash(System.Text.Encoding.UTF8.GetBytes(rawMessage));
-                var computedSignature = Convert.ToHexString(computedHash).ToLower();
-
-                var computedBytes = System.Text.Encoding.UTF8.GetBytes(computedSignature);
-                var headerBytes = System.Text.Encoding.UTF8.GetBytes(signatureHeader.Trim().ToLowerInvariant());
-
-                if (computedBytes.Length != headerBytes.Length || 
-                    !System.Security.Cryptography.CryptographicOperations.FixedTimeEquals(computedBytes, headerBytes))
-                {
-                    return Unauthorized(new { message = "Chữ ký webhook không hợp lệ." });
-                }
+                return StatusCode(StatusCodes.Status500InternalServerError, new { message = "Cổng thanh toán chưa được cấu hình khóa bảo mật." });
             }
-            else
+
+            var expectedHeaderValue = $"Apikey {expectedApiKey}";
+            var authHeader = Request.Headers["Authorization"].ToString();
+            if (string.IsNullOrEmpty(authHeader))
             {
-                
-                var expectedApiKey = _configuration["SePay:ApiKey"];
-                if (string.IsNullOrEmpty(expectedApiKey))
-                {
-                    return StatusCode(StatusCodes.Status500InternalServerError, new { message = "Cổng thanh toán chưa được cấu hình khóa bảo mật." });
-                }
+                return Unauthorized(new { message = "Khóa xác thực Webhook không hợp lệ." });
+            }
 
-                var expectedHeaderValue = $"Apikey {expectedApiKey}";
-                if (string.IsNullOrEmpty(authHeader))
-                {
-                    return Unauthorized(new { message = "Khóa xác thực Webhook không hợp lệ." });
-                }
+            var authHeaderBytes = System.Text.Encoding.UTF8.GetBytes(authHeader);
+            var expectedHeaderBytes = System.Text.Encoding.UTF8.GetBytes(expectedHeaderValue);
 
-                var authHeaderBytes = System.Text.Encoding.UTF8.GetBytes(authHeader);
-                var expectedHeaderBytes = System.Text.Encoding.UTF8.GetBytes(expectedHeaderValue);
-
-                if (authHeaderBytes.Length != expectedHeaderBytes.Length || 
-                    !System.Security.Cryptography.CryptographicOperations.FixedTimeEquals(authHeaderBytes, expectedHeaderBytes))
-                {
-                    return Unauthorized(new { message = "Khóa xác thực Webhook không hợp lệ." });
-                }
+            if (authHeaderBytes.Length != expectedHeaderBytes.Length ||
+                !System.Security.Cryptography.CryptographicOperations.FixedTimeEquals(authHeaderBytes, expectedHeaderBytes))
+            {
+                return Unauthorized(new { message = "Khóa xác thực Webhook không hợp lệ." });
             }
 
             
@@ -133,21 +112,18 @@ namespace VisualizationDSA.WebApi.Controllers
                     return Ok(new { success = true });
                 }
                 
-                
-                
                 return Ok(new { success = false, message = "Giao dịch không khớp hoặc không hợp lệ để kích hoạt Premium." });
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 
-                return StatusCode(StatusCodes.Status500InternalServerError, new { success = false, message = ex.Message });
+                return StatusCode(StatusCodes.Status500InternalServerError, new { success = false, message = "Lỗi xử lý thanh toán. Vui lòng thử lại." });
             }
         }
 
         private Guid GetCurrentUserId()
         {
-            var claim = User.FindFirstValue(ClaimTypes.NameIdentifier)
-                        ?? User.FindFirstValue("sub");
+            var claim = JwtHelper.ExtractSubFromToken(Request);
             return Guid.Parse(claim!);
         }
     }

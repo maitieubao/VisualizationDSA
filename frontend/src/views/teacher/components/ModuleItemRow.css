@@ -17,7 +17,7 @@
 }
 
 .module-item-row.drag-over {
-  border-color: #6366f1;
+  border-color: var(--color-accent-primary);
   background: rgba(99, 102, 241, 0.1);
 }
 
@@ -43,7 +43,7 @@
 }
 
 .module-item-row:hover .item-drag-handle {
-  color: #6366f1;
+  color: var(--color-accent-primary);
 }
 
 .item-drag-handle:active {
@@ -61,25 +61,25 @@
 
 .badge-indigo {
   background: rgba(99, 102, 241, 0.2);
-  color: #a5b4fc;
+  color: var(--color-accent-primary-light);
   border: 1px solid rgba(99, 102, 241, 0.3);
 }
 
 .badge-purple {
   background: rgba(168, 85, 247, 0.2);
-  color: #d8b4fe;
+  color: var(--color-accent-primary-light);
   border: 1px solid rgba(168, 85, 247, 0.3);
 }
 
 .badge-emerald {
   background: rgba(16, 185, 129, 0.2);
-  color: #6ee7b7;
+  color: var(--color-accent-green);
   border: 1px solid rgba(16, 185, 129, 0.3);
 }
 
 .badge-slate {
   background: rgba(148, 163, 184, 0.2);
-  color: #94a3b8;
+  color: var(--color-text-muted);
   border: 1px solid rgba(148, 163, 184, 0.3);
 }
 
@@ -146,31 +146,31 @@
 .setting-chip.required {
   background: rgba(239, 68, 68, 0.15);
   border-color: rgba(239, 68, 68, 0.3);
-  color: #fca5a5;
+  color: var(--color-accent-red);
 }
 
 .setting-chip.unlock {
   background: rgba(59, 130, 246, 0.15);
   border-color: rgba(59, 130, 246, 0.3);
-  color: #93c5fd;
+  color: var(--color-accent-primary-light);
 }
 
 .setting-chip.due {
   background: rgba(245, 158, 11, 0.15);
   border-color: rgba(245, 158, 11, 0.3);
-  color: #fcd34d;
+  color: var(--color-accent-yellow);
 }
 
 .setting-chip.attempts {
   background: rgba(168, 85, 247, 0.15);
   border-color: rgba(168, 85, 247, 0.3);
-  color: #d8b4fe;
+  color: var(--color-accent-primary-light);
 }
 
 .setting-chip.prereq {
   background: rgba(16, 185, 129, 0.15);
   border-color: rgba(16, 185, 129, 0.3);
-  color: #6ee7b7;
+  color: var(--color-accent-green);
 }
 
 .item-actions {
@@ -200,7 +200,7 @@
 .btn-icon.delete:hover {
   background: rgba(239, 68, 68, 0.2);
   border-color: rgba(239, 68, 68, 0.3);
-  color: #ef4444;
+  color: var(--color-accent-red);
 }
 
 .settings-popover {
@@ -208,7 +208,7 @@
   right: 0;
   top: 100%;
   margin-top: 8px;
-  background: #0f172a;
+  background: var(--color-bg-primary);
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 12px;
   padding: 12px;
@@ -248,7 +248,7 @@
 
 .popover-input:focus {
   outline: none;
-  border-color: #6366f1;
+  border-color: var(--color-accent-primary);
 }
 
 .popover-select {
@@ -273,7 +273,7 @@
 .popover-checkbox {
   width: 16px;
   height: 16px;
-  accent-color: #6366f1;
+  accent-color: var(--color-accent-primary);
 }
 
 @keyframes slideIn {

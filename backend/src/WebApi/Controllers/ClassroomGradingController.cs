@@ -8,8 +8,8 @@ using VisualizationDSA.WebApi.Filters;
 namespace VisualizationDSA.WebApi.Controllers
 {
     [ApiController]
-    [Route("api/v1/classrooms")]
-    [Authorize(Roles = "Teacher,Admin")]
+    [Route("api/v{version:apiVersion}/classrooms")]
+    [RequireJwtRole("Teacher,Admin")]
     public class ClassroomGradingController : ControllerBase
     {
         private readonly IClassroomGradingService _gradingService;
@@ -19,7 +19,7 @@ namespace VisualizationDSA.WebApi.Controllers
             _gradingService = gradingService;
         }
 
-        [HttpGet("{classroomId}/analytics")]
+        [HttpGet("{classroomId:guid}/analytics")]
         public async Task<IActionResult> GetClassAnalytics(Guid classroomId)
         {
             var userIdStr = JwtHelper.ExtractSubFromToken(Request);

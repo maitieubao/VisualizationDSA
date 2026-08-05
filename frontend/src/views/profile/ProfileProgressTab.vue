@@ -28,7 +28,7 @@
       <div class="group-title-row">
         <h3>Huy hiệu đã mở khóa ({{ badgesList.length }})</h3>
         <router-link to="/quiz" class="btn-link-action">
-          Làm trắc nghiệm để nhận thêm →
+          Làm trắc nghiệm để nhận thêm <BaseIcon name="arrow-right" class="w-3 h-3 inline ml-0.5 align-middle" />
         </router-link>
       </div>
 

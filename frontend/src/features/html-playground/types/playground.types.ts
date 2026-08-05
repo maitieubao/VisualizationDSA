@@ -9,13 +9,12 @@ export interface PlaygroundSource {
 export interface PlaygroundTab {
   readonly id: PlaygroundLanguage;
   readonly label: string;
-  readonly title: string;
 }
 
 export const PLAYGROUND_TABS: readonly PlaygroundTab[] = [
-  { id: 'html', label: 'HTML', title: 'index.html' },
-  { id: 'css', label: 'CSS', title: 'style.css' },
-  { id: 'javascript', label: 'JS', title: 'script.js' },
+  { id: 'html', label: 'HTML' },
+  { id: 'css', label: 'CSS' },
+  { id: 'javascript', label: 'JS' },
 ] as const;
 
 export const DEFAULT_PLAYGROUND_SOURCE: PlaygroundSource = {

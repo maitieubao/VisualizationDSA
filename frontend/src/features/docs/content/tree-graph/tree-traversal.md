@@ -21,7 +21,12 @@ Tên gọi của các phương pháp duyệt phụ thuộc vào thời điểm b
 **Đặc điểm:** Root sẽ luôn là phần tử đầu tiên được in ra.
 **Ứng dụng:** Dùng để tạo ra một bản sao (Copy) của Cây, hoặc dùng để Serialize cây thành một chuỗi văn bản.
 
-```csharp
+Bạn có thể xem cả 3 thứ tự duyệt chạy thực tế trong Playground bên dưới.
+
+```playground:tree-traversal
+```
+
+```dual:tree-traversal
 public void PreOrderTraversal(TreeNode node)
 {
     if (node == null) return;
@@ -92,6 +97,8 @@ Bạn có nhận ra 3 đoạn code trên hoàn toàn giống nhau 100%, chỉ kh
 Chỉ bằng cách thay đổi vị trí dòng xử lý (trước, giữa, hay sau lời gọi hàm đệ quy), luồng chạy của chương trình thay đổi một cách kinh ngạc. Đó chính là sự thanh lịch tuyệt đỉnh của Cấu trúc dữ liệu phi tuyến.
 :::
 
+**Độ phức tạp:** Dù duyệt theo thứ tự nào, mỗi phương pháp trên đều thăm đúng mỗi Node đúng một lần, nên thời gian chạy là **O(n)** với n là tổng số Node của cây. Về không gian, do sử dụng Đệ quy, bộ nhớ bổ sung tỉ lệ với chiều cao h của cây (độ sâu của tầng đệ quy lớn nhất): **O(log n)** với cây cân bằng, và tệ nhất **O(n)** với cây suy biến (cây lệch về một nhánh duy nhất).
+
 ## Next Steps {#next-steps}
 
 Cả 3 phương pháp trên đều có chung một đặc tính: **Cắm đầu đi sâu xuống tận đáy rồi mới vòng lên**. Do đó, chúng được xếp chung vào nhóm thuật toán **DFS (Duyệt theo chiều sâu)**.
@@ -104,3 +111,13 @@ Vậy nếu chúng ta không muốn cắm đầu đi sâu, mà muốn duyệt C�
     <p class="next-steps-caption">Kỹ thuật quét ngang qua cây theo từng tầng bằng Queue.</p>
   </a>
 </div>
+
+## 📚 Tham khảo lý thuyết {#references}
+
+Dưới đây là các nguồn tài liệu kinh điển và chính thống được dùng để biên soạn bài viết này, giúp bạn tự nghiên cứu sâu hơn nếu muốn:
+
+- **Định nghĩa Pre-order, In-order, Post-order, Level-order và mối liên hệ với DFS/BFS:** [Tree traversal - Wikipedia](https://en.wikipedia.org/wiki/Tree_traversal). Nguồn chính về thứ tự duyệt và mối quan hệ giữa DFS, BFS với các kiểu duyệt cây.
+- **In-order trên BST in ra dãy tăng dần và các tính chất của cây nhị phân tìm kiếm:** Cormen, Leiserson, Rivest & Stein, *Introduction to Algorithms* (CLRS), 3rd ed., Chương 12 (Binary Search Trees).
+- **Bổ sung về cấu trúc BST và thao tác duyệt:** [Binary search tree - Wikipedia](https://en.wikipedia.org/wiki/Binary_search_tree).
+- **Giải thích trực quan từng bước của 3 phép duyệt kèm ví dụ code:** GeeksforGeeks - [Tree Traversals (Inorder, Preorder and Postorder)](https://www.geeksforgeeks.org/tree-traversals-inorder-preorder-and-postorder/).
+- **Ứng dụng duyệt hậu thứ tự khi xóa cây (delete tree):** GeeksforGeeks - [Write a program to Delete a Tree](https://www.geeksforgeeks.org/write-a-c-program-to-delete-a-tree/). Giải thích vì sao phải xóa con trước rồi mới xóa cha.

@@ -3,12 +3,9 @@
 
 
 
-export { default as AlgorithmCanvas }    from './components/AlgorithmCanvas.vue';
 export { default as ArrayBarVisualizer } from './components/ArrayBarVisualizer.vue';
-export { default as CustomInputPanel }   from './components/CustomInputPanel.vue';
 export { default as SortingDetailPanel } from './components/SortingDetailPanel.vue';
 export { default as SortingAlgorithmControls } from './components/SortingAlgorithmControls.vue';
-export { default as SortingDrawerInput } from './components/SortingDrawerInput.vue';
 export { default as SortingDrawerTrace } from './components/SortingDrawerTrace.vue';
 export { default as SortingVisualizerDispatcher } from './components/SortingVisualizerDispatcher.vue';
 export { default as BubbleSortVisualizer } from './components/BubbleSortVisualizer.vue';
@@ -23,8 +20,6 @@ export { default as BucketSortVisualizer } from './components/BucketSortVisualiz
 export { PseudocodeSyncer }              from './engine/PseudocodeSyncer';
 export { MonacoGutterClickInterceptor }  from './engine/MonacoGutterClickInterceptor';
 export { MonacoLineSyncerCoordinator }   from './engine/MonacoLineSyncerCoordinator';
-export { CustomInputParser }             from './engine/CustomInputParser';
-export { ForceDirectedLayout }           from './engine/ForceDirectedLayout';
 
 
 export { enrichFramesWithIds }           from './helpers/sortingIdEnricher';

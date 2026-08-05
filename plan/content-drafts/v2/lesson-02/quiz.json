@@ -1,0 +1,78 @@
+{
+  "quizTitle": "Trắc nghiệm Mảng cơ bản",
+  "topic": "dsa",
+  "difficulty": 1,
+  "xpReward": 40,
+  "questions": [
+    {
+      "questionText": "Truy cập phần tử theo chỉ số arr[i] của mảng có độ phức tạp là bao nhiêu?",
+      "options": ["O(1)", "O(log N)", "O(N)", "O(N²)"],
+      "correctIndex": 0,
+      "explanation": "Địa chỉ ô nhớ tính trực tiếp từ chỉ số bằng phép toán cộng nên thời gian không đổi."
+    },
+    {
+      "questionText": "Chèn một phần tử vào giữa mảng có N phần tử tốn bao nhiêu thời gian?",
+      "options": ["O(1)", "O(log N)", "O(N)", "O(N²)"],
+      "correctIndex": 2,
+      "explanation": "Tất cả phần tử phía sau vị trí chèn phải dịch chuyển một ô, trung bình N/2 lần nên là O(N)."
+    },
+    {
+      "questionText": "Khi dynamic array đầy, điều gì xảy ra khi thêm phần tử mới?",
+      "options": [
+        "Báo lỗi và từ chối thêm phần tử",
+        "Cấp phát vùng nhớ lớn hơn (thường gấp đôi) rồi copy dữ liệu cũ sang",
+        "Xóa phần tử cũ nhất để có chỗ",
+        "Tự động giảm kích thước mảng"
+      ],
+      "correctIndex": 1,
+      "explanation": "Dynamic array tăng trưởng bằng cách cấp phát mảng mới lớn hơn và copy dữ liệu, chi phí này được chia đều cho các lần thêm sau."
+    },
+    {
+      "questionText": "Tìm giá trị lớn nhất trong mảng bằng cách duyệt hết các phần tử có độ phức tạp là bao nhiêu?",
+      "options": ["O(1)", "O(log N)", "O(N)", "O(N log N)"],
+      "correctIndex": 2,
+      "explanation": "Mỗi phần tử phải được xét ít nhất một lần để so sánh nên thời gian tuyến tính O(N)."
+    },
+    {
+      "questionText": "Xoay mảng [1, 2, 3, 4, 5] sang phải 2 bước, kết quả là gì?",
+      "options": ["[2, 3, 4, 5, 1]", "[5, 4, 3, 2, 1]", "[4, 5, 1, 2, 3]", "[1, 2, 3, 5, 4]"],
+      "correctIndex": 2,
+      "explanation": "Hai phần tử cuối (4, 5) được chuyển lên đầu, phần còn lại dời về sau nên kết quả là [4, 5, 1, 2, 3]."
+    },
+    {
+      "questionText": "Dùng cấu trúc hash (Set/Map) để kiểm tra một phần tử đã tồn tại giúp giảm độ phức tạp như thế nào so với duyệt mảng?",
+      "options": [
+        "Từ O(N) xuống O(1) trung bình",
+        "Từ O(N²) xuống O(N)",
+        "Từ O(1) lên O(N)",
+        "Không thay đổi độ phức tạp"
+      ],
+      "correctIndex": 0,
+      "explanation": "Tìm kiếm trong hash có độ phức tạp O(1) trung bình, nhanh hơn hẳn duyệt tuyến tính O(N)."
+    },
+    {
+      "questionText": "Sắp xếp mảng (O(N log N)) trước rồi duyệt một lần (O(N)) để xử lý, độ phức tạp tổng là gì?",
+      "options": ["O(N)", "O(N log N)", "O(N²)", "O(N + log N)"],
+      "correctIndex": 1,
+      "explanation": "Bậc cao nhất trong tổng O(N log N + N) là O(N log N)."
+    },
+    {
+      "questionText": "Xóa phần tử trùng trong mảng đã sắp xếp [1, 1, 2, 2, 3] bằng kỹ thuật hai con trỏ slow/fast, độ dài mảng hợp lệ còn lại là bao nhiêu?",
+      "options": ["2", "3", "4", "5"],
+      "correctIndex": 1,
+      "explanation": "Các giá trị duy nhất là 1, 2, 3 nên slow dừng ở chỉ số 2, độ dài hợp lệ là slow + 1 = 3."
+    },
+    {
+      "questionText": "Thêm lần lượt N phần tử vào dynamic array (mỗi lần đầy lại gấp đôi vùng nhớ), tổng chi phí trung bình cho toàn bộ quá trình là bao nhiêu?",
+      "options": ["O(N²)", "O(N log N)", "O(N)", "O(1)"],
+      "correctIndex": 2,
+      "explanation": "Tổng chi phí copy là 1 + 2 + 4 + ... + N xấp xỉ 2N, nên thêm N phần tử chỉ tốn O(N) theo phân tích amortized."
+    },
+    {
+      "questionText": "Gộp hai mảng đã sắp xếp [1, 3, 5] và mảng rỗng [], kết quả đúng là gì?",
+      "options": ["[1, 3, 5]", "[]", "[5, 3, 1]", "Báo lỗi vì mảng rỗng"],
+      "correctIndex": 0,
+      "explanation": "Vòng lặp gộp chỉ chạy trên mảng có dữ liệu, mảng rỗng được nối nguyên vẹn nên kết quả là [1, 3, 5]."
+    }
+  ]
+}

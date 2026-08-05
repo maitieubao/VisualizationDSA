@@ -17,15 +17,34 @@ export function generateBucketSortFrames(arr: number[]): SortFrame[] {
     value: val,
   }));
 
+  // Dải Bucket được tính động theo giá trị thực tế của mảng (không cố định
+  // [0-25)...): giá trị âm hay > 100 vẫn được phân phối đều vào 4 Bucket
   const bucketCount = 4;
   const buckets: TrackedElement[][] = Array.from({ length: bucketCount }, () => []);
 
+  const minVal = n > 0 ? Math.min(...arr) : 0;
+  const maxVal = n > 0 ? Math.max(...arr) : 0;
+  const spread = maxVal - minVal;
+
   const getBucketIndex = (val: number): number => {
-    if (val < 25) return 0;
-    if (val < 50) return 1;
-    if (val < 75) return 2;
-    return 3;
+    if (spread === 0) return 0;
+    const idx = Math.floor(((val - minVal) / spread) * bucketCount);
+    return Math.min(bucketCount - 1, Math.max(0, idx));
   };
+
+  const fmtRange = (x: number): string =>
+    Number.isInteger(x) ? String(x) : x.toFixed(2);
+
+  const rangeLabel = (b: number): string => {
+    const low = minVal + (spread * b) / bucketCount;
+    const high = b === bucketCount - 1 ? maxVal : minVal + (spread * (b + 1)) / bucketCount;
+    return b === bucketCount - 1
+      ? `[${fmtRange(low)}-${fmtRange(high)}]`
+      : `[${fmtRange(low)}-${fmtRange(high)})`;
+  };
+
+  const rangeSummary = (): string =>
+    Array.from({ length: bucketCount }, (_, b) => rangeLabel(b)).join(", ");
 
   const cloneBuckets = (bks: TrackedElement[][]): TrackedElement[][] => {
     return bks.map((b) => b.map((e) => ({ ...e })));
@@ -59,14 +78,14 @@ export function generateBucketSortFrames(arr: number[]): SortFrame[] {
   };
 
   frames.push({
-    stepIndex: ++stepIndex,
+    stepIndex: stepIndex++,
     arrayState: initialElements.map((e) => e.value),
     arrayStateWithIds: initialElements.map((e) => ({ id: e.id, value: e.value })),
     comparingIndices: null,
     pivotIndex: null,
     swappedIndices: null,
     sortedIndices: [],
-    description: "Khởi tạo Bucket Sort. Chúng ta chia phạm vi giá trị thành 4 Bucket: [0-25), [25-50), [50-75), [75-100].",
+    description: `Khởi tạo Bucket Sort. Chia phạm vi giá trị [${fmtRange(minVal)}-${fmtRange(maxVal)}] thành 4 Bucket: ${rangeSummary()}.`,
     algorithm: "bucket",
     bucketSortBuckets: buckets.map((b) => b.map((e) => e.value)),
     bucketSortBucketsWithIds: cloneBuckets(buckets),
@@ -82,14 +101,14 @@ export function generateBucketSortFrames(arr: number[]): SortFrame[] {
     const bucketIdx = getBucketIndex(elem.value);
 
     frames.push({
-      stepIndex: ++stepIndex,
+      stepIndex: stepIndex++,
       arrayState: initialElements.map((e) => e.value),
       arrayStateWithIds: initialElements.map((e) => ({ id: e.id, value: e.value })),
       comparingIndices: [i, i] as [number, number],
       pivotIndex: null,
       swappedIndices: null,
       sortedIndices: [],
-      description: `Đang phân loại phần tử A[${i}] = ${elem.value} thuộc phạm vi của Bucket ${bucketIdx}.`,
+      description: `Đang phân loại phần tử A[${i}] = ${elem.value} thuộc phạm vi ${rangeLabel(bucketIdx)} của Bucket ${bucketIdx}.`,
       algorithm: "bucket",
       bucketSortBuckets: buckets.map((b) => b.map((e) => e.value)),
       bucketSortBucketsWithIds: cloneBuckets(buckets),
@@ -103,7 +122,7 @@ export function generateBucketSortFrames(arr: number[]): SortFrame[] {
     buckets[bucketIdx].push({ ...elem });
 
     frames.push({
-      stepIndex: ++stepIndex,
+      stepIndex: stepIndex++,
       arrayState: initialElements.map((e) => e.value),
       arrayStateWithIds: initialElements.map((e) => ({ id: e.id, value: e.value })),
       comparingIndices: [i, i] as [number, number],
@@ -127,7 +146,7 @@ export function generateBucketSortFrames(arr: number[]): SortFrame[] {
     if (bucket.length === 0) continue;
 
     frames.push({
-      stepIndex: ++stepIndex,
+      stepIndex: stepIndex++,
       arrayState: initialElements.map((e) => e.value),
       arrayStateWithIds: initialElements.map((e) => ({ id: e.id, value: e.value })),
       comparingIndices: null,
@@ -151,7 +170,7 @@ export function generateBucketSortFrames(arr: number[]): SortFrame[] {
         while (j > 0) {
           comparisons++;
           frames.push({
-            stepIndex: ++stepIndex,
+            stepIndex: stepIndex++,
             arrayState: initialElements.map((e) => e.value),
             arrayStateWithIds: initialElements.map((e) => ({ id: e.id, value: e.value })),
             comparingIndices: null,
@@ -176,7 +195,7 @@ export function generateBucketSortFrames(arr: number[]): SortFrame[] {
             swaps++;
 
             frames.push({
-              stepIndex: ++stepIndex,
+              stepIndex: stepIndex++,
               arrayState: initialElements.map((e) => e.value),
               arrayStateWithIds: initialElements.map((e) => ({ id: e.id, value: e.value })),
               comparingIndices: null,
@@ -202,7 +221,7 @@ export function generateBucketSortFrames(arr: number[]): SortFrame[] {
     }
 
     frames.push({
-      stepIndex: ++stepIndex,
+      stepIndex: stepIndex++,
       arrayState: initialElements.map((e) => e.value),
       arrayStateWithIds: initialElements.map((e) => ({ id: e.id, value: e.value })),
       comparingIndices: null,
@@ -222,7 +241,7 @@ export function generateBucketSortFrames(arr: number[]): SortFrame[] {
   }
 
   frames.push({
-    stepIndex: ++stepIndex,
+    stepIndex: stepIndex++,
     arrayState: initialElements.map((e) => e.value),
     arrayStateWithIds: initialElements.map((e) => ({ id: e.id, value: e.value })),
     comparingIndices: null,
@@ -246,7 +265,7 @@ export function generateBucketSortFrames(arr: number[]): SortFrame[] {
 
     if (bucket.length > 0) {
       frames.push({
-        stepIndex: ++stepIndex,
+        stepIndex: stepIndex++,
         arrayState: initialElements.map((e) => e.value),
         arrayStateWithIds: initialElements.map((e) => ({ id: e.id, value: e.value })),
         comparingIndices: null,
@@ -271,7 +290,7 @@ export function generateBucketSortFrames(arr: number[]): SortFrame[] {
       outputArrayWithIds[outputCount] = elem;
 
       frames.push({
-        stepIndex: ++stepIndex,
+        stepIndex: stepIndex++,
         arrayState: mergedArrayState().arrayState,
         arrayStateWithIds: mergedArrayState().arrayStateWithIds,
         comparingIndices: [outputCount, outputCount] as [number, number],
@@ -294,7 +313,7 @@ export function generateBucketSortFrames(arr: number[]): SortFrame[] {
   }
 
   frames.push({
-    stepIndex: ++stepIndex,
+    stepIndex: stepIndex++,
     arrayState: outputArrayWithIds.map((e) => e!.value),
     arrayStateWithIds: outputArrayWithIds.map((e) => ({ id: e!.id, value: e!.value })),
     comparingIndices: null,
@@ -311,6 +330,13 @@ export function generateBucketSortFrames(arr: number[]): SortFrame[] {
     bucketSortOutputWithIds: cloneOutput(outputArrayWithIds),
     variables: baseVars({ outputCount }),
   });
+
+  // Keep source identity and dynamic ranges available to every visualizer frame.
+  const rangeLabels = Array.from({ length: bucketCount }, (_, b) => rangeLabel(b));
+  for (const frame of frames) {
+    frame.inputArrayWithIds = initialElements.map((element) => ({ ...element }));
+    frame.bucketRangeLabels = [...rangeLabels];
+  }
 
   return frames;
 }

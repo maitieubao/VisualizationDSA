@@ -1,4 +1,5 @@
 using Asp.Versioning;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System;
@@ -6,13 +7,10 @@ using System.Collections.Generic;
 using VisualizationDSA.Domain.Engine;
 using VisualizationDSA.Domain.Strategies;
 using VisualizationDSA.Infrastructure.Data;
+using VisualizationDSA.WebApi.Filters;
 
 namespace VisualizationDSA.WebApi.Controllers
 {
-    
-    
-    
-    
     [ApiVersion("1.0")]
     [ApiController]
     [Route("api/v{version:apiVersion}/concepts/payment")]
@@ -20,33 +18,33 @@ namespace VisualizationDSA.WebApi.Controllers
     {
         private readonly StatelessPaymentStrategy _paymentStrategy;
         private readonly ApplicationDbContext _dbContext;
+        private readonly IWebHostEnvironment _env;
 
-        public StatelessPaymentController(StatelessPaymentStrategy paymentStrategy, ApplicationDbContext dbContext)
+        public StatelessPaymentController(StatelessPaymentStrategy paymentStrategy, ApplicationDbContext dbContext, IWebHostEnvironment env)
         {
             _paymentStrategy = paymentStrategy;
             _dbContext = dbContext;
+            _env = env;
         }
 
-        
-        
-        
-        
+        /// <summary>Cấu hình công khai (giá, phương thức) — không cần đăng nhập.</summary>
         [HttpGet("config")]
         public ActionResult<StatelessPaymentConfigDto> GetConfig()
         {
             return Ok(_paymentStrategy.GetConfig());
         }
 
-        
-        
-        
-        
         [HttpPost("checkout")]
+        [RequireJwtRole]
         public ActionResult<StatelessOrderDto> Checkout([FromBody] StatelessCheckoutRequest request)
         {
+            // Người dùng lấy từ token — KHÔNG tin userId client gửi (chống cấp premium cho người khác).
+            var userId = JwtHelper.ExtractSubFromToken(Request);
+            if (string.IsNullOrEmpty(userId))
+                return Unauthorized(new { error = "UNAUTHORIZED", message = "Không xác định được người dùng." });
+
             try
             {
-                var userId = request.UserId ?? "demo-user-001";
                 var order = _paymentStrategy.CreateCheckout(userId, request.PaymentMethod);
                 return Ok(order);
             }
@@ -60,18 +58,18 @@ namespace VisualizationDSA.WebApi.Controllers
             }
         }
 
-        
-        
-        
-        
         [HttpPost("verify")]
+        [RequireJwtRole]
         public async Task<ActionResult<StatelessOrderDto>> Verify([FromBody] StatelessVerifyRequest request)
         {
+            var userId = JwtHelper.ExtractSubFromToken(Request);
+            if (string.IsNullOrEmpty(userId))
+                return Unauthorized(new { error = "UNAUTHORIZED", message = "Không xác định được người dùng." });
+
             try
             {
-                var order = _paymentStrategy.VerifyPayment(request.OrderId, request.UserId);
+                var order = _paymentStrategy.VerifyPayment(request.OrderId, userId);
 
-                
                 await PersistPremiumStatus(order.UserId);
 
                 return Ok(order);
@@ -86,13 +84,14 @@ namespace VisualizationDSA.WebApi.Controllers
             }
         }
 
-        
-        
-        
-        
         [HttpGet("orders/{orderId}/status")]
-        public ActionResult<StatelessOrderDto> GetOrderStatus(string orderId, [FromQuery] string? userId)
+        [RequireJwtRole]
+        public ActionResult<StatelessOrderDto> GetOrderStatus(string orderId)
         {
+            var userId = JwtHelper.ExtractSubFromToken(Request);
+            if (string.IsNullOrEmpty(userId))
+                return Unauthorized(new { error = "UNAUTHORIZED", message = "Không xác định được người dùng." });
+
             try
             {
                 var order = _paymentStrategy.GetOrderStatus(orderId, userId);
@@ -108,18 +107,21 @@ namespace VisualizationDSA.WebApi.Controllers
             }
         }
 
-        
-        
-        
-        
+        /// <summary>
+        /// Chỉ tồn tại ở môi trường Development để demo luồng thanh toán.
+        /// Production: trả 404 — webhook thật phải đi qua PaymentsController (có verify chữ ký).
+        /// </summary>
         [HttpPost("simulate-webhook")]
+        [RequireJwtRole]
         public async Task<ActionResult<StatelessOrderDto>> SimulateWebhook([FromBody] StatelessVerifyRequest request)
         {
+            if (!_env.IsDevelopment())
+                return NotFound(new { error = "NOT_FOUND", message = "Endpoint chỉ dùng cho môi trường phát triển." });
+
             try
             {
                 var order = _paymentStrategy.SimulateWebhook(request.OrderId);
 
-                
                 await PersistPremiumStatus(order.UserId);
 
                 return Ok(order);
@@ -130,47 +132,45 @@ namespace VisualizationDSA.WebApi.Controllers
             }
         }
 
-        
-        
-        
-        
         [HttpGet("premium-status")]
-        public ActionResult<StatelessPremiumStatusDto> GetPremiumStatus([FromQuery] string? userId)
+        [RequireJwtRole]
+        public ActionResult<StatelessPremiumStatusDto> GetPremiumStatus()
         {
-            var id = userId ?? "demo-user-001";
-            return Ok(_paymentStrategy.GetPremiumStatus(id));
+            var userId = JwtHelper.ExtractSubFromToken(Request);
+            if (string.IsNullOrEmpty(userId))
+                return Unauthorized(new { error = "UNAUTHORIZED", message = "Không xác định được người dùng." });
+
+            return Ok(_paymentStrategy.GetPremiumStatus(userId));
         }
 
-        
-        
-        
-        
         [HttpGet("check-access")]
-        public ActionResult<object> CheckFeatureAccess([FromQuery] string? userId, [FromQuery] string featureId)
+        [RequireJwtRole]
+        public ActionResult<object> CheckFeatureAccess([FromQuery] string featureId)
         {
-            var id = userId ?? "demo-user-001";
-            var hasAccess = _paymentStrategy.CheckFeatureAccess(id, featureId);
-            return Ok(new { userId = id, featureId, hasAccess });
+            var userId = JwtHelper.ExtractSubFromToken(Request);
+            if (string.IsNullOrEmpty(userId))
+                return Unauthorized(new { error = "UNAUTHORIZED", message = "Không xác định được người dùng." });
+
+            var hasAccess = _paymentStrategy.CheckFeatureAccess(userId, featureId);
+            return Ok(new { userId, featureId, hasAccess });
         }
 
-        
-        
-        
-        
         [HttpGet("transactions")]
-        public ActionResult<List<StatelessTransactionLogEntry>> GetTransactions([FromQuery] string? userId)
+        [RequireJwtRole]
+        public ActionResult<List<StatelessTransactionLogEntry>> GetTransactions()
         {
+            var userId = JwtHelper.ExtractSubFromToken(Request);
+            if (string.IsNullOrEmpty(userId))
+                return Unauthorized(new { error = "UNAUTHORIZED", message = "Không xác định được người dùng." });
+
             var log = _paymentStrategy.GetTransactionLog(userId);
             return Ok(log);
         }
 
-        
-        
-        
         private async Task PersistPremiumStatus(string? userId)
         {
             if (string.IsNullOrWhiteSpace(userId)) return;
-            
+
             var email = userId == "demo-user-001" ? "demo@visualizationdsa.dev" : userId;
             var dbUser = await _dbContext.Users
                 .FirstOrDefaultAsync(u => u.Email == email || u.Id.ToString() == userId);

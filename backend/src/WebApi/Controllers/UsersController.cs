@@ -10,6 +10,8 @@ using VisualizationDSA.Application.DTOs;
 using VisualizationDSA.Application.Services;
 using VisualizationDSA.Domain.Interfaces;
 
+using VisualizationDSA.WebApi.Filters;
+
 namespace VisualizationDSA.WebApi.Controllers
 {
     
@@ -21,7 +23,7 @@ namespace VisualizationDSA.WebApi.Controllers
     [ApiVersion("1.0")]
     [ApiController]
     [Route("api/v{version:apiVersion}/[controller]")]
-    [Authorize]
+    [RequireJwtRole]
     public class UsersController : ControllerBase
     {
         private readonly IUnitOfWork           _unitOfWork;
@@ -132,6 +134,7 @@ namespace VisualizationDSA.WebApi.Controllers
 
         
         [HttpGet("{id}/progress")]
+        [VisualizationDSA.WebApi.Filters.RequireJwtRole("Admin")]
         public async Task<ActionResult> GetUserProgress(Guid id)
         {
             var user = await _unitOfWork.Users.GetByIdWithDetailsAsync(id, track: false);
@@ -151,12 +154,8 @@ namespace VisualizationDSA.WebApi.Controllers
 
         private Guid GetCurrentUserId()
         {
-            
-            
-            
-            var claim = User.FindFirstValue(ClaimTypes.NameIdentifier)
-                        ?? User.FindFirstValue(JwtRegisteredClaimNames.Sub)
-                        ?? User.FindFirstValue("sub");
+            // [RequireJwtRole] không populate HttpContext.User — phải đọc từ token.
+            var claim = JwtHelper.ExtractSubFromToken(Request);
 
             if (string.IsNullOrEmpty(claim) || !Guid.TryParse(claim, out var userId))
             {

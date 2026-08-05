@@ -12,11 +12,13 @@ using MediatR;
 using VisualizationDSA.Application.Features.Classrooms.Queries;
 using VisualizationDSA.Application.Features.Classrooms.Commands;
 
+using VisualizationDSA.WebApi.Filters;
+
 namespace VisualizationDSA.WebApi.Controllers
 {
     [ApiController]
-    [Route("api/[controller]")]
-    [Authorize]
+    [Route("api/v{version:apiVersion}/classrooms")]
+    [RequireJwtRole]
     public class ClassroomController : ControllerBase
     {
         private readonly IMediator _mediator;
@@ -35,7 +37,7 @@ namespace VisualizationDSA.WebApi.Controllers
 
         private Guid GetUserId()
         {
-            var userIdStr = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var userIdStr = JwtHelper.ExtractSubFromToken(Request);
             if (string.IsNullOrEmpty(userIdStr) || !Guid.TryParse(userIdStr, out var userId))
             {
                 throw new UnauthorizedAccessException("Invalid User Token.");
@@ -44,7 +46,7 @@ namespace VisualizationDSA.WebApi.Controllers
         }
 
         [HttpPost]
-        [Authorize(Roles = "Teacher")]
+        [RequireJwtRole("Teacher")]
         public async Task<IActionResult> CreateClassroom([FromBody] CreateClassroomDto dto)
         {
             try
@@ -74,7 +76,8 @@ namespace VisualizationDSA.WebApi.Controllers
                 var command = new VisualizationDSA.Application.Features.Classrooms.Commands.JoinClassroom.JoinClassroomCommand
                 {
                     StudentId = studentId,
-                    InviteCode = dto.InviteCode
+                    // Chuẩn hóa invite code (mã sinh ra viết hoa — nhập thường vẫn khớp).
+                    InviteCode = (dto.InviteCode ?? string.Empty).Trim().ToUpperInvariant()
                 };
                 var classroom = await _mediator.Send(command);
                 return Ok(classroom);
@@ -99,7 +102,7 @@ namespace VisualizationDSA.WebApi.Controllers
             try
             {
                 var userId = GetUserId();
-                var role = User.FindFirstValue(ClaimTypes.Role);
+                var role = JwtHelper.ExtractRoleFromToken(Request);
 
                 if (role == "Teacher")
                 {
@@ -120,7 +123,7 @@ namespace VisualizationDSA.WebApi.Controllers
             }
         }
 
-        [HttpGet("{id}/students")]
+        [HttpGet("{id:guid}/students")]
         public async Task<IActionResult> GetStudentsInClassroom(Guid id)
         {
             try
@@ -140,12 +143,12 @@ namespace VisualizationDSA.WebApi.Controllers
             }
         }
         
-        [HttpGet("{id}")]
+        [HttpGet("{id:guid}")]
         public async Task<IActionResult> GetClassroom(Guid id)
         {
             try
             {
-                var userIdStr = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+                var userIdStr = JwtHelper.ExtractSubFromToken(Request);
                 if (!Guid.TryParse(userIdStr, out var userId))
                 {
                     return Unauthorized();
@@ -166,8 +169,8 @@ namespace VisualizationDSA.WebApi.Controllers
         }
 
 
-        [HttpPut("{id}")]
-        [Authorize(Roles = "Teacher")]
+        [HttpPut("{id:guid}")]
+        [RequireJwtRole("Teacher")]
         public async Task<IActionResult> UpdateClassroom(Guid id, [FromBody] UpdateClassroomDto dto)
         {
             try
@@ -189,8 +192,8 @@ namespace VisualizationDSA.WebApi.Controllers
             }
         }
 
-        [HttpPost("{id}/regenerate-code")]
-        [Authorize(Roles = "Teacher")]
+        [HttpPost("{id:guid}/regenerate-code")]
+        [RequireJwtRole("Teacher")]
         public async Task<IActionResult> RegenerateInviteCode(Guid id)
         {
             try
@@ -210,8 +213,8 @@ namespace VisualizationDSA.WebApi.Controllers
             }
         }
 
-        [HttpGet("{id}/statistics")]
-        [Authorize(Roles = "Teacher")]
+        [HttpGet("{id:guid}/statistics")]
+        [RequireJwtRole("Teacher")]
         public async Task<IActionResult> GetStatistics(Guid id)
         {
             try
@@ -226,8 +229,8 @@ namespace VisualizationDSA.WebApi.Controllers
             }
         }
 
-        [HttpGet("{id}/export-excel")]
-        [Authorize(Roles = "Teacher")]
+        [HttpGet("{id:guid}/export-excel")]
+        [RequireJwtRole("Teacher")]
         public async Task<IActionResult> ExportExcel(Guid id)
         {
             try
@@ -242,8 +245,8 @@ namespace VisualizationDSA.WebApi.Controllers
             }
         }
 
-        [HttpPost("{id}/kick/{studentId}")]
-        [Authorize(Roles = "Teacher")]
+        [HttpPost("{id:guid}/kick/{studentId:guid}")]
+        [RequireJwtRole("Teacher")]
         public async Task<IActionResult> KickStudent(Guid id, Guid studentId)
         {
             try
@@ -268,8 +271,8 @@ namespace VisualizationDSA.WebApi.Controllers
             }
         }
 
-        [HttpPost("{id}/archive")]
-        [Authorize(Roles = "Teacher")]
+        [HttpPost("{id:guid}/archive")]
+        [RequireJwtRole("Teacher")]
         public async Task<IActionResult> ArchiveClassroom(Guid id)
         {
             try
@@ -289,13 +292,13 @@ namespace VisualizationDSA.WebApi.Controllers
             }
         }
     
-        [HttpPut("{id}/override/{moduleId}")]
-        [Authorize(Roles = "Teacher")]
+        [HttpPut("{id:guid}/override/{moduleId:guid}")]
+        [RequireJwtRole("Teacher")]
         public async Task<IActionResult> UpdateModuleItemOverride(Guid id, Guid moduleId, [FromBody] UpdateClassroomModuleItemOverrideCommand command)
         {
             try
             {
-                var userIdStr = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+                var userIdStr = JwtHelper.ExtractSubFromToken(Request);
                 if (!Guid.TryParse(userIdStr, out var userId))
                 {
                     return Unauthorized();

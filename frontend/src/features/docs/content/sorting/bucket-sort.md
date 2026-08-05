@@ -129,8 +129,18 @@ Chúc mừng bạn! Chúng ta đã hoàn thành chuyến hành trình dài đi q
 Giờ là lúc để gom tất cả kiến thức lại. Đứng trước một bài toán thực tế của doanh nghiệp, bạn sẽ chọn thuật toán nào? Hãy cùng tìm câu trả lời tại bài **Tổng hợp: Chọn thuật toán sắp xếp phù hợp**.
 
 <div class="vt-box-container next-steps">
-  <a class="vt-box" href="/docs/sorting/summary">
+  <a class="vt-box" href="/docs/sorting/sorting-summary">
     <p class="next-steps-link">Tổng hợp: Chọn Thuật toán Sắp xếp</p>
     <p class="next-steps-caption">Bảng so sánh tối thượng và bí quyết chọn thuật toán trong môi trường Production.</p>
   </a>
 </div>
+
+## 📚 Tham khảo lý thuyết {#references}
+
+Dưới đây là các nguồn tài liệu kinh điển và chính thống được dùng để biên soạn bài viết này, giúp bạn tự nghiên cứu sâu hơn nếu muốn:
+
+- **Khái niệm Bucket Sort, 4 bước Chuẩn bị Xô - Scatter - Sort - Gather và tính ổn định phụ thuộc thuật toán sắp xếp nội bộ trong xô:** *Bucket sort*, Wikipedia — https://en.wikipedia.org/wiki/Bucket_sort. Nguồn chính về mô tả thuật toán, bảng độ phức tạp (trung bình O(N + K), xấu nhất O(N²)) và điều kiện để thuật toán ổn định.
+- **Phân tích toán học thời gian chạy trung bình O(N) của Bucket Sort khi dữ liệu phân bố đều, kèm mã giả và chứng minh độ phức tạp trong trường hợp xấu nhất:** Cormen, T. H., Leiserson, C. E., Rivest, R. L., & Stein, C. (2009). *Introduction to Algorithms (CLRS)*, 3rd Edition, MIT Press — Chương 8 (Sorting in Linear Time), Mục 8.4 Bucket sort.
+- **Công thức chia xô dựa trên phạm vi giá trị [0, 1) và cài đặt tham khảo dùng List chứa từng xô rồi sắp xếp nội bộ:** GeeksforGeeks - *Bucket Sort* — https://www.geeksforgeeks.org/bucket-sort/
+- **Hàm Sort mặc định của List<float> trong .NET dùng thuật toán lai IntroSort (không ổn định), lý do bài viết khuyên dùng Insertion Sort nếu cần giữ tính ổn định:** Microsoft Learn - *List&lt;T&gt;.Sort Method* — https://learn.microsoft.com/en-us/dotnet/api/system.collections.generic.list-1.sort
+- **Bối cảnh ứng dụng Bucket Sort cho dữ liệu thực tế như lịch hẹn, điểm số và cách tùy biến hàm băm chia xô:** *Bucket Sort*, GeeksforGeeks — https://www.geeksforgeeks.org/bucket-sort-2/

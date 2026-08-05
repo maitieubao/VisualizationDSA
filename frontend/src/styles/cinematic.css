@@ -51,8 +51,8 @@
 }
 
 @keyframes vcr-glow {
-  from { box-shadow: 0 0 4px rgba(66, 85, 255, 0.22); }
-  to   { box-shadow: 0 0 16px rgba(66, 85, 255, 0.44); }
+  from { box-shadow: 0 0 4px var(--vcr-accent-dim); }
+  to   { box-shadow: 0 0 16px var(--vcr-accent-dim); }
 }
 
 

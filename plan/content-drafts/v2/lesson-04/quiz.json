@@ -1,0 +1,68 @@
+{
+  "quizTitle": "Trắc nghiệm Hash Table & Set",
+  "topic": "dsa",
+  "difficulty": 1,
+  "xpReward": 40,
+  "questions": [
+    {
+      "questionText": "Hàm băm (hash function) trong Hash Table có nhiệm vụ chính là gì?",
+      "options": ["Biến một Key bất kỳ thành chỉ số mảng hợp lệ", "Sắp xếp các Key theo thứ tự tăng dần", "Nén dữ liệu để tiết kiệm bộ nhớ", "Mã hóa Key để bảo mật"],
+      "correctIndex": 0,
+      "explanation": "Hàm băm tính index = hash(key) % capacity, giúp tìm vị trí lưu trữ và tra cứu trong O(1)."
+    },
+    {
+      "questionText": "Va chạm (collision) trong bảng băm xảy ra khi nào?",
+      "options": ["Hai Value trùng nhau trong bảng", "Hai Key khác nhau băm ra cùng một chỉ số", "Bảng băm hết bộ nhớ RAM", "Một Key bị xóa khỏi bảng"],
+      "correctIndex": 1,
+      "explanation": "Số Key có thể nhiều hơn dung lượng mảng, nên hai Key khác nhau có thể trùng chỉ số băm — gọi là va chạm."
+    },
+    {
+      "questionText": "Phương pháp chaining (móc xích) giải quyết va chạm bằng cách nào?",
+      "options": ["Mỗi ô của mảng chứa một danh sách liên kết các Key trùng chỉ số", "Tăng gấp đôi kích thước mảng ngay khi có va chạm", "Tìm ô trống kế tiếp theo một quy tắc dò xác định", "Lưu Key va chạm vào một mảng riêng biệt"],
+      "correctIndex": 0,
+      "explanation": "Chaining đặt các Key va chạm vào cùng một bucket là danh sách liên kết; việc dò ô trống kế tiếp thuộc về open addressing."
+    },
+    {
+      "questionText": "Sự khác biệt cốt lõi giữa Map (Dictionary) và Set (HashSet) là gì?",
+      "options": ["Map chỉ lưu Value, Set chỉ lưu Key", "Map lưu cặp Key–Value, Set chỉ lưu Key", "Map sắp xếp dữ liệu, Set không sắp xếp", "Map nhanh hơn Set trong mọi thao tác"],
+      "correctIndex": 1,
+      "explanation": "Map ánh xạ mỗi Key sang một Value; Set chỉ ghi nhận sự tồn tại của Key, thường dùng để khử trùng lặp."
+    },
+    {
+      "questionText": "Trường hợp nào KHÔNG phù hợp để dùng Hash Table?",
+      "options": ["Cần duyệt dữ liệu theo thứ tự tăng dần", "Cần tra cứu Key nhanh trong hàng triệu bản ghi", "Cần khử trùng lặp dữ liệu", "Cần đếm tần suất xuất hiện"],
+      "correctIndex": 0,
+      "explanation": "Bảng băm không duy trì thứ tự; khi cần thứ tự hãy dùng mảng hoặc cây tìm kiếm (SortedDictionary)."
+    },
+    {
+      "questionText": "Tại sao các bảng băm thường chọn ngưỡng load factor khoảng 0,75?",
+      "options": ["Để bảng không bao giờ xảy ra va chạm", "Cân bằng giữa chi phí bộ nhớ và tốc độ tra cứu", "Vì mảng chỉ hoạt động được khi đầy 75%", "Để tăng tốc độ của hàm băm"],
+      "correctIndex": 1,
+      "explanation": "Load factor thấp giảm số lần dò nhưng lãng phí RAM; 0,75 là điểm cân bằng phổ biến, được C# Dictionary sử dụng."
+    },
+    {
+      "questionText": "Điều gì xảy ra khi dùng một Key có giá trị thay đổi sau khi đã chèn vào Map?",
+      "options": ["Tra cứu Key đó có thể không tìm thấy vì hash code đã đổi", "Giá trị cũ tự động được cập nhật theo", "Map tự động sắp xếp lại toàn bộ bảng", "Map ném lỗi ngay tại thời điểm chèn"],
+      "correctIndex": 0,
+      "explanation": "Chỉ số ô phụ thuộc hash code tại lúc chèn; Key bị thay đổi làm hash code mới trỏ sai chỗ, gây thất bại tra cứu."
+    },
+    {
+      "questionText": "Bảng băm dung lượng 10 đang chứa 8 phần tử. Load factor hiện tại là bao nhiêu và hệ thống nên làm gì?",
+      "options": ["α = 1,25 — bảng đã đầy, cần xóa bớt", "α = 8 — cần rehash ngay", "α = 0,8 — nên sẵn sàng rehash để giảm va chạm", "α = 0,8 — không cần làm gì thêm"],
+      "correctIndex": 2,
+      "explanation": "α = 8 / 10 = 0,8, vượt ngưỡng 0,75 nên bảng nên rehash để duy trì hiệu năng tra cứu."
+    },
+    {
+      "questionText": "Bảng băm dung lượng 5 chứa các Key có giá trị hash lần lượt là 3, 8, 13. Khi rehash lên dung lượng 10, các Key này rơi vào những chỉ số nào?",
+      "options": ["0, 3, 8", "3, 8, 13", "3, 3, 3", "3, 8, 3"],
+      "correctIndex": 3,
+      "explanation": "Chỉ số mới = hash % 10: 3 % 10 = 3, 8 % 10 = 8, 13 % 10 = 3 — Key 3 và 13 vẫn va chạm nhưng Key 8 được tách ra."
+    },
+    {
+      "questionText": "Trường hợp xấu nhất nào khiến thao tác tra cứu của bảng băm suy biến thành O(N)?",
+      "options": ["Toàn bộ Key băm trúng cùng một ô, biến bucket thành danh sách dài", "Bảng có dung lượng quá lớn so với số phần tử", "Key là chuỗi ký tự rất dài", "Hàm băm chạy chậm hơn phép so sánh chuỗi"],
+      "correctIndex": 0,
+      "explanation": "Nếu mọi Key rơi vào một bucket, chaining trở thành danh sách dài N phần tử và tra cứu phải duyệt O(N)."
+    }
+  ]
+}

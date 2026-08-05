@@ -80,6 +80,17 @@ export const docsNavigation: NavItem[] = [
     ]
   },
   {
+    id: 'trees-group',
+    title: 'CẤU TRÚC CÂY NÂNG CAO',
+    children: [
+      { id: 'tr-heap', title: 'Heap & Priority Queue', path: '/docs/trees/heap-priority-queue' },
+      { id: 'tr-trie', title: 'Trie (Cây tiền tố)', path: '/docs/trees/trie-prefix-tree' },
+      { id: 'tr-segment', title: 'Segment Tree (Cây đoạn)', path: '/docs/trees/segment-tree' },
+      { id: 'tr-fenwick', title: 'Fenwick Tree (BIT)', path: '/docs/trees/fenwick-tree' },
+      { id: 'tr-union-find', title: 'Union-Find (Disjoint Set)', path: '/docs/trees/union-find' }
+    ]
+  },
+  {
     id: 'oop-group',
     title: 'LẬP TRÌNH HƯỚNG ĐỐI TƯỢNG (OOP)',
     children: [

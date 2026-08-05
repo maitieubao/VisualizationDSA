@@ -191,6 +191,7 @@ Dù rất nhanh, Quick Sort sở hữu một nhược điểm chí tử liên qu
 | **Thời gian (Tốt nhất/Trung bình)**| **O(N log N)** - Xảy ra khi Pivot chia mảng thành 2 phần gần bằng nhau. Cây đệ quy cực kỳ lùn và cân đối. |
 | **Thời gian (Tồi tệ nhất)** | **O(N²)** - Trùng hợp thay, nó xảy ra khi mảng đầu vào **Đã được sắp xếp sẵn** (hoặc sắp xếp ngược). |
 | **Không gian bộ nhớ** | **O(log N)** - Dù sắp xếp tại chỗ `O(1)` mảng RAM, nhưng thuật toán cần tốn bộ nhớ cho Call Stack (Ngăn xếp đệ quy). |
+| **Tính Ổn định (Stable)** | **Không** - Vì hàm Partition hoán đổi (Swap) các phần tử qua lại, những phần tử bằng nhau có thể bị đổi chỗ, phá vỡ thứ tự tương đối ban đầu của chúng. |
 
 **Vì sao mảng đã sắp xếp lại khiến Quick Sort chậm như rùa?**
 Nếu mảng là `[1, 2, 3, 4, 5]` và bạn luôn chọn số cuối cùng (`5`) làm Pivot. Tất cả các số đều nhỏ hơn 5, nên mảng bị chia thành `[1, 2, 3, 4]` bên trái và `[]` bên phải.
@@ -207,3 +208,32 @@ Hành động này làm Cây đệ quy dài thòng lõng (giống hệt Linked L
 - Trái tim là hàm `Partition`: Phân bua mảng thành 2 phe (Nhỏ hơn Chốt - Lớn hơn Chốt).
 - Nhanh ở thực tế (Nhờ tối ưu CPU Cache In-place), nhưng ẩn chứa rủi ro `O(N²)` và `StackOverflow` nếu chọn nhầm chốt.
 :::
+
+## Next Steps {#next-steps}
+
+Bạn đã chinh phục được trái tim của Quick Sort: tư duy Chia để Trị và kỹ thuật Phân mảnh. Tuy nhiên, đừng quên rằng Quick Sort không ổn định (Không stable) và dễ suy thoái xuống `O(N²)` nếu gặp mảng đã sắp xếp sẵn.
+
+Bài học tiếp theo sẽ giới thiệu một thuật toán Chia để Trị khác, có tính ổn định tuyệt đối và không bao giờ suy thoái xuống `O(N²)`: **Sắp xếp Trộn (Merge Sort)**. So sánh điểm mạnh, điểm yếu của hai gã khổng lồ này sẽ giúp bạn chọn đúng công cụ cho từng tình huống thực tế.
+
+<div class="vt-box-container next-steps">
+  <a class="vt-box" href="/docs/sorting/merge-sort">
+    <p class="next-steps-link">Sắp xếp Trộn (Merge Sort)</p>
+    <p class="next-steps-caption">Ổn định O(N log N) ở mọi trường hợp, bá chủ dữ liệu lớn.</p>
+  </a>
+  <a class="vt-box" href="/docs/sorting/sorting-summary">
+    <p class="next-steps-link">Tổng hợp thuật toán Sắp xếp</p>
+    <p class="next-steps-caption">Bảng so sánh toàn diện mọi thuật toán trong nhóm.</p>
+  </a>
+</div>
+
+## 📚 Tham khảo lý thuyết {#references}
+
+Các kiến thức lý thuyết trong bài được tổng hợp và đối chiếu từ những nguồn học thuật sau:
+
+- **Thuật toán Quick Sort, kỹ thuật Partition Lomuto và Hoare, phân tích độ phức tạp O(N log N) trung bình, O(N²) trường hợp xấu và không gian ngăn xếp O(log N):** Cormen, T. H., Leiserson, C. E., Rivest, R. L., & Stein, C., *Introduction to Algorithms* (CLRS), 3rd Edition, MIT Press, 2009 — Chương 7 *Quicksort* (gồm 7.1 *Description of quicksort*, 7.2 *Performance of quicksort*, 7.3 *Randomized quicksort*).
+- **Phân tích lý thuyết khác về Quick Sort cùng phương pháp phân tích đệ quy chia để trị:** Dasgupta, S., Papadimitriou, C., & Vazirani, U., *Algorithms*, McGraw-Hill, 2008 — Chương 2.3 *Merge sort* và bài tập phân tích Quick Sort theo cùng tư duy chia để trị.
+- **Tổng quan thuật toán, mã giả Lomuto Partition và minh họa trực quan từng bước:** Wikipedia, *Quicksort* — https://en.wikipedia.org/wiki/Quicksort
+- **Tính ổn định (Stability) của các thuật toán sắp xếp và lý do Quick Sort không stable:** Wikipedia, *Sorting algorithm* (mục *Stability*) — https://en.wikipedia.org/wiki/Sorting_algorithm
+- **Giải pháp IntroSort — thuật toán lai dùng để vá lỗi O(N²) của Quick Sort:** Wikipedia, *Introsort* — https://en.wikipedia.org/wiki/Introsort
+- **Tài liệu chính thức của .NET về `Array.Sort` sử dụng IntroSort và lý do không nên tự viết lại thuật toán sắp xếp:** Microsoft Learn, *Array.Sort Method* — https://learn.microsoft.com/en-us/dotnet/api/system.array.sort
+- **Học liệu tham khảo về Quick Sort và phân tích độ phức tạp của MIT OpenCourseWare:** MIT 6.006 *Introduction to Algorithms* — https://ocw.mit.edu/courses/6-006-introduction-to-algorithms-spring-2020/

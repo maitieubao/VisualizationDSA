@@ -7,7 +7,7 @@ description: Khám phá Counting Sort - thuật toán đếm tần suất xuất
 
 Thuật toán Sắp xếp Đếm (Counting Sort) là một kỹ thuật sắp xếp **không dựa trên so sánh (Non-comparison based)**. Thay vì so sánh xem phần tử nào lớn hơn, nó chỉ đơn giản là... đếm xem mỗi con số xuất hiện bao nhiêu lần, sau đó rải chúng ra theo thứ tự.
 
-Điểm làm nên sức mạnh tuyệt đối của thuật toán này là tốc độ tiệm cận **O(N)**. Tuy nhiên, cái giá phải trả là bạn cần một lượng bộ nhớ bổ sung phụ thuộc vào **giá trị lớn nhất** trong mảng.
+Điểm làm nên sức mạnh tuyệt đối của thuật toán này là tốc độ tiệm cận **O(N)** khi phạm vi giá trị K nhỏ. Tuy nhiên, cái giá phải trả là bạn cần một lượng bộ nhớ bổ sung phụ thuộc vào **phạm vi giá trị (Range)** của dữ liệu trong mảng.
 
 ## Nguyên lý hoạt động {#how-it-works}
 
@@ -31,34 +31,34 @@ Duyệt mảng gốc từ phải sang trái (để duy trì Tính Ổn định -
 
 ```mermaid
 flowchart TD
-    subgraph "1. Mảng Gốc (Input)"
+    subgraph G1 ["1. Mảng Gốc (Input)"]
         direction LR
         I0[4] --- I1[2] --- I2[2] --- I3[8] --- I4[3] --- I5[3] --- I6[1]
     end
     
-    subgraph "2. Đếm Tần Suất (Count Array)"
+    subgraph G2 ["2. Đếm Tần Suất (Count Array)"]
         direction LR
         C0["0: 0"] --- C1["1: 1"] --- C2["2: 2"] --- C3["3: 2"] --- C4["4: 1"] --- C5["5..7: 0"] --- C8["8: 1"]
     end
     
-    subgraph "3. Cộng Dồn (Prefix Sum)"
+    subgraph G3 ["3. Cộng Dồn (Prefix Sum)"]
         direction LR
         P0["0: 0"] --- P1["1: 1"] --- P2["2: 3"] --- P3["3: 5"] --- P4["4: 6"] --- P5["5..7: 6"] --- P8["8: 7"]
     end
     
-    subgraph "4. Trải Ngược Lại (Output)"
+    subgraph G4 ["4. Trải Ngược Lại (Output)"]
         direction LR
         O0[1] --- O1[2] --- O2[2] --- O3[3] --- O4[3] --- O5[4] --- O6[8]
     end
     
-    "1. Mảng Gốc (Input)" --> "2. Đếm Tần Suất (Count Array)"
-    "2. Đếm Tần Suất (Count Array)" --> "3. Cộng Dồn (Prefix Sum)"
-    "3. Cộng Dồn (Prefix Sum)" --> "4. Trải Ngược Lại (Output)"
+    G1 --> G2
+    G2 --> G3
+    G3 --> G4
     
-    style I0 fill:#3b82f6,color:#fff
-    style C4 fill:#10b981,color:#fff
-    style P4 fill:#f59e0b,color:#fff
-    style O5 fill:#3b82f6,color:#fff
+    style I0 fill:#c9a227,color:#fff
+    style C4 fill:#3d9970,color:#fff
+    style P4 fill:#c9a227,color:#fff
+    style O5 fill:#3d9970,color:#fff
 ```
 
 
@@ -66,8 +66,8 @@ flowchart TD
 
 | Đặc tính | Phân tích Big O |
 | :--- | :--- |
-| **Thời gian (Mọi trường hợp)** | **O(N + K)** - Trong đó N là số lượng phần tử, K là giá trị lớn nhất trong mảng. Vô cùng nhanh nếu K không quá lớn! |
-| **Không gian bộ nhớ** | **O(N + K)** - Cần mảng `count` kích thước K và mảng `output` kích thước N. |
+| **Thời gian (Mọi trường hợp)** | **O(N + K)** - Trong đó N là số lượng phần tử, K là phạm vi giá trị (Range), tức khoảng chênh lệch giữa giá trị lớn nhất và nhỏ nhất của dữ liệu. Vô cùng nhanh nếu K không quá lớn! |
+| **Không gian bộ nhớ** | **O(N + K)** - Cần mảng `count` kích thước theo phạm vi giá trị K và mảng `output` kích thước N. |
 | **Tính ổn định (Stable)** | **Có** - Cực kỳ quan trọng để Counting Sort có thể được dùng làm thuật toán lõi hỗ trợ cho Radix Sort. |
 
 ## Cài đặt (Code Example) {#code-example}
@@ -130,3 +130,13 @@ Tiếp theo, chúng ta sẽ xem xét một cách tiếp cận chia để trị t
     <p class="next-steps-caption">Phân tán dữ liệu thành các xô để giảm tải bài toán.</p>
   </a>
 </div>
+
+## 📚 Tham khảo lý thuyết {#references}
+
+Các kiến thức lý thuyết trong bài được tổng hợp và đối chiếu từ những nguồn học thuật sau:
+
+- **Khái niệm sắp xếp không dựa trên so sánh (Non-comparison based) và thuật toán Counting Sort chi tiết:** Cormen, T. H., Leiserson, C. E., Rivest, R. L., & Stein, C., *Introduction to Algorithms* (CLRS), 3rd Edition, MIT Press, 2009 — Chương 8.2 *Counting sort* (phân tích độ phức tạp O(N + K), mảng đếm và mảng cộng dồn Prefix Sum).
+- **Tính ổn định (Stability) và lý do Counting Sort thường được dùng làm lõi cho Radix Sort:** Cormen, T. H., Leiserson, C. E., Rivest, R. L., & Stein, C., *Introduction to Algorithms* (CLRS), 3rd Edition, MIT Press, 2009 — Chương 8.3 *Radix sort*; Dasgupta, S., Papadimitriou, C., & Vazirani, U., *Algorithms*, McGraw-Hill, 2008 — Chương 2.3 *Counting and radix sort*.
+- **Tổng quan, phân tích độ phức tạp O(N + K) và hạn chế khi K lớn:** Wikipedia, *Counting sort* — https://en.wikipedia.org/wiki/Counting_sort
+- **Cài đặt tham khảo bằng C# và giải thích từng bước trực quan:** GeeksforGeeks, *Counting Sort* — https://www.geeksforgeeks.org/counting-sort/
+- **Phân tích độ phức tạp và vấn đề bộ nhớ khi K rất lớn:** MIT OpenCourseWare, *6.006 Introduction to Algorithms, Lecture 7: Counting Sort, Radix Sort, Lower Bounds for Sorting* — https://ocw.mit.edu/courses/6-006-introduction-to-algorithms-spring-2020/

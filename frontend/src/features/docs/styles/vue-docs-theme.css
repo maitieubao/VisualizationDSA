@@ -33,7 +33,7 @@
   transition: color 0.2s;
 }
 .vue-docs-theme a:hover {
-  color: #34d399;
+  color: var(--color-accent-green);
   text-decoration: underline;
 }
 
@@ -41,7 +41,7 @@
 .vue-docs-theme p code,
 .vue-docs-theme li code {
   background-color: rgba(16, 185, 129, 0.15);
-  color: #10b981;
+  color: var(--color-accent-green);
   padding: 0.15rem 0.4rem;
   border-radius: 4px;
   font-family: 'JetBrains Mono', Consolas, Monaco, monospace;
@@ -88,20 +88,20 @@
 .vue-docs-theme .custom-block.tip {
   border-color: rgba(16, 185, 129, 0.4);
 }
-.vue-docs-theme .custom-block.tip .custom-block-title { color: #34d399; }
+.vue-docs-theme .custom-block.tip .custom-block-title { color: var(--color-accent-green); }
 
 
 .vue-docs-theme .custom-block.important {
   border-color: rgba(139, 92, 246, 0.4);
 }
-.vue-docs-theme .custom-block.important .custom-block-title { color: #a78bfa; }
+.vue-docs-theme .custom-block.important .custom-block-title { color: var(--color-accent-primary); }
 
 
 .vue-docs-theme .custom-block.warning {
   border-color: rgba(245, 158, 11, 0.4);
 }
 .vue-docs-theme .custom-block.warning .custom-block-title { color: #d97706; }
-html[data-theme="dark"] .vue-docs-theme .custom-block.warning .custom-block-title { color: #fbbf24; }
+html[data-theme="dark"] .vue-docs-theme .custom-block.warning .custom-block-title { color: var(--color-accent-yellow); }
 .vue-docs-theme .custom-block.warning p, 
 .vue-docs-theme .custom-block.warning a { color: var(--color-text-secondary); }
 
@@ -111,9 +111,9 @@ html[data-theme="dark"] .vue-docs-theme .custom-block.warning .custom-block-titl
   border-color: rgba(239, 68, 68, 0.4);
 }
 .vue-docs-theme .custom-block.danger .custom-block-title,
-.vue-docs-theme .custom-block.caution .custom-block-title { color: #ef4444; }
+.vue-docs-theme .custom-block.caution .custom-block-title { color: var(--color-accent-red); }
 html[data-theme="dark"] .vue-docs-theme .custom-block.danger .custom-block-title,
-html[data-theme="dark"] .vue-docs-theme .custom-block.caution .custom-block-title { color: #f87171; }
+html[data-theme="dark"] .vue-docs-theme .custom-block.caution .custom-block-title { color: var(--color-accent-red); }
 .vue-docs-theme .custom-block.danger p, 
 .vue-docs-theme .custom-block.caution p, 
 .vue-docs-theme .custom-block.danger a,
@@ -227,7 +227,7 @@ html[data-theme="dark"] .vue-docs-theme .custom-block.caution .custom-block-titl
   padding: 1rem 1.25rem;
   border-radius: 10px;
   border: 1px solid rgba(129, 140, 248, 0.35);
-  background: linear-gradient(135deg, rgba(129, 140, 248, 0.12), rgba(16, 185, 129, 0.08));
+  background: rgba(129, 140, 248, 0.12);
   backdrop-filter: blur(4px);
 }
 .vue-docs-theme .playground-demo-info {
@@ -245,7 +245,7 @@ html[data-theme="dark"] .vue-docs-theme .custom-block.caution .custom-block-titl
   flex-shrink: 0;
   border-radius: 10px;
   background: rgba(129, 140, 248, 0.2);
-  color: #818cf8;
+  color: var(--color-accent-primary-light);
 }
 .vue-docs-theme .playground-demo-text {
   display: flex;
@@ -270,8 +270,8 @@ html[data-theme="dark"] .vue-docs-theme .custom-block.caution .custom-block-titl
   border-radius: 8px;
   font-size: 0.85rem;
   font-weight: 600;
-  color: #fff;
-  background: #6366f1;
+  color: var(--color-text-heading);
+  background: var(--color-accent-primary);
   box-shadow: 0 0 12px rgba(99, 102, 241, 0.35);
   text-decoration: none;
   transition: background 0.2s, transform 0.15s;
@@ -316,7 +316,7 @@ html[data-theme="dark"] .vue-docs-theme .custom-block.caution .custom-block-titl
 .vue-docs-theme .dual-code-select {
   flex-shrink: 0;
   background: #1e2229;
-  color: #e2e8f0;
+  color: var(--color-bg-hover);
   border: 1px solid rgba(255, 255, 255, 0.15);
   border-radius: 6px;
   padding: 0.3rem 0.5rem;

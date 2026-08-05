@@ -92,11 +92,11 @@ function renderCanvas(): void {
   for (const pos of positions) {
     if (pos.leftId  != null) { 
       const child = posMap.get(pos.leftId);  
-      if (child) drawEdge(ctx as any, pos.x, pos.y, child.x, child.y, isDijkstra.value ? 3 : undefined); 
+      if (child) drawEdge(ctx, pos.x, pos.y, child.x, child.y, isDijkstra.value ? 3 : undefined); 
     }
     if (pos.rightId != null) { 
       const child = posMap.get(pos.rightId); 
-      if (child) drawEdge(ctx as any, pos.x, pos.y, child.x, child.y, isDijkstra.value ? 5 : undefined); 
+      if (child) drawEdge(ctx, pos.x, pos.y, child.x, child.y, isDijkstra.value ? 5 : undefined); 
     }
   }
   for (const pos of positions) {
@@ -109,7 +109,7 @@ function renderCanvas(): void {
       status = 'visited';
     }
 
-    drawNode(ctx as any, pos.x, pos.y, pos.value, status);
+    drawNode(ctx, pos.x, pos.y, pos.value, status);
   }
 }
 

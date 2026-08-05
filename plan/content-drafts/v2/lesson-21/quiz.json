@@ -1,0 +1,68 @@
+{
+  "quizTitle": "Trắc nghiệm Topological Sort",
+  "topic": "graph",
+  "difficulty": 2,
+  "xpReward": 40,
+  "questions": [
+    {
+      "questionText": "Điều kiện bắt buộc để một đồ thị có thứ tự tô-pô là gì?",
+      "options": ["Đồ thị có hướng không chu trình (DAG)", "Đồ thị vô hướng liên thông", "Đồ thị có hướng bất kỳ", "Đồ thị có trọng số âm"],
+      "correctIndex": 0,
+      "explanation": "Chỉ đồ thị có hướng không chứa chu trình mới có thứ tự tô-pô; chu trình tạo quan hệ trước sau mâu thuẫn."
+    },
+    {
+      "questionText": "Trong thứ tự tô-pô của DAG có cạnh u → v, vị trí của u và v phải thỏa mãn điều gì?",
+      "options": ["u đứng trước v", "v đứng trước u", "u và v đứng cạnh nhau", "Thứ tự tùy ý"],
+      "correctIndex": 0,
+      "explanation": "Định nghĩa thứ tự tô-pô: với mỗi cạnh u → v, đỉnh u phải xuất hiện trước đỉnh v."
+    },
+    {
+      "questionText": "Thuật toán Kahn khởi động bằng cách đưa những đỉnh nào vào hàng đợi?",
+      "options": ["Đỉnh có indegree bằng 0", "Đỉnh có outdegree bằng 0", "Đỉnh có bậc lớn nhất", "Đỉnh xuất phát bất kỳ"],
+      "correctIndex": 0,
+      "explanation": "Đỉnh indegree 0 không có tiền đề nào nên chắc chắn đứng đầu thứ tự, là điểm khởi đầu của Kahn."
+    },
+    {
+      "questionText": "Một DAG có bao nhiêu thứ tự tô-pô hợp lệ?",
+      "options": ["Đúng một thứ tự duy nhất", "Có thể có nhiều thứ tự khác nhau", "Luôn là 2 thứ tự", "Không xác định được"],
+      "correctIndex": 1,
+      "explanation": "Thứ tự tô-pô không duy nhất: khi có nhiều đỉnh indegree 0, ta có thể chọn xử lý đỉnh nào trước tùy ý."
+    },
+    {
+      "questionText": "Indegree của một đỉnh trong đồ thị có hướng là gì?",
+      "options": ["Số cạnh đi ra từ đỉnh đó", "Số cạnh đi vào đỉnh đó", "Tổng số cạnh nối với đỉnh đó", "Số đỉnh kề với nó"],
+      "correctIndex": 1,
+      "explanation": "Indegree đếm số cạnh hướng vào đỉnh; outdegree đếm số cạnh hướng ra."
+    },
+    {
+      "questionText": "Trong Kahn, khi xử lý đỉnh u, vì sao phải giảm indegree của mọi đỉnh kề v?",
+      "options": ["Vì cạnh u → v đã được thỏa mãn", "Để tăng tốc thuật toán", "Để xóa v khỏi đồ thị", "Vì v đã được xử lý rồi"],
+      "correctIndex": 0,
+      "explanation": "u đã đứng trước v trong thứ tự nên yêu cầu của cạnh u → v không còn nữa; v chỉ vào hàng đợi khi mọi tiền đề đều xong."
+    },
+    {
+      "questionText": "Ứng dụng kinh điển nào sau đây dùng topological sort?",
+      "options": ["Sắp lịch học khi môn này cần môn kia", "Tìm đường đi ngắn nhất trên bản đồ", "Sắp xếp mảng số tăng dần", "Kiểm tra chuỗi đối xứng"],
+      "correctIndex": 0,
+      "explanation": "Bài toán course schedule và hệ thống build phụ thuộc (npm, make) đều cần sắp thứ tự công việc theo quan hệ phụ thuộc."
+    },
+    {
+      "questionText": "Cho DAG có cạnh A → B, A → C, B → D, C → D. Thứ tự nào sau đây KHÔNG hợp lệ?",
+      "options": ["A B C D", "A C B D", "B A C D", "A B D C"],
+      "correctIndex": 3,
+      "explanation": "Cạnh C → D buộc C đứng trước D, nhưng thứ tự A B D C để D đứng trước C nên vi phạm."
+    },
+    {
+      "questionText": "Đồ thị có 6 đỉnh; sau khi Kahn kết thúc, thứ tự chỉ chứa 5 đỉnh. Kết luận đúng là gì?",
+      "options": ["Đồ thị có chu trình nên không tồn tại thứ tự tô-pô đầy đủ", "Đồ thị hợp lệ và thiếu đỉnh cô lập", "Cần chạy lại thuật toán với hàng đợi khác", "Indegree ban đầu tính sai"],
+      "correctIndex": 0,
+      "explanation": "Nếu số đỉnh xử lý nhỏ hơn V, các đỉnh còn lại nằm trong chu trình nên indegree của chúng không bao giờ về 0."
+    },
+    {
+      "questionText": "Với DAG có cạnh A → B và B → C, DFS postorder đẩy kết quả theo thứ tự C, B, A. Thứ tự tô-pô chính thức là gì?",
+      "options": ["A B C", "C B A", "B C A", "C A B"],
+      "correctIndex": 0,
+      "explanation": "Kỹ thuật DFS topo ghi đỉnh sau khi hoàn thành nhánh rồi đảo ngược mảng, nên C, B, A trở thành A, B, C."
+    }
+  ]
+}

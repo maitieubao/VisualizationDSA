@@ -97,3 +97,26 @@ Trong C# (.NET) hay Java, phương thức `Array.Sort()` bên dưới vỏ bọc
 - Nếu mảng đã sắp xếp gần xong, thuật toán này chạy cực kỳ nhanh (O(N)).
 - Thường được các ngôn ngữ lập trình dùng để kết liễu các mảng con nhỏ trong thuật toán lai (TimSort, IntroSort).
 :::
+
+## Next Steps {#next-steps}
+
+Đừng chỉ đọc lý thuyết! Hãy truy cập bảng điều khiển tương tác (Sandbox) bên phải màn hình. Bấm nút Play và quan sát từng lượt rút lá bài, dồn các phần tử sang phải rồi chèn `key` vào đúng vị trí để thực sự củng cố kiến thức này.
+
+Sau khi đã nắm vững Insertion Sort, chúng ta sẽ so sánh nó với một thuật toán cùng nhóm sắp xếp so sánh cơ bản: **Sắp xếp Nổi bọt (Bubble Sort)**.
+
+<div class="vt-box-container next-steps">
+  <a class="vt-box" href="/docs/sorting/bubble-sort">
+    <p class="next-steps-link">Sắp xếp Nổi bọt (Bubble Sort)</p>
+    <p class="next-steps-caption">So sánh từng cặp liền kề và liên tục đẩy phần tử lớn nhất về cuối mảng.</p>
+  </a>
+</div>
+
+## 📚 Tham khảo lý thuyết
+
+Các nguồn lý thuyết uy tín dưới đây được sử dụng để biên soạn bài viết, gắn với từng khái niệm chính:
+
+- **CLRS — Introduction to Algorithms (Cormen, Leiserson, Rivest, Stein), Chương 2:** Nguồn kinh điển cho toàn bộ ý tưởng Insertion Sort, chứng minh tính đúng đắn bằng bất biến vòng lặp (loop invariant), cùng phân tích độ phức tạp thời gian tốt nhất O(N) và trung bình / xấu nhất O(N²).
+- **Dasgupta, Papadimitriou, Vazirani — Algorithms, Mục 2.1:** Trình bày trực quan về Insertion Sort và giải thích vì sao thuật toán sắp xếp tại chỗ (in-place) chỉ tốn O(1) bộ nhớ phụ.
+- **Wikipedia — Insertion sort:** Tổng hợp các đặc tính của thuật toán như tính ổn định (stable), khả năng thích nghi tốt với dữ liệu gần như đã sắp xếp, và sự so sánh với Quick Sort / Merge Sort trên các mảng kích thước nhỏ.
+- **Microsoft Learn — Array.Sort Method (.NET):** Tài liệu chính thức của .NET giải thích phương thức `Array.Sort()` sử dụng thuật toán lai Introsort, kết hợp Quick Sort với Insertion Sort cho các mảng con nhỏ.
+- **GeeksforGeeks — Insertion Sort:** Tài liệu tham khảo bổ sung về cài đặt chuẩn (dịch các phần tử lớn hơn `key` bằng vòng lặp `while`) và bảng tổng hợp độ phức tạp của thuật toán.

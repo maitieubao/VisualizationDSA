@@ -1,0 +1,108 @@
+{
+  "quizTitle": "Trắc nghiệm Đường đi ngắn nhất",
+  "topic": "graph",
+  "difficulty": 2,
+  "xpReward": 40,
+  "questions": [
+    {
+      "questionText": "BFS có thể tìm đường đi ngắn nhất chính xác trong trường hợp nào?",
+      "options": [
+        "Đồ thị không trọng số (mọi cạnh nặng 1)",
+        "Đồ thị có trọng số dương bất kỳ",
+        "Đồ thị có cạnh âm",
+        "Đồ thị có chu trình âm"
+      ],
+      "correctIndex": 0,
+      "explanation": "BFS ngầm coi mọi cạnh nặng 1 nên chỉ đúng khi các cạnh bằng nhau; hàng đợi FIFO bảo đảm đỉnh gần nhất được thăm trước, tìm được đường ít cạnh nhất."
+    },
+    {
+      "questionText": "Cấu trúc dữ liệu nào giúp Dijkstra luôn chọn được đỉnh gần nhất ở mỗi bước?",
+      "options": [
+        "Hàng đợi FIFO",
+        "Ngăn xếp",
+        "Min-heap (hàng đợi ưu tiên)",
+        "Bảng băm"
+      ],
+      "correctIndex": 2,
+      "explanation": "Min-heap trả về phần tử nhỏ nhất trong O(log V), giúp Dijkstra chốt đỉnh có dist nhỏ nhất ở mỗi vòng lặp."
+    },
+    {
+      "questionText": "Phép nới lỏng cạnh (relaxation) trong Dijkstra nghĩa là gì?",
+      "options": [
+        "Xóa cạnh có trọng số lớn nhất",
+        "Cập nhật dist[v] nếu dist[u] + w(u,v) nhỏ hơn giá trị đang có",
+        "Đổi hướng cạnh ngược lại",
+        "Cộng thêm trọng số vào mọi đỉnh"
+      ],
+      "correctIndex": 1,
+      "explanation": "Relaxation so sánh đường mới qua u với kỷ lục cũ của v; nếu ngắn hơn thì ghi đè dist[v], đây là linh hồn của thuật toán."
+    },
+    {
+      "questionText": "Điểm mạnh riêng của Bellman-Ford so với Dijkstra là gì?",
+      "options": [
+        "Chạy nhanh hơn trên đồ thị lớn",
+        "Chấp nhận cạnh trọng số âm và phát hiện chu trình âm",
+        "Không cần khởi tạo mảng dist",
+        "Chỉ làm việc với đồ thị vô hướng"
+      ],
+      "correctIndex": 1,
+      "explanation": "Bellman-Ford nới lỏng toàn bộ E cạnh trong V-1 vòng nên vẫn đúng với cạnh âm; vòng thứ V dùng để phát hiện chu trình âm."
+    },
+    {
+      "questionText": "Vì sao Dijkstra cho kết quả sai khi đồ thị có cạnh âm?",
+      "options": [
+        "Vì heap không sắp xếp được số âm",
+        "Vì nó chốt đỉnh là tối ưu ngay khi rút khỏi heap, trong khi cạnh âm có thể rút ngắn đường sau đó",
+        "Vì phép nới lỏng chỉ cộng không trừ",
+        "Vì cần duyệt mảng thay vì heap"
+      ],
+      "correctIndex": 1,
+      "explanation": "Dijkstra tham lam chốt đỉnh khi rút khỏi heap và tin không còn đường ngắn hơn; cạnh âm xuất hiện sau có thể hạ dist của đỉnh đã chốt nên đáp án sai."
+    },
+    {
+      "questionText": "Bellman-Ford phát hiện negative cycle (chu trình âm) bằng cách nào?",
+      "options": [
+        "So sánh số đỉnh trong chu trình",
+        "Chạy thêm vòng lặp thứ V: nếu còn cạnh nới lỏng được thì có chu trình âm",
+        "Đếm số lần cập nhật dist của mỗi đỉnh",
+        "Dùng BFS dự phòng"
+      ],
+      "correctIndex": 1,
+      "explanation": "Sau V-1 vòng, mọi đường đi đơn giản đã tối ưu; nếu vòng thứ V vẫn nới lỏng được tức tồn tại chu trình khiến dist giảm vô hạn."
+    },
+    {
+      "questionText": "Floyd-Warshall khác Dijkstra ở điểm cốt lõi nào?",
+      "options": [
+        "Chỉ chạy trên đồ thị không có cạnh",
+        "Trả về khoảng cách ngắn nhất giữa MỌI cặp đỉnh bằng quy hoạch động",
+        "Không cần lưu trọng số",
+        "Chạy nhanh hơn O(V²) cho đồ thị dày"
+      ],
+      "correctIndex": 1,
+      "explanation": "Floyd dùng ba vòng lặp với đỉnh trung gian k để cập nhật dist[i][j] cho mọi cặp (i,j), nên trả về all-pairs trong O(V³)."
+    },
+    {
+      "questionText": "Đồ thị có các cạnh A-B = 4, A-C = 2, C-E = 3, E-D = 4, B-D = 10. Chạy Dijkstra từ A, khoảng cách ngắn nhất tới D là bao nhiêu?",
+      "options": ["10", "14", "9", "12"],
+      "correctIndex": 2,
+      "explanation": "A→C = 2, C→E = 5, E→D = 9; đường A→B→D = 14 dài hơn nên dist[D] = 9 sau khi nới lỏng qua E."
+    },
+    {
+      "questionText": "Đồ thị có cạnh âm nhưng không có chu trình âm. Thuật toán nào sau đây vẫn cho kết quả chính xác?",
+      "options": ["BFS", "Dijkstra", "Bellman-Ford", "Cả BFS và Dijkstra"],
+      "correctIndex": 2,
+      "explanation": "BFS coi mọi cạnh nặng 1, Dijkstra sai với cạnh âm; chỉ Bellman-Ford chấp nhận cạnh âm miễn không có chu trình âm."
+    },
+    {
+      "questionText": "Đồ thị tồn tại chu trình âm. Bellman-Ford sẽ phản hồi như thế nào?",
+      "options": [
+        "Vẫn trả về đáp án đúng như Dijkstra",
+        "Báo tồn tại chu trình âm và kết luận không có đường đi ngắn nhất hữu hạn",
+        "Tự động loại bỏ cạnh âm rồi chạy tiếp",
+        "Chuyển sang dùng Floyd-Warshall"
+      ],
+      "correctIndex": 1,
+      "explanation": "Khi còn cạnh nới lỏng được ở vòng thứ V, chu trình âm làm khoảng cách giảm vô hạn nên đáp án không xác định; thuật toán chỉ phát hiện và báo lỗi."
+    }
+  ]
+}

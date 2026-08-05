@@ -67,3 +67,15 @@ Bây giờ, chúng ta sẽ chuyển sang một nhóm thuật toán có tính ứ
     <p class="next-steps-caption">Cách đơn giản nhất để tìm kim trong đáy bể.</p>
   </a>
 </div>
+
+## 📚 Tham khảo lý thuyết {#references}
+
+Dưới đây là các nguồn tài liệu kinh điển và chính thống được dùng để biên soạn bài viết này, giúp bạn tự nghiên cứu sâu hơn nếu muốn:
+
+- **Bảng tổng hợp độ phức tạp, tính ổn định (stable) và tính in-place của từng thuật toán:** Cormen, Leiserson, Rivest & Stein, *Introduction to Algorithms* (CLRS), 3rd Edition (MIT Press) - Chương 6, 7, 8 về Heap Sort, Quick Sort và các thuật toán sắp xếp tuyến tính (Counting Sort, Radix Sort, Bucket Sort). Đây là nguồn gốc của toàn bộ các ký hiệu Big O trong bảng so sánh.
+- **Độ phức tạp trường hợp tốt nhất O(N) của Bubble Sort nhờ cờ dừng sớm:** [Bubble sort - Wikipedia](https://en.wikipedia.org/wiki/Bubble_sort). Mô tả thuật toán cùng bảng độ phức tạp và tính ổn định.
+- **Quick Sort O(N log N) trung bình, O(N²) trường hợp xấu và vai trò chọn pivot:** [Quicksort - Wikipedia](https://en.wikipedia.org/wiki/Quicksort).
+- **Merge Sort, Heap Sort với độ phức tạp O(N log N) tuyệt đối, không gian phụ trợ và tính ổn định:** [Merge sort - Wikipedia](https://en.wikipedia.org/wiki/Merge_sort) và [Heapsort - Wikipedia](https://en.wikipedia.org/wiki/Heapsort).
+- **Counting Sort, Radix Sort, Bucket Sort — họ sắp xếp không dựa trên so sánh, đạt O(N) khi giá trị có phạm vi nhỏ:** [Counting sort - Wikipedia](https://en.wikipedia.org/wiki/Counting_sort), [Radix sort - Wikipedia](https://en.wikipedia.org/wiki/Radix_sort) và [Bucket sort - Wikipedia](https://en.wikipedia.org/wiki/Bucket_sort).
+- **C# dùng thuật toán lai IntroSort (Quick Sort + Heap Sort + Insertion Sort) cho `Array.Sort()`:** Microsoft Learn - [Array.Sort Method (.NET)](https://learn.microsoft.com/en-us/dotnet/api/system.array.sort). Tài liệu chính thức giải thích chiến lược lai giúp tránh trường hợp xấu O(N²).
+- **Hành vi của `OrderBy()` trong LINQ và so sánh với `Array.Sort()`:** Microsoft Learn - [Enumerable.OrderBy Method (.NET)](https://learn.microsoft.com/en-us/dotnet/api/system.linq.enumerable.orderby).

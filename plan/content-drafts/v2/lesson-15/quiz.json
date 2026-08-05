@@ -1,0 +1,98 @@
+{
+  "quizTitle": "Trắc nghiệm Kadane",
+  "topic": "dsa",
+  "difficulty": 1,
+  "xpReward": 40,
+  "questions": [
+    {
+      "questionText": "Bài toán Maximum Subarray yêu cầu tìm gì trong một mảng số?",
+      "options": [
+        "Một dãy các phần tử bất kỳ có tổng lớn nhất",
+        "Một dãy con liên tiếp có tổng lớn nhất",
+        "Phần tử có giá trị lớn nhất trong mảng",
+        "Cặp phần tử có tổng lớn nhất"
+      ],
+      "correctIndex": 1,
+      "explanation": "Mảng con phải gồm các phần tử đứng cạnh nhau trong mảng gốc và tổng của nó phải lớn nhất."
+    },
+    {
+      "questionText": "Công thức cốt lõi của thuật toán Kadane khi xét phần tử arr[i] là gì?",
+      "options": [
+        "current = max(arr[i], current + arr[i])",
+        "current = current + arr[i]",
+        "best = best + arr[i]",
+        "current = max(best, current + arr[i])"
+      ],
+      "correctIndex": 0,
+      "explanation": "Tại mỗi vị trí ta chọn giữa việc bắt đầu mảng con mới từ arr[i] hoặc nối vào mảng con đang dở, rồi lấy giá trị tốt hơn."
+    },
+    {
+      "questionText": "Độ phức tạp thời gian và bộ nhớ của thuật toán Kadane là gì?",
+      "options": [
+        "O(N²) và O(N)",
+        "O(N log N) và O(N)",
+        "O(N) và O(1)",
+        "O(N) và O(N)"
+      ],
+      "correctIndex": 2,
+      "explanation": "Kadane duyệt mảng đúng một lần và chỉ giữ hai biến current cùng best nên tốn O(N) thời gian và O(1) bộ nhớ."
+    },
+    {
+      "questionText": "Ý nghĩa của biến current trong thuật toán Kadane là gì?",
+      "options": [
+        "Tổng tốt nhất của mảng con kết thúc tại vị trí đang xét",
+        "Tổng của toàn bộ mảng",
+        "Giá trị nhỏ nhất từng gặp",
+        "Vị trí bắt đầu của mảng con tối ưu"
+      ],
+      "correctIndex": 0,
+      "explanation": "current mang tính quy hoạch động: nó là tổng lớn nhất của mọi mảng con có phần tử cuối trùng với vị trí hiện tại."
+    },
+    {
+      "questionText": "Với mảng [-3, -1, -2] toàn số âm, Kadane trả về kết quả nào?",
+      "options": ["0", "-1", "-3", "-6"],
+      "correctIndex": 1,
+      "explanation": "Khởi tạo current = best = -3; tại i = 1: current = max(-1, -3 - 1) = -1, best = -1; i = 2 giữ nguyên, kết quả là -1 — mảng con chỉ gồm phần tử -1."
+    },
+    {
+      "questionText": "Khi current đang âm trước khi xét phần tử mới arr[i], điều gì là đúng?",
+      "options": [
+        "Luôn tiếp tục cộng dồn để tận dụng dữ liệu",
+        "Bắt đầu lại từ arr[i] vì nối thêm số âm chỉ làm giảm tổng",
+        "Reset current về 0 rồi mới cộng arr[i]",
+        "Bỏ qua arr[i] mà không cập nhật biến nào"
+      ],
+      "correctIndex": 1,
+      "explanation": "Một tổng âm không bao giờ có ích cho các phần tử phía sau, nên max(arr[i], current + arr[i]) sẽ tự động khởi động lại từ arr[i]."
+    },
+    {
+      "questionText": "Với mảng [5, -4, 3], best cuối cùng của Kadane là bao nhiêu?",
+      "options": ["5", "4", "3", "8"],
+      "correctIndex": 0,
+      "explanation": "i = 0: current = 5, best = 5; i = 1: current = max(-4, 1) = 1, best vẫn 5; i = 2: current = max(3, 4) = 4, best vẫn là 5."
+    },
+    {
+      "questionText": "Mô phỏng Kadane với mảng [-2, 1, -3, 4, -1, 2, 1, -5, 4]: best cuối cùng là bao nhiêu?",
+      "options": ["4", "5", "6", "7"],
+      "correctIndex": 2,
+      "explanation": "Mảng con tối ưu là [4, -1, 2, 1] có tổng 6; Kadane đạt best = 6 tại i = 6 và giữ nguyên tới cuối dù current có giảm."
+    },
+    {
+      "questionText": "Tại sao khi gặp số -5 tại i = 7 trong mảng ví dụ trên, kết quả best không bị giảm xuống?",
+      "options": [
+        "Vì best đã được lưu từ các bước trước nên không bị ghi đè",
+        "Vì số âm được cộng vào current nên best cũng giảm theo",
+        "Vì thuật toán quay lại chạy từ đầu khi gặp số âm",
+        "Vì -5 không được xét trong vòng lặp"
+      ],
+      "correctIndex": 0,
+      "explanation": "current giảm xuống 1 nhưng best chỉ cập nhật khi lớn hơn; giá trị best = 6 đã được lưu từ bước trước nên kết quả không thay đổi."
+    },
+    {
+      "questionText": "Biến thể maximum circular subarray với mảng [5, -3, 5] có đáp án là bao nhiêu?",
+      "options": ["7", "10", "5", "15"],
+      "correctIndex": 1,
+      "explanation": "Tổng mảng total = 7, mảng con tuyến tính tốt nhất = 7, minSubarray = -3; đáp án = max(7, 7 - (-3)) = 10, tương ứng mảng con vòng [5, 5]."
+    }
+  ]
+}

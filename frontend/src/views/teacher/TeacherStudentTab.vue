@@ -37,7 +37,7 @@
               </td>
               <td class="font-bold text-accent">Cấp {{ student.currentLevel ?? 1 }}</td>
               <td class="font-mono text-accent-yellow font-bold">+{{ student.totalXP ?? 0 }} XP</td>
-              <td class="font-mono text-accent-purple">{{ student.streakDays ?? 0 }} ngày 🔥</td>
+              <td class="font-mono text-accent-purple">{{ student.streakDays ?? 0 }} ngày <BaseIcon name="fire" class="w-3 h-3 inline align-middle" /></td>
               <td class="text-text-muted text-xs">{{ formatDate(student.createdAt) }}</td>
               <td>
                 <div class="flex justify-center">

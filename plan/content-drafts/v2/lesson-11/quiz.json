@@ -1,0 +1,68 @@
+{
+  "quizTitle": "Trắc nghiệm Two Pointers",
+  "topic": "searching",
+  "difficulty": 1,
+  "xpReward": 40,
+  "questions": [
+    {
+      "questionText": "Trong kỹ thuật Two Pointers, con trỏ thực chất là gì?",
+      "options": ["Con trỏ bộ nhớ kiểu C/C++", "Hai biến số nguyên lưu chỉ số (index) của mảng", "Hai hàm đệ quy gọi lồng nhau", "Hai mảng phụ chứa kết quả trung gian"],
+      "correctIndex": 1,
+      "explanation": "Con trỏ chỉ là hai biến int lưu vị trí phần tử trong mảng, không phải con trỏ bộ nhớ."
+    },
+    {
+      "questionText": "Biến thể ngược chiều (opposite direction) thường được áp dụng khi nào?",
+      "options": ["Khi mảng chưa được sắp xếp", "Khi mảng đã được sắp xếp tăng hoặc giảm dần", "Khi mảng chỉ có một phần tử", "Khi cần sử dụng thêm cấu trúc ngăn xếp"],
+      "correctIndex": 1,
+      "explanation": "Con trỏ ngược chiều dựa vào tính thứ tự của mảng để quyết định dịch left hay right, nên yêu cầu mảng đã sắp xếp."
+    },
+    {
+      "questionText": "Trong bài pair sum trên mảng tăng dần, nếu sum < target thì ta nên làm gì?",
+      "options": ["Giảm right để tổng nhỏ lại", "Dừng thuật toán ngay lập tức", "Tăng left để tổng lớn hơn", "Không đổi gì, tiếp tục vòng lặp"],
+      "correctIndex": 2,
+      "explanation": "Mảng tăng dần nên cách duy nhất để tăng tổng là dịch left sang phải, loại bỏ số nhỏ nhất hiện tại."
+    },
+    {
+      "questionText": "Biến thể fast & slow thường được dùng để giải quyết nhóm bài toán nào?",
+      "options": ["Tìm kiếm nhị phân trên mảng đã sắp xếp", "Xóa phần tử trùng lặp tại chỗ, di chuyển phần tử trong mảng", "Sắp xếp mảng theo chiều giảm dần", "Tính tổng tất cả phần tử của mảng"],
+      "correctIndex": 1,
+      "explanation": "Fast dò tìm phần tử mới, slow chốt vị trí ghi đè để xử lý trực tiếp trên mảng cũ mà không tốn thêm bộ nhớ."
+    },
+    {
+      "questionText": "Cho nums = [1, 1, 2, 3, 3]. Độ dài mảng hợp lệ sau khi xóa phần tử trùng bằng fast & slow là bao nhiêu?",
+      "options": ["2", "3", "4", "5"],
+      "correctIndex": 1,
+      "explanation": "Mảng hợp lệ là [1, 2, 3], độ dài bằng slow + 1 = 3."
+    },
+    {
+      "questionText": "Khi kiểm tra palindrome bằng hai con trỏ, vòng lặp nên dừng khi nào?",
+      "options": ["Khi left > right", "Khi left == right", "Khi left >= right", "Khi right bằng 0"],
+      "correctIndex": 2,
+      "explanation": "Khi hai con trỏ gặp nhau hoặc vượt qua nhau thì mọi cặp đối xứng đã được kiểm tra, nên dừng tại left >= right."
+    },
+    {
+      "questionText": "Độ phức tạp thời gian của thuật toán 3Sum dùng một vòng for kết hợp hai con trỏ là bao nhiêu?",
+      "options": ["O(N)", "O(N log N)", "O(N²)", "O(N³)"],
+      "correctIndex": 2,
+      "explanation": "Vòng for chọn phần tử đầu chạy N lần, bên trong hai con trỏ quét phần còn lại mất O(N), tổng là O(N²)."
+    },
+    {
+      "questionText": "Cho numbers = [11, 23, 29, 37, 41, 58, 62, 70] và target = 66. Kết quả cặp chỉ số trả về là gì?",
+      "options": ["[1, 3]", "[2, 4]", "[0, 5]", "[3, 6]"],
+      "correctIndex": 1,
+      "explanation": "Mô phỏng: 11+70=81 → right--, 11+62=73 → right--, 11+58=69 → right--, 11+41=52 → left++, 23+41=64 → left++, 29+41=70 → right--, 29+37=66 → trả về [2, 4]."
+    },
+    {
+      "questionText": "Cho mảng chiều cao [1, 8, 6, 2, 5, 4, 8, 3, 7]. Diện tích nước lớn nhất hai vạch chứa được là bao nhiêu?",
+      "options": ["42", "49", "56", "64"],
+      "correctIndex": 1,
+      "explanation": "Cặp tối ưu là vạch 8 (index 1) và vạch 7 (index 8): chiều cao giới hạn 7, khoảng cách 7, diện tích 7 × 7 = 49."
+    },
+    {
+      "questionText": "Trong bài pair sum, vì sao vòng lặp dùng điều kiện while (left < right) mà không phải left <= right?",
+      "options": ["Vì left không bao giờ nhỏ hơn right", "Vì left == right nghĩa là cộng một phần tử với chính nó, không phải hai số phân biệt", "Vì mảng có chỉ số bắt đầu từ 1", "Vì cần chừa lại phần tử giữa cho lần lặp sau"],
+      "correctIndex": 1,
+      "explanation": "Điều kiện left < right bảo đảm hai con trỏ trỏ vào hai phần tử khác nhau, tránh dùng lặp một phần tử duy nhất."
+    }
+  ]
+}

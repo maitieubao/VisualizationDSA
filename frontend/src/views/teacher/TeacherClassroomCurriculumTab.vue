@@ -39,7 +39,7 @@
 
     
     <div v-else-if="!curriculum || curriculum.modules.length === 0" class="empty-state">
-      <div class="text-5xl mb-4">📚</div>
+      <div class="text-5xl mb-4"><BaseIcon name="book-open" class="w-12 h-12 text-text-muted mx-auto" /></div>
       <h3 class="text-xl font-bold text-white">Chưa có Module nào</h3>
       <p class="text-text-muted mt-2 max-w-md">
         Tạo Module đầu tiên hoặc Import từ Khóa học có sẵn để bắt đầu xây dựng chương trình học.

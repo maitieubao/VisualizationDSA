@@ -44,6 +44,7 @@
 import { computed, type Component } from 'vue';
 import { useAnimationStore } from '../../animation-engine/store/useAnimationStore';
 import { useAlgorithmStore } from '../store/useAlgorithmStore';
+import type { FrameDTO } from '../types/algorithm.types';
 import BarChartRenderer from './renderers/BarChartRenderer.vue';
 import BoxArrayRenderer from './renderers/BoxArrayRenderer.vue';
 import TreeRenderer from './renderers/TreeRenderer.vue';
@@ -53,13 +54,20 @@ import GraphRenderer from './renderers/GraphRenderer.vue';
 const animStore = useAnimationStore();
 const algoStore = useAlgorithmStore();
 
-const currentFrame = computed(() => animStore.currentFrame);
+// Store dùng FrameDTO thu gọn (animation-engine); frame thực tế từ DSA module
+// chứa thêm graphNodes/treeNodes/distances — ép kiểu an toàn để đọc theo hợp đồng DTO
+const currentFrame = computed<FrameDTO | null>(() => animStore.currentFrame as unknown as FrameDTO | null);
 const totalSteps = computed(() => animStore.totalSteps);
 const progressPercent = computed(() => animStore.progressPercent);
 
 const activeRenderer = computed<Component>(() => {
+  // Ưu tiên theo dữ liệu frame thực tế: backend trả đồ thị (graphNodes),
+  // generator nội bộ trả cây (treeNodes) — renderer phải bám dữ liệu, không bám tên loại
+  const frame = currentFrame.value;
+  if (frame?.graphNodes?.length) return GraphRenderer;
+  if (frame?.treeNodes?.length) return TreeRenderer;
+
   const category = algoStore.currentAlgorithm?.category?.toLowerCase();
-  const algoId = algoStore.currentAlgorithm?.id;
 
   switch (category) {
     case 'sorting':

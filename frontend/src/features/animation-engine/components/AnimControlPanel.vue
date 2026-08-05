@@ -32,7 +32,7 @@
 
       
       <div class="speed-controls-right">
-        <select v-model.number="playbackSpeedModel" class="speed-select-dropdown" :disabled="store.interactionLocked">
+        <select v-model.number="playbackSpeedModel" class="speed-select-dropdown" :disabled="store.interactionLocked" aria-label="Tốc độ phát">
           <option v-for="speed in SPEED_PRESETS" :key="speed" :value="speed">
             {{ speed }}x{{ speed === 1.0 ? ' (Mặc định)' : '' }}
           </option>
@@ -49,7 +49,7 @@
         'state-dot--paused':   store.playbackState === 'PAUSED',
         'state-dot--finished': store.playbackState === 'FINISHED',
       }" />
-      <span class="state-label">{{ store.playbackState }}</span>
+      <span class="state-label">{{ playbackStateLabel }}</span>
     </div>
   </div>
 </template>
@@ -73,6 +73,17 @@ const { registerHotkeys } = usePlaybackHotkeys();
 const timelineRef  = ref<InstanceType<typeof AnimTimelineSlider> | null>(null);
 const isFirstFrame = computed(() => store.currentIndex === 0);
 const isLastFrame  = computed(() => store.isFinished);
+
+const playbackStateLabel = computed(() => {
+  const labels: Record<string, string> = {
+    UNINITIALIZED: 'Chưa khởi tạo',
+    LOADED: 'Sẵn sàng',
+    PLAYING: 'Đang phát',
+    PAUSED: 'Tạm dừng',
+    FINISHED: 'Hoàn tất',
+  };
+  return labels[store.playbackState] ?? store.playbackState;
+});
 
 const playbackSpeedModel = computed({
   get: () => store.playbackSpeed,

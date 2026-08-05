@@ -13,7 +13,7 @@
       class="px-8 py-3 rounded-[var(--radius-lg)] bg-gradient-to-r from-accent-cyan to-accent-purple hover:from-accent-cyan hover:to-accent-purple text-text-primary font-semibold transition-all hover:scale-[1.02] shadow-[0_0_20px_rgba(6,182,212,0.3)] disabled:opacity-50 disabled:pointer-events-none active:scale-[0.98]"
     >
       <span v-if="isLoading" class="flex items-center justify-center gap-2">
-        <span class="spinner"></span> Đang tạo hóa đơn...
+        <BaseIcon name="spinner" class="w-4 h-4 animate-spin" /> Đang tạo hóa đơn...
       </span>
       <span v-else>Bắt đầu Thanh toán (VietQR)</span>
     </button>
@@ -28,8 +28,3 @@
 defineProps<{ isLoading: boolean; error: string | null }>();
 defineEmits<{ start: [] }>();
 </script>
-
-<style scoped>
-.spinner { display: inline-block; width: 1rem; height: 1rem; border: 2px solid rgba(255,255,255,0.3); border-radius: 50%; border-top-color: #fff; animation: spin 0.8s linear infinite; }
-@keyframes spin { to { transform: rotate(360deg); } }
-</style>

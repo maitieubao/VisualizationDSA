@@ -233,3 +233,35 @@ Ngày mai, nếu giỏ hàng lên tới 1 triệu món, hàm `Sum()` của LINQ 
 - Tối ưu mã nguồn với Auto-properties (`{ get; set; }`).
 - Cập nhật chuẩn hiện đại của C#: Dùng **`init`** thay cho `set` đối với các thuộc tính định danh để tạo ra Đối tượng Bất biến (Immutable Objects). An toàn tuyệt đối trong Đa luồng.
 :::
+
+## Next Steps {#next-steps}
+
+Bạn vừa trang bị xong lớp khiên bảo vệ dữ liệu đầu tiên! Nhưng Đóng gói chỉ mới là trụ cột khởi đầu. Hãy tiếp tục chinh phục các trụ cột còn lại của OOP để xây dựng những hệ thống thực chiến vững chắc:
+
+<div class="vt-box-container next-steps">
+  <a class="vt-box" href="/docs/oop/inheritance">
+    <p class="next-steps-link">Tính Kế thừa (Inheritance)</p>
+    <p class="next-steps-caption">Tái sử dụng dữ liệu và hành vi từ Class cha, đồng thời cảnh giác với cái bẫy Fragile Base Class.</p>
+  </a>
+  <a class="vt-box" href="/docs/oop/polymorphism">
+    <p class="next-steps-link">Tính Đa hình (Polymorphism)</p>
+    <p class="next-steps-caption">Một giao diện, vô số cách triển khai — sức mạnh khiến OOP trở nên mềm dẻo và dễ mở rộng.</p>
+  </a>
+  <a class="vt-box" href="/docs/oop/abstraction">
+    <p class="next-steps-link">Tính Trừu tượng (Abstraction)</p>
+    <p class="next-steps-caption">Che giấu độ phức tạp bên trong, chỉ phơi bày những gì thế giới bên ngoài thực sự cần.</p>
+  </a>
+</div>
+
+## 📚 Tham khảo lý thuyết {#references}
+
+Nguồn lý thuyết chính dùng để biên soạn bài viết này:
+
+- **Robert C. Martin – *Clean Code* (Prentice Hall):** Chương về *Data/Object Anti-Symmetry* cảnh báo sự nguy hiểm của việc để dữ liệu "trần truồng" và thúc đẩy che giấu dữ liệu — nền tảng trực tiếp cho Mục 2 (Naked Data).
+- **Robert C. Martin – *Clean Architecture* (Prentice Hall):** Triết lý rằng chi tiết triển khai phải được đóng gói và các phụ thuộc hướng vào trong, liên hệ với Mục 6 (Information Hiding).
+- **Brett D. McLaughlin, Gary Pollice, David West – *Head First Object-Oriented Analysis and Design* (O'Reilly):** Giải thích trực quan về Encapsulation và mối quan hệ giữa dữ liệu với hành vi trong thiết kế hướng đối tượng.
+- **Microsoft Learn – [Properties (C# Programming Guide)](https://learn.microsoft.com/en-us/dotnet/csharp/programming-guide/classes-and-structs/properties):** Tài liệu chính thức về Property, Backing Field và Auto-property — nền tảng của Mục 4.
+- **Microsoft Learn – [init keyword (C# Reference)](https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/keywords/init):** Tài liệu chính thức về Init-only setters được giới thiệu trong C# 9.0 — nền tảng của Mục 5.
+- **Microsoft Learn – [Access Modifiers (C# Reference)](https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/keywords/access-modifiers):** So sánh đầy đủ `public`, `private`, `protected` và `internal`.
+- **Wikipedia – [Encapsulation (computer programming)](https://en.wikipedia.org/wiki/Encapsulation_(computer_programming)) và [Information hiding](https://en.wikipedia.org/wiki/Information_hiding):** Khái niệm tổng quan về đóng gói và che giấu thông tin trong nhiều ngôn ngữ lập trình.
+- **GeeksforGeeks – [Encapsulation in C#](https://www.geeksforgeeks.org/encapsulation-in-c-sharp/):** Tổng hợp lý thuyết và ví dụ cài đặt Encapsulation bằng C#.

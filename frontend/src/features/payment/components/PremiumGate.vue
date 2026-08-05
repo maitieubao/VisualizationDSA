@@ -2,13 +2,13 @@
   <div v-if="!hasAccess" class="premium-gate">
     <div class="premium-gate__overlay">
       <div class="premium-gate__card">
-        <span class="premium-gate__icon">👑</span>
+        <span class="premium-gate__icon"><BaseIcon name="crown" class="w-8 h-8" /></span>
         <h3 class="premium-gate__title">Nội dung Premium</h3>
         <p class="premium-gate__desc">
           {{ message || 'Tính năng này yêu cầu tài khoản Premium. Nâng cấp để mở khóa toàn bộ sức mạnh DSA!' }}
         </p>
-        <button class="premium-gate__btn" @click="goToCheckout">
-          Nâng cấp Premium — 199.000đ
+        <button type="button" class="premium-gate__btn" @click="goToCheckout">
+          Nâng cấp Premium — {{ formatPrice(paymentStore.premiumPrice) }}
         </button>
       </div>
     </div>
@@ -42,6 +42,10 @@ const hasAccess = computed(() => {
 
 function goToCheckout(): void {
   router.push('/checkout');
+}
+
+function formatPrice(price: number): string {
+  return new Intl.NumberFormat('vi-VN').format(price) + 'đ';
 }
 </script>
 

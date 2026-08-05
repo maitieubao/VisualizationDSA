@@ -18,7 +18,10 @@
   margin-bottom: 1rem;
 }
 
-.topic-tab-btn {
+.topic-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
   padding: 0.4rem 0.9rem;
   border-radius: 8px;
   border: 1px solid var(--color-border-subtle, rgba(255, 255, 255, 0.08));
@@ -30,13 +33,17 @@
   transition: all 0.2s ease;
 }
 
-.topic-tab-btn:hover {
+.topic-tab:hover {
   background: var(--color-bg-hover, rgba(255, 255, 255, 0.06));
   color: var(--color-text-heading, #ffffff);
 }
 
-.topic-tab-btn.active {
+.topic-tab--active {
   background: rgba(66, 85, 255, 0.15);
   border-color: rgba(66, 85, 255, 0.35);
   color: var(--color-accent-primary-text, #7b89f4);
 }
+
+.topic-tab__icon { font-size: 14px; }
+.topic-tab__label { font-size: 12px; }
+.topic-tab__count { font-size: 10px; opacity: 0.6; }

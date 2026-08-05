@@ -10,10 +10,11 @@ import type {
 
 
 
-export const useAnimationStore = defineStore('animation', () => {
-  
-  
-  
+// State VCR dùng chung cho nhiều store (animation, playground-animation,...).
+// Các feature cùng mount một lúc (vd GraphView: InteractivePlayground + DSAPlayer)
+// phải có instance riêng — nếu dùng chung singleton, frames/pseudoCode bị ghi đè
+// chéo giữa các màn hình.
+export function createAnimationVcrState() {
 
   const frames = shallowRef<FrameDTO[]>([]);
   const pseudoCode = ref<string[]>([]);
@@ -124,6 +125,11 @@ export const useAnimationStore = defineStore('animation', () => {
 
   function stop(): void {
     pause();
+    // Giải phóng promise playUntilFrame đang chờ — nếu không, lecture kẹt isWaitingForAnimation
+    // vĩnh viễn (nextSlide/prevSlide bị chặn).
+    if (playUntilTarget !== null) {
+      resolvePlayUntil();
+    }
     currentIndex.value = 0;
   }
 
@@ -251,4 +257,11 @@ export const useAnimationStore = defineStore('animation', () => {
     cancelPlayUntil,
     setInteractionLocked,
   };
-});
+}
+
+// Store chính (DSA module, e-lecture, lesson, quiz,...)
+export const useAnimationStore = defineStore('animation', createAnimationVcrState);
+
+// Store riêng cho InteractivePlayground — tránh ghi đè chéo với DSAPlayer
+// khi cả hai cùng mount trong GraphView (v-show)
+export const usePlaygroundAnimationStore = defineStore('playground-animation', createAnimationVcrState);

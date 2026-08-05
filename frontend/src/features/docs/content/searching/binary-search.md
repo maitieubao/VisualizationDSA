@@ -119,22 +119,22 @@ Tốc độ $K$ lớn nhất Koko cần là `Max(piles)` (Ăn phát hết nải 
 
 **Áp dụng Binary Search (Template 2):**
 1. Chọn `L = 1`, `R = Max`.
-2. Lấy `Mid = (L + R) / 2` làm tốc độ ăn thử nghiệm.
+2. Lấy `Mid = L + (R - L) / 2` (công thức chống tràn số như Mục 2) làm tốc độ ăn thử nghiệm.
 3. Viết hàm giả lập `CanFinish(mid)` để xem với tốc độ đó, Koko có ăn xong trong $H$ giờ không.
 4. Nếu Ăn xong: Tốc độ này xài được, nhưng ta muốn tìm chậm hơn nữa -> Ép `R = mid`.
 5. Nếu Không xong: Chậm quá rồi! Phải tăng tốc lên -> Ép `L = mid + 1`.
 
 ```mermaid
 flowchart TD
-    subgraph Không gian kết quả (Tốc độ K: từ 1 đến 11 quả/h)
+    subgraph KQ ["Không gian kết quả (Tốc độ K: từ 1 đến 11 quả/h)"]
         direction LR
         1 --- 2 --- 3 --- 4 --- 5 --- 6 --- 7 --- 8 --- 9 --- 10 --- 11
-        style 1 fill:#ef4444,color:#fff
-        style 2 fill:#ef4444,color:#fff
-        style 3 fill:#ef4444,color:#fff
-        style 4 fill:#10b981,color:#fff
-        style 5 fill:#10b981,color:#fff
-        style 11 fill:#10b981,color:#fff
+        style 1 fill:#b85c5c,color:#fff
+        style 2 fill:#b85c5c,color:#fff
+        style 3 fill:#b85c5c,color:#fff
+        style 4 fill:#3d9970,color:#fff
+        style 5 fill:#3d9970,color:#fff
+        style 11 fill:#3d9970,color:#fff
     end
 ```
 *(Với K = 1,2,3 là sai. K từ 4 trở lên là đúng. Ta cần tìm ranh giới chuyển tiếp này bằng Binary Search! Kết quả là K = 4).*
@@ -179,3 +179,33 @@ private bool CanFinish(int[] piles, int H, int speed)
 - Binary Search cực kỳ linh hoạt với 3 Template tùy vào yêu cầu tìm chính xác hay tìm biên (Lower/Upper Bound).
 - Hãy áp dụng linh hoạt vào **Không gian kết quả** thay vì chỉ tìm kiếm trên Mảng. Nếu bạn có thể xây dựng hàm `Điều kiện` trả về dạng mảng `[Sai, Sai, Sai, Đúng, Đúng, Đúng]`, bạn hoàn toàn có thể dùng Binary Search để tìm ra điểm ranh giới đó!
 :::
+
+## Next Steps {#next-steps}
+
+Bạn đã nắm được bộ não chia-để-trị của Binary Search rồi! Nhưng Binary Search thường chỉ mới là "bước đệm" để bạn nhận ra mảng đã được sắp xếp sẵn. Với các bài toán phức tạp hơn, bạn sẽ cần tới hai kỹ thuật quét mảng kinh điển tiếp theo, và cuối cùng là bức tranh tổng hợp toàn bộ nhóm Tìm kiếm.
+
+<div class="vt-box-container next-steps">
+  <a class="vt-box" href="/docs/searching/two-pointers">
+    <p class="next-steps-link">Kỹ thuật Hai con trỏ (Two Pointers)</p>
+    <p class="next-steps-caption">Dùng hai con trỏ quét từ hai đầu để giải bài toán trên mảng đã sắp xếp.</p>
+  </a>
+  <a class="vt-box" href="/docs/searching/sliding-window">
+    <p class="next-steps-link">Kỹ thuật Cửa sổ trượt (Sliding Window)</p>
+    <p class="next-steps-caption">Trượt một cửa sổ qua dãy con để tối ưu các bài toán tìm kiếm trên đoạn liên tiếp.</p>
+  </a>
+  <a class="vt-box" href="/docs/searching/searching-summary">
+    <p class="next-steps-link">Tổng hợp ứng dụng Tìm kiếm</p>
+    <p class="next-steps-caption">Bức tranh toàn cảnh: khi nào dùng thuật toán tìm kiếm nào.</p>
+  </a>
+</div>
+
+## 📚 Tham khảo lý thuyết {#references}
+
+Nguồn lý thuyết chính được dùng để biên soạn bài viết này:
+
+- **Cormen, Leiserson, Rivest & Stein (CLRS) – *Introduction to Algorithms*, 3rd Edition (MIT Press):** Chương 2.3 *Designing Algorithms* phân tích kỹ thuật tìm kiếm nhị phân và độ phức tạp O(log N).
+- **Wikipedia – [Binary search algorithm](https://en.wikipedia.org/wiki/Binary_search_algorithm):** Giải thích cơ chế hoạt động, phân tích độ phức tạp và các biến thể Lower Bound/Upper Bound.
+- **Joshua Bloch – *Extra, Extra – Read All About It: Nearly All Binary Searches and Mergesorts are Broken* (Google AI Blog, 2006):** Bài viết gốc công bố lỗi tràn số `(L + R) / 2` tồn tại trong thư viện chuẩn Java suốt 9 năm, khởi nguồn cho câu chuyện ở Mục 2.
+- **GeeksforGeeks – [Binary Search](https://www.geeksforgeeks.org/binary-search/):** Tổng hợp 3 mẫu cài đặt (Template) phổ biến dùng để phân tích trong Mục 3.
+- **LeetCode – [Problem 875: Koko Eating Bananas](https://leetcode.com/problems/koko-eating-bananas/):** Bài toán kinh điển minh họa kỹ thuật Tìm kiếm trên Không gian Kết quả ở Mục 4.
+- **Microsoft Learn – [Array.BinarySearch Method](https://learn.microsoft.com/en-us/dotnet/api/system.array.binarysearch):** Tài liệu chính thức của .NET về phương thức tìm kiếm nhị phân có sẵn trong BCL.

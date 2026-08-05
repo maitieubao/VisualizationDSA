@@ -1,3 +1,5 @@
+import { parseEmojiToSvg } from '../../utils/emojiParser';
+
 export function renderMarkdown(md: string): string {
   if (!md) return '';
   
@@ -37,5 +39,5 @@ export function renderMarkdown(md: string): string {
     return `<p class="text-text-secondary leading-relaxed mb-3 text-xs lg:text-sm">${paragraphLines}</p>`;
   });
   
-  return renderedBlocks.join('');
+  return parseEmojiToSvg(renderedBlocks.join(''));
 }

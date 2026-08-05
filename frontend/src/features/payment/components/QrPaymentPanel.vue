@@ -46,7 +46,7 @@
           <div class="text-[10px] text-[var(--text-muted)] uppercase mb-1 font-semibold">Nội dung chuyển khoản chính xác:</div>
           <div class="flex items-center justify-between gap-2 bg-bg-primary p-2 rounded border border-accent-yellow/30">
             <span class="font-mono text-sm font-extrabold text-[var(--color-gold)] tracking-wider">{{ order?.paymentCode }}</span>
-            <button @click="copyCode" class="text-[10px] px-2 py-1 bg-bg-surface hover:bg-bg-active rounded text-accent active:scale-95 transition">
+            <button @click="copyCode" aria-live="polite" class="text-[10px] px-2 py-1 bg-bg-surface hover:bg-bg-active rounded text-accent active:scale-95 transition">
               {{ isCopied ? 'Đã copy' : 'Copy' }}
             </button>
           </div>
@@ -90,11 +90,17 @@ const isCopied = ref(false);
 
 function copyCode() {
   if (!props.order) return;
-  navigator.clipboard.writeText(props.order.paymentCode);
-  isCopied.value = true;
-  setTimeout(() => {
-    isCopied.value = false;
-  }, 2000);
+  navigator.clipboard
+    .writeText(props.order.paymentCode)
+    .then(() => {
+      isCopied.value = true;
+      setTimeout(() => {
+        isCopied.value = false;
+      }, 2000);
+    })
+    .catch(() => {
+      isCopied.value = false;
+    });
 }
 
 function formatCurrency(val: number): string {

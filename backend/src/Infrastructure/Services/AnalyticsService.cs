@@ -51,30 +51,36 @@ namespace VisualizationDSA.Infrastructure.Services
             
             var user = await _db.Users
                 .AsNoTracking()
-                .Include(u => u.QuizAttempts)
-                .Include(u => u.LearningProgresses)
-                .Include(u => u.UserBadges)
                 .FirstOrDefaultAsync(u => u.Id == userId);
 
             if (user == null)
                 throw new KeyNotFoundException($"User {userId} not found.");
 
-            var attempts  = user.QuizAttempts.ToList();
-            var passed    = attempts.Count(a => a.Passed);
-            var passRate  = attempts.Count > 0 ? (double)passed / attempts.Count : 0.0;
+            // Đếm riêng bằng CountAsync — trước đây Include toàn bộ collection (nặng khi attempts lớn).
+            var attemptsCount = await _db.QuizAttempts.CountAsync(a => a.UserId == userId);
+            var passedCount   = await _db.QuizAttempts.CountAsync(a => a.UserId == userId && a.Passed);
+            var progressCount = await _db.Set<VisualizationDSA.Domain.Entities.UserModuleItemProgress>()
+                .CountAsync(p => p.UserId == userId && p.Status == "Completed");
+            var badgesCount   = await _db.Set<VisualizationDSA.Domain.Entities.UserBadge>()
+                .CountAsync(b => b.UserId == userId);
+            var completedModuleIds = await _db.LearningProgresses
+                .Where(lp => lp.UserId == userId)
+                .Select(lp => lp.ModuleId)
+                .ToListAsync();
+            var passRate = attemptsCount > 0 ? (double)passedCount / attemptsCount : 0.0;
 
             return new UserAnalyticsDto
             {
                 TotalXP            = user.TotalXP,
                 CurrentLevel       = user.CurrentLevel,
                 StreakDays         = user.StreakDays,
-                TotalQuizAttempts  = attempts.Count,
-                QuizzesPassedCount = passed,
+                TotalQuizAttempts  = attemptsCount,
+                QuizzesPassedCount = passedCount,
                 QuizPassRate       = Math.Round(passRate, 3),
-                ModulesCompleted   = user.LearningProgresses.Count,
-                BadgesEarned       = user.UserBadges.Count,
+                ModulesCompleted   = progressCount,
+                BadgesEarned       = badgesCount,
                 LastActivityDate   = user.LastActivityDate,
-                CompletedModules   = user.LearningProgresses.Select(lp => lp.ModuleId).ToList(),
+                CompletedModules   = completedModuleIds,
             };
         }
 

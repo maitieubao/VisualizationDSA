@@ -9,6 +9,8 @@
         :class="{ 'dot-active': idx === currentSlideIndex, 'dot-visited': idx < currentSlideIndex }"
         :disabled="isWaiting"
         :title="`Slide ${idx + 1}`"
+        :aria-label="`Chuyển đến slide ${idx + 1}`"
+        :aria-current="idx === currentSlideIndex ? 'step' : undefined"
         @click="$emit('goTo', idx)"
       />
     </div>
@@ -16,12 +18,12 @@
     
     <div class="nav-buttons">
       <button class="nav-btn nav-btn-back" :disabled="isFirstSlide || isWaiting" @click="$emit('prev')">
-        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6" /></svg>
+        <BaseIcon name="chevron-left" class="w-3.5 h-3.5" />
         <span>Quay lại</span>
       </button>
       <button v-if="!isLastSlide" class="nav-btn nav-btn-next" @click="$emit('next')">
         <span>{{ isWaiting ? 'Bỏ qua' : 'Tiếp tục' }}</span>
-        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6" /></svg>
+        <BaseIcon name="chevron-right" class="w-3.5 h-3.5" />
       </button>
       <button v-else class="nav-btn nav-btn-finish" @click="$emit('exit')">
         <span>Thoát Bài giảng</span>

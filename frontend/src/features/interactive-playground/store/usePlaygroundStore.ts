@@ -7,8 +7,24 @@ export type PlaygroundMode = 'SELECT' | 'ADD_NODE' | 'ADD_EDGE' | 'WEIGHT' | 'DE
 
 const MAX_NODES = 30;
 
+/**
+ * Tạo nhãn đỉnh duy nhất kiểu A..Z, sau đó A1..Z1, A2..Z2 ...
+ * Tránh hiện tượng trùng nhãn khi vượt quá 26 đỉnh (MAX_NODES = 30).
+ */
+function nextUniqueLabel(used: Set<string>): string {
+  let i = 0;
+  for (;; i++) {
+    const candidate =
+      i < 26
+        ? String.fromCharCode(65 + i)
+        : `${String.fromCharCode(65 + (i % 26))}${Math.floor(i / 26)}`;
+    if (!used.has(candidate)) return candidate;
+  }
+}
+
 export const usePlaygroundStore = defineStore('playground', () => {
   const mode = ref<PlaygroundMode>('SELECT');
+  const graphType = ref<'undirected' | 'directed'>('undirected');
   const nodes = ref<NodeDTO[]>([]);
   const edges = ref<EdgeDTO[]>([]);
   const selectedNodeId = ref<string | null>(null);
@@ -20,16 +36,20 @@ export const usePlaygroundStore = defineStore('playground', () => {
   const hoveredNodeId = ref<string | null>(null);
   const hoveredEdgeId = ref<string | null>(null);
   const isGuideDismissed = ref(false);
+  const zoomLevel = ref(100);
 
   const canAddNode = computed(() => nodes.value.length < MAX_NODES);
   const nodeCount = computed(() => nodes.value.length);
   const edgeCount = computed(() => edges.value.length);
 
   const setMode = (newMode: PlaygroundMode) => { mode.value = newMode; clearSelection(); };
+  const setGraphType = (type: 'undirected' | 'directed') => { graphType.value = type; };
 
   const addNode = (x: number, y: number): NodeDTO | null => {
     if (!canAddNode.value) return null;
-    const node = { id: `node_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`, label: String.fromCharCode(65 + (nodes.value.length % 26)), x, y, radius: 20 };
+    const usedLabels = new Set(nodes.value.map(n => n.label));
+    const label = nextUniqueLabel(usedLabels);
+    const node = { id: `node_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`, label, x, y, radius: 20 };
     nodes.value.push(node);
     return node;
   };
@@ -79,9 +99,10 @@ export const usePlaygroundStore = defineStore('playground', () => {
   const dismissGuide = () => { isGuideDismissed.value = true; };
 
   return {
-    mode, nodes, edges, selectedNodeId, selectedEdgeId, isPhysicsEnabled,
+    mode, graphType, nodes, edges, selectedNodeId, selectedEdgeId, isPhysicsEnabled,
     isAlgorithmMode, selectedAlgorithm, sourceNodeId, hoveredNodeId, hoveredEdgeId,
-    canAddNode, nodeCount, edgeCount, setMode, addNode, addEdge,
+    zoomLevel,
+    canAddNode, nodeCount, edgeCount, setMode, setGraphType, addNode, addEdge,
     updateEdgeWeight, moveNode, deleteNode, deleteEdge, clearAll,
     clearSelection, selectNode, selectEdge, togglePhysics,
     setAlgorithmMode, setSelectedAlgorithm, setSourceNodeId, setHoveredNodeId, setHoveredEdgeId,

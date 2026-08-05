@@ -1,0 +1,68 @@
+{
+  "quizTitle": "Trắc nghiệm Sắp xếp cơ bản",
+  "topic": "sorting",
+  "difficulty": 1,
+  "xpReward": 40,
+  "questions": [
+    {
+      "questionText": "Bubble Sort so sánh những phần tử nào trong mỗi lượt duyệt?",
+      "options": ["Các phần tử ngẫu nhiên trong mảng", "Từng cặp phần tử liền kề nhau", "Phần tử đầu và phần tử cuối mảng", "Mỗi phần tử với giá trị cố định"],
+      "correctIndex": 1,
+      "explanation": "Bubble Sort duyệt từ đầu mảng, so sánh từng cặp kề nhau và đổi chỗ nếu chúng sai thứ tự."
+    },
+    {
+      "questionText": "Mỗi bước của Selection Sort thực hiện thao tác gì?",
+      "options": ["Đổi chỗ các cặp liền kề", "Tìm phần tử nhỏ nhất trong phần chưa sắp xếp rồi đưa về đầu phần đó", "Dịch toàn bộ mảng sang phải một ô", "Chèn phần tử vào giữa mảng"],
+      "correctIndex": 1,
+      "explanation": "Selection Sort tìm min của vùng chưa sắp xếp và hoán đổi nó với phần tử đầu vùng đó."
+    },
+    {
+      "questionText": "Insertion Sort mô phỏng hoạt động quen thuộc nào của con người?",
+      "options": ["Xếp bài tây trên tay", "Đếm số phần tử trong mảng", "Chia bài cho người chơi", "Trộn hai bộ bài với nhau"],
+      "correctIndex": 0,
+      "explanation": "Insertion Sort hoạt động như cách ta rút từng lá bài mới và chèn vào đúng vị trí giữa các lá đã xếp."
+    },
+    {
+      "questionText": "Độ phức tạp thời gian trung bình của cả ba thuật toán Bubble, Selection, Insertion Sort là gì?",
+      "options": ["O(N)", "O(N log N)", "O(N²)", "O(log N)"],
+      "correctIndex": 2,
+      "explanation": "Cả ba đều dùng hai vòng lặp lồng nhau nên trung bình là O(N²)."
+    },
+    {
+      "questionText": "Thuật toán nào có trường hợp tốt nhất là O(N) nhờ dừng sớm khi mảng gần như đã sắp xếp?",
+      "options": ["Selection Sort", "Bubble Sort có cờ swapped", "Cả Bubble Sort có cờ swapped và Insertion Sort", "Không thuật toán nào"],
+      "correctIndex": 2,
+      "explanation": "Bubble Sort dùng cờ swapped dừng ngay khi không còn cặp nào đổi chỗ; Insertion Sort dừng vòng dịch chuyển ngay khi gặp phần tử đúng vị trí. Selection Sort luôn O(N²)."
+    },
+    {
+      "questionText": "Ưu điểm nổi bật nhất của Selection Sort so với Bubble Sort là gì?",
+      "options": ["Chạy nhanh hơn trong trường hợp xấu nhất", "Số lần đổi chỗ chỉ tối đa N − 1", "Luôn ổn định hơn", "Không cần so sánh phần tử"],
+      "correctIndex": 1,
+      "explanation": "Selection Sort mỗi bước chỉ đổi chỗ đúng một lần nên tổng số swap tối đa là N − 1, trong khi Bubble Sort có thể đổi chỗ O(N²) lần."
+    },
+    {
+      "questionText": "Vì sao Insertion Sort thường được các thư viện chuẩn dùng cho mảng con nhỏ trong thuật toán lai?",
+      "options": ["Vì nó chạy O(N log N) với mọi mảng", "Vì không tốn chi phí gọi đệ quy và thân thiện CPU cache với dữ liệu nhỏ", "Vì nó không cần bộ nhớ phụ", "Vì nó hoạt động tốt trên dữ liệu phân tán"],
+      "correctIndex": 1,
+      "explanation": "Với mảng nhỏ, overhead đệ quy của Quick Sort lớn hơn lợi ích, còn Insertion Sort có code ngắn, truy cập tuần tự nên nhanh hơn trên thực tế."
+    },
+    {
+      "questionText": "Sau lượt duyệt thứ nhất (pass 1) của Bubble Sort trên mảng [4, 2, 5, 1], kết quả mảng là gì?",
+      "options": ["[2, 4, 1, 5]", "[1, 2, 4, 5]", "[2, 1, 4, 5]", "[2, 4, 5, 1]"],
+      "correctIndex": 0,
+      "explanation": "Đổi 4 và 2 → [2, 4, 5, 1]; giữ 4 và 5; đổi 5 và 1 → [2, 4, 1, 5]. Số lớn nhất 5 về đúng vị trí cuối."
+    },
+    {
+      "questionText": "Mô phỏng bước đầu tiên của Selection Sort trên mảng [29, 10, 14, 37, 13]: phần tử nhỏ nhất nằm ở đâu và kết quả sau khi đổi chỗ là gì?",
+      "options": ["Min tại index 4, kết quả [29, 10, 14, 37, 13]", "Min tại index 1, kết quả [10, 29, 14, 37, 13]", "Min tại index 0, kết quả giữ nguyên", "Min tại index 2, kết quả [29, 10, 14, 37, 13]"],
+      "correctIndex": 1,
+      "explanation": "Giá trị nhỏ nhất là 10 ở index 1, đổi chỗ với phần tử đầu index 0 → [10, 29, 14, 37, 13]."
+    },
+    {
+      "questionText": "Edge case: dùng Insertion Sort sắp xếp mảng [5, 4, 3, 2, 1] (đảo ngược hoàn toàn). Tổng số lần dịch chuyển phần tử sang phải là bao nhiêu?",
+      "options": ["4", "5", "10", "15"],
+      "correctIndex": 2,
+      "explanation": "Mỗi key ở vị trí i phải dịch cả i phần tử phía trước: 1 + 2 + 3 + 4 = 10. Đây là trường hợp xấu nhất O(N²) của Insertion Sort."
+    }
+  ]
+}

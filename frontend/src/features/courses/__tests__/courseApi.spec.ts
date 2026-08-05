@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { courseApi } from '../../../services/courseApi';
 import type { CreateCourseDto, AddModuleDto, AddModuleItemDto } from '../../../services/courseApi';
+import type { Course } from '../../../features/courses/types/course.types';
 import * as apiClient from '../../../services/apiClient';
 
 vi.mock('../../../services/apiClient', () => ({
@@ -38,11 +39,70 @@ const mockItemDto: AddModuleItemDto = {
   isRequired: true,
 };
 
+const mockCourses: Course[] = [
+  {
+    id: 'sorting-101',
+    title: 'Thuật toán Sắp xếp Cơ bản',
+    description: 'Làm chủ các thuật toán sắp xếp cơ bản.',
+    category: 'Sorting',
+    difficulty: 'Easy',
+    xpReward: 300,
+    isPremium: false,
+    totalLessons: 3,
+    lessons: [
+      { id: 'bubble-sort', title: 'Bubble Sort', order: 1 },
+      { id: 'selection-sort', title: 'Selection Sort', order: 2 },
+      { id: 'insertion-sort', title: 'Insertion Sort', order: 3 },
+    ],
+    isPublished: true,
+    coverImage: 'https://example.com/cover.png',
+  },
+];
+
 describe('courseApi — Giao tiếp Backend Khóa học', () => {
   const mockedApi = vi.mocked(apiClient.api);
 
   beforeEach(() => {
     vi.clearAllMocks();
+  });
+
+  describe('getCourses', () => {
+    it('GET từ /concepts/courses trả về danh sách khóa học', async () => {
+      mockedApi.get.mockResolvedValueOnce(mockCourses);
+
+      const result = await courseApi.getCourses();
+
+      expect(mockedApi.get).toHaveBeenCalledWith('/concepts/courses');
+      expect(result).toHaveLength(1);
+      expect(result[0]?.title).toBe('Thuật toán Sắp xếp Cơ bản');
+    });
+
+    it('GET từ /concepts/courses trả về mảng rỗng khi không có khóa học', async () => {
+      mockedApi.get.mockResolvedValueOnce([]);
+
+      const result = await courseApi.getCourses();
+
+      expect(result).toHaveLength(0);
+    });
+  });
+
+  describe('getCourseById', () => {
+    it('GET từ /concepts/courses/{id} trả về khóa học theo id', async () => {
+      mockedApi.get.mockResolvedValueOnce(mockCourses[0]);
+
+      const result = await courseApi.getCourseById('sorting-101');
+
+      expect(mockedApi.get).toHaveBeenCalledWith('/concepts/courses/sorting-101');
+      expect(result?.id).toBe('sorting-101');
+    });
+
+    it('GET từ /concepts/courses/{id} trả về undefined khi không tìm thấy', async () => {
+      mockedApi.get.mockResolvedValueOnce(null);
+
+      const result = await courseApi.getCourseById('unknown-id');
+
+      expect(result).toBeNull();
+    });
   });
 
   describe('createCourse', () => {
@@ -93,6 +153,12 @@ describe('courseApi — Giao tiếp Backend Khóa học', () => {
       mockedApi.post.mockRejectedValueOnce(new TypeError('Failed to fetch'));
 
       await expect(courseApi.addModule('course-1', mockModuleDto)).rejects.toThrow('Failed to fetch');
+    });
+
+    it('lan truyền lỗi khi GET danh sách khóa học thất bại', async () => {
+      mockedApi.get.mockRejectedValueOnce(new TypeError('Failed to fetch'));
+
+      await expect(courseApi.getCourses()).rejects.toThrow('Failed to fetch');
     });
   });
 });

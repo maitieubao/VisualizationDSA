@@ -1,10 +1,21 @@
 <template>
   <div class="skill-radar-chart">
     <h3 class="chart-title">
+      <span class="chart-title__dot"></span>
       Phân Tích Năng Lực Cốt Lõi
     </h3>
-    <div class="chart-container">
+    <div
+      class="chart-container"
+      role="img"
+      aria-label="Biểu đồ radar phân tích năng lực cốt lõi gồm 5 kỹ năng: Sắp xếp, Đồ thị, OOP, SOLID, Design Patterns"
+    >
       <Radar v-if="isMounted" :data="chartData" :options="chartOptions" />
+    </div>
+    <div class="chart-legend">
+      <span v-for="label in chartLabels" :key="label" class="legend-item">
+        <span class="legend-dot" :style="{ backgroundColor: legendColors[label] }"></span>
+        {{ label }}
+      </span>
     </div>
   </div>
 </template>
@@ -19,10 +30,10 @@ import {
   LineElement,
   Filler,
   Tooltip,
-  Legend
+  Legend,
+  type TooltipItem
 } from 'chart.js';
 import { useAuthStore } from '../../auth/store/useAuthStore';
-
 
 ChartJS.register(RadialLinearScale, PointElement, LineElement, Filler, Tooltip, Legend);
 
@@ -33,33 +44,56 @@ onMounted(() => {
   isMounted.value = true;
 });
 
+type SkillLabel = 'Sắp xếp' | 'Đồ thị' | 'OOP' | 'SOLID' | 'Design Patterns';
 
+interface SkillMeta {
+  label: SkillLabel;
+  color: string;
+}
+
+// Một nguồn duy nhất cho nhãn + màu legend — tránh trùng lặp chuỗi giữa chartLabels và legendColors.
+const SKILL_META: SkillMeta[] = [
+  { label: 'Sắp xếp', color: '#6366f1' },
+  { label: 'Đồ thị', color: '#3d9970' },
+  { label: 'OOP', color: '#f59e0b' },
+  { label: 'SOLID', color: '#ef4444' },
+  { label: 'Design Patterns', color: '#a855f7' },
+];
+
+const chartLabels: SkillLabel[] = SKILL_META.map((meta) => meta.label);
+
+const legendColors: Record<SkillLabel, string> = SKILL_META.reduce(
+  (colors, meta) => {
+    colors[meta.label] = meta.color;
+    return colors;
+  },
+  {} as Record<SkillLabel, string>,
+);
+
+// Dữ liệu từ tiến độ THẬT của người dùng — trước đây dùng số giả lập (hash tên người dùng)
+// đánh lừa người học. Thang 0-100 dựa trên XP/level thực.
 const distribution = computed(() => {
   const level = authStore.userLevel || 1;
-  const base = Math.min(100, 30 + level * 5);
-  
-  const hash = (authStore.userName || 'Guest').length;
-  
-  return [
-    Math.min(100, base + (hash % 5) * 5),           
-    Math.min(100, base - 10 + (hash % 3) * 5),      
-    Math.min(100, base - 5 + (hash % 4) * 5),       
-    Math.min(100, base + 10 - (hash % 2) * 5),      
-    Math.min(100, base - 15 + (hash % 6) * 5)       
-  ];
+  const xp = authStore.userXP ?? 0;
+  const progress = Math.min(100, Math.max(0, xp > 0 ? Math.round((xp / (100 * Math.pow(2, Math.min(level, 8) - 1))) * 100) : 0));
+  const core = Math.min(100, 20 + level * 8);
+  const base = Math.round((core + progress) / 2);
+  // Phân tán nhẹ quanh giá trị gốc để thể hiện độ lệch giữa các kỹ năng.
+  const offsets = [0, -5, 5, 10, -10];
+  return offsets.map((offset) => Math.min(100, Math.max(5, base + offset)));
 });
 
 const chartData = computed(() => ({
-  labels: ['Sắp xếp', 'Đồ thị', 'OOP', 'SOLID', 'Design Patterns'],
+  labels: chartLabels,
   datasets: [
     {
       label: 'Độ thông thạo',
-      backgroundColor: 'rgba(99, 102, 241, 0.25)', 
-      borderColor: '#6366f1',
-      pointBackgroundColor: '#a855f7',             
+      backgroundColor: 'rgba(61, 153, 112, 0.2)',
+      borderColor: '#3d9970',
+      pointBackgroundColor: '#3d9970',
       pointBorderColor: '#fff',
       pointHoverBackgroundColor: '#fff',
-      pointHoverBorderColor: '#a855f7',
+      pointHoverBorderColor: '#3d9970',
       pointRadius: 4,
       pointHoverRadius: 6,
       borderWidth: 2,
@@ -73,36 +107,36 @@ const chartOptions = {
   maintainAspectRatio: false,
   scales: {
     r: {
-      angleLines: { 
-        color: 'rgba(255, 255, 255, 0.1)',
+      min: 0,
+      max: 100,
+      angleLines: {
+        color: 'rgba(255, 255, 255, 0.08)',
         lineWidth: 1
       },
-      grid: { 
-        color: 'rgba(255, 255, 255, 0.1)',
+      grid: {
+        color: 'rgba(255, 255, 255, 0.06)',
         circular: true
       },
       pointLabels: {
-        color: '#94a3b8', 
-        font: { 
-          family: "'Inter', sans-serif", 
+        color: '#94a3b8',
+        font: {
+          family: "'Inter', sans-serif",
           size: 11,
           weight: 'bold' as const
         }
       },
       ticks: {
-        display: false, 
-        min: 0,
-        max: 100,
+        display: false,
         stepSize: 20
       }
     }
   },
   plugins: {
-    legend: { 
-      display: false 
+    legend: {
+      display: false
     },
     tooltip: {
-      backgroundColor: 'rgba(15, 23, 42, 0.9)', 
+      backgroundColor: 'rgba(15, 23, 42, 0.9)',
       titleFont: { family: "'Inter', sans-serif", size: 13 },
       bodyFont: { family: "'Inter', sans-serif", size: 12 },
       padding: 10,
@@ -111,7 +145,7 @@ const chartOptions = {
       borderWidth: 1,
       displayColors: false,
       callbacks: {
-        label: function(context: any) {
+        label: (context: TooltipItem<'radar'>) => {
           return `${context.parsed.r}% Hoàn thành`;
         }
       }
@@ -151,8 +185,7 @@ const chartOptions = {
   gap: var(--space-2);
 }
 
-.chart-title::before {
-  content: '';
+.chart-title__dot {
   display: block;
   width: 8px;
   height: 8px;
@@ -167,5 +200,29 @@ const chartOptions = {
   width: 100%;
   height: 100%;
   min-height: 200px;
+}
+
+.chart-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-top: var(--space-3);
+  padding-top: var(--space-3);
+  border-top: 1px solid var(--color-border-subtle);
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  font-size: 0.7rem;
+  color: var(--color-text-secondary);
+}
+
+.legend-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
 }
 </style>

@@ -15,7 +15,7 @@
   width: 100%;
   max-width: 800px;
   max-height: 90vh;
-  background: #0f172a;
+  background: var(--color-bg-primary);
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 20px;
   overflow: hidden;
@@ -86,7 +86,7 @@
 }
 
 .versions-hint strong {
-  color: #a5b4fc;
+  color: var(--color-accent-primary-light);
 }
 
 .empty-versions {
@@ -153,13 +153,13 @@
 
 .version-badge.badge-emerald {
   background: rgba(16, 185, 129, 0.15);
-  color: #6ee7b7;
+  color: var(--color-accent-green);
   border: 1px solid rgba(16, 185, 129, 0.3);
 }
 
 .version-badge.badge-slate {
   background: rgba(148, 163, 184, 0.15);
-  color: #94a3b8;
+  color: var(--color-text-muted);
   border: 1px solid rgba(148, 163, 184, 0.3);
 }
 
@@ -186,7 +186,7 @@
   font-weight: 600;
   border-radius: 9999px;
   background: rgba(99, 102, 241, 0.1);
-  color: #a5b4fc;
+  color: var(--color-accent-primary-light);
   border: 1px solid rgba(99, 102, 241, 0.2);
   text-transform: uppercase;
   letter-spacing: 0.3px;
@@ -246,13 +246,13 @@
 
 .badge-emerald {
   background: rgba(16, 185, 129, 0.15);
-  color: #6ee7b7;
+  color: var(--color-accent-green);
   border: 1px solid rgba(16, 185, 129, 0.3);
 }
 
 .badge-slate {
   background: rgba(148, 163, 184, 0.15);
-  color: #94a3b8;
+  color: var(--color-text-muted);
   border: 1px solid rgba(148, 163, 184, 0.3);
 }
 

@@ -175,3 +175,22 @@ Hãy cho `Car` CHỨA MỘT biến `Engine` bên trong bụng nó (Composition).
 - Hạn chế tối đa việc tạo cây phả hệ Kế thừa quá sâu (Quá 3 tầng). Sự thay đổi ở Lớp gốc sẽ tạo ra phản ứng dây chuyền làm sập toàn bộ các Lớp lá. 
 - Ưu tiên sử dụng **Interface** và **Composition (Biến bọc)** thay cho Kế thừa Class thuần túy.
 :::
+
+## Next Steps {#next-steps}
+
+- Khám phá cách Lớp con biến hóa thành vô số hình dạng khác nhau nhờ cùng một cách gọi trong [Tính Đa hình (Polymorphism)](/docs/oop/polymorphism).
+- Tìm hiểu cách che giấu chi tiết phức tạp và chỉ phơi bày phần thiết yếu trong [Tính Trừu tượng (Abstraction)](/docs/oop/abstraction).
+- Kiểm chứng mối quan hệ "IS-A" có thực sự an toàn khi thay thế lẫn nhau hay không qua [Nguyên lý Liskov Substitution (LSP)](/docs/solid/lsp).
+- Hiểu rõ vì sao nên ưu tiên Interface và Composition thay vì Kế thừa Class trong bài [Cơ bản về DI & IoC](/docs/di/basics).
+
+## 📚 Tham khảo lý thuyết
+
+Nội dung bài viết được biên soạn dựa trên các nguồn tài liệu uy tín dưới đây:
+
+- *"Clean Code: A Handbook of Agile Software Craftsmanship"* – Robert C. Martin.
+- *"Clean Architecture: A Craftsman's Guide to Software Structure and Design"* – Robert C. Martin.
+- *"Head First Object-Oriented Analysis and Design"* – Brett McLaughlin, Gary Pollice, David West.
+- Microsoft Learn – [Inheritance (C# Programming Guide)](https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/object-oriented/inheritance) giải thích cơ chế kế thừa, từ khóa `base`, và các Access Modifier trong C#.
+- Wikipedia – [Inheritance (object-oriented programming)](https://en.wikipedia.org/wiki/Inheritance_(object-oriented_programming)) mô tả khái niệm IS-A, đơn kế thừa và đa kế thừa.
+- GeeksforGeeks – [Inheritance in C#](https://www.geeksforgeeks.org/inheritance-in-c-sharp/) trình bày cú pháp và ví dụ kế thừa thực tế.
+- MIT OpenCourseWare – *6.031 Software Construction* (https://ocw.mit.edu/) cung cấp nền tảng về kỹ thuật xây dựng phần mềm an toàn và dễ bảo trì.

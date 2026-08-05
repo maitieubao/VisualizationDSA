@@ -19,7 +19,7 @@
         </p>
         <div class="hero__actions">
           <button class="hero__cta hero__cta--primary" @click="handleCta">
-            {{ authStore.isAuthenticated ? 'Vào bảng điều khiển ➔' : 'Bắt đầu ngay' }}
+            <template v-if="authStore.isAuthenticated">Vào bảng điều khiển <BaseIcon name="arrow-right" class="w-4 h-4 inline ml-1 align-middle" /></template><template v-else>Bắt đầu ngay</template>
           </button>
           <a href="https://github.com/maitieubao/VisualizationDSA"
              target="_blank" rel="noopener noreferrer"

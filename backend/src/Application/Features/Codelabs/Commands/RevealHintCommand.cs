@@ -58,7 +58,11 @@ namespace VisualizationDSA.Application.Features.Codelabs.Commands
                 return new RevealHintResult { Success = false, Message = "User not found." };
             }
 
-            if (hint.XpCost > 0 && !user.DeductXP(hint.XpCost))
+            // Idempotency: hint đã mở trước đó thì trả lại Content MIỄN PHÍ (không trừ XP lần 2).
+            var alreadyRevealed = await _context.Set<VisualizationDSA.Domain.Entities.CodelabHintReveal>()
+                .AnyAsync(r => r.UserId == request.UserId && r.CodelabHintId == hint.Id, cancellationToken);
+
+            if (!alreadyRevealed && hint.XpCost > 0 && !user.DeductXP(hint.XpCost))
             {
                 return new RevealHintResult
                 {
@@ -67,6 +71,13 @@ namespace VisualizationDSA.Application.Features.Codelabs.Commands
                     XpCost = hint.XpCost,
                     RemainingXp = user.TotalXP
                 };
+            }
+
+            if (!alreadyRevealed)
+            {
+                _context.Set<VisualizationDSA.Domain.Entities.CodelabHintReveal>().Add(
+                    new VisualizationDSA.Domain.Entities.CodelabHintReveal(request.UserId, hint.Id)
+                );
             }
 
             await _context.SaveChangesAsync(cancellationToken);

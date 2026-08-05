@@ -6,17 +6,18 @@ const API_BASE = import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:5055';
 
 
 export async function executeAlgorithm(request: AlgorithmRequest): Promise<AlgorithmResult> {
+  // Timeout 8s — trước đây fetch treo vô hạn khi backend chết → isLoading kẹt vĩnh viễn.
   const response = await fetch(`${API_BASE}/api/v1/algorithms/execute`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      'Accept-Encoding': 'gzip, br',
     },
     body: JSON.stringify(request),
+    signal: AbortSignal.timeout(8000),
   });
 
   if (!response.ok) {
-    const errorBody = await response.json().catch(() => null);
+    const errorBody: { message?: string } | null = await response.json().catch(() => null);
     const message = errorBody?.message ?? `HTTP Error ${response.status}`;
     throw new Error(message);
   }

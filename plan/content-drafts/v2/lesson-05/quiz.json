@@ -1,0 +1,68 @@
+{
+  "quizTitle": "Trắc nghiệm Linked List",
+  "topic": "dsa",
+  "difficulty": 1,
+  "xpReward": 40,
+  "questions": [
+    {
+      "questionText": "Một Node trong danh sách liên kết đơn (singly) chứa những phần thông tin gì?",
+      "options": ["Dữ liệu và con trỏ trỏ tới Node tiếp theo", "Dữ liệu và chỉ số của Node trong mảng", "Hai con trỏ trỏ tới Node trước và Node sau", "Dữ liệu và kích thước của danh sách"],
+      "correctIndex": 0,
+      "explanation": "Node singly gồm data và Next; Node doubly mới có thêm con trỏ Prev."
+    },
+    {
+      "questionText": "Truy cập phần tử thứ i trong danh sách liên kết đơn có độ phức tạp là bao nhiêu?",
+      "options": ["O(1) — dùng chỉ số như mảng", "O(N) — phải duyệt từ Head theo từng con trỏ", "O(log N) — chia đôi danh sách", "O(N²) — duyệt lồng nhau"],
+      "correctIndex": 1,
+      "explanation": "Danh sách không có truy cập ngẫu nhiên; phải đi lần lượt theo các con trỏ Next từ Head nên tốn O(N)."
+    },
+    {
+      "questionText": "Thêm một Node vào đầu danh sách liên kết đơn gồm những thao tác nào?",
+      "options": ["Tạo Node mới, trỏ Next của nó vào Head cũ, cập nhật Head", "Dịch chuyển toàn bộ danh sách sang phải một ô", "Duyệt tới cuối danh sách rồi nối Node mới", "Xóa Head cũ rồi thay bằng Node mới"],
+      "correctIndex": 0,
+      "explanation": "Chỉ nối lại con trỏ nên tốn O(1), không cần dịch chuyển phần tử như mảng."
+    },
+    {
+      "questionText": "Điểm khác biệt chính giữa danh sách liên kết đôi (doubly) và đơn (singly) là gì?",
+      "options": ["Doubly chỉ chứa dữ liệu, không có con trỏ", "Doubly có thêm con trỏ Prev cho phép duyệt hai chiều", "Doubly được lưu trong bộ nhớ liền kề", "Doubly không thể xóa phần tử"],
+      "correctIndex": 1,
+      "explanation": "Con trỏ Prev giúp quay lại phía trước và xóa Node đã biết trong O(1) không cần tìm Node trước đó."
+    },
+    {
+      "questionText": "Với danh sách chỉ giữ con trỏ Head (không có Tail), chèn vào cuối tốn bao nhiêu thời gian?",
+      "options": ["O(1) — chèn trực tiếp", "O(log N) — tìm kiếm nhị phân", "O(N) — phải duyệt tới Node cuối", "O(1) nhưng chỉ khi danh sách rỗng"],
+      "correctIndex": 2,
+      "explanation": "Muốn tìm Node cuối phải đi từ Head tới khi gặp Next = null; nếu giữ thêm Tail thì mới là O(1)."
+    },
+    {
+      "questionText": "Kỹ thuật dummy head (head giả) trong Linked List dùng để làm gì?",
+      "options": ["Tránh xử lý riêng trường hợp head rỗng, giúp code chèn xóa thống nhất", "Tăng tốc độ duyệt danh sách", "Giảm bộ nhớ tiêu tốn cho mỗi Node", "Làm cho danh sách trở thành vòng tròn"],
+      "correctIndex": 0,
+      "explanation": "Node giả luôn tồn tại nên thao tác trên Node đầu tiên giống hệt các Node khác, giảm rẽ nhánh code."
+    },
+    {
+      "questionText": "Để xóa một Node đã biết vị trí khỏi danh sách đơn, ta cần có thêm điều gì?",
+      "options": ["Con trỏ tới Head của danh sách", "Con trỏ tới Node ngay trước Node cần xóa", "Con trỏ tới Node cuối cùng", "Chỉ cần chính Node cần xóa"],
+      "correctIndex": 1,
+      "explanation": "Singly không có Prev nên phải tìm Node trước đó để nối Next của nó sang Node kế sau; doubly xóa trực tiếp O(1)."
+    },
+    {
+      "questionText": "Trong thuật toán Floyd, vì sao hai con trỏ slow và fast chắc chắn gặp nhau khi danh sách có chu trình (cycle)?",
+      "options": ["Fast nhanh hơn slow đúng một bước mỗi vòng nên khoảng cách giảm dần đều về 0", "Vì fast luôn đi chậm hơn slow", "Vì chu trình không tồn tại trong thực tế", "Vì slow dừng lại ở điểm bắt đầu chu trình"],
+      "correctIndex": 0,
+      "explanation": "Trong vòng lặp, fast thu hẹp khoảng cách với slow mỗi bước một đơn vị nên chúng buộc phải gặp nhau trong cycle."
+    },
+    {
+      "questionText": "Danh sách 1 → 2 → 3 → 4 → 5 → 6 được duyệt bằng kỹ thuật fast and slow. Khi fast dừng lại (chạm null), slow đang đứng ở Node nào?",
+      "options": ["Node 3", "Node 4", "Node 6", "Node 2"],
+      "correctIndex": 1,
+      "explanation": "fast đi 2 bước, slow đi 1 bước: sau 3 vòng fast = null và slow = 4 — vị trí middle thứ hai của danh sách 6 phần tử."
+    },
+    {
+      "questionText": "Khi đảo ngược danh sách bằng ba con trỏ, vì sao phải lưu next trước khi gán curr.next = prev?",
+      "options": ["Phép gán phá hủy liên kết tới phần còn lại, không lưu trước sẽ mất cả danh sách phía sau", "Vì con trỏ next thay đổi giá trị mỗi vòng lặp", "Vì cần so sánh next với prev", "Vì next là con trỏ duy nhất tới Head"],
+      "correctIndex": 0,
+      "explanation": "curr.next = prev cắt đứt đường tới Node kế tiếp; nếu không giữ lại trong biến next từ trước, vòng lặp không thể tiến tiếp."
+    }
+  ]
+}

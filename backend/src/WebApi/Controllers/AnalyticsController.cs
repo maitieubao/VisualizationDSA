@@ -9,6 +9,8 @@ using System.Threading.Tasks;
 using VisualizationDSA.Application.Services;
 using Microsoft.Extensions.Caching.Memory;
 
+using VisualizationDSA.WebApi.Filters;
+
 namespace VisualizationDSA.WebApi.Controllers
 {
     
@@ -42,9 +44,13 @@ namespace VisualizationDSA.WebApi.Controllers
             if (!_cache.TryGetValue(cacheKey, out SystemOverviewDto? overview))
             {
                 overview = await _analytics.GetSystemOverviewAsync();
-                var cacheEntryOptions = new MemoryCacheEntryOptions()
-                    .SetAbsoluteExpiration(TimeSpan.FromMinutes(2));
-                _cache.Set(cacheKey, overview, cacheEntryOptions);
+                // Không cache null (MemoryCache.Set(null) là no-op → miss cache mỗi request).
+                if (overview != null)
+                {
+                    var cacheEntryOptions = new MemoryCacheEntryOptions()
+                        .SetAbsoluteExpiration(TimeSpan.FromMinutes(2));
+                    _cache.Set(cacheKey, overview, cacheEntryOptions);
+                }
             }
             return Ok(overview);
         }
@@ -54,11 +60,10 @@ namespace VisualizationDSA.WebApi.Controllers
         
         
         [HttpGet("me")]
-        [Authorize]
+        [RequireJwtRole]
         public async Task<ActionResult<UserAnalyticsDto>> GetMyAnalytics()
         {
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier)
-                         ?? User.FindFirstValue("sub");
+            var userId = JwtHelper.ExtractSubFromToken(Request);
 
             if (!Guid.TryParse(userId, out var id))
                 return Unauthorized();
@@ -89,7 +94,7 @@ namespace VisualizationDSA.WebApi.Controllers
         }
 
         [HttpGet("quizzes")]
-        [Authorize(Roles = "Teacher,Admin")]
+        [RequireJwtRole("Teacher,Admin")]
         public async Task<IActionResult> GetQuizAnalytics([FromServices] MediatR.IMediator mediator)
         {
             var result = await mediator.Send(new VisualizationDSA.Application.Features.Analytics.Queries.GetQuizAnalytics.GetQuizAnalyticsQuery());

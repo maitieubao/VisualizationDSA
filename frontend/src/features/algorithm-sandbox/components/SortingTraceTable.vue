@@ -38,9 +38,9 @@
                 'text-accent': isHighlightedCell(frame, col),
                 'opacity-35': !isHighlightedCell(frame, col) && cellValue(frame, col) === '-',
               }"
-            >{{ cellValue(frame, col) }}</td>
+            ><span v-html="parseEmojiToSvg(String(cellValue(frame, col)))"></span></td>
             <td class="px-1.5 py-[3px] max-w-[200px]">
-              <span class="block truncate" :title="frame.description">{{ frame.description }}</span>
+              <span class="block truncate" :title="frame.description" v-html="parseEmojiToSvg(frame.description)"></span>
             </td>
           </tr>
           <tr v-if="frames.length > 0" class="pointer-events-none" style="height: 100%">
@@ -58,6 +58,7 @@
 
 <script setup lang="ts">
 import { computed, watch, ref, nextTick } from 'vue';
+import { parseEmojiToSvg } from '../../../utils/emojiParser';
 import type { SortFrame, SortAlgorithm } from '../types/sorting.types';const props = defineProps<{
   frames: SortFrame[];
   currentIndex: number;
@@ -134,7 +135,16 @@ const totalCols = computed(() => 2 + columns.value.length);
 
 function cellValue(frame: SortFrame, col: TraceColumn): string | number {
   if (col.kind === 'compare') {
-    return frame.comparingIndices ? `${frame.comparingIndices[0]}↔${frame.comparingIndices[1]}` : '-';
+    const ci = frame.comparingIndices;
+    if (!ci) return '-';
+    // counting/radix: comparingIndices không phải cặp bar-bar mà là [barIdx, ô Count]/[barIdx, barIdx]
+    if (frame.algorithm === 'counting') return `A[${ci[0]}]→Count[${ci[1]}]`;
+    if (frame.algorithm === 'radix') {
+      return frame.radixStep === 'distribute'
+        ? `A[${ci[0]}]→Hộp[${frame.variables?.digit ?? ci[1]}]`
+        : `Hộp→A[${ci[0]}]`;
+    }
+    return `${ci[0]}↔${ci[1]}`;
   }
   if (col.kind === 'swap') {
     return frame.swappedIndices ? `${frame.swappedIndices[0]}↔${frame.swappedIndices[1]}` : '-';

@@ -5,7 +5,7 @@
     </div>
     <h3 class="text-2xl font-bold text-accent-green mb-2">Thanh Toán Thành Công!</h3>
     <p class="text-sm text-[var(--text-secondary)] max-w-sm mx-auto mb-8">
-      Chúc mừng bạn! Tài khoản đã được nâng cấp lên **Premium**. Mọi giới hạn học tập và sandbox giải thuật đã được giải phóng.
+      Chúc mừng bạn! Tài khoản đã được nâng cấp lên Premium. Mọi giới hạn học tập và sandbox giải thuật đã được giải phóng.
     </p>
     <button
       @click="$emit('finish')"

@@ -1,0 +1,93 @@
+{
+  "quizTitle": "Trắc nghiệm Segment Tree",
+  "topic": "dsa",
+  "difficulty": 2,
+  "xpReward": 40,
+  "questions": [
+    {
+      "questionText": "Mỗi node của Segment Tree lưu trữ thông tin gì?",
+      "options": [
+        "Một phần tử duy nhất của mảng",
+        "Giá trị tổng hợp (tổng, min, max...) của một đoạn mảng con",
+        "Chỉ số của phần tử lớn nhất",
+        "Con trỏ tới node cha"
+      ],
+      "correctIndex": 1,
+      "explanation": "Mỗi node quản lý một đoạn [l, r] và lưu giá trị tổng hợp của đoạn đó; chỉ node lá mới lưu đúng một phần tử."
+    },
+    {
+      "questionText": "Node gốc của Segment Tree quản lý đoạn nào của mảng gốc?",
+      "options": [
+        "Đoạn [0, 0]",
+        "Đoạn [N-1, N-1]",
+        "Toàn bộ mảng [0, N-1]",
+        "Nửa đầu mảng"
+      ],
+      "correctIndex": 2,
+      "explanation": "Gốc đại diện cho toàn bộ mảng; các con chia đôi dần đoạn đó cho tới khi đạt node lá [i, i]."
+    },
+    {
+      "questionText": "Trong cách lưu Segment Tree bằng mảng, với node tại chỉ số i, node con phải nằm ở chỉ số nào?",
+      "options": ["2i", "2i + 1", "2i + 2", "i + 1"],
+      "correctIndex": 2,
+      "explanation": "Cách lưu giống heap: con trái ở 2i + 1, con phải ở 2i + 2, cha ở (i - 1) chia 2."
+    },
+    {
+      "questionText": "Thời gian xây dựng (build) một Segment Tree từ mảng N phần tử là bao nhiêu?",
+      "options": ["O(1)", "O(log N)", "O(N)", "O(N log N)"],
+      "correctIndex": 2,
+      "explanation": "Build đệ quy thăm đúng một lần mỗi node của cây (khoảng 2N node) nên tốn O(N)."
+    },
+    {
+      "questionText": "Trong thao tác query, khi đoạn [start, end] của node nằm gọn hoàn toàn trong [l, r] thì làm gì?",
+      "options": [
+        "Trả về 0",
+        "Trả nguyên tree[node]",
+        "Đệ quy cả hai con",
+        "Trả về giá trị trung hòa"
+      ],
+      "correctIndex": 1,
+      "explanation": "Nếu đoạn node nằm gọn trong đoạn cần truy vấn, toàn bộ giá trị của nó được dùng, không cần đi sâu thêm."
+    },
+    {
+      "questionText": "Khi nào nên chọn Segment Tree thay vì Fenwick Tree?",
+      "options": [
+        "Chỉ cần tổng đoạn và cập nhật điểm",
+        "Cần truy vấn min/max đoạn hoặc cập nhật cả đoạn",
+        "Cần bộ nhớ tối thiểu",
+        "Chỉ cần tính tổng tiền tố"
+      ],
+      "correctIndex": 1,
+      "explanation": "Fenwick không hỗ trợ min/max (phép toán không khả nghịch) và không cập nhật đoạn; hai việc này chỉ Segment Tree đảm nhận được."
+    },
+    {
+      "questionText": "Lazy propagation được dùng trong tình huống nào?",
+      "options": [
+        "Cập nhật một điểm duy nhất",
+        "Cập nhật đồng thời một đoạn [l, r]",
+        "Xây dựng cây lần đầu",
+        "Tìm kiếm nhị phân trên mảng"
+      ],
+      "correctIndex": 1,
+      "explanation": "Lazy trì hoãn việc ghi giá trị xuống từng phần tử: chỉ sửa node nằm gọn và ghi nợ cho con, giúp cập nhật đoạn chỉ còn O(log N)."
+    },
+    {
+      "questionText": "Cho mảng [1, 3, 5, 7, 9, 11]. Truy vấn tổng đoạn [1, 3] trên Segment Tree cho kết quả bao nhiêu?",
+      "options": ["12", "15", "16", "24"],
+      "correctIndex": 1,
+      "explanation": "Tổng các phần tử tại chỉ số 1, 2, 3 là 3 + 5 + 7 = 15; query chỉ ghép các node nằm gọn trong [1, 3]."
+    },
+    {
+      "questionText": "Với mảng [1, 3, 5, 7, 9, 11], sau khi update(2, 8) (đặt arr[2] = 8), tổng đoạn [0, 2] trở thành bao nhiêu?",
+      "options": ["9", "11", "12", "14"],
+      "correctIndex": 2,
+      "explanation": "Mảng trở thành [1, 3, 8, 7, 9, 11]; tổng [0, 2] = 1 + 3 + 8 = 12, các node cha trên đường đi được tính lại."
+    },
+    {
+      "questionText": "Cây đoạn tổng cho mảng [1, 3, 5, 7, 9, 11] có gốc bằng 36. Dùng lazy propagation để cộng 10 vào toàn bộ đoạn [0, 5] thì node gốc trở thành bao nhiêu?",
+      "options": ["46", "56", "96", "66"],
+      "correctIndex": 2,
+      "explanation": "Node gốc nằm gọn trong [0, 5] nên chỉ cập nhật gốc: 36 + 10 × 6 = 96, và ghi nợ lazy cho hai con, không chạm vào từng phần tử."
+    }
+  ]
+}

@@ -38,7 +38,7 @@
   <div v-if="authStore.isImpersonating" class="impersonate-banner">
     <div class="impersonate-banner__pulse"></div>
     <div class="impersonate-banner__text">
-      <span class="impersonate-banner__icon">🎭</span>
+      <span class="impersonate-banner__icon"><BaseIcon name="masks" class="w-4 h-4" /></span>
       <span>Đang đóng vai: <strong>{{ authStore.userName }}</strong></span>
     </div>
     <button class="impersonate-banner__btn" @click="handleStopImpersonating">
@@ -50,7 +50,7 @@
   <div v-if="progressStore.isSyncError" class="sync-error-banner">
     <div class="sync-error-banner__pulse"></div>
     <div class="sync-error-banner__text">
-      <span class="sync-error-banner__icon">⚠️</span>
+      <span class="sync-error-banner__icon"><BaseIcon name="warning" class="w-4 h-4" /></span>
       <span>Đồng bộ tiến trình thất bại.</span>
     </div>
     <button class="sync-error-banner__btn" :disabled="isSyncingProgress" @click="handleRetrySync">

@@ -15,7 +15,7 @@
   width: 100%;
   max-width: 700px;
   max-height: 90vh;
-  background: #0f172a;
+  background: var(--color-bg-primary);
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 20px;
   overflow: hidden;
@@ -83,7 +83,7 @@
 }
 
 .form-label .required {
-  color: #f43f5e;
+  color: var(--color-accent-red);
 }
 
 .form-input,
@@ -104,7 +104,7 @@
 .form-textarea:focus,
 .form-select:focus {
   outline: none;
-  border-color: #6366f1;
+  border-color: var(--color-accent-primary);
   box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
 }
 
@@ -135,7 +135,7 @@
 .form-checkbox {
   width: 18px;
   height: 18px;
-  accent-color: #6366f1;
+  accent-color: var(--color-accent-primary);
   cursor: pointer;
 }
 
@@ -184,7 +184,7 @@
   border-radius: 10px;
   font-weight: 600;
   font-size: 13px;
-  background: linear-gradient(135deg, #6366f1, #8b5cf6);
+  background: var(--color-accent-primary);
   border: none;
   color: white;
   cursor: pointer;

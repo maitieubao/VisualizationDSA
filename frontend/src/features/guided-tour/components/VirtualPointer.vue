@@ -3,6 +3,7 @@
     <div
       v-if="visible"
       class="virtual-pointer fixed pointer-events-none z-[10000] transition-all duration-700 ease-out-quint"
+      aria-hidden="true"
       :style="{
         top: `${y}px`,
         left: `${x}px`,

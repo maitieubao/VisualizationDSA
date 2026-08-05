@@ -209,7 +209,7 @@ Thật điên rồ! Bạn có thể dồn 100 cái topping vào nhau một cách
 Bạn có bao giờ thắc mắc tại sao khi đọc/ghi File trong C# hay Java, code thường trông rất dài dòng theo kiểu lồng nhau như thế này không?
 
 ```csharp
-// Đọc File -> Giải nén Zip -> Giải mã hóa GZip -> Cắt Buffer
+// Đọc File -> Giải nén GZip -> Chuyển byte thành chuỗi Text
 using (var fs = new FileStream("data.txt", FileMode.Open))
 {
     using (var gzip = new GZipStream(fs, CompressionMode.Decompress))
@@ -232,5 +232,23 @@ Bằng thiết kế này, Microsoft không cần phải tạo ra hàng vạn Cla
 :::tip Tóm tắt nhanh (Key Takeaways)
 - Decorator giải quyết triệt để nạn **Class Explosion** (Bùng nổ kế thừa) bằng nguyên lý bọc đối tượng (Composition).
 - Bí kíp: Lớp Bọc (Decorator) vừa **kế thừa Interface** của đối tượng, lại vừa chứa một **biến tham chiếu (Instance)** trỏ vào ruột của đối tượng đó.
-- Điểm bất lợi duy nhất của Decorator là hệ thống sẽ sinh ra rất nhiều Object con lồng ghép vào nhau (Instantiating Layers), khiến việc gỡ lỗi (Debug) trace code sẽ chui vào hàng chục tầng bọc hơi rối mắt. Tuy nhiên, đánh đổi đó hoàn toàn xứng đáng với sự linh hoạt mà nó mang lại.
+- Mối liên hệ với **Chain of Responsibility:** Cả hai mẫu đều "rót" lời gọi sang một đối tượng khác (gọi là *chained handler* / vỏ bọc bên trong). Nhưng chuỗi trong Chain of Responsibility dừng sớm tại handler đầu tiên xử lý được, còn Decorator luôn chạy qua **tất cả** các lớp vỏ từ ngoài vào trong rồi cộng dồn hoặc biến đổi lần lượt.
+- Điểm yếu: hệ thống sinh ra nhiều Object lồng ghép (Instantiating Layers), khiến việc gỡ lỗi (Debug) trace code phải chui qua hàng chục tầng bọc. Vì vậy hạn chế Bọc quá sâu, và không nên lạm dụng tạo một mê cung Wrapper dày đặc làm khó đọc mã.
+- **Decorator vs Inheritance:** Render code nhẹ nhàng (Composition-first) — bạn chỉ bọc khi cần đúng đối tượng đó, còn Inheritance buộc tạo ra một Class tĩnh từ trước và nhân bản vô số lớp con khi số tổ hợp tăng.
 :::
+
+## Next Steps {#next-steps}
+
+- Đang học các Structural Patterns? Bắt đầu từ [Singleton](/docs/patterns/singleton) — mẫu đảm bảo một đối tượng duy nhất trong toàn hệ thống, rất khác tư duy "đẻ vô số lớp vỏ" của Decorator.
+- Đang code theo kiểu bọc đối tượng? Khám phá [Strategy](/docs/patterns/strategy) để tách thuật toán khỏi class khi bạn cần **nhổ** hành vi ra thay vì **bọc thêm**.
+- Hiểu cách Decorator tôn trọng giao ước [Open-Closed (OCP)](/docs/solid/ocp) để mở rộng chức năng mà không cần sửa mã đối tượng gốc.
+- Ôn lại nền tảng **Tính Đa hình ([Polymorphism](/docs/oop/polymorphism))** — thứ mà Decorator dựa vào để lớp vỏ "giả danh" được đối tượng gốc.
+
+## 📚 Tham khảo lý thuyết
+
+- *Design Patterns: Elements of Reusable Object-Oriented Software* — Erich Gamma, Richard Helm, Ralph Johnson, John Vlissides (Gang of Four), Addison-Wesley, 1994.
+- *Head First Design Patterns* — Eric Freeman & Elisabeth Robson, O'Reilly Media.
+- Wikipedia — Decorator pattern (định nghĩa tổng quan và ví dụ).
+- Microsoft Learn — "Decorator" trong loạt bài về Design Pattern trên nền tảng .NET.
+- Refactoring.Guru — "Decorator" (giải thích kèm sơ đồ và mã so sánh Inheritance/Composition).
+- SourceMaking — "Decorator" (anti-pattern kèm ví dụ thuộc Application).

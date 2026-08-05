@@ -15,6 +15,35 @@ Lập trình Hướng đối tượng (Object-Oriented Programming) là một m�
 
 Ví dụ: Một đối tượng `User` có thể chứa trạng thái (Tên, Email, Tuổi) và hành vi (Đăng nhập, Đổi mật khẩu, Gửi tin nhắn).
 
+Dưới đây là một ví dụ C# chạy được, minh họa cách một Class gom nhóm Trạng thái (thuộc tính) và Hành vi (phương thức) vào một Đối tượng duy nhất:
+
+```csharp
+using System;
+
+public class User
+{
+    // Trạng thái (Thuộc tính)
+    public string Name { get; set; }
+    public string Email { get; set; }
+
+    // Hành vi (Phương thức)
+    public void SendMessage(string message)
+    {
+        Console.WriteLine($"{Name} nhận tin nhắn: {message}");
+    }
+}
+
+public class Program
+{
+    public static void Main()
+    {
+        // Tạo và sử dụng Đối tượng
+        var user = new User { Name = "Lan", Email = "lan@example.com" };
+        user.SendMessage("Xin chào!");
+    }
+}
+```
+
 **Lưu ý:** C# là một ngôn ngữ thuần OOP. Mọi thứ trong C# (ngoại trừ một số kiểu nguyên thủy đặc biệt) đều là đối tượng. Nếu bạn muốn trở thành một chuyên gia C# hay .NET Developer, việc làm chủ OOP là bắt buộc.
 
 ## 4 Trụ cột của Lập trình Hướng đối tượng {#four-pillars}
@@ -81,3 +110,12 @@ Hãy cùng bắt đầu hành trình bằng việc tìm hiểu trụ cột đầ
     <p class="next-steps-caption">Tìm hiểu cách bảo vệ trạng thái của đối tượng và che giấu chi tiết triển khai bên trong.</p>
   </a>
 </div>
+
+## 📚 Tham khảo lý thuyết
+
+Để đào sâu hơn từng khái niệm trong bài, bạn có thể tham khảo các nguồn uy tín sau:
+
+- **Lập trình Hướng đối tượng (OOP) & 4 trụ cột:** [Microsoft Learn — Object-Oriented programming (C#)](https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/tutorials/oop) và [Wikipedia — Object-oriented programming](https://en.wikipedia.org/wiki/Object-oriented_programming).
+- **Nguyên lý SOLID:** Robert C. Martin (Uncle Bob), *Clean Architecture: A Craftsman's Guide to Software Structure and Design* (Prentice Hall, 2017) và [Wikipedia — SOLID](https://en.wikipedia.org/wiki/SOLID).
+- **Design Patterns (Gang of Four):** Erich Gamma, Richard Helm, Ralph Johnson, John Vlissides, *Design Patterns: Elements of Reusable Object-Oriented Software* (Addison-Wesley, 1994) và [Wikipedia — Design Patterns](https://en.wikipedia.org/wiki/Design_Patterns).
+- **Dependency Injection (DI) & IoC:** [Microsoft Learn — Dependency injection in ASP.NET Core](https://learn.microsoft.com/en-us/aspnet/core/fundamentals/dependency-injection) và Mark Seemann, *Dependency Injection in .NET* (Manning, 2019).

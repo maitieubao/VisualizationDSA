@@ -1,4 +1,5 @@
 using Asp.Versioning;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System;
@@ -9,6 +10,7 @@ using VisualizationDSA.Domain.Engine;
 using VisualizationDSA.Domain.Entities;
 using VisualizationDSA.Domain.Strategies;
 using VisualizationDSA.Infrastructure.Data;
+using VisualizationDSA.WebApi.Filters;
 
 namespace VisualizationDSA.WebApi.Controllers
 {
@@ -24,6 +26,7 @@ namespace VisualizationDSA.WebApi.Controllers
     {
         private readonly StatelessAuthStrategy _authStrategy;
         private readonly ApplicationDbContext _dbContext;
+        private readonly IWebHostEnvironment _env;
 
         static StatelessAuthController()
         {
@@ -46,16 +49,17 @@ namespace VisualizationDSA.WebApi.Controllers
             };
         }
 
-        public StatelessAuthController(StatelessAuthStrategy authStrategy, ApplicationDbContext dbContext)
+        public StatelessAuthController(StatelessAuthStrategy authStrategy, ApplicationDbContext dbContext, IWebHostEnvironment env)
         {
             _authStrategy = authStrategy;
             _dbContext = dbContext;
+            _env = env;
         }
 
         private static string HashPasswordSHA256(string password)
         {
-            var bytes = SHA256.HashData(Encoding.UTF8.GetBytes(password + "visualizationdsa-salt"));
-            return Convert.ToHexString(bytes).ToLowerInvariant();
+            // BCrypt workFactor 12 — đồng bộ với AuthService chuẩn; tên giữ cũ để ít thay đổi.
+            return BCrypt.Net.BCrypt.HashPassword(password, workFactor: 12);
         }
 
         
@@ -63,36 +67,61 @@ namespace VisualizationDSA.WebApi.Controllers
         
         
         [HttpPost("register")]
-        public async Task<ActionResult<StatelessAuthResponse>> Register([FromBody] StatelessRegisterRequest request)
+        public async Task<ActionResult<StatelessAuthResponse>> Register([FromBody] StatelessRegisterRequest? request)
         {
+            if (request == null)
+                return BadRequest(new { error = "INVALID_INPUT", message = "Dữ liệu đăng ký không hợp lệ." });
+
             try
             {
-                
-                string dbUserId = Guid.NewGuid().ToString();
+                // Chống identity confusion: email đã tồn tại trong DB (dù chưa vào memory sau restart)
+                // → từ chối ngay, KHÔNG cho "đăng ký lại" email của người khác.
+                var emailExists = await _dbContext.Users.AnyAsync(u => u.Email == request.Email);
+                if (emailExists)
+                    return BadRequest(new { error = "REGISTRATION_FAILED", message = "Đăng ký không thành công. Vui lòng kiểm tra lại thông tin." });
+
+                // VALIDATE TRƯỚC (in-memory strategy ném ArgumentException khi trùng/không hợp lệ)
+                // — KHÔNG ghi DB trước khi validate.
+                var tempId = Guid.NewGuid().ToString();
+                var response = _authStrategy.Register(request, tempId);
+                response.User.Role = "Student";
+
+                // Ghi DB sau khi validate OK. DB lỗi → xóa user khỏi memory + 503 rõ ràng.
+                Guid dbUserId;
                 try
                 {
-                    var existingUser = await _dbContext.Users
-                        .FirstOrDefaultAsync(u => u.Email == request.Email);
-                    if (existingUser == null)
-                    {
-                        var passwordHash = HashPasswordSHA256(request.Password);
-                        var dbUser = new User(request.Email, request.Username, passwordHash);
-                        _dbContext.Users.Add(dbUser);
-                        await _dbContext.SaveChangesAsync();
-                        dbUserId = dbUser.Id.ToString();
-                    }
-                    else
-                    {
-                        dbUserId = existingUser.Id.ToString();
-                    }
+                    var dbUser = new User(request.Email, request.Username, HashPasswordSHA256(request.Password));
+                    _dbContext.Users.Add(dbUser);
+                    await _dbContext.SaveChangesAsync();
+                    dbUserId = dbUser.Id;
                 }
                 catch (Exception dbEx)
                 {
-                    Serilog.Log.Warning(dbEx, "Không thể kết nối DB khi đăng ký. Tiếp tục bằng in-memory auth.");
+                    _authStrategy.RemoveUser(tempId);
+                    Serilog.Log.Error(dbEx, "Đăng ký in-memory thành công nhưng KHÔNG lưu được vào DB.");
+                    return StatusCode(StatusCodes.Status503ServiceUnavailable, new
+                    {
+                        error = "DB_UNAVAILABLE",
+                        message = "Đăng ký chưa được lưu vĩnh viễn do máy chủ dữ liệu gặp sự cố. Vui lòng thử lại sau."
+                    });
                 }
 
-                var response = _authStrategy.Register(request, dbUserId);
-                response.User.Role = "Student";
+                // Đồng bộ id in-memory với id DB rồi phát hành lại token — sub phải khớp DB
+                // (trước đây token sub = id tạm → lesson progress/XP bị orphan).
+                if (_authStrategy.ChangeUserId(tempId, dbUserId.ToString()))
+                {
+                    response = _authStrategy.Login(new VisualizationDSA.Domain.Engine.StatelessLoginRequest
+                    {
+                        Email = request.Email,
+                        Password = request.Password
+                    });
+                    response.User.Role = "Student";
+                }
+                else
+                {
+                    response.User.Id = dbUserId.ToString();
+                }
+
                 return Ok(response);
             }
             catch (ArgumentException ex)
@@ -118,10 +147,6 @@ namespace VisualizationDSA.WebApi.Controllers
                         .FirstOrDefaultAsync(u => u.Email == request.Email);
                     if (dbUser != null)
                     {
-                        
-                        if (!dbUser.IsActive)
-                            return StatusCode(403, new { error = "ACCOUNT_BANNED", message = "Tài khoản của bạn đã bị khóa. Vui lòng liên hệ quản trị viên." });
-
                         _authStrategy.EnsureUserInMemory(
                             dbUser.Id.ToString(),
                             dbUser.Email,
@@ -133,9 +158,6 @@ namespace VisualizationDSA.WebApi.Controllers
                             dbUser.CurrentLevel,
                             dbUser.StreakDays
                         );
-
-                        dbUser.RecordLogin();
-                        await _dbContext.SaveChangesAsync();
                     }
                 }
                 catch (Exception ex)
@@ -144,6 +166,11 @@ namespace VisualizationDSA.WebApi.Controllers
                 }
 
                 var response = _authStrategy.Login(request);
+
+                // Check ban SAU khi verify mật khẩu — trả 401 chung chống enumeration
+                // (trước đây trả 403 ACCOUNT_BANNED trước verify → phân biệt được email tồn tại).
+                if (dbUser != null && !dbUser.IsActive)
+                    return Unauthorized(new { error = "LOGIN_FAILED", message = "Email hoặc mật khẩu không đúng." });
 
                 if (dbUser != null)
                 {
@@ -167,41 +194,12 @@ namespace VisualizationDSA.WebApi.Controllers
         
         
         [HttpPost("refresh")]
-        public async Task<ActionResult<StatelessAuthResponse>> Refresh([FromBody] StatelessRefreshRequest request)
+        public ActionResult<StatelessAuthResponse> Refresh([FromBody] StatelessRefreshRequest request)
         {
             try
             {
-                
-                if (!string.IsNullOrEmpty(request.UserId))
-                {
-                    if (Guid.TryParse(request.UserId, out var dbUserId))
-                    {
-                        try
-                        {
-                            var dbUser = await _dbContext.Users.FindAsync(dbUserId);
-                            if (dbUser != null)
-                            {
-                                _authStrategy.EnsureUserInMemory(
-                                    dbUser.Id.ToString(),
-                                    dbUser.Email,
-                                    dbUser.Username,
-                                    dbUser.PasswordHash,
-                                    dbUser.IsPremium,
-                                    dbUser.Role,
-                                    dbUser.TotalXP,
-                                    dbUser.CurrentLevel,
-                                    dbUser.StreakDays
-                                );
-                                _authStrategy.ForceAddRefreshToken(request.RefreshToken, dbUser.Id.ToString());
-                            }
-                        }
-                        catch (Exception ex)
-                        {
-                            Serilog.Log.Warning(ex, "Không thể kết nối cơ sở dữ liệu để re-hydrate tài khoản trong Refresh. Tiếp tục bằng in-memory.");
-                        }
-                    }
-                }
-
+                // Chỉ chấp nhận refresh token do server sinh ra (GenerateAuthResponse).
+                // KHÔNG cho phép client tự dựng/ép buộc token — tránh account takeover.
                 var response = _authStrategy.RefreshToken(request.RefreshToken);
                 return Ok(response);
             }
@@ -231,11 +229,15 @@ namespace VisualizationDSA.WebApi.Controllers
         
         
         [HttpGet("me")]
-        public async Task<ActionResult<StatelessUserDto>> GetMe([FromQuery] string? userId)
+        [RequireJwtRole]
+        public async Task<ActionResult<StatelessUserDto>> GetMe()
         {
+            var id = JwtHelper.ExtractSubFromToken(Request);
+            if (string.IsNullOrEmpty(id))
+                return Unauthorized(new { error = "UNAUTHORIZED", message = "Không xác định được người dùng." });
+
             try
             {
-                var id = userId ?? "demo-user-001";
                 if (id != "demo-user-001" && Guid.TryParse(id, out var dbUserId))
                 {
                     var dbUser = await _dbContext.Users.FindAsync(dbUserId);
@@ -268,11 +270,15 @@ namespace VisualizationDSA.WebApi.Controllers
         
         
         [HttpGet("progress")]
-        public async Task<ActionResult<StatelessUserProgressDto>> GetProgress([FromQuery] string? userId)
+        [RequireJwtRole]
+        public async Task<ActionResult<StatelessUserProgressDto>> GetProgress()
         {
+            var id = JwtHelper.ExtractSubFromToken(Request);
+            if (string.IsNullOrEmpty(id))
+                return Unauthorized(new { error = "UNAUTHORIZED", message = "Không xác định được người dùng." });
+
             try
             {
-                var id = userId ?? "demo-user-001";
                 if (id != "demo-user-001" && Guid.TryParse(id, out var dbUserId))
                 {
                     var dbUser = await _dbContext.Users.FindAsync(dbUserId);
@@ -304,12 +310,93 @@ namespace VisualizationDSA.WebApi.Controllers
         
         
         
-        [HttpPut("profile")]
-        public async Task<ActionResult<StatelessUserDto>> UpdateProfile([FromBody] StatelessUpdateProfileRequest request)
+        /// <summary>Tiến độ chi tiết của 1 bài học (lesson flow sync server-side).</summary>
+        [HttpGet("progress/{lessonId}")]
+        [RequireJwtRole]
+        public async Task<IActionResult> GetLessonProgress(Guid lessonId)
         {
+            var id = JwtHelper.ExtractSubFromToken(Request);
+            if (string.IsNullOrEmpty(id) || !Guid.TryParse(id, out var userId))
+                return Unauthorized(new { error = "UNAUTHORIZED", message = "Không xác định được người dùng." });
+
+            var progress = await _dbContext.UserLessonProgresses
+                .FirstOrDefaultAsync(p => p.UserId == userId && p.LessonId == lessonId);
+
+            if (progress == null)
+                return Ok(new { });
+
+            return Ok(new
+            {
+                hasWatchedVisualizer = progress.HasWatchedVisualizer,
+                quizScore = progress.QuizScore,
+                bestScore = progress.BestScore,
+                codelabCompleted = progress.CodelabCompleted,
+                xpAwarded = progress.XPRewarded
+            });
+        }
+
+        /// <summary>Upsert tiến độ bài học — bestScore luôn giữ giá trị cao nhất.</summary>
+        [HttpPost("progress/{lessonId}")]
+        [RequireJwtRole]
+        public async Task<IActionResult> SaveLessonProgress(Guid lessonId, [FromBody] SaveLessonProgressRequest request)
+        {
+            var id = JwtHelper.ExtractSubFromToken(Request);
+            if (string.IsNullOrEmpty(id) || !Guid.TryParse(id, out var userId))
+                return Unauthorized(new { error = "UNAUTHORIZED", message = "Không xác định được người dùng." });
+
+            var lessonExists = await _dbContext.Lessons.AnyAsync(l => l.Id == lessonId);
+            if (!lessonExists)
+                return NotFound(new { error = "LESSON_NOT_FOUND", message = "Không tìm thấy bài học." });
+
+            var progress = await _dbContext.UserLessonProgresses
+                .FirstOrDefaultAsync(p => p.UserId == userId && p.LessonId == lessonId);
+
+            if (progress == null)
+            {
+                progress = new UserLessonProgress(userId, lessonId);
+                _dbContext.UserLessonProgresses.Add(progress);
+            }
+
+            if (request.HasWatchedVisualizer) progress.RecordVisualizerWatched();
+            // Clamp QuizScore hợp lệ (0..100) — chống client gửi điểm ảo.
+            var quizScore = request.QuizScore.HasValue
+                ? Math.Clamp(request.QuizScore.Value, 0, 100)
+                : (int?)null;
+            if (quizScore.HasValue) progress.RecordQuizAttempt(quizScore.Value);
+            if (request.CodelabCompleted) progress.RecordCodelabCompleted();
+
+            // KHÔNG cấp XP ở đây: XP chỉ đi qua endpoint /award-xp (có cap 1-500 + auth).
+            // Trước đây client gửi XpAwarded tùy ý → farm XP vô hạn + double-award với lesson flow.
+            if (request.CodelabCompleted || (quizScore.HasValue && quizScore.Value >= 1))
+            {
+                if (progress.Status == "NotStarted" || progress.Status == "InProgress")
+                {
+                    progress.MarkAsCompleted(progress.XPRewarded);
+                }
+            }
+
+            await _dbContext.SaveChangesAsync();
+
+            return Ok(new
+            {
+                success = true,
+                hasWatchedVisualizer = progress.HasWatchedVisualizer,
+                quizScore = progress.QuizScore,
+                bestScore = progress.BestScore,
+                codelabCompleted = progress.CodelabCompleted,
+                xpAwarded = progress.XPRewarded
+            });
+        }
+
+        [HttpPut("profile")]
+        [RequireJwtRole]
+        public async Task<ActionResult<StatelessUserDto>> UpdateProfile([FromBody] StatelessUpdateProfileRequest request)        {
+            var id = JwtHelper.ExtractSubFromToken(Request);
+            if (string.IsNullOrEmpty(id))
+                return Unauthorized(new { error = "UNAUTHORIZED", message = "Không xác định được người dùng." });
+
             try
             {
-                var id = request.UserId ?? "demo-user-001";
                 if (id != "demo-user-001" && Guid.TryParse(id, out var dbUserId))
                 {
                     var dbUser = await _dbContext.Users.FindAsync(dbUserId);
@@ -346,6 +433,7 @@ namespace VisualizationDSA.WebApi.Controllers
         
         
         [HttpPut("change-password")]
+        [RequireJwtRole]
         public async Task<IActionResult> ChangePassword([FromBody] StatelessChangePasswordRequest request)
         {
             if (string.IsNullOrWhiteSpace(request.CurrentPassword) || string.IsNullOrWhiteSpace(request.NewPassword))
@@ -358,8 +446,11 @@ namespace VisualizationDSA.WebApi.Controllers
                 return BadRequest(new { error = "INVALID_INPUT", message = "Mật khẩu mới phải có ít nhất 8 ký tự." });
             }
 
-            var id = request.UserId ?? "demo-user-001";
-            
+            // Id người dùng luôn lấy từ token — KHÔNG tin userId do client gửi (chống IDOR).
+            var id = JwtHelper.ExtractSubFromToken(Request);
+            if (string.IsNullOrEmpty(id))
+                return Unauthorized(new { error = "UNAUTHORIZED", message = "Không xác định được người dùng." });
+
             if (id != "demo-user-001" && Guid.TryParse(id, out var dbUserId))
             {
                 var dbUser = await _dbContext.Users.FindAsync(dbUserId);
@@ -421,11 +512,20 @@ namespace VisualizationDSA.WebApi.Controllers
         
         
         [HttpPost("award-xp")]
+        [RequireJwtRole]
         public async Task<ActionResult<StatelessUserDto>> AwardXP([FromBody] StatelessXpAwardRequest request)
         {
+            // Giới hạn XP mỗi lần cấp để chống spam (khớp chính sách gamification).
+            if (request.Amount < 1 || request.Amount > 500)
+                return BadRequest(new { error = "INVALID_AMOUNT", message = "Số XP cấp phải nằm trong khoảng 1–500." });
+
+            // Chỉ cấp XP cho chính user của token — không tin userId từ client.
+            var id = JwtHelper.ExtractSubFromToken(Request);
+            if (string.IsNullOrEmpty(id))
+                return Unauthorized(new { error = "UNAUTHORIZED", message = "Không xác định được người dùng." });
+
             try
             {
-                var id = request.UserId ?? "demo-user-001";
                 if (id != "demo-user-001" && Guid.TryParse(id, out var dbUserId))
                 {
                     var dbUser = await _dbContext.Users.FindAsync(dbUserId);
@@ -475,6 +575,12 @@ namespace VisualizationDSA.WebApi.Controllers
         [HttpGet("demo-credentials")]
         public ActionResult<object> GetDemoCredentials()
         {
+            // Không lộ thông tin đăng nhập demo ra môi trường production.
+            if (!_env.IsDevelopment())
+            {
+                return NotFound();
+            }
+
             return Ok(new
             {
                 message = "Tài khoản demo để kiểm thử",
@@ -485,3 +591,11 @@ namespace VisualizationDSA.WebApi.Controllers
         }
     }
 }
+    public class SaveLessonProgressRequest
+    {
+        public bool HasWatchedVisualizer { get; set; }
+        public int? QuizScore { get; set; }
+        public int BestScore { get; set; }
+        public bool CodelabCompleted { get; set; }
+        public int XpAwarded { get; set; }
+    }

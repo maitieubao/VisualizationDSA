@@ -1,4 +1,5 @@
 import { api } from './apiClient';
+import type { Course } from '../features/courses/types/course.types';
 
 export interface CreateCourseDto {
   title: string;
@@ -27,6 +28,8 @@ export interface AddModuleItemDto {
 }
 
 export const courseApi = {
+  getCourses: () => api.get<Course[]>('/concepts/courses'),
+  getCourseById: (id: string) => api.get<Course>(`/concepts/courses/${id}`),
   createCourse: (data: CreateCourseDto) => api.post<{ courseId: string; message: string }>('/concepts/courses', data),
   addModule: (courseId: string, data: AddModuleDto) => api.post<{ moduleId: string; message: string }>(`/concepts/courses/${courseId}/modules`, data),
   addModuleItem: (moduleId: string, data: AddModuleItemDto) => api.post<{ message: string }>(`/concepts/modules/${moduleId}/items`, data),

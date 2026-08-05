@@ -6,11 +6,13 @@ using Microsoft.AspNetCore.Mvc;
 using VisualizationDSA.Application.Features.Codelabs.Commands;
 using VisualizationDSA.Application.Features.Codelabs.Queries;
 
+using VisualizationDSA.WebApi.Filters;
+
 namespace VisualizationDSA.WebApi.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    [Authorize]
+    [RequireJwtRole]
     public class CodelabsController : ControllerBase
     {
         private readonly IMediator _mediator;
@@ -30,7 +32,7 @@ namespace VisualizationDSA.WebApi.Controllers
         [HttpPost("{id}/submit")]
         public async Task<IActionResult> SubmitCodelab(Guid id, [FromBody] SubmitCodelabRequestDto request)
         {
-            var userIdStr = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+            var userIdStr = JwtHelper.ExtractSubFromToken(Request);
             if (string.IsNullOrEmpty(userIdStr) || !Guid.TryParse(userIdStr, out var userId))
             {
                 return Unauthorized();
@@ -51,7 +53,7 @@ namespace VisualizationDSA.WebApi.Controllers
         [HttpPost("{id}/run")]
         public async Task<IActionResult> RunCodelab(Guid id, [FromBody] SubmitCodelabRequestDto request)
         {
-            var userIdStr = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+            var userIdStr = JwtHelper.ExtractSubFromToken(Request);
             if (string.IsNullOrEmpty(userIdStr) || !Guid.TryParse(userIdStr, out var userId))
             {
                 return Unauthorized();
@@ -72,7 +74,7 @@ namespace VisualizationDSA.WebApi.Controllers
         [HttpPost("{id}/reveal-hint")]
         public async Task<IActionResult> RevealHint(Guid id, [FromBody] RevealHintRequestDto request)
         {
-            var userIdStr = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+            var userIdStr = JwtHelper.ExtractSubFromToken(Request);
             if (string.IsNullOrEmpty(userIdStr) || !Guid.TryParse(userIdStr, out var userId))
             {
                 return Unauthorized();

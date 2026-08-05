@@ -1,0 +1,68 @@
+{
+  "quizTitle": "Trắc nghiệm DP Patterns",
+  "topic": "dsa",
+  "difficulty": 1,
+  "xpReward": 45,
+  "questions": [
+    {
+      "questionText": "Interval DP thường dùng trạng thái nào?",
+      "options": ["dp[i] với i là độ dài dãy", "dp[i][j] với i, j là hai đầu đoạn liên tục", "dp[mask] với mask là tập con", "dp[u] với u là node trên cây"],
+      "correctIndex": 1,
+      "explanation": "Interval DP đại diện kết quả của đoạn từ i đến j bằng dp[i][j]."
+    },
+    {
+      "questionText": "Bitmask DP chỉ khả thi khi số phần tử n thỏa điều kiện nào?",
+      "options": ["n ≤ 10", "n ≤ 20", "n ≤ 100", "n ≤ 1000"],
+      "correctIndex": 1,
+      "explanation": "Số trạng thái là 2^n, chỉ khả thi với n khoảng 20 hoặc nhỏ hơn."
+    },
+    {
+      "questionText": "Tree DP thường duyệt cây theo thứ tự nào để tính bài toán con trước?",
+      "options": ["Preorder (gốc trước)", "Inorder (trái - gốc - phải)", "Postorder (con trước, gộp lên cha)", "Level-order (BFS)"],
+      "correctIndex": 2,
+      "explanation": "Cần kết quả của node con trước khi gộp lên node cha nên dùng postorder."
+    },
+    {
+      "questionText": "Bài toán matrix chain multiplication phù hợp pattern DP nào?",
+      "options": ["Interval DP", "Bitmask DP", "Tree DP", "Linear DP"],
+      "correctIndex": 0,
+      "explanation": "Chọn vị trí cắt phép nhân giữa một đoạn ma trận — đúng hình dạng Interval DP."
+    },
+    {
+      "questionText": "Với n = 4 thành phố, số trạng thái bitmask tối đa là bao nhiêu?",
+      "options": ["4", "8", "16", "64"],
+      "correctIndex": 2,
+      "explanation": "Số tập con của 4 phần tử là 2^4 = 16 trạng thái mask."
+    },
+    {
+      "questionText": "Trong Interval DP cho burst balloons, tư duy đảo ngược là gì?",
+      "options": ["Nổ quả bóng đầu tiên trước", "Chọn quả bóng nổ cuối cùng trong đoạn", "Nổ quả bóng lớn nhất trước", "Nổ hai quả cùng lúc"],
+      "correctIndex": 1,
+      "explanation": "Chọn quả nổ cuối giúp hai đoạn con độc lập và chi phí chỉ còn tích với biên ngoài."
+    },
+    {
+      "questionText": "Trong house robber III, nếu cướp node hiện tại thì node con phải thế nào?",
+      "options": ["Cũng cướp để tối đa lợi nhuận", "Không được cướp", "Cướp hoặc không đều được", "Chỉ cướp một nửa số con"],
+      "correctIndex": 1,
+      "explanation": "Hai node kề nhau không thể cùng bị cướp, nên khi cướp node cha, các con phải ở trạng thái không cướp."
+    },
+    {
+      "questionText": "Độ phức tạp điển hình của Interval DP (không tối ưu bằng Knuth) là bao nhiêu?",
+      "options": ["O(n)", "O(n²)", "O(n³)", "O(2^n)"],
+      "correctIndex": 2,
+      "explanation": "O(n²) trạng thái, mỗi trạng thái duyệt điểm chia k — tổng O(n³)."
+    },
+    {
+      "questionText": "Cho dp[mask][last] trong TSP, cách mở rộng trạng thái đúng là gì?",
+      "options": ["Xóa một bit khỏi mask", "Thêm một thành phố chưa đi vào mask và cập nhật last", "Đảo ngược thứ tự duyệt", "Gộp hai mask bất kỳ"],
+      "correctIndex": 1,
+      "explanation": "Từ mask hiện tại kết thúc ở last, thêm thành phố next chưa đi vào mask và cập nhật chi phí."
+    },
+    {
+      "questionText": "Với mảng [3, 1, 5], bài burst balloons chọn quả 1 nổ cuối cùng cho kết quả bao nhiêu?",
+      "options": ["5", "8", "15", "30"],
+      "correctIndex": 2,
+      "explanation": "Hai bên quả 1 đã nổ hết, chi phí cuối là 3 × 1 × 5 = 15, hai đoạn con đều rỗng nên tổng bằng 15."
+    }
+  ]
+}

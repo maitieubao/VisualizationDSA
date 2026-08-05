@@ -15,6 +15,7 @@ export const useGamificationStore = defineStore('gamification-engine', () => {
   const unlockedBadges = ref<string[]>([]), showConfetti = ref(false), leaderboardRank = ref(0);
   const streakFreezesCount = ref(MAX_STREAK_FREEZES), leaderboardData = ref<LeaderboardEntry[]>([]);
   const isSyncing = ref(false), syncError = ref<string | null>(null);
+  const completedAlgorithms = ref<string[]>([]);
 
   const allBadges = computed(() => GamificationEngine.getBadgeTemplates());
   const lockedBadges = computed(() => allBadges.value.filter(b => !unlockedBadges.value.includes(b.id)));
@@ -30,13 +31,28 @@ export const useGamificationStore = defineStore('gamification-engine', () => {
     if (!GamificationEngine.validateXPAmount(amount)) return;
     const todayStr = StreakCalculator.getAdjustedDate(new Date());
     currentXP.value += amount;
-    const { nextStreak, shouldUpdate } = StreakCalculator.calculateUpdatedStreak(lastActiveDate.value, activeStreak.value, todayStr);
-    if (shouldUpdate) { activeStreak.value = nextStreak; lastActiveDate.value = todayStr; }
+    const { nextStreak, shouldUpdate, freezeUsed } = StreakCalculator.calculateUpdatedStreak(
+      lastActiveDate.value, activeStreak.value, todayStr, streakFreezesCount.value
+    );
+    if (shouldUpdate) {
+      activeStreak.value = nextStreak;
+      lastActiveDate.value = todayStr;
+      // Nghỉ lỡ ngày đã dùng 1 lượt freeze.
+      if (freezeUsed && streakFreezesCount.value > 0) streakFreezesCount.value--;
+    }
     checkAndUnlockBadges();
   }
 
   function checkAndUnlockBadges(): void {
-    const userState: UserProgressState = { userId: 'current-user', totalXP: currentXP.value, activeStreak: activeStreak.value, lastActiveDate: lastActiveDate.value, unlockedBadges: unlockedBadges.value, streakFreezesCount: streakFreezesCount.value };
+    const userState: UserProgressState = {
+      userId: 'current-user',
+      totalXP: currentXP.value,
+      activeStreak: activeStreak.value,
+      lastActiveDate: lastActiveDate.value,
+      unlockedBadges: unlockedBadges.value,
+      streakFreezesCount: streakFreezesCount.value,
+      completedAlgorithms: completedAlgorithms.value,
+    };
     const newUnlocked = GamificationEngine.checkNewUnlockedBadges(userState);
     if (newUnlocked.length > 0) { unlockedBadges.value.push(...newUnlocked); triggerConfettiRain(); }
   }
@@ -113,6 +129,8 @@ export const useGamificationStore = defineStore('gamification-engine', () => {
       backendProfile.value = await statelessGamificationApi.getProfile();
       currentXP.value = backendProfile.value.totalXp;
       activeStreak.value = backendProfile.value.streakDays;
+      // Đồng bộ lastActiveDate — nếu không, lần earnXPLocal kế tiếp sẽ reset streak về 1.
+      lastActiveDate.value = StreakCalculator.getAdjustedDate(new Date());
       unlockedBadges.value = backendProfile.value.earnedBadges.map(b => b.id);
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : 'Không thể tải profile';
@@ -126,11 +144,13 @@ export const useGamificationStore = defineStore('gamification-engine', () => {
     try {
       isBackendLoading.value = true;
       backendError.value = null;
+      // Đếm badge TRƯỚC khi gán — confetti chỉ bắn khi thực sự có badge MỚI.
+      const prevBadgeCount = unlockedBadges.value.length;
       backendProfile.value = await statelessGamificationApi.awardXp(amount, reason);
       currentXP.value = backendProfile.value.totalXp;
       activeStreak.value = backendProfile.value.streakDays;
+      lastActiveDate.value = StreakCalculator.getAdjustedDate(new Date());
       unlockedBadges.value = backendProfile.value.earnedBadges.map(b => b.id);
-      const prevBadgeCount = unlockedBadges.value.length;
       if (backendProfile.value.earnedBadges.length > prevBadgeCount) triggerConfettiRain();
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : 'Không thể cộng XP';
@@ -163,7 +183,7 @@ export const useGamificationStore = defineStore('gamification-engine', () => {
   }
 
   return {
-    currentXP, activeStreak, lastActiveDate, unlockedBadges, showConfetti, leaderboardRank, streakFreezesCount, leaderboardData, isSyncing, syncError,
+    currentXP, activeStreak, lastActiveDate, unlockedBadges, showConfetti, leaderboardRank, streakFreezesCount, leaderboardData, isSyncing, syncError, completedAlgorithms,
     allBadges, lockedBadges, nextBadgeXPThreshold, xpProgressPercent, streakStatus, isOnlineMode,
     earnXPLocal, checkAndUnlockBadges, triggerConfettiRain, useStreakFreeze, setLeaderboardData, setStreakForTesting,
     earnXPWithSync, syncProgressFromServer, checkBadgesFromServer, fetchLeaderboardFromServer,

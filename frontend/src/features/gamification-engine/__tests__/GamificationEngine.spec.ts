@@ -12,6 +12,7 @@ describe('GamificationEngine', () => {
         lastActiveDate: '2026-05-18',
         unlockedBadges: [],
         streakFreezesCount: 1,
+        completedAlgorithms: ['quicksort', 'sorting'],
       };
       const newUnlocked = GamificationEngine.checkNewUnlockedBadges(userState);
       expect(newUnlocked).toContain('recursion-master');
@@ -25,6 +26,7 @@ describe('GamificationEngine', () => {
         lastActiveDate: '2026-05-18',
         unlockedBadges: [],
         streakFreezesCount: 1,
+        completedAlgorithms: ['quicksort', 'sorting'],
       };
       const newUnlocked = GamificationEngine.checkNewUnlockedBadges(userState);
       expect(newUnlocked).not.toContain('recursion-master');
@@ -38,6 +40,7 @@ describe('GamificationEngine', () => {
         lastActiveDate: '2026-05-18',
         unlockedBadges: [],
         streakFreezesCount: 1,
+        completedAlgorithms: ['quicksort', 'sorting'],
       };
       const newUnlocked = GamificationEngine.checkNewUnlockedBadges(userState);
       expect(newUnlocked).not.toContain('solid-architect');
@@ -51,6 +54,7 @@ describe('GamificationEngine', () => {
         lastActiveDate: '2026-05-18',
         unlockedBadges: ['recursion-master'],
         streakFreezesCount: 1,
+        completedAlgorithms: ['quicksort', 'sorting'],
       };
       const newUnlocked = GamificationEngine.checkNewUnlockedBadges(userState);
       expect(newUnlocked).not.toContain('recursion-master');
@@ -64,6 +68,7 @@ describe('GamificationEngine', () => {
         lastActiveDate: '2026-05-18',
         unlockedBadges: [],
         streakFreezesCount: 1,
+        completedAlgorithms: ['quicksort', 'sorting'],
       };
       const newUnlocked = GamificationEngine.checkNewUnlockedBadges(userState);
       expect(newUnlocked).toContain('solid-architect');
@@ -77,6 +82,7 @@ describe('GamificationEngine', () => {
         lastActiveDate: '2026-05-18',
         unlockedBadges: [],
         streakFreezesCount: 1,
+        completedAlgorithms: ['quicksort', 'sorting'],
       };
       const newUnlocked = GamificationEngine.checkNewUnlockedBadges(userState);
       expect(newUnlocked.length).toBeGreaterThanOrEqual(2);
@@ -90,6 +96,7 @@ describe('GamificationEngine', () => {
         lastActiveDate: '2026-05-18',
         unlockedBadges: [],
         streakFreezesCount: 1,
+        completedAlgorithms: ['quicksort', 'sorting'],
       };
       const newUnlocked = GamificationEngine.checkNewUnlockedBadges(userState);
       expect(newUnlocked).toEqual([]);
@@ -103,6 +110,7 @@ describe('GamificationEngine', () => {
         lastActiveDate: '2026-05-18',
         unlockedBadges: ['recursion-master', 'solid-architect', 'sorting-champion', 'streak-warrior', 'graph-explorer'],
         streakFreezesCount: 1,
+        completedAlgorithms: ['quicksort', 'sorting'],
       };
       const newUnlocked = GamificationEngine.checkNewUnlockedBadges(userState);
       expect(newUnlocked).toEqual([]);
@@ -116,6 +124,7 @@ describe('GamificationEngine', () => {
         lastActiveDate: '2026-05-18',
         unlockedBadges: [],
         streakFreezesCount: 1,
+        completedAlgorithms: ['quicksort', 'sorting'],
       };
       const newUnlocked = GamificationEngine.checkNewUnlockedBadges(userState);
       expect(newUnlocked).toContain('streak-warrior');

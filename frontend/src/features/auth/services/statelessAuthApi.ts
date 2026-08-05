@@ -5,6 +5,8 @@
 
 const BASE_URL = import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:5055';
 
+import { useAuthStore } from '../store/useAuthStore';
+
 
 
 export interface StatelessUserDto {
@@ -64,6 +66,25 @@ async function handleResponse<T>(response: Response): Promise<T> {
 
 const JSON_HEADERS: HeadersInit = { 'Content-Type': 'application/json' };
 
+/**
+ * Lấy access token đang hoạt động để gắn vào request cần xác thực.
+ * Backend xác định người dùng từ token (KHÔNG tin userId client gửi — chống IDOR).
+ */
+function getAuthToken(): string | null {
+  try {
+    const fromStore = useAuthStore().getAccessToken();
+    if (fromStore) return fromStore;
+  } catch {
+    // Pinia chưa active (test edge)
+  }
+  return localStorage.getItem('token');
+}
+
+function authHeaders(): HeadersInit {
+  const token = getAuthToken();
+  return token ? { ...JSON_HEADERS, 'Authorization': `Bearer ${token}` } : JSON_HEADERS;
+}
+
 
 
 export const statelessAuthApi = {
@@ -102,23 +123,21 @@ export const statelessAuthApi = {
     }).catch(() => {  });
   },
 
-  async getMe(userId?: string): Promise<StatelessUserDto> {
-    const params = userId ? `?userId=${encodeURIComponent(userId)}` : '';
-    const res = await fetch(`${BASE_URL}/api/v1/concepts/auth/me${params}`);
+  async getMe(): Promise<StatelessUserDto> {
+    const res = await fetch(`${BASE_URL}/api/v1/concepts/auth/me`, { headers: authHeaders() });
     return handleResponse<StatelessUserDto>(res);
   },
 
-  async getProgress(userId?: string): Promise<StatelessUserProgress> {
-    const params = userId ? `?userId=${encodeURIComponent(userId)}` : '';
-    const res = await fetch(`${BASE_URL}/api/v1/concepts/auth/progress${params}`);
+  async getProgress(): Promise<StatelessUserProgress> {
+    const res = await fetch(`${BASE_URL}/api/v1/concepts/auth/progress`, { headers: authHeaders() });
     return handleResponse<StatelessUserProgress>(res);
   },
 
-  async updateProfile(userId: string, username: string, nickname?: string, bio?: string, university?: string): Promise<StatelessUserDto> {
+  async updateProfile(username: string, nickname?: string, bio?: string, university?: string): Promise<StatelessUserDto> {
     const res = await fetch(`${BASE_URL}/api/v1/concepts/auth/profile`, {
       method: 'PUT',
-      headers: JSON_HEADERS,
-      body: JSON.stringify({ userId, username, nickname, bio, university }),
+      headers: authHeaders(),
+      body: JSON.stringify({ username, nickname, bio, university }),
     });
     return handleResponse<StatelessUserDto>(res);
   },
@@ -139,11 +158,11 @@ export const statelessAuthApi = {
     return handleResponse<StatelessAuthResponse>(res);
   },
 
-  async changePassword(userId: string, currentPassword: string, newPassword: string): Promise<{ message: string }> {
+  async changePassword(currentPassword: string, newPassword: string): Promise<{ message: string }> {
     const res = await fetch(`${BASE_URL}/api/v1/concepts/auth/change-password`, {
       method: 'PUT',
-      headers: JSON_HEADERS,
-      body: JSON.stringify({ userId, currentPassword, newPassword }),
+      headers: authHeaders(),
+      body: JSON.stringify({ currentPassword, newPassword }),
     });
     return handleResponse<{ message: string }>(res);
   },

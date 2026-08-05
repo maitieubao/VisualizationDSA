@@ -1,4 +1,4 @@
-import { ref, computed, watch, nextTick, onMounted, onUnmounted } from 'vue';
+import { computed, ref, watch, onMounted, onUnmounted } from 'vue';
 import type { SortFrame } from '../types/sorting.types';
 
 export function useRadixSortVisualizer(frame: () => SortFrame | null) {
@@ -7,8 +7,8 @@ export function useRadixSortVisualizer(frame: () => SortFrame | null) {
     if (!ids || ids.length === 0) {
       return (frame()?.arrayState ?? []).map((value, id) => ({ id, value, isPlaceholder: false }));
     }
-    
-    if (frame()?.radixStep === 'collect' && !frame()?.description.includes('hoàn thành')) {
+
+    if (frame()?.radixStep === 'collect' && !(frame()?.description ?? '').includes('hoàn thành')) {
       const activeIdx = activeElementIdx.value;
       return ids.map((item, idx) => {
         if (idx <= activeIdx) {
@@ -18,27 +18,41 @@ export function useRadixSortVisualizer(frame: () => SortFrame | null) {
         }
       });
     }
-    
+
+    if (frame()?.radixStep === 'distribute') {
+      const activeIdx = activeElementIdx.value;
+      if (activeIdx >= 0) {
+        return ids.map((item, idx) => ({
+          ...item,
+          isPlaceholder: idx < activeIdx,
+        }));
+      }
+    }
+
     return ids.map(item => ({ ...item, isPlaceholder: false }));
   });
 
   const n = computed(() => Math.max(displayItems.value.length, 1));
 
-  
-  const cellH  = computed(() => n.value <= 8 ? '72px' : n.value <= 12 ? '60px' : '50px');
-  const arrGap = computed(() => n.value <= 8 ? '8px'  : '5px');
+  const cellH = computed(() => n.value <= 8 ? '72px' : n.value <= 12 ? '60px' : '50px');
+  const arrGap = computed(() => n.value <= 8 ? '8px' : '5px');
   const cellFs = computed(() => n.value <= 8 ? '14px' : '12px');
 
-  
+  const countOffset = computed(() => {
+    const values = frame()?.arrayState;
+    if (!values || values.length === 0) return 0;
+    const min = Math.min(...values);
+    return min < 0 ? -min : 0;
+  });
+
   const isDistributePhase = computed(() => frame()?.radixStep !== 'collect');
-  const activeDigitPlace  = computed(() => frame()?.activeDigitPlace ?? 1);
+  const activeDigitPlace = computed(() => frame()?.activeDigitPlace ?? 1);
 
   const digitPlaceLabel = computed(() => {
     const e = activeDigitPlace.value;
     return e === 1 ? 'Hàng đơn vị (1s)' : e === 10 ? 'Hàng chục (10s)' : e === 100 ? 'Hàng trăm (100s)' : `×${e}`;
   });
 
-  
   const currentStepDescription = computed(() => frame()?.description ?? 'Khởi tạo Radix Sort');
 
   const miniStepExplanation = computed(() => {
@@ -47,19 +61,18 @@ export function useRadixSortVisualizer(frame: () => SortFrame | null) {
     const { activeDigitPlace: exp, radixStep, comparingIndices, arrayState } = f;
     const place = exp ?? 1;
     if (comparingIndices && comparingIndices.length > 0) {
-      const idx   = comparingIndices[0];
-      const val   = arrayState[idx];
-      const digit = Math.floor(val / place) % 10;
-      const ps    = place === 1 ? 'đơn vị' : place === 10 ? 'chục' : 'trăm';
+      const idx = comparingIndices[0];
+      const val = arrayState[idx];
+      const digit = Math.floor((val + countOffset.value) / place) % 10;
+      const ps = place === 1 ? 'đơn vị' : place === 10 ? 'chục' : 'trăm';
       return radixStep === 'distribute'
         ? `[PHÂN PHỐI] Xét arr[${idx}] = ${val}. Chữ số hàng ${ps} = ${digit}. → Hộp [${digit}].`
         : `[THU THẬP] Rút ${val} từ đáy Hộp [${digit}] (FIFO) → arr[${idx}].`;
     }
-    if (f.description.includes('✅')) return 'Hoàn tất! Mảng đã sắp xếp theo tất cả hàng chữ số.';
+    if (f.description.includes('✅')) return 'Hoán tất! Mảng đã sắp xếp theo tất cả hàng chữ số.';
     return f.description;
   });
 
-  
   const comparingIndices = computed(() => frame()?.comparingIndices ?? null);
 
   const activeElementIdx = computed(() => {
@@ -70,70 +83,21 @@ export function useRadixSortVisualizer(frame: () => SortFrame | null) {
   const activeBucketIdx = computed(() => {
     if (!frame() || activeElementIdx.value === -1) return -1;
     const val = frame()!.arrayState[activeElementIdx.value];
-    return Math.floor(val / activeDigitPlace.value) % 10;
+    return Math.floor((val + countOffset.value) / activeDigitPlace.value) % 10;
   });
 
   const hasActiveConnection = computed(() =>
     activeElementIdx.value !== -1 && activeBucketIdx.value !== -1
   );
 
-  
-  const connectionCoords = ref({ x1: 500, x2: 500 });
-
-  const updateCoords = () => {
-    if (!hasActiveConnection.value) return;
-    nextTick(() => {
-      const rootEl = document.querySelector('.radix-root');
-      if (!rootEl) return;
-      
-      const activeCell = rootEl.querySelector('.r-cell--dist, .r-cell--coll');
-      const activeBucket = rootEl.querySelector('.r-bucket--active');
-      const connector = rootEl.querySelector('.r-connector');
-      
-      if (activeCell && activeBucket && connector) {
-        const cellRect = activeCell.getBoundingClientRect();
-        const bucketRect = activeBucket.getBoundingClientRect();
-        const connRect = connector.getBoundingClientRect();
-        
-        const x1 = cellRect.left + cellRect.width / 2 - connRect.left;
-        const x2 = bucketRect.left + bucketRect.width / 2 - connRect.left;
-        const width = connRect.width || 1;
-        
-        connectionCoords.value = {
-          x1: Math.max(0, Math.min(1000, (x1 / width) * 1000)),
-          x2: Math.max(0, Math.min(1000, (x2 / width) * 1000))
-        };
-      }
-    });
-  };
-
-  watch(
-    () => [frame(), activeElementIdx.value, activeBucketIdx.value, isDistributePhase.value],
-    () => {
-      updateCoords();
-    },
-    { deep: true, immediate: true }
-  );
-
-  onMounted(() => {
-    window.addEventListener('resize', updateCoords);
-    setTimeout(updateCoords, 100);
+  const connStyle = computed(() => {
+    if (!hasActiveConnection.value) return { display: 'none' };
+    return {
+      background: isDistributePhase.value ? 'var(--color-accent-yellow)' : 'var(--color-accent-green)',
+      boxShadow: isDistributePhase.value ? '0 0 8px var(--color-accent-yellow-glow)' : '0 0 8px var(--color-accent-green-glow)',
+    };
   });
 
-  onUnmounted(() => {
-    window.removeEventListener('resize', updateCoords);
-  });
-
-  const connPath = computed(() => {
-    if (!hasActiveConnection.value) return '';
-    const { x1, x2 } = connectionCoords.value;
-    if (isDistributePhase.value) {
-      return `M ${x1} 8 L ${x1} 22 C ${x1} 60, ${x2} 40, ${x2} 78 L ${x2} 92`;
-    }
-    return `M ${x2} 92 L ${x2} 78 C ${x2} 40, ${x1} 60, ${x1} 22 L ${x1} 8`;
-  });
-
-  
   function bucketItems(d: number): Array<{ id: number; value: number }> {
     const wids = frame()?.radixBucketsWithIds?.[d];
     if (wids) return wids;
@@ -141,7 +105,6 @@ export function useRadixSortVisualizer(frame: () => SortFrame | null) {
   }
   function isBucketActive(d: number) { return activeBucketIdx.value === d; }
 
-  
   function cellClass(idx: number): string {
     if (!frame()) return 'r-cell--idle';
     const { comparingIndices: ci, radixStep } = frame()!;
@@ -158,20 +121,27 @@ export function useRadixSortVisualizer(frame: () => SortFrame | null) {
     return 'r-bitem--idle';
   }
 
-  
   function activeDigit(val: number): string {
-    return String(Math.floor(val / activeDigitPlace.value) % 10);
+    return String(Math.floor((val + countOffset.value) / activeDigitPlace.value) % 10);
   }
   function prefixDigits(val: number): string {
-    const s = String(val);
+    const s = String(val + countOffset.value);
     const pos = s.length - Math.log10(activeDigitPlace.value) - 1;
     return pos > 0 ? s.substring(0, pos) : '';
   }
   function suffixDigits(val: number): string {
-    const s = String(val);
+    const s = String(val + countOffset.value);
     const pos = s.length - Math.log10(activeDigitPlace.value) - 1;
     return pos + 1 < s.length ? s.substring(pos + 1) : '';
   }
+
+  const childIndices = computed(() => {
+    const list: number[] = [];
+    for (let i = 1; i < n.value; i++) {
+      list.push(i);
+    }
+    return list;
+  });
 
   return {
     displayItems,
@@ -188,7 +158,7 @@ export function useRadixSortVisualizer(frame: () => SortFrame | null) {
     activeElementIdx,
     activeBucketIdx,
     hasActiveConnection,
-    connPath,
+    connStyle,
     bucketItems,
     isBucketActive,
     cellClass,
@@ -196,6 +166,6 @@ export function useRadixSortVisualizer(frame: () => SortFrame | null) {
     activeDigit,
     prefixDigits,
     suffixDigits,
-    updateCoords
+    childIndices,
   };
 }

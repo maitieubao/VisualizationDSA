@@ -45,12 +45,22 @@ namespace VisualizationDSA.Application.Features.Lessons.Commands.CreateDraftLess
             _context.Lessons.Add(lesson);
 
             
-            var module = course.Modules.FirstOrDefault();
-            if (module == null)
+            CourseModule module;
+            if (request.ModuleId.HasValue)
             {
-                module = new CourseModule(course.Id, "Chương mặc định", "", 1000);
-                _context.Set<CourseModule>().Add(module);
-                await _context.SaveChangesAsync(cancellationToken);
+                module = course.Modules.FirstOrDefault(m => m.Id == request.ModuleId.Value);
+                if (module == null)
+                    throw new ArgumentException("Module not found in course.");
+            }
+            else
+            {
+                module = course.Modules.FirstOrDefault();
+                if (module == null)
+                {
+                    module = new CourseModule(course.Id, "Chương mặc định", "", 1000);
+                    _context.Set<CourseModule>().Add(module);
+                    await _context.SaveChangesAsync(cancellationToken);
+                }
             }
 
             

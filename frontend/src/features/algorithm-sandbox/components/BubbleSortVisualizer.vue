@@ -73,8 +73,14 @@ const maxVal = computed(() => {
   return Math.max(...props.frame.arrayState, 1);
 });
 
+const minVal = computed(() => {
+  if (!props.frame?.arrayState?.length) return 0;
+  return Math.min(...props.frame.arrayState, 0);
+});
+
 function barHeightPct(value: number): number {
-  const ratio = value / maxVal.value;
+  const span = Math.max(maxVal.value, Math.abs(minVal.value), 1);
+  const ratio = Math.max(0, value / span);
   return Math.round(8 + ratio * 80);
 }
 

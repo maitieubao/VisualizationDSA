@@ -31,14 +31,20 @@
     <div class="mt-auto border-t border-[var(--border-color)] pt-6">
       <div class="text-xs text-[var(--text-muted)] uppercase tracking-wider mb-1">Gói trọn đời (Lifetime)</div>
       <div class="flex items-baseline gap-2">
-        <span class="text-3xl font-extrabold text-[var(--color-gold)] font-mono">199.000đ</span>
+        <span class="text-3xl font-extrabold text-[var(--color-gold)] font-mono">{{ formatPrice(paymentStore.premiumPrice) }}</span>
         <span class="text-xs text-[var(--text-muted)] line-through">499.000đ</span>
       </div>
-      <p class="text-[10px] text-accent-green/80 mt-2 font-medium">★ Thanh toán một lần duy nhất, sở hữu mãi mãi.</p>
+      <p class="text-[10px] text-accent-green/80 mt-2 font-medium"><BaseIcon name="star" class="w-3 h-3 inline mr-1 align-middle" />Thanh toán một lần duy nhất, sở hữu mãi mãi.</p>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
+import { usePaymentStore } from '../store/usePaymentStore';
 
+const paymentStore = usePaymentStore();
+
+function formatPrice(price: number): string {
+  return new Intl.NumberFormat('vi-VN').format(price) + 'đ';
+}
 </script>

@@ -1,0 +1,68 @@
+{
+  "quizTitle": "Trắc nghiệm DP nâng cao",
+  "topic": "dsa",
+  "difficulty": 1,
+  "xpReward": 40,
+  "questions": [
+    {
+      "questionText": "Công thức truy hồi đúng của Knapsack 0/1 với món i và sức chứa w là gì?",
+      "options": ["dp[i][w] = max(dp[i-1][w], dp[i-1][w - wi] + vi)", "dp[i][w] = dp[i-1][w] + dp[i][w-1]", "dp[i][w] = dp[i][w - wi] + vi", "dp[i][w] = max(dp[i][w-1], dp[i-1][w])"],
+      "correctIndex": 0,
+      "explanation": "Với mỗi món ta chọn giữa bỏ qua (giữ dp[i-1][w]) hoặc lấy món (cộng giá trị vi vào dp[i-1][w - wi])."
+    },
+    {
+      "questionText": "Trong LCS, khi hai ký tự khớp nhau, ô dp[i][j] được tính như thế nào?",
+      "options": ["dp[i-1][j] + 1", "dp[i-1][j-1] + 1", "max(dp[i-1][j], dp[i][j-1])", "dp[i][j-1] + 1"],
+      "correctIndex": 1,
+      "explanation": "Khi ký tự khớp, độ dài chuỗi con chung tăng thêm 1 so với ô đường chéo dp[i-1][j-1]."
+    },
+    {
+      "questionText": "Edit Distance cho phép ba phép toán nào trên chuỗi?",
+      "options": ["Chèn, xóa, thay thế ký tự", "Hoán đổi, xoay, dịch chuyển", "Cộng, nhân, chia", "Trộn, tách, nhân đôi"],
+      "correctIndex": 0,
+      "explanation": "Ba phép biến đổi cơ bản của Edit Distance là insert (chèn), delete (xóa) và replace (thay thế), mỗi phép tốn chi phí 1."
+    },
+    {
+      "questionText": "Trong Unique Paths, giá trị khởi tạo của hàng đầu tiên và cột đầu tiên là gì?",
+      "options": ["0", "1", "Tổng kích thước lưới", "Vô cực"],
+      "correctIndex": 1,
+      "explanation": "Chỉ có đúng một cách di chuyển dọc theo hàng đầu hoặc cột đầu nên mọi ô ở đó đều bằng 1."
+    },
+    {
+      "questionText": "Độ dài LCS của hai chuỗi ABCBDAB và BDCABA là bao nhiêu?",
+      "options": ["3", "4", "5", "6"],
+      "correctIndex": 1,
+      "explanation": "Dãy con chung dài nhất là BDAB, độ dài 4 — lấp bảng LCS cho kết quả dp[7][6] = 4."
+    },
+    {
+      "questionText": "Knapsack 0/1 sức chứa 5 với các món (trọng lượng, giá trị): (2,3), (3,4), (4,5), (5,6). Giá trị tối ưu là bao nhiêu?",
+      "options": ["6", "7", "9", "8"],
+      "correctIndex": 1,
+      "explanation": "Chọn món (2,3) và (3,4): tổng trọng lượng 5, tổng giá trị 3 + 4 = 7, cao hơn món (5,6) đơn lẻ là 6."
+    },
+    {
+      "questionText": "Khác biệt chính giữa Unbounded Knapsack và Knapsack 0/1 là gì?",
+      "options": ["Mỗi món có thể được chọn lại không giới hạn", "Không có giới hạn sức chứa", "Chỉ chấp nhận trọng lượng chẵn", "Giá trị bắt buộc bằng trọng lượng"],
+      "correctIndex": 0,
+      "explanation": "Unbounded cho phép tái sử dụng cùng một món nhiều lần, do đó truy hồi đọc chính hàng hiện tại thay vì hàng trước."
+    },
+    {
+      "questionText": "Edit Distance giữa hai chuỗi kitten và sitting là bao nhiêu?",
+      "options": ["3", "4", "5", "6"],
+      "correctIndex": 0,
+      "explanation": "Ba phép biến đổi: thay k thành s, thay e thành i, và chèn g vào cuối — tổng chi phí 3."
+    },
+    {
+      "questionText": "Robot đi từ ô (0,0) đến ô (2,6) chỉ được sang phải hoặc xuống dưới, có bao nhiêu đường đi khác nhau?",
+      "options": ["18", "21", "28", "35"],
+      "correctIndex": 2,
+      "explanation": "Lưới 3×7, số đường đi là tổ hợp C(3+7-2, 3-1) = C(8, 2) = 28."
+    },
+    {
+      "questionText": "Khi nén Knapsack 0/1 xuống còn một mảng 1D, tại sao phải duyệt capacity theo chiều giảm dần?",
+      "options": ["Để mỗi món chỉ được chọn tối đa một lần", "Để tăng tốc truy cập bộ nhớ", "Để ưu tiên những món nhẹ hơn", "Để tránh tràn số nguyên"],
+      "correctIndex": 0,
+      "explanation": "Nếu duyệt tăng dần, giá trị vừa ghi đè sẽ được tái sử dụng trong cùng vòng lặp khiến một món bị chọn nhiều lần — biến bài toán thành unbounded."
+    }
+  ]
+}

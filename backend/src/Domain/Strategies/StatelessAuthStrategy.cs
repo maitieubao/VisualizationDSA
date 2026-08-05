@@ -23,8 +23,17 @@ namespace VisualizationDSA.Domain.Strategies
         public static Func<string, string, bool> VerifyPasswordDelegate { get; set; } = (password, hash) => 
             HashPassword(password) == hash;
 
+        /// <summary>
+        /// Chỉ seed tài khoản demo/admin mặc định ở môi trường Development.
+        /// Program.cs set giá trị này theo IWebHostEnvironment — nếu bật ở production,
+        /// ai biết credential công khai trong source sẽ login được quyền Admin/Teacher.
+        /// </summary>
+        public static bool EnableDemoAccounts { get; set; } = false;
+
         public StatelessAuthStrategy()
         {
+            if (!EnableDemoAccounts) return;
+
             var demoUser = new InMemoryUser
             {
                 Id = "demo-user-001",
@@ -244,16 +253,15 @@ namespace VisualizationDSA.Domain.Strategies
 
         private static string GenerateMockJwt(InMemoryUser user)
         {
-            var header = Convert.ToBase64String(Encoding.UTF8.GetBytes("{\"alg\":\"HS256\",\"typ\":\"JWT\"}"));
-            var payload = Convert.ToBase64String(Encoding.UTF8.GetBytes(
+            var header = JwtSigningConfig.Base64UrlEncode(Encoding.UTF8.GetBytes("{\"alg\":\"HS256\",\"typ\":\"JWT\"}"));
+            var payload = JwtSigningConfig.Base64UrlEncode(Encoding.UTF8.GetBytes(
                 $"{{\"sub\":\"{user.Id}\",\"email\":\"{user.Email}\",\"name\":\"{user.Username}\"," +
                 $"\"role\":\"{user.Role}\"," +
                 $"\"level\":{user.CurrentLevel},\"exp\":{DateTimeOffset.UtcNow.Add(AccessTokenLifetime).ToUnixTimeSeconds()}," +
                 $"\"jti\":\"{Guid.NewGuid()}\"}}"
             ));
-            var key = Encoding.UTF8.GetBytes("VisualizationDSA-Stateless-Dev-Secret-Key-2024-Phase6-256bit!");
-            var signature = Convert.ToBase64String(
-                HMACSHA256.HashData(key, Encoding.UTF8.GetBytes($"{header}.{payload}"))
+            var signature = JwtSigningConfig.Base64UrlEncode(
+                HMACSHA256.HashData(JwtSigningConfig.Key, Encoding.UTF8.GetBytes($"{header}.{payload}"))
             );
             return $"{header}.{payload}.{signature}";
         }
@@ -271,8 +279,9 @@ namespace VisualizationDSA.Domain.Strategies
 
         private static string HashPassword(string password)
         {
-            var bytes = SHA256.HashData(Encoding.UTF8.GetBytes(password + "visualizationdsa-salt"));
-            return Convert.ToHexString(bytes).ToLowerInvariant();
+            // BCrypt — KHÔNG dùng SHA256 (salt tĩnh, yếu) để DB đồng bộ với AuthService chuẩn,
+            // tránh tài khoản đăng ký/đổi mật khẩu qua stateless không login được qua hệ chuẩn.
+            return BCrypt.Net.BCrypt.HashPassword(password, workFactor: 12);
         }
 
         private static bool VerifyPassword(string password, string hash)
@@ -314,6 +323,16 @@ namespace VisualizationDSA.Domain.Strategies
         public void ForceAddRefreshToken(string token, string userId)
         {
             _refreshTokens[token] = userId;
+        }
+
+        /// <summary>Đổi id của user trong bộ nhớ (Register: id tạm → id DB) — giữ đúng sub cho token.</summary>
+        public bool ChangeUserId(string oldId, string newId)
+        {
+            if (!_usersById.TryRemove(oldId, out var user)) return false;
+            user.Id = newId;
+            _usersById[newId] = user;
+            _usersByEmail[user.Email] = user;
+            return true;
         }
 
         public void AddUser(string id, string email, string username, string passwordHash, string role, bool isPremium)
