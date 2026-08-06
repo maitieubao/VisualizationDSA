@@ -6,6 +6,7 @@ using System;
 using System.IO;
 using System.Threading.Tasks;
 using VisualizationDSA.WebApi.Filters;
+using Microsoft.AspNetCore.RateLimiting;
 
 namespace VisualizationDSA.WebApi.Controllers
 {
@@ -26,6 +27,7 @@ namespace VisualizationDSA.WebApi.Controllers
         
         
         [HttpPost("image")]
+        [EnableRateLimiting("api")]
         [RequireJwtRole] 
         [RequestSizeLimit(6 * 1024 * 1024)] // chặn sớm body > 6MB (giới hạn 5MB + overhead)
         public async Task<IActionResult> UploadImage(IFormFile file)

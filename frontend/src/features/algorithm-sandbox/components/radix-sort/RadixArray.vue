@@ -71,7 +71,7 @@ const {
   position: relative; user-select: none;
 }
 .r-cell--idle {
-  border-color: rgba(61, 153, 112, 0.4);
+  border-color: color-mix(in srgb, var(--color-accent-green) 40%, transparent);
   background: var(--color-accent-cyan-dim);
   color: var(--color-accent-cyan);
 }
@@ -94,7 +94,7 @@ const {
 .r-cell--placeholder {
   border-style: dashed !important;
   border-color: var(--color-border-subtle) !important;
-  background: rgba(19, 22, 20, 0.1) !important;
+  background: color-mix(in srgb, var(--color-bg-surface) 10%, transparent) !important;
   color: var(--color-text-muted) !important;
   box-shadow: none !important;
   transform: none !important;

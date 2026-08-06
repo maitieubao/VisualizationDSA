@@ -102,12 +102,12 @@ const {
 .r-bitem--active {
   background: var(--color-accent-cyan-dim);
   color: var(--color-accent-cyan);
-  border-color: rgba(61, 153, 112, 0.3);
+  border-color: color-mix(in srgb, var(--color-accent-green) 30%, transparent);
 }
 .r-bitem--coll {
   background: var(--color-accent-green-dim);
   color: var(--color-accent-green);
-  border-color: rgba(16, 185, 129, 0.3);
+  border-color: color-mix(in srgb, var(--color-accent-emerald) 30%, transparent);
   box-shadow: 0 0 8px var(--color-accent-green-glow);
   animation: collectPop .4s ease;
 }

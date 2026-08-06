@@ -89,7 +89,7 @@
                       >
                     </td>
                     <td class="p-3">
-                      <div class="font-medium text-white truncate max-w-xs">{{ c.title }}</div>
+                      <div class="font-medium text-text-primary truncate max-w-xs">{{ c.title }}</div>
                       <div class="text-xs text-text-muted truncate max-w-xs mt-0.5">{{ c.description }}</div>
                     </td>
                     <td class="p-3">
@@ -126,7 +126,7 @@
                 <span class="text-sm font-medium text-accent-green">
                   Đã chọn Codelab
                 </span>
-                <button type="button" class="text-text-muted hover:text-white text-xs" @click="selectedCodelabId = null">
+                <button type="button" class="text-text-muted hover:text-text-primary text-xs" @click="selectedCodelabId = null">
                   Xóa lựa chọn
                 </button>
               </div>

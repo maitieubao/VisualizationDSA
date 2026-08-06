@@ -82,7 +82,7 @@
                     >
                   </td>
                   <td class="p-3">
-                      <div class="font-medium text-white truncate max-w-xs">{{ q.title }}</div></td>
+                      <div class="font-medium text-text-primary truncate max-w-xs">{{ q.title }}</div></td>
                     <td class="p-3">
                       <span class="badge" :class="topicBadgeClass(q.topic)">{{ q.topic }}</span>
                     </td>

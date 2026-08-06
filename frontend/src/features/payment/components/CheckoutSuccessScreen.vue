@@ -9,7 +9,7 @@
     </p>
     <button
       @click="$emit('finish')"
-      class="px-8 py-3 rounded-[var(--radius-lg)] bg-gradient-to-r from-accent-green to-accent-cyan hover:from-accent-green hover:to-accent-cyan text-text-primary font-bold transition-all shadow-[0_0_20px_rgba(16,185,129,0.3)] active:scale-95"
+      class="px-8 py-3 rounded-[var(--radius-lg)] bg-gradient-to-r from-accent-green to-accent-cyan hover:from-accent-green hover:to-accent-cyan text-white font-bold transition-all shadow-[0_0_20px_rgba(16,185,129,0.3)] active:scale-95"
     >
       Bắt đầu trải nghiệm ngay
     </button>

@@ -24,6 +24,7 @@ using VisualizationDSA.Infrastructure.Interceptors;
 using VisualizationDSA.Infrastructure.Repositories;
 using VisualizationDSA.Infrastructure.Services;
 using VisualizationDSA.WebApi.Middlewares;
+using Microsoft.AspNetCore.HttpOverrides;
 
 
 Log.Logger = new LoggerConfiguration()
@@ -173,7 +174,18 @@ builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 
 
 // Dùng chung khóa ký JWT từ cấu hình cho hệ stateless (JwtHelper/StatelessAuthStrategy/AdminController).
-VisualizationDSA.Domain.JwtSigningConfig.Configure(builder.Configuration["Jwt:Key"]);
+var jwtKey = builder.Configuration["Jwt:Key"];
+
+// Fail-fast: không bao giờ chạy production với key mặc định/placeholder (JWT giả mạo được).
+if (builder.Environment.IsProduction() &&
+    (string.IsNullOrWhiteSpace(jwtKey) ||
+     jwtKey.Contains("REPLACE_WITH_SECURE", StringComparison.OrdinalIgnoreCase) ||
+     jwtKey.Contains("your-super-secret", StringComparison.OrdinalIgnoreCase)))
+{
+    throw new InvalidOperationException(
+        "Jwt:Key phải được cấu hình bằng chuỗi bí mật thực (không dùng placeholder) khi chạy Production.");
+}
+VisualizationDSA.Domain.JwtSigningConfig.Configure(jwtKey);
 
 // Tài khoản demo/admin mặc định CHỈ ở Development (tránh backdoor credential công khai ở production).
 VisualizationDSA.Domain.Strategies.StatelessAuthStrategy.EnableDemoAccounts = builder.Environment.IsDevelopment();
@@ -257,7 +269,7 @@ builder.Services.AddRateLimiter(options =>
     
     options.AddPolicy("auth", context =>
         RateLimitPartition.GetFixedWindowLimiter(
-            partitionKey: context.Connection.RemoteIpAddress?.ToString() ?? "global",
+            partitionKey: RateLimitKey(context),
             factory: _ => new FixedWindowRateLimiterOptions
             {
                 PermitLimit          = 10,
@@ -269,7 +281,7 @@ builder.Services.AddRateLimiter(options =>
     
     options.AddPolicy("api", context =>
         RateLimitPartition.GetFixedWindowLimiter(
-            partitionKey: context.Connection.RemoteIpAddress?.ToString() ?? "global",
+            partitionKey: RateLimitKey(context),
             factory: _ => new FixedWindowRateLimiterOptions
             {
                 PermitLimit          = 60,
@@ -281,7 +293,7 @@ builder.Services.AddRateLimiter(options =>
     
     options.AddPolicy("heavy", context =>
         RateLimitPartition.GetFixedWindowLimiter(
-            partitionKey: context.Connection.RemoteIpAddress?.ToString() ?? "global",
+            partitionKey: RateLimitKey(context),
             factory: _ => new FixedWindowRateLimiterOptions
             {
                 PermitLimit          = 15,
@@ -300,6 +312,17 @@ builder.Services.AddRateLimiter(options =>
             token);
     };
 });
+
+// Partition rate limit theo USER đã đăng nhập (sub) thay vì IP — trường học/office dùng
+// chung IP (NAT) trước đây gộp toàn lớp vào 1 bucket -> 429 hàng loạt khi cùng login.
+static string RateLimitKey(HttpContext ctx)
+{
+    var userId = ctx.User?.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value
+                 ?? ctx.User?.FindFirst("sub")?.Value;
+    return !string.IsNullOrEmpty(userId)
+        ? $"u:{userId}"
+        : (ctx.Connection.RemoteIpAddress?.ToString() ?? "global");
+}
 
 builder.Services.AddAuthorization();
 
@@ -323,6 +346,13 @@ app.UseSerilogRequestLogging(options =>
         ctx.Request.Path.StartsWithSegments("/health")
             ? LogEventLevel.Verbose
             : LogEventLevel.Information;
+});
+
+// Bắt buộc khi deploy sau reverse proxy (nginx/Caddy): nếu thiếu, rate limit theo IP
+// gộp toàn bộ user vào 1 bucket và UseHttpsRedirection nhìn scheme sai.
+app.UseForwardedHeaders(new ForwardedHeadersOptions
+{
+    ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto
 });
 
 

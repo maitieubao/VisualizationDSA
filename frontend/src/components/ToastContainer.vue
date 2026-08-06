@@ -17,8 +17,8 @@
             <BaseIcon v-else name="info" class="w-4 h-4" />
           </div>
           <div class="toast-body">
-            <div class="toast-title" v-html="parseEmojiToSvg(toast.title)"></div>
-            <div class="toast-message" v-html="parseEmojiToSvg(toast.message)"></div>
+            <div class="toast-title" v-html="parseEmojiToSvg(escapeHtmlText(toast.title))"></div>
+            <div class="toast-message" v-html="parseEmojiToSvg(escapeHtmlText(toast.message))"></div>
           </div>
           <button
             class="toast-close"
@@ -37,7 +37,7 @@
 
 <script setup lang="ts">
 import { useToastStore } from '../composables/useToast';
-import { parseEmojiToSvg } from '../utils/emojiParser';
+import { parseEmojiToSvg, escapeHtmlText } from '../utils/emojiParser';
 
 const toastStore = useToastStore();
 </script>

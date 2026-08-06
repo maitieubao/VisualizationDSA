@@ -12,6 +12,7 @@ namespace VisualizationDSA.Application.Features.Codelabs.Commands
 {
     public class CreateCodelabCommand : IRequest<Guid>
     {
+        public Guid? OwnerId { get; set; }
         public string Title { get; set; } = string.Empty;
         public string Description { get; set; } = string.Empty;
         public string InitialCode { get; set; } = string.Empty;
@@ -87,7 +88,8 @@ namespace VisualizationDSA.Application.Features.Codelabs.Commands
                 allowedLanguages: request.AllowedLanguages,
                 constraints: request.Constraints,
                 examples: request.Examples,
-                tags: request.Tags);
+                tags: request.Tags,
+                ownerId: request.OwnerId);
 
             _context.Codelabs.Add(codelab);
 

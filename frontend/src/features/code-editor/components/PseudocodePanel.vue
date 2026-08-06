@@ -82,7 +82,7 @@ const getLineClasses = (lineNum: number): string => {
     return "bg-accent-cyan/10 text-accent-cyan border-l-2 border-accent-cyan";
   }
   if (isLineExecutable(lineNum)) {
-    return "text-text-secondary hover:bg-bg-surface/50 hover:text-white";
+    return "text-text-secondary hover:bg-bg-surface/50 hover:text-text-primary";
   }
   return "text-text-muted/60";
 };

@@ -31,7 +31,7 @@ int Factorial(int n) {
     // Nội dung trong code block không bị biến đổi thành <strong>
     expect(html).not.toContain('<strong>KHÔNG được bold</strong>');
     // Phần ngoài code vẫn render bold bình thường
-    expect(html).toContain('<strong class="font-bold text-white">In đậm ngoài code</strong>');
+    expect(html).toContain('<strong class="font-bold text-text-primary">In đậm ngoài code</strong>');
     // Code block giữ nguyên ký tự gốc (đã escape)
     expect(html).toContain('if (n &lt;= 1) return 1;');
   });

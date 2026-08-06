@@ -3,7 +3,7 @@
     
     <div class="ide-editor-panel">
       <div class="flex-[6] min-h-0"><MonacoEditorPanel /></div>
-      <div class="flex-[4] min-h-0 border-t" style="border-color: rgba(255, 255, 255, 0.05);">
+      <div class="flex-[4] min-h-0 border-t" style="border-color: var(--color-border-subtle);">
         <CompilerConsole />
       </div>
     </div>
@@ -19,9 +19,9 @@
       />
 
       
-      <div class="flex-1 rounded-xl overflow-hidden border shadow-lg relative min-h-0" style="border-color: rgba(255, 255, 255, 0.05);">
+      <div class="flex-1 rounded-xl overflow-hidden border shadow-lg relative min-h-0" style="border-color: var(--color-border-subtle);">
         <CanvasLayer />
-        <div v-if="!hasFrames" class="absolute inset-0 flex items-center justify-center" style="background: rgba(15, 23, 42, 0.8);">
+        <div v-if="!hasFrames" class="absolute inset-0 flex items-center justify-center" style="background: color-mix(in srgb, var(--color-bg-primary) 80%, transparent);">
           <div class="text-center px-8">
             <BaseIcon name="code" class="w-10 h-10 mx-auto mb-3 text-text-disabled" />
             <p class="text-sm text-text-muted">
@@ -32,7 +32,7 @@
       </div>
 
       
-      <div class="mt-2 rounded-xl overflow-hidden border shadow-lg h-32" style="border-color: rgba(255, 255, 255, 0.05);">
+      <div class="mt-2 rounded-xl overflow-hidden border shadow-lg h-32" style="border-color: var(--color-border-subtle);">
         <AnimControlPanel />
       </div>
     </div>
@@ -89,6 +89,6 @@ onBeforeUnmount(() => {
 
 <style scoped>
 .ide-workspace-container { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; width: 100%; height: 100%; font-family: 'Outfit', sans-serif; }
-.ide-editor-panel { display: flex; flex-direction: column; background: rgba(30, 41, 59, 0.4); border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 16px; overflow: hidden; backdrop-filter: blur(10px); }
-.ide-canvas-panel { display: flex; flex-direction: column; background: rgba(15, 23, 42, 0.6); border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 16px; padding: 16px; }
+.ide-editor-panel { display: flex; flex-direction: column; background: color-mix(in srgb, var(--color-bg-secondary) 40%, transparent); border: 1px solid var(--color-border-subtle); border-radius: 16px; overflow: hidden; backdrop-filter: blur(10px); }
+.ide-canvas-panel { display: flex; flex-direction: column; background: color-mix(in srgb, var(--color-bg-primary) 60%, transparent); border: 1px solid var(--color-border-subtle); border-radius: 16px; padding: 16px; }
 </style>

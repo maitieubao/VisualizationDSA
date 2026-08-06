@@ -46,7 +46,11 @@ export interface LoginPayload {
 async function handleResponse<T>(response: Response): Promise<T> {
   if (!response.ok) {
     const body: { message?: string } | null = await response.json().catch(() => null);
-    throw new Error(body?.message ?? `HTTP ${response.status}: ${response.statusText}`);
+    const error = new Error(body?.message ?? `HTTP ${response.status}: ${response.statusText}`);
+    // Gắn HTTP status — cần thiết để phân biệt lỗi auth (401/403) với lỗi mạng/5xx
+    // (production thay message bằng safe-message → regex không dựa được).
+    (error as { status?: number }).status = response.status;
+    throw error;
   }
   return response.json() as Promise<T>;
 }

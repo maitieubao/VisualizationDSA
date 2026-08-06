@@ -23,6 +23,7 @@ export interface LessonProgressPayload {
   hasWatchedVisualizer: boolean;
   quizScore: number | null;
   bestScore: number;
+  quizPassed: boolean;
   codelabCompleted: boolean;
   xpAwarded: number;
 }
@@ -61,7 +62,12 @@ export async function fetchLessonDetail(lessonId: string): Promise<LessonDetailR
   if (token) headers['Authorization'] = `Bearer ${token}`;
 
   const res = await fetch(`${API_BASE}/api/v1/concepts/lessons/${encodeURIComponent(lessonId)}`, { headers });
-  if (!res.ok) throw new Error(`Failed to fetch lesson detail: ${res.status}`);
+  if (!res.ok) {
+    const error = new Error(`Failed to fetch lesson detail: ${res.status}`);
+    // Gắn status để store phân biệt 403 Premium với lỗi mạng.
+    (error as { status?: number }).status = res.status;
+    throw error;
+  }
   return res.json() as Promise<LessonDetailResponse>;
 }
 
@@ -99,6 +105,8 @@ export async function saveLessonProgress(payload: LessonProgressPayload) {
       quizScore: payload.quizScore,
       // bestScore truyền từ store (giữ giá trị cao nhất) — KHÔNG ghi đè bằng điểm hiện tại.
       bestScore: payload.bestScore,
+      // quizPassed giúp server đánh dấu Completed đúng rule 70% (không chỉ quizScore>=1).
+      quizPassed: payload.quizPassed,
       codelabCompleted: payload.codelabCompleted,
       xpAwarded: payload.xpAwarded
     }),

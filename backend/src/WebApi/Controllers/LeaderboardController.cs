@@ -37,6 +37,7 @@ namespace VisualizationDSA.WebApi.Controllers
         public async Task<ActionResult<IEnumerable<LeaderboardEntryDto>>> GetTop(
             [FromQuery] int limit = 20)
         {
+            limit = Math.Clamp(limit, 1, 20);
             var entries = await _leaderboard.GetTopUsersAsync(limit);
             return Ok(entries);
         }

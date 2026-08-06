@@ -63,7 +63,9 @@ namespace VisualizationDSA.WebApi.Controllers
         private Guid GetCurrentUserId()
         {
             var userIdClaim = JwtHelper.ExtractSubFromToken(Request);
-            return Guid.Parse(userIdClaim!);
+            if (string.IsNullOrEmpty(userIdClaim) || !Guid.TryParse(userIdClaim, out var userId))
+                throw new UnauthorizedAccessException("User identity claim không hợp lệ hoặc bị thiếu.");
+            return userId;
         }
     }
 }

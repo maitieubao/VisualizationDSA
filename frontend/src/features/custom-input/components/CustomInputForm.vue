@@ -25,7 +25,7 @@
     <div class="flex items-center gap-2 flex-wrap">
       
       <div class="relative" ref="dropdownRef">
-        <button class="px-3 py-1.5 rounded-lg text-[11px] font-bold bg-bg-surface border border-border-default text-text-secondary hover:text-white hover:border-border-strong transition-colors flex items-center gap-1.5"
+        <button class="px-3 py-1.5 rounded-lg text-[11px] font-bold bg-bg-surface border border-border-default text-text-secondary hover:text-text-primary hover:border-border-strong transition-colors flex items-center gap-1.5"
           @click="showDropdown = !showDropdown">
           <BaseIcon name="dice" class="w-3.5 h-3.5" />
           <span>Sinh Ngẫu Nhiên</span>
@@ -36,13 +36,13 @@
         <Transition name="dropdown">
           <div v-if="showDropdown" class="absolute left-0 top-full mt-1 w-52 bg-bg-surface border border-border-default rounded-lg shadow-xl z-50 overflow-hidden">
             <button v-for="opt in generationOptions" :key="opt.type"
-              class="w-full text-left px-3 py-2 text-[11px] text-text-secondary hover:bg-bg-active hover:text-white transition-colors"
+              class="w-full text-left px-3 py-2 text-[11px] text-text-secondary hover:bg-bg-active hover:text-text-primary transition-colors"
               @click="onGenerate(opt.type)">{{ opt.label }}</button>
           </div>
         </Transition>
       </div>
 
-      <button class="px-3 py-1.5 rounded-lg text-[11px] font-bold bg-bg-surface border border-border-default text-text-secondary hover:text-white hover:border-border-strong transition-colors"
+      <button class="px-3 py-1.5 rounded-lg text-[11px] font-bold bg-bg-surface border border-border-default text-text-secondary hover:text-text-primary hover:border-border-strong transition-colors"
         @click="inputStore.clear()">Xóa Trắng</button>
 
       <button :disabled="!inputStore.canExecute"

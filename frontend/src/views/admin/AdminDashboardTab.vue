@@ -32,17 +32,17 @@
     <div class="dashboard-charts grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
       <div class="card card--chart">
         <h3 class="card-heading">
-          <BaseIcon name="chart-bar" style="width:18px;height:18px;color:#38bdf8" />
+          <BaseIcon name="chart-bar" style="width:18px;height:18px;color:var(--color-accent-cyan)" />
           Lượng học viên đăng ký mới (7 ngày gần nhất)
         </h3>
         <div class="chart-container flex items-center justify-center p-4">
           <svg viewBox="0 0 500 200" class="w-full h-48">
-            <line x1="40" y1="20" x2="480" y2="20" stroke="rgba(255,255,255,0.05)" stroke-dasharray="4" />
-            <line x1="40" y1="70" x2="480" y2="70" stroke="rgba(255,255,255,0.05)" stroke-dasharray="4" />
-            <line x1="40" y1="120" x2="480" y2="120" stroke="rgba(255,255,255,0.05)" stroke-dasharray="4" />
-            <line x1="40" y1="170" x2="480" y2="170" stroke="rgba(255,255,255,0.1)" />
+            <line x1="40" y1="20" x2="480" y2="20" stroke="var(--color-border-subtle)" stroke-dasharray="4" />
+            <line x1="40" y1="70" x2="480" y2="70" stroke="var(--color-border-subtle)" stroke-dasharray="4" />
+            <line x1="40" y1="120" x2="480" y2="120" stroke="var(--color-border-subtle)" stroke-dasharray="4" />
+            <line x1="40" y1="170" x2="480" y2="170" stroke="var(--color-border-default)" />
             <text v-for="(day, idx) in dashboardData.registrationsLast7Days" :key="idx"
-              :x="60 + idx * 65" y="190" fill="#64748b" font-size="9" text-anchor="middle">
+              :x="60 + idx * 65" y="190" fill="var(--color-text-secondary)" font-size="9" text-anchor="middle">
               {{ formatDateLabel(day.date) }}
             </text>
             <g v-for="(day, idx) in dashboardData.registrationsLast7Days" :key="'bar-' + idx">
@@ -50,11 +50,11 @@
                 width="30" :height="Math.min(5, Math.max(0.2, day.count)) * 25"
                 rx="4" fill="url(#chartGrad)" class="transition-all duration-500 hover:opacity-80" />
               <text :x="60 + idx * 65" :y="160 - Math.min(5, Math.max(0.2, day.count)) * 25"
-                fill="#38bdf8" font-weight="bold" font-size="10" text-anchor="middle">{{ day.count }}</text>
+                fill="var(--color-accent-cyan)" font-weight="bold" font-size="10" text-anchor="middle">{{ day.count }}</text>
             </g>
             <defs>
               <linearGradient id="chartGrad" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stop-color="#06b6d4" />
+                <stop offset="0%" stop-color="var(--color-accent-cyan)" />
                 <stop offset="100%" stop-color="#3b82f6" stop-opacity="0.1" />
               </linearGradient>
             </defs>
@@ -64,7 +64,7 @@
 
       <div class="card card--chart">
         <h3 class="card-heading">
-          <BaseIcon name="collection" style="width:18px;height:18px;color:#a855f7" />
+          <BaseIcon name="collection" style="width:18px;height:18px;color:var(--color-accent-purple)" />
           Khóa học phổ biến nhất (Lượt tương tác)
         </h3>
         <div class="course-stats-container p-6 space-y-4">

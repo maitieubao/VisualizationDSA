@@ -156,6 +156,19 @@ namespace VisualizationDSA.WebApi.Controllers
                 return NotFound(new { error = "COURSE_NOT_FOUND", message = "Không tìm thấy khóa học." });
             }
 
+            // GATE PREMIUM: khóa trả phí chỉ owner/Teacher/Admin/Student đã mua Premium xem được.
+            if (course.IsPremium && !isTeacherOrAdmin && !isOwner)
+            {
+                User? gateUser = null;
+                if (userIdStrForGate != null && Guid.TryParse(userIdStrForGate, out var gateUserId))
+                    gateUser = await _dbContext.Users.FindAsync(gateUserId);
+
+                if (gateUser == null || !gateUser.IsPremium)
+                {
+                    return StatusCode(403, new { error = "PREMIUM_REQUIRED", message = "Khóa học này yêu cầu tài khoản Premium để truy cập." });
+                }
+            }
+
             var currentUserIdStr = JwtHelper.ExtractSubFromToken(Request);
             Guid? targetUserId = null;
 
@@ -194,6 +207,25 @@ namespace VisualizationDSA.WebApi.Controllers
                 .ThenBy(x => x.Item.OrderIndex)
                 .Select(x => x.Item)
                 .ToList();
+            // Gom toàn bộ progress trong 1 query (khử N+1 — trước đây 1 query/lesson).
+            Dictionary<Guid, string> lessonStatusMap = new();
+            if (targetUserId.HasValue)
+            {
+                var lessonIds = orderedLessonItems
+                    .Where(i => i.Lesson != null)
+                    .Select(i => i.Lesson!.Id)
+                    .Distinct()
+                    .ToList();
+                if (lessonIds.Count > 0)
+                {
+                    lessonStatusMap = await _dbContext.UserLessonProgresses
+                        .Where(p => p.UserId == targetUserId.Value && lessonIds.Contains(p.LessonId))
+                        .GroupBy(p => p.LessonId)
+                        .Select(g => new { LessonId = g.Key, Status = g.First().Status })
+                        .ToDictionaryAsync(x => x.LessonId, x => x.Status);
+                }
+            }
+
             foreach (var item in orderedLessonItems)
             {
                 var l = item.Lesson;
@@ -203,16 +235,7 @@ namespace VisualizationDSA.WebApi.Controllers
                     continue;
                 }
 
-                var status = "NotStarted";
-                if (targetUserId.HasValue)
-                {
-                    var progress = await _dbContext.UserLessonProgresses
-                        .FirstOrDefaultAsync(p => p.UserId == targetUserId.Value && p.LessonId == l.Id);
-                    if (progress != null)
-                    {
-                        status = progress.Status;
-                    }
-                }
+                var status = lessonStatusMap.TryGetValue(l.Id, out var s) ? s : "NotStarted";
 
                 Guid? linkedQuizId = null;
                 if (quizItemsByModule.TryGetValue(item.ModuleId, out var quizCandidates))
@@ -513,13 +536,33 @@ namespace VisualizationDSA.WebApi.Controllers
                     }
                 }
 
-                foreach (var item in course.Modules.SelectMany(m => m.Items).Where(i => i.ItemType == ModuleItemType.Lesson).OrderBy(i => i.OrderIndex))
+                // Gom thống kê trạng thái bài học trong 1 query (khử 2N CountAsync — trước đây 2 query/lesson).
+                var lessonIdsForStats = course.Modules
+                    .SelectMany(m => m.Items)
+                    .Where(i => i.ItemType == ModuleItemType.Lesson && i.Lesson != null)
+                    .Select(i => i.Lesson!.Id)
+                    .Distinct()
+                    .ToList();
+                var statusCounts = lessonIdsForStats.Count > 0
+                    ? (IEnumerable<dynamic>)await _dbContext.UserLessonProgresses
+                        .Where(p => lessonIdsForStats.Contains(p.LessonId))
+                        .GroupBy(p => new { p.LessonId, p.Status })
+                        .Select(g => new { g.Key.LessonId, g.Key.Status, Count = g.Count() })
+                        .ToListAsync()
+                    : Array.Empty<dynamic>();
+
+                var statusLookup = statusCounts
+                    .Cast<dynamic>()
+                    .GroupBy(x => (Guid)x.LessonId)
+                    .ToDictionary(g => g.Key, g => g.ToDictionary(x => (string)x.Status, x => (int)x.Count));
+
+                foreach (var entry in course.Modules.SelectMany(m => m.Items).Where(i => i.ItemType == ModuleItemType.Lesson).Select(i => new { Item = i, ModuleOrder = i.Module != null ? i.Module.OrderIndex : 0 }).OrderBy(x => x.ModuleOrder).ThenBy(x => x.Item.OrderIndex))
                 {
+                    var item = entry.Item;
                     var lesson = item.Lesson;
-                    var startedCount = await _dbContext.UserLessonProgresses
-                        .CountAsync(p => p.LessonId == lesson.Id && p.Status == "InProgress");
-                    var completedCount = await _dbContext.UserLessonProgresses
-                        .CountAsync(p => p.LessonId == lesson.Id && p.Status == "Completed");
+                    statusLookup.TryGetValue(lesson.Id, out var perLesson);
+                    var startedCount = perLesson != null && perLesson.TryGetValue("InProgress", out var sc) ? sc : 0;
+                    var completedCount = perLesson != null && perLesson.TryGetValue("Completed", out var cc) ? cc : 0;
 
                     lessonDistribution.Add(new
                     {

@@ -8,13 +8,13 @@
       <span class="bucket-phase" :class="phaseClass('distribute')">01 PHÂN PHỐI</span><BaseIcon name="arrow-right" class="bucket-arrow" /><span class="bucket-phase" :class="phaseClass('sort')">02 SẮP XẾP</span><BaseIcon name="arrow-right" class="bucket-arrow" />
       <span class="bucket-phase" :class="phaseClass('collect')">03 THU GOM</span>
     </div>
-    <p class="bucket-description" v-html="parseEmojiToSvg(explanation)"></p>
+    <p class="bucket-description" v-html="parseEmojiToSvg(escapeHtmlText(explanation))"></p>
   </header>
 </template>
 
 <script setup lang="ts">
 import { useBucketSortVisualizer } from '../../composables/useBucketSortVisualizer';
-import { parseEmojiToSvg } from '../../../../utils/emojiParser';
+import { parseEmojiToSvg, escapeHtmlText } from '../../../../utils/emojiParser';
 import type { SortFrame } from '../../types/sorting.types';
 const props = defineProps<{ frame: SortFrame | null }>();
 const { phaseClass, explanation, isComplete } = useBucketSortVisualizer(() => props.frame);

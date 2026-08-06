@@ -25,7 +25,7 @@
             font-family="JetBrains Mono, monospace"
             font-size="20"
             font-weight="700"
-            fill="#06B6D4"
+            fill="var(--color-accent-cyan)"
           >
             VisualizationDSA — Export Preview
           </text>
@@ -38,8 +38,8 @@
               width="120"
               height="40"
               rx="10"
-              fill="rgba(15, 23, 42, 0.8)"
-              stroke="#06B6D4"
+              fill="color-mix(in srgb, var(--color-bg-primary) 80%, transparent)"
+              stroke="var(--color-accent-cyan)"
               stroke-width="1.5"
             />
             <text
@@ -48,7 +48,7 @@
               text-anchor="middle"
               font-family="JetBrains Mono, monospace"
               font-size="12"
-              fill="#e2e8f0"
+              fill="var(--color-text-primary)"
             >
               {{ node.id }}
             </text>
@@ -62,7 +62,7 @@
             :y1="edge.y1"
             :x2="edge.x2"
             :y2="edge.y2"
-            stroke="#06B6D4"
+            stroke="var(--color-accent-cyan)"
             stroke-width="1"
             stroke-dasharray="6,4"
             opacity="0.5"

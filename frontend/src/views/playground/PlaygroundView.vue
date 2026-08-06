@@ -104,10 +104,10 @@ watch(
 }
 .mode-toggle-btn:hover {
   color: var(--color-text-primary, #f1f5f9);
-  background: rgba(255, 255, 255, 0.06);
+  background: var(--color-bg-hover);
 }
 .mode-toggle-btn.active {
-  color: #fbbf24;
-  background: rgba(251, 191, 36, 0.14);
+  color: var(--color-accent-yellow-light);
+  background: color-mix(in srgb, var(--color-accent-yellow) 14%, transparent);
 }
 </style>

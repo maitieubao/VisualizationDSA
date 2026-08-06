@@ -25,11 +25,18 @@ window.fetch = async function (input: RequestInfo | URL, init?: RequestInit): Pr
   
   const isApiRequest = url.includes('/api/v1/') || url.includes('/api/v1/concepts/');
   const isRefreshRequest = url.includes('/auth/refresh') || url.includes('/concepts/auth/refresh');
+  const isAuthSessionRequest = [
+    '/auth/login',
+    '/auth/register',
+    '/auth/refresh',
+    '/auth/logout',
+    '/auth/demo-credentials',
+  ].some((path) => url.includes(path));
 
   let headers = new Headers(init?.headers);
 
   
-  if (isApiRequest && !isRefreshRequest) {
+  if (isApiRequest && !isAuthSessionRequest) {
     const token = authStore.getAccessToken();
     if (token) {
       headers.set('Authorization', `Bearer ${token}`);
@@ -47,7 +54,7 @@ window.fetch = async function (input: RequestInfo | URL, init?: RequestInit): Pr
   
   
   
-  if (response.status === 401 && isApiRequest && !isRefreshRequest) {
+  if (response.status === 401 && isApiRequest && !isAuthSessionRequest) {
     console.warn(`[Fetch Interceptor] 401 Unauthorized detected for ${url}. Attempting token refresh...`);
     try {
       const newToken = await authStore.refreshAccessToken();

@@ -74,7 +74,7 @@ const phaseBadgeClass = computed(() => {
 }
 
 .item-active {
-  border-color: rgba(61, 153, 112, 0.35);
+  border-color: color-mix(in srgb, var(--color-accent-green) 35%, transparent);
   color: var(--color-accent-cyan);
   box-shadow: 0 0 10px var(--color-accent-cyan-glow);
 }
@@ -94,7 +94,7 @@ const phaseBadgeClass = computed(() => {
 }
 
 .item-sorted {
-  border-color: rgba(16, 185, 129, 0.4) !important;
+  border-color: color-mix(in srgb, var(--color-accent-emerald) 40%, transparent) !important;
   background-color: var(--color-accent-green-dim) !important;
   color: var(--color-accent-green) !important;
 }

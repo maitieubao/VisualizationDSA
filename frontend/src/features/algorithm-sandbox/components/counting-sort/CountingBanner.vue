@@ -14,13 +14,13 @@
       <BaseIcon name="arrow-right" class="count-arrow" />
       <span class="count-phase" :class="phaseClass('output')">03 DỰNG OUTPUT</span>
     </div>
-    <p class="count-description" v-html="parseEmojiToSvg(explanation)"></p>
+    <p class="count-description" v-html="parseEmojiToSvg(escapeHtmlText(explanation))"></p>
   </header>
 </template>
 
 <script setup lang="ts">
 import { useCountingSortVisualizer } from '../../composables/useCountingSortVisualizer';
-import { parseEmojiToSvg } from '../../../../utils/emojiParser';
+import { parseEmojiToSvg, escapeHtmlText } from '../../../../utils/emojiParser';
 import type { SortFrame } from '../../types/sorting.types';
 
 const props = defineProps<{ frame: SortFrame | null }>();

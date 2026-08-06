@@ -38,9 +38,9 @@
                 'text-accent': isHighlightedCell(frame, col),
                 'opacity-35': !isHighlightedCell(frame, col) && cellValue(frame, col) === '-',
               }"
-            ><span v-html="parseEmojiToSvg(String(cellValue(frame, col)))"></span></td>
+            ><span v-html="parseEmojiToSvg(escapeHtmlText(String(cellValue(frame, col))))"></span></td>
             <td class="px-1.5 py-[3px] max-w-[200px]">
-              <span class="block truncate" :title="frame.description" v-html="parseEmojiToSvg(frame.description)"></span>
+              <span class="block truncate" :title="frame.description" v-html="parseEmojiToSvg(escapeHtmlText(frame.description))"></span>
             </td>
           </tr>
           <tr v-if="frames.length > 0" class="pointer-events-none" style="height: 100%">
@@ -58,7 +58,7 @@
 
 <script setup lang="ts">
 import { computed, watch, ref, nextTick } from 'vue';
-import { parseEmojiToSvg } from '../../../utils/emojiParser';
+import { parseEmojiToSvg, escapeHtmlText } from '../../../utils/emojiParser';
 import type { SortFrame, SortAlgorithm } from '../types/sorting.types';const props = defineProps<{
   frames: SortFrame[];
   currentIndex: number;

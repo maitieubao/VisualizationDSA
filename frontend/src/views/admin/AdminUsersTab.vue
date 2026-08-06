@@ -104,7 +104,7 @@
       <div v-if="showCreateUserModal" class="user-modal-backdrop" @click.self="closeCreateUserModal">
         <div class="user-modal-card">
           <div class="user-modal-header">
-            <h2 class="user-modal-name text-white">Tạo người dùng mới</h2>
+            <h2 class="user-modal-name text-text-primary">Tạo người dùng mới</h2>
             <button class="user-modal-close" @click="closeCreateUserModal">&times;</button>
           </div>
           <form @submit.prevent="submitCreateUser" class="modal-form mt-4">
@@ -126,7 +126,7 @@
       <div v-if="showResetPasswordModal" class="user-modal-backdrop" @click.self="closeResetPasswordModal">
         <div class="user-modal-card">
           <div class="user-modal-header">
-            <div><h2 class="user-modal-name text-white">Đặt lại mật khẩu</h2><p class="text-xs text-text-muted mt-1">Đổi mật khẩu cho: {{ targetUserForReset?.username }}</p></div>
+            <div><h2 class="user-modal-name text-text-primary">Đặt lại mật khẩu</h2><p class="text-xs text-text-muted mt-1">Đổi mật khẩu cho: {{ targetUserForReset?.username }}</p></div>
             <button class="user-modal-close" @click="closeResetPasswordModal">&times;</button>
           </div>
           <form @submit.prevent="submitResetPassword" class="modal-form mt-4">

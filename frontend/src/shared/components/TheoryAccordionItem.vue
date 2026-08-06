@@ -65,7 +65,7 @@
         <div v-if="isLast" class="pillar-completion-footer mt-4">
           <div class="completion-banner">
             <span class="check-icon-wrapper">
-              <SvgIcon name="check" :size="9" color="#10b981" />
+              <SvgIcon name="check" :size="9" color="var(--color-accent-emerald)" />
             </span>
             <span class="completion-text">Bạn đã sẵn sàng học tiếp?</span>
           </div>

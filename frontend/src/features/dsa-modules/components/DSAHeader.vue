@@ -1,7 +1,7 @@
 <template>
   <div class="flex items-center gap-3 px-3 py-2 bg-bg-surface/50 rounded-lg border border-border-default">
     <button
-      class="text-xs text-text-secondary hover:text-white px-2 py-1 rounded hover:bg-bg-active transition-colors"
+      class="text-xs text-text-secondary hover:text-text-primary px-2 py-1 rounded hover:bg-bg-active transition-colors"
       @click="$emit('back')"
     >
       <BaseIcon name="arrow-left" class="w-3.5 h-3.5 inline mr-1 align-middle" /> Quay lại
@@ -25,7 +25,7 @@
       <BaseIcon name="book-open" class="w-3.5 h-3.5 inline mr-1 align-middle" />Lý thuyết
     </button>
     <button
-      class="text-xs bg-accent hover:bg-accent-light text-text-primary px-3 py-1.5 rounded-lg font-medium transition-colors"
+      class="text-xs bg-accent hover:bg-accent-light text-white px-3 py-1.5 rounded-lg font-medium transition-colors"
       :disabled="isExecuting"
       @click="$emit('execute')"
     >

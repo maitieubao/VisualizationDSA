@@ -39,6 +39,25 @@ export const useAuthStore = defineStore('auth', () => {
   const isAdmin         = computed(() => userRole.value === 'Admin');
 
   
+  // Cleanup phiên stateless dùng chung (timer catch + refresh fail) — trước đây timer catch
+  // gọi clearSession classic-only → bỏ sót stateless keys, trạng thái nửa vời.
+  function _clearStatelessSession(): void {
+    localStorage.removeItem(REFRESH_TOKEN_KEY);
+    localStorage.removeItem(ACCESS_EXPIRES_KEY);
+    localStorage.removeItem(STATELESS_USER_ID_KEY);
+    // Dọn cả dấu vết impersonate — tránh UI "đang impersonate" khi session đã chết.
+    localStorage.removeItem('vdsa_admin_access_token');
+    localStorage.removeItem('vdsa_admin_refresh_token');
+    localStorage.removeItem('vdsa_admin_user_id');
+    localStorage.removeItem('vdsa_admin_user_data');
+    if (refreshTimer.value) { clearTimeout(refreshTimer.value); refreshTimer.value = null; }
+    accessToken.value = null;
+    currentUser.value = null;
+    statelessUser.value = null;
+    isStatelessMode.value = false;
+    impersonateTrigger.value++;
+  }
+
   function _scheduleRefresh(expiresInSeconds: number): void {
     if (refreshTimer.value) clearTimeout(refreshTimer.value);
     const delay = Math.max(0, (expiresInSeconds - 120) * 1000);
@@ -49,8 +68,20 @@ export const useAuthStore = defineStore('auth', () => {
         // Đi qua refreshAccessToken() của store: tự chọn đúng mode (stateless/classic)
         // và dùng chung dedupe refreshPromise — tránh 2 request song song/đường chéo mode.
         await refreshAccessToken();
-      } catch {
-        clearSession(accessToken, currentUser, refreshTimer);
+      } catch (err) {
+        // refreshAccessToken đã quyết định giữ/xóa phiên theo loại lỗi —
+        // timer chỉ dọn dẹp phần còn lại khi session thực sự vô hiệu.
+        const httpStatus = (err as { status?: number } | null)?.status;
+        // Mọi 4xx (trừ 429 rate-limit) đều là lỗi auth cần xóa phiên — gồm 404 khi refresh
+        // (user bị xóa khỏi memory) để không kẹt vòng lặp 401-refresh.
+        const isAuthFailure = (httpStatus !== undefined && httpStatus >= 400 && httpStatus < 500 && httpStatus !== 429)
+          || (err instanceof Error && /token|expired|invalid|hết hạn|không còn hiệu lực/i.test(err.message));
+        if (!isAuthFailure) return;
+        if (isStatelessMode.value || localStorage.getItem(STATELESS_USER_ID_KEY)) {
+          _clearStatelessSession();
+        } else {
+          clearSession(accessToken, currentUser, refreshTimer);
+        }
       }
     }, delay);
   }
@@ -122,17 +153,25 @@ export const useAuthStore = defineStore('auth', () => {
           return response.accessToken;
         }
       } catch (err) {
-        
-        if (savedUserId || isStatelessMode.value) {
-          localStorage.removeItem(REFRESH_TOKEN_KEY);
-          localStorage.removeItem(ACCESS_EXPIRES_KEY);
-          localStorage.removeItem(STATELESS_USER_ID_KEY);
-          accessToken.value = null;
-          currentUser.value = null;
-          statelessUser.value = null;
-          isStatelessMode.value = false;
-        } else {
-          clearSession(accessToken, currentUser, refreshTimer);
+        // Chỉ xóa phiên khi lỗi là AUTH thật (HTTP 401/403 hoặc token bị từ chối).
+        // Lỗi mạng/5xx thoáng qua → GIỮ phiên (timer/interceptor sẽ thử lại).
+        const httpStatus = (err as { status?: number } | null)?.status;
+        // Mọi 4xx (trừ 429 rate-limit) đều là lỗi auth cần xóa phiên — gồm 404 khi refresh
+        // (user bị xóa khỏi memory) để không kẹt vòng lặp 401-refresh.
+        const isAuthFailure = (httpStatus !== undefined && httpStatus >= 400 && httpStatus < 500 && httpStatus !== 429)
+          || (err instanceof Error && /token|expired|invalid|hết hạn|không còn hiệu lực/i.test(err.message));
+        if (isAuthFailure) {
+          if (savedUserId || isStatelessMode.value) {
+            localStorage.removeItem(REFRESH_TOKEN_KEY);
+            localStorage.removeItem(ACCESS_EXPIRES_KEY);
+            localStorage.removeItem(STATELESS_USER_ID_KEY);
+            accessToken.value = null;
+            currentUser.value = null;
+            statelessUser.value = null;
+            isStatelessMode.value = false;
+          } else {
+            clearSession(accessToken, currentUser, refreshTimer);
+          }
         }
         throw err;
       } finally {
@@ -169,6 +208,9 @@ export const useAuthStore = defineStore('auth', () => {
     localStorage.setItem(REFRESH_TOKEN_KEY, response.refreshToken);
     localStorage.setItem(ACCESS_EXPIRES_KEY, String(Date.now() + response.expiresIn * 1000));
     localStorage.setItem(STATELESS_USER_ID_KEY, response.user.id);
+
+    // Chủ động refresh trước khi hết hạn (trước đây stateless chỉ chờ 401 thụ động).
+    _scheduleRefresh(response.expiresIn);
   }
 
   async function statelessLogin(email: string, password: string): Promise<void> {
@@ -296,10 +338,15 @@ export const useAuthStore = defineStore('auth', () => {
     const currentUserId = localStorage.getItem(STATELESS_USER_ID_KEY);
     const currentUserData = JSON.stringify(currentUser.value);
 
-    if (currentAccessToken) localStorage.setItem(ADMIN_ACCESS_TOKEN_KEY, currentAccessToken);
-    if (currentRefreshToken) localStorage.setItem(ADMIN_REFRESH_TOKEN_KEY, currentRefreshToken);
-    if (currentUserId) localStorage.setItem(ADMIN_USER_ID_KEY, currentUserId);
-    if (currentUserData) localStorage.setItem(ADMIN_USER_DATA_KEY, currentUserData);
+    // Wrap try/catch — QuotaExceededException khi storage đầy không làm hỏng luồng đóng vai.
+    try {
+      if (currentAccessToken) localStorage.setItem(ADMIN_ACCESS_TOKEN_KEY, currentAccessToken);
+      if (currentRefreshToken) localStorage.setItem(ADMIN_REFRESH_TOKEN_KEY, currentRefreshToken);
+      if (currentUserId) localStorage.setItem(ADMIN_USER_ID_KEY, currentUserId);
+      if (currentUserData) localStorage.setItem(ADMIN_USER_DATA_KEY, currentUserData);
+    } catch {
+      // Storage đầy — bỏ qua, admin vẫn đăng nhập bình thường.
+    }
 
     
     _applyStatelessAuth(response);
@@ -318,8 +365,12 @@ export const useAuthStore = defineStore('auth', () => {
 
     
     accessToken.value = adminAccessToken;
-    localStorage.setItem(REFRESH_TOKEN_KEY, adminRefreshToken);
-    localStorage.setItem(STATELESS_USER_ID_KEY, adminUserId);
+    try {
+      localStorage.setItem(REFRESH_TOKEN_KEY, adminRefreshToken);
+      localStorage.setItem(STATELESS_USER_ID_KEY, adminUserId);
+    } catch {
+      // Storage đầy — bỏ qua.
+    }
     
     try {
       const adminUser = JSON.parse(adminUserDataStr) as authApi.AuthUserDto;

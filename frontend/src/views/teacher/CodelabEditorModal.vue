@@ -101,7 +101,7 @@
                 <div class="flex-1 min-w-0 space-y-2">
                   <input v-model="hint.content" type="text" class="form-input" :placeholder="`Gợi ý ${idx + 1}...`" required />
                   <div class="flex items-center gap-3">
-                    <label class="flex items-center gap-2 cursor-pointer text-text-secondary hover:text-white">
+                    <label class="flex items-center gap-2 cursor-pointer text-text-secondary hover:text-text-primary">
                       <input type="checkbox" v-model="hint.isTiered" class="form-checkbox" />
                       <span>Gợi ý tiered (tốn XP)</span>
                     </label>

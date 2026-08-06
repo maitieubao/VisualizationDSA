@@ -4,7 +4,7 @@
     <div class="flex items-center justify-between">
       <div class="flex items-center gap-3">
         <div class="w-8 h-8 rounded-lg bg-accent flex items-center justify-center">
-          <BaseIcon name="clipboard-list" class="w-4 h-4 text-text-primary" />
+          <BaseIcon name="clipboard-list" class="w-4 h-4 text-white" />
         </div>
         <div>
           <h2 class="text-base font-bold text-text-primary">Ngân Hàng Trắc Nghiệm</h2>

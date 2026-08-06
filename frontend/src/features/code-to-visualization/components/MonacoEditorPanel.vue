@@ -5,7 +5,7 @@
   >
     
     <div class="flex items-center justify-between px-4 py-2 border-b"
-      style="border-color: rgba(255, 255, 255, 0.05); background: rgba(30, 41, 59, 0.6);"
+      style="border-color: var(--color-border-subtle); background: color-mix(in srgb, var(--color-bg-secondary) 60%, transparent);"
     >
       <div class="flex items-center gap-2">
         <div class="w-2 h-2 rounded-full" :class="statusDotClass"></div>
@@ -147,18 +147,18 @@ watch(
 
 <style scoped>
 .compile-failed-glow {
-  border: 1px solid #EF4444 !important;
-  box-shadow: 0 0 20px rgba(239, 68, 68, 0.15) !important;
+  border: 1px solid var(--color-accent-red) !important;
+  box-shadow: 0 0 20px color-mix(in srgb, var(--color-accent-red) 15%, transparent) !important;
   animation: glowPulseError 2.0s infinite alternate;
 }
 
 .compile-success-glow {
-  border: 1px solid #10B981 !important;
-  box-shadow: 0 0 20px rgba(16, 185, 129, 0.15) !important;
+  border: 1px solid var(--color-accent-emerald) !important;
+  box-shadow: 0 0 20px color-mix(in srgb, var(--color-accent-emerald) 15%, transparent) !important;
 }
 
 @keyframes glowPulseError {
-  0% { box-shadow: 0 0 10px rgba(239, 68, 68, 0.1); }
-  100% { box-shadow: 0 0 25px rgba(239, 68, 68, 0.3); }
+  0% { box-shadow: 0 0 10px color-mix(in srgb, var(--color-accent-red) 10%, transparent); }
+  100% { box-shadow: 0 0 25px color-mix(in srgb, var(--color-accent-red) 30%, transparent); }
 }
 </style>

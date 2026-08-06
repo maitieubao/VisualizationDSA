@@ -82,7 +82,7 @@
                       >
                     </td>
                     <td class="p-3">
-                      <div class="font-medium text-white truncate max-w-xs">{{ article.title }}</div>
+                      <div class="font-medium text-text-primary truncate max-w-xs">{{ article.title }}</div>
                       <div class="text-xs text-text-muted truncate max-w-xs mt-0.5">{{ article.slug }}</div>
                     </td>
                     <td class="p-3 text-xs text-text-muted">{{ article.category }}</td>
@@ -121,7 +121,7 @@
                 <span class="text-sm font-medium text-accent">
                   Đã chọn {{ selectedArticles.length }} bài viết
                 </span>
-                <button type="button" class="text-text-muted hover:text-white text-xs" @click="clearSelection">
+                <button type="button" class="text-text-muted hover:text-text-primary text-xs" @click="clearSelection">
                   Xóa tất cả
                 </button>
               </div>

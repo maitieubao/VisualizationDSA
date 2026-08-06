@@ -34,7 +34,7 @@ const store = useExportShareStore();
   font-family: 'JetBrains Mono', monospace;
   font-size: 11px;
   font-weight: 600;
-  color: #94a3b8;
+  color: var(--color-text-secondary);
   text-transform: uppercase;
   letter-spacing: 0.08em;
 }
@@ -51,38 +51,38 @@ const store = useExportShareStore();
   gap: 4px;
   padding: 12px 16px;
   border-radius: 12px;
-  border: 1px solid rgba(255, 255, 255, 0.06);
-  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--color-border-default);
+  background: var(--color-bg-surface);
   cursor: pointer;
   transition: all 0.2s ease;
   text-align: left;
 }
 
 .format-btn:hover {
-  background: rgba(6, 182, 212, 0.06);
-  border-color: rgba(6, 182, 212, 0.2);
+  background: color-mix(in srgb, var(--color-accent-cyan) 6%, transparent);
+  border-color: color-mix(in srgb, var(--color-accent-cyan) 20%, transparent);
 }
 
 .format-btn.active {
-  background: rgba(6, 182, 212, 0.1);
-  border-color: #06b6d4;
-  box-shadow: 0 0 12px rgba(6, 182, 212, 0.15);
+  background: color-mix(in srgb, var(--color-accent-cyan) 10%, transparent);
+  border-color: var(--color-accent-cyan);
+  box-shadow: 0 0 12px color-mix(in srgb, var(--color-accent-cyan) 15%, transparent);
 }
 
 .format-btn-label {
   font-family: 'JetBrains Mono', monospace;
   font-size: 12px;
   font-weight: 700;
-  color: #e2e8f0;
+  color: var(--color-text-primary);
 }
 
 .format-btn.active .format-btn-label {
-  color: #06b6d4;
-  text-shadow: 0 0 8px rgba(6, 182, 212, 0.3);
+  color: var(--color-accent-cyan);
+  text-shadow: 0 0 8px color-mix(in srgb, var(--color-accent-cyan) 30%, transparent);
 }
 
 .format-btn-desc {
   font-size: 10px;
-  color: #64748b;
+  color: var(--color-text-muted);
 }
 </style>

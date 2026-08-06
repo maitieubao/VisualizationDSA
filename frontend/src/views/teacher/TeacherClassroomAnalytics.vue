@@ -1,11 +1,11 @@
 <template>
   <div class="teacher-classroom-analytics min-h-screen bg-bg-secondary p-6">
     <header class="mb-8">
-      <button type="button" class="text-text-muted hover:text-white transition-colors mb-4 flex items-center gap-2" @click="$router.back()">
+      <button type="button" class="text-text-muted hover:text-text-primary transition-colors mb-4 flex items-center gap-2" @click="$router.back()">
         <BaseIcon name="arrow-left" class="w-4 h-4" />
         <span class="text-sm">Quay lại</span>
       </button>
-      <h1 class="text-2xl font-bold text-white">Phân tích lớp học</h1>
+      <h1 class="text-2xl font-bold text-text-primary">Phân tích lớp học</h1>
       <p class="text-text-muted mt-1">Thống kê tiến độ và kết quả học tập</p>
     </header>
 
@@ -19,7 +19,7 @@
       <div class="grid grid-cols-4 gap-4 mb-8">
         <div class="bg-bg-secondary border border-border-subtle rounded-2xl p-5">
           <div class="text-sm text-text-muted mb-1">Tổng học viên</div>
-          <div class="text-3xl font-bold text-white">{{ stats.totalStudents }}</div>
+          <div class="text-3xl font-bold text-text-primary">{{ stats.totalStudents }}</div>
         </div>
         <div class="bg-bg-secondary border border-border-subtle rounded-2xl p-5">
           <div class="text-sm text-text-muted mb-1">Điểm trung bình</div>
@@ -38,7 +38,7 @@
       
       <div class="bg-bg-secondary border border-border-subtle rounded-2xl overflow-hidden">
         <div class="p-5 border-b border-border-subtle">
-          <h2 class="text-lg font-bold text-white">Chi tiết điểm số</h2>
+          <h2 class="text-lg font-bold text-text-primary">Chi tiết điểm số</h2>
         </div>
         <div class="overflow-x-auto">
           <table class="w-full text-sm">
@@ -51,7 +51,7 @@
             </thead>
             <tbody>
               <tr v-for="student in stats.studentScores" :key="student.studentId" class="border-b border-border-subtle hover:bg-bg-hover">
-                <td class="p-4 text-white font-medium">{{ student.name }}</td>
+                <td class="p-4 text-text-primary font-medium">{{ student.name }}</td>
                 <td v-for="(title, id) in stats.quizTitles" :key="id" class="text-center p-4">
                   <span class="font-mono" :class="getScoreClass(student.scoresPerQuiz[id])">{{ student.scoresPerQuiz[id] ?? '-' }}%</span>
                 </td>
@@ -115,6 +115,6 @@ onMounted(loadAnalytics);
 
 <style scoped>
 .teacher-classroom-analytics {
-  background: #020617;
+  background: var(--color-bg-primary);
 }
 </style>

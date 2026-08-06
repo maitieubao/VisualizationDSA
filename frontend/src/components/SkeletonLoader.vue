@@ -36,7 +36,7 @@ function variantHeight(v: string): string {
 .skeleton {
   position: relative;
   overflow: hidden;
-  background: rgba(255, 255, 255, 0.04);
+  background: var(--color-bg-hover);
   border-radius: 6px;
 }
 
@@ -51,9 +51,9 @@ function variantHeight(v: string): string {
   background: linear-gradient(
     90deg,
     transparent 0%,
-    rgba(255, 255, 255, 0.06) 40%,
-    rgba(255, 255, 255, 0.1) 50%,
-    rgba(255, 255, 255, 0.06) 60%,
+    color-mix(in srgb, var(--color-text-muted) 20%, transparent) 40%,
+    color-mix(in srgb, var(--color-text-muted) 35%, transparent) 50%,
+    color-mix(in srgb, var(--color-text-muted) 20%, transparent) 60%,
     transparent 100%
   );
   animation: shimmer 1.8s ease-in-out infinite;

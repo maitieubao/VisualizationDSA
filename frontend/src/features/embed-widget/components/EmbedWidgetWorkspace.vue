@@ -48,9 +48,9 @@ const store = useEmbedConfiguratorStore();
   flex-direction: column;
   gap: 12px;
   padding: 16px;
-  background: rgba(14, 23, 38, 0.7);
+  background: var(--glass-bg);
   backdrop-filter: blur(12px);
-  border: 1px solid rgba(100, 116, 139, 0.2);
+  border: 1px solid var(--glass-border);
   border-radius: 16px;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
   height: 100%;
@@ -62,7 +62,7 @@ const store = useEmbedConfiguratorStore();
   align-items: center;
   justify-content: space-between;
   padding-bottom: 10px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+  border-bottom: 1px solid var(--color-border-subtle);
 }
 
 .header-badge {
@@ -75,15 +75,15 @@ const store = useEmbedConfiguratorStore();
 }
 
 .badge-theme {
-  background: rgba(6, 182, 212, 0.1);
-  color: #06b6d4;
-  border: 1px solid rgba(6, 182, 212, 0.2);
+  background: color-mix(in srgb, var(--color-accent-cyan) 10%, transparent);
+  color: var(--color-accent-cyan);
+  border: 1px solid color-mix(in srgb, var(--color-accent-cyan) 20%, transparent);
 }
 
 .badge-algo {
-  background: rgba(16, 185, 129, 0.1);
-  color: #10b981;
-  border: 1px solid rgba(16, 185, 129, 0.2);
+  background: color-mix(in srgb, var(--color-accent-emerald) 10%, transparent);
+  color: var(--color-accent-emerald);
+  border: 1px solid color-mix(in srgb, var(--color-accent-emerald) 20%, transparent);
 }
 
 .workspace-body {
@@ -106,8 +106,8 @@ const store = useEmbedConfiguratorStore();
 .code-section {
   flex-shrink: 0;
   padding: 16px;
-  background: rgba(7, 11, 19, 0.5);
-  border: 1px solid rgba(255, 255, 255, 0.04);
+  background: var(--color-bg-secondary);
+  border: 1px solid var(--color-border-subtle);
   border-radius: 14px;
 }
 </style>

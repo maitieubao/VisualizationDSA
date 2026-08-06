@@ -14,8 +14,8 @@
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  background: #10b981;
-  box-shadow: 0 0 8px rgba(16, 185, 129, 0.5);
+  background: var(--color-accent-emerald);
+  box-shadow: 0 0 8px color-mix(in srgb, var(--color-accent-emerald) 50%, transparent);
 }
 
 .snippet-title {
@@ -23,7 +23,7 @@
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.5px;
-  color: #94a3b8;
+  color: var(--color-text-secondary);
 }
 
 .copy-btn {
@@ -33,47 +33,47 @@
   text-transform: uppercase;
   letter-spacing: 0.8px;
   border-radius: 8px;
-  border: 1px solid rgba(6, 182, 212, 0.35);
-  background: rgba(6, 182, 212, 0.1);
-  color: #06b6d4;
+  border: 1px solid color-mix(in srgb, var(--color-accent-cyan) 35%, transparent);
+  background: color-mix(in srgb, var(--color-accent-cyan) 10%, transparent);
+  color: var(--color-accent-cyan);
   cursor: pointer;
   transition: all 0.25s ease;
 }
 
 .copy-btn:hover {
-  background: rgba(6, 182, 212, 0.2);
-  box-shadow: 0 0 18px rgba(6, 182, 212, 0.2);
+  background: color-mix(in srgb, var(--color-accent-cyan) 20%, transparent);
+  box-shadow: 0 0 18px color-mix(in srgb, var(--color-accent-cyan) 20%, transparent);
 }
 
 .copy-btn.copied {
-  background: rgba(16, 185, 129, 0.15);
-  border-color: rgba(16, 185, 129, 0.4);
-  color: #10b981;
-  box-shadow: 0 0 18px rgba(16, 185, 129, 0.2);
+  background: color-mix(in srgb, var(--color-accent-emerald) 15%, transparent);
+  border-color: color-mix(in srgb, var(--color-accent-emerald) 40%, transparent);
+  color: var(--color-accent-emerald);
+  box-shadow: 0 0 18px color-mix(in srgb, var(--color-accent-emerald) 20%, transparent);
 }
 
 .copy-btn.failed {
-  border-color: rgba(244, 63, 94, 0.4);
-  background: rgba(244, 63, 94, 0.1);
-  color: #f43f5e;
+  border-color: color-mix(in srgb, var(--color-accent-red) 40%, transparent);
+  background: color-mix(in srgb, var(--color-accent-red) 10%, transparent);
+  color: var(--color-accent-red);
 }
 
 .copy-error {
   margin: 0;
   font-size: 10px;
   font-weight: 600;
-  color: #f43f5e;
+  color: var(--color-accent-red);
 }
 
 .embed-code-snippet-box {
-  background: rgba(10, 15, 26, 0.8);
-  border: 1px solid rgba(6, 182, 212, 0.2);
+  background: var(--code-bg);
+  border: 1px solid color-mix(in srgb, var(--color-accent-cyan) 20%, transparent);
   border-radius: 12px;
   padding: 16px;
   font-family: 'JetBrains Mono', monospace;
   font-size: 12px;
   color: #e2e8f0;
-  box-shadow: 0 0 20px rgba(6, 182, 212, 0.08);
+  box-shadow: 0 0 20px color-mix(in srgb, var(--color-accent-cyan) 8%, transparent);
   position: relative;
   overflow: hidden;
 }
@@ -85,7 +85,7 @@
   left: -50%;
   width: 200%;
   height: 200%;
-  background: linear-gradient(45deg, transparent, rgba(6, 182, 212, 0.03), transparent);
+  background: linear-gradient(45deg, transparent, color-mix(in srgb, var(--color-accent-cyan) 3%, transparent), transparent);
   transform: rotate(45deg);
   transition: transform 0.5s ease;
   pointer-events: none;
@@ -115,12 +115,12 @@
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.5px;
-  color: #64748b;
+  color: var(--color-text-muted);
 }
 
 .integration-code {
-  border-color: rgba(245, 158, 11, 0.15);
-  box-shadow: 0 0 20px rgba(245, 158, 11, 0.05);
+  border-color: color-mix(in srgb, var(--color-accent-yellow) 15%, transparent);
+  box-shadow: 0 0 20px color-mix(in srgb, var(--color-accent-yellow) 5%, transparent);
 }
 
 .integration-code .snippet-code {

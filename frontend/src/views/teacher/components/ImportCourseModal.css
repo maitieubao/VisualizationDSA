@@ -20,14 +20,14 @@
   align-items: center;
   justify-content: space-between;
   padding: 20px 24px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  border-bottom: 1px solid var(--color-border-default);
   flex-shrink: 0;
 }
 
 .modal-title {
   font-size: 18px;
   font-weight: 700;
-  color: white;
+  color: var(--color-text-primary);
   margin: 0;
 }
 
@@ -39,16 +39,16 @@
   height: 36px;
   border-radius: 10px;
   background: transparent;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  color: rgba(255, 255, 255, 0.5);
+  border: 1px solid var(--color-border-default);
+  color: var(--color-text-secondary);
   cursor: pointer;
   transition: all 0.2s;
 }
 
 .modal-close:hover {
-  background: rgba(255, 255, 255, 0.05);
-  border-color: rgba(255, 255, 255, 0.2);
-  color: white;
+  background: var(--color-bg-hover);
+  border-color: var(--color-border-strong);
+  color: var(--color-text-primary);
 }
 
 .modal-body {
@@ -72,7 +72,7 @@
   justify-content: space-between;
   margin-bottom: 24px;
   padding-bottom: 16px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  border-bottom: 1px solid var(--color-border-default);
 }
 
 .step-indicator {
@@ -92,54 +92,54 @@
   justify-content: center;
   font-weight: 700;
   font-size: 14px;
-  background: rgba(255, 255, 255, 0.1);
-  color: rgba(255, 255, 255, 0.4);
-  border: 2px solid rgba(255, 255, 255, 0.1);
+  background: var(--color-bg-active);
+  color: var(--color-text-muted);
+  border: 2px solid var(--color-border-default);
   transition: all 0.2s;
 }
 
 .step-number.active {
   background: #6366f1;
   border-color: #6366f1;
-  color: white;
-  box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.2);
+  color: var(--color-text-primary);
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--color-accent-primary) 20%, transparent);
 }
 
 .step-number.done {
-  background: #10b981;
-  border-color: #10b981;
-  color: white;
+  background: var(--color-accent-emerald);
+  border-color: var(--color-accent-emerald);
+  color: var(--color-text-primary);
 }
 
 .step-label {
   font-size: 11px;
-  color: rgba(255, 255, 255, 0.5);
+  color: var(--color-text-secondary);
   text-align: center;
   white-space: nowrap;
 }
 
 .step-description {
-  color: rgba(255, 255, 255, 0.6);
+  color: var(--color-text-secondary);
   font-size: 13px;
   margin-bottom: 20px;
 }
 
 .course-preview {
   padding: 16px;
-  background: rgba(99, 102, 241, 0.1);
-  border: 1px solid rgba(99, 102, 241, 0.2);
+  background: color-mix(in srgb, var(--color-accent-primary) 10%, transparent);
+  border: 1px solid color-mix(in srgb, var(--color-accent-primary) 20%, transparent);
   border-radius: 12px;
   margin-bottom: 20px;
 }
 
 .preview-title {
   font-weight: 700;
-  color: #a5b4fc;
+  color: var(--color-accent-primary-light);
   margin: 0 0 8px;
 }
 
 .preview-desc {
-  color: rgba(255, 255, 255, 0.7);
+  color: var(--color-text-primary);
   font-size: 13px;
   margin: 0 0 12px;
   display: -webkit-box;
@@ -159,7 +159,7 @@
   align-items: center;
   gap: 4px;
   font-size: 12px;
-  color: rgba(255, 255, 255, 0.6);
+  color: var(--color-text-secondary);
 }
 
 .modules-selection {
@@ -176,21 +176,21 @@
   align-items: center;
   gap: 12px;
   padding: 12px 16px;
-  background: rgba(15, 23, 42, 0.6);
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  background: color-mix(in srgb, var(--color-bg-surface) 60%, transparent);
+  border: 1px solid var(--color-border-subtle);
   border-radius: 10px;
   cursor: pointer;
   transition: all 0.2s;
 }
 
 .module-checkbox:hover {
-  background: rgba(15, 23, 42, 0.8);
-  border-color: rgba(99, 102, 241, 0.2);
+  background: color-mix(in srgb, var(--color-bg-surface) 80%, transparent);
+  border-color: color-mix(in srgb, var(--color-accent-primary) 20%, transparent);
 }
 
 .module-checkbox:has(input:checked) {
-  background: rgba(99, 102, 241, 0.15);
-  border-color: rgba(99, 102, 241, 0.3);
+  background: color-mix(in srgb, var(--color-accent-primary) 15%, transparent);
+  border-color: color-mix(in srgb, var(--color-accent-primary) 30%, transparent);
 }
 
 .module-checkbox input[type="checkbox"] {
@@ -207,13 +207,13 @@
 
 .module-title {
   font-weight: 600;
-  color: white;
+  color: var(--color-text-primary);
   font-size: 14px;
 }
 
 .module-meta {
   font-size: 11px;
-  color: rgba(255, 255, 255, 0.5);
+  color: var(--color-text-secondary);
 }
 
 .empty-modules {
@@ -223,13 +223,13 @@
   justify-content: center;
   padding: 40px;
   text-align: center;
-  color: rgba(255, 255, 255, 0.4);
+  color: var(--color-text-muted);
   gap: 8px;
 }
 
 .confirm-summary {
-  background: rgba(15, 23, 42, 0.6);
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  background: color-mix(in srgb, var(--color-bg-surface) 60%, transparent);
+  border: 1px solid var(--color-border-subtle);
   border-radius: 12px;
   padding: 20px;
   margin-bottom: 20px;
@@ -237,7 +237,7 @@
 
 .confirm-title {
   font-weight: 700;
-  color: white;
+  color: var(--color-text-primary);
   margin: 0 0 16px;
   font-size: 14px;
 }
@@ -256,14 +256,14 @@
 
 .summary-label {
   font-size: 11px;
-  color: rgba(255, 255, 255, 0.5);
+  color: var(--color-text-secondary);
   text-transform: uppercase;
   letter-spacing: 0.5px;
 }
 
 .summary-value {
   font-weight: 600;
-  color: white;
+  color: var(--color-text-primary);
   font-size: 14px;
 }
 
@@ -272,11 +272,11 @@
   align-items: flex-start;
   gap: 12px;
   padding: 16px;
-  background: rgba(245, 158, 11, 0.15);
-  border: 1px solid rgba(245, 158, 11, 0.3);
+  background: color-mix(in srgb, var(--color-accent-yellow) 15%, transparent);
+  border: 1px solid color-mix(in srgb, var(--color-accent-yellow) 30%, transparent);
   border-radius: 10px;
   margin-top: 16px;
-  color: #fde047;
+  color: var(--color-accent-yellow-light);
   font-size: 13px;
   line-height: 1.5;
 }
@@ -286,7 +286,7 @@
   justify-content: flex-end;
   gap: 12px;
   padding-top: 16px;
-  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  border-top: 1px solid var(--color-border-default);
   margin-top: 24px;
   flex-shrink: 0;
 }
@@ -296,9 +296,9 @@
   border-radius: 10px;
   font-weight: 600;
   font-size: 13px;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  color: rgba(255, 255, 255, 0.8);
+  background: var(--color-bg-hover);
+  border: 1px solid var(--color-border-default);
+  color: var(--color-text-primary);
   cursor: pointer;
   transition: all 0.2s;
   display: flex;
@@ -307,8 +307,8 @@
 }
 
 .btn-secondary:hover {
-  background: rgba(255, 255, 255, 0.1);
-  border-color: rgba(255, 255, 255, 0.2);
+  background: var(--color-bg-active);
+  border-color: var(--color-border-strong);
 }
 
 .btn-primary {
@@ -322,15 +322,15 @@
   font-size: 13px;
   background: linear-gradient(135deg, #6366f1, #8b5cf6);
   border: none;
-  color: white;
+  color: var(--btn-primary-text);
   cursor: pointer;
   transition: all 0.2s;
-  box-shadow: 0 4px 14px rgba(99, 102, 241, 0.3);
+  box-shadow: 0 4px 14px color-mix(in srgb, var(--color-accent-primary) 30%, transparent);
 }
 
 .btn-primary:hover:not(:disabled) {
   transform: translateY(-1px);
-  box-shadow: 0 6px 20px rgba(99, 102, 241, 0.4);
+  box-shadow: 0 6px 20px color-mix(in srgb, var(--color-accent-primary) 40%, transparent);
 }
 
 .btn-primary:disabled {
@@ -340,18 +340,18 @@
 
 .btn-primary.btn-danger {
   background: linear-gradient(135deg, #ef4444, #f97316);
-  box-shadow: 0 4px 14px rgba(239, 68, 68, 0.3);
+  box-shadow: 0 4px 14px color-mix(in srgb, var(--color-accent-red) 30%, transparent);
 }
 
 .btn-primary.btn-danger:hover:not(:disabled) {
-  box-shadow: 0 6px 20px rgba(239, 68, 68, 0.4);
+  box-shadow: 0 6px 20px color-mix(in srgb, var(--color-accent-red) 40%, transparent);
 }
 
 .spinner-sm {
   width: 14px;
   height: 14px;
-  border: 2px solid rgba(255, 255, 255, 0.3);
-  border-top-color: white;
+  border: 2px solid var(--color-border-strong);
+  border-top-color: var(--btn-primary-text);
   border-radius: 50%;
   animation: spin 0.8s linear infinite;
 }

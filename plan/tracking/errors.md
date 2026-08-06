@@ -1399,3 +1399,119 @@ px vue-tsc --noEmit exit code 0 (toan bo type check pass).
 | 268 | Build warning lightningcss: ':global()' khong hop le trong App.css (file CSS toan cuc, khong phai scoped) | Bo wrapper `:global(...)` o 4 block page-fade transition — selectors van toan cuc vi App.css import global | `FIXED` |
 | Ghi nhan | Backend test can `DOTNET_ROLL_FORWARD=LatestMajor` vi may chi co .NET 10 runtime (du an target net9.0); `dotnet test` chay: 154/154 PASS | — | `INFO` |
 | Ghi nhan | Build warning "Gradient has outdated direction syntax" (2 lan) den tu `@shikijs/langs` (grammar CSS ben thu 3, khong thuoc src/) — khong block build | — | `INFO` |
+### Review lan 2 - fix P1/P2 con sot (Lo 267-281) — 2026-08-06
+| Lo | Mo ta | Cach khac phuc | Trang thai |
+| :-- | :-- | :-- | :-- |
+| 267 | GetCourseById gate publish NHUNG chua gate premium (lo ContentMd khoa tra phi) | Them gate premium (owner/Teacher/Admin/Premium) | `FIXED` |
+| 268 | AuthService.MapToUserDto khong set Role (Admin/Teacher tra ve Student qua flow chuan) | Role = user.Role | `FIXED` |
+| 269 | Refresh token stateless khong expiry (song vo han) + impersonation refresh vinh vien | RefreshTokenLifetime 30 ngay; ForceAddRefreshToken mac dinh 15 phut; check expiry khi refresh | `FIXED` |
+| 270 | StatelessAuth khong rate limit (brute-force login/register) | [EnableRateLimiting("auth")] class-level | `FIXED` — E2E: 429 sau 10 lan |
+| 271 | Lesson progress/comments khong qua gate (ghi progress/comment bai premium/draft) | CheckLessonAccessAsync o 3 endpoint + parent comment cung bai | `FIXED` |
+| 272 | SaveLessonProgress mark Completed khi quizScore>=1 (sai rule 70%) + XPRewarded khong luu (farm khi doi thiet bi) | Them QuizPassed flag tu client; mark Completed khi codelab/quizPassed; luu XpAwarded clamp | `FIXED` |
+| 273 | BadgesController Guid.Parse NRE + Include thua (N+1) | TryParse -> Unauthorized | `FIXED` |
+| 274 | Register DbUpdateException -> 503 sai nghia (trung username) + RecordLogin mat o stateless login | DbUpdateException -> 400; RecordLogin khoi phuc | `FIXED` |
+| 275 | DeleteModule STUB (khong xoa gi) — khong ton tai command | Tao DeleteClassroomModuleCommand + handler (soft-delete + ownership) | `FIXED` |
+| 276 | Codelab CRUD IDOR (teacher sua codelab nguoi khac, entity khong OwnerId) | Them OwnerId + migration; RequireCodelabOwnershipAsync o 11 mutation; CreateCodelab set OwnerId | `FIXED` |
+| 277 | VerifyPasswordDelegate default luon false (BCrypt salt ngau nhien) | Default BCrypt.Verify + fallback SHA256 | `FIXED` |
+| 278 | ChangePassword demo so chuoi "Demo@2024" (sau lan doi khong doi lai duoc) | Verify qua GetUserPasswordHash + delegate | `FIXED` |
+| 279 | GetAuditLogs khong clamp + LogAdminAction loi -> 500 sau action thanh cong | Clamp + try/catch log | `FIXED` |
+| 280 | Leaderboard khong clamp (limit toi da 100); Analytics overview/popular public | Clamp 1-20; RequireJwtRole("Teacher,Admin") — frontend khong goi nen an toan | `FIXED` |
+| 281 | Frontend: completedAlgorithms khong populate + id lech; stateless khong refresh chu dong; prevSlide khong cancel; isLessonComplete latent; Toast khong escape; TeacherQuizTab nut Excel chet | Lesson flow ghi localStorage + alias nhom; _scheduleRefresh trong _applyStatelessAuth; prevSlide cancel; isLessonComplete them nhanh ly thuyet; Toast escapeHtmlText; xoa nut | `FIXED` |
+| Ghi nhan | P0Tests/debug7/lessonStepTheory class mismatch la test files NGOAI session (mock thieu component) — khong do fix cua toi | — | `INFO` |
+### Review lan 3 - fix regression dot S (Lo 282-288) — 2026-08-06
+| Lo | Mo ta | Cach khac phuc | Trang thai |
+| :-- | :-- | :-- | :-- |
+| 282 | Rate limit auth truom ca class -> /me/progress/award-xp cung bi 10/phut (chan nham flow hoc) | Chuyen [EnableRateLimiting("auth")] sang method-level: register/login/refresh/logout | `FIXED` — E2E: /me 15 lan khong 429 |
+| 283 | Impersonation refresh rotation: refresh trong 15 phut cap refresh moi 30 ngay (mat flag) | RefreshToken giu TTL con lai cua token goc (GenerateAuthResponse nhan refreshTtl) | `FIXED` |
+| 284 | DeleteModule handler nem exception -> 500 thay vi 403/404 | Controller bat UnauthorizedAccessException->403, ArgumentException->404 | `FIXED` |
+| 285 | LogAdminAction FindAsync ngoai try/catch (DB loi giua chung -> 500) | Boc toan bo body try/catch | `FIXED` |
+| 286 | Ban chi chan login: refresh token cu van dung duoc | Refresh check IsActive DB (vo hieu hoa token) | `FIXED` |
+| 287 | Frontend: gamification completedAlgorithms stale (chi doc khi rong) + timer catch cleanup sai mode (mat stateless keys) + escapeHtml NO-OP o 2 editor preview (self-XSS) | Merge localStorage moi lan check; _clearStatelessSession dung mode; escape dung &amp;/&lt;/&gt; | `FIXED` |
+| 288 | Refresh token tam (Register tempId) dangle trong dictionary | Ghi nhan P3 — token chet sau 30 ngay, khong lo ra client | `INFO` |
+### Review lan 4 - fix (Lo 289-296) — 2026-08-06
+| Lo | Mo ta | Cach khac phuc | Trang thai |
+| :-- | :-- | :-- | :-- |
+| 289 | P1: Refresh ban check phu thuoc DB — DB down -> 500 -> frontend xoa session (dang xuat hang loat) | Boc FindAsync try/catch: DB loi -> bo qua ban check, giu phien | `FIXED` |
+| 290 | P2: AwardXP memory truoc DB sau — DB loi -> lech vinh vien | DB truoc (FindAsync theo Guid), memory sau | `FIXED` |
+| 291 | P2: Register de refresh token tam (sub=tempId) dangle 30 ngay | Logout(response.RefreshToken) ngay sau Register | `FIXED` |
+| 292 | P2: BanUser khong sync stateless memory (DB down van login duoc) | InMemoryUser.IsActive + SetUserActive + Login check + BanUser goi | `FIXED` |
+| 293 | P2: Frontend isLessonComplete dung quizQuestions.length (quiz tai loi -> completed sai) + setSession khong xoa stateless key (classic mat phien) + timer catch van dang xuat khi loi mang + inline code XSS 2 editor + escape " no-op | Dung lessonMeta.quizId; setSession remove vdsa_stateless_user_id; catch chi clear khi 401; callback escape inline code; &quot; | `FIXED` |
+| 294 | P2: Codelab demo-user-001 khong GUID -> OwnerId null + Unauthorized | Map demo -> GUID co dinh (CreateCodelab + GetCurrentUserAndCheckAsync) | `FIXED` |
+| 295 | P3: RefreshToken remaining==0 -> 30 ngay | remaining > 1s | `FIXED` |
+| 296 | P3: features/codelabs toan module dead code + api path sai | Xoa module (3 file) | `FIXED` |
+| Xac nhan | KHONG lo PasswordHash (StatelessUserDto sach); LogAdminAction brace dung; merge badge khong nhan doi | — | `INFO` |
+### Review lan 5 - fix (Lo 297-304) — 2026-08-06
+| Lo | Mo ta | Cach khac phuc | Trang thai |
+| :-- | :-- | :-- | :-- |
+| 297 | P1: BanUser KHONG goi SetUserActive (fix Lo 292 bi mat khi chua thuc su ap dung) -> check IsActive memory la dead code, DB down van login duoc | Them _authStrategy.SetUserActive sau SaveChanges trong BanUser | `FIXED` |
+| 298 | P1: Timer catch la dead code — refreshAccessToken clear session vo dieu kien TRUOC rethrow -> loi mang thoang qua van dang xuat | refreshAccessToken chi clear khi auth-fail (HTTP 401/403 hoac token/invalid/hết hạn); handleResponse gan status vao Error; timer catch dung status | `FIXED` |
+| 299 | P2: Login ban sinh token roi moi check (refresh moi moc oi) | Logout(response.RefreshToken) trong nhanh 401 | `FIXED` |
+| 300 | P2: Refresh check ban SAU rotation (token moi moc oi, xoa nham token cu) | GetRefreshTokenOwner check truoc rotation | `FIXED` |
+| 301 | P2: AwardXP DB-first khong try/catch (DB hiccup -> 500 tran) | Boc try/catch: loi DB -> log + van award memory | `FIXED` |
+| 302 | P2: Codelab admin-user khong GUID -> Guid.Empty -> 401 (admin dev khong sua codelab) | IsAdmin check truoc khi map Guid | `FIXED` |
+| 303 | P3: new Random() time-seeded 3 cho (payment code + invite code x2) — cung ms trung ma | RandomNumberGenerator.GetInt32 | `FIXED` |
+| 304 | P3: BestScore field chet; rate limit thieu Codelabs/Upload/Payments; isLessonComplete stuck khi quiz tai loi | Xoa field; them heavy/api; quay lai !quizQuestions.length (khong the cham quiz khong tai duoc) | `FIXED` |
+| Xac nhan | chuoi "hoặc mật khẩu" dung (console encoding); mojibake khong ton tai | — | `INFO` |
+### Review lan 6 - fix (Lo 305-311) — 2026-08-06
+| Lo | Mo ta | Cach khac phuc | Trang thai |
+| :-- | :-- | :-- | :-- |
+| 305 | P1: Classic mode production refresh 401 khong clear session (authApi khong gan status + safe-message thay the) -> 401-refresh loop vo han | authApi.handleResponse gan .status; isAuthFailure = moi 4xx (tru 429) hoac regex | `FIXED` |
+| 306 | P1: CreateCodelab admin giu OwnerId client gui (gan codelab cho hoc vien) | IsAdmin -> OwnerId = null (khong tin client) | `FIXED` |
+| 307 | P2: Refresh KeyNotFoundException -> 404 -> frontend khong clear -> ket phien | isAuthFailure bao gom 404 (moi 4xx tru 429) | `FIXED` |
+| 308 | P2: GenerateMockJwt/GenerateImpersonatedJwt interpolate raw username/email (self-DoS token hong) | JsonSerializer.Serialize payload ca 2 cho | `FIXED` — E2E login/refresh OK |
+| 309 | P2: Codelabs heavy class-level gop GET + Run/Submit 15/phut (hoc vien 429 khi luyen code) | GET khong limit; submit/run/reveal-hint heavy rieng | `FIXED` |
+| 310 | P2: N+1 GetCourseById (1 query/lesson) + GetCourseAnalytics (2N CountAsync) | Gom GroupBy 1 query -> dictionary ca 2 noi | `FIXED` — E2E 12 lessons OK |
+| 311 | P3: RefreshToken remaining<=1s -> 30 ngay (impersonation edge) | Ghi nhan edge (race 1s) | `INFO` |
+| Ghi nhan | BanUser memory sync vo hieu voi user chua tung vao memory (van chan duoc qua DB check); ManageQuiz dual-write 2 nguon (P2 cu, can chon 1 nguon); Teacher xem toan bo email (intent?) | — | `INFO` |
+### Review lan 7 - fix (Lo 312-322) — 2026-08-06
+| Lo | Mo ta | Cach khac phuc | Trang thai |
+| :-- | :-- | :-- | :-- |
+| 312 | P1: Tab Quan ly hoc vien cua Teacher luon 403 - class-level RequireJwtRole("Admin") chan Teacher nhung frontend (TeacherStudentTab.vue:156) goi /admin/users bang token Teacher; va AdminUsersController (route literal, Admin-only, shape items/totalCount khac frontend) chiếm route | Tao TeacherController (route /concepts/admin/users, method-level Teacher,Admin + filter Role=Student cho teacher); xoa AdminUsersController + GetUsersQuery handler | `FIXED` — E2E: teacher 200 chi Student(11), student 403 |
+| 313 | P2: Impersonate half-state: refresh 401 chi xoa stateless keys, ADMIN_* keys con lai -> UI "dang impersonate" khi session da chet | _clearStatelessSession xoa ca vdsa_admin_* + impersonateTrigger++ | `FIXED` |
+| 314 | P2: CreateCodelab teacher sub khong phai GUID (khong admin/demo) van giu OwnerId client gui | Fail-closed: else -> OwnerId = null | `FIXED` |
+| 315 | P2: ManageQuiz dual-write 2 nguon (bank + DB) - quiz da xoa van hien qua fallback bank | DB la nguon duy nhat: bo _quizBank.Add/Update; GET/Delete da dung DB | `FIXED` — E2E teacher create/GET-by-title/delete OK |
+| 316 | P2: Race double XP QuizService: attempt chua commit -> 2 request dong thoi cung thay 0 pass | CommitAsync attempt ngay sau AddAsync (truoc khi doc previousAttempts) | `FIXED` |
+| 317 | P2: N+1 CompleteLesson + QuizService (FirstOrDefaultAsync trong loop) | Gom 1 query -> dictionary ca 2 cho | `FIXED` |
+| 318 | P2: VisualizationPlayer khong cleanup khi rời view giua cau hoi -> activeQuestion + lock 'quiz' stale | onUnmounted -> quizStore.resetQuizStore() | `FIXED` |
+| 319 | P2: Premium lesson -> 403 bi hien "Khong tim thay bai hoc" (sai thong diep, khong CTA) | lessonApi gan .status; store phan biet 403 -> thong diep Premium | `FIXED` |
+| 320 | P3: GetMe demo-user-001 404 sau restart (production) -> profile stale | 401 khi EnableDemoAccounts=false de frontend don session | `FIXED` |
+| 321 | P3: lessonDistribution sort toan cuc theo OrderIndex (interleave module) | Sort theo (ModuleOrder, OrderIndex) | `FIXED` |
+| 322 | Ghi nhan | Codelab legacy (OwnerId null truoc R6): chi Admin sua duoc - trade-off dung (khong biet chu that); Teacher chi thay Student qua /admin/users; rate limit theo IP can UseForwardedHeaders khi deploy sau proxy | — | `INFO` |
+### Review lan 8 - fix (Lo 323-333) — 2026-08-06
+| Lo | Mo ta | Cach khac phuc | Trang thai |
+| :-- | :-- | :-- | :-- |
+| 323 | CAO: Quiz teacher tao (DB-only) bien mat khoi tab teacher - GET /quiz/all + /topics + /topic/{t} van bank-only; GetById uu tien bank truoc nhung Submit uu tien DB truoc (le 2 nguon) | Merge DB + bank vao /all (dedupe theo Title), /topics, /topic/{t}; dao GetById: DB truoc -> bank fallback (dung nhu Submit) | `FIXED` — E2E: all=58, topics=11, seed by title OK |
+| 324 | CAO: Thieu UseForwardedHeaders - sau proxy rate limit gop 1 bucket IP + HttpsRedirection sai scheme | app.UseForwardedHeaders(XForwardedFor + XForwardedProto) sau request logging | `FIXED` |
+| 325 | TB: TeacherController fallback in-memory khong filter Student (lo email Admin/Teacher khi DB down) + page khong clamp | Filter Student o ca fallback; clamp page>=1, pageSize<=100 | `FIXED` |
+| 326 | TB: CreateQuiz response quiz.id rong (DTO dau vao khong Id) | Gắn Id GUID thuc sau SaveChanges | `FIXED` |
+| 327 | TB: q.Id.ToString() == quizId trong EF query (UpdateQuiz/DeleteQuiz) phu thuoc EF translate | Parse Guid truoc, query theo Id hoac Title | `FIXED` |
+| 328 | TB: QuizService commit som lam mat tinh nguyen tu - AwardXP throw sau commit -> XP mat vinh vien, attempt da Passed | Bao try/catch quanh AwardXP + CompleteModule, log loi, van tra ket qua | `FIXED` |
+| 329 | TB: Jwt:Key placeholder trong appsettings (production) - JWT gia mao duoc neu quen set env | Fail-fast: IsProduction + key placeholder/rong -> throw InvalidOperationException | `FIXED` — E2E can set Jwt__Key env |
+| 330 | TB: PaymentsController catch im lang (webhook SePay kho debug) | Serilog.Log.Error("SePay webhook failed") | `FIXED` |
+| 331 | THAP: Thieu AsNoTracking o query read-only (dashboard, registration, audit, analytics) | Them AsNoTracking 4 noi | `FIXED` |
+| 332 | THAP: 5 .vue dead (ConceptScenarioPicker, VcrExplanationBanner, LessonContentEditor, CourseBuilder, AlgorithmSearchBar) | Xoa (0 import) | `FIXED` |
+| 333 | Ghi nhan INFO | 7 .vue chi test import (PremiumGate, LessonDiscussionPanel, LessonListItem, CodelabItemModal, CustomLessonCreator, ClassroomModuleAccordion, CodeEditorApiHints) - giu cho test; cleanup useAuthStore 2 duong lech (timer xoa admin keys khi impersonate) - TH hiem; EF warnings (global query filter required-end, ClassroomAnnouncement.ClassroomId1 shadow FK, Embedding comparer) | — | `INFO` |
+### Review lan 9 - fix (Lo 334-343) — 2026-08-06
+| Lo | Mo ta | Cach khac phuc | Trang thai |
+| :-- | :-- | :-- | :-- |
+| 334 | CAO: Difficulty DB tra "1/2/3" (int.ToString) trong khi bank "easy/medium/hard" - teacher sua quiz DB bi reset ve medium | Helper DifficultyToLabel map int->easy/medium/hard, ap 4 diem (GetAll/GetById/GetByTopic/CreateQuiz) | `FIXED` — E2E difficulties=[easy,hard,medium] |
+| 335 | CAO: API keys that (OpenRouter + AimlApi) trong appsettings.Development.json - bi mat trong git | Xoa key, thay placeholder + doc tu env; CAN XOAY (revoke) key cu | `FIXED` — user phai xoay key |
+| 336 | CAO: XSS stored — LectureOverlay v-html raw (no sanitize) + DocsMarkdownRenderer marked.parse khong DOMPurify | Them dompurify dep; sanitize ca 2 (ADD_ATTR style giu layout) | `FIXED` |
+| 337 | TB: 7 component v-html parseEmojiToSvg khong escape (SortingTraceTable, BucketBanner, RadixBanner, RadixInspector, CountingBanner, SortingDetailPanel, BucketConnector) | Bao escapeHtmlText 9 diem | `FIXED` |
+| 338 | TB: GetByTopic Concat khong dedupe - quiz trung title 2 nguon hien 2 card | GroupBy Title (DB thang) nhu GetAll | `FIXED` — E2E /topic/Sorting 1 quiz |
+| 339 | TB: Rate limit partition theo IP - truong hoc chung IP (NAT) -> 429 hang loat khi cung login | Partition theo user sub (da dang nhap) -> IP fallback | `FIXED` |
+| 340 | TB: Production CORS chua localhost:5173/3000 + domain placeholder | Chi giu domain that (placeholder) | `FIXED` |
+| 341 | Ghi nhan: X-Forwarded-For spoof (client tu dat header gia de tron rate limit khi goi thang) | Khi deploy sau proxy: config KnownNetworks = dai proxy | `INFO` |
+| 342 | Ghi nhan: SignalR token qua query string (access_token) co the lot access log/proxy | Chan log query tai nginx hoac doi headers transport | `INFO` |
+| 343 | Ghi nhan: Jwt:Key fail-fast chi IsProduction - Staging/trong env van dung placeholder | Xem lai neu co moi truong staging | `INFO` |
+### Review lan 10 - fix (Lo 344-345) + tong ket — 2026-08-06
+| Lo | Mo ta | Cach kiem tra | Trang thai |
+| :-- | :-- | :-- | :-- |
+| 344 | Kiem tra XP bug (attempt.Id client-side GUID — SAI, khong phai bug) | QuizAttempt constructor dung Guid.NewGuid() -> filter dung | `FALSE POSITIVE` |
+| 345 | P2: localStorage.setItem khong try/catch trong impersonate/restore path | Wrap try/catch ca 2 path | `FIXED` |
+| — | P2 INFO con lai: Task.Run AlgorithmsController (demo OK), new Random fallback (demo OK), EF warnings (khong runtime bug), SQLite wildcard (parameterized OK) | — | `INFO` |
+### Hotfix local CORS — 2026-08-06
+| Lo | Mo ta | Cach khac phuc | Trang thai |
+| :-- | :-- | :-- | :-- |
+| 346 | Preflight tu `http://localhost:5173` den backend `:5055` tra 204 nhung thieu `Access-Control-Allow-Origin` vi `START-PROJECT.bat` khoi dong backend bang Production, trong khi Production CORS chi cho domain deploy | Dat `ASPNETCORE_ENVIRONMENT=Development` trong launcher va them `launchSettings.json` de `dotnet run` local mac dinh dung Development CORS | `FIXED` — runtime verify: OPTIONS login/courses co Allow-Origin, GET courses 200 |
+| 347 | Login demo tra 401 sau khi backend tung chay Production: production seeder da disable credential cong khai trong DB; khi quay lai Development, seeder chi set role nen `IsActive=false` van con. Frontend lai thu refresh token tren chinh request login 401 | Development seeder reactivate + reset password cho 3 credential development; fetch interceptor bo attach/refresh token tren login/register/refresh/logout/demo-credentials | `FIXED` — runtime login demo 200, role Teacher; Vite build pass |

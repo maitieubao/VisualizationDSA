@@ -61,7 +61,7 @@ namespace VisualizationDSA.WebApi.Controllers
                 var paidOrders   = await _dbContext.Orders.CountAsync(o => o.Status == "Completed" || o.Status == "paid");
 
                 
-                var topUsers = await _dbContext.Users
+                var topUsers = await _dbContext.Users.AsNoTracking()
                     .OrderByDescending(u => u.TotalXP)
                     .Take(5)
                     .Select(u => new { u.Email, u.Username, u.TotalXP, u.CurrentLevel, u.Role })
@@ -69,7 +69,7 @@ namespace VisualizationDSA.WebApi.Controllers
 
                 
                 var sevenDaysAgo = DateTime.UtcNow.Date.AddDays(-6);
-                var registrationList = await _dbContext.Users
+                var registrationList = await _dbContext.Users.AsNoTracking()
                     .Where(u => u.CreatedAt >= sevenDaysAgo)
                     .GroupBy(u => u.CreatedAt.Date)
                     .Select(g => new { Date = g.Key, Count = g.Count() })
@@ -160,78 +160,6 @@ namespace VisualizationDSA.WebApi.Controllers
         
         
         
-        [HttpGet("users")]
-        [RequireJwtRole("Teacher,Admin")]  
-        public async Task<IActionResult> GetUsers([FromQuery] int page = 1, [FromQuery] int pageSize = 20, [FromQuery] string? search = null)
-        {
-
-            try
-            {
-                var query = _dbContext.Users.AsQueryable();
-
-                if (!string.IsNullOrWhiteSpace(search))
-                    query = query.Where(u => u.Email.Contains(search) || u.Username.Contains(search));
-
-                var total = await query.CountAsync();
-                var users = await query
-                    .OrderByDescending(u => u.CreatedAt)
-                    .Skip((page - 1) * pageSize)
-                    .Take(pageSize)
-                    .Select(u => new
-                    {
-                        id        = u.Id.ToString(),
-                        u.Email,
-                        u.Username,
-                        u.Role,
-                        u.IsPremium,
-                        u.TotalXP,
-                        u.CurrentLevel,
-                        u.StreakDays,
-                        isActive  = u.IsActive,
-                        createdAt = u.CreatedAt,
-                        lastLogin = u.LastLoginAt
-                    })
-                    .ToListAsync();
-
-                return Ok(new { total, page, pageSize, users });
-            }
-            catch (Exception ex)
-            {
-                Serilog.Log.Warning(ex, "Không thể kết nối cơ sở dữ liệu để lấy danh sách users. Fallback sang dữ liệu in-memory.");
-                var inMemoryUsers = _authStrategy.GetAllUsers();
-
-                if (!string.IsNullOrWhiteSpace(search))
-                {
-                    inMemoryUsers = inMemoryUsers
-                        .Where(u => u.Email.Contains(search, StringComparison.OrdinalIgnoreCase) || 
-                                    u.Username.Contains(search, StringComparison.OrdinalIgnoreCase))
-                        .ToList();
-                }
-
-                var total = inMemoryUsers.Count;
-                var users = inMemoryUsers
-                    .OrderByDescending(u => u.CreatedAt)
-                    .Skip((page - 1) * pageSize)
-                    .Take(pageSize)
-                    .Select(u => new
-                    {
-                        id        = u.Id,
-                        u.Email,
-                        u.Username,
-                        u.Role,
-                        u.IsPremium,
-                        u.TotalXP,
-                        u.CurrentLevel,
-                        u.StreakDays,
-                        isActive  = true,
-                        createdAt = u.CreatedAt,
-                        lastLogin = DateTime.UtcNow
-                    })
-                    .ToList();
-
-                return Ok(new { total, page, pageSize, users });
-            }
-        }
 
         
         
@@ -533,6 +461,9 @@ namespace VisualizationDSA.WebApi.Controllers
             user.SetActiveStatus(request.IsActive);
             await _dbContext.SaveChangesAsync();
 
+            // Đồng bộ trạng thái ban vào stateless memory — chặn login ngay cả khi DB down.
+            _authStrategy.SetUserActive(user.Id.ToString(), request.IsActive);
+
             var action = request.IsActive ? "mở khóa" : "khóa";
             return Ok(new { message = $"Đã {action} tài khoản {user.Email}.", userId = id, isActive = request.IsActive });
         }
@@ -622,12 +553,20 @@ namespace VisualizationDSA.WebApi.Controllers
         private static string GenerateImpersonatedJwt(string userId, string email, string username, string role, int level, string adminId)
         {
             var header = JwtSigningConfig.Base64UrlEncode(Encoding.UTF8.GetBytes("{\"alg\":\"HS256\",\"typ\":\"JWT\"}"));
-            var payload = JwtSigningConfig.Base64UrlEncode(Encoding.UTF8.GetBytes(
-                $"{{\"sub\":\"{userId}\",\"email\":\"{email}\",\"name\":\"{username}\"," +
-                $"\"role\":\"{role}\"," +
-                $"\"level\":{level},\"exp\":{DateTimeOffset.UtcNow.AddMinutes(15).ToUnixTimeSeconds()}," +
-                $"\"jti\":\"{Guid.NewGuid()}\",\"isImpersonated\":true,\"originalAdminId\":\"{adminId}\"}}"
-            ));
+            // JsonSerializer — username/email chứa ký tự đặc biệt không làm vỡ payload.
+            var payloadJson = System.Text.Json.JsonSerializer.Serialize(new
+            {
+                sub = userId,
+                email,
+                name = username,
+                role,
+                level,
+                exp = DateTimeOffset.UtcNow.AddMinutes(15).ToUnixTimeSeconds(),
+                jti = Guid.NewGuid(),
+                isImpersonated = true,
+                originalAdminId = adminId
+            });
+            var payload = JwtSigningConfig.Base64UrlEncode(Encoding.UTF8.GetBytes(payloadJson));
             var signature = JwtSigningConfig.Base64UrlEncode(
                 HMACSHA256.HashData(JwtSigningConfig.Key, Encoding.UTF8.GetBytes($"{header}.{payload}"))
             );
@@ -641,6 +580,8 @@ namespace VisualizationDSA.WebApi.Controllers
         [HttpGet("audit-logs")]
         public async Task<IActionResult> GetAuditLogs([FromQuery] int page = 1, [FromQuery] int pageSize = 50)
         {
+            page = Math.Max(1, page);
+            pageSize = Math.Clamp(pageSize, 1, 100);
             var query = _dbContext.AuditLogs.AsQueryable();
             var total = await query.CountAsync();
             var logs = await query
@@ -654,6 +595,8 @@ namespace VisualizationDSA.WebApi.Controllers
 
         private async Task LogAdminAction(string action, Guid? targetId, string details)
         {
+            try
+            {
             var adminIdStr = JwtHelper.ExtractSubFromToken(Request);
             var adminName = "SystemAdmin";
             Guid adminId = Guid.Empty;
@@ -669,7 +612,11 @@ namespace VisualizationDSA.WebApi.Controllers
 
             var log = new AuditLog(action, adminId, adminName, targetId, details);
             _dbContext.AuditLogs.Add(log);
-            await _dbContext.SaveChangesAsync();
+            // Audit không được làm hỏng action đã thành công (trước đây lỗi log → 500).
+            try { await _dbContext.SaveChangesAsync(); }
+            catch (Exception ex) { Serilog.Log.Warning(ex, "Không ghi được audit log."); }
+            }
+            catch (Exception ex) { Serilog.Log.Warning(ex, "LogAdminAction tong the loi."); }
         }
     }
 

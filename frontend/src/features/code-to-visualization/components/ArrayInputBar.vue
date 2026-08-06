@@ -12,7 +12,7 @@
       :class="isValid ? 'border-border-default text-text-secondary focus:border-accent-cyan/50' : 'border-accent-red/50 text-accent-red'"
       @blur="$emit('parse')"
       @keydown.enter="$emit('parse')"
-      style="background: rgba(15, 23, 42, 0.6);"
+      style="background: color-mix(in srgb, var(--color-bg-surface) 60%, transparent);"
     />
     <button @click="$emit('run')" :disabled="isCompiling" class="run-btn" :class="{ 'run-btn-loading': isCompiling }">
       <BaseIcon v-if="!isCompiling" name="play" class="w-3.5 h-3.5 mr-1.5" />
@@ -28,9 +28,9 @@ defineEmits<{ 'update:modelValue': [v: string]; parse: []; run: [] }>();
 </script>
 
 <style scoped>
-.run-btn { display: flex; align-items: center; padding: 6px 16px; border-radius: 10px; background: linear-gradient(135deg, #06B6D4, #0891B2); color: white; cursor: pointer; border: none; transition: all 0.2s ease; white-space: nowrap; }
-.run-btn:hover:not(:disabled) { background: linear-gradient(135deg, #22D3EE, #06B6D4); box-shadow: 0 0 16px rgba(6, 182, 212, 0.4); }
+.run-btn { display: flex; align-items: center; padding: 6px 16px; border-radius: 10px; background: linear-gradient(135deg, var(--color-accent-cyan-light), var(--color-accent-cyan)); color: white; cursor: pointer; border: none; transition: all 0.2s ease; white-space: nowrap; }
+.run-btn:hover:not(:disabled) { background: linear-gradient(135deg, var(--color-accent-cyan-light), var(--color-accent-cyan)); box-shadow: 0 0 16px color-mix(in srgb, var(--color-accent-cyan) 40%, transparent); }
 .run-btn:disabled { opacity: 0.7; cursor: not-allowed; }
-.run-btn-loading { background: linear-gradient(135deg, #0891B2, #0E7490); animation: loadingPulse 1.5s infinite alternate; }
-@keyframes loadingPulse { 0% { box-shadow: 0 0 8px rgba(6, 182, 212, 0.2); } 100% { box-shadow: 0 0 20px rgba(6, 182, 212, 0.5); } }
+.run-btn-loading { background: linear-gradient(135deg, var(--color-accent-cyan), color-mix(in srgb, var(--color-accent-cyan) 55%, var(--color-bg-primary))); animation: loadingPulse 1.5s infinite alternate; }
+@keyframes loadingPulse { 0% { box-shadow: 0 0 8px color-mix(in srgb, var(--color-accent-cyan) 20%, transparent); } 100% { box-shadow: 0 0 20px color-mix(in srgb, var(--color-accent-cyan) 50%, transparent); } }
 </style>

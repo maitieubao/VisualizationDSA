@@ -38,6 +38,7 @@ namespace VisualizationDSA.WebApi.Controllers
         
         
         [HttpGet("overview")]
+        [RequireJwtRole("Teacher,Admin")]
         public async Task<ActionResult<SystemOverviewDto>> GetOverview()
         {
             const string cacheKey = "Analytics_Overview";
@@ -77,6 +78,7 @@ namespace VisualizationDSA.WebApi.Controllers
         
         
         [HttpGet("modules/popular")]
+        [RequireJwtRole("Teacher,Admin")]
         public async Task<ActionResult<IEnumerable<ModulePopularityDto>>> GetPopularModules(
             [FromQuery] int limit = 10)
         {

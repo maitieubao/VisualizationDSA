@@ -12,6 +12,8 @@ namespace VisualizationDSA.Domain.Entities
         public int Difficulty { get; private set; }
         public int XPReward { get; private set; }
         public bool IsDeleted { get; private set; }
+        // Chủ sở hữu (teacher tạo codelab) — null = dữ liệu cũ, chỉ Admin được sửa.
+        public Guid? OwnerId { get; private set; }
         
         public string Constraints { get; private set; } = string.Empty;
         public string Examples { get; private set; } = string.Empty; 
@@ -31,9 +33,10 @@ namespace VisualizationDSA.Domain.Entities
 
         public Codelab(string title, string description, string initialCode, int difficulty, int xpReward, 
             int maxRuntimeMs = 2000, int maxMemoryBytes = 128000000, string allowedLanguages = "csharp,python,java,javascript",
-            string constraints = "", string examples = "", string tags = "")
+            string constraints = "", string examples = "", string tags = "", Guid? ownerId = null)
         {
             Id = Guid.NewGuid();
+            OwnerId = ownerId;
             Title = title;
             Description = description;
             InitialCode = initialCode;

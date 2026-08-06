@@ -2,8 +2,8 @@
 
 .course-detail-view {
   min-height: calc(100vh - 80px);
-  background-color: var(--color-bg-primary, #1a1d2e);
-  color: var(--color-text-primary, #d9dde8);
+  background-color: var(--color-bg-primary);
+  color: var(--color-text-primary);
 }
 
 .animate-fade-in {

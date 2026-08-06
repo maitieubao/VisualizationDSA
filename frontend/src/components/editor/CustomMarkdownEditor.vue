@@ -243,7 +243,7 @@ function renderMarkdown(md: string): string {
       return `<pre class="language-${language}"><code>${escapeHtml(code)}</code></pre>`;
     })
     
-    .replace(/`([^`]+)`/g, '<code class="inline-code">$1</code>')
+    .replace(/`([^`]+)`/g, (_, code) => `<code class="inline-code">${escapeHtml(code)}</code>`)
     // Headers
     .replace(/^### (.*$)/gm, '<h3>$1</h3>')
     .replace(/^## (.*$)/gm, '<h2>$1</h2>')
@@ -282,10 +282,8 @@ function renderMarkdown(md: string): string {
 
 function escapeHtml(text: string): string {
   return text
-    .replace(/&/g, '&')
-    .replace(/</g, '<')
-    .replace(/>/g, '>')
-    .replace(/"/g, '"')
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
     .replace(/'/g, '&#039;');
 }
 
@@ -415,8 +413,8 @@ watch(content, () => {
   flex-direction: column;
   height: 100%;
   min-height: 400px;
-  background: #0f172a;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: var(--color-bg-primary);
+  border: 1px solid var(--color-border-default);
   border-radius: 12px;
   overflow: hidden;
   font-family: inherit;
@@ -427,8 +425,8 @@ watch(content, () => {
   align-items: center;
   gap: 4px;
   padding: 8px 12px;
-  background: rgba(15, 23, 42, 0.8);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  background: color-mix(in srgb, var(--color-bg-surface) 80%, transparent);
+  border-bottom: 1px solid var(--color-border-subtle);
   flex-wrap: wrap;
 }
 
@@ -441,7 +439,7 @@ watch(content, () => {
 .toolbar-divider {
   width: 1px;
   height: 24px;
-  background: rgba(255, 255, 255, 0.1);
+  background: var(--color-border-default);
   margin: 0 8px;
 }
 
@@ -454,19 +452,19 @@ watch(content, () => {
   border-radius: 8px;
   background: transparent;
   border: none;
-  color: rgba(255, 255, 255, 0.6);
+  color: var(--color-text-secondary);
   cursor: pointer;
   transition: all 0.15s;
 }
 
 .toolbar-btn:hover {
-  background: rgba(99, 102, 241, 0.15);
-  color: #a5b4fc;
+  background: color-mix(in srgb, var(--color-accent-purple) 15%, transparent);
+  color: var(--color-accent-purple-light);
 }
 
 .toolbar-btn.active {
-  background: rgba(99, 102, 241, 0.2);
-  color: #a5b4fc;
+  background: color-mix(in srgb, var(--color-accent-purple) 20%, transparent);
+  color: var(--color-accent-purple-light);
 }
 
 .toolbar-spacer {
@@ -502,7 +500,7 @@ watch(content, () => {
   padding: 16px;
   background: transparent;
   border: none;
-  color: #e2e8f0;
+  color: var(--color-text-primary);
   font-family: 'JetBrains Mono', 'Fira Code', 'Consolas', monospace;
   font-size: 13px;
   line-height: 1.6;
@@ -512,7 +510,7 @@ watch(content, () => {
 }
 
 .editor-textarea::placeholder {
-  color: rgba(148, 163, 184, 0.4);
+  color: var(--color-text-muted);
 }
 
 .editor-textarea:focus {
@@ -521,7 +519,7 @@ watch(content, () => {
 
 .preview-content {
   padding: 16px;
-  color: #e2e8f0;
+  color: var(--color-text-primary);
   font-size: 14px;
   line-height: 1.7;
   max-width: 800px;
@@ -531,30 +529,30 @@ watch(content, () => {
 .preview-content h1,
 .preview-content h2,
 .preview-content h3 {
-  color: white;
+  color: var(--color-text-heading);
   margin-top: 1.5em;
   margin-bottom: 0.5em;
   font-weight: 700;
 }
 
-.preview-content h1 { font-size: 1.75em; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 0.3em; }
-.preview-content h2 { font-size: 1.5em; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 0.3em; }
+.preview-content h1 { font-size: 1.75em; border-bottom: 1px solid var(--color-border-default); padding-bottom: 0.3em; }
+.preview-content h2 { font-size: 1.5em; border-bottom: 1px solid var(--color-border-default); padding-bottom: 0.3em; }
 .preview-content h3 { font-size: 1.25em; }
 
 .preview-content p { margin: 0.75em 0; }
 .preview-content ul, .preview-content ol { margin: 0.75em 0; padding-left: 1.5em; }
 .preview-content li { margin: 0.25em 0; }
 .preview-content code.inline-code { 
-  background: rgba(99, 102, 241, 0.15); 
-  color: #a5b4fc; 
+  background: color-mix(in srgb, var(--color-accent-purple) 15%, transparent); 
+  color: var(--color-accent-purple-light); 
   padding: 0.15em 0.4em; 
   border-radius: 4px; 
   font-family: inherit;
   font-size: 0.9em;
 }
 .preview-content pre { 
-  background: #020617; 
-  border: 1px solid rgba(255,255,255,0.05);
+  background: var(--color-bg-primary); 
+  border: 1px solid var(--color-border-subtle);
   border-radius: 8px; 
   padding: 16px; 
   overflow-x: auto; 
@@ -564,33 +562,33 @@ watch(content, () => {
   font-family: 'JetBrains Mono', 'Fira Code', 'Consolas', monospace; 
   font-size: 12px; 
   line-height: 1.6; 
-  color: #e2e8f0; 
+  color: var(--color-text-primary); 
   display: block; 
 }
 .preview-content blockquote { 
   border-left: 3px solid #6366f1; 
   padding-left: 16px; 
   margin: 1em 0; 
-  color: #94a3b8; 
+  color: var(--color-text-secondary); 
   font-style: italic; 
 }
-.preview-content a { color: #a5b4fc; text-decoration: none; }
+.preview-content a { color: var(--color-accent-purple-light); text-decoration: none; }
 .preview-content a:hover { text-decoration: underline; }
-.preview-content hr { border: none; border-top: 1px solid rgba(255,255,255,0.1); margin: 2em 0; }
+.preview-content hr { border: none; border-top: 1px solid var(--color-border-default); margin: 2em 0; }
 .preview-content .md-image { max-width: 100%; height: auto; border-radius: 8px; margin: 1em 0; }
-.preview-content del { color: #64748b; text-decoration: line-through; }
-.preview-content strong { color: white; }
-.preview-content em { color: #cbd5e1; }
+.preview-content del { color: var(--color-text-secondary); text-decoration: line-through; }
+.preview-content strong { color: var(--color-text-heading); }
+.preview-content em { color: var(--color-text-secondary); }
 
 .editor-statusbar {
   display: flex;
   align-items: center;
   justify-content: space-between;
   padding: 8px 12px;
-  background: rgba(15, 23, 42, 0.8);
-  border-top: 1px solid rgba(255, 255, 255, 0.05);
+  background: color-mix(in srgb, var(--color-bg-surface) 80%, transparent);
+  border-top: 1px solid var(--color-border-subtle);
   font-size: 11px;
-  color: rgba(255, 255, 255, 0.5);
+  color: var(--color-text-secondary);
 }
 
 .status-left,

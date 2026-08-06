@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 using VisualizationDSA.Application.DTOs;
 using VisualizationDSA.Application.Services;
 using VisualizationDSA.Domain.Entities;
@@ -17,14 +18,17 @@ namespace VisualizationDSA.Infrastructure.Services
         private readonly IGamificationService _gamificationService;
         private readonly VisualizationDSA.Application.Interfaces.IApplicationDbContext _context;
         private readonly IProgressRuleEngine _progressRuleEngine;
+        private readonly ILogger<QuizService> _logger;
 
         public QuizService(IUnitOfWork unitOfWork, IGamificationService gamificationService, 
-            VisualizationDSA.Application.Interfaces.IApplicationDbContext context, IProgressRuleEngine progressRuleEngine)
+            VisualizationDSA.Application.Interfaces.IApplicationDbContext context, IProgressRuleEngine progressRuleEngine,
+            ILogger<QuizService> logger)
         {
             _unitOfWork = unitOfWork;
             _gamificationService = gamificationService;
             _context = context;
             _progressRuleEngine = progressRuleEngine;
+            _logger = logger;
         }
 
         public async Task<IEnumerable<QuizDto>> GetAllQuizzesAsync()
@@ -82,6 +86,9 @@ namespace VisualizationDSA.Infrastructure.Services
             
             var attempt = new QuizAttempt(userId, quiz.Id, request.Answers, score, maxScore);
             await _unitOfWork.QuizAttempts.AddAsync(attempt);
+            // Commit attempt TRƯỚC khi đọc previousAttempts — chống race double XP
+            // (2 request đồng thời cùng thấy 0 pass → cả 2 được thưởng).
+            await _unitOfWork.CommitAsync();
 
             
             int xpEarned = 0;
@@ -131,19 +138,35 @@ namespace VisualizationDSA.Infrastructure.Services
 
                 if (xpEarned > 0)
                 {
-                    await _gamificationService.AwardXPAsync(userId, xpEarned, $"Completed quiz: {quiz.Title}");
-                    await _gamificationService.CompleteModuleAsync(userId, $"quiz-{quiz.Topic}");
+                    try
+                    {
+                        await _gamificationService.AwardXPAsync(userId, xpEarned, $"Completed quiz: {quiz.Title}");
+                        await _gamificationService.CompleteModuleAsync(userId, $"quiz-{quiz.Topic}");
+                    }
+                    catch (Exception xpEx)
+                    {
+                        // Attempt đã commit (chống race) — không làm hỏng kết quả bài làm;
+                        // chỉ log để tránh mất XP im lặng.
+                        _logger.LogError(xpEx, "AwardXP sau quiz {QuizId} thất bại — user {UserId} có thể bị thiếu XP", quiz.Id, userId);
+                    }
                 }
 
                 
                 var moduleItems = await Microsoft.EntityFrameworkCore.EntityFrameworkQueryableExtensions.ToListAsync(_context.ModuleItems
                     .Where(m => m.QuizId == quiz.Id && !m.IsDeleted));
 
+                // Khử N+1: gom toàn bộ progress của user trong 1 query.
+                var moduleItemIds = moduleItems.Select(m => m.Id).ToList();
+                var existingProgress = moduleItemIds.Count > 0
+                    ? (await Microsoft.EntityFrameworkCore.EntityFrameworkQueryableExtensions.ToListAsync(_context.UserModuleItemProgresses
+                        .Where(p => p.UserId == userId && moduleItemIds.Contains(p.ModuleItemId))))
+                        .ToDictionary(p => p.ModuleItemId)
+                    : new Dictionary<Guid, UserModuleItemProgress>();
+
                 foreach (var moduleItem in moduleItems)
                 {
-                    var progress = await Microsoft.EntityFrameworkCore.EntityFrameworkQueryableExtensions.FirstOrDefaultAsync(_context.UserModuleItemProgresses
-                        .Where(p => p.UserId == userId && p.ModuleItemId == moduleItem.Id));
-                        
+                    existingProgress.TryGetValue(moduleItem.Id, out var progress);
+
                     if (progress == null)
                     {
                         progress = new UserModuleItemProgress(userId, moduleItem.Id);

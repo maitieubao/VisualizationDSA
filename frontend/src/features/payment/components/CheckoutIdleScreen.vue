@@ -10,7 +10,7 @@
     <button
       @click="$emit('start')"
       :disabled="isLoading"
-      class="px-8 py-3 rounded-[var(--radius-lg)] bg-gradient-to-r from-accent-cyan to-accent-purple hover:from-accent-cyan hover:to-accent-purple text-text-primary font-semibold transition-all hover:scale-[1.02] shadow-[0_0_20px_rgba(6,182,212,0.3)] disabled:opacity-50 disabled:pointer-events-none active:scale-[0.98]"
+      class="px-8 py-3 rounded-[var(--radius-lg)] bg-gradient-to-r from-accent-cyan to-accent-purple hover:from-accent-cyan hover:to-accent-purple text-white font-semibold transition-all hover:scale-[1.02] shadow-[0_0_20px_rgba(6,182,212,0.3)] disabled:opacity-50 disabled:pointer-events-none active:scale-[0.98]"
     >
       <span v-if="isLoading" class="flex items-center justify-center gap-2">
         <BaseIcon name="spinner" class="w-4 h-4 animate-spin" /> Đang tạo hóa đơn...

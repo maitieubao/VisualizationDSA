@@ -272,7 +272,7 @@ body {
 .dot-grid-bg {
   background-image: radial-gradient(
     circle,
-    rgba(255, 255, 255, 0.07) 1px,
+    color-mix(in srgb, var(--color-text-primary) 7%, transparent) 1px,
     transparent 1px
   );
   background-size: 24px 24px;
@@ -306,12 +306,12 @@ body, #app {
 
 
 h1, h2, h3, h4, h5, h6 {
-  color: var(--color-text-heading, #ffffff);
+  color: var(--color-text-heading);
 }
 
 
-.text-accent   { color: var(--color-accent-primary-text, #7b89f4); }
-.text-heading  { color: var(--color-text-heading, #ffffff); }
+.text-accent   { color: var(--color-accent-primary-text); }
+.text-heading  { color: var(--color-text-heading); }
 
 
 
@@ -320,16 +320,16 @@ h1, h2, h3, h4, h5, h6 {
 
 
 .monaco-pseudocode-active-line-glow {
-  background: var(--color-accent-yellow-dim, rgba(212, 168, 50, 0.08)) !important;
-  border-left: 4px solid var(--color-accent-yellow, #d4a832) !important;
+  background: var(--color-accent-yellow-dim) !important;
+  border-left: 4px solid var(--color-accent-yellow) !important;
 }
 
 .monaco-pseudocode-gutter-decorator {
-  background-color: var(--color-accent-yellow, #d4a832) !important;
+  background-color: var(--color-accent-yellow) !important;
   width: 5px !important;
   margin-left: 3px;
   border-radius: var(--radius-full);
-  box-shadow: 0 0 10px var(--color-accent-yellow, #d4a832);
+  box-shadow: 0 0 10px var(--color-accent-yellow);
 }
 
 

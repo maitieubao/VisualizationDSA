@@ -35,14 +35,33 @@ namespace VisualizationDSA.WebApi.Controllers
         
         
         [HttpGet("all")]
-        public IActionResult GetAll()
+        public async Task<IActionResult> GetAll()
         {
-            var quizzes = _quizBank.GetAllQuizzes().Select(q => new
-            {
-                q.Id, q.Title, q.Topic, q.Difficulty, q.XpReward,
-                questionCount = q.Questions.Count
-            });
-            return Ok(quizzes);
+            // Merge bank (quiz mặc định) + DB (quiz giảng viên tạo) — trước đây bank-only
+            // → quiz teacher tạo biến mất khỏi tab quản lý sau khi chuyển DB-only.
+            var bankQuizzes = _quizBank.GetAllQuizzes()
+                .Select(q => new
+                {
+                    q.Id, q.Title, q.Topic, q.Difficulty, q.XpReward,
+                    questionCount = q.Questions.Count
+                });
+
+            var dbQuizzes = await _dbContext.Quizzes
+                .Select(q => new
+                {
+                    Id = q.Id.ToString(),
+                    q.Title, q.Topic,
+                    Difficulty = DifficultyToLabel(q.Difficulty),
+                    XpReward = q.XPReward,
+                    questionCount = q.Questions.Count
+                })
+                .ToListAsync();
+
+            var merged = dbQuizzes
+                .Concat(bankQuizzes)
+                .GroupBy(q => q.Title, StringComparer.OrdinalIgnoreCase)
+                .Select(g => g.First());
+            return Ok(merged);
         }
 
         
@@ -50,9 +69,16 @@ namespace VisualizationDSA.WebApi.Controllers
         
         
         [HttpGet("topics")]
-        public IActionResult GetTopics()
+        public async Task<IActionResult> GetTopics()
         {
-            return Ok(_quizBank.GetTopics());
+            var bankTopics = _quizBank.GetTopics();
+            var dbTopics = await _dbContext.Quizzes
+                .Where(q => q.Topic != null && q.Topic != "")
+                .Select(q => q.Topic!)
+                .Distinct()
+                .ToListAsync();
+            var merged = dbTopics.Concat(bankTopics).Distinct(StringComparer.OrdinalIgnoreCase);
+            return Ok(merged);
         }
 
         
@@ -66,13 +92,7 @@ namespace VisualizationDSA.WebApi.Controllers
             // công khai → chỉ trả câu hỏi (chống lộ đề trước khi làm bài).
             var authenticated = JwtHelper.RequireToken(Request) == null;
 
-            var quiz = _quizBank.GetQuizById(quizId);
-            if (quiz != null)
-            {
-                return Ok(ToPublicDto(quiz, authenticated));
-            }
-
-            // Fallback: quiz được seed/tạo từ DB (GUID) — bank in-memory chỉ chứa quiz mặc định.
+            // DB là nguồn chính (seed + quiz giảng viên tạo); bank chỉ là fallback khi DB down.
             // Parse Guid trước để tránh phụ thuộc cách EF translate Id.ToString() trên SQLite.
             var dbQuiz = Guid.TryParse(quizId, out var quizGuid)
                 ? await _dbContext.Quizzes
@@ -81,34 +101,42 @@ namespace VisualizationDSA.WebApi.Controllers
                 : await _dbContext.Quizzes
                     .Include(q => q.Questions)
                     .FirstOrDefaultAsync(q => q.Title == quizId);
-            if (dbQuiz == null)
-                return NotFound(new { error = "QUIZ_NOT_FOUND", quizId, supportedQuizzes = _quizBank.GetAllQuizzes().Select(q => q.Id) });
-
-            return Ok(new StatelessQuizPublicDto
+            if (dbQuiz != null)
             {
-                Id = dbQuiz.Id.ToString(),
-                Title = dbQuiz.Title,
-                Topic = dbQuiz.Topic,
-                Difficulty = dbQuiz.Difficulty.ToString(),
-                XpReward = dbQuiz.XPReward,
-                Questions = dbQuiz.Questions
-                    .Select(q => authenticated
-                        ? new StatelessQuestionPublicDto
-                        {
-                            Id = q.Id.ToString(),
-                            Text = q.Question,
-                            Options = q.Options.ToList(),
-                            CorrectIndex = q.CorrectIndex,
-                            Explanation = q.Explanation
-                        }
-                        : new StatelessQuestionPublicDto
-                        {
-                            Id = q.Id.ToString(),
-                            Text = q.Question,
-                            Options = q.Options.ToList()
-                        })
-                    .ToList()
-            });
+                return Ok(new StatelessQuizPublicDto
+                {
+                    Id = dbQuiz.Id.ToString(),
+                    Title = dbQuiz.Title,
+                    Topic = dbQuiz.Topic,
+                    Difficulty = DifficultyToLabel(dbQuiz.Difficulty),
+                    XpReward = dbQuiz.XPReward,
+                    Questions = dbQuiz.Questions
+                        .Select(q => authenticated
+                            ? new StatelessQuestionPublicDto
+                            {
+                                Id = q.Id.ToString(),
+                                Text = q.Question,
+                                Options = q.Options.ToList(),
+                                CorrectIndex = q.CorrectIndex,
+                                Explanation = q.Explanation
+                            }
+                            : new StatelessQuestionPublicDto
+                            {
+                                Id = q.Id.ToString(),
+                                Text = q.Question,
+                                Options = q.Options.ToList()
+                            })
+                        .ToList()
+                });
+            }
+
+            var quiz = _quizBank.GetQuizById(quizId);
+            if (quiz != null)
+            {
+                return Ok(ToPublicDto(quiz, authenticated));
+            }
+
+            return NotFound(new { error = "QUIZ_NOT_FOUND", quizId, supportedQuizzes = _quizBank.GetAllQuizzes().Select(q => q.Id) });
         }
 
         private static StatelessQuizPublicDto ToPublicDto(StatelessQuizDto quiz, bool authenticated)
@@ -145,11 +173,48 @@ namespace VisualizationDSA.WebApi.Controllers
         
         
         [HttpGet("topic/{topic}")]
-        public IActionResult GetByTopic(string topic)
+        public async Task<IActionResult> GetByTopic(string topic)
         {
             var authenticated = JwtHelper.RequireToken(Request) == null;
-            var quizzes = _quizBank.GetQuizzesByTopic(topic).Select(q => ToPublicDto(q, authenticated));
-            return Ok(quizzes);
+
+            var dbQuizzes = await _dbContext.Quizzes
+                .Include(q => q.Questions)
+                .Where(q => q.Topic == topic)
+                .ToListAsync();
+            var bankQuizzes = _quizBank.GetQuizzesByTopic(topic);
+
+            // Dedupe theo Title (DB thắng) — tránh card trùng khi teacher tạo quiz trùng tên bank.
+            var all = dbQuizzes
+                .Select(q => new StatelessQuizPublicDto
+                {
+                    Id = q.Id.ToString(),
+                    Title = q.Title,
+                    Topic = q.Topic,
+                    Difficulty = DifficultyToLabel(q.Difficulty),
+                    XpReward = q.XPReward,
+                    Questions = q.Questions
+                        .Select(question => authenticated
+                            ? new StatelessQuestionPublicDto
+                            {
+                                Id = question.Id.ToString(),
+                                Text = question.Question,
+                                Options = question.Options.ToList(),
+                                CorrectIndex = question.CorrectIndex,
+                                Explanation = question.Explanation
+                            }
+                            : new StatelessQuestionPublicDto
+                            {
+                                Id = question.Id.ToString(),
+                                Text = question.Question,
+                                Options = question.Options.ToList()
+                            })
+                        .ToList()
+                })
+                .Concat(bankQuizzes.Select(q => ToPublicDto(q, authenticated)))
+                .GroupBy(q => q.Title, StringComparer.OrdinalIgnoreCase)
+                .Select(g => g.First());
+
+            return Ok(all);
         }
 
         
@@ -397,9 +462,8 @@ namespace VisualizationDSA.WebApi.Controllers
             }
 
             
-            var created = _quizBank.AddQuiz(quiz);
-
-            
+            // DB là NGUỒN DUY NHẤT cho quiz giảng viên tạo — không ghi thêm vào bank in-memory
+            // (trước đây 2 nguồn → delete chỉ xóa 1 nơi, quiz đã xóa vẫn hiện qua fallback bank).
             var difficultyInt = quiz.Difficulty switch
             {
                 "easy" => 1, "medium" => 3, "hard" => 5, _ => 3
@@ -411,6 +475,17 @@ namespace VisualizationDSA.WebApi.Controllers
             }
             _dbContext.Quizzes.Add(dbQuiz);
             await _dbContext.SaveChangesAsync();
+
+            // Gắn Id GUID thật vào response (DTO đầu vào không có Id).
+            var created = new StatelessQuizDto
+            {
+                Id = dbQuiz.Id.ToString(),
+                Title = dbQuiz.Title,
+                Topic = dbQuiz.Topic,
+                Difficulty = DifficultyToLabel(dbQuiz.Difficulty),
+                XpReward = dbQuiz.XPReward,
+                Questions = quiz.Questions
+            };
 
             return Ok(new { message = "Quiz đã được thêm thành công.", quiz = created });
         }
@@ -467,15 +542,18 @@ namespace VisualizationDSA.WebApi.Controllers
             }
 
             
-            var updated = _quizBank.UpdateQuiz(quizId, quiz);
-            if (updated == null)
+            // DB là nguồn duy nhất — không ghi bank (trước đây 2 nguồn lệch nhau).
+            // Parse Guid trước để tránh phụ thuộc cách EF translate Id.ToString() trên SQLite.
+            var dbQuiz = Guid.TryParse(quizId, out var updateGuid)
+                ? await _dbContext.Quizzes
+                    .Include(q => q.Questions)
+                    .FirstOrDefaultAsync(q => q.Id == updateGuid)
+                : await _dbContext.Quizzes
+                    .Include(q => q.Questions)
+                    .FirstOrDefaultAsync(q => q.Title == quizId);
+            if (dbQuiz == null)
                 return NotFound(new { error = "QUIZ_NOT_FOUND", message = $"Không tìm thấy quiz với ID {quizId} để cập nhật." });
 
-            
-            var dbQuiz = await _dbContext.Quizzes
-                .Include(q => q.Questions)
-                .FirstOrDefaultAsync(q => q.Title == quizId || q.Id.ToString() == quizId);
-            if (dbQuiz != null)
             {
                 var difficultyInt = quiz.Difficulty switch
                 {
@@ -493,7 +571,7 @@ namespace VisualizationDSA.WebApi.Controllers
                 await _dbContext.SaveChangesAsync();
             }
 
-            return Ok(new { message = "Quiz đã được cập nhật thành công.", quiz = updated });
+            return Ok(new { message = "Quiz đã được cập nhật thành công.", quiz });
         }
 
         
@@ -510,8 +588,11 @@ namespace VisualizationDSA.WebApi.Controllers
             var deletedInMemory = _quizBank.DeleteQuiz(quizId);
 
             
-            var dbQuiz = await _dbContext.Quizzes
-                .FirstOrDefaultAsync(q => q.Title == quizId || q.Id.ToString() == quizId);
+            var dbQuiz = Guid.TryParse(quizId, out var deleteGuid)
+                ? await _dbContext.Quizzes
+                    .FirstOrDefaultAsync(q => q.Id == deleteGuid)
+                : await _dbContext.Quizzes
+                    .FirstOrDefaultAsync(q => q.Title == quizId);
             if (dbQuiz != null)
             {
                 _dbContext.Quizzes.Remove(dbQuiz);
@@ -536,11 +617,12 @@ namespace VisualizationDSA.WebApi.Controllers
             
 
             
-            var totalQuizzes         = await _dbContext.Quizzes.CountAsync();
-            var totalQuestionsInBank = await _dbContext.QuizQuestions.CountAsync();
+            var totalQuizzes         = await _dbContext.Quizzes.AsNoTracking().CountAsync();
+            var totalQuestionsInBank = await _dbContext.QuizQuestions.AsNoTracking().CountAsync();
 
             
             var topicBreakdown = await _dbContext.Quizzes
+                .AsNoTracking()
                 .GroupBy(q => q.Topic)
                 .Select(g => new
                 {
@@ -648,5 +730,10 @@ namespace VisualizationDSA.WebApi.Controllers
             if (string.IsNullOrWhiteSpace(text)) return string.Empty;
             return System.Text.RegularExpressions.Regex.Replace(text.Trim(), @"\s+", " ");
         }
+
+        // Map difficulty DB (int) sang nhãn — bank dùng "easy/medium/hard"; trước đây
+        // ToString() trả "1/2/3" làm teacher sửa quiz DB bị reset về medium.
+        private static string DifficultyToLabel(int difficulty) =>
+            difficulty == 1 ? "easy" : difficulty == 5 ? "hard" : "medium";
     }
 }

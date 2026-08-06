@@ -59,7 +59,10 @@ export interface StatelessUserProgress {
 async function handleResponse<T>(response: Response): Promise<T> {
   if (!response.ok) {
     const body: { message?: string } | null = await response.json().catch(() => null);
-    throw new Error(body?.message ?? `HTTP ${response.status}: ${response.statusText}`);
+    const error = new Error(body?.message ?? `HTTP ${response.status}: ${response.statusText}`);
+    // Gắn HTTP status để caller phân biệt lỗi auth (401/403) với lỗi mạng/5xx.
+    (error as { status?: number }).status = response.status;
+    throw error;
   }
   return response.json() as Promise<T>;
 }

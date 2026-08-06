@@ -24,6 +24,9 @@ export function setSession(
   currentUser.value  = user;
   localStorage.setItem(REFRESH_TOKEN_KEY,  rt);
   localStorage.setItem(ACCESS_EXPIRES_KEY, String(Date.now() + expiresIn * 1000));
+  // Classic login phải xóa dấu vết stateless — nếu không, reload sau đó bị route nhầm sang
+  // stateless refresh (init ưu tiên STATELESS_USER_ID_KEY) → 401 → mất phiên oan.
+  localStorage.removeItem('vdsa_stateless_user_id');
   scheduleRefresh(expiresIn);
 }
 

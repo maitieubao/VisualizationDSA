@@ -5,7 +5,7 @@
       <div class="w-14 h-14 rounded-2xl bg-accent/20 border border-accent/30 flex items-center justify-center text-accent mb-4">
         <BaseIcon name="puzzle" class="w-7 h-7" />
       </div>
-      <h3 class="text-base font-bold text-white">Chưa có bài tập Code Lab</h3>
+      <h3 class="text-base font-bold text-text-primary">Chưa có bài tập Code Lab</h3>
       <p class="text-xs text-text-muted mt-1 max-w-md">Bài học này không kèm bài tập lập trình. Bạn có thể chuyển tiếp để hoàn thành bài học.</p>
       <button
         @click="$emit('completeLesson')"
@@ -38,7 +38,7 @@
                 <BaseIcon name="code" class="w-4 h-4" />
                 <span>Step 4 / 4 — Code Lab</span>
               </div>
-              <h2 class="text-lg font-extrabold text-white mt-0.5">{{ problemTitle }}</h2>
+              <h2 class="text-lg font-extrabold text-text-primary mt-0.5">{{ problemTitle }}</h2>
             </div>
             <span class="px-2.5 py-1 rounded-full text-[10px] font-bold bg-accent-green/80 text-accent-green border border-accent-green/30">
               Cơ bản
@@ -98,7 +98,7 @@
                 <BaseIcon name="info" class="w-4 h-4 text-accent" />
                 <span>Hint #{{ i + 1 }}</span>
               </div>
-              <button @click="toggleHint(i)" class="text-[11px] text-text-muted hover:text-white cursor-pointer">
+              <button @click="toggleHint(i)" class="text-[11px] text-text-muted hover:text-text-primary cursor-pointer">
                 {{ shownHints.includes(i) ? 'Ẩn' : 'Xem' }}
               </button>
             </div>
@@ -117,7 +117,7 @@
             <span class="text-xs font-bold text-text-secondary font-mono">Solution.js</span>
             <span class="text-[10px] px-2 py-0.5 rounded bg-bg-surface text-text-muted font-mono">JavaScript</span>
           </div>
-          <button @click="resetCode" class="text-[11px] text-text-muted hover:text-white cursor-pointer">
+          <button @click="resetCode" class="text-[11px] text-text-muted hover:text-text-primary cursor-pointer">
             Reset to Starter Code
           </button>
         </div>

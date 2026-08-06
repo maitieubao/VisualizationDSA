@@ -44,6 +44,17 @@ export const useGamificationStore = defineStore('gamification-engine', () => {
   }
 
   function checkAndUnlockBadges(): void {
+    // Merge danh sách thuật toán hoàn thành: store hiện tại (test/action push trực tiếp)
+    // + localStorage từ lesson flow — đọc MỖI LẦN để không stale khi user học thêm.
+    try {
+      const stored = JSON.parse(localStorage.getItem('completed_algorithms') ?? '[]');
+      if (Array.isArray(stored)) {
+        completedAlgorithms.value = [...new Set([...completedAlgorithms.value, ...stored])];
+      }
+    } catch {
+      /* giữ nguyên store hiện tại */
+    }
+
     const userState: UserProgressState = {
       userId: 'current-user',
       totalXP: currentXP.value,

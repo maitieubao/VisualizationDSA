@@ -41,10 +41,10 @@ defineEmits<{ stepBackward: []; stepForward: []; togglePlay: [] }>();
 
 <style scoped>
 .vcr-controls-left { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
-.vcr-action-btn { padding: 8px; border-radius: 10px; border: 1px solid rgba(71,85,105,0.6); color: #94a3b8; background: transparent; cursor: pointer; transition: all 0.15s; }
-.vcr-action-btn:hover:not(:disabled) { color: #fff; border-color: #64748b; background: rgba(100,116,139,0.15); }
+.vcr-action-btn { padding: 8px; border-radius: 10px; border: 1px solid var(--color-border-strong); color: var(--color-text-secondary); background: transparent; cursor: pointer; transition: all 0.15s; }
+.vcr-action-btn:hover:not(:disabled) { color: var(--color-text-primary); border-color: var(--color-border-strong); background: var(--color-bg-hover); }
 .vcr-action-btn:disabled { opacity: 0.35; cursor: not-allowed; }
-.vcr-play-btn { padding: 10px; border-radius: 50%; background: linear-gradient(135deg, #06b6d4, #0891b2); color: #fff; border: none; cursor: pointer; transition: all 0.15s; box-shadow: 0 0 16px rgba(6,182,212,0.3); }
-.vcr-play-btn:hover:not(:disabled) { background: linear-gradient(135deg, #22d3ee, #06b6d4); box-shadow: 0 0 24px rgba(6,182,212,0.5); transform: scale(1.05); }
+.vcr-play-btn { padding: 10px; border-radius: 50%; background: linear-gradient(135deg, var(--color-accent-cyan-light), var(--color-accent-cyan)); color: #fff; border: none; cursor: pointer; transition: all 0.15s; box-shadow: 0 0 16px color-mix(in srgb, var(--color-accent-cyan) 30%, transparent); }
+.vcr-play-btn:hover:not(:disabled) { background: linear-gradient(135deg, var(--color-accent-cyan-light), var(--color-accent-cyan)); box-shadow: 0 0 24px color-mix(in srgb, var(--color-accent-cyan) 50%, transparent); transform: scale(1.05); }
 .vcr-play-btn:disabled { opacity: 0.35; cursor: not-allowed; }
 </style>

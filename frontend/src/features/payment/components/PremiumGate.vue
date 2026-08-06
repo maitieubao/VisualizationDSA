@@ -58,7 +58,7 @@ function formatPrice(price: number): string {
   position: absolute;
   inset: 0;
   z-index: 10;
-  background: rgba(0, 0, 0, 0.7);
+  background: var(--color-bg-overlay);
   backdrop-filter: blur(6px);
   display: flex;
   align-items: center;
@@ -88,7 +88,7 @@ function formatPrice(price: number): string {
 
 .premium-gate__desc {
   font-size: 12px;
-  color: var(--color-text-secondary, #aaa);
+  color: var(--color-text-secondary);
   line-height: 1.5;
   margin-bottom: 16px;
 }

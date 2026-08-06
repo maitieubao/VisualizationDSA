@@ -14,6 +14,9 @@ using VisualizationDSA.Application.Features.Classrooms.Queries.GetTeacherClassro
 using VisualizationDSA.Application.Features.Classrooms.Queries.GetStudentClassroomCurriculum;
 using VisualizationDSA.WebApi.Filters;
 using VisualizationDSA.Domain.Enums;
+using VisualizationDSA.Infrastructure.Data;
+using Microsoft.EntityFrameworkCore;
+using VisualizationDSA.Application.Features.Classrooms.Commands.DeleteClassroomModule;
 
 namespace VisualizationDSA.WebApi.Controllers
 {
@@ -23,10 +26,12 @@ namespace VisualizationDSA.WebApi.Controllers
     public class ClassroomCurriculumController : ControllerBase
     {
         private readonly IMediator _mediator;
+        private readonly ApplicationDbContext _dbContext;
 
-        public ClassroomCurriculumController(IMediator mediator)
+        public ClassroomCurriculumController(IMediator mediator, ApplicationDbContext dbContext)
         {
             _mediator = mediator;
+            _dbContext = dbContext;
         }
 
         [HttpGet("{classroomId:guid}/curriculum/teacher")]
@@ -115,8 +120,32 @@ namespace VisualizationDSA.WebApi.Controllers
             if (!Guid.TryParse(teacherIdStr, out var teacherId))
                 return Unauthorized();
 
-            
-            return NoContent();
+            // Lấy classroomId qua module (trước đây là STUB — parse token rồi trả NoContent
+            // mà KHÔNG gửi command → module không bao giờ bị xóa).
+            var module = await _dbContext.ClassroomModules
+                .FirstOrDefaultAsync(m => m.Id == moduleId);
+            if (module == null)
+                return NotFound(new { error = "MODULE_NOT_FOUND", message = "Không tìm thấy module." });
+
+            var command = new DeleteClassroomModuleCommand
+            {
+                TeacherId = teacherId,
+                ClassroomId = module.ClassroomId,
+                ModuleId = moduleId
+            };
+            try
+            {
+                await _mediator.Send(command);
+                return NoContent();
+            }
+            catch (UnauthorizedAccessException)
+            {
+                return StatusCode(403, new { error = "FORBIDDEN", message = "Bạn không có quyền xóa module này." });
+            }
+            catch (ArgumentException ex)
+            {
+                return NotFound(new { error = "NOT_FOUND", message = ex.Message });
+            }
         }
 
         [HttpPost("modules/{moduleId}/items")]

@@ -233,7 +233,9 @@ namespace VisualizationDSA.Infrastructure.Services
             StreakDays = user.StreakDays,
             CreatedAt  = user.CreatedAt,
             Badges     = new List<BadgeDto>(),
-            IsPremium  = user.IsPremium
+            IsPremium  = user.IsPremium,
+            // Trước đây bỏ qua Role → mọi user qua flow chuẩn trả về "Student" dù là Admin/Teacher.
+            Role       = user.Role
         };
     }
 }

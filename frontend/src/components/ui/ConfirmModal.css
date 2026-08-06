@@ -1,7 +1,7 @@
 .modal-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.7);
+  background: var(--color-bg-overlay);
   backdrop-filter: blur(4px);
   display: flex;
   align-items: center;
@@ -14,8 +14,8 @@
 .modal-container {
   width: 100%;
   max-width: 480px;
-  background: #0f172a;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: var(--color-bg-primary);
+  border: 1px solid var(--color-border-default);
   border-radius: 20px;
   overflow: hidden;
   box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
@@ -27,23 +27,23 @@
   align-items: center;
   justify-content: space-between;
   padding: 20px 24px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  border-bottom: 1px solid var(--color-border-default);
 }
 
 .modal-header.btn-danger {
-  background: linear-gradient(90deg, rgba(239, 68, 68, 0.15), transparent);
-  border-bottom-color: rgba(239, 68, 68, 0.3);
+  background: linear-gradient(90deg, color-mix(in srgb, var(--color-accent-red) 15%, transparent), transparent);
+  border-bottom-color: color-mix(in srgb, var(--color-accent-red) 30%, transparent);
 }
 
 .modal-header.btn-warning {
-  background: linear-gradient(90deg, rgba(245, 158, 11, 0.15), transparent);
-  border-bottom-color: rgba(245, 158, 11, 0.3);
+  background: linear-gradient(90deg, color-mix(in srgb, var(--color-accent-yellow) 15%, transparent), transparent);
+  border-bottom-color: color-mix(in srgb, var(--color-accent-yellow) 30%, transparent);
 }
 
 .modal-title {
   font-size: 18px;
   font-weight: 700;
-  color: white;
+  color: var(--color-text-heading);
   margin: 0;
   display: flex;
   align-items: center;
@@ -57,16 +57,16 @@
   height: 36px;
   border-radius: 10px;
   background: transparent;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  color: rgba(255, 255, 255, 0.5);
+  border: 1px solid var(--color-border-default);
+  color: var(--color-text-secondary);
   cursor: pointer;
   transition: all 0.2s;
 }
 
 .modal-close:hover {
-  background: rgba(255, 255, 255, 0.05);
-  border-color: rgba(255, 255, 255, 0.2);
-  color: white;
+  background: var(--color-bg-hover);
+  border-color: var(--color-border-strong);
+  color: var(--color-text-primary);
 }
 
 .modal-body {
@@ -75,19 +75,19 @@
 
 .modal-message {
   font-size: 15px;
-  color: rgba(255, 255, 255, 0.9);
+  color: var(--color-text-primary);
   line-height: 1.6;
   margin: 0 0 16px;
 }
 
 .modal-details {
   font-size: 13px;
-  color: rgba(255, 255, 255, 0.5);
+  color: var(--color-text-secondary);
   line-height: 1.6;
   padding: 12px;
-  background: rgba(15, 23, 42, 0.6);
+  background: color-mix(in srgb, var(--color-bg-surface) 60%, transparent);
   border-radius: 8px;
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--color-border-subtle);
 }
 
 .modal-footer {
@@ -95,7 +95,7 @@
   justify-content: flex-end;
   gap: 12px;
   padding: 16px 24px;
-  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  border-top: 1px solid var(--color-border-default);
 }
 
 .btn-secondary {
@@ -103,16 +103,16 @@
   border-radius: 10px;
   font-weight: 600;
   font-size: 13px;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  color: rgba(255, 255, 255, 0.8);
+  background: var(--color-bg-hover);
+  border: 1px solid var(--color-border-default);
+  color: var(--color-text-primary);
   cursor: pointer;
   transition: all 0.2s;
 }
 
 .btn-secondary:hover:not(:disabled) {
-  background: rgba(255, 255, 255, 0.1);
-  border-color: rgba(255, 255, 255, 0.2);
+  background: var(--color-bg-active);
+  border-color: var(--color-border-strong);
 }
 
 .btn-secondary:disabled {

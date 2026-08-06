@@ -10,7 +10,7 @@
         <span>•</span>
         <span>Kiến Thức Nền Tảng</span>
       </div>
-      <h1 class="text-2xl font-black text-white tracking-tight">{{ title }}</h1>
+      <h1 class="text-2xl font-black text-text-primary tracking-tight">{{ title }}</h1>
     </div>
 
     
@@ -112,11 +112,11 @@ const formattedContent = computed(() => {
 
     return html
       .replace(/^### (.*$)/gim, '<h3 class="text-base font-bold text-accent mt-4 mb-2">$1</h3>')
-      .replace(/^## (.*$)/gim, '<h2 class="text-lg font-bold text-white mt-6 mb-3">$1</h2>')
-      .replace(/^# (.*$)/gim, '<h1 class="text-xl font-extrabold text-white mt-6 mb-3">$1</h1>')
-      .replace(/\*\*(.*)\*\*/gim, '<strong class="font-bold text-white">$1</strong>')
+      .replace(/^## (.*$)/gim, '<h2 class="text-lg font-bold text-text-primary mt-6 mb-3">$1</h2>')
+      .replace(/^# (.*$)/gim, '<h1 class="text-xl font-extrabold text-text-primary mt-6 mb-3">$1</h1>')
+      .replace(/\*\*(.*)\*\*/gim, '<strong class="font-bold text-text-primary">$1</strong>')
       .replace(/`([^`]+)`/g, '<code class="bg-bg-surface text-accent px-1.5 py-0.5 rounded text-xs font-mono">$1</code>')
-      .replace(/\n\n/g, '</p><p class="my-3">');
+      .replace(/\n\n/g, '</p><p class="my-3 text-text-primary">');
   };
 
   let html = '';

@@ -81,7 +81,7 @@ defineEmits<{
   transition: all var(--duration-normal) ease;
   border: 1px solid var(--glass-border);
   background: var(--picker-bg);
-  color: #94a3b8;
+  color: var(--color-text-secondary);
 }
 .vcr-controls__btn:hover:not(:disabled) {
   background: var(--picker-hover-bg);
@@ -92,8 +92,8 @@ defineEmits<{
 }
 
 .vcr-controls__btn--nav {
-  color: #c4b5fd;
-  border-color: rgba(196, 181, 253, 0.3);
+  color: var(--color-accent-purple-light);
+  border-color: color-mix(in srgb, var(--color-accent-purple-light) 30%, transparent);
 }
 
 .vcr-controls__btn--exit {

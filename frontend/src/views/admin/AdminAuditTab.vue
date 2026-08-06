@@ -2,11 +2,11 @@
   <section class="tab-section fade-in">
     <div class="card card--audit-logs bg-bg-secondary/40 border border-border-subtle rounded-3xl p-6">
       <div class="card-header-row flex justify-between items-center mb-6">
-        <h3 class="card-heading flex items-center gap-2 m-0 text-white text-base font-black">
-          <BaseIcon name="shield" style="width:18px;height:18px;color:#f87171" />
+        <h3 class="card-heading flex items-center gap-2 m-0 text-text-primary text-base font-black">
+          <BaseIcon name="shield" style="width:18px;height:18px;color:var(--color-accent-red)" />
           Nhật ký Hoạt động Quản trị (Admin Audit Logs)
         </h3>
-        <button class="btn-create-user flex items-center gap-1 bg-bg-hover border border-border-subtle px-3 py-1.5 rounded-xl text-xs text-white hover:bg-bg-hover transition-all font-bold cursor-pointer" @click="loadAuditLogs">
+        <button class="btn-create-user flex items-center gap-1 bg-bg-hover border border-border-subtle px-3 py-1.5 rounded-xl text-xs text-text-primary hover:bg-bg-hover transition-all font-bold cursor-pointer" @click="loadAuditLogs">
           <BaseIcon name="refresh-cw" style="width:13px;height:13px" /> Làm mới
         </button>
       </div>
@@ -29,12 +29,12 @@
               </tr>
             </thead>
             <tbody>
-              <tr v-for="log in auditLogsList" :key="log.id" class="border-b border-border-subtle text-xs hover:bg-white/[0.02] transition-colors">
+              <tr v-for="log in auditLogsList" :key="log.id" class="border-b border-border-subtle text-xs hover:bg-bg-hover transition-colors">
                 <td class="py-3 font-mono text-text-muted whitespace-nowrap">{{ formatAuditDate(log.createdAt) }}</td>
                 <td class="py-3">
                   <span class="px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider whitespace-nowrap" :class="getAuditActionClass(log.action)">{{ log.action }}</span>
                 </td>
-                <td class="py-3 font-bold text-white">{{ log.actorName }} <span class="text-[10px] text-text-muted font-mono">({{ log.actorId.substring(0,8) }}...)</span></td>
+                <td class="py-3 font-bold text-text-primary">{{ log.actorName }} <span class="text-[10px] text-text-muted font-mono">({{ log.actorId.substring(0,8) }}...)</span></td>
                 <td class="py-3 font-mono text-text-muted">{{ log.targetId ? log.targetId.substring(0,8) + '...' : '—' }}</td>
                 <td class="py-3 text-text-secondary">{{ log.details }}</td>
               </tr>
@@ -79,7 +79,7 @@ function getAuditActionClass(action: string) {
     case 'UpdateUserRole': return 'bg-accent/10 text-accent border border-accent/20';
     case 'TogglePremium': return 'bg-accent-purple/10 text-accent-purple border border-accent-purple/20';
     case 'ImpersonateUser': return 'bg-accent-cyan/10 text-accent-cyan border border-accent-cyan/20';
-    default: return 'bg-slate-500/10 text-text-muted border border-slate-500/20';
+    default: return 'bg-bg-hover text-text-muted border border-border-default';
   }
 }
 

@@ -49,6 +49,33 @@
         <span class="stat-item__label">{{ stat.label }}</span>
       </div>
     </section>
+
+    <section class="landing-courses">
+      <h2 class="landing-courses__heading">Khóa học DSA</h2>
+      <p class="landing-courses__sub">Lộ trình học tập trực quan từ cơ bản đến nâng cao</p>
+      <div class="landing-courses__grid">
+        <router-link to="/courses" class="landing-course-card">
+          <div class="landing-course-card__icon"><BaseIcon name="sorting" class="w-6 h-6" /></div>
+          <h3 class="landing-course-card__title">Sắp xếp Cơ bản</h3>
+          <p class="landing-course-card__desc">Bubble, Selection, Insertion Sort</p>
+        </router-link>
+        <router-link to="/courses" class="landing-course-card">
+          <div class="landing-course-card__icon"><BaseIcon name="graph" class="w-6 h-6" /></div>
+          <h3 class="landing-course-card__title">Cấu trúc Đồ thị</h3>
+          <p class="landing-course-card__desc">BFS, DFS, Dijkstra</p>
+        </router-link>
+        <router-link to="/courses" class="landing-course-card">
+          <div class="landing-course-card__icon"><BaseIcon name="oop" class="w-6 h-6" /></div>
+          <h3 class="landing-course-card__title">OOP & SOLID</h3>
+          <p class="landing-course-card__desc">Lập trình hướng đối tượng trực quan</p>
+        </router-link>
+        <router-link to="/courses" class="landing-course-card landing-course-card--cta">
+          <div class="landing-course-card__icon"><BaseIcon name="arrow-right" class="w-6 h-6" /></div>
+          <h3 class="landing-course-card__title">Xem tất cả khóa học</h3>
+          <p class="landing-course-card__desc">Khám phá 3 lộ trình học đầy đủ</p>
+        </router-link>
+      </div>
+    </section>
   </div>
 </template>
 

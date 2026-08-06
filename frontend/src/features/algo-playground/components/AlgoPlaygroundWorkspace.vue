@@ -614,12 +614,12 @@ onBeforeUnmount(() => {
   border-radius: 8px;
   font-size: 12px;
   font-weight: 600;
-  color: var(--color-text-primary, #f1f5f9);
-  background: var(--color-surface, #0f172a);
-  border: 1px solid var(--color-border-strong, #334155);
+  color: var(--color-text-primary);
+  background: var(--color-bg-surface);
+  border: 1px solid var(--color-border-strong);
   outline: none;
   cursor: pointer;
-  accent-color: #fbbf24;
+  accent-color: var(--color-accent-yellow);
   color-scheme: dark;
 }
 
@@ -630,9 +630,9 @@ onBeforeUnmount(() => {
   border-radius: 8px;
   font-size: 11px;
   font-family: 'JetBrains Mono', Consolas, monospace;
-  color: var(--color-text-primary, #f1f5f9);
-  background: var(--color-surface, #0f172a);
-  border: 1px solid var(--color-border-strong, #334155);
+  color: var(--color-text-primary);
+  background: var(--color-bg-surface);
+  border: 1px solid var(--color-border-strong);
   outline: none;
 }
 
@@ -642,7 +642,7 @@ onBeforeUnmount(() => {
   border-radius: 6px;
   font-size: 14px;
   background: transparent;
-  border: 1px solid var(--color-border-strong, #334155);
+  border: 1px solid var(--color-border-strong);
   cursor: pointer;
   display: inline-flex;
   align-items: center;
@@ -650,7 +650,7 @@ onBeforeUnmount(() => {
   transition: background 0.15s ease;
 }
 .algo-icon-btn:hover {
-  background: rgba(255, 255, 255, 0.08);
+  background: var(--color-bg-hover);
 }
 
 .algo-btn {
@@ -658,29 +658,29 @@ onBeforeUnmount(() => {
   border-radius: 8px;
   font-size: 12px;
   font-weight: 600;
-  color: var(--color-text-primary, #f1f5f9);
-  background: var(--color-surface, #0f172a);
-  border: 1px solid var(--color-border-strong, #334155);
+  color: var(--color-text-primary);
+  background: var(--color-bg-surface);
+  border: 1px solid var(--color-border-strong);
   cursor: pointer;
   transition: background 0.15s ease;
 }
 .algo-btn:hover {
-  background: rgba(255, 255, 255, 0.08);
+  background: var(--color-bg-hover);
 }
 
 .algo-btn-active {
-  background: rgba(251, 191, 36, 0.14);
-  border-color: rgba(251, 191, 36, 0.4);
-  color: #fbbf24;
+  background: color-mix(in srgb, var(--color-accent-yellow) 14%, transparent);
+  border-color: color-mix(in srgb, var(--color-accent-yellow) 40%, transparent);
+  color: var(--color-accent-yellow);
 }
 
 .algo-btn-primary {
-  background: rgba(251, 191, 36, 0.15);
-  border-color: rgba(251, 191, 36, 0.4);
-  color: #fbbf24;
+  background: color-mix(in srgb, var(--color-accent-yellow) 15%, transparent);
+  border-color: color-mix(in srgb, var(--color-accent-yellow) 40%, transparent);
+  color: var(--color-accent-yellow);
 }
 .algo-btn-primary:hover {
-  background: rgba(251, 191, 36, 0.28);
+  background: color-mix(in srgb, var(--color-accent-yellow) 28%, transparent);
 }
 
 .algo-btn-disabled {
@@ -701,9 +701,9 @@ onBeforeUnmount(() => {
   font-size: 10px;
   font-weight: 600;
   font-family: 'JetBrains Mono', Consolas, monospace;
-  color: #22d3ee;
-  background: rgba(34, 211, 238, 0.08);
-  border: 1px solid rgba(34, 211, 238, 0.25);
+  color: var(--color-accent-cyan-light);
+  background: color-mix(in srgb, var(--color-accent-cyan-light) 8%, transparent);
+  border: 1px solid color-mix(in srgb, var(--color-accent-cyan-light) 25%, transparent);
   white-space: nowrap;
 }
 
@@ -717,9 +717,9 @@ onBeforeUnmount(() => {
   font-size: 13px;
 }
 .algo-btn-play {
-  background: rgba(16, 185, 129, 0.15);
-  border-color: rgba(16, 185, 129, 0.4);
-  color: #34d399;
+  background: color-mix(in srgb, var(--color-accent-emerald) 15%, transparent);
+  border-color: color-mix(in srgb, var(--color-accent-emerald) 40%, transparent);
+  color: var(--color-accent-emerald-light);
 }
 
 .algo-mini-btn {
@@ -727,24 +727,24 @@ onBeforeUnmount(() => {
   border-radius: 6px;
   font-size: 10px;
   font-weight: 600;
-  color: var(--color-text-secondary, #94a3b8);
+  color: var(--color-text-secondary);
   background: transparent;
-  border: 1px solid var(--color-border-strong, #334155);
+  border: 1px solid var(--color-border-strong);
   cursor: pointer;
   transition: all 0.15s ease;
 }
 .algo-mini-btn:hover {
-  color: var(--color-text-primary, #f1f5f9);
-  background: rgba(255, 255, 255, 0.06);
+  color: var(--color-text-primary);
+  background: var(--color-bg-hover);
 }
 
 .algo-speed {
   padding: 6px 8px;
   border-radius: 8px;
   font-size: 11px;
-  color: var(--color-text-primary, #f1f5f9);
-  background: var(--color-surface, #0f172a);
-  border: 1px solid var(--color-border-strong, #334155);
+  color: var(--color-text-primary);
+  background: var(--color-bg-surface);
+  border: 1px solid var(--color-border-strong);
   outline: none;
   color-scheme: dark;
 }
@@ -754,11 +754,11 @@ onBeforeUnmount(() => {
   background: transparent;
 }
 .custom-splitpanes :deep(.splitpanes__splitter) {
-  background: rgba(148, 163, 184, 0.15);
+  background: color-mix(in srgb, var(--color-text-secondary) 15%, transparent);
   transition: background 0.15s ease;
 }
 .custom-splitpanes :deep(.splitpanes__splitter:hover) {
-  background: rgba(251, 191, 36, 0.4);
+  background: color-mix(in srgb, var(--color-accent-yellow) 40%, transparent);
 }
 /* Ẩn splitter khi editor bị thu gọn */
 .custom-splitpanes.hide-splitter :deep(.splitpanes__splitter) {
@@ -773,7 +773,7 @@ onBeforeUnmount(() => {
   padding: 7px 12px;
   font-size: 12px;
   font-weight: 500;
-  color: var(--color-text-primary, #f1f5f9);
+  color: var(--color-text-primary);
   background: transparent;
   border: none;
   cursor: pointer;
@@ -781,12 +781,12 @@ onBeforeUnmount(() => {
   transition: background 0.12s ease;
 }
 .algo-menu-item:hover {
-  background: rgba(255, 255, 255, 0.08);
+  background: var(--color-bg-hover);
 }
 
 /* Fullscreen canvas */
 .custom-fullscreen:fullscreen {
-  background: var(--color-surface, #0f172a);
+  background: var(--color-bg-surface);
   padding: 12px;
   display: flex;
   flex-direction: column;

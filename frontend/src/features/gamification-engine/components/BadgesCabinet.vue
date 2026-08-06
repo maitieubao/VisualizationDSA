@@ -61,12 +61,12 @@ function isUnlocked(badgeId: string): boolean {
 
 .badge-image-locked {
   filter: grayscale(1) opacity(0.35);
-  border: 2px dashed rgba(255, 255, 255, 0.1);
+  border: 2px dashed var(--color-border-strong);
 }
 
 .badge-image-unlocked {
-  filter: grayscale(0) drop-shadow(0 0 12px rgba(16, 185, 129, 0.5));
-  border: 2px solid #10b981;
+  filter: grayscale(0) drop-shadow(0 0 12px color-mix(in srgb, var(--color-accent-emerald) 50%, transparent));
+  border: 2px solid var(--color-accent-emerald);
   animation: badge-unlock-pulse 2s infinite ease-in-out;
 }
 

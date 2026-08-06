@@ -16,7 +16,7 @@
 
 .app-header {
   flex-shrink: 0;
-  background: var(--glass-bg, rgba(15, 23, 42, 0.6));
+  background: var(--glass-bg, color-mix(in srgb, var(--color-bg-surface) 60%, transparent));
   backdrop-filter: blur(16px) saturate(1.3);
   -webkit-backdrop-filter: blur(16px) saturate(1.3);
   border-bottom: 1px solid var(--color-border-default);
@@ -363,7 +363,7 @@
 
 .user-badge__avatar--premium {
   background: var(--color-accent-primary) !important;
-  color: #fff !important;
+  color: var(--btn-primary-text) !important;
   box-shadow: 0 0 8px var(--color-accent-primary-glow);
 }
 
@@ -371,7 +371,7 @@
   font-size: 8px;
   font-weight: 700;
   background: var(--color-accent-primary);
-  color: #fff;
+  color: var(--btn-primary-text);
   padding: 1px 4px;
   border-radius: 3px;
   margin-left: 4px;
@@ -419,6 +419,10 @@
   animation: banner-slide-in 0.4s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
+:root[data-theme="light"] .impersonate-banner {
+  color: #92400e;
+}
+
 .impersonate-banner__pulse {
   width: 8px;
   height: 8px;
@@ -438,6 +442,10 @@
 .impersonate-banner__text strong {
   color: #fff;
   font-weight: 600;
+}
+
+:root[data-theme="light"] .impersonate-banner__text strong {
+  color: #78350f;
 }
 
 .impersonate-banner__btn {
@@ -544,7 +552,7 @@
 .sync-error-banner__btn {
   background: var(--color-accent-red);
   border: none;
-  color: #fff;
+  color: var(--btn-primary-text);
   padding: 6px 14px;
   border-radius: 8px;
   font-size: 12px;

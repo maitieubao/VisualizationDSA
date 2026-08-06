@@ -40,7 +40,7 @@
     
     <div v-else-if="!curriculum || curriculum.modules.length === 0" class="empty-state">
       <div class="text-5xl mb-4"><BaseIcon name="book-open" class="w-12 h-12 text-text-muted mx-auto" /></div>
-      <h3 class="text-xl font-bold text-white">Chưa có Module nào</h3>
+      <h3 class="text-xl font-bold text-text-primary">Chưa có Module nào</h3>
       <p class="text-text-muted mt-2 max-w-md">
         Tạo Module đầu tiên hoặc Import từ Khóa học có sẵn để bắt đầu xây dựng chương trình học.
       </p>
@@ -79,7 +79,7 @@
             </div>
             <div class="flex-1 min-w-0">
               <div class="flex items-center gap-3 flex-wrap">
-                <h3 class="font-bold text-white truncate">{{ module.title }}</h3>
+                <h3 class="font-bold text-text-primary truncate">{{ module.title }}</h3>
                 <span v-if="module.isHidden" class="badge badge-warning text-xs">Ẩn</span>
                 <span v-if="module.unlockAt" class="badge badge-info text-xs">
                   <BaseIcon name="clock" class="w-3 h-3 inline mr-1" /> 

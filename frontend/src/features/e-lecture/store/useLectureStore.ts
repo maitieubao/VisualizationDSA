@@ -54,7 +54,13 @@ export const useLectureStore = defineStore('lecture', () => {
   }
 
   async function prevSlide(): Promise<void> {
-    if (!currentLecture.value || isFirstSlide.value || isWaitingForAnimation.value || isTransitioning.value) return;
+    if (!currentLecture.value || isFirstSlide.value || isTransitioning.value) return;
+    // Bất đối xứng với nextSlide: cho phép cancel autoplay để lùi slide.
+    if (isWaitingForAnimation.value) {
+      animStore.cancelPlayUntil();
+      isWaitingForAnimation.value = false;
+      isMinimized.value = false;
+    }
     isTransitioning.value = true;
     try {
       currentSlideIndex.value--;

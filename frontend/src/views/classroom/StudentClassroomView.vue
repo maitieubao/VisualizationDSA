@@ -25,7 +25,7 @@
         
         <div v-if="!currentItem" class="flex flex-col items-center justify-center h-full text-center">
           <BaseIcon name="book-open" class="w-16 h-16 text-text-disabled mb-4" />
-          <h2 class="text-2xl font-bold text-white mb-2">Chào mừng đến với lớp học!</h2>
+          <h2 class="text-2xl font-bold text-text-primary mb-2">Chào mừng đến với lớp học!</h2>
           <p class="text-text-muted max-w-md">
             Chọn một bài học từ sidebar để bắt đầu. Tiến độ của bạn sẽ được tự động lưu lại.
           </p>
@@ -225,6 +225,6 @@ watch(() => route.query.itemId, (newId) => {
 
 <style scoped>
 .student-classroom-view {
-  background: #020617;
+  background: var(--color-bg-primary);
 }
 </style>

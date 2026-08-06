@@ -17,11 +17,21 @@ namespace VisualizationDSA.Domain.Strategies
     {
         private readonly ConcurrentDictionary<string, InMemoryUser> _usersByEmail = new();
         private readonly ConcurrentDictionary<string, InMemoryUser> _usersById = new();
-        private readonly ConcurrentDictionary<string, string> _refreshTokens = new(); 
+        private readonly ConcurrentDictionary<string, (string UserId, DateTime ExpiresAt)> _refreshTokens = new(); 
         private static readonly TimeSpan AccessTokenLifetime = TimeSpan.FromMinutes(15);
+        private static readonly TimeSpan RefreshTokenLifetime = TimeSpan.FromDays(30);
 
-        public static Func<string, string, bool> VerifyPasswordDelegate { get; set; } = (password, hash) => 
-            HashPassword(password) == hash;
+        public static Func<string, string, bool> VerifyPasswordDelegate { get; set; } = (password, hash) =>
+        {
+            // Default an toàn: BCrypt trước, fallback SHA256 cho dữ liệu legacy.
+            if (hash.StartsWith("$2a$") || hash.StartsWith("$2b$") || hash.StartsWith("$2y$"))
+            {
+                try { return BCrypt.Net.BCrypt.Verify(password, hash); }
+                catch { return false; }
+            }
+            var bytes = SHA256.HashData(Encoding.UTF8.GetBytes(password + "visualizationdsa-salt"));
+            return Convert.ToHexString(bytes).ToLowerInvariant() == hash;
+        };
 
         /// <summary>
         /// Chỉ seed tài khoản demo/admin mặc định ở môi trường Development.
@@ -139,8 +149,18 @@ namespace VisualizationDSA.Domain.Strategies
             if (!VerifyPassword(request.Password, user.PasswordHash))
                 throw new UnauthorizedAccessException("Email hoặc mật khẩu không đúng.");
 
+            // Chặn tài khoản bị ban trong memory (AdminController.BanUser đồng bộ qua SetUserActive).
+            if (!user.IsActive)
+                throw new UnauthorizedAccessException("Email hoặc mật khẩu không đúng.");
+
             user.LastLoginAt = DateTime.UtcNow;
             return GenerateAuthResponse(user);
+        }
+
+        /// <summary>Lấy owner của refresh token KHÔNG rotation (dùng check ban trước khi xoay token).</summary>
+        public string? GetRefreshTokenOwner(string refreshTokenValue)
+        {
+            return _refreshTokens.TryGetValue(refreshTokenValue, out var entry) ? entry.UserId : null;
         }
 
         public StatelessUserDto GetProfile(string userId)
@@ -152,14 +172,26 @@ namespace VisualizationDSA.Domain.Strategies
 
         public StatelessAuthResponse RefreshToken(string refreshTokenValue)
         {
-            if (!_refreshTokens.TryGetValue(refreshTokenValue, out var userId))
+            if (!_refreshTokens.TryGetValue(refreshTokenValue, out var entry))
                 throw new UnauthorizedAccessException("Refresh token không hợp lệ hoặc đã hết hạn.");
 
-            if (!_usersById.TryGetValue(userId, out var user))
+            // Hết hạn → từ chối + xóa token (trước đây token sống vô hạn).
+            if (entry.ExpiresAt < DateTime.UtcNow)
+            {
+                _refreshTokens.TryRemove(refreshTokenValue, out _);
+                throw new UnauthorizedAccessException("Refresh token không hợp lệ hoặc đã hết hạn.");
+            }
+
+            if (!_usersById.TryGetValue(entry.UserId, out var user))
                 throw new KeyNotFoundException("Người dùng không tồn tại.");
 
             _refreshTokens.TryRemove(refreshTokenValue, out _);
-            return GenerateAuthResponse(user);
+
+            // Giữ TTL CÒN LẠI của token gốc khi rotation — impersonation (15 phút) không được
+            // "refresh thành 30 ngày" qua vòng xoay (trước đây phiên impersonate kéo dài 30 ngày).
+            var remaining = entry.ExpiresAt - DateTime.UtcNow;
+            var newTtl = remaining > TimeSpan.FromSeconds(1) && remaining < RefreshTokenLifetime ? remaining : RefreshTokenLifetime;
+            return GenerateAuthResponse(user, newTtl);
         }
 
         public void Logout(string refreshTokenValue)
@@ -236,11 +268,11 @@ namespace VisualizationDSA.Domain.Strategies
 
         
 
-        private StatelessAuthResponse GenerateAuthResponse(InMemoryUser user)
+        private StatelessAuthResponse GenerateAuthResponse(InMemoryUser user, TimeSpan? refreshTtl = null)
         {
             var accessToken = GenerateMockJwt(user);
             var refreshToken = Guid.NewGuid().ToString("N") + Guid.NewGuid().ToString("N");
-            _refreshTokens[refreshToken] = user.Id;
+            _refreshTokens[refreshToken] = (user.Id, DateTime.UtcNow.Add(refreshTtl ?? RefreshTokenLifetime));
 
             return new StatelessAuthResponse
             {
@@ -254,12 +286,19 @@ namespace VisualizationDSA.Domain.Strategies
         private static string GenerateMockJwt(InMemoryUser user)
         {
             var header = JwtSigningConfig.Base64UrlEncode(Encoding.UTF8.GetBytes("{\"alg\":\"HS256\",\"typ\":\"JWT\"}"));
-            var payload = JwtSigningConfig.Base64UrlEncode(Encoding.UTF8.GetBytes(
-                $"{{\"sub\":\"{user.Id}\",\"email\":\"{user.Email}\",\"name\":\"{user.Username}\"," +
-                $"\"role\":\"{user.Role}\"," +
-                $"\"level\":{user.CurrentLevel},\"exp\":{DateTimeOffset.UtcNow.Add(AccessTokenLifetime).ToUnixTimeSeconds()}," +
-                $"\"jti\":\"{Guid.NewGuid()}\"}}"
-            ));
+            // JsonSerializer — username/email chứa `"`/`\` không làm vỡ payload (trước đây
+            // interpolate raw → token hỏng JSON → self-DoS).
+            var payloadJson = System.Text.Json.JsonSerializer.Serialize(new
+            {
+                sub = user.Id,
+                email = user.Email,
+                name = user.Username,
+                role = user.Role,
+                level = user.CurrentLevel,
+                exp = DateTimeOffset.UtcNow.Add(AccessTokenLifetime).ToUnixTimeSeconds(),
+                jti = Guid.NewGuid()
+            });
+            var payload = JwtSigningConfig.Base64UrlEncode(Encoding.UTF8.GetBytes(payloadJson));
             var signature = JwtSigningConfig.Base64UrlEncode(
                 HMACSHA256.HashData(JwtSigningConfig.Key, Encoding.UTF8.GetBytes($"{header}.{payload}"))
             );
@@ -320,9 +359,11 @@ namespace VisualizationDSA.Domain.Strategies
             }
         }
 
-        public void ForceAddRefreshToken(string token, string userId)
+        public void ForceAddRefreshToken(string token, string userId, TimeSpan? lifetime = null)
         {
-            _refreshTokens[token] = userId;
+            // Impersonation: mặc định 15 phút — token refresh vĩnh viễn bị lộ = chiếm tài khoản vô hạn.
+            var ttl = lifetime ?? TimeSpan.FromMinutes(15);
+            _refreshTokens[token] = (userId, DateTime.UtcNow.Add(ttl));
         }
 
         /// <summary>Đổi id của user trong bộ nhớ (Register: id tạm → id DB) — giữ đúng sub cho token.</summary>
@@ -361,6 +402,14 @@ namespace VisualizationDSA.Domain.Strategies
             }
         }
 
+        public void SetUserActive(string userId, bool isActive)
+        {
+            if (_usersById.TryGetValue(userId, out var user))
+            {
+                user.IsActive = isActive;
+            }
+        }
+
         public void SetUserPremium(string userId, bool isPremium)
         {
             if (_usersById.TryGetValue(userId, out var user))
@@ -383,6 +432,12 @@ namespace VisualizationDSA.Domain.Strategies
             {
                 user.PasswordHash = newPasswordHash;
             }
+        }
+
+        /// <summary>Lấy hash mật khẩu hiện tại để verify (không lộ qua DTO response).</summary>
+        public string? GetUserPasswordHash(string userId)
+        {
+            return _usersById.TryGetValue(userId, out var user) ? user.PasswordHash : null;
         }
 
         private static StatelessUserDto MapToUserDto(InMemoryUser user) => new()
@@ -420,6 +475,7 @@ namespace VisualizationDSA.Domain.Strategies
             public int CurrentLevel { get; set; }
             public int StreakDays { get; set; }
             public bool IsPremium { get; set; }
+            public bool IsActive { get; set; } = true;
             public string Role { get; set; } = "Student";
             public DateTime CreatedAt { get; set; }
             public DateTime? LastLoginAt { get; set; }

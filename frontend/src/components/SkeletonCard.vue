@@ -18,8 +18,8 @@ import SkeletonLoader from './SkeletonLoader.vue';
 .skeleton-card {
   padding: 16px;
   border-radius: 12px;
-  background: rgba(255, 255, 255, 0.02);
-  border: 1px solid rgba(255, 255, 255, 0.06);
+  background: var(--color-bg-surface);
+  border: 1px solid var(--color-border-default);
   display: flex;
   flex-direction: column;
   gap: 10px;

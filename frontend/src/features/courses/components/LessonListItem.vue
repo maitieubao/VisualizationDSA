@@ -28,7 +28,7 @@
     
     <div class="flex-1 min-w-0">
       <div class="flex items-center gap-2.5">
-        <h4 class="text-sm font-medium text-white truncate">{{ title }}</h4>
+        <h4 class="text-sm font-medium text-text-primary truncate">{{ title }}</h4>
         <span
           class="px-2 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wider flex-shrink-0"
           :class="statusBadgeClass"

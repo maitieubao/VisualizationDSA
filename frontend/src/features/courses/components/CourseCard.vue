@@ -30,7 +30,7 @@
     
     <div class="p-4 flex flex-col flex-1">
       <div class="flex items-start justify-between mb-2">
-        <h3 class="text-base font-bold text-white line-clamp-1 mr-2">{{ course.title }}</h3>
+        <h3 class="text-base font-bold text-text-primary line-clamp-1 mr-2">{{ course.title }}</h3>
         <span class="text-[10px] font-bold text-accent-yellow flex items-center gap-0.5 whitespace-nowrap bg-accent-yellow/30 px-1.5 py-0.5 rounded">
           <BaseIcon name="zap" class="w-3 h-3" />
           {{ course.xpReward }} XP

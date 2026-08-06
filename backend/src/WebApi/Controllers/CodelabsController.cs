@@ -7,6 +7,7 @@ using VisualizationDSA.Application.Features.Codelabs.Commands;
 using VisualizationDSA.Application.Features.Codelabs.Queries;
 
 using VisualizationDSA.WebApi.Filters;
+using Microsoft.AspNetCore.RateLimiting;
 
 namespace VisualizationDSA.WebApi.Controllers
 {
@@ -30,6 +31,7 @@ namespace VisualizationDSA.WebApi.Controllers
         }
 
         [HttpPost("{id}/submit")]
+        [EnableRateLimiting("heavy")]
         public async Task<IActionResult> SubmitCodelab(Guid id, [FromBody] SubmitCodelabRequestDto request)
         {
             var userIdStr = JwtHelper.ExtractSubFromToken(Request);
@@ -51,6 +53,7 @@ namespace VisualizationDSA.WebApi.Controllers
         }
 
         [HttpPost("{id}/run")]
+        [EnableRateLimiting("heavy")]
         public async Task<IActionResult> RunCodelab(Guid id, [FromBody] SubmitCodelabRequestDto request)
         {
             var userIdStr = JwtHelper.ExtractSubFromToken(Request);
@@ -72,6 +75,7 @@ namespace VisualizationDSA.WebApi.Controllers
         }
 
         [HttpPost("{id}/reveal-hint")]
+        [EnableRateLimiting("heavy")]
         public async Task<IActionResult> RevealHint(Guid id, [FromBody] RevealHintRequestDto request)
         {
             var userIdStr = JwtHelper.ExtractSubFromToken(Request);

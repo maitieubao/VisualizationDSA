@@ -51,7 +51,7 @@
           
           <div v-else-if="paymentStore.checkoutState === 'verifying'" class="text-center py-12">
             <div class="spinner-lg mx-auto mb-4"></div>
-            <p class="text-sm text-[var(--text-secondary)]">Đang xác nhận thanh toán...</p>
+            <p class="text-sm text-text-secondary">Đang xác nhận thanh toán...</p>
           </div>
 
           
@@ -138,7 +138,7 @@ onUnmounted(() => {
 
 <style scoped>
 .checkout-container { background: radial-gradient(circle at center, var(--color-bg-secondary) 0%, var(--color-bg-primary) 100%); min-height: 100vh; }
-.main-card { border-color: var(--border-color); box-shadow: 0 0 50px -15px rgba(6,182,212,0.15); }
-.spinner-lg { width: 2rem; height: 2rem; border: 3px solid rgba(255,255,255,0.2); border-radius: 50%; border-top-color: var(--color-accent-primary); animation: spin 0.8s linear infinite; }
+.main-card { border-color: var(--border-color); box-shadow: 0 0 50px -15px var(--color-accent-cyan-glow); }
+.spinner-lg { width: 2rem; height: 2rem; border: 3px solid var(--color-border-default); border-radius: 50%; border-top-color: var(--color-accent-primary); animation: spin 0.8s linear infinite; }
 @keyframes spin { to { transform: rotate(360deg); } }
 </style>

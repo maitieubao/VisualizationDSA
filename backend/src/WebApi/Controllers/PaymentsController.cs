@@ -10,6 +10,7 @@ using VisualizationDSA.Application.DTOs;
 using VisualizationDSA.Application.Services;
 
 using VisualizationDSA.WebApi.Filters;
+using Microsoft.AspNetCore.RateLimiting;
 
 namespace VisualizationDSA.WebApi.Controllers
 {
@@ -32,6 +33,7 @@ namespace VisualizationDSA.WebApi.Controllers
         
         
         [HttpPost("order")]
+        [EnableRateLimiting("api")]
         [RequireJwtRole]
         public async Task<ActionResult<OrderDto>> CreateOrder()
         {
@@ -114,9 +116,10 @@ namespace VisualizationDSA.WebApi.Controllers
                 
                 return Ok(new { success = false, message = "Giao dịch không khớp hoặc không hợp lệ để kích hoạt Premium." });
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                
+                // Webhook SePay — log đầy đủ để debug khi merchant/proxy thay đổi format payload.
+                Serilog.Log.Error(ex, "SePay webhook failed");
                 return StatusCode(StatusCodes.Status500InternalServerError, new { success = false, message = "Lỗi xử lý thanh toán. Vui lòng thử lại." });
             }
         }

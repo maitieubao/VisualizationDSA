@@ -1,7 +1,7 @@
 <template>
   <div class="lesson-discussion bg-bg-secondary/40 border border-border-subtle rounded-3xl p-6 flex flex-col h-full overflow-hidden text-text-secondary">
     <div class="flex items-center justify-between mb-4 flex-shrink-0">
-      <h3 class="text-sm font-black text-white flex items-center gap-2">
+      <h3 class="text-sm font-black text-text-primary flex items-center gap-2">
         <BaseIcon name="message-circle" class="w-4 h-4 text-accent" />THẢO LUẬN & HỎI ĐÁP
         <span class="px-2 py-0.5 rounded-full bg-accent/20 text-accent text-[10px] font-bold">
           {{ comments.length }} bình luận
@@ -27,13 +27,13 @@
           v-model="searchQuery"
           type="text"
           placeholder="Tìm kiếm trong thảo luận..."
-          class="w-full bg-bg-secondary border border-border-subtle rounded-xl pl-9 pr-3 py-2 text-xs focus:border-accent focus:outline-none text-white placeholder-text-muted transition-colors"
+          class="w-full bg-bg-secondary border border-border-subtle rounded-xl pl-9 pr-3 py-2 text-xs focus:border-accent focus:outline-none text-text-primary placeholder-text-muted transition-colors"
           @input="debouncedSearch"
         />
         <button
           v-if="searchQuery"
           @click="clearSearch"
-          class="absolute right-2 top-1/2 -translate-y-1/2 text-text-muted hover:text-white transition-colors text-xs"
+          class="absolute right-2 top-1/2 -translate-y-1/2 text-text-muted hover:text-text-primary transition-colors text-xs"
         >
           <BaseIcon name="close" class="w-3 h-3" />
         </button>
@@ -48,7 +48,7 @@
     
     <div class="flex-1 overflow-y-auto pr-2 scrollbar-thin space-y-4 mb-4">
       <div v-if="loading && comments.length === 0" class="h-32 flex items-center justify-center text-xs text-text-muted">
-        <div class="inline-block w-4 h-4 border-2 border-accent/20 border-t-indigo-400 rounded-full animate-spin mr-2"></div>
+        <div class="inline-block w-4 h-4 border-2 border-accent/20 border-t-accent rounded-full animate-spin mr-2"></div>
         Đang tải các thảo luận...
       </div>
 
@@ -61,7 +61,7 @@
       
       <div v-else v-for="comment in rootComments" :key="comment.id" class="space-y-3">
         
-        <div class="p-4 bg-white/[0.02] border border-border-subtle rounded-2xl hover:border-border-subtle transition-all">
+        <div class="p-4 bg-bg-hover border border-border-subtle rounded-2xl hover:border-border-subtle transition-all">
           <div class="flex items-start justify-between gap-3">
             <div class="flex items-center gap-2">
               
@@ -70,7 +70,7 @@
               </div>
               <div>
                 <div class="flex items-center gap-1.5">
-                  <span class="text-xs font-bold text-white">{{ comment.username }}</span>
+                  <span class="text-xs font-bold text-text-primary">{{ comment.username }}</span>
                   
                   <span 
                     v-if="comment.role === 'Admin'" 
@@ -109,14 +109,14 @@
 
         
         <div class="pl-8 space-y-2 border-l border-accent/10">
-          <div v-for="reply in getReplies(comment.id)" :key="reply.id" class="p-3 bg-white/[0.01] border border-border-subtle rounded-xl">
+          <div v-for="reply in getReplies(comment.id)" :key="reply.id" class="p-3 bg-bg-hover border border-border-subtle rounded-xl">
             <div class="flex items-start gap-2">
               <div class="w-6 h-6 rounded-full bg-accent-purple/20 text-accent-purple flex items-center justify-center font-bold text-[10px] capitalize flex-shrink-0">
                 {{ reply.username.charAt(0) }}
               </div>
               <div class="flex-1 min-w-0">
                 <div class="flex items-center gap-1.5">
-                  <span class="text-xs font-bold text-white">{{ reply.username }}</span>
+                  <span class="text-xs font-bold text-text-primary">{{ reply.username }}</span>
                   <span 
                     v-if="reply.role === 'Admin'" 
                     class="px-1.5 py-0.2 text-[8px] font-extrabold uppercase rounded bg-accent-red/20 text-accent-red border border-accent-red/10"
@@ -141,7 +141,7 @@
             <textarea 
               v-model="replyText" 
               placeholder="Nhập nội dung câu trả lời..." 
-              class="w-full h-16 bg-bg-secondary border border-border-subtle rounded-lg p-2 text-xs focus:border-accent focus:outline-none resize-none text-white"
+              class="w-full h-16 bg-bg-secondary border border-border-subtle rounded-lg p-2 text-xs focus:border-accent focus:outline-none resize-none text-text-primary"
             ></textarea>
             <div class="flex items-center justify-end gap-2">
               <button 
@@ -168,7 +168,7 @@
       <textarea 
         v-model="newCommentText" 
         placeholder="Đặt câu hỏi hoặc chia sẻ ý kiến về bài học này..." 
-        class="w-full h-20 bg-bg-secondary border border-border-subtle rounded-xl p-3 text-xs focus:border-accent focus:outline-none resize-none text-white scrollbar-none"
+        class="w-full h-20 bg-bg-secondary border border-border-subtle rounded-xl p-3 text-xs focus:border-accent focus:outline-none resize-none text-text-primary scrollbar-none"
       ></textarea>
       <div class="flex items-center justify-between">
         <span class="text-[10px] text-text-muted">Tối đa 2000 ký tự. Vui lòng tôn trọng nội quy thảo luận.</span>
@@ -342,10 +342,10 @@ onMounted(() => {
   background: transparent;
 }
 .scrollbar-thin::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.1);
+  background: var(--scrollbar-thumb);
   border-radius: 9999px;
 }
 .scrollbar-thin::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.2);
+  background: var(--scrollbar-thumb-hover);
 }
 </style>

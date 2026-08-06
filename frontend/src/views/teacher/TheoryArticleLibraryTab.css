@@ -9,8 +9,8 @@
   flex-direction: column;
   gap: 16px;
   padding: 16px;
-  background: rgba(15, 23, 42, 0.6);
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  background: color-mix(in srgb, var(--color-bg-surface) 60%, transparent);
+  border: 1px solid var(--color-border-subtle);
   border-radius: 16px;
 }
 
@@ -25,7 +25,7 @@
 .toolbar-title {
   font-size: 18px;
   font-weight: 700;
-  color: white;
+  color: var(--color-text-primary);
   margin: 0;
 }
 
@@ -34,8 +34,8 @@
   align-items: center;
   gap: 8px;
   padding: 8px 16px;
-  background: rgba(99, 102, 241, 0.1);
-  border: 1px solid rgba(99, 102, 241, 0.3);
+  background: color-mix(in srgb, var(--color-accent-primary) 10%, transparent);
+  border: 1px solid color-mix(in srgb, var(--color-accent-primary) 30%, transparent);
   border-radius: 8px;
   color: var(--color-accent-primary-light);
   font-size: 13px;
@@ -45,7 +45,7 @@
 }
 
 .filter-toggle:hover {
-  background: rgba(99, 102, 241, 0.2);
+  background: color-mix(in srgb, var(--color-accent-primary) 20%, transparent);
   border-color: var(--color-accent-primary);
 }
 
@@ -58,7 +58,7 @@
   flex-direction: column;
   gap: 12px;
   padding-top: 8px;
-  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  border-top: 1px solid var(--color-border-default);
   padding-top: 16px;
 }
 
@@ -83,17 +83,17 @@
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.5px;
-  color: rgba(255, 255, 255, 0.5);
+  color: var(--color-text-secondary);
 }
 
 .filter-input,
 .filter-select {
   width: 100%;
   padding: 10px 12px;
-  background: rgba(15, 23, 42, 0.8);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: color-mix(in srgb, var(--color-bg-surface) 80%, transparent);
+  border: 1px solid var(--color-border-default);
   border-radius: 8px;
-  color: white;
+  color: var(--color-text-primary);
   font-size: 13px;
   transition: all 0.2s;
 }
@@ -102,7 +102,7 @@
 .filter-select:focus {
   outline: none;
   border-color: var(--color-accent-primary);
-  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-accent-primary) 20%, transparent);
 }
 
 .filter-checkbox {
@@ -111,7 +111,7 @@
   gap: 8px;
   cursor: pointer;
   font-size: 13px;
-  color: rgba(255, 255, 255, 0.8);
+  color: var(--color-text-primary);
 }
 
 .filter-checkbox input[type="checkbox"] {
@@ -149,7 +149,7 @@
 .article-title {
   font-size: 15px;
   font-weight: 700;
-  color: white;
+  color: var(--color-text-primary);
   margin: 0;
   max-width: 400px;
   white-space: nowrap;
@@ -169,39 +169,39 @@
 }
 
 .badge-emerald {
-  background: rgba(16, 185, 129, 0.15);
+  background: color-mix(in srgb, var(--color-accent-green) 15%, transparent);
   color: var(--color-accent-green);
-  border: 1px solid rgba(16, 185, 129, 0.3);
+  border: 1px solid color-mix(in srgb, var(--color-accent-green) 30%, transparent);
 }
 
 .badge-warning {
-  background: rgba(245, 158, 11, 0.15);
+  background: color-mix(in srgb, var(--color-accent-yellow) 15%, transparent);
   color: var(--color-accent-yellow);
-  border: 1px solid rgba(245, 158, 11, 0.3);
+  border: 1px solid color-mix(in srgb, var(--color-accent-yellow) 30%, transparent);
 }
 
 .badge-indigo {
-  background: rgba(99, 102, 241, 0.15);
+  background: color-mix(in srgb, var(--color-accent-primary) 15%, transparent);
   color: var(--color-accent-primary-light);
-  border: 1px solid rgba(99, 102, 241, 0.3);
+  border: 1px solid color-mix(in srgb, var(--color-accent-primary) 30%, transparent);
 }
 
 .badge-slate {
-  background: rgba(148, 163, 184, 0.15);
+  background: color-mix(in srgb, var(--color-text-muted) 15%, transparent);
   color: var(--color-text-muted);
-  border: 1px solid rgba(148, 163, 184, 0.3);
+  border: 1px solid color-mix(in srgb, var(--color-text-muted) 30%, transparent);
 }
 
 .badge-amber {
-  background: rgba(245, 158, 11, 0.15);
+  background: color-mix(in srgb, var(--color-accent-yellow) 15%, transparent);
   color: var(--color-accent-yellow);
-  border: 1px solid rgba(245, 158, 11, 0.3);
+  border: 1px solid color-mix(in srgb, var(--color-accent-yellow) 30%, transparent);
 }
 
 .badge-purple {
-  background: rgba(168, 85, 247, 0.15);
+  background: color-mix(in srgb, var(--color-accent-purple) 15%, transparent);
   color: var(--color-accent-primary-light);
-  border: 1px solid rgba(168, 85, 247, 0.3);
+  border: 1px solid color-mix(in srgb, var(--color-accent-purple) 30%, transparent);
 }
 
 .article-meta {
@@ -210,7 +210,7 @@
   gap: 16px;
   flex-wrap: wrap;
   font-size: 11px;
-  color: rgba(255, 255, 255, 0.5);
+  color: var(--color-text-secondary);
 }
 
 .meta-item {
@@ -221,7 +221,7 @@
 
 .meta-item svg {
   flex-shrink: 0;
-  color: rgba(255, 255, 255, 0.4);
+  color: var(--color-text-muted);
 }
 
 .article-actions {
@@ -239,45 +239,45 @@
   border-radius: 8px;
   background: transparent;
   border: 1px solid transparent;
-  color: rgba(255, 255, 255, 0.4);
+  color: var(--color-text-muted);
   cursor: pointer;
   transition: all 0.15s;
 }
 
 .btn-action-icon:hover {
-  background: rgba(255, 255, 255, 0.05);
-  border-color: rgba(255, 255, 255, 0.1);
-  color: white;
+  background: var(--color-bg-hover);
+  border-color: var(--color-border-default);
+  color: var(--color-text-primary);
 }
 
 .btn-action-icon.text-emerald-400:hover {
   color: var(--color-accent-green);
-  background: rgba(16, 185, 129, 0.1);
-  border-color: rgba(16, 185, 129, 0.3);
+  background: color-mix(in srgb, var(--color-accent-green) 10%, transparent);
+  border-color: color-mix(in srgb, var(--color-accent-green) 30%, transparent);
 }
 
 .btn-action-icon.text-amber-400:hover {
   color: var(--color-accent-yellow);
-  background: rgba(245, 158, 11, 0.1);
-  border-color: rgba(245, 158, 11, 0.3);
+  background: color-mix(in srgb, var(--color-accent-yellow) 10%, transparent);
+  border-color: color-mix(in srgb, var(--color-accent-yellow) 30%, transparent);
 }
 
 .btn-action-icon.text-rose-400:hover {
   color: var(--color-accent-red);
-  background: rgba(244, 63, 94, 0.1);
-  border-color: rgba(244, 63, 94, 0.3);
+  background: color-mix(in srgb, var(--color-accent-red) 10%, transparent);
+  border-color: color-mix(in srgb, var(--color-accent-red) 30%, transparent);
 }
 
 .btn-action-icon.text-indigo-400:hover {
   color: var(--color-accent-primary-light);
-  background: rgba(99, 102, 241, 0.1);
-  border-color: rgba(99, 102, 241, 0.3);
+  background: color-mix(in srgb, var(--color-accent-primary) 10%, transparent);
+  border-color: color-mix(in srgb, var(--color-accent-primary) 30%, transparent);
 }
 
 .article-slug {
   font-family: monospace;
   font-size: 12px;
-  color: rgba(255, 255, 255, 0.4);
+  color: var(--color-text-muted);
   margin: 0 0 12px;
   white-space: nowrap;
   overflow: hidden;
@@ -289,7 +289,7 @@
   align-items: center;
   gap: 16px;
   font-size: 11px;
-  color: rgba(255, 255, 255, 0.5);
+  color: var(--color-text-secondary);
 }
 
 .stat-item {
@@ -304,7 +304,7 @@
   gap: 6px;
   margin-top: 12px;
   padding-top: 12px;
-  border-top: 1px solid rgba(255, 255, 255, 0.05);
+  border-top: 1px solid var(--color-border-subtle);
 }
 
 .tag-chip {
@@ -312,8 +312,8 @@
   align-items: center;
   gap: 4px;
   padding: 2px 8px;
-  background: rgba(148, 163, 184, 0.1);
-  border: 1px solid rgba(148, 163, 184, 0.2);
+  background: color-mix(in srgb, var(--color-text-muted) 10%, transparent);
+  border: 1px solid color-mix(in srgb, var(--color-text-muted) 20%, transparent);
   border-radius: 6px;
   font-size: 10px;
   color: var(--color-text-muted);
@@ -328,13 +328,13 @@
   justify-content: center;
   padding: 60px 20px;
   text-align: center;
-  color: rgba(255, 255, 255, 0.5);
+  color: var(--color-text-secondary);
 }
 
 .spinner {
   width: 32px;
   height: 32px;
-  border: 3px solid rgba(99, 102, 241, 0.2);
+  border: 3px solid color-mix(in srgb, var(--color-accent-primary) 20%, transparent);
   border-top-color: var(--color-accent-primary);
   border-radius: 50%;
   animation: spin 0.8s linear infinite;

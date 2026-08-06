@@ -5,7 +5,7 @@
       <div class="flex items-center gap-3">
         <button 
           type="button" 
-          class="text-text-muted hover:text-white transition-colors" 
+          class="text-text-muted hover:text-text-primary transition-colors" 
           @click="$emit('back')"
         >
           <BaseIcon name="arrow-left" class="w-5 h-5" />
@@ -20,7 +20,7 @@
             />
           </div>
           <div>
-            <h2 class="font-bold text-white truncate">{{ item.overrideTitle || item.lessonTitle || item.quizTitle || item.codelabTitle }}</h2>
+            <h2 class="font-bold text-text-primary truncate">{{ item.overrideTitle || item.lessonTitle || item.quizTitle || item.codelabTitle }}</h2>
             <div class="flex items-center gap-2 text-xs text-text-muted mt-1">
               <span class="badge" :class="getTypeBadgeClass(item.itemType)">{{ item.itemType }}</span>
               <span v-if="item.isRequired" class="badge badge-rose text-[10px]">Bắt buộc</span>
@@ -148,7 +148,7 @@ function getTypeBgClass(type: string) {
     case 'Lesson': return 'bg-accent/20';
     case 'Quiz': return 'bg-accent-purple/20';
     case 'Codelab': return 'bg-accent-green/20';
-    default: return 'bg-slate-500/20';
+    default: return 'bg-bg-surface';
   }
 }
 

@@ -21,14 +21,14 @@
   align-items: center;
   justify-content: space-between;
   padding: 20px 24px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  border-bottom: 1px solid var(--color-border-default);
   flex-shrink: 0;
 }
 
 .modal-title {
   font-size: 18px;
   font-weight: 700;
-  color: white;
+  color: var(--color-text-primary);
   margin: 0;
   display: flex;
   align-items: center;
@@ -42,16 +42,16 @@
   height: 36px;
   border-radius: 10px;
   background: transparent;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  color: rgba(255, 255, 255, 0.5);
+  border: 1px solid var(--color-border-default);
+  color: var(--color-text-secondary);
   cursor: pointer;
   transition: all 0.2s;
 }
 
 .modal-close:hover {
-  background: rgba(255, 255, 255, 0.05);
-  border-color: rgba(255, 255, 255, 0.2);
-  color: white;
+  background: var(--color-bg-hover);
+  border-color: var(--color-border-strong);
+  color: var(--color-text-primary);
 }
 
 .modal-body {
@@ -66,7 +66,7 @@
   gap: 12px;
   margin-bottom: 16px;
   padding-bottom: 16px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  border-bottom: 1px solid var(--color-border-default);
 }
 
 .search-box {
@@ -91,8 +91,8 @@
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.5px;
-  color: rgba(255, 255, 255, 0.4);
-  background: rgba(15, 23, 42, 0.4);
+  color: var(--color-text-muted);
+  background: color-mix(in srgb, var(--color-bg-surface) 40%, transparent);
   position: sticky;
   top: 0;
   z-index: 10;
@@ -109,11 +109,11 @@
 }
 
 .articles-table tbody tr:hover {
-  background: rgba(255, 255, 255, 0.03);
+  background: var(--color-bg-hover);
 }
 
 .articles-table tbody tr.selected {
-  background: rgba(99, 102, 241, 0.08);
+  background: color-mix(in srgb, var(--color-accent-primary) 8%, transparent);
 }
 
 .form-checkbox {
@@ -135,33 +135,33 @@
 }
 
 .badge-emerald {
-  background: rgba(16, 185, 129, 0.15);
-  color: #6ee7b7;
-  border: 1px solid rgba(16, 185, 129, 0.3);
+  background: color-mix(in srgb, var(--color-accent-green) 15%, transparent);
+  color: var(--color-accent-green-light);
+  border: 1px solid color-mix(in srgb, var(--color-accent-green) 30%, transparent);
 }
 
 .badge-amber {
-  background: rgba(245, 158, 11, 0.15);
-  color: #fcd34d;
-  border: 1px solid rgba(245, 158, 11, 0.3);
+  background: color-mix(in srgb, var(--color-accent-yellow) 15%, transparent);
+  color: var(--color-accent-yellow-light);
+  border: 1px solid color-mix(in srgb, var(--color-accent-yellow) 30%, transparent);
 }
 
 .badge-rose {
-  background: rgba(244, 63, 94, 0.15);
-  color: #fda4af;
-  border: 1px solid rgba(244, 63, 94, 0.3);
+  background: color-mix(in srgb, var(--color-accent-red) 15%, transparent);
+  color: var(--color-accent-red-light);
+  border: 1px solid color-mix(in srgb, var(--color-accent-red) 30%, transparent);
 }
 
 .badge-slate {
-  background: rgba(148, 163, 184, 0.15);
+  background: color-mix(in srgb, var(--color-text-muted) 15%, transparent);
   color: var(--color-text-muted);
-  border: 1px solid rgba(148, 163, 184, 0.3);
+  border: 1px solid color-mix(in srgb, var(--color-text-muted) 30%, transparent);
 }
 
 .badge-indigo {
-  background: rgba(99, 102, 241, 0.15);
+  background: color-mix(in srgb, var(--color-accent-primary) 15%, transparent);
   color: var(--color-accent-primary-light);
-  border: 1px solid rgba(99, 102, 241, 0.3);
+  border: 1px solid color-mix(in srgb, var(--color-accent-primary) 30%, transparent);
 }
 
 .btn-action-icon {
@@ -173,26 +173,26 @@
   border-radius: 8px;
   background: transparent;
   border: 1px solid transparent;
-  color: rgba(255, 255, 255, 0.4);
+  color: var(--color-text-muted);
   cursor: pointer;
   transition: all 0.15s;
 }
 
 .btn-action-icon:hover {
-  background: rgba(255, 255, 255, 0.05);
-  border-color: rgba(255, 255, 255, 0.1);
-  color: white;
+  background: var(--color-bg-hover);
+  border-color: var(--color-border-default);
+  color: var(--color-text-primary);
 }
 
 .btn-action-icon.text-indigo-400:hover {
   color: var(--color-accent-primary-light);
-  background: rgba(99, 102, 241, 0.1);
-  border-color: rgba(99, 102, 241, 0.3);
+  background: color-mix(in srgb, var(--color-accent-primary) 10%, transparent);
+  border-color: color-mix(in srgb, var(--color-accent-primary) 30%, transparent);
 }
 
 .selected-preview {
-  background: rgba(99, 102, 241, 0.1);
-  border: 1px solid rgba(99, 102, 241, 0.2);
+  background: color-mix(in srgb, var(--color-accent-primary) 10%, transparent);
+  border: 1px solid color-mix(in srgb, var(--color-accent-primary) 20%, transparent);
   border-radius: 12px;
   padding: 16px;
   margin-top: 16px;
@@ -216,8 +216,8 @@
   align-items: center;
   gap: 6px;
   padding: 4px 10px;
-  background: rgba(99, 102, 241, 0.15);
-  border: 1px solid rgba(99, 102, 241, 0.3);
+  background: color-mix(in srgb, var(--color-accent-primary) 15%, transparent);
+  border: 1px solid color-mix(in srgb, var(--color-accent-primary) 30%, transparent);
   border-radius: 9999px;
   font-size: 11px;
   color: var(--color-accent-primary-light);
@@ -232,13 +232,13 @@
   border-radius: 50%;
   background: transparent;
   border: none;
-  color: rgba(99, 102, 241, 0.6);
+  color: color-mix(in srgb, var(--color-accent-primary) 60%, transparent);
   cursor: pointer;
   transition: all 0.15s;
 }
 
 .badge-tag button:hover {
-  background: rgba(99, 102, 241, 0.2);
+  background: color-mix(in srgb, var(--color-accent-primary) 20%, transparent);
   color: var(--color-accent-primary-light);
 }
 
@@ -247,7 +247,7 @@
   justify-content: flex-end;
   gap: 12px;
   padding-top: 16px;
-  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  border-top: 1px solid var(--color-border-default);
   margin-top: 24px;
   flex-shrink: 0;
 }
@@ -260,13 +260,13 @@
   justify-content: center;
   padding: 60px 20px;
   text-align: center;
-  color: rgba(255, 255, 255, 0.5);
+  color: var(--color-text-secondary);
 }
 
 .spinner {
   width: 32px;
   height: 32px;
-  border: 3px solid rgba(99, 102, 241, 0.2);
+  border: 3px solid color-mix(in srgb, var(--color-accent-primary) 20%, transparent);
   border-top-color: var(--color-accent-primary);
   border-radius: 50%;
   animation: spin 0.8s linear infinite;

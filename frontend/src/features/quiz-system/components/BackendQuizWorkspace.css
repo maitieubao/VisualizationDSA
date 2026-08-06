@@ -1,14 +1,14 @@
 
 
 .selected-option {
-  background-color: color-mix(in srgb, var(--color-accent-primary, #4255ff) 20%, transparent) !important;
-  border-color: color-mix(in srgb, var(--color-accent-primary, #4255ff) 50%, transparent) !important;
+  background-color: color-mix(in srgb, var(--color-accent-primary) 20%, transparent) !important;
+  border-color: color-mix(in srgb, var(--color-accent-primary) 50%, transparent) !important;
   box-shadow: 0 0 12px rgba(66, 85, 255, 0.15);
 }
 
 .quiz-progress-badge {
-  background-color: color-mix(in srgb, var(--color-accent-primary, #4255ff) 10%, transparent);
-  border-color: color-mix(in srgb, var(--color-accent-primary, #4255ff) 25%, transparent);
+  background-color: color-mix(in srgb, var(--color-accent-primary) 10%, transparent);
+  border-color: color-mix(in srgb, var(--color-accent-primary) 25%, transparent);
 }
 
 .topic-filter-bar {
@@ -24,9 +24,9 @@
   gap: 6px;
   padding: 0.4rem 0.9rem;
   border-radius: 8px;
-  border: 1px solid var(--color-border-subtle, rgba(255, 255, 255, 0.08));
-  background: var(--color-bg-surface, #282e3e);
-  color: var(--color-text-secondary, #939bb4);
+  border: 1px solid var(--color-border-subtle);
+  background: var(--color-bg-surface);
+  color: var(--color-text-secondary);
   font-size: 0.8rem;
   font-weight: 600;
   cursor: pointer;
@@ -34,14 +34,14 @@
 }
 
 .topic-tab:hover {
-  background: var(--color-bg-hover, rgba(255, 255, 255, 0.06));
-  color: var(--color-text-heading, #ffffff);
+  background: var(--color-bg-hover);
+  color: var(--color-text-heading);
 }
 
 .topic-tab--active {
   background: rgba(66, 85, 255, 0.15);
   border-color: rgba(66, 85, 255, 0.35);
-  color: var(--color-accent-primary-text, #7b89f4);
+  color: var(--color-accent-primary-text);
 }
 
 .topic-tab__icon { font-size: 14px; }

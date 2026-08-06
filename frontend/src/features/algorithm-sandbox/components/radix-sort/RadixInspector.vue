@@ -31,7 +31,7 @@
 
     <div class="r-inspector-explain">
       <div class="r-inspector-explain-title"><BaseIcon name="book-open" class="r-explain-ic" /> Giải thích</div>
-      <div class="r-inspector-explain-body" v-html="parseEmojiToSvg(currentStepDescription)"></div>
+      <div class="r-inspector-explain-body" v-html="parseEmojiToSvg(escapeHtmlText(currentStepDescription))"></div>
     </div>
   </div>
 </template>
@@ -39,7 +39,7 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { useRadixSortVisualizer } from '../../composables/useRadixSortVisualizer';
-import { parseEmojiToSvg } from '../../../../utils/emojiParser';
+import { parseEmojiToSvg, escapeHtmlText } from '../../../../utils/emojiParser';
 import type { SortFrame } from '../../types/sorting.types';
 
 const props = defineProps<{ frame: SortFrame | null }>();

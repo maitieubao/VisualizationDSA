@@ -2,7 +2,7 @@
   <div class="code-debugger-view-root flex flex-col h-full w-full gap-4 p-4 max-w-[1600px] mx-auto overflow-hidden">
     
     <div class="tabs-header-bar flex items-center justify-between px-4 py-3 border rounded-xl"
-      style="background: rgba(15, 23, 42, 0.45); backdrop-filter: blur(12px); border-color: rgba(255, 255, 255, 0.05);"
+      style="background: var(--glass-bg); backdrop-filter: blur(12px); border-color: var(--glass-border);"
     >
       <div class="flex items-center gap-2 font-mono text-xs font-bold text-text-primary">
         <BaseIcon name="code-ide" class="w-4 h-4 text-[var(--color-accent-cyan)]" />

@@ -1,17 +1,17 @@
 
 @keyframes linearScan {
   0%, 100% { 
-    background: rgba(6, 182, 212, 0.03); 
-    border-color: rgba(6, 182, 212, 0.15); 
+    background: color-mix(in srgb, var(--color-accent-cyan) 3%, transparent); 
+    border-color: color-mix(in srgb, var(--color-accent-cyan) 15%, transparent); 
     color: var(--color-text-muted);
     transform: scale(1); 
   }
   10%, 25% { 
-    background: rgba(34, 211, 238, 0.2); 
+    background: color-mix(in srgb, var(--color-accent-cyan-light) 20%, transparent); 
     border-color: var(--color-accent-primary); 
     color: var(--color-accent-primary);
     transform: scale(1.1); 
-    box-shadow: 0 0 6px rgba(34, 211, 238, 0.35); 
+    box-shadow: 0 0 6px color-mix(in srgb, var(--color-accent-cyan-light) 35%, transparent); 
   }
 }
 .group:hover .linear-box-0 { animation: linearScan 2s infinite 0s; }
@@ -24,21 +24,21 @@
 @keyframes binaryScanRight {
   0%, 30% { 
     opacity: 1; 
-    border-color: rgba(6, 182, 212, 0.15); 
-    background: rgba(6, 182, 212, 0.03); 
+    border-color: color-mix(in srgb, var(--color-accent-cyan) 15%, transparent); 
+    background: color-mix(in srgb, var(--color-accent-cyan) 3%, transparent); 
   }
   8%, 18% { 
     border-color: var(--color-accent-yellow); 
-    background: rgba(234, 179, 8, 0.1);
-    box-shadow: 0 0 5px rgba(234, 179, 8, 0.3); 
+    background: color-mix(in srgb, var(--color-accent-yellow) 10%, transparent);
+    box-shadow: 0 0 5px color-mix(in srgb, var(--color-accent-yellow) 30%, transparent); 
   }
   35%, 85% { 
     opacity: 0.18; 
-    border-color: rgba(239, 68, 68, 0.15);
+    border-color: color-mix(in srgb, var(--color-accent-red) 15%, transparent);
   }
   90%, 100% { 
     opacity: 1; 
-    border-color: rgba(6, 182, 212, 0.15); 
+    border-color: color-mix(in srgb, var(--color-accent-cyan) 15%, transparent); 
   }
 }
 .group:hover .binary-box-right { animation: binaryScanRight 3.2s infinite; }
@@ -115,16 +115,16 @@
 
 
 @keyframes bstPulseRoot {
-  0%, 100% { border-color: rgba(6, 182, 212, 0.15); background: transparent; }
-  10%, 25% { border-color: var(--color-accent-primary); background: rgba(34, 211, 238, 0.2); box-shadow: 0 0 4px var(--color-accent-primary); }
+  0%, 100% { border-color: color-mix(in srgb, var(--color-accent-cyan) 15%, transparent); background: transparent; }
+  10%, 25% { border-color: var(--color-accent-primary); background: color-mix(in srgb, var(--color-accent-cyan-light) 20%, transparent); box-shadow: 0 0 4px var(--color-accent-primary); }
 }
 @keyframes bstPulseLeft {
-  0%, 30%, 100% { border-color: rgba(6, 182, 212, 0.15); background: transparent; }
-  40%, 55% { border-color: var(--color-accent-primary); background: rgba(34, 211, 238, 0.2); box-shadow: 0 0 4px var(--color-accent-primary); }
+  0%, 30%, 100% { border-color: color-mix(in srgb, var(--color-accent-cyan) 15%, transparent); background: transparent; }
+  40%, 55% { border-color: var(--color-accent-primary); background: color-mix(in srgb, var(--color-accent-cyan-light) 20%, transparent); box-shadow: 0 0 4px var(--color-accent-primary); }
 }
 @keyframes bstPulseRight {
-  0%, 60%, 100% { border-color: rgba(6, 182, 212, 0.15); background: transparent; }
-  70%, 85% { border-color: var(--color-accent-primary); background: rgba(34, 211, 238, 0.2); box-shadow: 0 0 4px var(--color-accent-primary); }
+  0%, 60%, 100% { border-color: color-mix(in srgb, var(--color-accent-cyan) 15%, transparent); background: transparent; }
+  70%, 85% { border-color: var(--color-accent-primary); background: color-mix(in srgb, var(--color-accent-cyan-light) 20%, transparent); box-shadow: 0 0 4px var(--color-accent-primary); }
 }
 .group:hover .bst-root { animation: bstPulseRoot 2.5s infinite; }
 .group:hover .bst-left { animation: bstPulseLeft 2.5s infinite; }
@@ -132,28 +132,28 @@
 
 
 @keyframes bfsPulseRoot {
-  0%, 100% { border-color: rgba(6, 182, 212, 0.15); background: transparent; }
-  10%, 30% { border-color: var(--color-accent-primary); background: rgba(34, 211, 238, 0.2); box-shadow: 0 0 4px var(--color-accent-primary); }
+  0%, 100% { border-color: color-mix(in srgb, var(--color-accent-cyan) 15%, transparent); background: transparent; }
+  10%, 30% { border-color: var(--color-accent-primary); background: color-mix(in srgb, var(--color-accent-cyan-light) 20%, transparent); box-shadow: 0 0 4px var(--color-accent-primary); }
 }
 @keyframes bfsPulseChild {
-  0%, 40%, 100% { border-color: rgba(6, 182, 212, 0.15); background: transparent; }
-  50%, 75% { border-color: var(--color-accent-primary); background: rgba(34, 211, 238, 0.2); box-shadow: 0 0 4px var(--color-accent-primary); }
+  0%, 40%, 100% { border-color: color-mix(in srgb, var(--color-accent-cyan) 15%, transparent); background: transparent; }
+  50%, 75% { border-color: var(--color-accent-primary); background: color-mix(in srgb, var(--color-accent-cyan-light) 20%, transparent); box-shadow: 0 0 4px var(--color-accent-primary); }
 }
 .group:hover .bfs-root { animation: bfsPulseRoot 2.4s infinite; }
 .group:hover .bfs-child { animation: bfsPulseChild 2.4s infinite; }
 
 
 @keyframes dfsPulseRoot {
-  0%, 100% { border-color: rgba(6, 182, 212, 0.15); background: transparent; }
-  5%, 20% { border-color: var(--color-accent-primary); background: rgba(34, 211, 238, 0.2); box-shadow: 0 0 4px var(--color-accent-primary); }
+  0%, 100% { border-color: color-mix(in srgb, var(--color-accent-cyan) 15%, transparent); background: transparent; }
+  5%, 20% { border-color: var(--color-accent-primary); background: color-mix(in srgb, var(--color-accent-cyan-light) 20%, transparent); box-shadow: 0 0 4px var(--color-accent-primary); }
 }
 @keyframes dfsPulseLeft {
-  0%, 25%, 100% { border-color: rgba(6, 182, 212, 0.15); background: transparent; }
-  35%, 55% { border-color: var(--color-accent-primary); background: rgba(34, 211, 238, 0.2); box-shadow: 0 0 4px var(--color-accent-primary); }
+  0%, 25%, 100% { border-color: color-mix(in srgb, var(--color-accent-cyan) 15%, transparent); background: transparent; }
+  35%, 55% { border-color: var(--color-accent-primary); background: color-mix(in srgb, var(--color-accent-cyan-light) 20%, transparent); box-shadow: 0 0 4px var(--color-accent-primary); }
 }
 @keyframes dfsPulseRight {
-  0%, 60%, 100% { border-color: rgba(6, 182, 212, 0.15); background: transparent; }
-  70%, 90% { border-color: var(--color-accent-primary); background: rgba(34, 211, 238, 0.2); box-shadow: 0 0 4px var(--color-accent-primary); }
+  0%, 60%, 100% { border-color: color-mix(in srgb, var(--color-accent-cyan) 15%, transparent); background: transparent; }
+  70%, 90% { border-color: var(--color-accent-primary); background: color-mix(in srgb, var(--color-accent-cyan-light) 20%, transparent); box-shadow: 0 0 4px var(--color-accent-primary); }
 }
 .group:hover .dfs-root { animation: dfsPulseRoot 2.8s infinite; }
 .group:hover .dfs-left { animation: dfsPulseLeft 2.8s infinite; }
@@ -161,24 +161,24 @@
 
 
 @keyframes dijPulseNodeStart {
-  0%, 100% { border-color: rgba(6, 182, 212, 0.15); background: transparent; }
-  5%, 20% { border-color: var(--color-accent-primary); background: rgba(34, 211, 238, 0.2); box-shadow: 0 0 4.5px var(--color-accent-primary); }
+  0%, 100% { border-color: color-mix(in srgb, var(--color-accent-cyan) 15%, transparent); background: transparent; }
+  5%, 20% { border-color: var(--color-accent-primary); background: color-mix(in srgb, var(--color-accent-cyan-light) 20%, transparent); box-shadow: 0 0 4.5px var(--color-accent-primary); }
 }
 @keyframes dijPulseLineTop {
   22%, 40% { background: var(--color-accent-primary); }
-  0%, 20%, 42%, 100% { background: rgba(15, 23, 42, 0.3); }
+  0%, 20%, 42%, 100% { background: color-mix(in srgb, var(--color-bg-surface) 30%, transparent); }
 }
 @keyframes dijPulseNodeMid {
-  0%, 35%, 100% { border-color: rgba(6, 182, 212, 0.15); background: transparent; }
-  45%, 60% { border-color: var(--color-accent-primary); background: rgba(34, 211, 238, 0.2); box-shadow: 0 0 4.5px var(--color-accent-primary); }
+  0%, 35%, 100% { border-color: color-mix(in srgb, var(--color-accent-cyan) 15%, transparent); background: transparent; }
+  45%, 60% { border-color: var(--color-accent-primary); background: color-mix(in srgb, var(--color-accent-cyan-light) 20%, transparent); box-shadow: 0 0 4.5px var(--color-accent-primary); }
 }
 @keyframes dijPulseLineMid {
   62%, 80% { background: var(--color-accent-primary); }
-  0%, 60%, 82%, 100% { background: rgba(15, 23, 42, 0.3); }
+  0%, 60%, 82%, 100% { background: color-mix(in srgb, var(--color-bg-surface) 30%, transparent); }
 }
 @keyframes dijPulseNodeEnd {
-  0%, 75%, 100% { border-color: rgba(6, 182, 212, 0.15); background: transparent; }
-  85%, 98% { border-color: var(--color-accent-primary); background: rgba(34, 211, 238, 0.2); box-shadow: 0 0 4.5px var(--color-accent-primary); }
+  0%, 75%, 100% { border-color: color-mix(in srgb, var(--color-accent-cyan) 15%, transparent); background: transparent; }
+  85%, 98% { border-color: var(--color-accent-primary); background: color-mix(in srgb, var(--color-accent-cyan-light) 20%, transparent); box-shadow: 0 0 4.5px var(--color-accent-primary); }
 }
 .group:hover .dij-node-start { animation: dijPulseNodeStart 3s infinite; }
 .group:hover .dij-line-top { animation: dijPulseLineTop 3s infinite; }

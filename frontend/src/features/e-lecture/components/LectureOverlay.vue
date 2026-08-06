@@ -5,9 +5,9 @@
         
         <div class="flex items-center justify-between">
           <div class="flex items-center gap-2">
-            <BaseIcon name="book-open" class="text-[#06b6d4] w-4 h-4" />
-            <span class="text-[11px] font-bold uppercase tracking-wider text-[#06b6d4]">E-Lecture</span>
-            <span class="badge-bg text-[11px] font-semibold text-text-muted border border-slate-800 py-0.5 px-2 rounded-md">{{ lectureStore.slideProgress }}</span>
+            <BaseIcon name="book-open" class="text-accent-cyan w-4 h-4" />
+            <span class="text-[11px] font-bold uppercase tracking-wider text-accent-cyan">E-Lecture</span>
+            <span class="badge-bg text-[11px] font-semibold text-text-muted border border-border-default py-0.5 px-2 rounded-md">{{ lectureStore.slideProgress }}</span>
           </div>
           <button class="exit-btn flex items-center justify-center w-7 h-7 rounded-lg border border-border-default text-text-muted cursor-pointer transition-all hover:text-text-primary hover:border-border-default" @click="lectureStore.exitLecture()" title="Thoát bài giảng (Esc)" aria-label="Thoát bài giảng (Esc)">
             <BaseIcon name="x" class="w-3.5 h-3.5" />
@@ -16,18 +16,18 @@
 
         
         <div v-if="lectureStore.currentLecture" class="pb-2 border-b border-border-default/6">
-          <h2 class="text-sm font-bold text-[#f1f5f9] leading-snug m-0">{{ lectureStore.currentLecture.title }}</h2>
+          <h2 class="text-sm font-bold text-text-primary leading-snug m-0">{{ lectureStore.currentLecture.title }}</h2>
         </div>
 
         
         <div v-if="activeSlide" class="flex flex-col gap-2.5 flex-1">
           <div class="inline-flex self-start text-[10px] font-bold uppercase tracking-wider py-0.5 px-2.5 rounded-md" :class="slideBadgeClass">{{ slideBadgeText }}</div>
-          <div class="text-xs text-text-secondary leading-relaxed [&_h3]:text-sm [&_h3]:font-bold [&_h3]:text-[#f1f5f9] [&_h3]:mb-1.5 [&_p]:mb-2 [&_b]:text-[#e2e8f0] [&_b]:font-semibold [&_em]:text-text-muted [&_em]:italic [&_ul]:my-1 [&_ul]:pl-4.5 [&_li]:mb-1" v-html="activeSlide.content" />
+          <div class="text-xs text-text-secondary leading-relaxed [&_h3]:text-sm [&_h3]:font-bold [&_h3]:text-text-heading [&_h3]:mb-1.5 [&_p]:mb-2 [&_b]:text-text-primary [&_b]:font-semibold [&_em]:text-text-muted [&_em]:italic [&_ul]:my-1 [&_ul]:pl-4.5 [&_li]:mb-1" v-html="sanitizedContent" />
         </div>
 
         
         <div v-if="lectureStore.isWaitingForAnimation" class="flex items-center gap-2.5 p-3 py-2.5 bg-accent-cyan/8 border border-accent-cyan/20 rounded-[10px]" role="status" aria-live="polite">
-          <div class="w-4 h-4 border-2 border-accent-cyan/30 border-t-cyan-500 rounded-full animate-spin" aria-hidden="true" />
+          <div class="w-4 h-4 border-2 border-accent-cyan/30 border-t-accent-cyan rounded-full animate-spin" aria-hidden="true" />
           <span class="text-xs text-accent-cyan font-medium">Đang phát hoạt ảnh minh họa...</span>
         </div>
 
@@ -51,10 +51,13 @@
 <script setup lang="ts">
 import { computed, onMounted, onUnmounted } from 'vue';
 import { useLectureStore } from '../store/useLectureStore';
+import DOMPurify from 'dompurify';
 import LectureNavigation from './LectureNavigation.vue';
 
 const lectureStore = useLectureStore();
 const activeSlide  = computed(() => lectureStore.activeSlide);
+// Sanitize nội dung slide (HTML từ lecture script) — chống stored XSS.
+const sanitizedContent = computed(() => DOMPurify.sanitize(activeSlide.value?.content ?? ''));
 
 const slideBadgeClass = computed(() => {
   if (!activeSlide.value) return '';

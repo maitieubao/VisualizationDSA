@@ -1,7 +1,7 @@
 <template>
   <section class="students-manage-section">
     <div class="flex justify-between items-center mb-6 flex-wrap gap-3">
-      <h2 class="section-heading m-0 text-white">Quản lý & Theo dõi tiến trình học viên</h2>
+      <h2 class="section-heading m-0 text-text-primary">Quản lý & Theo dõi tiến trình học viên</h2>
       <div class="flex gap-2 w-full sm:w-auto">
         <input v-model="searchStudentQuery" @input="debouncedSearchStudents" class="form-input form-input--sm w-64" placeholder="Tìm theo email hoặc username..." />
       </div>
@@ -29,7 +29,7 @@
           </thead>
           <tbody>
             <tr v-for="student in studentsList" :key="student.id">
-              <td class="font-bold text-white">
+              <td class="font-bold text-text-primary">
                 <div class="flex flex-col">
                   <span>{{ student.username }}</span>
                   <span class="text-xs text-text-muted font-normal">{{ student.email }}</span>
@@ -55,7 +55,7 @@
           <span class="text-xs text-text-muted">Hiển thị {{ studentsList.length }} học viên (Tổng số: {{ totalStudents }})</span>
           <div class="flex gap-2">
             <button :disabled="studentsPage === 1" @click="changeStudentsPage(-1)" class="btn-cancel px-3 py-1.5 text-xs disabled:opacity-50 cursor-pointer">Trước</button>
-            <span class="text-xs font-mono text-white flex items-center px-2">Trang {{ studentsPage }} / {{ totalStudentsPages }}</span>
+            <span class="text-xs font-mono text-text-primary flex items-center px-2">Trang {{ studentsPage }} / {{ totalStudentsPages }}</span>
             <button :disabled="studentsPage >= totalStudentsPages" @click="changeStudentsPage(1)" class="btn-cancel px-3 py-1.5 text-xs disabled:opacity-50 cursor-pointer">Sau</button>
           </div>
         </div>
@@ -67,10 +67,10 @@
       <div class="bg-bg-secondary border border-border-subtle rounded-3xl p-6 max-w-4xl w-full max-h-[85vh] overflow-hidden flex flex-col shadow-2xl">
         <div class="flex justify-between items-start border-b border-border-subtle pb-4 mb-4">
           <div>
-            <h3 class="text-xl font-black text-white">Chi tiết tiến trình: {{ selectedStudentForProgress.username }}</h3>
+            <h3 class="text-xl font-black text-text-primary">Chi tiết tiến trình: {{ selectedStudentForProgress.username }}</h3>
             <p class="text-xs text-text-muted mt-1">Email: {{ selectedStudentForProgress.email }} &middot; Cấp độ: {{ selectedStudentForProgress.currentLevel }} &middot; XP: {{ selectedStudentForProgress.totalXP }} XP</p>
           </div>
-          <button @click="selectedStudentForProgress = null" class="text-text-muted hover:text-white text-2xl font-bold p-1 cursor-pointer">&times;</button>
+          <button @click="selectedStudentForProgress = null" class="text-text-muted hover:text-text-primary text-2xl font-bold p-1 cursor-pointer">&times;</button>
         </div>
 
         <div class="flex-1 overflow-y-auto grid grid-cols-1 md:grid-cols-2 gap-6 pr-2">
@@ -84,7 +84,7 @@
             <div v-else class="space-y-4">
               <div v-for="course in studentCourseProgress" :key="course.id" class="p-4 rounded-xl border border-border-subtle bg-bg-secondary/40 flex flex-col gap-2">
                 <div class="flex justify-between items-center">
-                  <span class="text-sm font-bold text-white">{{ course.title }}</span>
+                  <span class="text-sm font-bold text-text-primary">{{ course.title }}</span>
                   <span class="text-xs font-mono font-bold text-accent">{{ course.progressPercent }}%</span>
                 </div>
                 <div class="w-full h-2 bg-bg-surface rounded-full overflow-hidden">
@@ -108,7 +108,7 @@
             <div v-else class="space-y-2">
               <div v-for="attempt in studentQuizHistory" :key="attempt.id" class="p-3.5 rounded-xl border border-border-subtle bg-bg-secondary/40 flex items-center justify-between gap-3 text-xs">
                 <div>
-                  <span class="font-bold text-white block">{{ attempt.quizTitle }}</span>
+                  <span class="font-bold text-text-primary block">{{ attempt.quizTitle }}</span>
                   <span class="text-[10px] text-text-muted">{{ formatAttemptDate(attempt.attemptedAt) }}</span>
                 </div>
                 <div class="flex items-center gap-2 flex-shrink-0">

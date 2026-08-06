@@ -14,7 +14,7 @@ for /f "tokens=5" %%a in ('netstat -ano ^| findstr ":5173 " 2^>nul') do taskkill
 
 REM ── Backend ──
 echo [2/4] Khoi dong Backend (.NET 9 - Port 5055)...
-start "BACKEND - VisualizationDSA" cmd /k "cd /d "%~dp0backend\src\WebApi" && dotnet run --urls "http://0.0.0.0:5055" && pause"
+start "BACKEND - VisualizationDSA" cmd /k "cd /d "%~dp0backend\src\WebApi" && set ASPNETCORE_ENVIRONMENT=Development&& set DOTNET_ROLL_FORWARD=Major&& dotnet run --urls "http://0.0.0.0:5055" && pause"
 
 REM Chờ backend khởi động
 echo [3/4] Cho backend san sang (10 giay)...

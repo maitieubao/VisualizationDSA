@@ -2623,3 +2623,36 @@ pm run build SUCCESS; dotnet test 158/158 PASS | PASSED || 2312 | **Lesson Viz**
 | 2348 | **Docs Audit** | Fix loi khoa hoc + mermaid | heap-sort build O(N), counting-sort K, mid chong tran, Dictionary K,V Separate Chaining, WAL truoc commit, off-by-one Fenwick, alpha(N)<=5, trung node ID Trie/UF/segment, 12 khoi mermaid loi cu phap | PASSED |
 | 2349 | **Docs Navigation** | Them nhom CẤU TRÚC CÂY NÂNG CAO | docsNavigation.ts `trees-group` 5 muc (heap-priority-queue, trie-prefix-tree, segment-tree, fenwick-tree, union-find) — 3 link `/docs/trees/*` chuyen tu link chet thanh hop le; DocsSidebar render tu docsNavigation | PASSED |
 | 2350 | **Mermaid syntax** | Regression sau khi them nav | `docsMermaidSyntax.spec.ts` 2/2 PASS — 95 khoi / 58 file parse hop le | PASSED |
+### Toast + Skeleton + NotFound + Checkout + Animation Sandbox � 14 Unit Tests
+
+| STT | Ph�n h? ki?m th? | T�nh nang h?t nh�n du?c x�c th?c | Phuong th?c ki?m th?c (Test Spec) | Tr?ng th�i |
+| :--- | :--- | :--- | :--- | :--- |
+| 2351 | **ToastContainer** | Toast-001: addToast displays a toast | Mount + addToast ? DOM contains title/message | PASSED |
+| 2352 | **ToastContainer** | Toast-002: 4 lo?i success/error/warning/info render class | 4 toasts ? 4 .toast-item with correct CSS class | PASSED |
+| 2353 | **ToastContainer** | Toast-003: T? d?ng d�ng sau duration | advanceTimersByTime(2100) ? activeToasts empty | PASSED |
+| 2354 | **ToastContainer** | Toast-004: ��ng th? c�ng khi click | dispatchEvent(click) ? activeToasts empty | PASSED |
+| 2355 | **SkeletonLoader** | Skel-001: Render skeleton with animated pulse | Mount ? .skeleton + .skeleton__shimmer exists | PASSED |
+| 2356 | **SkeletonCard** | Skel-002: Render placeholder structure | Mount ? .skeleton-card with >=3 skeletons | PASSED |
+| 2357 | **NotFoundView** | NF-001: Render 404 + text | Mount ? text contains 404 + Trang kh�ng t?n t?i | PASSED |
+| 2358 | **NotFoundView** | NF-002: N�t V? trang ch? | Mount ? #btn-go-home exists | PASSED |
+| 2359 | **PremiumCheckoutView** | Checkout-001: Login required | Not auth ? shows Y�u c?u �ang nh?p | PASSED |
+| 2360 | **PremiumCheckoutView** | Checkout-002: Checkout container renders | Mount ? .checkout-container + .glass-panel exist | PASSED |
+| 2361 | **PremiumCheckoutView** | Checkout-003: Dev simulate hidden when not paying | Not paying ? .success-screen not visible | PASSED |
+| 2362 | **Animation Sandbox** | Anim-001: ExplanationPanel renders | Mount ? .explanation-panel exists | PASSED |
+| 2363 | **Animation Sandbox** | Anim-002: VisualizationCanvas renders canvas | Mount ? canvas element exists | PASSED |
+| 2364 | **Animation Sandbox** | Anim-003: ExplanationPanel empty state | No frame ? .explanation-panel__empty visible | PASSED |
+| 2365 | **Algo Playground P0** | Run/Step/Input/Validation/Parse/Share | 31 tests: store actions, input validation, tree/graph parse, compile error translator | PASSED |
+| 2366 | **Sorting Sandbox P0** | Algorithm select, generator, stable ID, fallback, max 15, store state | 19 tests: bubble/counting/radix generators, store actions | PASSED |
+| 2367 | **Animation Engine + VCR** | VCR buttons, Play/Pause, ProgressBar, Pseudocode, ExplanationPanel | 38 tests: component mount, emit events, render | PASSED |
+| 2368 | **Quiz + Lesson** | Quiz select/nav/submit/result, Lesson Quiz/CompletionModal | 21 tests: store actions, component render | PASSED |
+| 2369 | **Auth + Guided Tour** | Login/logout/impersonate, Tour start/nav/skip/steps | 24 tests: store actions, overlay render, step logic | PASSED |
+| 2370 | **Concepts + DSA Modules** | OOP/SOLID/Patterns plan verify, Dashboard/Player/Legend/Pseudocode | 52 tests: plan integrity, component render | PASSED |
+| 2371 | **Teacher + Admin** | Teacher tabs + Quiz CRUD, Admin dashboard + User mgmt + Audit | 43 tests: tab navigation, CRUD, modal render | PASSED |
+| 2372 | **Interactive Graph + HTML** | Graph store (add/node/edge/BFS/DFS/Dijkstra/export), HTML Playground | 29 tests: store actions, algorithm output, preview | PASSED |
+| 2373 | **Code Editor + Pseudocode + Custom Input** | Presets, language switch, watch variables, validation | 29 tests: store actions, panel render | PASSED |
+| 2374 | **Embed + Export + Realtime + Payment** | iframe config, PNG/SVG/QR, SignalR store, Payment store | 60 tests: store actions, bridge verify | PASSED |
+| 2375 | **E-Lecture + Nav + CodeToViz + VCR** | Notification, Lecture store, AppHeader theme, Compiler, VCR store | 61 tests: store actions, component render | PASSED |
+| 2376 | **Toast + Skeleton + NotFound + Checkout** | Toast types, Skeleton, 404, Checkout flow, Animation sandbox | 14 tests: container render, type icons | PASSED |
+| 2377 | **Dashboard + Profile + Landing** | Stats, quickstart, XP bar, Profile tabs, Landing hero/CTA | 18 tests: greeting, stats cards, tab content | PASSED |
+| 2378 | **Courses + Progress + Gamification** | Courses list/filter/sort, Progress store + Radar, Gamification store | 71 tests: store actions, chart render | PASSED |
+| 2379 | **Project regression** | Full frontend suite | Vitest 84 files / 1139 tests PASS; `npm run build` PASS | PASSED |

@@ -48,6 +48,7 @@ import { marked, type Tokens } from 'marked';
 import { createHighlighter, type Highlighter } from 'shiki';
 import BaseIcon from '@/shared/components/BaseIcon.vue';
 import { parseEmojiToSvg } from '../../../utils/emojiParser';
+import DOMPurify from 'dompurify';
 import { buildMermaidInitConfig } from '../../../utils/mermaidTheme';
 import { getPlaygroundDemo } from '../../html-playground/demos/playgroundDemos';
 import '../styles/vue-docs-theme.css';
@@ -248,7 +249,7 @@ const renderMarkdown = async () => {
       if (validLang === 'mermaid') {
         
         const encoded = encodeURIComponent(code);
-        return parseEmojiToSvg(`<div class="mermaid-diagram flex justify-center my-6" data-mermaid-code="${encoded}"><div style="color:#888;font-size:14px;">Đang vẽ biểu đồ...</div></div>`);
+        return parseEmojiToSvg(`<div class="mermaid-diagram flex justify-center my-6" data-mermaid-code="${encoded}"><div style="color:var(--color-text-muted);font-size:14px;">Đang vẽ biểu đồ...</div></div>`);
       }
       
       
@@ -368,8 +369,11 @@ const renderMarkdown = async () => {
 
     marked.use({ renderer, gfm: true, breaks: true });
 
+    // marked không tự sanitize — DOMPurify loại script/event handler khỏi HTML đã render.
+    // ADD_ATTR style giữ layout dual-code/mermaid; nội dung docs là markdown nội bộ.
     const parsedHtml = marked.parse(contentWithoutFm);
-    htmlContent.value = parseEmojiToSvg(typeof parsedHtml === 'string' ? parsedHtml : await parsedHtml);
+    const sanitized = DOMPurify.sanitize(typeof parsedHtml === 'string' ? parsedHtml : await parsedHtml, { ADD_ATTR: ['style'] });
+    htmlContent.value = parseEmojiToSvg(sanitized);
     loading.value = false; 
     
     await nextTick(); 
@@ -396,7 +400,7 @@ const renderMarkdown = async () => {
           const { svg } = await mermaid.render(`mermaid-svg-${Date.now()}-${i}`, code);
           el.innerHTML = svg;
         } catch (renderErr: unknown) {
-          el.innerHTML = parseEmojiToSvg(`<div style="background:rgba(200,50,50,0.15);border:1px solid #c53030;padding:16px;border-radius:8px;color:#fc8181;font-size:13px;text-align:left;width:100%;">
+          el.innerHTML = parseEmojiToSvg(`<div style="background:color-mix(in srgb, var(--color-accent-red) 15%, transparent);border:1px solid var(--color-accent-red);padding:16px;border-radius:8px;color:var(--color-accent-red);font-size:13px;text-align:left;width:100%;">
             <strong>Lỗi cú pháp Mermaid:</strong><br/>
             <pre style="margin-top:8px;font-size:11px;overflow-x:auto;">${errorMessage(renderErr)}</pre>
           </div>`);
@@ -405,7 +409,7 @@ const renderMarkdown = async () => {
     } catch (err: unknown) {
       console.error("Lỗi tải Mermaid:", err);
       diagrams.forEach(el => {
-        el.innerHTML = parseEmojiToSvg(`<div style="color:#fc8181;">Không thể tải thư viện Mermaid: ${errorMessage(err)}</div>`);
+        el.innerHTML = parseEmojiToSvg(`<div style="color:var(--color-accent-red);">Không thể tải thư viện Mermaid: ${errorMessage(err)}</div>`);
       });
     }
   } catch (error: unknown) {

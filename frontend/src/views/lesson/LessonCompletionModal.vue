@@ -6,7 +6,7 @@
           <path stroke-linecap="round" stroke-linejoin="round" d="M5 3v4M3 5h4m6 17v-4m0 0a2 2 0 100-4 2 2 0 000 4zm3.243-8.657a6 6 0 011.414 4.243H16m0 0a6 6 0 01-4.243-1.414M16 17.5a6 6 0 00-4.243-1.414" />
         </svg>
       </div>
-      <h3 class="text-2xl font-black text-white">Xuất Sắc!</h3>
+      <h3 class="text-2xl font-black text-text-primary">Xuất Sắc!</h3>
       <p class="text-text-secondary mt-2 text-sm">Bạn đã hoàn thành bài học và tích lũy thêm điểm kinh nghiệm.</p>
 
       <div class="my-6 p-4 rounded-2xl bg-bg-hover border border-border-subtle inline-flex flex-col items-center">
@@ -35,7 +35,7 @@
         </button>
         <button
           @click="$emit('close')"
-          class="w-full py-3 bg-bg-hover hover:bg-bg-hover text-white font-bold rounded-2xl transition-all border border-border-subtle cursor-pointer"
+          class="w-full py-3 bg-bg-hover hover:bg-bg-hover text-text-primary font-bold rounded-2xl transition-all border border-border-subtle cursor-pointer"
         >
           Quay lại khóa học
         </button>

@@ -19,7 +19,8 @@
   padding: 12px 14px;
   border-radius: 10px;
   backdrop-filter: blur(16px);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
   cursor: pointer;
   position: relative;
   overflow: hidden;
@@ -27,16 +28,16 @@
 }
 
 .toast-item--success {
-  background: rgba(16, 185, 129, 0.15);
-  border-color: rgba(16, 185, 129, 0.3);
+  background: color-mix(in srgb, var(--glass-bg) 92%, var(--color-accent-emerald));
+  border-color: color-mix(in srgb, var(--color-accent-emerald) 30%, transparent);
 }
 .toast-item--error {
-  background: rgba(239, 68, 68, 0.15);
-  border-color: rgba(239, 68, 68, 0.3);
+  background: color-mix(in srgb, var(--glass-bg) 92%, var(--color-accent-red));
+  border-color: color-mix(in srgb, var(--color-accent-red) 30%, transparent);
 }
 .toast-item--warning {
-  background: rgba(245, 158, 11, 0.15);
-  border-color: rgba(245, 158, 11, 0.3);
+  background: color-mix(in srgb, var(--glass-bg) 92%, var(--color-accent-yellow));
+  border-color: color-mix(in srgb, var(--color-accent-yellow) 30%, transparent);
 }
 .toast-item--info {
   background: var(--color-accent-primary-dim, rgba(66, 85, 255, 0.15));
@@ -67,13 +68,13 @@
 .toast-title {
   font-size: 12px;
   font-weight: 700;
-  color: var(--text-primary, #fff);
+  color: var(--color-text-primary);
   margin-bottom: 2px;
 }
 
 .toast-message {
   font-size: 11px;
-  color: var(--text-secondary, #aaa);
+  color: var(--color-text-secondary);
   line-height: 1.4;
   word-break: break-word;
 }
@@ -82,7 +83,7 @@
   flex-shrink: 0;
   background: none;
   border: none;
-  color: var(--text-muted, #666);
+  color: var(--color-text-muted);
   font-size: 16px;
   cursor: pointer;
   padding: 0 2px;
@@ -100,10 +101,10 @@
   width: 100%;
   animation: toast-shrink linear forwards;
 }
-.toast-item--success .toast-progress { background: #10b981; }
-.toast-item--error   .toast-progress { background: #ef4444; }
-.toast-item--warning .toast-progress { background: #f59e0b; }
-.toast-item--info    .toast-progress { background: #06b6d4; }
+.toast-item--success .toast-progress { background: var(--color-accent-emerald); }
+.toast-item--error   .toast-progress { background: var(--color-accent-red); }
+.toast-item--warning .toast-progress { background: var(--color-accent-yellow); }
+.toast-item--info    .toast-progress { background: var(--color-accent-cyan); }
 
 @keyframes toast-shrink {
   from { transform: scaleX(1); transform-origin: left; }

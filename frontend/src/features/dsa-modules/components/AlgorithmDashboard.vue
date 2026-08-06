@@ -221,18 +221,18 @@ function getMiniVisualizer(algoId: string) {
           case 'linear-search':
             return h('div', { class: hCls }, [
               h('div', { class: 'flex gap-1.5' }, Array.from({ length: 5 }).map((_, i) =>
-                h('div', { class: `w-4 h-4 rounded border text-[7px] flex items-center justify-center font-mono border-zinc-800 bg-bg-secondary/50 text-text-muted` }, String((i + 1) * 10))
+                h('div', { class: `w-4 h-4 rounded border text-[7px] flex items-center justify-center font-mono border-border-default bg-bg-secondary/50 text-text-muted` }, String((i + 1) * 10))
               ))
             ]);
           case 'binary-search':
             return h('div', { class: hCls }, [
               h('div', { class: 'flex gap-1 relative' }, Array.from({ length: 7 }).map((_, i) =>
-                h('div', { class: `w-3.5 h-3.5 rounded border text-[7px] flex items-center justify-center font-mono border-zinc-800 text-text-muted bg-bg-secondary/50 ${i >= 4 ? 'binary-box-right' : ''}` }, String(i * 5 + 5))
+                h('div', { class: `w-3.5 h-3.5 rounded border text-[7px] flex items-center justify-center font-mono border-border-default text-text-muted bg-bg-secondary/50 ${i >= 4 ? 'binary-box-right' : ''}` }, String(i * 5 + 5))
               ))
             ]);
           case 'stack':
             return h('div', { class: hCls }, [
-              h('div', { class: 'w-8 h-10 border-b border-x border-zinc-800 relative flex flex-col justify-end items-center gap-0.5 pb-0.5 overflow-hidden' }, [
+              h('div', { class: 'w-8 h-10 border-b border-x border-border-default relative flex flex-col justify-end items-center gap-0.5 pb-0.5 overflow-hidden' }, [
                 h('div', { class: 'w-6 h-2 rounded bg-accent-cyan/90' }),
                 h('div', { class: 'w-6 h-2 rounded bg-accent-cyan/70' }),
                 h('div', { class: 'w-6 h-2 rounded bg-accent-cyan/50' })
@@ -240,7 +240,7 @@ function getMiniVisualizer(algoId: string) {
             ]);
           case 'queue':
             return h('div', { class: hCls }, [
-              h('div', { class: 'w-16 h-5 border-y border-zinc-800 relative flex items-center overflow-hidden justify-around' }, [
+              h('div', { class: 'w-16 h-5 border-y border-border-default relative flex items-center overflow-hidden justify-around' }, [
                 h('div', { class: 'w-3 h-3 rounded-full bg-accent-cyan shadow-sm shadow-accent-cyan/45' }),
                 h('div', { class: 'w-3 h-3 rounded-full bg-accent-cyan/70' }),
                 h('div', { class: 'w-3 h-3 rounded-full bg-accent-cyan/50' })
@@ -253,9 +253,9 @@ function getMiniVisualizer(algoId: string) {
               h('div', { class: 'w-14 h-10 relative' }, [
                 h('div', { class: 'absolute top-2 left-3 w-4 h-px bg-bg-secondary rotate-45' }),
                 h('div', { class: 'absolute top-2 right-3 w-4 h-px bg-bg-secondary -rotate-45' }),
-                h('div', { class: 'absolute top-0 left-1/2 -translate-x-1/2 w-3.5 h-3.5 rounded-full border border-zinc-800 bg-bg-secondary' }),
-                h('div', { class: 'absolute bottom-0 left-0 w-3.5 h-3.5 rounded-full border border-zinc-800 bg-bg-secondary' }),
-                h('div', { class: 'absolute bottom-0 right-0 w-3.5 h-3.5 rounded-full border border-zinc-800 bg-bg-secondary' })
+                h('div', { class: 'absolute top-0 left-1/2 -translate-x-1/2 w-3.5 h-3.5 rounded-full border border-border-default bg-bg-secondary' }),
+                h('div', { class: 'absolute bottom-0 left-0 w-3.5 h-3.5 rounded-full border border-border-default bg-bg-secondary' }),
+                h('div', { class: 'absolute bottom-0 right-0 w-3.5 h-3.5 rounded-full border border-border-default bg-bg-secondary' })
               ])
             ]);
           case 'dijkstra':
@@ -266,14 +266,14 @@ function getMiniVisualizer(algoId: string) {
           case 'a-star':
             return h('div', { class: hCls }, [
               h('div', { class: 'w-14 h-10 relative flex items-center justify-between' }, [
-                h('div', { class: 'w-3.5 h-3.5 rounded-full border border-zinc-800 bg-bg-secondary relative' }, [
+                h('div', { class: 'w-3.5 h-3.5 rounded-full border border-border-default bg-bg-secondary relative' }, [
                   h('div', { class: 'absolute top-1/2 left-full w-6 h-0.5 bg-bg-secondary origin-left' }),
                   h('div', { class: 'absolute top-1/2 left-full w-6 h-0.5 bg-bg-secondary origin-left rotate-45' })
                 ]),
-                h('div', { class: 'w-3.5 h-3.5 rounded-full border border-zinc-800 bg-bg-secondary relative' }, [
+                h('div', { class: 'w-3.5 h-3.5 rounded-full border border-border-default bg-bg-secondary relative' }, [
                   h('div', { class: 'absolute top-1/2 left-full w-6 h-0.5 bg-bg-secondary origin-left -rotate-45' })
                 ]),
-                h('div', { class: 'w-3.5 h-3.5 rounded-full border border-zinc-800 bg-bg-secondary' })
+                h('div', { class: 'w-3.5 h-3.5 rounded-full border border-border-default bg-bg-secondary' })
               ])
             ]);
           default:
@@ -408,9 +408,9 @@ onBeforeUnmount(() => {
   padding: 0.75rem 1rem;
   margin-bottom: 1rem;
   border-radius: 10px;
-  background: rgba(244, 63, 94, 0.08);
-  border: 1px solid rgba(244, 63, 94, 0.3);
-  color: #fb7185;
+  background: color-mix(in srgb, var(--color-accent-red) 8%, transparent);
+  border: 1px solid color-mix(in srgb, var(--color-accent-red) 30%, transparent);
+  color: var(--color-accent-red-light);
   font-size: 0.8rem;
 }
 
@@ -421,13 +421,13 @@ onBeforeUnmount(() => {
 .dash-error__retry {
   flex: 0 0 auto;
   padding: 0.3rem 0.75rem;
-  color: #fb7185;
-  border-color: rgba(244, 63, 94, 0.4);
+  color: var(--color-accent-red-light);
+  border-color: color-mix(in srgb, var(--color-accent-red) 40%, transparent);
 }
 
 .dash-error__retry:hover {
-  border-color: #fb7185;
-  color: #fff;
+  border-color: var(--color-accent-red-light);
+  color: var(--color-text-primary);
 }
 
 .dash-skeleton {
@@ -485,10 +485,10 @@ onBeforeUnmount(() => {
 }
 
 .dash-card {
-  background: rgba(15, 23, 42, 0.5);
+  background: color-mix(in srgb, var(--color-bg-surface) 50%, transparent);
   backdrop-filter: blur(12px) saturate(1.3);
   -webkit-backdrop-filter: blur(12px) saturate(1.3);
-  border: 1px solid rgba(255, 255, 255, 0.06);
+  border: 1px solid var(--color-border-default);
   border-radius: 12px;
   padding: 1.25rem;
   display: flex;
@@ -498,15 +498,15 @@ onBeforeUnmount(() => {
 
 .dash-card:hover {
   transform: translateY(-2px);
-  background: rgba(30, 41, 59, 0.6);
-  border-color: rgba(255, 255, 255, 0.1);
+  background: color-mix(in srgb, var(--color-bg-secondary) 60%, transparent);
+  border-color: var(--color-border-strong);
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
 }
 
 .dash-card--active {
   border-color: var(--color-accent-primary) !important;
-  background: rgba(6, 182, 212, 0.08) !important;
-  box-shadow: 0 0 0 1px var(--color-accent-primary-dim), 0 0 16px rgba(6, 182, 212, 0.12);
+  background: color-mix(in srgb, var(--color-accent-cyan) 8%, transparent) !important;
+  box-shadow: 0 0 0 1px var(--color-accent-primary-dim), 0 0 16px color-mix(in srgb, var(--color-accent-cyan) 12%, transparent);
 }
 
 .dash-card__header {
@@ -533,21 +533,21 @@ onBeforeUnmount(() => {
 }
 
 .dash-badge--easy {
-  background: rgba(61, 153, 112, 0.2);
-  color: #3d9970;
-  border: 1px solid rgba(61, 153, 112, 0.3);
+  background: color-mix(in srgb, var(--color-accent-green) 20%, transparent);
+  color: var(--color-accent-green);
+  border: 1px solid color-mix(in srgb, var(--color-accent-green) 30%, transparent);
 }
 
 .dash-badge--medium {
-  background: rgba(251, 191, 36, 0.2);
-  color: #fbbf24;
-  border: 1px solid rgba(251, 191, 36, 0.3);
+  background: color-mix(in srgb, var(--color-accent-yellow) 20%, transparent);
+  color: var(--color-accent-yellow);
+  border: 1px solid color-mix(in srgb, var(--color-accent-yellow) 30%, transparent);
 }
 
 .dash-badge--hard {
-  background: rgba(244, 63, 94, 0.2);
-  color: #fb7185;
-  border: 1px solid rgba(244, 63, 94, 0.3);
+  background: color-mix(in srgb, var(--color-accent-red) 20%, transparent);
+  color: var(--color-accent-red-light);
+  border: 1px solid color-mix(in srgb, var(--color-accent-red) 30%, transparent);
 }
 
 .dash-card__desc {
@@ -566,7 +566,7 @@ onBeforeUnmount(() => {
   height: 64px;
   margin: 0 -0.25rem 0.75rem;
   border-radius: 8px;
-  background: rgba(0, 0, 0, 0.3);
+  background: var(--color-bg-secondary);
   border: 1px solid var(--color-border-subtle);
   overflow: hidden;
   display: flex;

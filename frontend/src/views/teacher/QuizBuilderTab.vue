@@ -13,17 +13,17 @@
     
     <div class="filters-bar mb-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 w-full">
       <div class="relative w-full sm:w-64">
-        <input v-model="searchQuery" @input="debouncedSearch" type="text" placeholder="Tìm kiếm quiz..." class="appearance-none w-full bg-bg-secondary text-white border border-border-subtle rounded-full pl-10 pr-4 py-2.5 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-accent/30 focus:border-accent/50 transition-all" />
+        <input v-model="searchQuery" @input="debouncedSearch" type="text" placeholder="Tìm kiếm quiz..." class="appearance-none w-full bg-bg-secondary text-text-primary border border-border-subtle rounded-full pl-10 pr-4 py-2.5 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-accent/30 focus:border-accent/50 transition-all" />
         <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4 text-text-muted">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
         </div>
       </div>
       <div class="flex gap-2 w-full sm:w-auto">
-        <select v-model="filterTopic" class="appearance-none bg-bg-secondary text-white border border-border-subtle rounded-full pl-4 pr-10 py-2.5 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-accent/30 focus:border-accent/50 transition-all cursor-pointer">
+        <select v-model="filterTopic" class="appearance-none bg-bg-secondary text-text-primary border border-border-subtle rounded-full pl-4 pr-10 py-2.5 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-accent/30 focus:border-accent/50 transition-all cursor-pointer">
           <option value="">Tất cả chủ đề</option>
           <option v-for="t in topics" :key="t" :value="t">{{ t }}</option>
         </select>
-        <select v-model="filterDifficulty" class="appearance-none bg-bg-secondary text-white border border-border-subtle rounded-full pl-4 pr-10 py-2.5 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-accent/30 focus:border-accent/50 transition-all cursor-pointer">
+        <select v-model="filterDifficulty" class="appearance-none bg-bg-secondary text-text-primary border border-border-subtle rounded-full pl-4 pr-10 py-2.5 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-accent/30 focus:border-accent/50 transition-all cursor-pointer">
           <option value="">Tất cả độ khó</option>
           <option value="1">Dễ (1)</option>
           <option value="2">Dễ (2)</option>
@@ -42,7 +42,7 @@
 
     <div v-else-if="quizzesList.length === 0" class="empty-state">
       <div class="text-5xl mb-4"><BaseIcon name="help-circle" class="w-12 h-12 text-text-muted mx-auto" /></div>
-      <h3 class="text-xl font-bold text-white">Chưa có Quiz nào</h3>
+      <h3 class="text-xl font-bold text-text-primary">Chưa có Quiz nào</h3>
       <p class="text-text-muted mt-2 max-w-md">Tạo Quiz đầu tiên để bắt đầu xây dựng ngân hàng câu hỏi</p>
       <button class="btn-primary mt-6" @click="createNewQuiz">
         <BaseIcon name="plus" class="w-4 h-4 inline mr-1" /> Tạo Quiz đầu tiên
@@ -64,7 +64,7 @@
         <tbody>
           <template v-for="q in quizzesList" :key="q.id">
             <tr @click="toggleQuizAccordion(q.id)" class="cursor-pointer hover:bg-bg-hover transition-colors">
-              <td class="font-bold text-white">
+              <td class="font-bold text-text-primary">
                 <span class="inline-block mr-1 transition-transform duration-200" :style="expandedQuizId === q.id ? 'transform: rotate(90deg)' : ''">▶</span>
                 {{ q.title }}
               </td>
@@ -104,7 +104,7 @@
                       <div class="flex items-start justify-between gap-4 mb-3">
                         <div class="flex items-center gap-3 flex-1 min-w-0">
                           <span class="w-6 h-6 rounded-full bg-accent/30 border border-accent/50 text-accent font-bold text-xs flex items-center justify-center shrink-0">{{ qIdx + 1 }}</span>
-                          <p class="font-semibold text-white truncate">{{ question.question }}</p>
+                          <p class="font-semibold text-text-primary truncate">{{ question.question }}</p>
                         </div>
                         <span class="badge badge-indigo text-xs shrink-0">Câu hỏi</span>
                       </div>

@@ -243,26 +243,26 @@ function onDrop(e: DragEvent) {
   align-items: center;
   gap: 12px;
   padding: 12px 16px;
-  background: rgba(15, 23, 42, 0.4);
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  background: color-mix(in srgb, var(--color-bg-surface) 40%, transparent);
+  border: 1px solid var(--color-border-subtle);
   border-radius: 12px;
   transition: all 0.15s ease;
 }
 
 .module-item-row:hover {
-  border-color: rgba(255, 255, 255, 0.1);
-  background: rgba(15, 23, 42, 0.6);
+  border-color: var(--color-border-default);
+  background: color-mix(in srgb, var(--color-bg-surface) 60%, transparent);
 }
 
 .module-item-row.dragging {
   opacity: 0.4;
   transform: rotate(1deg);
-  box-shadow: 0 8px 24px rgba(99, 102, 241, 0.3);
+  box-shadow: 0 8px 24px color-mix(in srgb, var(--color-accent-primary) 30%, transparent);
 }
 
 .module-item-row.drag-over {
   border-color: var(--color-accent-primary);
-  background: rgba(99, 102, 241, 0.1);
+  background: color-mix(in srgb, var(--color-accent-primary) 10%, transparent);
 }
 
 .module-item-row.hidden {
@@ -277,7 +277,7 @@ function onDrop(e: DragEvent) {
   width: 28px;
   height: 28px;
   border-radius: 6px;
-  color: rgba(255, 255, 255, 0.3);
+  color: var(--color-text-muted);
   cursor: grab;
   flex-shrink: 0;
   background: transparent;
@@ -286,7 +286,7 @@ function onDrop(e: DragEvent) {
 
 .drag-handle:hover {
   color: var(--color-accent-primary-light);
-  background: rgba(99, 102, 241, 0.2);
+  background: color-mix(in srgb, var(--color-accent-primary) 20%, transparent);
 }
 
 .drag-handle:active {
@@ -312,14 +312,14 @@ function onDrop(e: DragEvent) {
   letter-spacing: 0.5px;
 }
 
-.type-badge.badge-lesson { background: rgba(99, 102, 241, 0.2); color: var(--color-accent-primary-light); }
-.type-badge.badge-quiz { background: rgba(168, 85, 247, 0.2); color: var(--color-accent-primary-light); }
-.type-badge.badge-codelab { background: rgba(16, 185, 129, 0.2); color: var(--color-accent-green); }
-.type-badge.badge-default { background: rgba(148, 163, 184, 0.2); color: var(--color-text-muted); }
+.type-badge.badge-lesson { background: color-mix(in srgb, var(--color-accent-primary) 20%, transparent); color: var(--color-accent-primary-light); }
+.type-badge.badge-quiz { background: color-mix(in srgb, var(--color-accent-purple) 20%, transparent); color: var(--color-accent-primary-light); }
+.type-badge.badge-codelab { background: color-mix(in srgb, var(--color-accent-green) 20%, transparent); color: var(--color-accent-green); }
+.type-badge.badge-default { background: color-mix(in srgb, var(--color-text-muted) 20%, transparent); color: var(--color-text-muted); }
 
 .prerequisite-indicator {
   font-size: 10px;
-  color: rgba(255, 255, 255, 0.4);
+  color: var(--color-text-muted);
   font-family: monospace;
 }
 
@@ -338,7 +338,7 @@ function onDrop(e: DragEvent) {
 
 .item-title {
   font-weight: 600;
-  color: white;
+  color: var(--color-text-primary);
   font-size: 14px;
   white-space: nowrap;
   overflow: hidden;
@@ -363,15 +363,15 @@ function onDrop(e: DragEvent) {
   letter-spacing: 0.3px;
 }
 
-.badge-primary { background: rgba(99, 102, 241, 0.2); color: var(--color-accent-primary-light); }
-.badge-warning { background: rgba(245, 158, 11, 0.2); color: var(--color-accent-yellow); }
-.badge-info { background: rgba(14, 165, 233, 0.2); color: var(--color-accent-primary-light); }
-.badge-rose { background: rgba(244, 63, 94, 0.2); color: var(--color-accent-red); }
-.badge-purple { background: rgba(168, 85, 247, 0.2); color: var(--color-accent-primary-light); }
+.badge-primary { background: color-mix(in srgb, var(--color-accent-primary) 20%, transparent); color: var(--color-accent-primary-light); }
+.badge-warning { background: color-mix(in srgb, var(--color-accent-yellow) 20%, transparent); color: var(--color-accent-yellow); }
+.badge-info { background: color-mix(in srgb, var(--color-accent-cyan) 20%, transparent); color: var(--color-accent-primary-light); }
+.badge-rose { background: color-mix(in srgb, var(--color-accent-red) 20%, transparent); color: var(--color-accent-red); }
+.badge-purple { background: color-mix(in srgb, var(--color-accent-purple) 20%, transparent); color: var(--color-accent-primary-light); }
 
 .item-description {
   font-size: 12px;
-  color: rgba(255, 255, 255, 0.5);
+  color: var(--color-text-secondary);
   margin: 0;
   display: -webkit-box;
   -webkit-line-clamp: 1;
@@ -396,9 +396,9 @@ function onDrop(e: DragEvent) {
   white-space: nowrap;
 }
 
-.linked-content-badge.indigo { background: rgba(99, 102, 241, 0.15); color: var(--color-accent-primary-light); }
-.linked-content-badge.purple { background: rgba(168, 85, 247, 0.15); color: var(--color-accent-primary-light); }
-.linked-content-badge.emerald { background: rgba(16, 185, 129, 0.15); color: var(--color-accent-green); }
+.linked-content-badge.indigo { background: color-mix(in srgb, var(--color-accent-primary) 15%, transparent); color: var(--color-accent-primary-light); }
+.linked-content-badge.purple { background: color-mix(in srgb, var(--color-accent-purple) 15%, transparent); color: var(--color-accent-primary-light); }
+.linked-content-badge.emerald { background: color-mix(in srgb, var(--color-accent-green) 15%, transparent); color: var(--color-accent-green); }
 
 .item-actions {
   display: flex;
@@ -416,19 +416,19 @@ function onDrop(e: DragEvent) {
   border-radius: 6px;
   border: none;
   background: transparent;
-  color: rgba(255, 255, 255, 0.4);
+  color: var(--color-text-muted);
   cursor: pointer;
   transition: all 0.15s;
 }
 
 .action-btn:hover {
   color: var(--color-accent-primary-light);
-  background: rgba(99, 102, 241, 0.15);
+  background: color-mix(in srgb, var(--color-accent-primary) 15%, transparent);
 }
 
 .action-btn.active {
   color: var(--color-accent-yellow);
-  background: rgba(245, 158, 11, 0.15);
+  background: color-mix(in srgb, var(--color-accent-yellow) 15%, transparent);
 }
 
 .action-btn.text-text-muted:hover {
@@ -437,7 +437,7 @@ function onDrop(e: DragEvent) {
 
 .action-btn.text-accent-red:hover {
   color: var(--color-accent-red);
-  background: rgba(244, 63, 94, 0.15);
+  background: color-mix(in srgb, var(--color-accent-red) 15%, transparent);
 }
 
 
@@ -465,7 +465,7 @@ function onDrop(e: DragEvent) {
     width: 100%;
     justify-content: flex-end;
     padding-top: 4px;
-    border-top: 1px solid rgba(255, 255, 255, 0.05);
+    border-top: 1px solid var(--color-border-subtle);
     margin-top: 4px;
   }
 }

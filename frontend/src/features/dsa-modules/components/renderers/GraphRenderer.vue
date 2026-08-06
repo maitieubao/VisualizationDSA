@@ -14,29 +14,29 @@
 
     
     <div v-if="frame?.graphNodes?.length" class="absolute top-3 right-3 flex flex-col gap-1 z-10">
-      <button @click="zoomIn" class="w-8 h-8 rounded-lg flex items-center justify-center text-sm font-bold text-text-primary hover:bg-bg-hover transition" style="background:rgba(15,23,42,0.8);backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,0.05)" title="Phóng to" aria-label="Phóng to"><BaseIcon name="plus" class="w-4 h-4" /></button>
-      <button @click="zoomOut" class="w-8 h-8 rounded-lg flex items-center justify-center text-sm font-bold text-text-primary hover:bg-bg-hover transition" style="background:rgba(15,23,42,0.8);backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,0.05)" title="Thu nhỏ" aria-label="Thu nhỏ"><BaseIcon name="minus" class="w-4 h-4" /></button>
-      <button @click="resetView" class="w-8 h-8 rounded-lg flex items-center justify-center text-xs font-bold text-text-primary hover:bg-bg-hover transition" style="background:rgba(15,23,42,0.8);backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,0.05)" title="Đặt lại" aria-label="Đặt lại"><BaseIcon name="refresh-cw" class="w-3.5 h-3.5" /></button>
+      <button @click="zoomIn" class="w-8 h-8 rounded-lg flex items-center justify-center text-sm font-bold text-text-primary hover:bg-bg-hover transition" style="background:color-mix(in srgb,var(--color-bg-surface) 80%,transparent);backdrop-filter:blur(8px);border:1px solid var(--color-border-default)" title="Phóng to" aria-label="Phóng to"><BaseIcon name="plus" class="w-4 h-4" /></button>
+      <button @click="zoomOut" class="w-8 h-8 rounded-lg flex items-center justify-center text-sm font-bold text-text-primary hover:bg-bg-hover transition" style="background:color-mix(in srgb,var(--color-bg-surface) 80%,transparent);backdrop-filter:blur(8px);border:1px solid var(--color-border-default)" title="Thu nhỏ" aria-label="Thu nhỏ"><BaseIcon name="minus" class="w-4 h-4" /></button>
+      <button @click="resetView" class="w-8 h-8 rounded-lg flex items-center justify-center text-xs font-bold text-text-primary hover:bg-bg-hover transition" style="background:color-mix(in srgb,var(--color-bg-surface) 80%,transparent);backdrop-filter:blur(8px);border:1px solid var(--color-border-default)" title="Đặt lại" aria-label="Đặt lại"><BaseIcon name="refresh-cw" class="w-3.5 h-3.5" /></button>
     </div>
 
     
     <div v-if="frame?.graphNodes?.length" class="absolute bottom-3 left-3 flex flex-wrap gap-2 text-[10px] z-10">
-      <span class="flex items-center gap-1 px-2 py-1 rounded-md" style="background:rgba(15,23,42,0.8);backdrop-filter:blur(8px)">
-        <span class="w-2.5 h-2.5 rounded-full" style="background:#FBBF24"></span> Active
+      <span class="flex items-center gap-1 px-2 py-1 rounded-md" style="background:color-mix(in srgb,var(--color-bg-surface) 80%,transparent);backdrop-filter:blur(8px)">
+        <span class="w-2.5 h-2.5 rounded-full" style="background:var(--color-accent-yellow)"></span> Active
       </span>
-      <span class="flex items-center gap-1 px-2 py-1 rounded-md" style="background:rgba(15,23,42,0.8);backdrop-filter:blur(8px)">
-        <span class="w-2.5 h-2.5 rounded-full" style="background:#10B981"></span> Visited
+      <span class="flex items-center gap-1 px-2 py-1 rounded-md" style="background:color-mix(in srgb,var(--color-bg-surface) 80%,transparent);backdrop-filter:blur(8px)">
+        <span class="w-2.5 h-2.5 rounded-full" style="background:var(--color-accent-emerald)"></span> Visited
       </span>
-      <span class="flex items-center gap-1 px-2 py-1 rounded-md" style="background:rgba(15,23,42,0.8);backdrop-filter:blur(8px)">
-        <span class="w-2.5 h-2.5 rounded-full" style="background:#06B6D4"></span> Frontier
+      <span class="flex items-center gap-1 px-2 py-1 rounded-md" style="background:color-mix(in srgb,var(--color-bg-surface) 80%,transparent);backdrop-filter:blur(8px)">
+        <span class="w-2.5 h-2.5 rounded-full" style="background:var(--color-accent-cyan)"></span> Frontier
       </span>
-      <span v-if="hasDistances" class="flex items-center gap-1 px-2 py-1 rounded-md" style="background:rgba(15,23,42,0.8);backdrop-filter:blur(8px)">
+      <span v-if="hasDistances" class="flex items-center gap-1 px-2 py-1 rounded-md" style="background:color-mix(in srgb,var(--color-bg-surface) 80%,transparent);backdrop-filter:blur(8px)">
         <span class="text-accent-cyan font-mono">dist</span> Labels
       </span>
     </div>
 
     
-    <div v-if="showDistanceTable && distances" class="absolute top-3 right-12 text-[10px] p-2 rounded-lg max-h-[40%] overflow-auto z-10" style="background:rgba(15,23,42,0.8);backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,0.05)">
+    <div v-if="showDistanceTable && distances" class="absolute top-3 right-12 text-[10px] p-2 rounded-lg max-h-[40%] overflow-auto z-10" style="background:color-mix(in srgb,var(--color-bg-surface) 80%,transparent);backdrop-filter:blur(8px);border:1px solid var(--color-border-default)">
       <div class="font-bold text-accent mb-1">Distances</div>
       <div v-for="([nodeId, d]) in sortedDistances" :key="nodeId" class="flex justify-between gap-2">
         <span>{{ getName(nodeId) }}</span>
@@ -105,10 +105,10 @@ const tooltipStyle = computed((): CSSProperties => {
   return {
     left: `${hoveredNode.value.x + 24}px`,
     top: `${hoveredNode.value.y - 10}px`,
-    background: 'rgba(15,23,42,0.92)',
+    background: 'var(--glass-bg)',
     backdropFilter: 'blur(12px)',
-    border: '1px solid rgba(255,255,255,0.08)',
-    color: '#FFFFFF',
+    border: '1px solid var(--color-border-default)',
+    color: 'var(--color-text-primary)',
   };
 });
 

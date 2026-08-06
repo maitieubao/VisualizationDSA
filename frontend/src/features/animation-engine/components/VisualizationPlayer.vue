@@ -37,7 +37,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue';
+import { computed, ref, watch, onUnmounted } from 'vue';
 import VisualizationCanvas from './VisualizationCanvas.vue';
 import ExplanationPanel from './ExplanationPanel.vue';
 import AnimControlPanel from './AnimControlPanel.vue';
@@ -88,6 +88,12 @@ function retryQuiz(): void {
 }
 
 function closeQuizSummary(): void { showQuizSummary.value = false; }
+
+// Rời view giữa câu hỏi checkpoint → reset quiz + nhả lock 'quiz'
+// (trước đây để lại activeQuestion + lock → overlay câu cũ hiện lại khi quay vào).
+onUnmounted(() => {
+  quizStore.resetQuizStore();
+});
 </script>
 
 <style scoped>

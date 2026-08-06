@@ -15,7 +15,7 @@
         :class="
           activePreset === key
             ? 'bg-accent text-white border-accent shadow-sm'
-            : 'bg-bg-secondary text-text-muted border-border-subtle hover:text-white hover:bg-bg-surface'
+            : 'bg-bg-secondary text-text-muted border-border-subtle hover:text-text-primary hover:bg-bg-surface'
         "
       >
         {{ tpl.shortName }}

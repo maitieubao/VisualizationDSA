@@ -20,8 +20,8 @@ watch(
   async (value) => {
     if (value && qrCanvas.value) {
       const rootStyle = typeof window !== 'undefined' ? window.getComputedStyle(document.documentElement) : null;
-      const qrDark = rootStyle?.getPropertyValue('--color-text-primary').trim() || '#f8fafc';
-      const qrLight = rootStyle?.getPropertyValue('--color-bg-primary').trim() || '#0f172a';
+      const qrDark = rootStyle?.getPropertyValue('--color-text-primary').trim() || '#000000';
+      const qrLight = rootStyle?.getPropertyValue('--color-bg-primary').trim() || '#ffffff';
 
       await QRCode.toCanvas(qrCanvas.value, value, {
         width: 180,
@@ -48,7 +48,7 @@ watch(
   font-family: 'JetBrains Mono', monospace;
   font-size: 11px;
   font-weight: 600;
-  color: #94a3b8;
+  color: var(--color-text-secondary);
   text-transform: uppercase;
   letter-spacing: 0.06em;
 }
@@ -58,10 +58,10 @@ watch(
   justify-content: center;
   align-items: center;
   padding: 16px;
-  background: rgba(255, 255, 255, 0.03);
-  border: 2px solid #f59e0b;
+  background: var(--color-bg-surface);
+  border: 2px solid var(--color-accent-yellow);
   border-radius: 16px;
-  box-shadow: 0 0 20px rgba(245, 158, 11, 0.15);
+  box-shadow: 0 0 20px color-mix(in srgb, var(--color-accent-yellow) 15%, transparent);
   transition: transform 0.3s ease;
 }
 

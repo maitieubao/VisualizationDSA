@@ -255,8 +255,8 @@ function startSortingTour() {
   margin-bottom: 2rem;
   padding: 2rem;
   border-radius: 16px;
-  background: linear-gradient(135deg, rgba(61, 153, 112, 0.12), rgba(99, 102, 241, 0.08));
-  border: 1px solid rgba(61, 153, 112, 0.2);
+  background: linear-gradient(135deg, color-mix(in srgb, var(--color-accent-primary) 12%, transparent), rgba(99, 102, 241, 0.08));
+  border: 1px solid var(--color-border-accent);
   animation: fadeSlideIn 0.5s ease;
   display: flex;
   flex-direction: column;
@@ -273,14 +273,14 @@ function startSortingTour() {
   width: 56px;
   height: 56px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #3d9970, #6366f1);
+  background: linear-gradient(135deg, var(--color-accent-primary), #6366f1);
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 1.2rem;
   font-weight: 700;
   color: #fff;
-  box-shadow: 0 4px 16px rgba(61, 153, 112, 0.3);
+  box-shadow: 0 4px 16px color-mix(in srgb, var(--color-accent-primary) 30%, transparent);
 }
 
 .greeting-banner__title {
@@ -291,7 +291,7 @@ function startSortingTour() {
 }
 
 .greeting-banner__name {
-  background: linear-gradient(135deg, #3d9970, #a855f7);
+  background: linear-gradient(135deg, var(--color-accent-primary), #a855f7);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -347,15 +347,15 @@ function startSortingTour() {
   gap: 0.75rem;
   padding: 1rem 1.25rem;
   border-radius: 12px;
-  background: rgba(255, 255, 255, 0.04);
+  background: color-mix(in srgb, var(--color-bg-surface) 4%, transparent);
   backdrop-filter: blur(16px);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  border: 1px solid var(--color-border-default);
   transition: all 0.2s ease;
 }
 
 .stat-card:hover {
-  background: rgba(255, 255, 255, 0.06);
-  border-color: rgba(255, 255, 255, 0.12);
+  background: var(--color-bg-hover);
+  border-color: var(--color-border-strong);
   transform: translateY(-1px);
 }
 
@@ -375,8 +375,8 @@ function startSortingTour() {
 }
 
 .stat-card__icon--completed {
-  background: rgba(16, 185, 129, 0.15);
-  color: #34d399;
+  background: color-mix(in srgb, var(--color-accent-emerald) 15%, transparent);
+  color: var(--color-accent-emerald-light);
 }
 
 .stat-card__icon--xp {
@@ -413,9 +413,9 @@ function startSortingTour() {
 }
 
 .dash-card {
-  background: rgba(255, 255, 255, 0.04);
+  background: color-mix(in srgb, var(--color-bg-surface) 4%, transparent);
   backdrop-filter: blur(16px);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  border: 1px solid var(--color-border-default);
   border-radius: 12px;
   padding: 1.5rem;
 }
@@ -436,7 +436,7 @@ function startSortingTour() {
 
 .quickstart-intro {
   font-size: 0.85rem;
-  color: var(--color-text-tertiary, #64748b);
+  color: var(--color-text-muted);
   margin-bottom: 1rem;
 }
 
@@ -452,15 +452,15 @@ function startSortingTour() {
   gap: 0.75rem;
   padding: 0.875rem 1rem;
   border-radius: 10px;
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.06);
+  background: color-mix(in srgb, var(--color-bg-surface) 3%, transparent);
+  border: 1px solid var(--color-border-subtle);
   text-decoration: none;
   transition: all 0.2s ease;
 }
 
 .quickstart-item:hover {
-  background: rgba(61, 153, 112, 0.08);
-  border-color: rgba(61, 153, 112, 0.2);
+  background: color-mix(in srgb, var(--color-accent-primary) 8%, transparent);
+  border-color: color-mix(in srgb, var(--color-accent-primary) 20%, transparent);
   transform: translateY(-1px);
 }
 
@@ -469,8 +469,8 @@ function startSortingTour() {
   height: 28px;
   min-width: 28px;
   border-radius: 8px;
-  background: linear-gradient(135deg, rgba(61, 153, 112, 0.2), rgba(99, 102, 241, 0.15));
-  color: #3d9970;
+  background: linear-gradient(135deg, color-mix(in srgb, var(--color-accent-primary) 20%, transparent), rgba(99, 102, 241, 0.15));
+  color: var(--color-accent-primary);
   font-size: 0.75rem;
   font-weight: 700;
   display: flex;
@@ -493,7 +493,7 @@ function startSortingTour() {
 
 .quickstart-item__desc {
   font-size: 0.7rem;
-  color: var(--color-text-tertiary, #64748b);
+  color: var(--color-text-muted);
   line-height: 1.3;
 }
 
@@ -504,7 +504,7 @@ function startSortingTour() {
 }
 
 .quickstart-item:hover .quickstart-item__arrow {
-  color: #3d9970;
+  color: var(--color-accent-primary);
 }
 
 .quickstart-tour-btn {
@@ -513,9 +513,9 @@ function startSortingTour() {
   border-radius: 8px;
   font-size: 0.8rem;
   font-weight: 600;
-  color: #3d9970;
-  background: rgba(61, 153, 112, 0.1);
-  border: 1px solid rgba(61, 153, 112, 0.2);
+  color: var(--color-accent-primary);
+  background: color-mix(in srgb, var(--color-accent-primary) 10%, transparent);
+  border: 1px solid color-mix(in srgb, var(--color-accent-primary) 20%, transparent);
   cursor: pointer;
   transition: all 0.2s ease;
   display: flex;
@@ -524,8 +524,8 @@ function startSortingTour() {
 }
 
 .quickstart-tour-btn:hover {
-  background: rgba(61, 153, 112, 0.18);
-  box-shadow: 0 0 12px rgba(61, 153, 112, 0.15);
+  background: color-mix(in srgb, var(--color-accent-primary) 18%, transparent);
+  box-shadow: 0 0 12px color-mix(in srgb, var(--color-accent-primary) 15%, transparent);
 }
 
 .xp-card {
@@ -543,14 +543,14 @@ function startSortingTour() {
   width: 100%;
   height: 8px;
   border-radius: 4px;
-  background: rgba(255, 255, 255, 0.06);
+  background: var(--color-bg-hover);
   overflow: hidden;
 }
 
 .xp-progress__fill {
   height: 100%;
   border-radius: 4px;
-  background: linear-gradient(90deg, #3d9970, #6366f1);
+  background: linear-gradient(90deg, var(--color-accent-primary), #6366f1);
   transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
@@ -569,12 +569,12 @@ function startSortingTour() {
 
 .xp-progress__xp {
   font-size: 0.75rem;
-  color: var(--color-text-tertiary, #64748b);
+  color: var(--color-text-muted);
 }
 
 .xp-card__hint {
   font-size: 0.8rem;
-  color: var(--color-text-tertiary, #64748b);
+  color: var(--color-text-muted);
   margin-top: 0.5rem;
 }
 
@@ -593,9 +593,9 @@ function startSortingTour() {
   align-items: center;
   gap: 0.5rem;
   padding: 0.5rem 0.75rem;
-  background: rgba(255, 255, 255, 0.06);
+  background: var(--color-bg-hover);
   border-radius: 8px;
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  border: 1px solid var(--color-border-default);
 }
 
 .badge-item__icon {
@@ -609,7 +609,7 @@ function startSortingTour() {
 
 .badges-empty {
   font-size: 0.85rem;
-  color: var(--color-text-tertiary, #64748b);
+  color: var(--color-text-muted);
   font-style: italic;
 }
 
@@ -632,7 +632,7 @@ function startSortingTour() {
 }
 
 .quicklink:hover {
-  background: rgba(255, 255, 255, 0.06);
+  background: var(--color-bg-hover);
 }
 
 .quicklink--teacher {

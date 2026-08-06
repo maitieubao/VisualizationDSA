@@ -28,13 +28,13 @@
       </div>
     </div>
 
-    <div class="r-explain" v-html="parseEmojiToSvg(miniStepExplanation)"></div>
+    <div class="r-explain" v-html="parseEmojiToSvg(escapeHtmlText(miniStepExplanation))"></div>
   </div>
 </template>
 
 <script setup lang="ts">
 import { useRadixSortVisualizer } from '../../composables/useRadixSortVisualizer';
-import { parseEmojiToSvg } from '../../../../utils/emojiParser';
+import { parseEmojiToSvg, escapeHtmlText } from '../../../../utils/emojiParser';
 import type { SortFrame } from '../../types/sorting.types';
 
 const props = defineProps<{ frame: SortFrame | null }>();
@@ -64,11 +64,11 @@ const {
 }
 .r-title    { font-size: 14.5px; font-weight: 700; color: var(--color-text-primary); }
 .r-phase    { font-size: 11.5px; font-family: var(--font-mono); font-weight: 700; padding: 3px 9px; border-radius: 999px; border: 1px solid; text-transform: uppercase; white-space: nowrap; flex-shrink: 0; }
-.r-phase--dist { background: var(--color-accent-yellow-dim); color: var(--color-accent-yellow); border-color: rgba(251, 191, 36, 0.3); }
-.r-phase--coll { background: var(--color-accent-green-dim);  color: var(--color-accent-green); border-color: rgba(16, 185, 129, 0.3); }
+.r-phase--dist { background: var(--color-accent-yellow-dim); color: var(--color-accent-yellow); border-color: color-mix(in srgb, var(--color-accent-yellow) 30%, transparent); }
+.r-phase--coll { background: var(--color-accent-green-dim);  color: var(--color-accent-green); border-color: color-mix(in srgb, var(--color-accent-emerald) 30%, transparent); }
 
 .r-chip  { font-size: 11px; font-family: var(--font-mono); font-weight: 700; padding: 2px 6px; border-radius: 4px; border: 1px solid var(--color-border-subtle); background: var(--color-bg-primary); color: var(--color-text-muted); transition: all .3s; }
-.r-chip--on { background: var(--color-accent-cyan-dim); color: var(--color-accent-cyan); border-color: rgba(61, 153, 112, 0.35); box-shadow: 0 0 6px var(--color-accent-cyan-glow); }
+.r-chip--on { background: var(--color-accent-cyan-dim); color: var(--color-accent-cyan); border-color: color-mix(in srgb, var(--color-accent-green) 35%, transparent); box-shadow: 0 0 6px var(--color-accent-cyan-glow); }
 
 .r-arrow {
   color: var(--color-text-muted);

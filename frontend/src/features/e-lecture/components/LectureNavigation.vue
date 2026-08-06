@@ -45,20 +45,20 @@ defineEmits<{ prev: []; next: []; exit: []; goTo: [number] }>();
 </script>
 
 <style scoped>
-.nav-area { display: flex; flex-direction: column; gap: 12px; padding-top: 8px; border-top: 1px solid rgba(255,255,255,0.06); }
+.nav-area { display: flex; flex-direction: column; gap: 12px; padding-top: 8px; border-top: 1px solid var(--color-border-subtle); }
 .pagination-dots { display: flex; justify-content: center; gap: 8px; }
-.dot { width: 8px; height: 8px; border-radius: 50%; border: none; background: #334155; cursor: pointer; transition: all .2s; padding: 0; }
-.dot:hover:not(:disabled) { background: #64748b; transform: scale(1.3); }
+.dot { width: 8px; height: 8px; border-radius: 50%; border: none; background: var(--color-text-disabled); cursor: pointer; transition: all .2s; padding: 0; }
+.dot:hover:not(:disabled) { background: var(--color-text-secondary); transform: scale(1.3); }
 .dot:disabled { cursor: not-allowed; }
-.dot-active  { background: #06b6d4; box-shadow: 0 0 8px rgba(6,182,212,0.5); transform: scale(1.3); }
-.dot-visited { background: #475569; }
+.dot-active  { background: var(--color-accent-cyan); box-shadow: 0 0 8px color-mix(in srgb, var(--color-accent-cyan) 50%, transparent); transform: scale(1.3); }
+.dot-visited { background: var(--color-text-muted); }
 .nav-buttons { display: flex; justify-content: space-between; gap: 8px; }
-.nav-btn { display: flex; align-items: center; gap: 6px; padding: 8px 16px; border-radius: 10px; font-size: 12px; font-weight: 600; cursor: pointer; transition: all .15s; border: 1px solid #334155; }
+.nav-btn { display: flex; align-items: center; gap: 6px; padding: 8px 16px; border-radius: 10px; font-size: 12px; font-weight: 600; cursor: pointer; transition: all .15s; border: 1px solid var(--color-border-strong); }
 .nav-btn:disabled { opacity: .3; cursor: not-allowed; }
 .nav-btn-back   { background: color-mix(in srgb, var(--color-bg-primary) 80%, transparent); color: var(--color-text-secondary); }
 .nav-btn-back:hover:not(:disabled) { background: var(--color-bg-hover); color: var(--color-text-primary); }
-.nav-btn-next   { background: rgba(6,182,212,.15); border-color: rgba(6,182,212,.3); color: #67e8f9; margin-left: auto; }
-.nav-btn-next:hover:not(:disabled) { background: rgba(6,182,212,.25); border-color: rgba(6,182,212,.5); }
-.nav-btn-finish { background: rgba(16,185,129,.15); border-color: rgba(16,185,129,.3); color: #6ee7b7; margin-left: auto; }
-.nav-btn-finish:hover { background: rgba(16,185,129,.25); border-color: rgba(16,185,129,.5); }
+.nav-btn-next   { background: color-mix(in srgb, var(--color-accent-cyan) 15%, transparent); border-color: color-mix(in srgb, var(--color-accent-cyan) 30%, transparent); color: var(--color-accent-cyan-light); margin-left: auto; }
+.nav-btn-next:hover:not(:disabled) { background: color-mix(in srgb, var(--color-accent-cyan) 25%, transparent); border-color: color-mix(in srgb, var(--color-accent-cyan) 50%, transparent); }
+.nav-btn-finish { background: color-mix(in srgb, var(--color-accent-emerald) 15%, transparent); border-color: color-mix(in srgb, var(--color-accent-emerald) 30%, transparent); color: var(--color-accent-emerald-light); margin-left: auto; }
+.nav-btn-finish:hover { background: color-mix(in srgb, var(--color-accent-emerald) 25%, transparent); border-color: color-mix(in srgb, var(--color-accent-emerald) 50%, transparent); }
 </style>

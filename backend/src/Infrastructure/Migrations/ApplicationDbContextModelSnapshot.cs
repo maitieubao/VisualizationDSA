@@ -516,6 +516,9 @@ namespace Infrastructure.Migrations
                     b.Property<int>("MaxRuntimeMs")
                         .HasColumnType("INTEGER");
 
+                    b.Property<Guid?>("OwnerId")
+                        .HasColumnType("TEXT");
+
                     b.Property<string>("Tags")
                         .IsRequired()
                         .HasColumnType("TEXT");

@@ -35,29 +35,29 @@ const store = useExportShareStore();
 .progress-text {
   font-family: 'JetBrains Mono', monospace;
   font-size: 11px;
-  color: #94a3b8;
+  color: var(--color-text-secondary);
 }
 
 .progress-percent {
   font-family: 'JetBrains Mono', monospace;
   font-size: 13px;
   font-weight: 700;
-  color: #10b981;
-  text-shadow: 0 0 8px rgba(16, 185, 129, 0.3);
+  color: var(--color-accent-emerald);
+  text-shadow: 0 0 8px color-mix(in srgb, var(--color-accent-emerald) 30%, transparent);
 }
 
 .export-progress-bar-container {
   width: 100%;
   height: 8px;
-  background: rgba(255, 255, 255, 0.08);
+  background: var(--color-bg-hover);
   border-radius: 4px;
   overflow: hidden;
 }
 
 .export-progress-bar-fill {
   height: 100%;
-  background: #10b981;
-  box-shadow: 0 0 10px rgba(16, 185, 129, 0.4);
+  background: var(--color-accent-emerald);
+  box-shadow: 0 0 10px color-mix(in srgb, var(--color-accent-emerald) 40%, transparent);
   transition: width 0.3s ease-out;
   border-radius: 4px;
 }

@@ -3,6 +3,7 @@ using Moq;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging.Abstractions;
 using VisualizationDSA.Application.DTOs;
 using VisualizationDSA.Application.Interfaces;
 using VisualizationDSA.Application.Services;
@@ -31,7 +32,7 @@ namespace VisualizationDSA.UnitTests.Services
             _mockProgressEngine = new Mock<IProgressRuleEngine>();
 
             _mockUow.Setup(u => u.Quizzes).Returns(_mockQuizRepo.Object);
-            _service = new QuizService(_mockUow.Object, _mockGamification.Object, _mockDbContext.Object, _mockProgressEngine.Object);
+            _service = new QuizService(_mockUow.Object, _mockGamification.Object, _mockDbContext.Object, _mockProgressEngine.Object, NullLogger<QuizService>.Instance);
         }
 
         [Fact]

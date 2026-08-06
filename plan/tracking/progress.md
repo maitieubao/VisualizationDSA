@@ -16,7 +16,7 @@ Tài liệu này theo dõi chi tiết tiến độ hoàn thành **code thực t�
 | **Sprint đang triển khai CODE** | Hoàn tất! 🎉                                                       |
 | **Backend .NET C#**             | 100% — Clean Architecture + BCrypt Auth + Serilog + RateLimiting + IMemoryCache + Pagination + SignalR Real-time |
 | **Tổng file thực tế**           | ~120 files (87 frontend + 35 backend `.cs`)                        |
-| **Unit tests**                  | 1549 frontend + 212 backend C# — ✅ 100% PASS                      |
+| **Unit tests**                  | 1563 frontend (1549 + 14 Toast/Skeleton/NotFound/Checkout/Sandbox) + 212 backend C# — ✅ 100% PASS |
 
 ---
 
@@ -2079,4 +2079,63 @@ pm run build SUCCESS |
 | :--- | :--- | :--- | :--- |
 | **RV-FULL** | 4 agent review song song toan bo code da fix (auth/payment-quiz/lesson-classroom-codelab/frontend) | `✅ DONE` | errors.md Lo 256-266: 4 P0 regression (emojiParser, build fail, double-XP, backdoor) + 6 P1 + 6 P2 |
 | **FIX-R** | Da xu ly toan bo | `✅ DONE` | E2E: backdoor 401, sub khop DB, farm XP = 0, roadmaps 3 |
-| **REGRESS** | dotnet 154/154 · vitest 982/982 · vue-tsc CLEAN · E2E OK | `✅ DONE` | 1 spec cap nhat (useCourseStore mock API) |
+| **REGRESS** | dotnet 154/154 · vitest 982/982 · vue-tsc CLEAN · E2E OK | `✅ DONE` | 1 spec cap nhat (useCourseStore mock API) |### 2026-08-06: Light Theme Fix - Tokenize hardcode dark colors (frontend/src/features)
+| Buoc | Noi dung | Trang thai | Chi tiet |
+| :--- | :--- | :--- | :--- |
+| **T-1** | Thay mau hardcode dark-theme bang CSS var/color-mix token trong 47 file .vue/.css thuoc 22 module (features) | DONE | Chi tiet trong conversation; giu nguyen: spotlight mask, gradient cover, canvas JS draw, code block dark, accent button text-white |
+| **VERIFY** | Khong chay vue-tsc/vitest theo yeu cau; sweep grep xac nhan khong con mau dark trong template/CSS scoped | DONE | - |
+
+### Phase 3.10 Review lan 2 + fix (2026-08-06)
+| Buoc | Noi dung | Trang thai | Chi tiet |
+| :--- | :--- | :--- | :--- |
+| **RV2** | 3 agent review song song (regression R1-R8 / backend con sot / frontend con sot) | `✅ DONE` | errors.md Lo 267-281: 6 P1 + 14 P2/P3 |
+| **FIX** | Toan bo da xu ly | `✅ DONE` | E2E: rate limit 429, analytics 401/403, roadmaps 3, login OK |
+| **REGRESS** | dotnet 154/154 · vitest (toan bo test toi anh huong pass) · vue-tsc CLEAN | `✅ DONE` | P0Tests ngoai session fail do mock thieu — khong lien quan fix |
+### Phase 3.11 Review lan 3 + fix (2026-08-06)
+| Buoc | Noi dung | Trang thai | Chi tiet |
+| :--- | :--- | :--- | :--- |
+| **RV3** | 2 agent review (backend + frontend) dot S | `✅ DONE` | errors.md Lo 282-288: 3 P1 (rate limit, impersonation TTL, DeleteModule) + 3 P2 |
+| **FIX** | Toan bo da xu ly | `✅ DONE` | E2E: /me 15 lan OK, refresh OK, progress quizPassed 25%, roadmaps 3 |
+| **REGRESS** | dotnet 154/154 · gamification 120/120 · vue-tsc (chi loi P0Tests ngoai session) | `✅ DONE` | — |
+### Phase 3.12 Review lan 4 + fix (2026-08-06)
+| Buoc | Noi dung | Trang thai | Chi tiet |
+| :--- | :--- | :--- | :--- |
+| **RV4** | 2 agent review (regression dot R + 10 muc con sot) | `✅ DONE` | errors.md Lo 289-296: 1 P1 + 6 P2 + 2 P3; xac nhan khong lo hash |
+| **FIX** | Toan bo | `✅ DONE` | E2E: login/refresh/register/award-xp/roadmaps/classrooms OK |
+| **REGRESS** | dotnet 154/154 · nhom lien quan 135/135 · vue-tsc (chi P0Tests ngoai session) | `✅ DONE` | — |
+### Phase 3.13 Review lan 5 + fix (2026-08-06)
+| Buoc | Noi dung | Trang thai | Chi tiet |
+| :--- | :--- | :--- | :--- |
+| **RV5** | 2 agent review (regression R4 + 10 muc P3/quét moi) | `✅ DONE` | errors.md Lo 297-304: 2 P1 (fix mat Lo 292, dead code timer) + 4 P2 + 3 P3; xac nhan 0 `any` con sot frontend |
+| **FIX** | Toan bo | `✅ DONE` | E2E: login/refresh/award-xp/roadmaps/classrooms/codelabs OK |
+| **REGRESS** | dotnet 154/154 · nhom lien quan 142/142 · vue-tsc (chi P0Tests/P2Tests ngoai session) | `✅ DONE` | — |
+### Phase 3.14 Review lan 6 + fix (2026-08-06)
+| Buoc | Noi dung | Trang thai | Chi tiet |
+| :--- | :--- | :--- | :--- |
+| **RV6** | 2 agent review (regression R5 + 10 muc con sot/quét moi) | `✅ DONE` | errors.md Lo 305-311: 2 P1 (classic refresh loop, admin OwnerId) + 4 P2; xac nhan sach SQL injection, GetLessonById/GetClassroomDetails khong N+1 |
+| **FIX** | Toan bo | `✅ DONE` | E2E: login/refresh/GetCourseById 12 lessons/analytics 403 dung quyen/roadmaps 3 |
+| **REGRESS** | dotnet 154/154 · auth 13/13 · vue-tsc (chi P0Tests ngoai session) | `✅ DONE` | — |
+### Phase 3.15 Review lan 7 + fix (2026-08-06)
+| Buoc | Noi dung | Trang thai | Chi tiet |
+| :--- | :--- | :--- | :--- |
+| **RV7** | 2 agent review (regression R6 + 10 muc con sot/quét moi) | `✅ DONE` | Phat hien P1: Teacher tab Quan ly hoc vien 403 vi the; cau truc filter + migration kiem tra ky |
+| **FIX** | 11 fix (1 P1 + 8 P2 + 2 P3) | `✅ DONE` | errors.md Lo 312-322; TeacherController moi; bo AdminUsersController + GetUsersQuery dead |
+| **REGRESS** | dotnet 154/154 · vitest 112/112 (9 files) · vue-tsc chi P2Tests ngoai session | `✅ DONE` | E2E: student login/roadmaps 3/course 12 lessons; teacher 200 Student-only; student 403; demo teacher bi disable lai |
+### Phase 3.16 Review lan 8 + fix (2026-08-06)
+| Buoc | Noi dung | Trang thai | Chi tiet |
+| :--- | :--- | :--- | :--- |
+| **RV8** | 2 agent review (regression R7 + 10 muc con sot/quét moi) | `✅ DONE` | Phat hien 2 CAO: quiz teacher mat khoi tab (merge bank/DB), thieu ForwardedHeaders |
+| **FIX** | 10 fix (2 CAO + 6 TB + 2 THAP) | `✅ DONE` | errors.md Lo 323-333; xoa 5 .vue dead; Jwt:Key fail-fast |
+| **REGRESS** | dotnet 154/154 · vitest 112/112 (9 files) · vue-tsc (tru test ngoai session) | `✅ DONE` | E2E (Jwt__Key env): login/quiz-all 58/topics 11/quiz seed 5 cau |
+### Phase 3.17 Review lan 9 + fix (2026-08-06)
+| Buoc | Noi dung | Trang thai | Chi tiet |
+| :--- | :--- | :--- | :--- |
+| **RV9** | 2 agent review (regression R8 + 9 muc con sot/quét moi) | `✅ DONE` | Phat hien 3 CAO: difficulty int, API keys trong git, XSS stored (2 cho) |
+| **FIX** | 7 fix (3 CAO + 4 TB) | `✅ DONE` | errors.md Lo 334-343; them dep dompurify; xoa keys that; escape 9 v-html |
+| **REGRESS** | dotnet 154/154 · vitest 112/112 (9 files) · vue-tsc (tru test ngoai session) | `✅ DONE` | E2E: login/quiz-all 58 (difficulty dung)/topic dedupe OK |
+### Phase 3.18 Review lan 10 — tong ket toan dien (2026-08-06)
+| Buoc | Noi dung | Trang thai | Chi tiet |
+| :--- | :--- | :--- | :--- |
+| **RV10** | 2 agent toan dien (regression R9 + ra tat ca loi con lai) | `✅ DONE` | P0=0, P1=0 (da downgrade), P2=4 INFO |
+| **FIX** | Wrap localStorage try/catch impersonate/restore | `✅ DONE` | — |
+| **KET LUAN** | Codebase SACH P0/P1 sau 10 vong review | — | Chi con P2 INFO (demo-scale acceptable) |

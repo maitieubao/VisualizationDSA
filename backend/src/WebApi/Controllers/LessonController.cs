@@ -169,11 +169,19 @@ namespace VisualizationDSA.WebApi.Controllers
                 .Where(m => m.LessonId == lessonId && !m.IsDeleted)
                 .ToListAsync();
 
+            // Khử N+1: gom toàn bộ progress trong 1 query.
+            var moduleItemIds = moduleItems.Select(m => m.Id).ToList();
+            var existingProgress = moduleItemIds.Count > 0
+                ? (await _dbContext.UserModuleItemProgresses
+                    .Where(p => p.UserId == userId && moduleItemIds.Contains(p.ModuleItemId))
+                    .ToListAsync())
+                    .ToDictionary(p => p.ModuleItemId)
+                : new Dictionary<Guid, UserModuleItemProgress>();
+
             foreach (var mi in moduleItems)
             {
-                var itemProgress = await _dbContext.UserModuleItemProgresses
-                    .FirstOrDefaultAsync(p => p.UserId == userId && p.ModuleItemId == mi.Id);
-                    
+                existingProgress.TryGetValue(mi.Id, out var itemProgress);
+
                 if (itemProgress == null)
                 {
                     itemProgress = new UserModuleItemProgress(userId, mi.Id);
@@ -251,6 +259,12 @@ namespace VisualizationDSA.WebApi.Controllers
             var userIdStr = JwtHelper.ExtractSubFromToken(Request);
             if (userIdStr == null || !Guid.TryParse(userIdStr, out var userId)) return Unauthorized();
 
+            // Gate thống nhất: không ghi progress vào bài Draft/premium không được phép.
+            var moduleItem = await _dbContext.ModuleItems.Include(m => m.Module).ThenInclude(m => m.Course).Include(m => m.Lesson).FirstOrDefaultAsync(i => i.LessonId == lessonId);
+            if (moduleItem?.Lesson == null) return NotFound(new { error = "LESSON_NOT_FOUND", message = "Không tìm thấy bài học." });
+            var accessBlock = await CheckLessonAccessAsync(moduleItem.Lesson, moduleItem.Module?.Course);
+            if (accessBlock != null) return accessBlock;
+
             var progress = await _dbContext.UserLessonProgresses
                 .FirstOrDefaultAsync(p => p.UserId == userId && p.LessonId == lessonId);
 
@@ -270,6 +284,12 @@ namespace VisualizationDSA.WebApi.Controllers
         [RequireJwtRole]
         public async Task<IActionResult> GetLessonComments(Guid lessonId, [FromQuery] string? search = null)
         {
+            // Gate thống nhất — không xem comment bài Draft/premium không được phép.
+            var moduleItem = await _dbContext.ModuleItems.Include(m => m.Module).ThenInclude(m => m.Course).Include(m => m.Lesson).FirstOrDefaultAsync(i => i.LessonId == lessonId);
+            if (moduleItem?.Lesson == null) return NotFound(new { error = "LESSON_NOT_FOUND", message = "Không tìm thấy bài học." });
+            var accessBlock = await CheckLessonAccessAsync(moduleItem.Lesson, moduleItem.Module?.Course);
+            if (accessBlock != null) return accessBlock;
+
             var query = _dbContext.LessonComments.Where(c => c.LessonId == lessonId && !c.IsDeleted);
 
             if (!string.IsNullOrWhiteSpace(search))
@@ -307,12 +327,19 @@ namespace VisualizationDSA.WebApi.Controllers
             var userIdStr = JwtHelper.ExtractSubFromToken(Request);
             if (userIdStr == null || !Guid.TryParse(userIdStr, out var userId)) return Unauthorized();
 
+            // Gate thống nhất — không comment bài Draft/premium không được phép.
+            var moduleItem = await _dbContext.ModuleItems.Include(m => m.Module).ThenInclude(m => m.Course).Include(m => m.Lesson).FirstOrDefaultAsync(i => i.LessonId == lessonId);
+            if (moduleItem?.Lesson == null) return NotFound(new { error = "LESSON_NOT_FOUND", message = "Không tìm thấy bài học." });
+            var accessBlock = await CheckLessonAccessAsync(moduleItem.Lesson, moduleItem.Module?.Course);
+            if (accessBlock != null) return accessBlock;
+
             if (string.IsNullOrWhiteSpace(dto.Content) || dto.Content.Length > 2000)
                 return BadRequest(new { error = "INVALID_CONTENT", message = "Nội dung bình luận không hợp lệ." });
 
             if (dto.ParentId.HasValue)
             {
-                var parentExists = await _dbContext.LessonComments.AnyAsync(c => c.Id == dto.ParentId.Value);
+                // Reply phải thuộc CÙNG bài học và chưa bị xóa.
+                var parentExists = await _dbContext.LessonComments.AnyAsync(c => c.Id == dto.ParentId.Value && c.LessonId == lessonId && !c.IsDeleted);
                 if (!parentExists)
                     return NotFound(new { error = "PARENT_COMMENT_NOT_FOUND", message = "Không tìm thấy bình luận gốc." });
             }

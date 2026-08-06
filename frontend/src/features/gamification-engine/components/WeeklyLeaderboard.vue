@@ -69,18 +69,18 @@ function xpClass(rank: number): string {
 
 <style scoped>
 .leaderboard-podium-first {
-  border: 1px solid rgba(245, 158, 11, 0.3);
-  box-shadow: 0 0 20px rgba(245, 158, 11, 0.1);
-  background: linear-gradient(180deg, rgba(245, 158, 11, 0.05) 0%, transparent 100%);
+  border: 1px solid color-mix(in srgb, var(--color-accent-yellow) 30%, transparent);
+  box-shadow: 0 0 20px color-mix(in srgb, var(--color-accent-yellow) 10%, transparent);
+  background: linear-gradient(180deg, color-mix(in srgb, var(--color-accent-yellow) 5%, transparent) 0%, transparent 100%);
 }
 
 .leaderboard-podium-second {
-  border: 1px solid rgba(148, 163, 184, 0.2);
-  box-shadow: 0 0 15px rgba(148, 163, 184, 0.08);
+  border: 1px solid color-mix(in srgb, var(--color-text-secondary) 20%, transparent);
+  box-shadow: 0 0 15px color-mix(in srgb, var(--color-text-secondary) 8%, transparent);
 }
 
 .leaderboard-podium-third {
-  border: 1px solid rgba(180, 83, 9, 0.2);
-  box-shadow: 0 0 10px rgba(180, 83, 9, 0.06);
+  border: 1px solid color-mix(in srgb, var(--color-accent-yellow) 20%, transparent);
+  box-shadow: 0 0 10px color-mix(in srgb, var(--color-accent-yellow) 6%, transparent);
 }
 </style>

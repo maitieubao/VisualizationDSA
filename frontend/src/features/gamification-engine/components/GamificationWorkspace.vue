@@ -3,7 +3,7 @@
     
     <div class="flex items-center justify-between">
       <div class="flex items-center gap-3">
-        <div class="w-8 h-8 rounded-lg bg-accent flex items-center justify-center"><BaseIcon name="trophy" class="w-4 h-4 text-text-primary" /></div>
+        <div class="w-8 h-8 rounded-lg bg-accent flex items-center justify-center"><BaseIcon name="trophy" class="w-4 h-4 text-white" /></div>
         <div>
           <h2 class="text-base font-bold text-text-primary">Gamification Engine</h2>
           <p class="text-[10px] text-text-secondary">Streak • Badges • Leaderboard</p>

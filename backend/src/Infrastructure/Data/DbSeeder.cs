@@ -755,10 +755,22 @@ namespace VisualizationDSA.Infrastructure.Data
                 else
                 {
                     existingUser.SetRole(role);
+                    if (_includeDemoAdmin && IsDevelopmentCredential(email))
+                    {
+                        existingUser.SetActiveStatus(true);
+                        existingUser.ChangePassword(HashPasswordSHA256(password));
+                    }
                 }
             }
 
             await _context.SaveChangesAsync();
+        }
+
+        private static bool IsDevelopmentCredential(string email)
+        {
+            return email.Equals("admin@visualizationdsa.dev", StringComparison.OrdinalIgnoreCase)
+                || email.Equals("admin@gmail.com", StringComparison.OrdinalIgnoreCase)
+                || email.Equals("demo@visualizationdsa.dev", StringComparison.OrdinalIgnoreCase);
         }
 
         private static string HashPasswordSHA256(string password)

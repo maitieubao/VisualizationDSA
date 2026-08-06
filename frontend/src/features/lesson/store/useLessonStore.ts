@@ -79,10 +79,18 @@ export const useLessonStore = defineStore('lessonStudy', () => {
   });
 
   const totalXpEarned = computed(() => xpAwarded.value);
-  // Bài không có CodeLab: hoàn thành khi quiz đạt; ngược lại cần codelab.
-  const isLessonComplete = computed(() =>
-    codelabCompleted.value || (!currentLesson.value?.codelabTask && quizPassed.value)
-  );
+  // Bài không có CodeLab: hoàn thành khi quiz đạt; bài chỉ lý thuyết (không quiz, không codelab):
+  // hoàn thành khi xem xong visualizer. Ngược lại cần codelab.
+  const isLessonComplete = computed(() => {
+    if (codelabCompleted.value) return true;
+    const lesson = currentLesson.value;
+    if (!lesson) return false;
+    if (!lesson.codelabTask && quizPassed.value) return true;
+    // Bài không có quiz nào để làm (quizQuestions rỗng — kể cả khi quizId có nhưng tải lỗi):
+    // hoàn thành khi xem hết visualizer (không thể chấm quiz không tải được).
+    if (!lesson.codelabTask && !(lesson.quizQuestions?.length) && hasWatchedVisualizer.value) return true;
+    return false;
+  });
 
   const getStorageKey = (lessonId: string) => `lesson_progress_${lessonId}`;
 
@@ -144,6 +152,7 @@ export const useLessonStore = defineStore('lessonStudy', () => {
         hasWatchedVisualizer: hasWatchedVisualizer.value,
         quizScore: quizScore.value,
         bestScore: bestScore.value,
+        quizPassed: quizPassed.value,
         codelabCompleted: codelabCompleted.value,
         xpAwarded: xpAwarded.value,
       };
@@ -244,7 +253,11 @@ export const useLessonStore = defineStore('lessonStudy', () => {
         };
       } catch (e) {
         console.warn('Không tải được bài học từ server, dùng dữ liệu local:', e);
-        if (!currentLesson.value) {
+        // 403 = bài yêu cầu Premium — thông điệp rõ ràng thay vì "Không tìm thấy".
+        const httpStatus = (e as { status?: number } | null)?.status;
+        if (httpStatus === 403) {
+          error.value = 'Bài học này yêu cầu tài khoản Premium để truy cập.';
+        } else if (!currentLesson.value) {
           error.value = 'Không tìm thấy bài học';
         } else {
           isOfflineFallback.value = true;
@@ -298,6 +311,36 @@ export const useLessonStore = defineStore('lessonStudy', () => {
     }
   }
 
+  /** Ghi nhận thuật toán đã hoàn thành (phục vụ badge gamification). */
+  function recordCompletedAlgorithm(): void {
+    const algoId = currentLesson.value?.algorithmId;
+    if (!algoId) return;
+    // Map sang id nhóm mà badge sử dụng (badge dùng id cũ 'quicksort'/'sorting'/'graph').
+    const GROUP_ALIASES: Record<string, string> = {
+      'quick-sort': 'quicksort',
+      'bubble-sort': 'sorting',
+      'merge-sort': 'sorting',
+      'heap-sort': 'sorting',
+      'radix-sort': 'sorting',
+      'counting-sort': 'sorting',
+      'bucket-sort': 'sorting',
+      'insertion-sort': 'sorting',
+      'selection-sort': 'sorting',
+      'bfs': 'graph',
+      'dfs': 'graph',
+      'dijkstra': 'graph',
+    };
+    const entries = [algoId, GROUP_ALIASES[algoId]].filter((v): v is string => !!v);
+    try {
+      const stored = new Set(JSON.parse(localStorage.getItem('completed_algorithms') ?? '[]') as string[]);
+      let changed = false;
+      for (const e of entries) {
+        if (!stored.has(e)) { stored.add(e); changed = true; }
+      }
+      if (changed) localStorage.setItem('completed_algorithms', JSON.stringify([...stored]));
+    } catch { /* ignore */ }
+  }
+
   async function submitQuiz(answers: Record<string, number>) {
     if (!currentLesson.value) return;
 
@@ -317,6 +360,7 @@ export const useLessonStore = defineStore('lessonStudy', () => {
     await syncToServer(true);
 
     if (quizPassed.value) {
+      recordCompletedAlgorithm();
       // Bài KHÔNG có CodeLab: quiz pass = hoàn thành bài → nhận FULL XP.
       // Bài có CodeLab: quiz chỉ trả 50%, phần còn lại ở bước CodeLab.
       const hasCodelab = !!currentLesson.value.codelabTask;
@@ -348,6 +392,7 @@ export const useLessonStore = defineStore('lessonStudy', () => {
 
     if (!codelabCompleted.value) {
       codelabCompleted.value = true;
+      recordCompletedAlgorithm();
 
       saveToLocalStorage();
       await syncToServer(true);

@@ -13,13 +13,13 @@
     
     <div class="filters-bar mb-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 w-full">
       <div class="relative w-full sm:w-64">
-        <input v-model="searchQuery" @input="debouncedSearch" type="text" placeholder="Tìm kiếm codelab..." class="appearance-none w-full bg-bg-secondary text-white border border-border-subtle rounded-full pl-10 pr-4 py-2.5 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-accent/30 focus:border-accent/50 transition-all" />
+        <input v-model="searchQuery" @input="debouncedSearch" type="text" placeholder="Tìm kiếm codelab..." class="appearance-none w-full bg-bg-secondary text-text-primary border border-border-subtle rounded-full pl-10 pr-4 py-2.5 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-accent/30 focus:border-accent/50 transition-all" />
         <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4 text-text-muted">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
         </div>
       </div>
       <div class="flex gap-2 w-full sm:w-auto">
-        <select v-model="filterDifficulty" class="appearance-none bg-bg-secondary text-white border border-border-subtle rounded-full pl-4 pr-10 py-2.5 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-accent/30 focus:border-accent/50 transition-all cursor-pointer">
+        <select v-model="filterDifficulty" class="appearance-none bg-bg-secondary text-text-primary border border-border-subtle rounded-full pl-4 pr-10 py-2.5 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-accent/30 focus:border-accent/50 transition-all cursor-pointer">
           <option value="">Tất cả độ khó</option>
           <option value="1">Dễ (1)</option>
           <option value="2">Dễ (2)</option>
@@ -27,7 +27,7 @@
           <option value="4">Khó (4)</option>
           <option value="5">Rất khó (5)</option>
         </select>
-        <select v-model="filterLanguage" class="appearance-none bg-bg-secondary text-white border border-border-subtle rounded-full pl-4 pr-10 py-2.5 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-accent/30 focus:border-accent/50 transition-all cursor-pointer">
+        <select v-model="filterLanguage" class="appearance-none bg-bg-secondary text-text-primary border border-border-subtle rounded-full pl-4 pr-10 py-2.5 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-accent/30 focus:border-accent/50 transition-all cursor-pointer">
           <option value="">Tất cả ngôn ngữ</option>
           <option value="csharp">C#</option>
           <option value="python">Python</option>
@@ -47,7 +47,7 @@
 
     <div v-else-if="codelabsList.length === 0" class="empty-state">
       <div class="text-5xl mb-4"><BaseIcon name="monitor" class="w-12 h-12 text-text-muted mx-auto" /></div>
-      <h3 class="text-xl font-bold text-white">Chưa có Codelab nào</h3>
+      <h3 class="text-xl font-bold text-text-primary">Chưa có Codelab nào</h3>
       <p class="text-text-muted mt-2 max-w-md">Tạo Codelab đầu tiên để bắt đầu xây dựng bài tập thực hành</p>
       <button class="btn-primary mt-6" @click="createNewCodelab">
         <BaseIcon name="plus" class="w-4 h-4 inline mr-1" /> Tạo Codelab đầu tiên
@@ -69,7 +69,7 @@
         <tbody>
           <template v-for="c in codelabsList" :key="c.id">
             <tr @click="toggleCodelabAccordion(c.id)" class="cursor-pointer hover:bg-bg-hover transition-colors">
-              <td class="font-bold text-white">
+              <td class="font-bold text-text-primary">
                 <span class="inline-block mr-1 transition-transform duration-200" :style="expandedCodelabId === c.id ? 'transform: rotate(90deg)' : ''">▶</span>
                 {{ c.title }}
               </td>

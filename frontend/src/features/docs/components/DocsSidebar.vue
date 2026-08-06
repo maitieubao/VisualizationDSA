@@ -8,7 +8,7 @@
       
       <button 
         @click="$emit('close')" 
-        class="lg:hidden absolute top-4 right-4 text-text-muted hover:text-white"
+        class="lg:hidden absolute top-4 right-4 text-text-muted hover:text-text-primary"
         aria-label="Đóng menu"
       >
         <BaseIcon name="x" class="w-6 h-6" />

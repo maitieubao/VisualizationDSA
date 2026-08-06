@@ -1,11 +1,11 @@
 <template>
-  <div class="bucket-connector"><span></span><strong :class="`bucket-connector--${phase}`" v-html="parseEmojiToSvg(label)"></strong><span></span></div>
+  <div class="bucket-connector"><span></span><strong :class="`bucket-connector--${phase}`" v-html="parseEmojiToSvg(escapeHtmlText(label))"></strong><span></span></div>
 </template>
 
 <script setup lang="ts">
 import { computed } from 'vue';
 import { useBucketSortVisualizer } from '../../composables/useBucketSortVisualizer';
-import { parseEmojiToSvg } from '../../../../utils/emojiParser';
+import { parseEmojiToSvg, escapeHtmlText } from '../../../../utils/emojiParser';
 import type { SortFrame } from '../../types/sorting.types';
 const props = defineProps<{ frame: SortFrame | null }>();
 const { phase, activeBucket, activeInputIndex, activeOutputIndex, activePair } = useBucketSortVisualizer(() => props.frame);

@@ -28,13 +28,13 @@
             </span>
           </div>
 
-          <h1 class="text-3xl font-extrabold text-white mt-4">{{ course.title }}</h1>
+          <h1 class="text-3xl font-extrabold text-text-primary mt-4">{{ course.title }}</h1>
           <p class="text-text-secondary mt-4 leading-relaxed whitespace-pre-line">{{ course.description }}</p>
         </section>
 
         
         <section class="p-8 rounded-3xl border border-border-subtle bg-bg-secondary backdrop-blur-md">
-          <h2 class="text-2xl font-bold text-white mb-6">Nội dung bài học</h2>
+          <h2 class="text-2xl font-bold text-text-primary mb-6">Nội dung bài học</h2>
 
           <div class="lessons-timeline flex flex-col gap-4">
             <div
@@ -53,7 +53,7 @@
                 </div>
 
                 <div>
-                  <h3 class="text-base font-bold text-white leading-tight group-hover:text-accent">{{ lesson.title }}</h3>
+                  <h3 class="text-base font-bold text-text-primary leading-tight group-hover:text-accent">{{ lesson.title }}</h3>
                   <div class="flex items-center gap-3 mt-1 text-xs text-text-muted">
                     <span class="flex items-center gap-1"><BaseIcon name="zap" class="w-3 h-3" /> +{{ lesson.xpReward }} XP</span>
                     <span v-if="lesson.sandboxType" class="text-accent font-semibold uppercase text-[10px] tracking-wider bg-accent/10 px-2 py-0.5 rounded">
@@ -109,7 +109,7 @@
           <div class="w-full h-[1px] bg-bg-hover my-2"></div>
           <div class="flex justify-between items-center text-sm">
             <span class="text-text-muted">Số bài giảng:</span>
-            <span class="font-bold text-white">{{ course.lessons.length }}</span>
+            <span class="font-bold text-text-primary">{{ course.lessons.length }}</span>
           </div>
           <div class="flex justify-between items-center text-sm">
             <span class="text-text-muted">Tổng điểm thưởng:</span>

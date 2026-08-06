@@ -4,7 +4,7 @@
     <header class="panel-header">
       <div class="header-main">
         <h1 class="panel-title">
-          <BaseIcon name="shield" style="width:28px;height:28px;color:#f87171" />
+          <BaseIcon name="shield" style="width:28px;height:28px;color:var(--color-accent-red)" />
           Hệ thống Quản trị Admin
           <span class="panel-title__badge">Super Admin</span>
         </h1>

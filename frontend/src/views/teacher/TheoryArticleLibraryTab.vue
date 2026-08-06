@@ -67,7 +67,7 @@
 
     <div v-else-if="articles.length === 0" class="empty-state">
       <div class="text-5xl mb-4"><BaseIcon name="book-open" class="w-12 h-12 text-text-muted mx-auto" /></div>
-      <h3 class="text-xl font-bold text-white">Chưa có bài viết nào</h3>
+      <h3 class="text-xl font-bold text-text-primary">Chưa có bài viết nào</h3>
       <p class="text-text-muted mt-2 max-w-md">Hãy tạo bài viết đầu tiên để bắt đầu xây dựng thư viện kiến thức</p>
       <button class="btn-primary mt-6" @click="createNewArticle">
         <BaseIcon name="plus" class="w-4 h-4 inline mr-1" /> Tạo bài viết đầu tiên
@@ -79,7 +79,7 @@
         <div class="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
           <div class="flex-1 min-w-0">
             <div class="flex items-center gap-2 flex-wrap mb-2">
-              <h3 class="font-bold text-white truncate">{{ article.title }}</h3>
+              <h3 class="font-bold text-text-primary truncate">{{ article.title }}</h3>
               <span v-if="article.isPublished" class="badge badge-emerald text-xs">Đã xuất bản</span>
               <span v-else class="badge badge-warning text-xs">Nháp</span>
               <span class="badge badge-indigo text-xs">{{ article.category }}</span>

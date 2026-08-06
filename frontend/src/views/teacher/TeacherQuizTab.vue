@@ -12,15 +12,6 @@
           <span v-if="activeFormType === 'manual'"><BaseIcon name="close" class="w-3.5 h-3.5 inline mr-1 align-text-bottom" /> Đóng Form</span>
           <span v-else><BaseIcon name="plus" class="w-3.5 h-3.5 inline mr-1 align-text-bottom" /> Tạo trắc nghiệm thủ công</span>
         </button>
-        <button 
-          type="button" 
-          class="btn-toggle-form btn-toggle-form--excel" 
-          :class="{ 'btn-toggle-form--active': activeFormType === 'excel' }"
-          @click="toggleForm('excel')"
-        >
-          <span v-if="activeFormType === 'excel'"><BaseIcon name="close" class="w-3.5 h-3.5 inline mr-1 align-text-bottom" /> Đóng Form</span>
-          <span v-else><BaseIcon name="export-share" class="w-3.5 h-3.5 inline mr-1 align-text-bottom" /> Nhập từ Excel</span>
-        </button>
       </div>
     </div>
 
@@ -125,7 +116,7 @@
           <tbody>
             <template v-for="q in quizzesList" :key="q.id">
               <tr @click="toggleQuizAccordion(String(q.id))" class="cursor-pointer hover:bg-bg-hover transition-colors">
-                <td class="font-bold text-white">
+                <td class="font-bold text-text-primary">
                   <span class="inline-block mr-1 transition-transform duration-200" :style="expandedQuizId === String(q.id) ? 'transform: rotate(90deg)' : ''">▶</span>
                   {{ q.title }}
                 </td>
@@ -203,7 +194,7 @@
 
       
       <div class="quizzes-report-container mt-10 p-6 rounded-2xl border border-border-subtle bg-bg-secondary/40">
-        <h3 class="subsection-heading mb-2 flex items-center gap-2 text-white">
+        <h3 class="subsection-heading mb-2 flex items-center gap-2 text-text-primary">
           <BaseIcon name="chart-bar" class="w-5 h-5 text-accent" />
           Báo cáo hiệu suất bài tập trắc nghiệm
         </h3>
@@ -225,7 +216,7 @@
             </thead>
             <tbody>
               <tr v-for="stat in quizPerformanceStats" :key="stat.quizId">
-                <td class="font-bold text-white">{{ stat.title }}</td>
+                <td class="font-bold text-text-primary">{{ stat.title }}</td>
                 <td><span class="topic-badge" :class="'topic-' + stat.topic">{{ formatTopic(stat.topic) }}</span></td>
                 <td class="text-center font-mono font-bold text-text-secondary">{{ stat.totalAttempts }} lượt</td>
                 <td class="text-center font-mono text-accent-green">{{ stat.passedCount }} lượt</td>
@@ -260,7 +251,7 @@ interface QuestionForm {
   explanation: string;
 }
 
-const activeFormType = ref<'none' | 'manual' | 'excel'>('none');
+const activeFormType = ref<'none' | 'manual'>('none');
 const isEditMode = ref(false);
 const editingQuizId = ref<string | null>(null);
 const expandedQuizId = ref<string | null>(null);
@@ -291,7 +282,7 @@ function createEmptyQuestion(): QuestionForm {
 function addQuestion(): void { newQuiz.questions.push(createEmptyQuestion()); }
 function removeQuestion(index: number): void { newQuiz.questions.splice(index, 1); }
 
-function toggleForm(type: 'manual' | 'excel'): void {
+function toggleForm(type: 'manual'): void {
   if (activeFormType.value === type) {
     activeFormType.value = 'none';
     if (isEditMode.value) cancelEdit();

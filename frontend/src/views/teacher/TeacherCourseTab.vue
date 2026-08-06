@@ -150,7 +150,7 @@
           <tbody>
             <template v-for="c in coursesList" :key="c.id">
               <tr @click="toggleCourseAccordion(String(c.id))" class="cursor-pointer hover:bg-bg-hover transition-colors">
-                <td class="font-bold text-white">
+                <td class="font-bold text-text-primary">
                   <span class="inline-block mr-1 transition-transform duration-200" :style="expandedCourseId === String(c.id) ? 'transform: rotate(90deg)' : ''">▶</span>
                   {{ c.title }}
                 </td>
@@ -193,7 +193,7 @@
                       <div v-for="l in courseLessons[String(c.id)]" :key="l.id" class="sub-question-card flex justify-between items-center p-4 border border-border-subtle bg-bg-secondary/20 rounded-xl">
                         <div>
                           <span class="text-xs text-accent font-mono mr-2">#{{ l.orderIndex }}</span>
-                          <span class="text-sm font-bold text-white">{{ l.title }}</span>
+                          <span class="text-sm font-bold text-text-primary">{{ l.title }}</span>
                           <div class="flex gap-3 text-xs text-text-muted mt-1">
                             <span class="flex items-center gap-1"><BaseIcon name="zap" class="w-3 h-3" /> {{ l.xpReward }} XP</span>
                             <span v-if="l.sandboxType" class="text-accent uppercase text-[10px] font-bold">{{ l.sandboxType }}</span>

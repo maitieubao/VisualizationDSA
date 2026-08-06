@@ -125,7 +125,7 @@
               <div v-if="form.theoryArticleId" class="selected-theory p-4 bg-accent/10 border border-accent/20 rounded-xl">
                 <div class="flex items-center justify-between">
                   <div>
-                    <p class="font-semibold text-white">{{ selectedTheory?.title }}</p>
+                    <p class="font-semibold text-text-primary">{{ selectedTheory?.title }}</p>
                     <p class="text-sm text-text-muted">{{ selectedTheory?.category }} • {{ selectedTheory?.readTimeMinutes }} phút đọc</p>
                   </div>
                   <button type="button" class="btn-secondary text-sm" @click="removeTheory">
@@ -182,7 +182,7 @@
                 <div class="practice-icon">
                   <BaseIcon :name="activity.icon" class="w-8 h-8" />
                 </div>
-                <h5 class="font-semibold text-white">{{ activity.label }}</h5>
+                <h5 class="font-semibold text-text-primary">{{ activity.label }}</h5>
                 <p class="text-xs text-text-muted">{{ activity.description }}</p>
                 <div class="practice-check">
                   <input type="checkbox" :value="activity.key" v-model="form.practiceActivities" class="form-checkbox" />
@@ -204,7 +204,7 @@
               <div v-if="form.quizId" class="selected-quiz p-4 bg-accent-purple/10 border border-accent-purple/20 rounded-xl">
                 <div class="flex items-center justify-between">
                   <div>
-                    <p class="font-semibold text-white">{{ selectedQuiz?.title }}</p>
+                    <p class="font-semibold text-text-primary">{{ selectedQuiz?.title }}</p>
                     <p class="text-sm text-text-muted">{{ selectedQuiz?.topic }} • Độ khó {{ selectedQuiz?.difficulty }} • {{ selectedQuiz?.questionCount }} câu</p>
                   </div>
                   <button type="button" class="btn-secondary text-sm" @click="removeQuiz">
@@ -230,7 +230,7 @@
               <div v-if="form.codelabId" class="selected-codelab p-4 bg-accent-green/10 border border-accent-green/20 rounded-xl">
                 <div class="flex items-center justify-between">
                   <div>
-                    <p class="font-semibold text-white">{{ selectedCodelab?.title }}</p>
+                    <p class="font-semibold text-text-primary">{{ selectedCodelab?.title }}</p>
                     <p class="text-sm text-text-muted">{{ selectedCodelab?.difficulty }} • {{ selectedCodelab?.testCaseCount }} testcases</p>
                   </div>
                   <button type="button" class="btn-secondary text-sm" @click="removeCodelab">

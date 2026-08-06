@@ -2,7 +2,7 @@
   <div class="curriculum-sidebar bg-bg-secondary border border-border-subtle rounded-2xl p-4 h-full max-h-[calc(100vh-120px)] overflow-y-auto sticky top-24">
     
     <div class="mb-6 p-4 bg-bg-secondary border border-border-subtle rounded-xl">
-      <h3 class="text-sm font-bold text-white mb-3">Tiến độ tổng thể</h3>
+      <h3 class="text-sm font-bold text-text-primary mb-3">Tiến độ tổng thể</h3>
       <div class="w-full h-2 bg-bg-surface rounded-full overflow-hidden mb-2">
         <div 
           class="h-full bg-gradient-to-r from-accent to-accent-purple transition-all duration-500" 
@@ -41,7 +41,7 @@
               <span v-else class="text-accent font-bold text-sm">{{ getModuleIndex(module.id) + 1 }}</span>
             </div>
             <div class="flex-1 min-w-0">
-              <h4 class="font-semibold text-white truncate">{{ module.title }}</h4>
+              <h4 class="font-semibold text-text-primary truncate">{{ module.title }}</h4>
               <div class="flex items-center gap-2 mt-1 text-xs text-text-muted">
                 <span>{{ module.items?.length || 0 }} bài</span>
                 <span v-if="module.unlockAt" class="flex items-center gap-1">
@@ -111,7 +111,7 @@
             
             <div class="flex-1 min-w-0">
               <div class="flex items-center gap-2 flex-wrap">
-                <h5 class="font-medium text-white truncate">{{ item.overrideTitle || item.lessonTitle || item.quizTitle || item.codelabTitle || 'Untitled' }}</h5>
+                <h5 class="font-medium text-text-primary truncate">{{ item.overrideTitle || item.lessonTitle || item.quizTitle || item.codelabTitle || 'Untitled' }}</h5>
                 <span class="badge text-[10px]" :class="getTypeBadgeClass(item.itemType)">{{ item.itemType }}</span>
                 <span v-if="item.isRequired" class="badge badge-rose text-[10px]">Bắt buộc</span>
                 <span v-if="item.isHidden" class="badge badge-slate text-[10px]">Ẩn</span>

@@ -38,7 +38,7 @@
         :y1="`${getYPct(getParentIndex(idx))}%`"
         :x2="`${getXPct(idx)}%`"
         :y2="`${getYPct(idx)}%`"
-        stroke="rgba(148, 163, 184, 0.12)"
+        stroke="color-mix(in srgb, var(--color-text-secondary) 12%, transparent)"
         stroke-width="1"
         stroke-dasharray="3,3"
       />
@@ -121,12 +121,12 @@ const {
 
 <style scoped>
 .tree-container {
-  background-color: rgba(19, 22, 20, 0.1);
+  background-color: color-mix(in srgb, var(--color-bg-surface) 10%, transparent);
   border-color: var(--color-border-subtle);
 }
 
 .legend-overlay {
-  background-color: rgba(24, 28, 25, 0.85);
+  background-color: color-mix(in srgb, var(--color-bg-secondary) 85%, transparent);
   border-color: var(--color-border-subtle);
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
 }
@@ -196,7 +196,7 @@ const {
 }
 
 .node-sorted {
-  border-color: rgba(61, 153, 112, 0.6) !important;
+  border-color: color-mix(in srgb, var(--color-accent-green) 60%, transparent) !important;
   background-color: var(--color-accent-green-dim) !important;
   color: var(--color-accent-green) !important;
 }
@@ -209,7 +209,7 @@ const {
 }
 
 .tooltip-box {
-  background-color: rgba(24, 28, 25, 0.95);
+  background-color: color-mix(in srgb, var(--color-bg-secondary) 95%, transparent);
   border-color: var(--color-border-strong);
   color: var(--color-text-primary);
 }
@@ -226,13 +226,13 @@ const {
 .badge-heap {
   background-color: var(--color-accent-cyan-dim);
   color: var(--color-accent-cyan);
-  border-color: rgba(61, 153, 112, 0.2);
+  border-color: color-mix(in srgb, var(--color-accent-green) 20%, transparent);
 }
 
 .badge-sorted {
   background-color: var(--color-accent-green-dim);
   color: var(--color-accent-green);
-  border-color: rgba(16, 185, 129, 0.2);
+  border-color: color-mix(in srgb, var(--color-accent-emerald) 20%, transparent);
 }
 
 .tooltip-value {

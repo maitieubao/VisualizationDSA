@@ -23,11 +23,11 @@
       </div>
       <div class="flex items-start gap-1.5">
         <BaseIcon name="info" class="w-3 h-3 text-accent-cyan shrink-0 mt-0.5" />
-        <p class="text-[11px] text-text-primary leading-normal" v-html="parseEmojiToSvg(stepDescription)"></p>
+        <p class="text-[11px] text-text-primary leading-normal" v-html="parseEmojiToSvg(escapeHtmlText(stepDescription))"></p>
       </div>
       <div class="flex items-center gap-3 text-[10px] text-text-muted font-mono">
         <span>Bước: <strong class="text-accent">{{ vcrStore.currentFrameIndex + 1 }}/{{ vcrStore.totalFrames }}</strong></span>
-        <span v-if="compareLabel" class="text-accent-cyan" v-html="parseEmojiToSvg(compareLabel)"></span>
+        <span v-if="compareLabel" class="text-accent-cyan" v-html="parseEmojiToSvg(escapeHtmlText(compareLabel))"></span>
         <span v-if="frame?.swappedIndices" class="text-accent-red">Đổi: [{{ frame.swappedIndices[0] }}]<BaseIcon name="arrows-horizontal" class="w-3 h-3 inline mx-0.5" />[{{ frame.swappedIndices[1] }}]</span>
       </div>
     </div>
@@ -47,7 +47,7 @@
 import { computed, ref, watch } from 'vue';
 import { useVcrStore } from '../../vcr-player';
 import { useSharedSortingAnimation } from '../composables/useSortingAnimation';
-import { parseEmojiToSvg } from '../../../utils/emojiParser';
+import { parseEmojiToSvg, escapeHtmlText } from '../../../utils/emojiParser';
 import SortingTraceTable from './SortingTraceTable.vue';
 import type { SortAlgorithm } from '../types/sorting.types';
 

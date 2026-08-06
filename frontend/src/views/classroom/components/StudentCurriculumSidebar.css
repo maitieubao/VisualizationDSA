@@ -5,16 +5,16 @@
 }
 
 .module-accordion {
-  background: rgba(15, 23, 42, 0.4);
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  background: color-mix(in srgb, var(--color-bg-surface) 40%, transparent);
+  border: 1px solid var(--color-border-subtle);
   border-radius: 12px;
   overflow: hidden;
   transition: all 0.2s;
 }
 
 .module-accordion:hover:not(.module-locked) {
-  border-color: rgba(99, 102, 241, 0.2);
-  background: rgba(15, 23, 42, 0.6);
+  border-color: color-mix(in srgb, var(--color-accent-purple) 20%, transparent);
+  background: color-mix(in srgb, var(--color-bg-surface) 60%, transparent);
 }
 
 .module-accordion.module-locked {
@@ -33,7 +33,7 @@
 }
 
 .module-header:hover:not(:disabled) {
-  background: rgba(255, 255, 255, 0.03);
+  background: var(--color-bg-hover);
 }
 
 .module-header:disabled {
@@ -60,7 +60,7 @@
 
 .module-title {
   font-weight: 600;
-  color: white;
+  color: var(--color-text-primary);
   font-size: 14px;
   white-space: nowrap;
   overflow: hidden;
@@ -73,7 +73,7 @@
   gap: 8px;
   margin-top: 4px;
   font-size: 11px;
-  color: rgba(255, 255, 255, 0.4);
+  color: var(--color-text-muted);
 }
 
 .module-meta svg {
@@ -86,11 +86,11 @@
   gap: 8px;
   font-size: 11px;
   font-family: monospace;
-  color: rgba(255, 255, 255, 0.4);
+  color: var(--color-text-muted);
 }
 
 .module-items {
-  border-left: 1px solid rgba(255, 255, 255, 0.05);
+  border-left: 1px solid var(--color-border-subtle);
   padding-left: 16px;
   margin-left: 4px;
   animation: slideDown 0.2s ease-out;
@@ -118,17 +118,17 @@
 }
 
 .curriculum-item:hover {
-  background: rgba(255, 255, 255, 0.05);
+  background: var(--color-bg-hover);
 }
 
 .curriculum-item.item-completed {
-  background: rgba(16, 185, 129, 0.08);
-  border: 1px solid rgba(16, 185, 129, 0.2);
+  background: color-mix(in srgb, var(--color-accent-emerald) 8%, transparent);
+  border: 1px solid color-mix(in srgb, var(--color-accent-emerald) 20%, transparent);
 }
 
 .curriculum-item.item-in-progress {
-  background: rgba(245, 158, 11, 0.08);
-  border: 1px solid rgba(245, 158, 11, 0.2);
+  background: color-mix(in srgb, var(--color-accent-yellow) 8%, transparent);
+  border: 1px solid color-mix(in srgb, var(--color-accent-yellow) 20%, transparent);
 }
 
 .curriculum-item.item-locked {
@@ -161,7 +161,7 @@
 
 .item-title {
   font-weight: 500;
-  color: white;
+  color: var(--color-text-primary);
   font-size: 13px;
   white-space: nowrap;
   overflow: hidden;
@@ -179,12 +179,12 @@
   letter-spacing: 0.3px;
 }
 
-.badge-indigo { background: rgba(99, 102, 241, 0.15); color: #a5b4fc; border: 1px solid rgba(99, 102, 241, 0.3); }
-.badge-purple { background: rgba(168, 85, 247, 0.15); color: #d8b4fe; border: 1px solid rgba(168, 85, 247, 0.3); }
-.badge-emerald { background: rgba(16, 185, 129, 0.15); color: #6ee7b7; border: 1px solid rgba(16, 185, 129, 0.3); }
-.badge-rose { background: rgba(244, 63, 94, 0.15); color: #fda4af; border: 1px solid rgba(244, 63, 94, 0.3); }
-.badge-slate { background: rgba(148, 163, 184, 0.15); color: #94a3b8; border: 1px solid rgba(148, 163, 184, 0.3); }
-.badge-amber { background: rgba(245, 158, 11, 0.15); color: #fcd34d; border: 1px solid rgba(245, 158, 11, 0.3); }
+.badge-indigo { background: color-mix(in srgb, var(--color-accent-purple) 15%, transparent); color: var(--color-accent-purple-light); border: 1px solid color-mix(in srgb, var(--color-accent-purple) 30%, transparent); }
+.badge-purple { background: color-mix(in srgb, var(--color-accent-purple) 15%, transparent); color: var(--color-accent-purple-light); border: 1px solid color-mix(in srgb, var(--color-accent-purple) 30%, transparent); }
+.badge-emerald { background: color-mix(in srgb, var(--color-accent-emerald) 15%, transparent); color: var(--color-accent-emerald-light); border: 1px solid color-mix(in srgb, var(--color-accent-emerald) 30%, transparent); }
+.badge-rose { background: color-mix(in srgb, var(--color-accent-red) 15%, transparent); color: var(--color-accent-red-light); border: 1px solid color-mix(in srgb, var(--color-accent-red) 30%, transparent); }
+.badge-slate { background: color-mix(in srgb, var(--color-text-secondary) 15%, transparent); color: var(--color-text-secondary); border: 1px solid color-mix(in srgb, var(--color-text-secondary) 30%, transparent); }
+.badge-amber { background: color-mix(in srgb, var(--color-accent-yellow) 15%, transparent); color: var(--color-accent-yellow-light); border: 1px solid color-mix(in srgb, var(--color-accent-yellow) 30%, transparent); }
 
 .item-meta {
   display: flex;
@@ -192,7 +192,7 @@
   gap: 10px;
   margin-top: 4px;
   font-size: 10px;
-  color: rgba(255, 255, 255, 0.4);
+  color: var(--color-text-muted);
 }
 
 .item-meta svg {
@@ -219,27 +219,27 @@
 }
 
 .item-completed .item-status-badge {
-  background: rgba(16, 185, 129, 0.15);
-  color: #6ee7b7;
-  border: 1px solid rgba(16, 185, 129, 0.3);
+  background: color-mix(in srgb, var(--color-accent-emerald) 15%, transparent);
+  color: var(--color-accent-emerald-light);
+  border: 1px solid color-mix(in srgb, var(--color-accent-emerald) 30%, transparent);
 }
 
 .item-locked .item-status-badge {
-  background: rgba(148, 163, 184, 0.15);
-  color: #94a3b8;
-  border: 1px solid rgba(148, 163, 184, 0.3);
+  background: color-mix(in srgb, var(--color-text-secondary) 15%, transparent);
+  color: var(--color-text-secondary);
+  border: 1px solid color-mix(in srgb, var(--color-text-secondary) 30%, transparent);
 }
 
 .item-in-progress .item-status-badge {
-  background: rgba(245, 158, 11, 0.15);
-  color: #fcd34d;
-  border: 1px solid rgba(245, 158, 11, 0.3);
+  background: color-mix(in srgb, var(--color-accent-yellow) 15%, transparent);
+  color: var(--color-accent-yellow-light);
+  border: 1px solid color-mix(in srgb, var(--color-accent-yellow) 30%, transparent);
 }
 
 .item-not-started .item-status-badge {
-  background: rgba(99, 102, 241, 0.15);
-  color: #a5b4fc;
-  border: 1px solid rgba(99, 102, 241, 0.3);
+  background: color-mix(in srgb, var(--color-accent-purple) 15%, transparent);
+  color: var(--color-accent-purple-light);
+  border: 1px solid color-mix(in srgb, var(--color-accent-purple) 30%, transparent);
 }
 
 
