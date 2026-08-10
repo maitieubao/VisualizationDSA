@@ -5,6 +5,8 @@ import { setActivePinia, createPinia } from 'pinia';
 import CustomInputForm from '../components/CustomInputForm.vue';
 import { useInputStore } from '../store/useInputStore';
 
+const DEFAULT_PROPS = { algorithmId: 'bubble-sort' };
+
 describe('CI-001 (P0): Nhập mảng', () => {
   beforeEach(() => {
     setActivePinia(createPinia());
@@ -23,6 +25,7 @@ describe('CI-001 (P0): Nhập mảng', () => {
 
   it('CustomInputForm binds rawText to textarea', async () => {
     const wrapper = mount(CustomInputForm, {
+      props: DEFAULT_PROPS,
       global: {
         stubs: { BaseIcon: { template: '<span />' } },
       },
@@ -120,6 +123,7 @@ describe('CI-006 (P0): Validation lỗi', () => {
 
   it('CustomInputForm shows error message for invalid input', async () => {
     const wrapper = mount(CustomInputForm, {
+      props: DEFAULT_PROPS,
       global: {
         stubs: { BaseIcon: { template: '<span />' } },
       },
@@ -170,6 +174,7 @@ describe('CI-012 (P1): Max 15 elements', () => {
 
   it('CustomInputForm shows element count', async () => {
     const wrapper = mount(CustomInputForm, {
+      props: { algorithmId: 'bubble-sort' },
       global: {
         stubs: { BaseIcon: { template: '<span />' } },
       },
@@ -180,5 +185,111 @@ describe('CI-012 (P1): Max 15 elements', () => {
 
     const store = useInputStore();
     expect(store.elementCount).toBe(5);
+  });
+});
+
+describe('CI-013 (P0): algorithmId prop', () => {
+  beforeEach(() => {
+    setActivePinia(createPinia());
+    vi.restoreAllMocks();
+  });
+
+  it('submitCustomInput receives correct algorithmId from prop', async () => {
+    vi.spyOn(globalThis, 'fetch').mockResolvedValue(
+      new Response(JSON.stringify({
+        algorithmId: 'quick-sort', pseudoCode: ['line1'],
+        frames: [{ stepId: 1, activeLine: 0, explanation: 'test', dataState: [1, 2], highlights: { compare: [], swap: [], sorted: [] } }],
+      }), { status: 200 }),
+    );
+
+    const store = useInputStore();
+    store.rawText = '5, 3, 8, 1';
+
+    await store.submitCustomInput('quick-sort');
+
+    expect(globalThis.fetch).toHaveBeenCalledWith(
+      expect.stringContaining('/custom-execute'),
+      expect.objectContaining({
+        body: JSON.stringify({ algorithmId: 'quick-sort', rawInput: '5, 3, 8, 1' }),
+      }),
+    );
+  });
+
+  it('submitCustomInput uses different algorithmId per call', async () => {
+    vi.spyOn(globalThis, 'fetch').mockResolvedValue(
+      new Response(JSON.stringify({
+        algorithmId: 'merge-sort', pseudoCode: ['line1'],
+        frames: [{ stepId: 1, activeLine: 0, explanation: 'test', dataState: [1], highlights: { compare: [], swap: [], sorted: [] } }],
+      }), { status: 200 }),
+    );
+
+    const store = useInputStore();
+    store.rawText = '5, 3, 8';
+
+    await store.submitCustomInput('merge-sort');
+
+    expect(globalThis.fetch).toHaveBeenCalledWith(
+      expect.stringContaining('/custom-execute'),
+      expect.objectContaining({
+        body: JSON.stringify({ algorithmId: 'merge-sort', rawInput: '5, 3, 8' }),
+      }),
+    );
+  });
+});
+
+describe('CI-014 (P1): Keyboard shortcuts', () => {
+  beforeEach(() => {
+    setActivePinia(createPinia());
+    vi.restoreAllMocks();
+  });
+
+  it('Ctrl+Enter triggers execute when input is valid', async () => {
+    vi.spyOn(globalThis, 'fetch').mockResolvedValue(
+      new Response(JSON.stringify({
+        algorithmId: 'bubble-sort', pseudoCode: ['line1'],
+        frames: [{ stepId: 1, activeLine: 0, explanation: 'test', dataState: [1], highlights: { compare: [], swap: [], sorted: [] } }],
+      }), { status: 200 }),
+    );
+
+    const wrapper = mount(CustomInputForm, {
+      props: DEFAULT_PROPS,
+      global: { stubs: { BaseIcon: { template: '<span />' } } },
+    });
+
+    const textarea = wrapper.find('textarea');
+    await textarea.setValue('5, 3, 8');
+
+    await textarea.trigger('keydown', { key: 'Enter', ctrlKey: true });
+
+    expect(globalThis.fetch).toHaveBeenCalled();
+  });
+
+  it('Escape clears input', async () => {
+    const wrapper = mount(CustomInputForm, {
+      props: DEFAULT_PROPS,
+      global: { stubs: { BaseIcon: { template: '<span />' } } },
+    });
+
+    const textarea = wrapper.find('textarea');
+    await textarea.setValue('5, 3, 8');
+
+    await textarea.trigger('keydown', { key: 'Escape' });
+
+    const store = useInputStore();
+    expect(store.rawText).toBe('');
+  });
+
+  it('Ctrl+Shift+R generates random input', async () => {
+    const wrapper = mount(CustomInputForm, {
+      props: DEFAULT_PROPS,
+      global: { stubs: { BaseIcon: { template: '<span />' } } },
+    });
+
+    const textarea = wrapper.find('textarea');
+    await textarea.trigger('keydown', { key: 'r', ctrlKey: true, shiftKey: true });
+
+    const store = useInputStore();
+    expect(store.rawText).not.toBe('');
+    expect(store.parsedArray.length).toBe(10);
   });
 });

@@ -17,6 +17,10 @@ export function useDSAKeyboard(
       e.target instanceof HTMLSelectElement
     ) return;
 
+    // Chặn phím lặp (giữ phím) cho Space/R — tránh toggle rung nhấp nháy.
+    // Arrow cho phép repeat vì store đã có debounce 100ms cho step.
+    if (e.repeat && (e.key === ' ' || e.key === 'r' || e.key === 'R')) return;
+
     switch (e.key) {
       case ' ':
         e.preventDefault();

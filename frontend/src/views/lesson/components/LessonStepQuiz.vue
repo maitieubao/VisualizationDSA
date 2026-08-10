@@ -1,13 +1,7 @@
 <template>
   <div class="lesson-step-quiz flex flex-col h-full overflow-y-auto p-6 text-text-primary font-sans max-w-3xl mx-auto w-full">
-    <div class="border-b border-border-subtle pb-4 mb-6 text-center">
-      <div class="flex items-center justify-center gap-1.5 text-xs font-semibold text-accent uppercase tracking-wider">
-        <svg class="w-4 h-4 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 01-2 2h-0a2 2 0 01-2-2v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
-        </svg>
-        <span>Bước 3 / 4</span>
-      </div>
-      <h2 class="text-xl font-extrabold text-text-primary mt-1">Kiểm Tra Nhận Thức Nhanh</h2>
+    <div class="pb-4 mb-4 text-center">
+      <h2 class="text-xl font-extrabold text-text-primary">Kiểm Tra Nhận Thức Nhanh</h2>
       <p class="text-xs text-text-muted mt-1">Hoàn thành bài Quiz (đạt ≥ 70%) để mở khóa phần Code Lab.</p>
     </div>
 
@@ -80,7 +74,7 @@
           <button
             v-if="!isSubmitted"
             @click="submitQuiz"
-            class="px-6 py-3 bg-accent hover:bg-accent text-white rounded-xl text-xs font-bold transition-all shadow-lg cursor-pointer"
+            class="px-6 py-3 bg-accent hover:bg-accent-dark text-white rounded-xl text-xs font-bold transition-all shadow-lg cursor-pointer"
           >
             Nộp Bài Quiz
           </button>
@@ -88,7 +82,7 @@
           <button
             v-if="isSubmitted && quizPassed"
             @click="completeStep"
-            class="px-6 py-3 bg-accent-green hover:bg-accent-green text-white rounded-xl text-xs font-bold transition-all shadow-lg cursor-pointer"
+            class="px-6 py-3 bg-accent-green hover:bg-accent-green/80 text-white rounded-xl text-xs font-bold transition-all shadow-lg cursor-pointer"
           >
             Mở Khóa Code Lab <BaseIcon name="arrow-right" class="w-4 h-4 inline ml-1 align-middle" />
           </button>

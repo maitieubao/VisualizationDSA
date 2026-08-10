@@ -60,7 +60,7 @@ describe('statelessQuizApi — Quiz Không Trạng Thái (Backend)', () => {
 
       const result = await statelessQuizApi.getAllQuizzes();
 
-      expect(fetchMock).toHaveBeenCalledWith(`${BASE_URL}/concepts/quiz/all`);
+      expect(fetchMock).toHaveBeenCalledWith(`${BASE_URL}/concepts/quiz/all`, expect.anything());
       expect(result).toHaveLength(1);
       expect(result[0]).toEqual(mockSummary);
     });
@@ -79,7 +79,7 @@ describe('statelessQuizApi — Quiz Không Trạng Thái (Backend)', () => {
 
       const result = await statelessQuizApi.getTopics();
 
-      expect(fetchMock).toHaveBeenCalledWith(`${BASE_URL}/concepts/quiz/topics`);
+      expect(fetchMock).toHaveBeenCalledWith(`${BASE_URL}/concepts/quiz/topics`, expect.anything());
       expect(result).toEqual(['Sorting', 'Searching']);
     });
   });
@@ -113,7 +113,7 @@ describe('statelessQuizApi — Quiz Không Trạng Thái (Backend)', () => {
 
       const result = await statelessQuizApi.getQuizzesByTopic('Sorting');
 
-      expect(fetchMock).toHaveBeenCalledWith(`${BASE_URL}/concepts/quiz/topic/Sorting`);
+      expect(fetchMock).toHaveBeenCalledWith(`${BASE_URL}/concepts/quiz/topic/Sorting`, expect.anything());
       expect(result).toHaveLength(1);
     });
   });

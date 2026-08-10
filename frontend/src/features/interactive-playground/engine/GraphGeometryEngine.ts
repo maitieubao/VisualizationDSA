@@ -3,6 +3,14 @@ import type { NodeDTO, EdgeDTO } from '../store/usePlaygroundStore';
 export interface Point { x: number; y: number; }
 export interface ArrowPlacement { start: Point; end: Point; angle: number; }
 
+/** Giới hạn toạ độ WORLD-space (đã trừ pan & chia zoom) mà node được phép di chuyển. */
+export interface WorldBounds {
+  minX: number;
+  maxX: number;
+  minY: number;
+  maxY: number;
+}
+
 export class GraphGeometryEngine {
   static hitTestNode(mousePos: Point, nodes: NodeDTO[]): NodeDTO | null {
     for (let i = nodes.length - 1; i >= 0; i--) {
@@ -12,14 +20,40 @@ export class GraphGeometryEngine {
     return null;
   }
 
-  static hitTestEdge(mousePos: Point, edges: EdgeDTO[], nodes: NodeDTO[], threshold = 8): EdgeDTO | null {
+  /**
+   * IP-024: threshold nhận giá trị WORLD-space nhưng được quy đổi sang SCREEN-space
+   * (chia zoom, tối thiểu 5px màn hình) để cạnh luôn bấm được dù thu nhỏ.
+   */
+  static hitTestEdge(mousePos: Point, edges: EdgeDTO[], nodes: NodeDTO[], threshold = 8, zoom = 1): EdgeDTO | null {
+    const screenThreshold = Math.max(threshold / zoom, 5);
     for (let i = edges.length - 1; i >= 0; i--) {
       const edge = edges[i];
       const from = nodes.find(n => n.id === edge.from);
       const to = nodes.find(n => n.id === edge.to);
-      if (from && to && this.pointToSegmentDistance(mousePos, from, to) <= threshold) return edge;
+      if (from && to && this.pointToSegmentDistance(mousePos, from, to) <= screenThreshold) return edge;
     }
     return null;
+  }
+
+  /**
+   * IP-006/IP-016: helper clamp dùng chung — chuyển viewport CSS px + camera
+   * (pan/zoom) thành giới hạn WORLD-space thật của vùng nhìn thấy.
+   * minX = -pan.x/zoom + margin ; maxX = (width - pan.x)/zoom - margin (tương tự Y).
+   */
+  static worldBoundsFromViewport(width: number, height: number, pan: Point, zoom: number, margin: number): WorldBounds {
+    return {
+      minX: -pan.x / zoom + margin,
+      maxX: (width - pan.x) / zoom - margin,
+      minY: -pan.y / zoom + margin,
+      maxY: (height - pan.y) / zoom - margin,
+    };
+  }
+
+  static clampPointToBounds(pos: Point, bounds: WorldBounds): Point {
+    return {
+      x: Math.max(bounds.minX, Math.min(bounds.maxX, pos.x)),
+      y: Math.max(bounds.minY, Math.min(bounds.maxY, pos.y)),
+    };
   }
 
   static calculateArrowPlacement(from: Point, to: Point, fromRadius: number, toRadius: number): ArrowPlacement {
@@ -47,8 +81,13 @@ export class GraphGeometryEngine {
     ctx.restore();
   }
 
-  static isWithinSnapDistance(mousePos: Point, node: NodeDTO, snapDistance = 40): boolean {
-    return Math.hypot(mousePos.x - node.x, mousePos.y - node.y) <= node.radius + snapDistance;
+  /**
+   * IP-013: khoảng cách snap 40px tính theo WORLD nhưng phải quy đổi sang
+   * screen-space (chia zoom, tối thiểu 5px màn hình) để không bị mất hút khi zoom nhỏ.
+   */
+  static isWithinSnapDistance(mousePos: Point, node: NodeDTO, snapDistance = 40, zoom = 1): boolean {
+    const screenSnapDistance = Math.max(snapDistance / zoom, 5);
+    return Math.hypot(mousePos.x - node.x, mousePos.y - node.y) <= node.radius + screenSnapDistance;
   }
 
   static pointToSegmentDistance(p: Point, a: Point, b: Point): number {

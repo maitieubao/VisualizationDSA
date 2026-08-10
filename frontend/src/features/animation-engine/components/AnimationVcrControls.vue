@@ -1,19 +1,22 @@
 <template>
   <div class="vcr-controls-bar">
-    <button class="ctrl-btn" @click="$emit('stop')" title="Reset (R)">
+    <button class="ctrl-btn" :disabled="isUninitialized" @click="$emit('stop')" title="Reset (R)" aria-label="Đặt lại">
       <BaseIcon name="stop" class="w-3.5 h-3.5" />
     </button>
-    <button class="ctrl-btn" @click="$emit('stepBackward')" title="Step Back (Left)">
+    <button class="ctrl-btn" :disabled="isUninitialized || isFirstFrame" @click="$emit('stepBackward')" title="Step Back (Left)" aria-label="Bước trước">
       <BaseIcon name="step-backward" class="w-3.5 h-3.5" />
     </button>
     <button
       class="ctrl-btn-primary"
+      :disabled="isUninitialized"
       @click="$emit('togglePlay')"
       :title="isPlaying ? 'Pause (Space)' : 'Play (Space)'"
+      :aria-label="isPlaying ? 'Tạm dừng' : 'Phát'"
+      :aria-pressed="isPlaying"
     >
       <BaseIcon :name="isPlaying ? 'pause' : 'play'" class="w-4 h-4" />
     </button>
-    <button class="ctrl-btn" @click="$emit('stepForward')" title="Step Forward (Right)">
+    <button class="ctrl-btn" :disabled="isUninitialized || isLastFrame" @click="$emit('stepForward')" title="Step Forward (Right)" aria-label="Bước tiếp theo">
       <BaseIcon name="step-forward" class="w-3.5 h-3.5" />
     </button>
 
@@ -23,6 +26,7 @@
       min="0"
       :max="Math.max(0, totalSteps - 1)"
       :value="currentIndex"
+      :disabled="isUninitialized"
       class="timeline-scrubber"
       aria-label="Tiến trình hoạt ảnh"
       @input="onScrub"
@@ -35,21 +39,20 @@
       aria-label="Tốc độ phát"
       @change="onSpeedChange"
     >
-      <option :value="0.5">0.5x</option>
-      <option :value="1">1x</option>
-      <option :value="2">2x</option>
-      <option :value="5">5x</option>
-      <option :value="10">10x</option>
+      <option v-for="speed in SPEED_PRESETS" :key="speed" :value="speed">{{ speed }}x</option>
     </select>
 
-    <span class="step-counter">
-      {{ currentIndex + 1 }} / {{ totalSteps }}
+    <span class="step-counter" aria-live="polite">
+      {{ counterText }}
     </span>
   </div>
 </template>
 
 <script setup lang="ts">
-defineProps<{
+import { computed } from 'vue';
+import { SPEED_PRESETS } from '../composables/useSpeedPreferences';
+
+const props = defineProps<{
   isPlaying: boolean;
   currentIndex: number;
   totalSteps: number;
@@ -64,6 +67,13 @@ const emit = defineEmits<{
   (e: 'scrub', index: number): void;
   (e: 'speedChange', speed: number): void;
 }>();
+
+const isUninitialized = computed<boolean>(() => props.totalSteps === 0);
+const isFirstFrame = computed<boolean>(() => props.currentIndex === 0);
+const isLastFrame = computed<boolean>(() => props.totalSteps > 0 && props.currentIndex >= props.totalSteps - 1);
+const counterText = computed<string>(() =>
+  props.totalSteps === 0 ? '0 / 0' : `${props.currentIndex + 1} / ${props.totalSteps}`,
+);
 
 function onScrub(e: Event): void {
   const target = e.target as HTMLInputElement;
@@ -103,6 +113,11 @@ function onSpeedChange(e: Event): void {
   cursor: pointer;
 }
 .ctrl-btn:hover { background: var(--color-bg-hover); color: var(--color-text-primary); }
+.ctrl-btn:disabled,
+.ctrl-btn-primary:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
 
 .ctrl-btn-primary {
   width: 2.5rem; height: 2.5rem;

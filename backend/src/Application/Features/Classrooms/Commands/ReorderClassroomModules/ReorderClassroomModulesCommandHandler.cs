@@ -1,9 +1,10 @@
 using MediatR;
+using Microsoft.EntityFrameworkCore;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.EntityFrameworkCore;
+using VisualizationDSA.Application.Common.Exceptions;
 using VisualizationDSA.Application.Interfaces;
 
 namespace VisualizationDSA.Application.Features.Classrooms.Commands.ReorderClassroomModules
@@ -36,7 +37,14 @@ namespace VisualizationDSA.Application.Features.Classrooms.Commands.ReorderClass
                 }
             }
 
-            await _context.SaveChangesAsync(cancellationToken);
+            try
+            {
+                await _context.SaveChangesAsync(cancellationToken);
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                throw new ConflictException("The classroom curriculum was modified by another user. Please refresh and try again.");
+            }
         }
     }
 }

@@ -2,11 +2,7 @@ import type { CanvasStateSnapshot } from '../../../core/CompilerStepExecutor';
 import { drawPlaybackFrame, drawPlaybackFrameTransition } from '../renderer/algoCanvasHelpers';
 import { MergeSortAnimationEngine } from './MergeSortAnimationEngine';
 import { HeapSortAnimationEngine } from './HeapSortAnimationEngine';
-
-// ─── Easing ───
-function easeOut(t: number): number { return 1 - (1 - t) ** 3; }
-function easeInOut(t: number): number { return t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t; }
-function lerp(a: number, b: number, t: number): number { return a + (b - a) * t; }
+import { easeOut, easeInOut, lerp } from '@/utils/math';
 
 function lerpColor(from: string, to: string, t: number): string {
   if (from === to) return from;
@@ -49,6 +45,11 @@ export class SortingAnimationEngine {
   private _speed = 1;
   private onFrameAdvance: (() => void) | null = null;
 
+  // EC-008: cờ điều hành vòng lặp rAF. Trước đây loop chạy 60FPS mãi mãi kể cả
+  // khi PAUSED (bonus chỉ-for-idle), đốt CPU/GPU suốt thời gian workspace tồn tại.
+  // Nay vòng lặp chỉ tồn tại khi có việc thật: đang phát hoặc transition đang dở.
+  private _running = false;
+
   // Transition detection
   private transition: TransitionType = 'move';
   private swapPair: [number, number] | null = null;
@@ -70,10 +71,14 @@ export class SortingAnimationEngine {
     this.ctx = canvas.getContext('2d');
     this.onFrameAdvance = onAdvance;
     this.lastTimestamp = performance.now();
+    this._running = true;
     this.loop();
   }
 
   destroy() {
+    // EC-008: destroy() bắt buộc dừng vòng rAF — không để loop con chạy tiếp
+    // khi canvas/ctx đã bị tháo.
+    this._running = false;
     if (this.rafId !== null) cancelAnimationFrame(this.rafId);
     this.rafId = null;
     this.canvas = null;
@@ -96,15 +101,40 @@ export class SortingAnimationEngine {
     }
   }
 
-  play() { this._playing = true; this.progress = 0; this.lastTimestamp = performance.now(); }
-  pause() { this._playing = false; }
+  play() {
+    this._playing = true;
+    this.progress = 0;
+    this.lastTimestamp = performance.now();
+    // EC-008: khởi động lại vòng rAF nếu loop đã tự dừng (idle sau start, hoặc
+    // pause() đã cancel). `rafId === null` chính là dấu hiệu loop đang "ngủ".
+    this._running = true;
+    if (this.rafId === null) {
+      this.loop();
+    }
+  }
+
+  pause() {
+    this._playing = false;
+    // EC-008: hủy ngay rAF đang chờ — transition còn dở sẽ được vẽ đè frame tĩnh
+    // bởi snapToCurrent() của composable; không giữ vòng lặp 60FPS phí CPU.
+    this._running = false;
+    if (this.rafId !== null) {
+      cancelAnimationFrame(this.rafId);
+      this.rafId = null;
+    }
+  }
   setSpeed(s: number) { this._speed = s; }
   snapToCurrent() { this.progress = 1; this.drawInterpolated(); }
 
   // ─── RAF loop ───
 
-  private loop = (ts: number = performance.now()): void => {
-    if (!this.canvas || !this.ctx) return;
+private loop = (ts: number = performance.now()): void => {
+    if (!this.canvas || !this.ctx) {
+      // Canvas bị tháo trước khi destroy() kịp chạy → tự dừng, không reschedule.
+      this._running = false;
+      this.rafId = null;
+      return;
+    }
     // Clamp delta ≥ 0: nếu ts < lastTimestamp (RAF restart/đồng hồ nhảy), progress phải
     // KHÔNG lùi — trước đây delta âm làm progress giảm → advance không bao giờ xảy ra.
     const delta = Math.max(0, Math.min(ts - this.lastTimestamp, 32));
@@ -122,7 +152,15 @@ export class SortingAnimationEngine {
         this.drawInterpolated();
       }
     }
-    this.rafId = requestAnimationFrame(this.loop);
+    // EC-008: chỉ schedule tick kế tiếp khi vòng lặp còn được phép chạy VÀ có việc
+    // thật: đang phát, hoặc transition đang dở giữa chừng (0 < progress < 1) thì
+    // cho hoàn tất nốt. Pause/idle → tự dừng hẳn → không đốt CPU 60FPS vô ích.
+    const transitionPending = this.progress > 0 && this.progress < 1;
+    if (this._running && (this._playing || transitionPending)) {
+      this.rafId = requestAnimationFrame(this.loop);
+    } else {
+      this.rafId = null;
+    }
   };
 
   // ─── Transition detection ───
@@ -155,11 +193,32 @@ export class SortingAnimationEngine {
 
   // ─── Compute bar geometry ───
 
+  // EC-022: `Math.min(...arr)` / `Math.max(...arr)` spread vỡ stack khi mảng
+  // hàng chục nghìn phần tử (RangeError: Maximum call stack size exceeded).
+  // Các helper này duyệt vòng lặp O(n) với fallback đúng ngữ nghĩa spread cũ.
+  private minWithFallback(arr: number[], fallback: number): number {
+    let min = fallback;
+    for (let i = 0; i < arr.length; i++) {
+      const v = arr[i];
+      if (v < min) min = v;
+    }
+    return min;
+  }
+
+  private maxWithFallback(arr: number[], fallback: number): number {
+    let max = fallback;
+    for (let i = 0; i < arr.length; i++) {
+      const v = arr[i];
+      if (v > max) max = v;
+    }
+    return max;
+  }
+
   private computeGeo(arr: number[]): BarGeo[] {
     const margin = 32; const gap = 3;
     const n = arr.length; if (n === 0) return [];
-    const minV = Math.min(...arr, 0);
-    const maxV = Math.max(...arr, 1);
+    const minV = this.minWithFallback(arr, 0);
+    const maxV = this.maxWithFallback(arr, 1);
     const span = Math.max(maxV - minV, 1);
     const usableW = this.cssW - margin * 2;
     const barW = Math.max(2, (usableW - gap * (n - 1)) / n);
@@ -605,10 +664,10 @@ export class SortingAnimationEngine {
 
     const M = 8;
     const tierH = (this.cssH - M * 4) / 3;
-    const minV = Math.min(...arr, 0);
-    const maxV = Math.max(...arr, 1);
+    const minV = this.minWithFallback(arr, 0);
+    const maxV = this.maxWithFallback(arr, 1);
     const span = Math.max(maxV - minV, 1);
-    const min = Math.min(...arr, 0);
+    const min = this.minWithFallback(arr, 0);
     const cells = Math.max(10, Math.min(countArr.length, 24));
     const cellW = Math.max(16, (this.cssW - M * 2) / cells);
 
@@ -715,7 +774,7 @@ export class SortingAnimationEngine {
 
     const M = 6;
     const inputH = 50;
-    const offset = arr.length > 0 ? -Math.min(...arr, 0) : 0;
+    const offset = arr.length > 0 ? -this.minWithFallback(arr, 0) : 0;
     const placeLabel = place === 1 ? 'đơn vị' : place === 10 ? 'chục' : place === 100 ? 'trăm' : '10^' + Math.log10(place);
 
     // ── Input row ──
@@ -810,7 +869,7 @@ export class SortingAnimationEngine {
     const inputH = 40;
     const barGap = 2;
     const barW = Math.max(6, (this.cssW - M * 2 - barGap * (arr.length - 1)) / arr.length);
-    const maxV = Math.max(...arr, 1);
+    const maxV = this.maxWithFallback(arr, 1);
     const bucketCount = Math.max(1, buckets.length);
 
     // ── Input bars ──

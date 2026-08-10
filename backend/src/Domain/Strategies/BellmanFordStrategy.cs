@@ -177,7 +177,7 @@ public class BellmanFordStrategy : GraphStrategyBase
 
         var distDict = dist.Select((d, i) => d < INF ? new { Key = i, Value = d } : null)
             .Where(x => x != null).ToDictionary(x => x.Key, x => x.Value);
-        var prevDict = prev.Where(p => p.HasValue).ToDictionary(p => Array.IndexOf(prev, p), p => p.Value);
+        var prevDict = BuildPrevDict(prev);
 
         var frame = new FrameDTO
         {

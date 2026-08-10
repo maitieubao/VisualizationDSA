@@ -127,4 +127,69 @@ describe('useAlgorithmStore', () => {
       expect(store.metadata?.description.length).toBeGreaterThan(0);
     }
   });
+
+  describe('setSearchQuery', () => {
+    it('updates searchQuery', () => {
+      const store = useAlgorithmStore();
+      store.setSearchQuery('bubble');
+      expect(store.searchQuery).toBe('bubble');
+    });
+
+    it('empty string resets search', () => {
+      const store = useAlgorithmStore();
+      store.algorithms = [...ALGORITHM_CATALOG];
+      store.setSearchQuery('bubble');
+      expect(store.filteredAlgorithms.length).toBe(1);
+      store.setSearchQuery('');
+      expect(store.filteredAlgorithms.length).toBe(ALGORITHM_CATALOG.length);
+    });
+  });
+
+  describe('setViewMode', () => {
+    it('updates viewMode', () => {
+      const store = useAlgorithmStore();
+      store.setViewMode('theory');
+      expect(store.viewMode).toBe('theory');
+    });
+
+    it('switches between simulation and theory', () => {
+      const store = useAlgorithmStore();
+      store.setViewMode('simulation');
+      expect(store.viewMode).toBe('simulation');
+      store.setViewMode('theory');
+      expect(store.viewMode).toBe('theory');
+    });
+  });
+
+  describe('fetchAlgorithms validation', () => {
+    it('handles non-array response gracefully', async () => {
+      vi.spyOn(globalThis, 'fetch').mockResolvedValue({
+        ok: true,
+        json: () => Promise.resolve({ invalid: 'data' }),
+      } as Response);
+
+      const store = useAlgorithmStore();
+      await store.fetchAlgorithms();
+
+      expect(store.algorithms.length).toBe(ALGORITHM_CATALOG.length);
+    });
+
+    it('filters out invalid algorithm objects', async () => {
+      const mockData = [
+        { id: 'valid-algo', name: 'Valid', category: 'Sorting', difficulty: 'Easy', timeComplexity: 'O(1)', spaceComplexity: 'O(1)' },
+        { id: 123 }, // invalid - no name
+        { name: 'No ID' }, // invalid - no id
+      ];
+      vi.spyOn(globalThis, 'fetch').mockResolvedValue({
+        ok: true,
+        json: () => Promise.resolve(mockData),
+      } as Response);
+
+      const store = useAlgorithmStore();
+      await store.fetchAlgorithms();
+
+      const validAlgo = store.algorithms.find(a => a.id === 'valid-algo');
+      expect(validAlgo).not.toBeUndefined();
+    });
+  });
 });

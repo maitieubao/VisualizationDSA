@@ -1,8 +1,5 @@
-import type { AlgorithmResult, FrameDTO, HighlightIndices, TreeNodeDTO } from '../types/algorithm.types';
-
-function defaultHighlights(overrides?: Partial<HighlightIndices>): HighlightIndices {
-  return { compare: [], swap: [], sorted: [], dimmed: [], active: [], ...overrides };
-}
+import type { AlgorithmResult, FrameDTO, GraphEdgeDTO, GraphNodeDTO, HighlightIndices, TreeNodeDTO } from '../types/algorithm.types';
+import { defaultHighlights } from './highlightHelpers';
 
 interface BSTNode {
   id: number;
@@ -270,11 +267,28 @@ export function generateDFS(inputData: number[]): AlgorithmResult {
 export function generateDijkstra(inputData: number[]): AlgorithmResult {
   const frames: FrameDTO[] = [];
   let stepId = 0;
-  const idCounter = { val: 0 };
-  let root: BSTNode | null = null;
 
-  for (const val of inputData) {
-    root = insertBST(root, val, idCounter);
+  const nodeCount = Math.min(inputData.length, 6);
+
+  const nodes: GraphNodeDTO[] = [];
+  for (let i = 0; i < nodeCount; i++) {
+    nodes.push({
+      id: i,
+      value: inputData[i] ?? i * 10,
+      x: 100 + (i % 3) * 160,
+      y: 80 + Math.floor(i / 3) * 140,
+      label: `V${i}`,
+    });
+  }
+
+  const edges: GraphEdgeDTO[] = [];
+  for (let i = 0; i < nodeCount - 1; i++) {
+    const w = Math.abs((inputData[i] ?? i) % 9) + 1;
+    edges.push({ from: i, to: i + 1, weight: w, directed: true });
+  }
+  for (let i = 0; i + 2 < nodeCount; i += 2) {
+    const w = Math.abs((inputData[i + 1] ?? i) % 5) + 1;
+    edges.push({ from: i, to: i + 2, weight: w, directed: true });
   }
 
   const pseudoCode = [
@@ -286,140 +300,90 @@ export function generateDijkstra(inputData: number[]): AlgorithmResult {
     '    curr, d = pq.popMin()',
     '    for neighbor, weight in curr.edges:',
     '      newDist = d + weight',
-      '      if newDist < dist[neighbor]:',
-      '        dist[neighbor] = newDist',
-      '        pq.push(neighbor, newDist)'
+    '      if newDist < dist[neighbor]:',
+    '        dist[neighbor] = newDist',
+    '        pq.push(neighbor, newDist)',
   ];
 
-  const { treeNodes: initialNodes } = serializeTree(root);
-  frames.push({
-    stepId: ++stepId,
-    activeLine: 0,
-    explanation: 'Khởi tạo cây. Đặt khoảng cách tới nút nguồn (nút gốc) = 999 (Vô cùng).',
-    dataState: [],
-    highlights: defaultHighlights(),
-    treeNodes: initialNodes,
-  });
+  const dist: Record<number, number> = {};
+  const prev: Record<number, number | null> = {};
+  const visited: boolean[] = [];
+  for (let i = 0; i < nodeCount; i++) {
+    dist[i] = i === 0 ? 0 : Infinity;
+    prev[i] = null;
+    visited[i] = false;
+  }
 
-  if (!root) {
+  const buildFrame = (
+    activeLine: number,
+    explanation: string,
+    highlights: Partial<HighlightIndices>,
+    highlightedEdge?: { from: number; to: number },
+    currentPath?: number[] | null,
+  ): void => {
+    frames.push({
+      stepId: ++stepId,
+      activeLine,
+      explanation,
+      dataState: nodes.map(n => n.value),
+      highlights: defaultHighlights(highlights),
+      graphNodes: nodes,
+      graphEdges: edges.map(e => ({
+        ...e,
+        highlighted: highlightedEdge !== undefined && e.from === highlightedEdge.from && e.to === highlightedEdge.to,
+      })),
+      distances: { ...dist },
+      currentPath: currentPath ?? null,
+    });
+  };
+
+  if (nodeCount === 0) {
+    frames.push({ stepId: ++stepId, activeLine: 0, explanation: 'Mảng rỗng — không có đồ thị để chạy Dijkstra.', dataState: [], highlights: defaultHighlights(), graphNodes: [], graphEdges: [], distances: {}, currentPath: null });
     return { algorithmId: 'dijkstra', pseudoCode, frames };
   }
 
-  root.currentDistance = 0;
-  const { treeNodes: srcNodes } = serializeTree(root);
-  frames.push({
-    stepId: ++stepId,
-    activeLine: 2,
-    explanation: 'Thiết lập khoảng cách của nút nguồn (nút gốc) = 0.',
-    dataState: [0],
-    highlights: defaultHighlights({ active: [root.id] }),
-    treeNodes: srcNodes,
-  });
+  buildFrame(2, 'Khởi tạo Dijkstra. Nút nguồn V0 có khoảng cách = 0, các nút còn lại = ∞.', { active: [0] });
 
-  const allNodes: BSTNode[] = [];
-  function collect(n: BSTNode | null): void {
-    if (!n) return;
-    allNodes.push(n);
-    collect(n.left);
-    collect(n.right);
-  }
-  collect(root);
-
-  const unvisited = new Set<BSTNode>(allNodes);
-  const visitedDistances: number[] = [];
-
-  while (unvisited.size > 0) {
-    
-    let curr: BSTNode | null = null;
-    let minD = 9999;
-    for (const n of unvisited) {
-      if (n.currentDistance < minD) {
-        minD = n.currentDistance;
-        curr = n;
+  while (true) {
+    let u = -1;
+    let minD = Infinity;
+    for (let i = 0; i < nodeCount; i++) {
+      if (!visited[i] && dist[i] < minD) {
+        minD = dist[i];
+        u = i;
       }
     }
+    if (u === -1) break;
 
-    if (!curr || curr.currentDistance === 999) {
-      break;
-    }
+    visited[u] = true;
+    buildFrame(5, `Chọn nút V${u} có khoảng cách dist = ${dist[u]} nhỏ nhất trong tập chưa xử lý.`, { active: [u] });
 
-    unvisited.delete(curr);
-    visitedDistances.push(curr.currentDistance);
-
-    const { treeNodes: selectNodes } = serializeTree(root);
-    frames.push({
-      stepId: ++stepId,
-      activeLine: 5,
-      explanation: `Chọn nút với nhãn gốc ${curr.originalValue} có khoảng cách dist = ${curr.currentDistance} nhỏ nhất để duyệt.`,
-      dataState: [...visitedDistances],
-      highlights: defaultHighlights({ active: [curr.id] }),
-      treeNodes: selectNodes,
-    });
-
-    if (curr.left && unvisited.has(curr.left)) {
-      const weight = 3;
-      const newD = curr.currentDistance + weight;
-      const { treeNodes: leftScanNodes } = serializeTree(root);
-      frames.push({
-        stepId: ++stepId,
-        activeLine: 7,
-        explanation: `Xét nút con trái ${curr.left.originalValue}. Khoảng cách mới: ${curr.currentDistance} + ${weight} = ${newD}.`,
-        dataState: [...visitedDistances],
-        highlights: defaultHighlights({ active: [curr.left.id] }),
-        treeNodes: leftScanNodes,
-      });
-
-      if (newD < curr.left.currentDistance) {
-        curr.left.currentDistance = newD;
-        const { treeNodes: leftUpdateNodes } = serializeTree(root);
-        frames.push({
-          stepId: ++stepId,
-          activeLine: 9,
-          explanation: `Cập nhật khoảng cách ngắn nhất của nút con trái ${curr.left.originalValue} thành ${newD}.`,
-          dataState: [...visitedDistances],
-          highlights: defaultHighlights({ active: [curr.left.id] }),
-          treeNodes: leftUpdateNodes,
-        });
-      }
-    }
-
-    if (curr.right && unvisited.has(curr.right)) {
-      const weight = 5;
-      const newD = curr.currentDistance + weight;
-      const { treeNodes: rightScanNodes } = serializeTree(root);
-      frames.push({
-        stepId: ++stepId,
-        activeLine: 7,
-        explanation: `Xét nút con phải ${curr.right.originalValue}. Khoảng cách mới: ${curr.currentDistance} + ${weight} = ${newD}.`,
-        dataState: [...visitedDistances],
-        highlights: defaultHighlights({ active: [curr.right.id] }),
-        treeNodes: rightScanNodes,
-      });
-
-      if (newD < curr.right.currentDistance) {
-        curr.right.currentDistance = newD;
-        const { treeNodes: rightUpdateNodes } = serializeTree(root);
-        frames.push({
-          stepId: ++stepId,
-          activeLine: 9,
-          explanation: `Cập nhật khoảng cách ngắn nhất của nút con phải ${curr.right.originalValue} thành ${newD}.`,
-          dataState: [...visitedDistances],
-          highlights: defaultHighlights({ active: [curr.right.id] }),
-          treeNodes: rightUpdateNodes,
-        });
+    for (const edge of edges) {
+      if (edge.from !== u || visited[edge.to]) continue;
+      const v = edge.to;
+      const w = edge.weight ?? 1;
+      const newD = dist[u] + w;
+      buildFrame(6, `Xét cạnh V${u} → V${v} (trọng số ${w}). dist[V${u}] + ${w} = ${newD} so với dist[V${v}] = ${dist[v] === Infinity ? '∞' : dist[v]}.`, { active: [u, v] }, { from: u, to: v });
+      if (newD < dist[v]) {
+        dist[v] = newD;
+        prev[v] = u;
+        buildFrame(8, `Cập nhật khoảng cách ngắn nhất của nút V${v} thành ${newD}.`, { active: [v] }, { from: u, to: v });
       }
     }
   }
 
-  const { treeNodes: finalNodes } = serializeTree(root);
-  frames.push({
-    stepId: ++stepId,
-    activeLine: 0,
-    explanation: 'Thuật toán Dijkstra hoàn tất! Khoảng cách ngắn nhất từ nút gốc đến mọi nút đã được xác định thành công.',
-    dataState: [...visitedDistances],
-    highlights: defaultHighlights(),
-    treeNodes: finalNodes,
-  });
+  let lastReachable = 0;
+  for (let i = 0; i < nodeCount; i++) {
+    if (dist[i] !== Infinity) lastReachable = i;
+  }
+  const path: number[] = [];
+  let cur: number | null = lastReachable;
+  while (cur !== null && cur !== undefined) {
+    path.unshift(cur);
+    cur = prev[cur] ?? null;
+  }
+
+  buildFrame(0, `Dijkstra hoàn tất! Khoảng cách ngắn nhất: ${JSON.stringify(dist).replace(/Infinity/g, '∞')}.`, {}, undefined, path.length > 1 ? path : null);
 
   return { algorithmId: 'dijkstra', pseudoCode, frames };
 }

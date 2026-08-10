@@ -20,6 +20,7 @@ namespace VisualizationDSA.Domain.Entities
         public bool IsHidden { get; private set; }
         public bool IsDeleted { get; private set; }
         public DateTime CreatedAt { get; private set; }
+        public byte[] RowVersion { get; private set; } = new byte[8];
 
         
         public DateTime? UnlockAt { get; private set; }

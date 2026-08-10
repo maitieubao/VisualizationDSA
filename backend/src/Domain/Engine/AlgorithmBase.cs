@@ -25,7 +25,9 @@ public abstract class AlgorithmBase
         string explanation,
         List<int>? compares = null,
         List<int>? swaps = null,
-        List<int>? sorted = null)
+        List<int>? sorted = null,
+        string? activeLogicalLineId = null,
+        Dictionary<string, object>? variables = null)
     {
         _frames.Add(new FrameDTO
         {
@@ -38,7 +40,9 @@ public abstract class AlgorithmBase
                 Compare = compares ?? new List<int>(),
                 Swap = swaps ?? new List<int>(),
                 Sorted = sorted ?? new List<int>()
-            }
+            },
+            ActiveLogicalLineId = activeLogicalLineId,
+            Variables = variables
         });
     }
 }

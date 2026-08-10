@@ -91,4 +91,76 @@ describe('QuizStatsManager', () => {
     expect(stats1.correctAnswers).toBe(stats2.correctAnswers);
     expect(stats1.streak).toBe(stats2.streak);
   });
+
+  it('should fallback missing fields to defaults on partial JSON (QZ-049)', () => {
+    localStorage.setItem('dsa_quiz_statistics', JSON.stringify({ totalAttempts: 1 }));
+
+    const stats = QuizStatsManager.getStats();
+    expect(stats.totalAttempts).toBe(1);
+    expect(stats.correctAnswers).toBe(0);
+    expect(stats.streak).toBe(0);
+    expect(stats.bestStreak).toBe(0);
+    expect(stats.completedQuizzes).toEqual([]);
+  });
+
+  it('should fallback wrong-shaped fields to defaults (QZ-049)', () => {
+    localStorage.setItem(
+      'dsa_quiz_statistics',
+      JSON.stringify({
+        totalAttempts: '5',
+        correctAnswers: null,
+        streak: 3.5,
+        bestStreak: -1,
+        completedQuizzes: 'q1',
+      }),
+    );
+
+    const stats = QuizStatsManager.getStats();
+    expect(stats.totalAttempts).toBe(0);
+    expect(stats.correctAnswers).toBe(0);
+    expect(stats.streak).toBe(0);
+    expect(stats.bestStreak).toBe(0);
+    expect(stats.completedQuizzes).toEqual([]);
+  });
+
+  it('should not crash saveAttempt when storage is valid JSON but wrong shape (QZ-013)', () => {
+    localStorage.setItem('dsa_quiz_statistics', 'null');
+    QuizStatsManager.saveAttempt(true, 'q1');
+
+    let stats = QuizStatsManager.getStats();
+    expect(stats.totalAttempts).toBe(1);
+    expect(stats.correctAnswers).toBe(1);
+    expect(stats.streak).toBe(1);
+    expect(stats.completedQuizzes).toContain('q1');
+
+    localStorage.setItem('dsa_quiz_statistics', JSON.stringify({ totalAttempts: 'x', completedQuizzes: 42 }));
+    QuizStatsManager.saveAttempt(false, 'q2');
+
+    stats = QuizStatsManager.getStats();
+    expect(stats.totalAttempts).toBe(1);
+    expect(stats.correctAnswers).toBe(0);
+    expect(stats.streak).toBe(0);
+    expect(stats.completedQuizzes).toEqual([]);
+  });
+
+  it('should keep bestStreak (lifetime) when session streak resets (QZ-023)', () => {
+    QuizStatsManager.saveAttempt(true, 'q1');
+    QuizStatsManager.saveAttempt(true, 'q2');
+    QuizStatsManager.saveAttempt(true, 'q3');
+    QuizStatsManager.saveAttempt(false, 'q4');
+
+    const stats = QuizStatsManager.getStats();
+    expect(stats.streak).toBe(0);
+    expect(stats.bestStreak).toBe(3);
+  });
+
+  it('should compute getAccuracy as rounded percentage (QZ-023)', () => {
+    expect(QuizStatsManager.getAccuracy()).toBe(0);
+
+    QuizStatsManager.saveAttempt(true, 'q1');
+    QuizStatsManager.saveAttempt(true, 'q2');
+    QuizStatsManager.saveAttempt(false, 'q3');
+
+    expect(QuizStatsManager.getAccuracy()).toBe(67);
+  });
 });

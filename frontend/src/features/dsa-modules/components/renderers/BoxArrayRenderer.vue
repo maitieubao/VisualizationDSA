@@ -17,6 +17,25 @@ const containerRef = ref<HTMLDivElement | null>(null);
 const canvasRef = ref<HTMLCanvasElement | null>(null);
 let resizeObserver: ResizeObserver | null = null;
 
+let cachedColors: Record<string, string> = {};
+
+function cacheColors(): void {
+  const style = getComputedStyle(document.documentElement);
+  cachedColors = {
+    bg: style.getPropertyValue('--canvas-bg').trim() || '#080808',
+    default: style.getPropertyValue('--color-bg-active').trim() || '#232323',
+    border: style.getPropertyValue('--color-border-default').trim() || '#2b2b2b',
+    compare: style.getPropertyValue('--color-accent-yellow').trim() || '#FBBF24',
+    found: style.getPropertyValue('--color-accent-green').trim() || '#10B981',
+    dimmed: style.getPropertyValue('--color-text-disabled').trim() || 'rgba(35, 35, 35, 0.27)',
+    text: style.getPropertyValue('--color-text-primary').trim() || '#FFFFFF',
+    dimmedText: style.getPropertyValue('--color-text-muted').trim() || '#FFFFFF55',
+    muted: style.getPropertyValue('--color-text-muted').trim() || '#94A3B8',
+    low: style.getPropertyValue('--color-accent-blue').trim() || '#3B82F6',
+    high: style.getPropertyValue('--color-accent-red').trim() || '#EF4444',
+  };
+}
+
 
 const animatedState = shallowRef<AnimatedState | null>(null);
 let animationFrameId: number | null = null;
@@ -43,19 +62,18 @@ function renderCanvas(): void {
   const ctx = canvas.getContext('2d');
   if (!ctx) return;
 
-  const style = getComputedStyle(document.documentElement);
-  const colorBg = style.getPropertyValue('--canvas-bg').trim() || '#080808';
+  const colorBg = cachedColors.bg || '#080808';
   const colors = {
-    default: style.getPropertyValue('--color-bg-active').trim() || '#232323',
-    border: style.getPropertyValue('--color-border-default').trim() || '#2b2b2b',
-    compare: style.getPropertyValue('--color-accent-yellow').trim() || '#FBBF24',
-    found: style.getPropertyValue('--color-accent-green').trim() || '#10B981',
-    dimmed: style.getPropertyValue('--color-text-disabled').trim() || 'rgba(35, 35, 35, 0.27)',
-    text: style.getPropertyValue('--color-text-primary').trim() || '#FFFFFF',
-    dimmedText: style.getPropertyValue('--color-text-muted').trim() || '#FFFFFF55',
-    muted: style.getPropertyValue('--color-text-muted').trim() || '#94A3B8',
-    low: style.getPropertyValue('--color-accent-blue').trim() || '#3B82F6',
-    high: style.getPropertyValue('--color-accent-red').trim() || '#EF4444',
+    default: cachedColors.default || '#232323',
+    border: cachedColors.border || '#2b2b2b',
+    compare: cachedColors.compare || '#FBBF24',
+    found: cachedColors.found || '#10B981',
+    dimmed: cachedColors.dimmed || 'rgba(35, 35, 35, 0.27)',
+    text: cachedColors.text || '#FFFFFF',
+    dimmedText: cachedColors.dimmedText || '#FFFFFF55',
+    muted: cachedColors.muted || '#94A3B8',
+    low: cachedColors.low || '#3B82F6',
+    high: cachedColors.high || '#EF4444',
   };
 
   const dpr = window.devicePixelRatio || 1;
@@ -160,6 +178,7 @@ watch(() => props.frame, (newFrame) => {
 }, { deep: true });
 
 onMounted(() => {
+  cacheColors();
   resizeObserver = new ResizeObserver(resizeCanvas);
   if (containerRef.value) resizeObserver.observe(containerRef.value);
   resizeCanvas();

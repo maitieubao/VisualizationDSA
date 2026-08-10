@@ -380,15 +380,63 @@ namespace VisualizationDSA.WebApi.Controllers
             var userIdStr = JwtHelper.ExtractSubFromToken(Request);
             if (userIdStr == null || !Guid.TryParse(userIdStr, out var currentUserId)) return Unauthorized();
 
-            var course = await _dbContext.Courses.FindAsync(id);
+            var course = await _dbContext.Courses
+                .Include(c => c.Modules)
+                    .ThenInclude(m => m.Items)
+                        .ThenInclude(i => i.Lesson)
+                .FirstOrDefaultAsync(c => c.Id == id);
             if (course == null) return NotFound(new { error = "COURSE_NOT_FOUND", message = "Không tìm thấy khóa học." });
 
             if (!IsOwnerOrAdmin(course, currentUserId)) return StatusCode(403, new { error = "FORBIDDEN", message = "Bạn không có quyền xóa khóa học này." });
 
+            // T1-GUARD: Cascade delete theo thứ tự FK đảo để tránh orphan data.
+            // 1. Xóa Lessons liên quan qua ModuleItems (Lesson.Id → UserLessonProgress cascade)
+            var lessonIds = course.Modules.SelectMany(m => m.Items)
+                .Where(i => i.ItemType == ModuleItemType.Lesson && i.LessonId.HasValue)
+                .Select(i => i.LessonId!.Value)
+                .ToList();
+            if (lessonIds.Any())
+            {
+                await _dbContext.UserLessonProgresses
+                    .Where(p => lessonIds.Contains(p.LessonId))
+                    .ExecuteDeleteAsync();
+                await _dbContext.Lessons
+                    .Where(l => lessonIds.Contains(l.Id))
+                    .ExecuteDeleteAsync();
+            }
+
+            // 2. Xóa ClassroomLesson references (nếu classroom đã import)
+            await _dbContext.ClassroomLessons
+                .Where(cl => lessonIds.Contains(cl.LessonId))
+                .ExecuteDeleteAsync();
+
+            // 3. Xóa ModuleItems + ClassroomModuleItems liên quan
+            var moduleItemIds = course.Modules.SelectMany(m => m.Items).Select(i => i.Id).ToList();
+            if (moduleItemIds.Any())
+            {
+                await _dbContext.ClassroomModuleItemOverrides
+                    .Where(o => moduleItemIds.Contains(o.ModuleItemId))
+                    .ExecuteDeleteAsync();
+                await _dbContext.UserModuleItemProgresses
+                    .Where(p => moduleItemIds.Contains(p.ModuleItemId))
+                    .ExecuteDeleteAsync();
+            }
+
+            // 4. Xóa CourseModules (cascade sẽ xóa ModuleItems)
+            var moduleIds = course.Modules.Select(m => m.Id).ToList();
+            if (moduleIds.Any())
+            {
+                await _dbContext.ClassroomModules
+                    .Where(cm => moduleIds.Contains(cm.Id))
+                    .ExecuteDeleteAsync();
+            }
+
+            // 5. Xóa khóa học
             _dbContext.Courses.Remove(course);
             await _dbContext.SaveChangesAsync();
 
-            return Ok(new { message = "Xóa khóa học thành công!" });
+            var lessonCount = lessonIds.Count;
+            return Ok(new { message = $"Xóa khóa học thành công! Đã xóa {lessonCount} bài giảng và dữ liệu liên quan." });
         }
 
         [HttpPost("courses/{courseId}/lessons")]

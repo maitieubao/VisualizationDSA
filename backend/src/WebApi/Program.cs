@@ -172,6 +172,8 @@ builder.Services.AddScoped<VisualizationDSA.Application.Interfaces.IApplicationD
 
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 
+builder.Services.AddSingleton<VisualizationDSA.Domain.Lectures.LectureRepository>();
+
 
 // Dùng chung khóa ký JWT từ cấu hình cho hệ stateless (JwtHelper/StatelessAuthStrategy/AdminController).
 var jwtKey = builder.Configuration["Jwt:Key"];

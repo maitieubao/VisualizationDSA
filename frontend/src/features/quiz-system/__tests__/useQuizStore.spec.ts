@@ -1,8 +1,19 @@
 
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { flushPromises } from '@vue/test-utils';
 import { setActivePinia, createPinia } from 'pinia';
 import { useQuizStore } from '../store/useQuizStore';
+import { submitQuizAttempt } from '../service/quizApi';
 import type { QuizQuestion, QuizCheckpoint } from '../types/quiz.types';
+
+// QZ-006: mock quizApi để assert syncSessionToServer gửi đúng payload (quizId + answers).
+vi.mock('../service/quizApi', () => ({
+  submitQuizAttempt: vi.fn(async () => ({ score: 3, maxScore: 3, passed: true, xpAwarded: 100 })),
+}));
+
+vi.mock('../../auth/store/useAuthStore', () => ({
+  useAuthStore: () => ({ getAccessToken: () => 'jwt-token' }),
+}));
 
 const mockMCQuestion: QuizQuestion = {
   id: 'q1',
@@ -40,6 +51,8 @@ describe('useQuizStore', () => {
   beforeEach(() => {
     setActivePinia(createPinia());
     localStorage.clear();
+    // QZ-006: mock submitQuizAttempt phải sạch giữa các test.
+    vi.clearAllMocks();
   });
 
   it('should initialize with empty state', () => {
@@ -81,18 +94,29 @@ describe('useQuizStore', () => {
     expect(store.isQuizActive).toBe(false);
   });
 
-  it('should not re-trigger completed checkpoint', () => {
+  it('should not re-trigger completed checkpoint (chỉ sau khi trả lời ĐÚNG — QZ-018)', () => {
     const store = useQuizStore();
     store.loadCheckpoints(mockCheckpoints);
 
     store.checkFrameForQuiz(1);
-    expect(store.activeQuestion?.id).toBe('q1');
-
+    store.submitOptionAnswer(1); // q1 đúng (correctOptionIndex=1)
     store.dismissQuestionAndContinue();
-    store.checkFrameForQuiz(1);
-
-    expect(store.activeQuestion).toBeNull();
     expect(store.completedCheckpointIndexes).toContain(1);
+
+    store.checkFrameForQuiz(1);
+    expect(store.activeQuestion).toBeNull();
+  });
+
+  it('dismiss khi chưa trả lời đúng KHÔNG đánh dấu completed — được phép trả lời lại (QZ-018)', () => {
+    const store = useQuizStore();
+    store.loadCheckpoints(mockCheckpoints);
+
+    store.checkFrameForQuiz(1);
+    store.dismissQuestionAndContinue();
+    expect(store.completedCheckpointIndexes).not.toContain(1);
+
+    store.checkFrameForQuiz(1);
+    expect(store.activeQuestion).not.toBeNull();
   });
 
   it('should submit correct MC answer', () => {
@@ -271,5 +295,46 @@ describe('useQuizStore', () => {
     store.checkFrameForQuiz(1);
 
     expect(store.isCanvasTargetMode).toBe(false);
+  });
+
+  it('QZ-006: truyền quizId → dismiss sau khi trả lời đúng hết sẽ sync XP lên server', async () => {
+    const store = useQuizStore();
+    store.loadCheckpoints(mockCheckpoints, 'bubble-sort');
+
+    store.checkFrameForQuiz(1);
+    store.submitOptionAnswer(1); // q1 MC đúng
+    store.dismissQuestionAndContinue();
+
+    store.checkFrameForQuiz(5);
+    store.submitOptionAnswer(0); // q2 TF đúng
+    store.dismissQuestionAndContinue();
+
+    store.checkFrameForQuiz(10);
+    store.handleCanvasClickAnswer(202, 198, [
+      { id: 'node_A', x: 100, y: 100, radius: 20 },
+      { id: 'node_C', x: 200, y: 200, radius: 20 },
+    ]); // q3 CANVAS đúng
+    expect(store.isCorrect).toBe(true);
+    store.dismissQuestionAndContinue();
+
+    await flushPromises();
+    // Lưu ý: CANVAS_TARGET không có option index nên sessionAnswers giữ null → gửi -1
+    // (thiết kế hiện tại — câu canvas không được chấm phía server, chỉ đếm session local).
+    expect(submitQuizAttempt).toHaveBeenCalledWith(
+      { quizId: 'bubble-sort', answers: [1, 0, -1] },
+      'jwt-token',
+    );
+  });
+
+  it('QZ-006: KHÔNG truyền quizId → syncSessionToServer không được gọi (không sync XP)', async () => {
+    const store = useQuizStore();
+    store.loadCheckpoints(mockCheckpoints); // thiếu quizId — trước đây VisualizationPlayer gọi nhầm dạng này
+
+    store.checkFrameForQuiz(1);
+    store.submitOptionAnswer(1);
+    store.dismissQuestionAndContinue();
+
+    await flushPromises();
+    expect(submitQuizAttempt).not.toHaveBeenCalled();
   });
 });

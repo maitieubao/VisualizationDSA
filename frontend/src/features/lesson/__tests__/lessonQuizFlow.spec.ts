@@ -114,4 +114,68 @@ describe('LessonStepQuiz.vue', () => {
     await resetBtn!.trigger('click');
     expect(wrapper.text()).toContain('Đã chọn 0 / 4');
   });
+
+  // ── QZ-043: biên chính xác 70% (7/10) + quiz 1 câu ──
+  function makeTrueFalseQuestions(count: number): QuizQuestion[] {
+    return Array.from({ length: count }, (_, i) => ({
+      id: `tq${i + 1}`,
+      questionText: `Câu trắc nghiệm ${i + 1}?`,
+      options: ['Đúng', 'Sai'],
+      correctIndex: 0,
+      explanation: `Giải thích ${i + 1}`,
+    }));
+  }
+
+  /** Chọn phương án theo chỉ số toàn cục: câu i phương án j = button[i*2 + j]. */
+  async function answerByGlobalIndex(correctList: boolean[], count: number): Promise<void> {
+    for (let i = 0; i < count; i++) {
+      const btn = wrapper!.findAll('button')[i * 2 + (correctList[i] ? 0 : 1)];
+      expect(btn).toBeTruthy();
+      await btn.trigger('click');
+    }
+    await wrapper!.findAll('button').find(b => b.text().includes('Nộp Bài Quiz'))!.trigger('click');
+  }
+
+  it('QZ-043a: đúng 7/10 (biên 70%) → pass, mở Code Lab', async () => {
+    const ten = makeTrueFalseQuestions(10);
+    wrapper = mountQuiz({ questions: ten });
+    const correctList = [true, true, true, true, true, true, true, false, false, false];
+    await answerByGlobalIndex(correctList, 10);
+
+    expect(wrapper.text()).toContain('7 / 10');
+    expect(wrapper.text()).toContain('70%');
+    expect(wrapper.findAll('button').some(b => b.text().includes('Mở Khóa Code Lab'))).toBe(true);
+  });
+
+  it('QZ-043b: đúng 6/10 (dưới biên) → không pass', async () => {
+    const ten = makeTrueFalseQuestions(10);
+    wrapper = mountQuiz({ questions: ten });
+    const correctList = [true, true, true, true, true, true, false, false, false, false];
+    await answerByGlobalIndex(correctList, 10);
+
+    expect(wrapper.text()).toContain('6 / 10');
+    expect(wrapper.text()).toContain('60%');
+    expect(wrapper.text()).toContain('chưa đạt');
+    expect(wrapper.findAll('button').some(b => b.text().includes('Mở Khóa Code Lab'))).toBe(false);
+  });
+
+  it('QZ-043c: quiz 1 câu — trả lời đúng → 100% pass', async () => {
+    const one = makeTrueFalseQuestions(1);
+    wrapper = mountQuiz({ questions: one });
+    await answerByGlobalIndex([true], 1);
+
+    expect(wrapper.text()).toContain('1 / 1');
+    expect(wrapper.text()).toContain('100%');
+    expect(wrapper.findAll('button').some(b => b.text().includes('Mở Khóa Code Lab'))).toBe(true);
+  });
+
+  it('QZ-043d: quiz 1 câu — trả lời sai → 0% không pass', async () => {
+    const one = makeTrueFalseQuestions(1);
+    wrapper = mountQuiz({ questions: one });
+    await answerByGlobalIndex([false], 1);
+
+    expect(wrapper.text()).toContain('0 / 1');
+    expect(wrapper.text()).toContain('chưa đạt');
+    expect(wrapper.findAll('button').some(b => b.text().includes('Mở Khóa Code Lab'))).toBe(false);
+  });
 });

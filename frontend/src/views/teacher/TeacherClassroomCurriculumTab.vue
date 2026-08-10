@@ -9,26 +9,35 @@
         </p>
       </div>
       
-      <div class="flex gap-2 flex-wrap">
-        <button 
-          type="button" 
-          class="btn-secondary" 
-          @click="showImportCourseModal = true"
-        >
-          <BaseIcon name="download" class="w-4 h-4 inline mr-1 align-middle" />
-          Import từ Khóa học
-        </button>
-        
-        <button 
-          type="button" 
-          class="btn-primary" 
-          @click="addNewModule"
-          :disabled="saving"
-        >
-          <BaseIcon name="plus" class="w-4 h-4 inline mr-1 align-middle" />
-          Thêm Module
-        </button>
-      </div>
+        <div class="flex gap-2 flex-wrap">
+          <button
+            type="button"
+            class="btn-secondary"
+            @click="showImportCourseModal = true"
+          >
+            <BaseIcon name="download" class="w-4 h-4 inline mr-1 align-middle" />
+            Import từ Khóa học
+          </button>
+
+          <button
+            type="button"
+            class="btn-primary"
+            @click="addNewModule"
+            :disabled="saving"
+          >
+            <BaseIcon name="plus" class="w-4 h-4 inline mr-1 align-middle" />
+            Thêm Module
+          </button>
+
+          <button
+            type="button"
+            class="btn-action btn-action--delete"
+            @click="confirmDeleteClassroom"
+            :disabled="saving"
+          >
+            <BaseIcon name="trash" class="w-4 h-4" /> Xóa lớp học
+          </button>
+        </div>
     </div>
 
     
@@ -378,6 +387,29 @@ async function executeDelete() {
 async function onCourseImported() {
   showImportCourseModal.value = false;
   await loadCurriculum();
+}
+
+async function confirmDeleteClassroom() {
+  const classroomId = route.params.id;
+  const classroomName = curriculum.value?.name || 'lớp học này';
+  if (!confirm(`Bạn có chắc chắn muốn XÓA VĨNH VIỄN lớp học "${classroomName}"?` + '\n\nHành động này sẽ xóa toàn bộ module, bài học, học viên và dữ liệu liên quan. KHÔNG THỂ HOÀN TẤT!')) return;
+  try {
+    const token = authStore.getAccessToken() || '';
+    const res = await fetch(`${import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:5055'}/api/v1/classrooms/${classroomId}`, {
+      method: 'DELETE',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+    });
+    if (res.ok) {
+      const data = await res.json();
+      alert(data.message || 'Xóa lớp học thành công!');
+      router.push('/teacher');
+    } else {
+      const err = await res.json();
+      alert(err.message || 'Lỗi khi xóa lớp học.');
+    }
+  } catch {
+    alert('Lỗi kết nối.');
+  }
 }
 
 

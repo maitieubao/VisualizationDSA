@@ -1,8 +1,5 @@
 import type { AlgorithmResult, FrameDTO, HighlightIndices, TreeNodeDTO } from '../types/algorithm.types';
-
-function defaultHighlights(overrides?: Partial<HighlightIndices>): HighlightIndices {
-  return { compare: [], swap: [], sorted: [], dimmed: [], active: [], ...overrides };
-}
+import { defaultHighlights } from './highlightHelpers';
 
 export function generateStack(inputData: number[]): AlgorithmResult {
   const frames: FrameDTO[] = [], stack: number[] = [];

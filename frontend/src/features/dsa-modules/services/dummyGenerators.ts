@@ -1,4 +1,5 @@
 import type { AlgorithmResult, HighlightIndices } from '../types/algorithm.types';
+import { defaultHighlights } from './highlightHelpers';
 import {
   generateLinearSearch,
   generateBinarySearch,
@@ -16,10 +17,6 @@ import { generateStack, generateQueue, generateBST } from './dataStructureGenera
 import { generateBFS, generateDFS, generateDijkstra, generateSlidingWindow, generateMonotonicStack } from './premiumGenerators';
 import { generateBellmanFord } from './graphGenerators';
 import { LOCAL_METADATA } from '../store/algorithmLocalMetadata';
-
-function defaultHighlights(overrides?: Partial<HighlightIndices>): HighlightIndices {
-  return { compare: [], swap: [], sorted: [], dimmed: [], active: [], ...overrides };
-}
 
 const GENERATORS: Record<string, (input: number[]) => AlgorithmResult> = {
   'linear-search':   generateLinearSearch,

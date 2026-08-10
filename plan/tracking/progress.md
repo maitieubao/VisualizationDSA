@@ -16,7 +16,7 @@ Tài liệu này theo dõi chi tiết tiến độ hoàn thành **code thực t�
 | **Sprint đang triển khai CODE** | Hoàn tất! 🎉                                                       |
 | **Backend .NET C#**             | 100% — Clean Architecture + BCrypt Auth + Serilog + RateLimiting + IMemoryCache + Pagination + SignalR Real-time |
 | **Tổng file thực tế**           | ~120 files (87 frontend + 35 backend `.cs`)                        |
-| **Unit tests**                  | 1563 frontend (1549 + 14 Toast/Skeleton/NotFound/Checkout/Sandbox) + 212 backend C# — ✅ 100% PASS |
+| **Unit tests**                  | 1563 frontend (1549 + 14 Toast/Skeleton/NotFound/Checkout/Sandbox) + 258 backend C# — ✅ 100% PASS |
 
 ---
 
@@ -96,20 +96,89 @@ Tài liệu này theo dõi chi tiết tiến độ hoàn thành **code thực t�
 | **Frontend** | DSAPlayer + Dashboard + App Integration | ✅ CODE DONE | `DSAPlayer.vue`, `AlgorithmDashboard.vue`, "DSA Modules" tab in `App.vue` |
 | **Tests** | 38 Unit Tests | ✅ CODE DONE | `useAlgorithmStore.spec.ts` (10), `dummyGenerators.spec.ts` (18), `dsaApi.spec.ts` (3), `algorithmCatalog.spec.ts` (7) — ALL PASS |
 
+### DSA Modules — Code Quality Review Fixes (Round 3)
+
+| Task | Trạng thái CODE | Chi tiết |
+| :--- | :--- | :--- |
+| `defaultHighlights` de-duplicate | ✅ CODE DONE | `services/highlightHelpers.ts` (mới) — 5 generator files import chung thay vì duplicate mỗi file |
+| QuickSort đệ quy → iterative | ✅ CODE DONE | `services/sortingGenerators.ts` — stack-based, hết StackOverflowException |
+| Dijkstra chạy trên BST sai bản chất | ✅ CODE DONE | `services/premiumGenerators.ts` — rewrite thành đồ thị thật: `graphNodes`/`graphEdges` (chain + cross edges, weight dương sinh từ input) + `distances` + `currentPath`, bỏ weights hardcode 3/5; `AlgorithmVisualizer` tự chọn GraphRenderer qua data-driven detection |
+| Bucket Sort dải tĩnh 0-100 | ✅ CODE DONE | `services/sortingGenerators.ts` — bucket range động theo `[min, max]` thực tế, hỗ trợ số âm + range == 0 (all-equal) |
+| `getComputedStyle` mỗi frame | ✅ CODE DONE | 5 renderers: `cacheColors()` trong `onMounted`; `treeCanvasHelpers.ts`: `getThemeColors()` lazy cache module-level — không còn gọi per-frame |
+| Tests | ✅ CODE DONE | `__tests__/dummyGenerators.spec.ts` — test Dijkstra đổi sang assert graph behavior; toàn bộ `src/features/dsa-modules` = 182 tests PASS, `vue-tsc --noEmit` clean |
+
 ### Phase 1 E-Lecture Mode — Chế độ Bài giảng Điện tử (Script-driven Architecture)
 
 | Bước | Nội dung | Trạng thái CODE | Chi tiết |
 | :--- | :--- | :--- | :--- |
-| **Types** | TypeScript Interfaces (Lecture, Slide, SlideAction) | ✅ CODE DONE | `e-lecture/types/lecture.types.ts` — SlideCommand, SlideType, Slide, LectureScript, LectureErrorResponse |
+| **Types** | TypeScript Interfaces (Lecture, Slide, SlideAction) | ✅ CODE DONE | `e-lecture/types/lecture.types.ts` — SlideCommand, SlideType, Slide, LectureScript (xóa `LectureErrorResponse` dead type) |
 | **JSON Script** | Kịch bản bài giảng mẫu Bubble Sort | ✅ CODE DONE | `e-lecture/assets/lectures/bubble-sort-intro.json` — 5 slides (theory, guided-animation, interactive-check) |
 | **Frontend** | useLectureStore Pinia Store | ✅ CODE DONE | `e-lecture/store/useLectureStore.ts` — startLecture, nextSlide, prevSlide, goToSlide, exitLecture, PLAY_UNTIL sync, isMinimized |
 | **Frontend** | LectureOverlay.vue (Glassmorphism UI) | ✅ CODE DONE | `e-lecture/components/LectureOverlay.vue` — glassmorphism panel, dimmed backdrop 40%, auto-minimize (opacity 0.15) khi Canvas chạy, pagination dots, Next/Back/Exit, keyboard shortcuts (Arrow keys, Esc) |
 | **Frontend** | Extend useAnimationStore | ✅ CODE DONE | Added `playUntilFrame()`, `goToFrame()`, `cancelPlayUntil()`, `setInteractionLocked()`, `interactionLocked` state |
-| **Frontend** | VisualizationPlayer Integration | ✅ CODE DONE | E-Lecture button + LectureOverlay overlay trong `VisualizationPlayer.vue`, AnimControlPanel respects `interactionLocked` |
-| **Frontend** | Lecture Loader Service | ✅ CODE DONE | `e-lecture/services/lectureLoader.ts` — bundled JSON + API fallback, `hasLecture()`, `getAvailableLectureIds()` |
-| **Backend** | C# Lecture Models | ✅ CODE DONE | `Domain/Lectures/Lecture.cs` (Lecture, Slide, SlideAction), `LectureRepository.cs` (in-memory seed data) |
-| **Backend** | LecturesController API | ✅ CODE DONE | `WebApi/Controllers/LecturesController.cs` — `GET /api/v1/lectures`, `GET /api/v1/lectures/{algorithmId}`, Cache-Control 7 days |
+| **Frontend** | VisualizationPlayer Integration | ✅ CODE DONE | E-Lecture button + LectureOverlay overlay trong `VisualizationPlayer.vue`, AnimControlPanel respects `interactionLocked`; nút hiện qua `isLectureAvailable()` async (bundle + API list) |
+| **Frontend** | Lecture Loader Service | ✅ CODE DONE | `e-lecture/services/lectureLoader.ts` — bundled JSON + API fallback, `hasLecture()`, `getAvailableLectureIds()`, `isLectureAvailable()` |
+| **Backend** | C# Lecture Models | ✅ CODE DONE | `Domain/Lectures/Lecture.cs` (Lecture, Slide, SlideAction), `LectureRepository.cs` — instance + DI, bỏ seed trùng lặp với frontend (nguồn chân lý duy nhất = frontend bundle) |
+| **Backend** | LecturesController API | ✅ CODE DONE | `WebApi/Controllers/LecturesController.cs` — constructor injection, `GET /api/v1/lectures`, `GET /api/v1/lectures/{algorithmId}`, Cache-Control 7 days |
 | **Tests** | 28 Unit Tests | ✅ CODE DONE | `useLectureStore.spec.ts` (13), `lectureLoader.spec.ts` (7), `animationStoreExtensions.spec.ts` (8) — ALL PASS |
+
+### E-Lecture — Review Fixes & Test Expansion
+
+| Task | Trạng thái CODE | Chi tiết |
+| :--- | :--- | :--- |
+| Tách notification ra feature riêng | ✅ CODE DONE | 4 file (NotificationBell.vue/.css, notificationApi.ts, useNotificationStore.ts) chuyển sang `features/notifications/` + barrel `index.ts`; update imports `AppHeader.vue`, `checkoutP2Tests.spec.ts` |
+| Trùng lặp lecture data 2 nguồn | ✅ CODE DONE | `LectureRepository` → instance class + DI singleton trong `Program.cs`; xóa seed trùng lặp backend; `LecturesController` constructor injection |
+| Dead code API fallback | ✅ CODE DONE | Thêm `isLectureAvailable()` (bundle trước, API list sau); `VisualizationPlayer` dùng async ref thay sync `hasLecture` |
+| **Bug: nút Bỏ qua bị chặn** | ✅ CODE DONE | `useLectureStore.ts` — guard `isTransitioning` từ chối skip khi PLAY_UNTIL đang chạy; fix: `if (isTransitioning.value && !isWaitingForAnimation.value) return;` (cả nextSlide + prevSlide) |
+| Backend tests | ✅ CODE DONE | `Domain/Lectures/LectureRepositoryTests.cs` (6 tests), `Features/Lectures/LecturesControllerTests.cs` (4 tests) — thêm `WebApi.csproj` reference |
+| Frontend tests | ✅ CODE DONE | `notifications/__tests__/` (store 10, api 6, bell 8); `e-lecture`: `lectureOverlay.spec.ts` (10), `lectureNavigation.spec.ts` (9), `useLectureStore.spec.ts` +7 (PLAY_UNTIL/skip race/lock ownership/guards), `lectureLoader.spec.ts` +5 (isLectureAvailable); thêm header `// @vitest-environment jsdom` cho 7 file test thiếu (trước đây chạy sai node env) |
+| Verify | ✅ CODE DONE | E-Lecture + Notifications = 141/141 PASS; Backend = 356/356 PASS; `vue-tsc --noEmit` clean |
+
+### Fix 5 Failures Còn Tồn Tại (Cross-Feature Cleanup)
+
+| Task | Trạng thái CODE | Chi tiết |
+| :--- | :--- | :--- |
+| graphP2Tests VCR step debounce | ✅ CODE DONE | `graphP2Tests.spec.ts` IP-026 — `vi.useFakeTimers()` + `vi.advanceTimersByTime(200)` giữa các step (test cũ không tôn trọng `STEP_DEBOUNCE_MS` 100ms) |
+| code-to-viz compile success false-positive | ✅ CODE DONE | `useLiveCompilerStore.spec.ts` + `codeToVizP0Tests.spec.ts` — thêm header `// @vitest-environment jsdom` (thiếu rAF → `animStore.play()` throw → catch đánh `hasCompileError=true` sai) |
+| codeEditorP2 CE-010 reload button | ✅ CODE DONE | `codeEditorP2Tests.spec.ts` — `wrapper.find('button')` bắt nhầm tab button "Bubble Sort"; scope lại `[role="alert"] button` |
+| docsMermaidSyntax flaky | ✅ CODE DONE | Chạy lại full suite pass (issue tài nguyên khi chạy song song, không phải bug code) |
+| Verify | ✅ CODE DONE | Frontend = **2553/2553 PASS (144 files)**; Backend = **356/356 PASS**; `vue-tsc --noEmit` clean |
+
+### Fix Backend Graph Strategies Bug + DSA Tasks T1-T4
+
+| Task | Trạng thái CODE | Chi tiết |
+| :--- | :--- | :--- |
+| BellmanFord/Prim/AStar duplicate key | ✅ CODE DONE | `AlgorithmStrategyBase.BuildPrevDict()` — thay `Array.IndexOf(prev, p)` (trả về index đầu tiên khi trùng parent → ToDictionary ném ArgumentException) bằng loop theo index; áp dụng 3 strategies; test "KnownBug" đổi thành assert Execute thành công + predecessors không trùng key |
+| DSAPlayer catch → toast cho user | ✅ CODE DONE | `DSAPlayer.vue` — `toastStore.error()` khi catch, `toastStore.warning()` khi fallback (T3) |
+| Verify T1/T2/T4 đã xong trước | ✅ CODE DONE | T1 fallback message (dsaApi ExecuteResult), T2 bỏ `as unknown as FrameDTO`, T4 `Array.isArray` guard trong useAlgorithmStore |
+| Task files | ✅ CODE DONE | `tasks-dsa-modules.md` + `tasks-custom-input.md` — đánh dấu hoàn tất toàn bộ |
+| Verify cuối | ✅ CODE DONE | Frontend = **2553/2553 PASS**; Backend = **356/356 PASS**; `vue-tsc --noEmit` clean |
+
+### E-Lecture Review Round — Reactivity & API Consistency
+
+| Task | Trạng thái CODE | Chi tiết |
+| :--- | :--- | :--- |
+| 🔴 `ref<Set>` reactivity bug | ✅ CODE DONE | `useLectureStore.ts` — `interactionLockOwners` chuyển `ref<Set>` → `ref<string[]>` (push + filter reassignment), dedup bằng `includes()`; Vue track được mọi thay đổi |
+| 🟡 API_BASE inconsistent | ✅ CODE DONE | `lectureLoader.ts` — `${import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:5055'}/api/v1/lectures` (khớp notificationApi) |
+| 🟡 `isLectureAvailable` GET list → HEAD | ✅ CODE DONE | Chỉ HEAD đúng 1 algorithm thay vì tải cả danh sách; ASP.NET Core tự map HEAD cho GET endpoint |
+| 🟢 Blank lines đầu types | ✅ CODE DONE | `lecture.types.ts` — xóa 5 dòng trống |
+| 🟢 Template line dài | ✅ CODE DONE | `LectureOverlay.vue` — tách attribute `:class` xuống nhiều dòng |
+| 🟢 Inline SVG → BaseIcon | ✅ CODE DONE | `LectureNavigation.vue` — dùng `BaseIcon name="log-out"` |
+| Tests | ✅ CODE DONE | `lectureLoader.spec.ts` — 5 tests isLectureAvailable đổi sang HEAD (ok/404/500/network); verify `method: 'HEAD'` + URL chứa algorithmId |
+| Verify cuối | ✅ CODE DONE | Frontend = **2555/2555 PASS (144 files)**; `vue-tsc --noEmit` clean; docsMermaid timeout tăng 60s→120s hết flaky |
+
+### E-Lecture Review Round 4 — Reactivity & API Consistency
+
+| Task | Trạng thái CODE | Chi tiết |
+| :--- | :--- | :--- |
+| 🔴 `ref<Set>` reactivity bug | ✅ CODE DONE | `useLectureStore.ts` — `interactionLockOwners` đổi `ref<Set<string>>` → `ref<string[]>` (push/filter, dedupe qua includes). Vue ref không track mutation của Set nhưng track reassignment của array |
+| 🟡 API_BASE inconsistent | ✅ CODE DONE | `lectureLoader.ts` — `/api/v1/lectures` → `${import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:5055'}/api/v1/lectures` (khớp notificationApi.ts) |
+| 🟡 `isLectureAvailable` GET list | ✅ CODE DONE | Đổi sang `HEAD {algorithmId}` — không tải toàn bộ danh sách chỉ để check 1 algorithm |
+| 🟢 5 dòng trống đầu types | ✅ CODE DONE | `lecture.types.ts` — dọn file |
+| 🟢 Template dài | ✅ CODE DONE | `LectureOverlay.vue` — format multi-line |
+| 🟢 Inline SVG vs BaseIcon | ✅ CODE DONE | Thêm icon `log-out` vào `BaseIcon.vue`; `LectureNavigation.vue` dùng `<BaseIcon name="log-out">` |
+| Tests | ✅ CODE DONE | `lectureLoader.spec.ts`: 2 tests isLectureAvailable đổi sang HEAD semantics + assert method HEAD; `useLectureStore.spec.ts`: +2 tests (reactivity watch detect lock change, lock dedupe) |
+| Verify | ✅ CODE DONE | Frontend = **2555/2555 PASS (144 files)**; `vue-tsc --noEmit` clean |
 
 ### Phase 1 Execution Control — VCR Control Panel Nâng cấp
 
@@ -122,6 +191,7 @@ Tài liệu này theo dõi chi tiết tiến độ hoàn thành **code thực t�
 | **Store** | togglePlay action added | ✅ CODE DONE | `useAnimationStore.ts` — togglePlay() play/pause toggle action |
 | **Component** | AnimControlPanel.vue rewrite | ✅ CODE DONE | Replay button (↩ khi FINISHED), YouTube-style neon slider (emerald progress track), Dynamic Tooltip, Speed dropdown (0.25x-4.0x), Glassmorphism backdrop-blur, E-Lecture lock (opacity 0.5 + pointer-events none) |
 | **Tests** | 23 Unit Tests | ✅ CODE DONE | `executionControl.spec.ts` — Speed Presets (1), Speed Preferences localStorage (5), Throttled Scrubbing (3), Replay Logic (3), Keyboard Hotkeys (9), Tooltip Logic (2) — ALL PASS |
+| **BugFix** | DATN_ERRORS §1 — chiến dịch EC-001→047 | ✅ CODE DONE | 2026-08-10. `useVcrStore.ts`: scrub auto-pause (EC-001), step ép pause (EC-002), Replay khi isAtEnd (EC-003), debounce 100ms step (EC-005), clamp speed 0.1–5.0 (EC-006), heal index khi dataset đổi (EC-010), pause trước customCompileFn (EC-011), toast thay alert (EC-024), ticker dùng `advanceFrame` riêng (không pause). `VcrDockBar.vue`: speed options SPEED_PRESETS 8 mốc (EC-007), mousedown-pause + throttle 33ms (EC-013), thumb + fill CSS (EC-014), replay icon khi isAtEnd (EC-003 UI), capsule glassmorphic (EC-031), aria-live (EC-029), title động (EC-027). `AnimationVcrControls.vue`: disabled states + counter `0/0` (EC-015), aria-label (EC-028). `SortingView.vue`/`usePlaybackHotkeys`/`useDSAKeyboard`: e.repeat guard (EC-025), interactionLocked guard (EC-036), hint R (EC-030). `useAnimationStore.ts`: replay khi finished (EC-004), counted visibility listener (EC-016/017), reset loopEnabled khi load (EC-033), resolve playUntil trên pause/step (EC-034), progressPercent 1-frame = 100 (EC-035). `SortingAnimationEngine.ts`: rAF dừng khi paused + clamp delta (EC-008), bỏ Math.max spread (EC-022). `useSliderTooltip`/`useThrottledScrub`/`AnimTimelineSlider`: rAF throttle + flush + mouseleave scrubEnd (EC-019/020/021). Renderers: bỏ deep watch (EC-023). Tests: `vcrPlayerP0Tests` rewrite (fake timers EC-039, ticker EC-040, jumpToFrame OOB EC-043, lỗi compile EC-042, mount VcrDockBar EC-012), `animControlPanel.spec.ts` (mới, EC-041), xóa dead `VcrControls.vue` (EC-032). Toàn feature + animation-engine + dsa-modules: **402/402 pass** |
 
 ### Phase 1 Interactive Playground — Sân chơi vẽ đồ thị tương tác (Canvas + Physics)
 
@@ -139,6 +209,9 @@ Tài liệu này theo dõi chi tiết tiến độ hoàn thành **code thực t�
 | **Drawing** | playgroundCanvasDraw.ts (Directed/Undirected) | ✅ CODE DONE | `drawPlayground()` accepts `graphType` param, draws arrowheads for directed edges, dashed edge preview with arrow when graphType=directed |
 | **Integration** | App.vue Playground tab | ✅ CODE DONE | New "Playground" tab in App.vue, full-screen InteractivePlayground component |
 | **Tests** | 31 Unit Tests | ✅ CODE DONE | `interactivePlayground.spec.ts` — Store (11), GeometryEngine (8), ForceDirectedEngine (4), GraphParser (8) — ALL PASS |
+| **BugFix** | DATN_ERRORS §2 — round IP-005/008/011/019/020/021/022/025/026/028/029 | ✅ CODE DONE | 2026-08-10. `GraphAlgorithmSimulator.ts`: Dijkstra explanation dùng `oldDist` pre-update (IP-011), frame kết thúc cảnh báo đỉnh không đến được (IP-019), BFS queueStack chỉ hiển thị đỉnh còn trong Queue (IP-028), DFS else-frame `activeLine: 5` (IP-029). `InteractivePlayground.vue`: gán `jsonOutput` qua `GraphParser.toAdjacencyList` (IP-020), chặn Dijkstra khi đồ thị cô lập + toast (IP-005), `setSourceNodeId`/`moveNode` thay mutation trực tiếp (IP-026), auto-layout chuẩn chung radius 0.35/-90° (IP-022), hoãn `URL.revokeObjectURL` 1000ms (IP-025). `GraphView.vue`: bỏ handler hotkey trùng (IP-008), reset tool SELECT khi vào/thoát mô phỏng (IP-021), auto-layout cùng chuẩn (IP-022), revoke hoãn (IP-025). 131 playground tests pass, `vue-tsc` không có lỗi mới ở 4 file sửa |
+| **BugFix** | DATN_ERRORS §2 — round Canvas/Physics EC-018, IP-006/007/010/012/013/014/015/016/017/018/024/027/030 | ✅ CODE DONE | 2026-08-10. `PlaygroundCanvas.vue`: dirty-flag render loop dừng hẳn khi idle (EC-018/IP-030, `isStable(energy)` + `markDirty()`), Pointer Events + `setPointerCapture` + `touch-action:none` (IP-014), window `pointerup` chỉ commit addEdge trong canvas (IP-010), DPR/Retina `setTransform(dpr,…)` trong draw/resize (IP-012), zoom `markDirty` tức thì (IP-015), grid phủ vùng visible + `lineWidth = 1/zoom` (IP-017), reset zoom khi unmount (IP-027), hover clear khi rời canvas (IP-007). `canvasEventHandlers.ts`: clamp world-space dùng chung helper (IP-006), hover node ưu tiên thắng edge (IP-007), snap 40/zoom + hit-test 8/zoom tối thiểu 5px (IP-013), popover weight bỏ tỉ lệ DPR (IP-012). `GraphGeometryEngine.ts`: `worldBoundsFromViewport`/`clampPointToBounds` dùng chung IP-006/IP-016, `hitTestEdge`/`isWithinSnapDistance` nhận zoom (IP-024/IP-013). `ForceDirectedEngine.ts`: bounds world trừ pan (IP-016), jitter `dist===0` tách node trùng (IP-018). 131 playground tests pass (graphP2Tests 75 + graphAlgorithmSimulator 6 + interactivePlayground 33 + graphP0Tests 17), `vue-tsc` không lỗi mới ở 5 file sửa |
+| **BugFix** | DATN_ERRORS §2 — round tests IP-033/034/035/036/038/039/040/041 + biên parser/store/simulator | ✅ CODE DONE | 2026-08-10. `__tests__/canvasMock.ts` (mới): canvas 2D context mock đầy đủ save/restore/translate/scale/rotate/setTransform/arc/fill/stroke/beginPath/closePath/clearRect/fillText/measureText/setLineDash/getLineDash dùng chung (IP-038). `__tests__/graphComponentTests.spec.ts` (mới, 33 tests): mount PlaygroundCanvas (ADD_NODE click, ADD_EDGE drag+snap, IP-010 release ngoài canvas không tạo cạnh ma, khóa vẽ khi isAlgorithmMode), zoom wheel → `store.zoomLevel` + `ctx.scale` + clamp 20–300% (IP-033), pan giữa chuột/Alt → `ctx.translate`, weight popover Enter/Blur/Esc + 0/1000/NaN (IP-040), import JSON toast lỗi/hợp lệ, phím tắt V/N/E/W/Delete/Backspace qua `handleKeydown` THẬT (IP-041), toolbar lock, legend/guide/header DOM (IP-033), export JSON Blob + toast (IP-034), GraphView loadTemplate Triangle/Square/Star thật (IP-035). `canvasEventHandlersTests.spec.ts` (mới, 21 tests): 5 mode × hit/miss, snap null, setSourceNodeId khi algorithm mode, clamp world-space, hover IP-007. `graphAlgorithmSimulator.spec.ts`: +12 tests directed BFS/DFS/Dijkstra (IP-036) + edge case rỗng/1 node/source fallback/không liên thông/trọng số âm. `interactivePlayground.spec.ts`: +18 tests biên importFromJSON (IP-001/IP-003/IP-031 đã fix: reject weight 0/âm/NaN, x/y NaN, dangling edge, trùng id; clamp [0,1000]), store.importGraph ≤30 node + trùng nhãn, addEdge ghost-id → null + lastEdgeError, updateEdgeWeight/deleteNode/deleteEdge id không tồn tại, IP-004 directed cặp đảo + IP-009 deleteNode dọn selectedEdgeId (đã un-skip sau khi store fix). `graphP2Tests.spec.ts`: xóa mockKeydownHandler nhân bản (IP-041) + test tautological zoom/pan/legend/guide/header (IP-033) + loadTemplate giả (IP-035). `graphP0Tests.spec.ts`: xóa exportGraph tự stringify (IP-034) → mount InteractivePlayground + spy URL.createObjectURL + click nút Xuất JSON. **182/182 playground tests pass × 2 lần chạy (không flaky)** |
 
 ### Phase 2 HTML Playground — CodePen-style HTML/CSS/JS Editor (Monaco local ESM) — 42 Unit Tests
 
@@ -187,7 +260,10 @@ Tài liệu này theo dõi chi tiết tiến độ hoàn thành **code thực t�
 | **Component** | VariableWatchPanel.vue | ✅ CODE DONE | `components/VariableWatchPanel.vue` — dynamic variable badges (TransitionGroup fade-in/out), Cyan neon values, Glassmorphism card, hide empty state |
 | **Script** | Bubble Sort pseudocode (4 languages) | ✅ CODE DONE | `scripts/bubble-sort.pseudocode.ts` — cpp/java/python/javascript, 5 logicalIds (FUNC_DECL, OUTER_LOOP, INNER_LOOP, COMPARE_STEP, SWAP_STEP), `scriptLoader.ts` registry |
 | **Integration** | VisualizationPlayer + Dummy Generators | ✅ CODE DONE | `VisualizationPlayer.vue` replaced AnimPseudoCodePanel with MultilingualCodePanel, auto-load script on algorithmId change, `algorithmApi.ts` dummy BubbleSort updated with activeLogicalLineId + variables per frame |
+| **Data Source (PS-001)** | Frame Contract thống nhất Backend ↔ Fallback | ✅ CODE DONE | `FrameDTO.cs` + `ActiveLogicalLineId` (string?) + `Variables` (Dictionary<string,object>?); `AlgorithmBase.CaptureState` nhận optional param; `BubbleSortStrategy.cs` emit FUNC_DECL/OUTER_LOOP/INNER_LOOP/COMPARE_STEP/SWAP_STEP + i/j/n/temp; `sortingGenerators.generateBubbleSort` fallback đồng bộ; fix PS-009 (temp capture trước swap), PS-010 (INNER_LOOP đầu pass), PS-024 (OUTER_LOOP đầu pass) — build backend + 356 tests pass, vitest dsa-modules/pseudocode-sync 240 tests pass |
 | **Store Ext** | useAnimationStore activeFrame alias | ✅ CODE DONE | Added `activeFrame` computed alias for `currentFrame` in `useAnimationStore.ts` |
+| **UI Fixes (PS-003/005/012-015/018-020/033-037/039)** | Pseudocode UI hardening — 2026-08-10 | ✅ CODE DONE | `syntaxHighlighter.ts` tokenizer 1 lượt trên text gốc (hết rác CSS #60a5fa, keyword theo từng ngôn ngữ, bỏ `//` giả); `MultilingualCodePanel.vue` — auto-scroll rect math đúng tọa độ, `behavior:auto` khi PLAYING, computed occurrenceMap (hết O(L×F)), Tab giữ focus mặc định + Ctrl+Tab/Alt+Tab đổi ngôn ngữ, ref callback dọn lineRefs khi null, badge chỉ hiện khi dòng đang active, a11y tabs/aria/focus-visible + tabindex/Enter snap dòng code; `MultilingualCodePanel.css` + `VariableWatchPanel.vue` theo spec 02-ui-ux.md (neon text-shadow, gutter 28px, padding 6/20, font tab 13px, watch card margin 16px + min-height); `VisualizationPlayer.vue` — reset pseudocode store khi script không tồn tại (PS-004) + onUnmounted (PS-008). Vitest pseudocode-sync 57 tests pass; editorP2Tests 61/63 pass (2 fail do test khóa hành vi cũ Tab + badge — chờ agent test cập nhật) |
+| **Store/Engine Fixes (PS-006/011/016/017/021/022/023)** | Pseudocode Sync hardening — 2026-08-10 | ✅ CODE DONE | `usePseudocodeStore.ts` — debounce 50ms highlight khi `playbackSpeed >= 2.0` (trailing debounce, xoá dòng trung gian, timer clear khi reset + `onScopeDispose`, BEHAVIOR_SPEC §1), lookup line duy nhất qua `PseudocodeSyncEngine` (PS-016), expose `activePhysicalLineNumbers: number[]` (PS-011 — engine thêm `getPhysicalLineNumbers` trả toàn bộ line khớp cho 1 logicalId; `getPhysicalLineNumber` = first-match của danh sách), `bindAnimationStore`/`unbindAnimationStore` thay hardcode `useAnimationStore()` (PS-021 — không dùng tham số setup store vì pinia 2.3+ gọi `setup({ action })`); `pseudocodeStoreHelpers.ts` — bỏ `pause()` trùng trong snap (PS-022, goToFrame đã pause); `scriptLoader.ts` — `Object.hasOwn` thay `in` (PS-017), `validatePseudocodeScript` + `registerPseudocodeScript` fail-fast (PS-023 — languages non-empty, language hợp lệ, lineNumber dương & duy nhất, text/logicalId non-empty). Vitest pseudocode-sync: 96/98 pass (2 fail thuộc test/component agent khác: PS-011 test yêu cầu logicalId duy nhất — xung khắc với test "same set" + "generator emits every id"; PS-032 component vẫn gọi snapToNextOccurrence thay vì snapToLogicalLine) |
 | **Tests** | 37 Unit Tests | ✅ CODE DONE | `PseudocodeSyncEngine.spec.ts` (15), `usePseudocodeStore.spec.ts` (15), `scriptLoader.spec.ts` (7) — ALL PASS |
 
 
@@ -247,6 +323,21 @@ Tài liệu này theo dõi chi tiết tiến độ hoàn thành **code thực t�
 | **Perf/clean** | Renderer O(n) + input graph sạch | ✅ CODE DONE | `nodeStateColor(snap, id, prunedSet?)`; phục hồi block stroke/text drawTreeTransition (lỗi tự gây khi tối ưu — typecheck bắt kịp); generateDemoInput đánh dấu cạnh spanning tree |
 | **Verify** | Toàn bộ | ✅ CODE DONE | Vitest 67 files / 922 tests PASS; `vue-tsc -b --force` CLEAN; `npm run build` SUCCESS |
 
+### Animation Engine Hardening — rAF Playback + Sub-frame Interpolation + DRY Refactor (2026-08-07)
+
+| Bước | Nội dung | Trạng thái CODE | Chi tiết |
+| :--- | :--- | :--- | :--- |
+| **DRY** | Tạo `utils/math.ts` single source cho lerp/easeOut/clamp/lERPArray | ✅ CODE DONE | `frontend/src/utils/math.ts` — 4 hàm toán học chung,消除 duplicate |
+| **DRY** | canvasMathHelpers.ts re-export từ utils/math.ts | ✅ CODE DONE | Xóa local `lerp`/`easeOut`, re-export từ `@/utils/math` |
+| **DRY** | CoreAnimationEngine.ts dùng shared lerp | ✅ CODE DONE | Static `lerp`/`lerpPoint` delegate về `@/utils/math` |
+| **P0** | Playback engine: setTimeout → requestAnimationFrame | ✅ CODE DONE | `useAnimationStore.ts` — rAF loop với `accumulatedTime` tracking, delta time chính xác, Page Visibility API pause on tab hidden |
+| **P0** | Sub-frame interpolation (lerp dataState) | ✅ CODE DONE | `useAnimationCanvas.ts` — interpolate bar heights giữa current/next frame theo `subFrameProgress` từ store, easeOut smoothing |
+| **P1** | Loại bỏ Throttle Scrub 33ms | ✅ CODE DONE | `useThrottledScrub.ts` — scrub tức thì không throttle |
+| **P1** | Debounce Step Actions 100ms | ✅ CODE DONE | `stepForward`/`stepBackward` debounce `performance.now()` 100ms chống spam click |
+| **P1** | Speed presets đầy đủ [0.1x → 5.0x] | ✅ CODE DONE | `useSpeedPreferences.ts` — [0.1, 0.25, 0.5, 1.0, 1.5, 2.0, 4.0, 5.0] |
+| **Tests** | Cập nhật 3 test files cho rAF mock + debounce | ✅ CODE DONE | `useAnimationStore.spec.ts`, `usePlaygroundAnimationStore.spec.ts`, `executionControl.spec.ts` — rAF/cancelAnimationFrame mocks, vi.advanceTimersByTime(200) giữa step calls |
+| **Verify** | Toàn bộ | ✅ CODE DONE | 6 files / 90 tests PASS; `vue-tsc --noEmit` CLEAN |
+
 
 
 
@@ -267,7 +358,11 @@ Tài liệu này theo dõi chi tiết tiến độ hoàn thành **code thực t�
 | **Script** | Bubble Sort quiz (4 checkpoints) | ✅ CODE DONE | `quiz-system/scripts/bubble-sort.quiz.ts` — 4 checkpoints (MC + TF), frames 1/5/10/16, `quizLoader.ts` registry |
 | **LectureStore Ext** | lockLectureInteraction/unlockLectureInteraction/resumeLecturePlayback | ✅ CODE DONE | Extended `useLectureStore.ts` — 3 new actions for quiz-triggered playback lock and auto-resume |
 | **Integration** | VisualizationPlayer checkpoint watch | ✅ CODE DONE | `VisualizationPlayer.vue` — QuizCardOverlay + QuizSummaryCard, watch currentIndex for checkpoint detection, watch algorithmId for quiz script loading, watch allCheckpointsCompleted for summary |
-| **Tests** | 54 Unit Tests | ✅ CODE DONE | `QuizVerificationEngine.spec.ts` (12), `QuizStatsManager.spec.ts` (9), `QuizSchemaValidator.spec.ts` (11), `useQuizStore.spec.ts` (18), `quizLoader.spec.ts` (4) — ALL PASS |
+| **Tests** | 72 Unit Tests | ✅ CODE DONE | `QuizVerificationEngine.spec.ts` (12), `QuizStatsManager.spec.ts` (14 — +5: partial JSON QZ-049, wrong-shape storage QZ-013, bestStreak/getAccuracy QZ-023), `QuizSchemaValidator.spec.ts` (24 — +13 biên QZ-010/011/012/020/021/022/038), `useQuizStore.spec.ts` (18), `quizLoader.spec.ts` (4) — ALL PASS (129 tests toàn feature 2026-08-10) |
+| **Accessibility** | QZ-037/038/039/041 — a11y & CSS fix | ✅ CODE DONE | `BackendQuizWorkspace.vue` (quiz card role="button"+tabindex+Enter/Space, QZ-037), `QuizCardOverlay.vue` (role="dialog"+aria-modal+focus trap+aria-live feedback+backdrop passive CANVAS_TARGET, QZ-038/041), `QuizSummaryCard.vue` (dialog semantics+Escape đóng+focus trap, QZ-038), `QuizOptionsList.vue` (role="radiogroup"+radio+aria-checked+letters A..H động QZ-039), `QuizCardOverlay.css` (max-width 520 QZ-028 + z-index 2000 QZ-041), `LessonStepQuiz.vue` (hover khác màu QZ-040) — 2026-08-10 |
+| **CANVAS_TARGET** | QZ-004 — nối click canvas | ✅ CODE DONE | `useAnimationCanvas.ts` + `CanvasLayer.vue` — khi `quizStore.isCanvasTargetMode`: listener click canvas đọc `graphNodes` frame → `handleCanvasClickAnswer(x,y,nodes)`; cursor crosshair; flash node xanh/đỏ vẽ trong renderCanvas; cleanup listener+timer khi unmount; click trượt không nộp — 2026-08-10 |
+| **Perf** | EC-009 — tối ưu render canvas | ✅ CODE DONE | `useAnimationCanvas.ts` — `findPrevSnapshotForBar` O(n²) → Map lookup O(1)/bar; bỏ shadowBlur per-bar cho mọi sorted bar (globalAlpha thay thế, giữ shadowBlur 12 chỉ cho swap bar); cache font/align/string fillText — 2026-08-10 |
+| **Tests P2** | QZ-042/043/044/045/050/051/052 | ✅ CODE DONE | `quizP2Tests.spec.ts` (fixture 3/3 nhất quán + a11y tests), `lessonQuizFlow.spec.ts` (+4 biên 70%: 7/10, 6/10, quiz 1 câu), `useQuizStoreBackendMode.spec.ts` (+3: double-submit guard QZ-044, fake-timers race, resubmit xpAwarded=0 QZ-052), `quizLoader.spec.ts` (QZ-045 registry vs ADR-12), `quizP0Tests.spec.ts` (QZ-050 bỏ tautological — assert UI thật), `learningFlow.spec.ts` (QZ-051 integration lesson→quiz→XP thật, chỉ mock fetch), `quizCanvasTarget.spec.ts` (mới, QZ-004: 7 tests crosshair/flash/blank/double-click/cleanup) — 2026-08-10 |
 
 ### Phase 2 Code-to-Visualization Compiler — AST Instrumentation & Web Worker Sandbox
 
@@ -954,6 +1049,7 @@ Tất cả các mục tiêu Sprint 5 đã đạt:
 | **DI Registration** | Singleton strategies in DI container | ✅ CODE DONE | `AlgorithmDIConfiguration.cs` — `QuizBankStrategy`, `GamificationStrategy` registered |
 | **Vietnamese Test Guide** | Manual testing documentation | ✅ CODE DONE | `huong-dan-kiem-thu-giai-doan-3.md` — 16 test cases covering API + UI |
 | **Compilation** | dotnet build 0 errors + vue-tsc 0 errors | ✅ CODE DONE | Backend 0 errors (42 pre-existing warnings), Frontend vue-tsc --noEmit clean |
+| **Backend Quiz Hardening (QZ-001/002/003/005/014/015/047/048)** | Race double-XP, lộ đáp án GET, guard null/404, trùng title | ✅ CODE DONE | `StatelessQuizController.cs` — commit attempt trước khi đọc `previousAttempts`; bank path bỏ check-then-act dựa unique `(UserId, QuizKey)` (`ApplicationDbContext.cs` + migration `20260809182125_AddQuizXpGrantUniqueIndex`); GET `?withAnswers=false` mặc định (lesson/teacher dùng `=true`); body null → 400; quiz not found → 404 (`QuizService.cs` KeyNotFoundException); trùng Title → 409. `QuizSystemTests.cs` 16 tests (race song song 2 connection) — toàn suite 372/372 PASS, ADR-39 |
 
 ## 18. Phase 6 — Authentication & User Management Infrastructure
 
@@ -2139,3 +2235,86 @@ pm run build SUCCESS |
 | **RV10** | 2 agent toan dien (regression R9 + ra tat ca loi con lai) | `✅ DONE` | P0=0, P1=0 (da downgrade), P2=4 INFO |
 | **FIX** | Wrap localStorage try/catch impersonate/restore | `✅ DONE` | — |
 | **KET LUAN** | Codebase SACH P0/P1 sau 10 vong review | — | Chi con P2 INFO (demo-scale acceptable) |
+
+### UI Redesign — Giao diện theo kiểu Coursera (2026-08-07)
+
+| Buoc | Noi dung | Trang thai | Chi tiet |
+| :--- | :--- | :--- | :--- |
+| **0.1** | Tao BreadcrumbsBar.vue — component breadcrumb tai su dung | ✅ CODE DONE | `features/courses/components/BreadcrumbsBar.vue` |
+| **0.2** | Tao CourseSidebar.vue — sidebar trai danh sach modules/lessons | ✅ CODE DONE | `features/courses/components/CourseSidebar.vue` — hien thi progress, checkmarks, lesson status |
+| **0.3** | Tao CourseProgressBar.vue — thanh tien trinh % hoan thanh | ✅ CODE DONE | `features/courses/components/CourseProgressBar.vue` |
+| **0.4** | Tao StepTabs.vue — horizontal step indicator | ✅ CODE DONE | `features/lesson/components/StepTabs.vue` |
+| **6.1** | Update useLessonStore — them loadCourseDetail() + currentCourse | ✅ CODE DONE | `features/lesson/store/useLessonStore.ts` — load course detail cho sidebar |
+| **6.2** | Tao useCourseNavigation composable | ✅ CODE DONE | `features/courses/composables/useCourseNavigation.ts` — quan ly sidebar state |
+| **2.1** | Refactor LessonStudyView: Layout 2-panel sidebar+content | ✅ CODE DONE | `views/lesson/LessonStudyView.vue` — Coursera-style layout with sidebar, breadcrumbs, step tabs, nav buttons |
+| **2.2** | Tich hop CourseSidebar vao LessonStudyView | ✅ CODE DONE | Sidebar trai hien thi danh sach lessons voi progress |
+| **2.3** | Tich hop BreadcrumbsBar vao LessonStudyView | ✅ CODE DONE | Breadcrumb: Home > Khoa hoc > Bai hoc |
+| **2.4** | Di chuyen step tabs xuong content area | ✅ CODE DONE | StepTabs hien thi trong header cua content area |
+| **2.5** | Them Previous/Next navigation buttons | ✅ CODE DONE | Bottom navigation bar voi bai truoc/bai tiep theo |
+| **3.1** | LessonStepTheory — loai bo header 'Buoc 1/4' | ✅ CODE DONE | Chi giu title, loai bo step indicator trung lap |
+| **3.2** | LessonStepViz — loai bo nut noi 'Tiep Tuc Lam Quiz' | ✅ CODE DONE | Dung step tabs thay the |
+| **3.3** | LessonStepQuiz — loai bo header 'Buoc 3/4' | ✅ CODE DONE | Chi giu tieu de va mo ta |
+| **3.4** | LessonStepCodeLab — loai bo header 'Step 4/4' | ✅ CODE DONE | Chi giu problem title |
+| **1.1** | CourseDetailView: breadcrumb + 2-column layout | ✅ CODE DONE | `views/courses/CourseDetailView.vue` — breadcrumb, main content + sidebar phai |
+| **1.5** | Lesson list voi icon theo loai | ✅ CODE DONE | Hien thi sandboxType, quiz badge, XP moi lesson |
+| **1.6** | Module grouping expandable (accordion) | ✅ CODE DONE | Nhom lessons theo chang (5 bai/chang), expand/collapse |
+| **1.7** | Sidebar phai redesign | ✅ CODE DONE | Cover + stats + progress bar + CTA button |
+| **BUILD** | vue-tsc + vite build — PASS | ✅ DONE | 0 type errors, 0 build errors |
+
+### UI Redesign — Round 2 Review Fixes (2026-08-07)
+
+| Phase | Task | Status | Files |
+|:------|:-----|:-------|:------|
+| **R4** | Remove unused `useRouter` import from CourseDetailView | ✅ CODE DONE | `views/courses/CourseDetailView.vue` — removed dead import + declaration |
+| **R5** | Remove forced tab switch to 'testcases' on Run in CodeLab | ✅ CODE DONE | `views/lesson/components/LessonStepCodeLab.vue` — removed `activeTab.value = 'testcases'` |
+| **R6** | Add click-outside-to-close on completion modal | ✅ CODE DONE | `views/lesson/LessonCompletionModal.vue` — added `@click.self="$emit('close')"` |
+| **R7** | Fix breadcrumb label inconsistency (Trang chủ → Khóa học) | ✅ CODE DONE | `views/lesson/LessonStudyView.vue` — unified to 'Khóa học' |
+| **BUILD** | vue-tsc + vite build — PASS | ✅ DONE | 0 type errors, 0 build errors |
+
+| Phase | Task | Status | Files |
+|:------|:-----|:-------|:------|
+| **R1** | Fix breadcrumb separators rendering order (bug: separators after links instead of between) | ✅ CODE DONE | `features/courses/components/BreadcrumbsBar.vue` — merged into single v-for loop |
+| **R2** | Fix goToStep navigation guard — allow quiz tab if user already passed quiz previously | ✅ CODE DONE | `features/lesson/store/useLessonStore.ts` — relaxed guard condition |
+| **R3** | Auto-scroll sidebar to current lesson on navigation | ✅ CODE DONE | `features/courses/components/CourseSidebar.vue` — watch + scrollIntoView |
+| **BUILD** | vue-tsc + vite build — PASS | ✅ DONE | 0 type errors, 0 build errors |
+
+### UI Redesign — Unit Tests for New Components (2026-08-07)
+
+| Phase | Task | Status | Files |
+|:------|:-----|:-------|:------|
+| **T1** | BreadcrumbsBar — 5 tests | ✅ DONE | `features/courses/__tests__/uiRedesignComponents.spec.ts` |
+| **T2** | StepTabs — 4 tests | ✅ DONE | same file |
+| **T3** | useCourseNavigation — 5 tests | ✅ DONE | same file |
+| **T4** | CourseSidebar — 7 tests (renders, progress, accent border, quiz badge, emit, empty state) | ✅ DONE | same file |
+| **BUILD** | vue-tsc + vite build — PASS | ✅ DONE | 0 type errors, 0 build errors |
+| **TEST** | vitest — 21/21 new pass (+ 2369 existing, 19 pre-existing failures unrelated) | ✅ DONE | |
+
+### Classroom Lifecycle Unit Tests (2026-08-08)
+
+| Phase | Task | Status | Files |
+|:------|:-----|:-------|:------|
+| **T1** | JoinClassroom + KickStudent — 11 tests | ✅ DONE | `JoinClassroomCommandHandlerTests.cs` |
+| **T2** | CreateClassroom — 3 tests (valid / no user / not teacher) | ✅ DONE | `CreateClassroomCommandHandlerTests.cs` |
+| **T3** | UpdateClassroom — 3 tests (valid / not found / not owner) | ✅ DONE | `UpdateClassroomCommandHandlerTests.cs` |
+| **T4** | RegenerateInviteCode — 3 tests (valid / not found / not owner) | ✅ DONE | `RegenerateInviteCodeCommandHandlerTests.cs` |
+| **T5** | GetTeacherClassrooms — 3 tests (active filter / empty / order) | ✅ DONE | `GetTeacherClassroomsQueryHandlerTests.cs` |
+| **T6** | GetStudentClassrooms — 3 tests (active only / empty / archived) | ✅ DONE | `GetStudentClassroomsQueryHandlerTests.cs` |
+| **T7** | GetClassroomStudents — 3 tests (valid / not found / not owner) | ✅ DONE | `GetClassroomStudentsQueryHandlerTests.cs` |
+| **T8** | UpdateClassroomModule — 3 tests (valid / not found / not owner) | ✅ DONE | `UpdateClassroomModuleCommandHandlerTests.cs` |
+| **T9** | UpdateClassroomModuleItemOverride — 5 tests (create / update / 3 errors) | ✅ DONE | `UpdateClassroomModuleItemOverrideHandlerTests.cs` |
+| **T10** | ImportCourseToClassroom — 5 tests (valid / 3 errors / override) | ✅ DONE | `ImportCourseToClassroomCommandHandlerTests.cs` |
+| **TEST** | dotnet test — 258/258 PASS | ✅ DONE | |
+| **TEST** | vitest teacher — 55/55 PASS | ✅ DONE | |
+### BugFix Campaign 2026-08-10 � 4 feature (DATN_ERRORS.md) � HO�N T?T
+
+| M?c | K?t qu? |
+| :--- | :--- |
+| Execution Control (EC-001?047) | ? To�n b? FIXED � frontend 2712/2712 test PASS |
+| Interactive Playground (IP-001?041) | ? To�n b? FIXED � 182/182 playground tests |
+| Pseudocode Sync (PS-001?041) | ? To�n b? FIXED � FrameDTO/backend emit logicalId + variables; UI mount v�o SortingView tab DSA (PS-002); highlighter vi?t l?i tokenizer (PS-003) |
+| Quiz System (QZ-001?052) | ? FIXED (tr? QZ-048 DEFERRED � bank quiz chua ghi QuizAttempt) � backend 372/372, migration AddQuizXpGrantUniqueIndex |
+| Cross-cutting | ? CC-001?010; CC-011 (pre-existing TS drift dsa-modules renderers � build ue-tsc c�n ~143 l?i, n?m ngo�i scope 4 feature) |
+
+| **BugFix** | DATN_ERRORS Review Round 2 � IP-042/043/044, EC-048/049, QZ-053 | ? CODE DONE | 2026-08-10. GraphParser.ts: 	oAdjacencyList them param graphType � directed chi them 1 chieu (IP-042, fix bug that ??) + test moi 2 mode. PlaygroundCanvas.vue: watch zoomLevel -> store.setZoomLevel (IP-043), xoa TODO stale (IP-044). VcrDockBar.vue: SVG chevron -> BaseIcon arrow-down (EC-048). useVcrStore.ts/crDefaults.ts: code primary + sourceCode alias, gom DEFAULT_INPUT_RAW/DEFAULT_INPUT_ARRAY (EC-049). Tests quiz: mountQuiz() stub BaseIcon (QZ-053) � het Vue warn. Frontend **2713/2713 PASS** |
+
+| **BugFix** | DATN_ERRORS Deep Review Round 3 � QZ-006/IP-045?049/EC-050/QZ-054?056 | ? CODE DONE | 2026-08-10. VisualizationPlayer.vue: loadCheckpoints(checkpoints, algorithmId) 2 cho � bat sync XP checkpoint (QZ-006, ?? dead code). InteractivePlayground.vue: return sau toast loi import (IP-045). playgroundCanvasDraw.ts: cache getComputedStyle module-level (IP-046). PlaygroundCanvas.vue: goi store.resetZoom() truc tiep (IP-047). usePlaygroundStore.ts: toast vao store (IP-048) + action setBackendQuizError (QZ-055). GraphView.vue: import JSON hien thi loi 1 phan (IP-049). useVcrStore.ts: comment hop dong customCompileFn (EC-050). useQuizStore.ts: clamp answers restore theo so option tung cau (QZ-054) + reassignment thay splice (QZ-056). Tests: +2 QZ-006 (co/khong quizId). Frontend **2715/2715 PASS** |

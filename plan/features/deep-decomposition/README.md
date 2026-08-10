@@ -51,6 +51,8 @@ Chào mừng bạn đến với **Deep Decomposition Master Index** của **Visu
 - **[28. Guided Tour & Monaco Resilience](./supporting-guided-tour)** `✅ CODE DONE` — **Guided Tour**: `useGuidedTourStore.ts`, `GuidedTourOverlay.vue`, `useGuidedTourStore.spec.ts`. Monaco robustness try-catch wrapper in `MonacoEditorPanel.vue`, `DebugWorkspace.vue`, `CodeEditor.vue`. LSP/DIP pedagogical explanations in `LSPLessonPanel.vue`, `DIPLessonPanel.vue`.
 - **[29. Guided Tour Expansion](./phase2-guided-tour-expansion)** `✅ CODE DONE` — **Guided Tour Expansion**: Thiết lập 9 bộ kịch bản tour chi tiết cho các view học thuật cốt lõi và tích hợp component `HelpButton.vue` dùng chung giúp học viên xem lại hướng dẫn tương tác bất cứ lúc nào.
 
+- **[Backend Lifecycle & Integrity Refactor](../../../plan/backlog/integrity-refactor.md)** `✅ CODE DONE` — **Phase 2 Backend Hardening**: Admin User Mgmt (block/deactivate/resetPassword/role), Quiz delete cascade, Teacher classroom hard-delete, Reorder optimistic concurrency (`RowVersion`), IntegrityCheck API + ConflictException middleware. Backend tests: 163/163 PASS.
+
 ---
 
 ## 🏛️ ĐẶC TẢ CHI TIẾT CÁC PHÂN HỆ (DEEP SPECS — CHỈ LÀ TÀI LIỆU, CHƯA PHẢI CODE)

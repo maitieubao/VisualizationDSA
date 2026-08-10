@@ -9,14 +9,17 @@ namespace VisualizationDSA.WebApi.Controllers;
 [Route("api/v{version:apiVersion}/[controller]")]
 public class LecturesController : ControllerBase
 {
-    
-    
-    
-    
+    private readonly LectureRepository _repository;
+
+    public LecturesController(LectureRepository repository)
+    {
+        _repository = repository;
+    }
+
     [HttpGet]
     public ActionResult<IEnumerable<object>> GetAll()
     {
-        var lectures = LectureRepository.GetAll();
+        var lectures = _repository.GetAll();
         var summary = lectures.Select(l => new
         {
             l.LectureId,
@@ -27,15 +30,11 @@ public class LecturesController : ControllerBase
         return Ok(summary);
     }
 
-    
-    
-    
-    
     [HttpGet("{algorithmId}")]
     [ResponseCache(Duration = 604800, Location = ResponseCacheLocation.Any)]
     public ActionResult<Lecture> GetByAlgorithmId(string algorithmId)
     {
-        var lecture = LectureRepository.GetByAlgorithmId(algorithmId);
+        var lecture = _repository.GetByAlgorithmId(algorithmId);
         if (lecture == null)
         {
             return NotFound(new

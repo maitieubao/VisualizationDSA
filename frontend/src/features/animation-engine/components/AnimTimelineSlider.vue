@@ -10,12 +10,13 @@
       :disabled="totalSteps === 0 || disabled" class="custom-timeline-slider" :style="progressStyle"
       aria-label="Tiến trình hoạt ảnh"
       @mousedown="$emit('scrubStart')" @input="$emit('scrubInput', $event)"
-      @mouseup="$emit('scrubEnd')" @touchstart="$emit('scrubStart')" @touchend="$emit('scrubEnd')" />
+      @mouseup="$emit('scrubEnd')" @touchstart="$emit('scrubStart')" @touchend="$emit('scrubEnd')"
+      @mouseleave="$emit('scrubEnd')" />
 
     
     <div v-if="tooltipVisible && !disabled" :style="{ left: tooltipX + 'px' }" class="slider-dynamic-tooltip">
       <span class="tooltip-step-label">Bước {{ tooltipStep }}:</span>
-      <p class="tooltip-explanation-text" v-html="parseEmojiToSvg(escapeHtmlText(tooltipText))"></p>
+      <p class="tooltip-explanation-text" v-html="tooltipHtml || parseEmojiToSvg(escapeHtmlText(tooltipText))"></p>
     </div>
   </div>
 </template>
@@ -28,6 +29,7 @@ defineProps<{
   currentIndex: number; totalSteps: number; disabled?: boolean;
   progressStyle: Record<string, string>;
   tooltipVisible: boolean; tooltipX: number; tooltipStep: number; tooltipText: string;
+  tooltipHtml: string;
 }>();
 defineEmits<{ hover: [MouseEvent]; leave: []; scrubStart: []; scrubInput: [Event]; scrubEnd: [] }>();
 const containerRef = ref<HTMLDivElement | null>(null);

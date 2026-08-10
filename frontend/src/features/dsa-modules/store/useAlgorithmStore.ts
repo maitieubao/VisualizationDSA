@@ -34,8 +34,14 @@ export const useAlgorithmStore = defineStore('algorithm', () => {
     try {
       const response = await fetch(`${API_BASE}/api/v1/algorithms`);
       if (!response.ok) throw new Error('Không thể tải danh sách thuật toán từ máy chủ.');
-      const backendAlgos = await response.json() as Algorithm[];
+      const raw = await response.json();
       
+      const backendAlgos = (Array.isArray(raw) ? raw : []).filter(
+        (a: unknown): a is Algorithm =>
+          typeof a === 'object' && a !== null &&
+          typeof (a as Algorithm).id === 'string' &&
+          typeof (a as Algorithm).name === 'string',
+      );
       
       const backendIds = new Set(backendAlgos.map(a => a.id));
       const missingFromBackend = ALGORITHM_CATALOG.filter(a => !backendIds.has(a.id));

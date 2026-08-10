@@ -9,11 +9,13 @@ describe('dsaApi', () => {
   it('falls back to dummy result when API is unavailable', async () => {
     vi.spyOn(globalThis, 'fetch').mockRejectedValue(new Error('Network error'));
 
-    const result = await executeDSAAlgorithm('bubble-sort', [5, 3, 1]);
+    const { result, isFallback, errorMessage } = await executeDSAAlgorithm('bubble-sort', [5, 3, 1]);
 
     expect(result.algorithmId).toBe('bubble-sort');
     expect(result.frames.length).toBeGreaterThan(0);
     expect(result.pseudoCode.length).toBeGreaterThan(0);
+    expect(isFallback).toBe(true);
+    expect(errorMessage).toContain('Không kết nối được máy chủ');
   });
 
   it('returns API result when available', async () => {
@@ -28,9 +30,10 @@ describe('dsaApi', () => {
       json: () => Promise.resolve(mockResult),
     } as Response);
 
-    const result = await executeDSAAlgorithm('bubble-sort', [5, 3, 1]);
+    const { result, isFallback } = await executeDSAAlgorithm('bubble-sort', [5, 3, 1]);
     expect(result.algorithmId).toBe('bubble-sort');
     expect(result.frames.length).toBe(1);
+    expect(isFallback).toBe(false);
   });
 
   it('falls back on HTTP error status', async () => {
@@ -39,9 +42,10 @@ describe('dsaApi', () => {
       status: 500,
     } as Response);
 
-    const result = await executeDSAAlgorithm('bubble-sort', [5, 3, 1]);
+    const { result, isFallback } = await executeDSAAlgorithm('bubble-sort', [5, 3, 1]);
 
     expect(result.algorithmId).toBe('bubble-sort');
     expect(result.frames.length).toBeGreaterThan(0);
+    expect(isFallback).toBe(true);
   });
 });

@@ -1,16 +1,8 @@
 <template>
-  <div class="lesson-step-theory flex flex-col h-full overflow-y-auto p-6 text-text-primary font-sans leading-relaxed">
+  <div class="lesson-step-theory flex flex-col h-full overflow-y-auto p-6 text-text-primary font-sans leading-relaxed max-w-4xl mx-auto w-full">
     
-    <div class="border-b border-border-subtle pb-4 mb-6">
-      <div class="flex items-center gap-2 text-xs font-semibold text-accent uppercase tracking-wider mb-1">
-        <svg class="w-4 h-4 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
-        </svg>
-        <span>Bước 1 / 4</span>
-        <span>•</span>
-        <span>Kiến Thức Nền Tảng</span>
-      </div>
-      <h1 class="text-2xl font-black text-text-primary tracking-tight">{{ title }}</h1>
+    <div class="pb-4 mb-4">
+      <h1 class="text-xl font-black text-text-primary tracking-tight">{{ title }}</h1>
     </div>
 
     

@@ -2,69 +2,8 @@ import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { setActivePinia, createPinia } from 'pinia';
 import { usePlaygroundStore } from '../store/usePlaygroundStore';
 import { GraphAlgorithmSimulator, BFS_PSEUDO, DFS_PSEUDO, DIJKSTRA_PSEUDO } from '../services/GraphAlgorithmSimulator';
-import { GraphGeometryEngine } from '../engine/GraphGeometryEngine';
 import { usePlaygroundAnimationStore } from '../../animation-engine/store/useAnimationStore';
 import type { NodeDTO, EdgeDTO } from '../store/usePlaygroundStore';
-
-vi.stubGlobal('HTMLCanvasElement', class HTMLCanvasElement {});
-(globalThis as any).HTMLCanvasElement.prototype.getContext = vi.fn(() => ({
-  fillRect: vi.fn(),
-  clearRect: vi.fn(),
-  fillText: vi.fn(),
-  measureText: vi.fn(() => ({ width: 10 })),
-  beginPath: vi.fn(),
-  arc: vi.fn(),
-  fill: vi.fn(),
-  stroke: vi.fn(),
-  moveTo: vi.fn(),
-  lineTo: vi.fn(),
-  save: vi.fn(),
-  restore: vi.fn(),
-  translate: vi.fn(),
-  scale: vi.fn(),
-  rotate: vi.fn(),
-  setLineDash: vi.fn(),
-})) as any;
-
-(globalThis as any).requestAnimationFrame = vi.fn((cb: FrameRequestCallback) => {
-  cb(0);
-  return 0;
-});
-(globalThis as any).cancelAnimationFrame = vi.fn();
-
-class MockResizeObserver {
-  observe() {}
-  unobserve() {}
-  disconnect() {}
-}
-(globalThis as any).ResizeObserver = MockResizeObserver;
-
-(globalThis as any).window = {
-  addEventListener: vi.fn(),
-  removeEventListener: vi.fn(),
-  confirm: vi.fn().mockReturnValue(true),
-};
-
-function mockKeydownHandler(key: string, targetTag = 'DIV', store: ReturnType<typeof usePlaygroundStore>) {
-  const tag = targetTag;
-  if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return;
-  if (store.isAlgorithmMode) return;
-
-  const keyMap: Record<string, 'SELECT' | 'ADD_NODE' | 'ADD_EDGE' | 'WEIGHT'> = {
-    v: 'SELECT', n: 'ADD_NODE', e: 'ADD_EDGE', w: 'WEIGHT'
-  };
-  const lowerKey = key.toLowerCase();
-  if (keyMap[lowerKey]) {
-    store.setMode(keyMap[lowerKey]);
-  } else if (lowerKey === 'delete' || lowerKey === 'backspace') {
-    if (store.selectedNodeId) {
-      const node = store.nodes.find(n => n.id === store.selectedNodeId);
-      if (node && window.confirm(`Xóa đỉnh ${node.label}?`)) store.deleteNode(store.selectedNodeId);
-    } else if (store.selectedEdgeId) {
-      if (window.confirm('Xóa cạnh đã chọn?')) store.deleteEdge(store.selectedEdgeId);
-    }
-  }
-}
 
 function buildTriangleGraph(): { nodes: NodeDTO[]; edges: EdgeDTO[] } {
   const nodes: NodeDTO[] = [
@@ -192,194 +131,24 @@ describe('Interactive Graph Playground — P2 Stories', () => {
     });
   });
 
-  describe('IP-009 (P2): Template load', () => {
-    it('loadTemplate("triangle") creates exactly 3 nodes', () => {
-      const store = usePlaygroundStore();
-      const { nodes, edges } = buildTriangleGraph();
-      nodes.forEach(n => store.addNode(n.x, n.y));
-      expect(store.nodes.length).toBe(3);
-      expect(store.nodeCount).toBe(3);
-    });
-
-    it('loadTemplate("triangle") creates 3 edges forming a cycle', () => {
-      const store = usePlaygroundStore();
-      const n1 = store.addNode(100, 100);
-      const n2 = store.addNode(200, 100);
-      const n3 = store.addNode(150, 200);
-      store.addEdge(n1!.id, n2!.id);
-      store.addEdge(n2!.id, n3!.id);
-      store.addEdge(n3!.id, n1!.id);
-      expect(store.edges.length).toBe(3);
-      expect(store.edgeCount).toBe(3);
-    });
-
-    it('loaded triangle template has correct labels A, B, C', () => {
-      const store = usePlaygroundStore();
-      store.addNode(0, 0);
-      store.addNode(0, 0);
-      store.addNode(0, 0);
-      expect(store.nodes.map(n => n.label)).toEqual(['A', 'B', 'C']);
-    });
-  });
-
-  describe('IP-012 (P2): Shortcuts V/N/E/W', () => {
-    it('pressing "v" sets mode to SELECT', () => {
-      const store = usePlaygroundStore();
-      store.setMode('ADD_NODE');
-      mockKeydownHandler('v', 'DIV', store);
-      expect(store.mode).toBe('SELECT');
-    });
-
-    it('pressing "n" sets mode to ADD_NODE', () => {
-      const store = usePlaygroundStore();
-      mockKeydownHandler('n', 'DIV', store);
-      expect(store.mode).toBe('ADD_NODE');
-    });
-
-    it('pressing "e" sets mode to ADD_EDGE', () => {
-      const store = usePlaygroundStore();
-      mockKeydownHandler('e', 'DIV', store);
-      expect(store.mode).toBe('ADD_EDGE');
-    });
-
-    it('pressing "w" sets mode to WEIGHT', () => {
-      const store = usePlaygroundStore();
-      mockKeydownHandler('w', 'DIV', store);
-      expect(store.mode).toBe('WEIGHT');
-    });
-
-    it('shortcut does not fire when target is INPUT', () => {
-      const store = usePlaygroundStore();
-      store.setMode('SELECT');
-      mockKeydownHandler('n', 'INPUT', store);
-      expect(store.mode).toBe('SELECT');
-    });
-
-    it('shortcut does not fire when target is TEXTAREA', () => {
-      const store = usePlaygroundStore();
-      store.setMode('SELECT');
-      mockKeydownHandler('e', 'TEXTAREA', store);
-      expect(store.mode).toBe('SELECT');
-    });
-
-    it('shortcut does not fire when target is SELECT element', () => {
-      const store = usePlaygroundStore();
-      store.setMode('SELECT');
-      mockKeydownHandler('w', 'SELECT', store);
-      expect(store.mode).toBe('SELECT');
-    });
-
-    it('uppercase key "V" also triggers SELECT mode', () => {
-      const store = usePlaygroundStore();
-      store.setMode('ADD_NODE');
-      mockKeydownHandler('V', 'DIV', store);
-      expect(store.mode).toBe('SELECT');
-    });
-  });
-
-  describe('IP-013 (P2): Delete key', () => {
-    it('pressing Delete with selected node removes it (confirmed)', () => {
-      const store = usePlaygroundStore();
-      const n1 = store.addNode(100, 100);
-      const n2 = store.addNode(200, 200);
-      store.selectNode(n1!.id);
-      vi.spyOn(window, 'confirm').mockReturnValue(true);
-      mockKeydownHandler('delete', 'DIV', store);
-      expect(store.nodes.length).toBe(1);
-      expect(store.nodes[0].id).toBe(n2!.id);
-    });
-
-    it('pressing Backspace with selected edge removes it (confirmed)', () => {
-      const store = usePlaygroundStore();
-      const n1 = store.addNode(100, 100);
-      const n2 = store.addNode(200, 200);
-      const edge = store.addEdge(n1!.id, n2!.id);
-      store.selectEdge(edge!.id);
-      vi.spyOn(window, 'confirm').mockReturnValue(true);
-      mockKeydownHandler('backspace', 'DIV', store);
-      expect(store.edges.length).toBe(0);
-    });
-
-    it('Delete does nothing when no node or edge is selected', () => {
-      const store = usePlaygroundStore();
-      store.addNode(100, 100);
-      store.addNode(200, 200);
-      vi.spyOn(window, 'confirm').mockReturnValue(true);
-      mockKeydownHandler('delete', 'DIV', store);
-      expect(store.nodes.length).toBe(2);
-    });
-
-    it('Delete does nothing when confirm is cancelled', () => {
-      const store = usePlaygroundStore();
-      const n1 = store.addNode(100, 100);
-      store.selectNode(n1!.id);
-      vi.spyOn(window, 'confirm').mockReturnValue(false);
-      mockKeydownHandler('delete', 'DIV', store);
-      expect(store.nodes.length).toBe(1);
-    });
-  });
+  // IP-035: loadTemplate thật (GraphView.vue:255-257) được test tại
+  // graphComponentTests.spec.ts — describe "IP-035 — GraphView loadTemplate thật".
+  // IP-041: mockKeydownHandler nhân bản logic đã bị xóa; phím tắt V/N/E/W và
+  // Delete/Backspace được test qua handleKeydown THẬT (mount InteractivePlayground
+  // + dispatch KeyboardEvent) tại graphComponentTests.spec.ts.
 
   describe('IP-014 (P2): Zoom', () => {
-    it('zoom in increases zoom level', () => {
-      const store = usePlaygroundStore();
-      expect(store.zoomLevel).toBe(100);
-      store.zoomLevel = 120;
-      expect(store.zoomLevel).toBe(120);
-    });
-
-    it('zoom out decreases zoom level', () => {
-      const store = usePlaygroundStore();
-      store.zoomLevel = 80;
-      expect(store.zoomLevel).toBe(80);
-    });
-
+    // IP-033: test zoom cũ tự gán store.zoomLevel / mô phỏng clamp — tautological.
+    // Hành vi thật (wheel → store.zoomLevel + clamp 20%..300% + ctx.scale) được
+    // test tại graphComponentTests.spec.ts — describe "IP-033 — Zoom & Pan".
     it('zoom level reflects percentage value (100 = default)', () => {
       const store = usePlaygroundStore();
       expect(store.zoomLevel).toBe(100);
     });
-
-    it('zoom clamps within reasonable bounds (simulated 0.2–3 range)', () => {
-      const zoomMin = 0.2;
-      const zoomMax = 3;
-      const currentZoom = 1.0;
-      const zoomIn = Math.min(zoomMax, currentZoom * 1.1);
-      const zoomOut = Math.max(zoomMin, currentZoom * 0.9);
-      expect(zoomIn).toBeCloseTo(1.1, 1);
-      expect(zoomOut).toBeCloseTo(0.9, 1);
-    });
   });
 
-  describe('IP-015 (P2): Pan', () => {
-    it('pan offset changes when dragging with middle-click', () => {
-      const panOffset = { x: 0, y: 0 };
-      const startX = 400;
-      const startY = 300;
-      const currentX = 450;
-      const currentY = 320;
-      panOffset.x = currentX - (startX - panOffset.x);
-      panOffset.y = currentY - (startY - panOffset.y);
-      expect(panOffset.x).toBe(50);
-      expect(panOffset.y).toBe(20);
-    });
-
-    it('pan offset is zero initially', () => {
-      const panOffset = { x: 0, y: 0 };
-      expect(panOffset.x).toBe(0);
-      expect(panOffset.y).toBe(0);
-    });
-
-    it('pan with Alt+click works same as middle-click', () => {
-      const panOffset = { x: 0, y: 0 };
-      const startX = 200;
-      const startY = 200;
-      const currentX = 250;
-      const currentY = 230;
-      panOffset.x = currentX - (startX - panOffset.x);
-      panOffset.y = currentY - (startY - panOffset.y);
-      expect(panOffset.x).toBe(50);
-      expect(panOffset.y).toBe(30);
-    });
-  });
+  // IP-033: pan (kéo giữa chuột / Alt+click) được test qua ctx.translate tại
+  // graphComponentTests.spec.ts — describe "IP-033 — Zoom & Pan".
 
   describe('IP-016 (P2): Node count display', () => {
     it('nodeCount is 0 initially', () => {
@@ -402,88 +171,11 @@ describe('Interactive Graph Playground — P2 Stories', () => {
       store.deleteNode(n1!.id);
       expect(store.nodeCount).toBe(1);
     });
-
-    it('header text format "Nodes: X" can be derived from nodeCount', () => {
-      const store = usePlaygroundStore();
-      store.addNode(100, 100);
-      store.addNode(200, 200);
-      const headerText = `Nodes: ${store.nodeCount}`;
-      expect(headerText).toBe('Nodes: 2');
-    });
   });
 
-  describe('IP-017 (P2): Legend', () => {
-    it('legend items are defined with correct labels', () => {
-      const legendItems = [
-        { color: 'amber-400', label: 'Đang xử lý' },
-        { color: 'emerald-500', label: 'Đã duyệt' },
-        { color: 'sky-500', label: 'Đang chọn' },
-        { color: 'weight', label: 'Trọng số' },
-      ];
-      expect(legendItems.length).toBe(4);
-      expect(legendItems[0].label).toBe('Đang xử lý');
-    });
-
-    it('legend is visible when nodes exist (store has nodes)', () => {
-      const store = usePlaygroundStore();
-      store.addNode(100, 100);
-      const legendVisible = store.nodes.length > 0 && !store.isAlgorithmMode;
-      expect(legendVisible).toBe(true);
-    });
-
-    it('legend is hidden in algorithm mode even with nodes', () => {
-      const store = usePlaygroundStore();
-      store.addNode(100, 100);
-      store.setAlgorithmMode(true);
-      const legendVisible = store.nodes.length > 0 && !store.isAlgorithmMode;
-      expect(legendVisible).toBe(false);
-    });
-  });
-
-  describe('IP-018 (P2): Guide overlay', () => {
-    it('guide overlay shows when no nodes and not dismissed', () => {
-      const store = usePlaygroundStore();
-      const showGuide = store.nodes.length === 0 && !store.isAlgorithmMode && !store.isGuideDismissed;
-      expect(showGuide).toBe(true);
-    });
-
-    it('guide overlay hidden when nodes exist', () => {
-      const store = usePlaygroundStore();
-      store.addNode(100, 100);
-      const showGuide = store.nodes.length === 0 && !store.isAlgorithmMode && !store.isGuideDismissed;
-      expect(showGuide).toBe(false);
-    });
-
-    it('guide overlay hidden in algorithm mode', () => {
-      const store = usePlaygroundStore();
-      store.setAlgorithmMode(true);
-      const showGuide = store.nodes.length === 0 && !store.isAlgorithmMode && !store.isGuideDismissed;
-      expect(showGuide).toBe(false);
-    });
-  });
-
-  describe('IP-019 (P2): Close guide', () => {
-    it('dismissGuide() sets isGuideDismissed to true', () => {
-      const store = usePlaygroundStore();
-      expect(store.isGuideDismissed).toBe(false);
-      store.dismissGuide();
-      expect(store.isGuideDismissed).toBe(true);
-    });
-
-    it('guide overlay hidden after dismissGuide()', () => {
-      const store = usePlaygroundStore();
-      store.dismissGuide();
-      const showGuide = store.nodes.length === 0 && !store.isAlgorithmMode && !store.isGuideDismissed;
-      expect(showGuide).toBe(false);
-    });
-
-    it('isGuideDismissed persists across node additions', () => {
-      const store = usePlaygroundStore();
-      store.dismissGuide();
-      store.addNode(100, 100);
-      expect(store.isGuideDismissed).toBe(true);
-    });
-  });
+  // IP-033: legend, guide overlay và header counter được test bằng DOM thật tại
+  // graphComponentTests.spec.ts (mount InteractivePlayground + query theo
+  // aria-label / text) — các test cũ chỉ sao chép biểu thức template.
 
   describe('IP-023 (P2): Source node dropdown', () => {
     it('setSourceNodeId updates sourceNodeId in store', () => {
@@ -630,15 +322,22 @@ describe('Interactive Graph Playground — P2 Stories', () => {
     });
 
     it('stepBackward decreases currentIndex', () => {
-      const animStore = usePlaygroundAnimationStore();
-      const { nodes, edges } = buildTriangleGraph();
-      const result = GraphAlgorithmSimulator.simulate('BFS', nodes, edges, 'n1', 'undirected');
-      animStore.loadResult({ algorithmId: result.algorithmId, pseudoCode: result.pseudoCode, frames: result.frames });
-      animStore.stepForward();
-      animStore.stepForward();
-      const idx = animStore.currentIndex;
-      animStore.stepBackward();
-      expect(animStore.currentIndex).toBe(idx - 1);
+      vi.useFakeTimers();
+      try {
+        const animStore = usePlaygroundAnimationStore();
+        const { nodes, edges } = buildTriangleGraph();
+        const result = GraphAlgorithmSimulator.simulate('BFS', nodes, edges, 'n1', 'undirected');
+        animStore.loadResult({ algorithmId: result.algorithmId, pseudoCode: result.pseudoCode, frames: result.frames });
+        animStore.stepForward();
+        vi.advanceTimersByTime(200);
+        animStore.stepForward();
+        vi.advanceTimersByTime(200);
+        const idx = animStore.currentIndex;
+        animStore.stepBackward();
+        expect(animStore.currentIndex).toBe(idx - 1);
+      } finally {
+        vi.useRealTimers();
+      }
     });
 
     it('stepBackward does not go below 0', () => {
@@ -651,14 +350,20 @@ describe('Interactive Graph Playground — P2 Stories', () => {
     });
 
     it('stepForward does not exceed last frame', () => {
-      const animStore = usePlaygroundAnimationStore();
-      const { nodes, edges } = buildTriangleGraph();
-      const result = GraphAlgorithmSimulator.simulate('BFS', nodes, edges, 'n1', 'undirected');
-      animStore.loadResult({ algorithmId: result.algorithmId, pseudoCode: result.pseudoCode, frames: result.frames });
-      for (let i = 0; i < result.frames.length + 5; i++) {
-        animStore.stepForward();
+      vi.useFakeTimers();
+      try {
+        const animStore = usePlaygroundAnimationStore();
+        const { nodes, edges } = buildTriangleGraph();
+        const result = GraphAlgorithmSimulator.simulate('BFS', nodes, edges, 'n1', 'undirected');
+        animStore.loadResult({ algorithmId: result.algorithmId, pseudoCode: result.pseudoCode, frames: result.frames });
+        for (let i = 0; i < result.frames.length + 5; i++) {
+          animStore.stepForward();
+          vi.advanceTimersByTime(200);
+        }
+        expect(animStore.currentIndex).toBe(result.frames.length - 1);
+      } finally {
+        vi.useRealTimers();
       }
-      expect(animStore.currentIndex).toBe(result.frames.length - 1);
     });
 
     it('scrubTo jumps to specific frame index', () => {

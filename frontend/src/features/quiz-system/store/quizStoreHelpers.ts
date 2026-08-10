@@ -12,6 +12,7 @@ export function resetActiveQuestionState(
   feedbackExplanation: Ref<string>,
   matchedNodeId: Ref<string | null>,
   isCanvasTargetMode: Ref<boolean>,
+  canvasBlankClickCount: Ref<number>,
 ): void {
   activeQuestion.value      = null;
   selectedAnswerIndex.value = null;
@@ -20,6 +21,7 @@ export function resetActiveQuestionState(
   feedbackExplanation.value = '';
   matchedNodeId.value       = null;
   isCanvasTargetMode.value  = false;
+  canvasBlankClickCount.value = 0;
 }
 
 

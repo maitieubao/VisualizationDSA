@@ -1,3 +1,4 @@
+// @vitest-environment jsdom
 import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest';
 import { setActivePinia, createPinia } from 'pinia';
 import { useAnimationStore } from '../store/useAnimationStore';
@@ -12,10 +13,15 @@ describe('useAnimationStore', () => {
   beforeEach(() => {
     setActivePinia(createPinia());
     vi.useFakeTimers();
+    vi.stubGlobal('requestAnimationFrame', (cb: FrameRequestCallback) => {
+      return setTimeout(() => cb(performance.now()), 16) as unknown as number;
+    });
+    vi.stubGlobal('cancelAnimationFrame', (id: number) => clearTimeout(id));
   });
 
   afterEach(() => {
     vi.useRealTimers();
+    vi.unstubAllGlobals();
   });
 
   it('starts in UNINITIALIZED state', () => {
@@ -59,9 +65,11 @@ describe('useAnimationStore', () => {
     store.loadResult(createTestResult());
 
     store.stepForward();
+    vi.advanceTimersByTime(200);
     store.stepForward();
     expect(store.currentIndex).toBe(2);
 
+    vi.advanceTimersByTime(200);
     store.stepBackward();
     expect(store.currentIndex).toBe(1);
   });
@@ -82,6 +90,7 @@ describe('useAnimationStore', () => {
     const lastIndex = result.frames.length - 1;
     for (let i = 0; i < result.frames.length + 5; i++) {
       store.stepForward();
+      vi.advanceTimersByTime(200);
     }
     expect(store.currentIndex).toBe(lastIndex);
   });
@@ -138,6 +147,7 @@ describe('useAnimationStore', () => {
     store.loadResult(createTestResult());
 
     store.stepForward();
+    vi.advanceTimersByTime(200);
     store.stepForward();
     store.stop();
 
@@ -175,13 +185,205 @@ describe('useAnimationStore', () => {
     expect(store.playbackState).toBe('FINISHED');
   });
 
-  it('play does nothing when finished', () => {
+  it('play replays from the start when finished', () => {
     const store = useAnimationStore();
     const result = createTestResult();
     store.loadResult(result);
 
     store.scrubTo(result.frames.length - 1);
+    expect(store.isFinished).toBe(true);
     store.play();
+    expect(store.currentIndex).toBe(0);
+    expect(store.isPlaying).toBe(true);
+  });
+});
+
+describe('useAnimationStore — subFrameProgress', () => {
+  beforeEach(() => {
+    setActivePinia(createPinia());
+    vi.useFakeTimers();
+    vi.stubGlobal('requestAnimationFrame', (cb: FrameRequestCallback) => {
+      return setTimeout(() => cb(performance.now()), 16) as unknown as number;
+    });
+    vi.stubGlobal('cancelAnimationFrame', (id: number) => clearTimeout(id));
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+    vi.unstubAllGlobals();
+  });
+
+  it('subFrameProgress starts at 0', () => {
+    const store = useAnimationStore();
+    store.loadResult(createTestResult());
+    expect(store.subFrameProgress).toBe(0);
+  });
+
+  it('subFrameProgress increases during playback', () => {
+    const store = useAnimationStore();
+    store.loadResult(createTestResult());
+    store.play();
+
+    vi.advanceTimersByTime(500);
+    expect(store.subFrameProgress).toBeGreaterThan(0);
+    expect(store.subFrameProgress).toBeLessThan(1);
+  });
+
+  it('subFrameProgress resets to 0 on frame advance', () => {
+    const store = useAnimationStore();
+    store.loadResult(createTestResult());
+    store.play();
+
+    vi.advanceTimersByTime(1100);
+    expect(store.currentIndex).toBeGreaterThan(0);
+    expect(store.subFrameProgress).toBeGreaterThanOrEqual(0);
+    expect(store.subFrameProgress).toBeLessThan(1);
+  });
+
+  it('subFrameProgress resets to 0 on stepForward', () => {
+    const store = useAnimationStore();
+    store.loadResult(createTestResult());
+    store.stepForward();
+    expect(store.subFrameProgress).toBe(0);
+  });
+
+  it('subFrameProgress resets to 0 on stepBackward', () => {
+    const store = useAnimationStore();
+    store.loadResult(createTestResult());
+    store.stepForward();
+    vi.advanceTimersByTime(200);
+    store.stepForward();
+    vi.advanceTimersByTime(200);
+    store.stepBackward();
+    expect(store.subFrameProgress).toBe(0);
+  });
+
+  it('subFrameProgress resets to 0 on scrubTo', () => {
+    const store = useAnimationStore();
+    store.loadResult(createTestResult());
+    store.scrubTo(2);
+    expect(store.subFrameProgress).toBe(0);
+  });
+
+  it('subFrameProgress resets to 0 on goToFrame', () => {
+    const store = useAnimationStore();
+    store.loadResult(createTestResult());
+    store.goToFrame(2);
+    expect(store.subFrameProgress).toBe(0);
+  });
+
+  it('subFrameProgress resets to 0 on stop', () => {
+    const store = useAnimationStore();
+    store.loadResult(createTestResult());
+    store.play();
+    vi.advanceTimersByTime(500);
+    store.stop();
+    expect(store.subFrameProgress).toBe(0);
+  });
+});
+
+describe('useAnimationStore — playUntilFrame', () => {
+  beforeEach(() => {
+    setActivePinia(createPinia());
+    vi.useFakeTimers();
+    vi.stubGlobal('requestAnimationFrame', (cb: FrameRequestCallback) => {
+      return setTimeout(() => cb(performance.now()), 16) as unknown as number;
+    });
+    vi.stubGlobal('cancelAnimationFrame', (id: number) => clearTimeout(id));
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+    vi.unstubAllGlobals();
+  });
+
+  it('playUntilFrame resolves immediately when target >= frames.length', async () => {
+    const store = useAnimationStore();
+    store.loadResult(createTestResult());
+
+    const promise = store.playUntilFrame(999);
+    const resolved = await Promise.race([
+      promise.then(() => true),
+      new Promise<boolean>((r) => setTimeout(() => r(false), 100)),
+    ]);
+    expect(resolved).toBe(true);
+  });
+
+  it('playUntilFrame resolves immediately when currentIndex >= target', async () => {
+    const store = useAnimationStore();
+    store.loadResult(createTestResult());
+    store.scrubTo(5);
+
+    const promise = store.playUntilFrame(3);
+    const resolved = await Promise.race([
+      promise.then(() => true),
+      new Promise<boolean>((r) => setTimeout(() => r(false), 100)),
+    ]);
+    expect(resolved).toBe(true);
+    expect(store.currentIndex).toBe(3);
+  });
+
+  it('playUntilFrame plays and stops at target frame', async () => {
+    const store = useAnimationStore();
+    store.loadResult(createTestResult());
+
+    const promise = store.playUntilFrame(3);
+    vi.advanceTimersByTime(5000);
+    await promise;
+
+    expect(store.currentIndex).toBe(3);
     expect(store.isPlaying).toBe(false);
+  });
+
+  it('cancelPlayUntil stops at playUntilTarget', async () => {
+    const store = useAnimationStore();
+    store.loadResult(createTestResult());
+
+    const promise = store.playUntilFrame(5);
+    vi.advanceTimersByTime(2500);
+    store.cancelPlayUntil();
+    await promise;
+
+    expect(store.currentIndex).toBe(5);
+    expect(store.subFrameProgress).toBe(0);
+  });
+});
+
+describe('useAnimationStore — visibilitychange', () => {
+  beforeEach(() => {
+    setActivePinia(createPinia());
+    vi.useFakeTimers();
+    vi.stubGlobal('requestAnimationFrame', (cb: FrameRequestCallback) => {
+      return setTimeout(() => cb(performance.now()), 16) as unknown as number;
+    });
+    vi.stubGlobal('cancelAnimationFrame', (id: number) => clearTimeout(id));
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+    vi.unstubAllGlobals();
+  });
+
+  it('pauses playback when tab becomes hidden', () => {
+    const store = useAnimationStore();
+    store.loadResult(createTestResult());
+    store.play();
+    expect(store.isPlaying).toBe(true);
+
+    Object.defineProperty(document, 'hidden', { value: true, writable: true });
+    document.dispatchEvent(new Event('visibilitychange'));
+
+    expect(store.isPlaying).toBe(false);
+  });
+
+  it('does not pause when tab becomes visible', () => {
+    const store = useAnimationStore();
+    store.loadResult(createTestResult());
+    store.play();
+
+    Object.defineProperty(document, 'hidden', { value: false, writable: true });
+    document.dispatchEvent(new Event('visibilitychange'));
+
+    expect(store.isPlaying).toBe(true);
   });
 });

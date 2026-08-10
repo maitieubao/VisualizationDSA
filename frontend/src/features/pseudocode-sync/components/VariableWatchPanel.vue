@@ -1,5 +1,5 @@
 <template>
-  <div class="watch-panel-card" v-if="watchVariables.length > 0">
+  <div class="watch-panel-card">
     <div class="watch-title">WATCH VARIABLES</div>
     <div class="watch-variables-grid">
       <TransitionGroup name="var-fade">
@@ -19,19 +19,36 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { usePseudocodeStore } from '../store/usePseudocodeStore';
+import type { VariableState } from '../types/pseudocode.types';
 
 const pseudocodeStore = usePseudocodeStore();
 
-const watchVariables = computed(() => pseudocodeStore.watchVariablesList);
+// PS-015: Sắp xếp theo tên (alphabet) để thứ tự badge ỔN ĐỊNH xuyên các frame —
+// trước đây `Object.entries(frame.variables)` theo thứ tự khai báo của từng
+// frame → thứ tự badge nhảy/giật liên tục khi phát.
+const watchVariables = computed<VariableState[]>(() =>
+  [...pseudocodeStore.watchVariablesList].sort((a, b) => a.name.localeCompare(b.name)),
+);
+
+// TODO(PS-038): khi `VariableState` được bổ sung field
+// `type: 'index' | 'pointer' | 'temporary'` (theo TECHNICAL_SPEC §1 — file
+// types/pseudocode.types.ts do agent khác sở hữu), phân loại badge tại đây:
+// ví dụ icon/vành màu khác nhau cho biến index/pointer/temporary.
 </script>
 
 <style scoped>
 .watch-panel-card {
-  margin: 0;
-  padding: 10px 12px;
+  /* PS-035: margin 16px theo spec 02-ui-ux.md §4 */
+  margin: 16px;
+  padding: 16px;
+  /* PS-015: min-height giữ khung ổn định khi frame thiếu variables —
+     trước đây `v-if` ẩn cả panel → khung co giãn đột ngột */
+  min-height: 96px;
   background: color-mix(in srgb, var(--color-bg-secondary) 40%, transparent);
-  border-top: 1px solid var(--color-border-subtle);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: 16px;
   flex-shrink: 0;
+  box-sizing: border-box;
 }
 
 .watch-title {

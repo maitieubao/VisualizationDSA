@@ -5,6 +5,14 @@
 
 import type { PseudocodeScript } from '../types/pseudocode.types';
 
+// NOTE (PS-010 — ✅ FIXED 2026-08-10): Cả 3 nguồn frame bubble-sort
+// (`animation-engine/services/algorithmApi.ts` generateDummyBubbleSortResult,
+// `dsa-modules/services/sortingGenerators.ts` generateBubbleSort,
+// backend `BubbleSortStrategy.cs`) đều emit `INNER_LOOP` ở đầu mỗi vòng `j`,
+// `OUTER_LOOP` ở đầu mỗi pass (PS-024) và capture `temp` trước swap (PS-009).
+// Script này khai báo dòng `for j ...` (cpp/java/js line 3, python line 4) với
+// logicalId INNER_LOOP để đồng bộ highlight với các frame đó.
+
 export const bubbleSortScript: PseudocodeScript = {
   algorithmId: 'bubble-sort',
   languages: [

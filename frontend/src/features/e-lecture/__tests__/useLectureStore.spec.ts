@@ -1,4 +1,6 @@
+﻿// @vitest-environment jsdom
 import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest';
+import { watch, nextTick } from 'vue';
 import { setActivePinia, createPinia } from 'pinia';
 import { useLectureStore } from '../store/useLectureStore';
 import { useAnimationStore } from '../../animation-engine/store/useAnimationStore';
@@ -224,5 +226,153 @@ describe('useLectureStore', () => {
 
     await store.goToSlide(100);
     expect(store.currentSlideIndex).toBe(0);
+  });
+
+  describe('PLAY_UNTIL command', () => {
+    it('bật isWaitingForAnimation + isMinimized và tự kết thúc khi đạt target frame', async () => {
+      const store = useLectureStore();
+      const animStore = useAnimationStore();
+      animStore.loadResult(createMockAnimResult());
+      store.startLecture(createMockLecture());
+
+      const promise = store.nextSlide();
+
+      expect(store.isWaitingForAnimation).toBe(true);
+      expect(store.isMinimized).toBe(true);
+
+      vi.advanceTimersByTime(10000);
+      await promise;
+
+      expect(store.isWaitingForAnimation).toBe(false);
+      expect(store.isMinimized).toBe(false);
+      expect(animStore.currentIndex).toBe(3);
+    });
+
+    it('skip PLAY_UNTIL bằng nextSlide: continuation cũ không ghi đè trạng thái slide mới', async () => {
+      const store = useLectureStore();
+      const animStore = useAnimationStore();
+      animStore.loadResult(createMockAnimResult());
+      store.startLecture(createMockLecture());
+
+      const p1 = store.nextSlide();
+      expect(store.isWaitingForAnimation).toBe(true);
+
+      const p2 = store.nextSlide();
+      expect(store.currentSlideIndex).toBe(2);
+
+      vi.advanceTimersByTime(10000);
+      await Promise.all([p1, p2]);
+
+      expect(store.currentSlideIndex).toBe(2);
+      expect(store.activeSlide?.type).toBe('interactive-check');
+      expect(store.isWaitingForAnimation).toBe(false);
+      expect(store.isMinimized).toBe(false);
+    });
+  });
+
+  describe('PAUSE command', () => {
+    it('dừng animation đang phát', async () => {
+      const store = useLectureStore();
+      const animStore = useAnimationStore();
+      animStore.loadResult(createMockAnimResult());
+      store.startLecture(createMockLecture());
+
+      const p1 = store.nextSlide();
+      vi.advanceTimersByTime(10000);
+      await p1;
+      expect(animStore.isPlaying).toBe(false);
+
+      animStore.play();
+      expect(animStore.isPlaying).toBe(true);
+
+      await store.goToSlide(2);
+      expect(store.activeSlide?.type).toBe('interactive-check');
+      expect(animStore.isPlaying).toBe(false);
+    });
+  });
+
+  describe('Interaction lock ownership', () => {
+    it('exitLecture không phá lock của owner khác (quiz)', () => {
+      const store = useLectureStore();
+      const animStore = useAnimationStore();
+      animStore.loadResult(createMockAnimResult());
+      store.startLecture(createMockLecture());
+
+      store.lockLectureInteraction('quiz');
+      store.exitLecture();
+
+      expect(animStore.interactionLocked).toBe(true);
+
+      store.unlockLectureInteraction('quiz');
+      expect(animStore.interactionLocked).toBe(false);
+    });
+
+    it('unlock một owner khi còn owner khác giữ lock', () => {
+      const store = useLectureStore();
+      const animStore = useAnimationStore();
+      animStore.loadResult(createMockAnimResult());
+
+      store.lockLectureInteraction('lecture');
+      store.lockLectureInteraction('quiz');
+
+      store.unlockLectureInteraction('lecture');
+
+      expect(animStore.interactionLocked).toBe(true);
+
+      store.unlockLectureInteraction('quiz');
+      expect(animStore.interactionLocked).toBe(false);
+    });
+
+    it('lock thay đổi được reactive detect (không còn bug ref<Set> mutation)', async () => {
+      const store = useLectureStore();
+      const animStore = useAnimationStore();
+      animStore.loadResult(createMockAnimResult());
+
+      const observed: boolean[] = [];
+      const stopWatch = watch(() => animStore.interactionLocked, (v) => { observed.push(v); });
+
+      store.lockLectureInteraction('quiz');
+      await nextTick();
+      expect(observed).toContain(true);
+
+      store.unlockLectureInteraction('quiz');
+      await nextTick();
+      expect(observed).toContain(false);
+
+      stopWatch();
+    });
+
+    it('lock cùng owner nhiều lần không nhân đôi token', () => {
+      const store = useLectureStore();
+      const animStore = useAnimationStore();
+      animStore.loadResult(createMockAnimResult());
+
+      store.lockLectureInteraction('quiz');
+      store.lockLectureInteraction('quiz');
+
+      expect(animStore.interactionLocked).toBe(true);
+
+      store.unlockLectureInteraction('quiz');
+      expect(animStore.interactionLocked).toBe(false);
+    });
+  });
+
+  describe('Transition guards', () => {
+    it('goToSlide bị chặn khi đang chờ animation', async () => {
+      const store = useLectureStore();
+      const animStore = useAnimationStore();
+      animStore.loadResult(createMockAnimResult());
+      store.startLecture(createMockLecture());
+
+      const promise = store.nextSlide();
+      expect(store.isWaitingForAnimation).toBe(true);
+
+      await store.goToSlide(2);
+
+      expect(store.currentSlideIndex).toBe(1);
+
+      vi.advanceTimersByTime(10000);
+      await promise;
+    });
   });
 });

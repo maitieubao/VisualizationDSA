@@ -40,7 +40,8 @@ namespace VisualizationDSA.Infrastructure.Services
         public async Task<QuizDto> GetQuizByIdAsync(Guid id)
         {
             var quiz = await _unitOfWork.Quizzes.GetByIdWithQuestionsAsync(id);
-            if (quiz == null) throw new Exception("Quiz not found");
+            // QZ-015: KeyNotFoundException → ErrorHandlingMiddleware map sang 404 (RESOURCE_NOT_FOUND).
+            if (quiz == null) throw new KeyNotFoundException("Quiz not found");
             return MapToQuizDto(quiz);
         }
 
@@ -53,12 +54,14 @@ namespace VisualizationDSA.Infrastructure.Services
         public async Task<QuizAttemptResult> SubmitQuizAttemptAsync(Guid userId, QuizAttemptRequest request)
         {
             var quiz = await _unitOfWork.Quizzes.GetByIdWithQuestionsAsync(request.QuizId);
-            if (quiz == null) throw new Exception("Quiz not found");
+            // QZ-015: quiz không tồn tại → 404 (KeyNotFoundException) thay vì Exception chung → 500.
+            if (quiz == null) throw new KeyNotFoundException("Quiz not found");
 
             var questions = quiz.Questions.ToList();
             if (request.Answers.Length != questions.Count)
             {
-                throw new Exception("Number of answers does not match number of questions");
+                // Số câu trả lời sai → 400 (VALIDATION_ERROR) thay vì Exception chung → 500.
+                throw new ArgumentException("Number of answers does not match number of questions");
             }
 
             

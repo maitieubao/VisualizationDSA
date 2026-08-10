@@ -324,7 +324,7 @@ async function loadQuizzes(): Promise<void> {
 async function editQuiz(quizId: string): Promise<void> {
   submitMessage.value = ''; submitError.value = false;
   try {
-    const res = await fetch(`${BASE_URL}/api/v1/concepts/quiz/${quizId}`, { headers: getAuthHeaders() });
+    const res = await fetch(`${BASE_URL}/api/v1/concepts/quiz/${quizId}?withAnswers=true`, { headers: getAuthHeaders() });
     if (!res.ok) throw new Error('Không thể tải chi tiết trắc nghiệm');
     const data = await res.json();
     isEditMode.value = true; editingQuizId.value = quizId; activeFormType.value = 'manual';
@@ -370,7 +370,8 @@ async function toggleQuizAccordion(quizId: string): Promise<void> {
 async function fetchQuizDetail(quizId: string): Promise<void> {
   loadingDetail.value[quizId] = true; inlineError.value[quizId] = '';
   try {
-    const res = await fetch(`${BASE_URL}/api/v1/concepts/quiz/${quizId}`, { headers: getAuthHeaders() });
+    // QZ-003: cần withAnswers=true để teacher xem/sửa đáp án
+    const res = await fetch(`${BASE_URL}/api/v1/concepts/quiz/${quizId}?withAnswers=true`, { headers: getAuthHeaders() });
     if (!res.ok) throw new Error('Không thể tải chi tiết trắc nghiệm');
     quizDetails.value[quizId] = await res.json();
   } catch (err: any) { inlineError.value[quizId] = err.message || 'Lỗi khi tải chi tiết'; }

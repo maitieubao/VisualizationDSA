@@ -87,11 +87,7 @@ describe('PS-002 (P0): Chuyển ngôn ngữ', () => {
     const store = usePseudocodeStore();
     store.loadPseudocodeScript(mockLanguages);
 
-    const wrapper = mount(MultilingualCodePanel, {
-      global: {
-        stubs: { BaseIcon: { template: '<span />' } },
-      },
-    });
+    const wrapper = mount(MultilingualCodePanel);
 
     const tabs = wrapper.findAll('.lang-btn');
     expect(tabs.length).toBe(2);

@@ -1,9 +1,11 @@
 <template>
-  <div v-if="options && type !== 'CANVAS_TARGET'" class="quiz-options">
+  <div v-if="options && type !== 'CANVAS_TARGET'" class="quiz-options" role="radiogroup" aria-label="Các phương án trả lời">
     <button
       v-for="(option, idx) in options"
       :key="idx"
       class="quiz-option-btn"
+      role="radio"
+      :aria-checked="selectedIndex === idx"
       :class="{
         'option-selected':  selectedIndex === idx && !isSubmitted,
         'option-correct':   isSubmitted && idx === correctIndex,
@@ -13,7 +15,7 @@
       :disabled="isSubmitted"
       @click="$emit('select', idx)"
     >
-      <span class="option-letter">{{ letters[idx] }}</span>
+      <span class="option-letter">{{ optionLetter(idx) }}</span>
       <span class="option-text">{{ option }}</span>
       <span v-if="isSubmitted && idx === correctIndex" class="option-icon correct-icon">
         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="m5 12 5 5L20 7" /></svg>
@@ -34,7 +36,11 @@ defineProps<{
   correctIndex?: number;
 }>();
 defineEmits<{ select: [number] }>();
-const letters = ['A', 'B', 'C', 'D', 'E', 'F'];
+
+// QZ-039: chữ cái sinh động theo chỉ số — options > 6 không còn bị undefined.
+function optionLetter(idx: number): string {
+  return String.fromCharCode(65 + idx);
+}
 </script>
 
 <style scoped>

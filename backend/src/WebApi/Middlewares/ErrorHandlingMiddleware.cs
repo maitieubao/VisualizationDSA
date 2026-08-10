@@ -1,6 +1,7 @@
 using System.Net;
 using System.Text.Json;
 using Microsoft.EntityFrameworkCore;
+using VisualizationDSA.Application.Common.Exceptions;
 
 namespace VisualizationDSA.WebApi.Middlewares;
 
@@ -48,6 +49,7 @@ public sealed class ErrorHandlingMiddleware
             InvalidOperationException ex    => (HttpStatusCode.Conflict,             "OPERATION_CONFLICT",      ex.Message),
             OperationCanceledException      => (HttpStatusCode.RequestTimeout,        "REQUEST_TIMEOUT",         "Yêu cầu đã bị hủy hoặc hết thời gian chờ."),
             DbUpdateConcurrencyException    => (HttpStatusCode.Conflict,              "CONCURRENCY_CONFLICT",    "Dữ liệu đã bị thay đổi bởi người khác. Vui lòng thử lại."),
+            ConflictException ex            => (HttpStatusCode.Conflict,              "CONFLICT",                ex.Message),
             NotImplementedException         => (HttpStatusCode.NotImplemented,        "NOT_IMPLEMENTED",         "Tính năng này chưa được triển khai."),
             _                               => (HttpStatusCode.InternalServerError,  "INTERNAL_SERVER_ERROR",   "Đã xảy ra lỗi hệ thống. Vui lòng thử lại sau.")
         };

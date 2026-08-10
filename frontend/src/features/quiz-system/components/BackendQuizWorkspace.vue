@@ -179,7 +179,12 @@
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         <div v-for="quiz in displayedQuizzes" :key="quiz.id"
           class="rounded-2xl bg-bg-secondary/45 border border-border-subtle backdrop-blur-xl p-5 cursor-pointer hover:border-accent/30 transition-all duration-200 quiz-card"
-          @click="handleQuizClick(quiz)">
+          role="button"
+          tabindex="0"
+          :aria-label="`Mở quiz: ${quiz.title}`"
+          @click="handleQuizClick(quiz)"
+          @keydown.enter.prevent="handleQuizClick(quiz)"
+          @keydown.space.prevent="handleQuizClick(quiz)">
           <div class="flex items-center justify-between mb-3">
             <span class="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider"
               :class="difficultyClass(quiz.difficulty)">
@@ -271,8 +276,8 @@ const displayedQuizzes = computed(() => {
 
 function handleQuizClick(quiz: StatelessQuizSummary): void {
   if (isUsingFallback.value) {
-    
-    store.backendQuizError = 'Cần kết nối server để làm quiz. Vui lòng khởi động backend.';
+    // QZ-055: gán qua action — không mutation state store trực tiếp từ component.
+    store.setBackendQuizError('Cần kết nối server để làm quiz. Vui lòng khởi động backend.');
     return;
   }
   store.startBackendQuiz(quiz.id);

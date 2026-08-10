@@ -16,6 +16,7 @@ using VisualizationDSA.WebApi.Filters;
 using VisualizationDSA.Domain.Enums;
 using VisualizationDSA.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
+using VisualizationDSA.Application.Features.Classrooms.Queries.GetClassroomIntegrityReport;
 using VisualizationDSA.Application.Features.Classrooms.Commands.DeleteClassroomModule;
 
 namespace VisualizationDSA.WebApi.Controllers
@@ -209,7 +210,35 @@ namespace VisualizationDSA.WebApi.Controllers
             return NoContent();
         }
 
-[HttpPut("{classroomId}/modules/reorder")]
+        [HttpGet("{classroomId:guid}/integrity-report")]
+        [RequireJwtRole("Teacher")]
+        public async Task<IActionResult> GetIntegrityReport(Guid classroomId)
+        {
+            var teacherIdStr = JwtHelper.ExtractSubFromToken(Request);
+            if (!Guid.TryParse(teacherIdStr, out var teacherId))
+                return Unauthorized();
+
+            try
+            {
+                var query = new GetClassroomIntegrityReportQuery
+                {
+                    ClassroomId = classroomId,
+                    TeacherId = teacherId
+                };
+                var result = await _mediator.Send(query);
+                return Ok(result);
+            }
+            catch (UnauthorizedAccessException)
+            {
+                return Forbid();
+            }
+            catch (KeyNotFoundException)
+            {
+                return NotFound(new { error = "NOT_FOUND", message = "Classroom not found." });
+            }
+        }
+
+        [HttpPut("{classroomId}/modules/reorder")]
         [RequireJwtRole("Teacher")]
         public async Task<IActionResult> ReorderModules(Guid classroomId, [FromBody] ReorderModulesRequest request)
         {

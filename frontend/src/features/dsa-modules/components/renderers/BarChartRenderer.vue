@@ -21,6 +21,22 @@ const containerRef = ref<HTMLDivElement | null>(null);
 const canvasRef = ref<HTMLCanvasElement | null>(null);
 let resizeObserver: ResizeObserver | null = null;
 
+let cachedColors: Record<string, string> = {};
+
+function cacheColors(): void {
+  const style = getComputedStyle(document.documentElement);
+  cachedColors = {
+    bg: style.getPropertyValue('--canvas-bg').trim() || '#080808',
+    default: style.getPropertyValue('--color-accent-cyan').trim() || '#38BDF8',
+    compare: style.getPropertyValue('--color-accent-yellow').trim() || '#FBBF24',
+    swap: style.getPropertyValue('--color-accent-red').trim() || '#EF4444',
+    sorted: style.getPropertyValue('--color-accent-green').trim() || '#10B981',
+    pivot: style.getPropertyValue('--color-accent-purple').trim() || '#8B5CF6',
+    text: style.getPropertyValue('--color-text-primary').trim() || '#FFFFFF',
+    muted: style.getPropertyValue('--color-text-muted').trim() || '#94A3B8',
+  };
+}
+
 function resizeCanvas(): void {
   const canvas = canvasRef.value;
   const container = containerRef.value;
@@ -46,24 +62,16 @@ function renderCanvas(): void {
   const ctx = canvas.getContext('2d');
   if (!ctx) return;
 
-  
-  const style = getComputedStyle(document.documentElement);
-  const colorBg = style.getPropertyValue('--canvas-bg').trim() || '#080808';
-  const colorDefault = style.getPropertyValue('--color-accent-cyan').trim() || '#38BDF8';
-  const colorCompare = style.getPropertyValue('--color-accent-yellow').trim() || '#FBBF24';
-  const colorSwap = style.getPropertyValue('--color-accent-red').trim() || '#EF4444';
-  const colorSorted = style.getPropertyValue('--color-accent-green').trim() || '#10B981';
-  const colorPivot = style.getPropertyValue('--color-accent-purple').trim() || '#8B5CF6';
-  const colorText = style.getPropertyValue('--color-text-primary').trim() || '#FFFFFF';
-  const colorMuted = style.getPropertyValue('--color-text-muted').trim() || '#94A3B8';
-
+  const colorBg = cachedColors.bg || '#080808';
   const colors = {
-    default: colorDefault,
-    compare: colorCompare,
-    swap: colorSwap,
-    sorted: colorSorted,
-    pivot: colorPivot
+    default: cachedColors.default || '#38BDF8',
+    compare: cachedColors.compare || '#FBBF24',
+    swap: cachedColors.swap || '#EF4444',
+    sorted: cachedColors.sorted || '#10B981',
+    pivot: cachedColors.pivot || '#8B5CF6',
   };
+  const colorText = cachedColors.text || '#FFFFFF';
+  const colorMuted = cachedColors.muted || '#94A3B8';
 
   const dpr = window.devicePixelRatio || 1;
   const w = canvas.width / dpr;
@@ -78,7 +86,13 @@ function renderCanvas(): void {
   if (!frame || frame.dataState.length === 0) return;
 
   const n = frame.dataState.length;
-  const maxVal = Math.max(...frame.dataState, 1);
+  // EC-022: `Math.max(...frame.dataState, 1)` spread vỡ stack với mảng lớn
+  // (RangeError: Maximum call stack size exceeded) — duyệt vòng lặp O(n) thay thế.
+  let maxVal = 1;
+  for (let i = 0; i < n; i++) {
+    const v = frame.dataState[i];
+    if (v > maxVal) maxVal = v;
+  }
   
   
   const gapVal = Math.max(2, Math.min(6, 120 / n));
@@ -114,9 +128,12 @@ function renderCanvas(): void {
   }
 }
 
-watch(() => props.frame, renderCanvas, { deep: true });
+// EC-023: frame là object bất biến — mỗi frame mới là tham chiếu mới, watch theo
+// identity đủ; `{ deep: true }` chỉ tốn phí duyệt cây mỗi lần trigger.
+watch(() => props.frame, renderCanvas);
 
 onMounted(() => {
+  cacheColors();
   resizeObserver = new ResizeObserver(resizeCanvas);
   if (containerRef.value) resizeObserver.observe(containerRef.value);
   resizeCanvas();

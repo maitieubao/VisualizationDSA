@@ -33,20 +33,20 @@ describe('dummyGenerators', () => {
   });
 
   describe('Dijkstra', () => {
-    it('calculates shortest path and updates distances', () => {
+    it('calculates shortest path on a real graph and updates distances', () => {
       const result = generateDummyResult('dijkstra', [50, 30, 70]);
       expect(result.algorithmId).toBe('dijkstra');
       const lastFrame = result.frames[result.frames.length - 1];
-      expect(lastFrame.treeNodes).toBeDefined();
 
-      
-      const rootNode = lastFrame.treeNodes!.find(n => n.id === 1);
-      const leftNode = lastFrame.treeNodes!.find(n => n.id === 2);
-      const rightNode = lastFrame.treeNodes!.find(n => n.id === 3);
+      expect(lastFrame.graphNodes).toBeDefined();
+      expect(lastFrame.graphEdges).toBeDefined();
+      expect(lastFrame.graphNodes!.length).toBe(3);
+      expect(lastFrame.graphNodes!.every(n => n.x !== undefined && n.y !== undefined)).toBe(true);
 
-      expect(rootNode?.value).toBe(0);
-      expect(leftNode?.value).toBe(3);
-      expect(rightNode?.value).toBe(5);
+      const edgeWeights = lastFrame.graphEdges!.map(e => e.weight ?? 0);
+      expect(edgeWeights.every(w => w > 0)).toBe(true);
+      expect(lastFrame.distances).toBeDefined();
+      expect(lastFrame.distances![0]).toBe(0);
     });
   });
 
@@ -172,6 +172,142 @@ describe('dummyGenerators', () => {
       const result = generateDummyResult('unknown-algo', [1, 2, 3]);
       expect(result.algorithmId).toBe('unknown-algo');
       expect(result.frames.length).toBe(1);
+    });
+  });
+
+  describe('Selection Sort', () => {
+    it('generates frames with correct algorithm id', () => {
+      const result = generateDummyResult('selection-sort', [5, 3, 8, 1, 9]);
+      expect(result.algorithmId).toBe('selection-sort');
+      expect(result.frames.length).toBeGreaterThan(0);
+      expect(result.pseudoCode.length).toBeGreaterThan(0);
+    });
+
+    it('sorts array correctly', () => {
+      const result = generateDummyResult('selection-sort', [5, 3, 8, 1, 9]);
+      const lastFrame = result.frames[result.frames.length - 1];
+      expect(lastFrame.dataState).toEqual([1, 3, 5, 8, 9]);
+    });
+  });
+
+  describe('Insertion Sort', () => {
+    it('generates frames with correct algorithm id', () => {
+      const result = generateDummyResult('insertion-sort', [5, 3, 8, 1, 9]);
+      expect(result.algorithmId).toBe('insertion-sort');
+      expect(result.frames.length).toBeGreaterThan(0);
+      expect(result.pseudoCode.length).toBeGreaterThan(0);
+    });
+
+    it('sorts array correctly', () => {
+      const result = generateDummyResult('insertion-sort', [5, 3, 8, 1, 9]);
+      const lastFrame = result.frames[result.frames.length - 1];
+      expect(lastFrame.dataState).toEqual([1, 3, 5, 8, 9]);
+    });
+  });
+
+  describe('Quick Sort', () => {
+    it('generates frames with correct algorithm id', () => {
+      const result = generateDummyResult('quick-sort', [5, 3, 8, 1, 9]);
+      expect(result.algorithmId).toBe('quick-sort');
+      expect(result.frames.length).toBeGreaterThan(0);
+      expect(result.pseudoCode.length).toBeGreaterThan(0);
+    });
+
+    it('sorts array correctly', () => {
+      const result = generateDummyResult('quick-sort', [5, 3, 8, 1, 9]);
+      const lastFrame = result.frames[result.frames.length - 1];
+      expect(lastFrame.dataState).toEqual([1, 3, 5, 8, 9]);
+    });
+  });
+
+  describe('Merge Sort', () => {
+    it('generates frames with correct algorithm id', () => {
+      const result = generateDummyResult('merge-sort', [5, 3, 8, 1, 9]);
+      expect(result.algorithmId).toBe('merge-sort');
+      expect(result.frames.length).toBeGreaterThan(0);
+      expect(result.pseudoCode.length).toBeGreaterThan(0);
+    });
+
+    it('sorts array correctly', () => {
+      const result = generateDummyResult('merge-sort', [5, 3, 8, 1, 9]);
+      const lastFrame = result.frames[result.frames.length - 1];
+      expect(lastFrame.dataState).toEqual([1, 3, 5, 8, 9]);
+    });
+  });
+
+  describe('Heap Sort', () => {
+    it('generates frames with correct algorithm id', () => {
+      const result = generateDummyResult('heap-sort', [5, 3, 8, 1, 9]);
+      expect(result.algorithmId).toBe('heap-sort');
+      expect(result.frames.length).toBeGreaterThan(0);
+      expect(result.pseudoCode.length).toBeGreaterThan(0);
+    });
+
+    it('sorts array correctly', () => {
+      const result = generateDummyResult('heap-sort', [5, 3, 8, 1, 9]);
+      const lastFrame = result.frames[result.frames.length - 1];
+      expect(lastFrame.dataState).toEqual([1, 3, 5, 8, 9]);
+    });
+  });
+
+  describe('Radix Sort', () => {
+    it('generates frames with correct algorithm id', () => {
+      const result = generateDummyResult('radix-sort', [5, 3, 8, 1, 9]);
+      expect(result.algorithmId).toBe('radix-sort');
+      expect(result.frames.length).toBeGreaterThan(0);
+      expect(result.pseudoCode.length).toBeGreaterThan(0);
+    });
+
+    it('sorts array correctly', () => {
+      const result = generateDummyResult('radix-sort', [5, 3, 8, 1, 9]);
+      const lastFrame = result.frames[result.frames.length - 1];
+      expect(lastFrame.dataState).toEqual([1, 3, 5, 8, 9]);
+    });
+  });
+
+  describe('Counting Sort', () => {
+    it('generates frames with correct algorithm id', () => {
+      const result = generateDummyResult('counting-sort', [5, 3, 8, 1, 9]);
+      expect(result.algorithmId).toBe('counting-sort');
+      expect(result.frames.length).toBeGreaterThan(0);
+      expect(result.pseudoCode.length).toBeGreaterThan(0);
+    });
+
+    it('sorts array correctly', () => {
+      const result = generateDummyResult('counting-sort', [5, 3, 8, 1, 9]);
+      const lastFrame = result.frames[result.frames.length - 1];
+      expect(lastFrame.dataState).toEqual([1, 3, 5, 8, 9]);
+    });
+  });
+
+  describe('Bucket Sort', () => {
+    it('generates frames with correct algorithm id', () => {
+      const result = generateDummyResult('bucket-sort', [5, 3, 8, 1, 9]);
+      expect(result.algorithmId).toBe('bucket-sort');
+      expect(result.frames.length).toBeGreaterThan(0);
+      expect(result.pseudoCode.length).toBeGreaterThan(0);
+    });
+
+    it('sorts array correctly', () => {
+      const result = generateDummyResult('bucket-sort', [5, 3, 8, 1, 9]);
+      const lastFrame = result.frames[result.frames.length - 1];
+      expect(lastFrame.dataState).toEqual([1, 3, 5, 8, 9]);
+    });
+  });
+
+  describe('BellmanFord', () => {
+    it('generates frames with correct algorithm id', () => {
+      const result = generateDummyResult('bellman-ford', [50, 30, 70]);
+      expect(result.algorithmId).toBe('bellman-ford');
+      expect(result.frames.length).toBeGreaterThan(0);
+      expect(result.pseudoCode.length).toBeGreaterThan(0);
+    });
+
+    it('has graph nodes in frames', () => {
+      const result = generateDummyResult('bellman-ford', [50, 30, 70]);
+      const lastFrame = result.frames[result.frames.length - 1];
+      expect(lastFrame.dataState).toBeDefined();
+      expect(lastFrame.dataState!.length).toBeGreaterThan(0);
     });
   });
 });

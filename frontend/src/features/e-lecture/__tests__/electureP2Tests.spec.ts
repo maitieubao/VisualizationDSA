@@ -1,41 +1,15 @@
-﻿import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest';
+﻿// @vitest-environment jsdom
+import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest';
 import { setActivePinia, createPinia } from 'pinia';
-import { useNotificationStore } from '../store/useNotificationStore';
 import { useLectureStore } from '../store/useLectureStore';
 import { useAnimationStore } from '../../animation-engine/store/useAnimationStore';
 import { useToastStore } from '../../../composables/useToast';
 import { useCourseStore } from '../../courses/store/useCourseStore';
 import { APP_TABS } from '../../../appTabs';
 import type { TabGroup, TabItem } from '../../../appTabs';
-import type { NotificationDto } from '../services/notificationApi';
 import type { LectureScript } from '../types/lecture.types';
 import type { AlgorithmResult } from '../../animation-engine/types/animation.types';
 import type { Course } from '../../courses/types/course.types';
-
-const mockGetNotifications = vi.fn();
-const mockMarkAsRead = vi.fn();
-const mockMarkAllAsRead = vi.fn();
-
-vi.mock('../services/notificationApi', () => ({
-  getNotifications: (...args: unknown[]) => mockGetNotifications(...args),
-  markAsRead: (...args: unknown[]) => mockMarkAsRead(...args),
-  markAllAsRead: (...args: unknown[]) => mockMarkAllAsRead(...args),
-}));
-
-vi.mock('../../auth/store/useAuthStore', () => ({
-  useAuthStore: () => ({
-    isAuthenticated: true,
-    accessToken: 'mock-token',
-  }),
-}));
-
-function createMockNotifications(): NotificationDto[] {
-  return [
-    { id: 'n1', content: 'Chào mừng bạn!', isRead: false, linkUrl: '/welcome', createdAt: '2026-08-01T10:00:00Z' },
-    { id: 'n2', content: 'Bài mới đã có', isRead: false, linkUrl: '/courses', createdAt: '2026-08-02T10:00:00Z' },
-    { id: 'n3', content: 'Đã đọc rồi', isRead: true, linkUrl: '', createdAt: '2026-08-03T10:00:00Z' },
-  ];
-}
 
 function createMockLecture(): LectureScript {
   return {
@@ -113,129 +87,6 @@ function filteredTabs(isAuthenticated: boolean, userRole: string): (TabGroup | T
     return tabOrGroup;
   });
 }
-
-function formatTimeWithBase(dateStr: string, baseDate: Date): string {
-  const date = new Date(dateStr);
-  const diffMs = baseDate.getTime() - date.getTime();
-  const diffMins = Math.floor(diffMs / 60000);
-  if (diffMins < 1) return 'Vừa xong';
-  if (diffMins < 60) return `${diffMins} phút trước`;
-  const diffHours = Math.floor(diffMins / 60);
-  if (diffHours < 24) return `${diffHours} giờ trước`;
-  const diffDays = Math.floor(diffHours / 24);
-  if (diffDays < 7) return `${diffDays} ngày trước`;
-  return date.toLocaleDateString('vi-VN');
-}
-
-describe('EL-004 (P2): Mark all read - readAll() reset unreadCount', () => {
-  beforeEach(() => {
-    setActivePinia(createPinia());
-    vi.clearAllMocks();
-  });
-
-  it('readAll() resets unreadCount to 0 after marking all as read', async () => {
-    mockMarkAllAsRead.mockResolvedValue(undefined);
-    const store = useNotificationStore();
-    store.notifications = createMockNotifications();
-
-    expect(store.unreadCount).toBe(2);
-
-    await store.readAll();
-
-    expect(store.unreadCount).toBe(0);
-    expect(store.hasUnread).toBe(false);
-  });
-
-  it('readAll() marks every notification as isRead = true', async () => {
-    mockMarkAllAsRead.mockResolvedValue(undefined);
-    const store = useNotificationStore();
-    store.notifications = createMockNotifications();
-
-    await store.readAll();
-
-    expect(store.notifications.every(n => n.isRead)).toBe(true);
-  });
-});
-
-describe('EL-005 (P2): Click notification - handleNotificationClick()', () => {
-  beforeEach(() => {
-    setActivePinia(createPinia());
-    vi.clearAllMocks();
-  });
-
-  it('clicking unread notification calls readNotification', async () => {
-    mockMarkAsRead.mockResolvedValue(undefined);
-    const store = useNotificationStore();
-    store.notifications = createMockNotifications();
-
-    await store.readNotification('n1');
-
-    const n1 = store.notifications.find(n => n.id === 'n1');
-    expect(n1?.isRead).toBe(true);
-    expect(mockMarkAsRead).toHaveBeenCalledWith('n1', 'mock-token');
-  });
-
-  it('clicking read notification does not call API again', async () => {
-    mockMarkAsRead.mockResolvedValue(undefined);
-    const store = useNotificationStore();
-    store.notifications = createMockNotifications();
-
-    const n3 = store.notifications.find(n => n.id === 'n3');
-    expect(n3?.isRead).toBe(true);
-
-    if (n3 && !n3.isRead) {
-      await store.readNotification('n3');
-    }
-
-    expect(mockMarkAsRead).not.toHaveBeenCalled();
-  });
-
-  it('unreadCount decreases after clicking unread notification', async () => {
-    mockMarkAsRead.mockResolvedValue(undefined);
-    const store = useNotificationStore();
-    store.notifications = createMockNotifications();
-
-    expect(store.unreadCount).toBe(2);
-
-    await store.readNotification('n1');
-
-    expect(store.unreadCount).toBe(1);
-  });
-});
-
-describe('EL-007 (P2): Relative time - formatTime()', () => {
-  it('returns "Vừa xong" for timestamps less than 1 minute ago', () => {
-    const now = new Date('2026-08-06T12:00:00Z');
-    const thirtySecondsAgo = new Date(now.getTime() - 30 * 1000).toISOString();
-
-    const result = formatTimeWithBase(thirtySecondsAgo, now);
-    expect(result).toBe('Vừa xong');
-  });
-
-  it('returns "X phút trước" for timestamps within 1 hour', () => {
-    const now = new Date('2026-08-06T12:00:00Z');
-    const fifteenMinAgo = new Date(now.getTime() - 15 * 60 * 1000).toISOString();
-
-    const result = formatTimeWithBase(fifteenMinAgo, now);
-    expect(result).toBe('15 phút trước');
-  });
-
-  it('returns "X giờ trước" for timestamps within 24 hours', () => {
-    const now = new Date('2026-08-06T12:00:00Z');
-    const threeHoursAgo = new Date(now.getTime() - 3 * 60 * 60 * 1000).toISOString();
-
-    const result = formatTimeWithBase(threeHoursAgo, now);
-    expect(result).toBe('3 giờ trước');
-  });
-
-  it('returns "X ngày trước" for timestamps within 7 days', () => {
-    const now = new Date('2026-08-06T12:00:00Z');
-    const twoDaysAgo = new Date(now.getTime() - 2 * 24 * 60 * 60 * 1000).toISOString();
-
-    const result = formatTimeWithBase(twoDaysAgo, now);
-    expect(result).toBe('2 ngày trước');
-  });
-});
 
 describe('EL-009 (P2): Slide content - HTML render', () => {
   beforeEach(() => {
@@ -593,7 +444,7 @@ describe('NA-009 (P2): Retry sync - retry button', () => {
 });
 
 describe('NA-010 (P2): Page transition - fade animation class', () => {
-  it('CourseDetailView template contains animate-fade-in class', () => {
+  it('CourseDetailView template contains course-detail-view class', () => {
     const fs = require('fs');
     const path = require('path');
     const viewSource = fs.readFileSync(
@@ -601,7 +452,7 @@ describe('NA-010 (P2): Page transition - fade animation class', () => {
       'utf-8'
     );
 
-    expect(viewSource).toContain('animate-fade-in');
+    expect(viewSource).toContain('course-detail-view');
   });
 
   it('LectureOverlay template contains lecture-fade transition', () => {

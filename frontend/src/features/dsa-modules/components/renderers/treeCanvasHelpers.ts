@@ -1,12 +1,31 @@
+let cachedColors: Record<string, string> | null = null;
+
+function getThemeColors(): Record<string, string> {
+  if (cachedColors === null) {
+    const style = getComputedStyle(document.documentElement);
+    cachedColors = {
+      colorEdge: style.getPropertyValue('--color-border-strong').trim() || '#475569',
+      colorHighlight: style.getPropertyValue('--color-accent-yellow').trim() || '#FBBF24',
+      colorMST: style.getPropertyValue('--color-accent-purple').trim() || '#A855F7',
+      colorBgPrimary: style.getPropertyValue('--color-bg-primary').trim() || '#080808',
+      colorNode: style.getPropertyValue('--color-bg-surface').trim() || '#232323',
+      colorBorder: style.getPropertyValue('--color-border-default').trim() || '#475569',
+      colorActive: style.getPropertyValue('--color-accent-primary').trim() || '#FBBF24',
+      colorText: style.getPropertyValue('--color-text-primary').trim() || '#FFFFFF',
+    };
+  }
+  return cachedColors;
+}
+
 export function drawGraphEdge(
   ctx: CanvasRenderingContext2D,
   x1: number, y1: number, x2: number, y2: number,
   opts?: { weight?: number; directed?: boolean; highlighted?: boolean; inMST?: boolean },
 ): void {
-  const style = getComputedStyle(document.documentElement);
-  const colorEdge = style.getPropertyValue('--color-border-strong').trim() || '#475569';
-  const colorHighlight = style.getPropertyValue('--color-accent-yellow').trim() || '#FBBF24';
-  const colorMST = style.getPropertyValue('--color-accent-purple').trim() || '#A855F7';
+  const colors = getThemeColors();
+  const colorEdge = colors.colorEdge;
+  const colorHighlight = colors.colorHighlight;
+  const colorMST = colors.colorMST;
 
   ctx.beginPath();
   ctx.moveTo(x1, y1);
@@ -44,7 +63,7 @@ export function drawGraphEdge(
   if (opts?.weight !== undefined && opts.weight !== null) {
     const midX = (x1 + x2) / 2;
     const midY = (y1 + y2) / 2;
-    const bg = style.getPropertyValue('--color-bg-primary').trim() || '#080808';
+    const bg = getThemeColors().colorBgPrimary;
     ctx.fillStyle = bg;
     ctx.beginPath();
     ctx.arc(midX, midY, 9, 0, Math.PI * 2);
@@ -77,13 +96,13 @@ export function drawNode(
   x: number, y: number, value: number,
   status: 'default' | 'active' | 'visited',
 ): void {
-  const style = getComputedStyle(document.documentElement);
-  const colorNode = style.getPropertyValue('--color-bg-surface').trim() || '#232323';
-  const colorBorder = style.getPropertyValue('--color-border-default').trim() || '#475569';
-  const colorActive = style.getPropertyValue('--color-accent-primary').trim() || '#FBBF24';
+  const colors = getThemeColors();
+  const colorNode = colors.colorNode;
+  const colorBorder = colors.colorBorder;
+  const colorActive = colors.colorActive;
   const colorVisited = '#10B981';
-  const colorText = style.getPropertyValue('--color-text-primary').trim() || '#FFFFFF';
-  const colorBg = style.getPropertyValue('--color-bg-primary').trim() || '#080808';
+  const colorText = colors.colorText;
+  const colorBg = colors.colorBgPrimary;
 
   ctx.beginPath();
   ctx.arc(x, y, NODE_RADIUS, 0, Math.PI * 2);

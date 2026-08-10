@@ -1,12 +1,39 @@
-
-
-
-
-
 export interface HighlightIndices {
   compare: number[];
   swap: number[];
   sorted: number[];
+  pivot?: number | null;
+  found?: number | null;
+  low?: number | null;
+  mid?: number | null;
+  high?: number | null;
+  dimmed?: number[];
+  active?: number[];
+  target?: number;
+}
+
+export interface TreeNodeDTO {
+  id: number;
+  value: number;
+  leftNodeId: number | null;
+  rightNodeId: number | null;
+}
+
+export interface GraphNodeDTO {
+  id: number;
+  value: number;
+  x: number;
+  y: number;
+  label?: string;
+}
+
+export interface GraphEdgeDTO {
+  from: number;
+  to: number;
+  weight?: number;
+  directed?: boolean;
+  highlighted?: boolean;
+  inMST?: boolean;
 }
 
 export interface FrameDTO {
@@ -18,12 +45,25 @@ export interface FrameDTO {
   activeLogicalLineId?: string;
   variables?: Record<string, string | number>;
 
-  
   visitedNodes?: string[];
   activeNodes?: string[];
   visitedEdges?: string[];
   distances?: Record<string, number>;
   queueStack?: string[];
+
+  treeNodes?: TreeNodeDTO[] | null;
+  graphNodes?: GraphNodeDTO[] | null;
+  graphEdges?: GraphEdgeDTO[] | null;
+  predecessors?: Record<number, number> | null;
+  queueState?: number[] | null;
+  visitedSet?: number[] | null;
+  currentPath?: number[] | null;
+  openSet?: number[] | null;
+  closedSet?: number[] | null;
+  balanceFactors?: Record<number, number> | null;
+  rotationInfo?: string;
+  heapArray?: number[] | null;
+  heapSize?: number | null;
 }
 
 export interface AlgorithmResult {

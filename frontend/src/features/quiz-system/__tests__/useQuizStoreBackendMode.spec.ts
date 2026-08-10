@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { setActivePinia, createPinia } from 'pinia';
 import { useQuizStore } from '../store/useQuizStore';
 import { statelessQuizApi } from '../service/statelessQuizApi';
@@ -50,6 +50,10 @@ describe('useQuizStore — Chế độ Quiz Backend (Không trạng thái)', () 
   beforeEach(() => {
     setActivePinia(createPinia());
     vi.clearAllMocks();
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
   });
 
   describe('loadQuizCatalog', () => {
@@ -241,6 +245,74 @@ describe('useQuizStore — Chế độ Quiz Backend (Không trạng thái)', () 
       await store.submitBackendQuiz();
 
       expect(statelessQuizApi.submitAttempt).not.toHaveBeenCalled();
+    });
+
+    it('QZ-044: submit 2 lần đồng thời → chỉ 1 API call (guard isBackendQuizSubmitting)', async () => {
+      vi.mocked(statelessQuizApi.getQuizById).mockResolvedValueOnce(mockDetail);
+      let resolveAttempt!: (value: StatelessAttemptResult) => void;
+      vi.mocked(statelessQuizApi.submitAttempt).mockImplementationOnce(
+        () => new Promise<StatelessAttemptResult>((resolve) => { resolveAttempt = resolve; }),
+      );
+      const store = useQuizStore();
+      await store.startBackendQuiz('quiz-1');
+      store.backendAnswers = [1, 0, 3];
+
+      const first = store.submitBackendQuiz();
+      const second = store.submitBackendQuiz();
+
+      expect(statelessQuizApi.submitAttempt).toHaveBeenCalledTimes(1);
+      expect(store.isBackendQuizSubmitting).toBe(true);
+
+      resolveAttempt(mockResult);
+      await first;
+      await second;
+
+      expect(store.backendResult).not.toBeNull();
+      expect(store.isBackendQuizSubmitting).toBe(false);
+      expect(statelessQuizApi.submitAttempt).toHaveBeenCalledTimes(1);
+    });
+
+    it('QZ-044: submit chậm qua fake timers — response sau cùng vẫn resolve đúng', async () => {
+      vi.useFakeTimers();
+      vi.mocked(statelessQuizApi.getQuizById).mockResolvedValueOnce(mockDetail);
+      vi.mocked(statelessQuizApi.submitAttempt).mockImplementationOnce(
+        () => new Promise<StatelessAttemptResult>((resolve) => {
+          setTimeout(() => resolve(mockResult), 100);
+        }),
+      );
+      const store = useQuizStore();
+      await store.startBackendQuiz('quiz-1');
+      store.backendAnswers = [1, 0, 3];
+
+      const pending = store.submitBackendQuiz();
+      expect(statelessQuizApi.submitAttempt).toHaveBeenCalledTimes(1);
+      expect(store.isBackendQuizSubmitting).toBe(true);
+
+      await vi.advanceTimersByTimeAsync(100);
+      await pending;
+
+      expect(store.backendResult?.score).toBe(2);
+      expect(store.isBackendQuizSubmitting).toBe(false);
+    });
+
+    it('QZ-052: submit lần 2 (đậu lại) → xpAwarded=0 từ backend, store truyền nguyên vẹn', async () => {
+      vi.mocked(statelessQuizApi.getQuizById).mockResolvedValue(mockDetail);
+      vi.mocked(statelessQuizApi.submitAttempt)
+        .mockResolvedValueOnce({ ...mockResult, passed: true, xpAwarded: 100 })
+        .mockResolvedValueOnce({ ...mockResult, passed: true, xpAwarded: 0 });
+      const store = useQuizStore();
+      await store.startBackendQuiz('quiz-1');
+      store.backendAnswers = [1, 0, 3];
+
+      await store.submitBackendQuiz();
+      expect(store.backendResult?.xpAwarded).toBe(100);
+
+      // Làm lại lần 2 — anti-farm nằm ở backend; store phải phản ánh đúng
+      // xpAwarded=0 mà không tự cấp thêm hay ghi đè.
+      await store.submitBackendQuiz();
+      expect(store.backendResult?.xpAwarded).toBe(0);
+      expect(store.backendResult?.passed).toBe(true);
+      expect(statelessQuizApi.submitAttempt).toHaveBeenCalledTimes(2);
     });
   });
 

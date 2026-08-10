@@ -27,13 +27,14 @@
                   <span class="student-email">{{ u.email }}</span>
                 </div>
               </td>
-              <td>
-                <select :value="u.role" class="inline-select" @change="changeUserRole(u.id, $event)">
-                  <option value="Student">Học viên</option>
-                  <option value="Teacher">Giảng viên</option>
-                  <option value="Admin">Quản trị viên</option>
-                </select>
-              </td>
+               <td>
+                 <select :value="u.role" class="inline-select" @change="changeUserRole(u.id, $event)" :disabled="u.role === 'Admin' && isLastAdmin(u)">
+                   <option value="Student">Học viên</option>
+                   <option value="Teacher">Giảng viên</option>
+                   <option value="Admin">Quản trị viên</option>
+                 </select>
+                 <span v-if="u.role === 'Admin' && isLastAdmin(u)" class="text-xs text-accent-red ml-2">⚠ Cuối cùng</span>
+               </td>
               <td>
                 <button class="toggle-btn" :class="u.isPremium ? 'toggle-btn--active' : 'toggle-btn--inactive'" @click="toggleUserPremium(u.id, u.isPremium)">
                   <template v-if="u.isPremium">Premium <BaseIcon name="gem" style="width:13px;height:13px" /></template>
@@ -140,7 +141,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, onMounted } from 'vue';
+  import { ref, reactive, computed, onMounted } from 'vue';
 import { useAdminApi } from './useAdminApi';
 
 const emit = defineEmits<{ (e: 'refresh-dashboard'): void }>();
@@ -162,6 +163,9 @@ const createUserForm = reactive({ username: '', email: '', password: '', role: '
 const showResetPasswordModal = ref(false);
 const targetUserForReset = ref<UserItem | null>(null);
 const resetPasswordForm = reactive({ password: '' });
+
+const adminCount = computed(() => usersList.value.filter(u => u.role === 'Admin').length);
+const isLastAdmin = (user: UserItem) => user.role === 'Admin' && adminCount.value <= 1;
 
 async function loadUsers(page: number = 1): Promise<void> {
   try {
@@ -185,7 +189,11 @@ async function changeUserRole(userId: string, event: Event): Promise<void> {
   try {
     const res = await fetch(`${BASE_URL}/api/v1/concepts/admin/users/${userId}/role`, { method: 'PUT', headers: getAuthHeaders(), body: JSON.stringify({ role: newRole }) });
     if (res.ok) { pushLog('INFO', `Đã cập nhật vai trò ${userId} thành ${newRole}`); if (u) u.role = newRole; emit('refresh-dashboard'); await loadUsers(currentPage.value); }
-    else { pushLog('ERROR', `Lỗi cập nhật vai trò ${userId}`); alert('Lỗi cập nhật quyền.'); await loadUsers(currentPage.value); }
+    else {
+      const err = await res.json();
+      if (err.error === 'LAST_ADMIN_PROTECTED') { alert('Không thể thay đổi vai trò của admin cuối cùng trong hệ thống!'); if (u) select.value = oldRole; }
+      else { pushLog('ERROR', `Lỗi cập nhật vai trò ${userId}`); alert('Lỗi cập nhật quyền.'); await loadUsers(currentPage.value); }
+    }
   } catch { alert('Lỗi kết nối khi cập nhật role.'); await loadUsers(currentPage.value); }
 }
 
@@ -218,7 +226,7 @@ async function impersonateUser(userId: string): Promise<void> {
 }
 
 async function deleteUser(userId: string, username: string) {
-  if (!confirm(`Bạn có chắc chắn muốn XÓA VĨNH VIỄN tài khoản "${username}"?`)) return;
+  if (!confirm(`Bạn có chắc chắn muốn XÓA VĨNH VIỄN tài khoản "${username}"?` + '\n\nHành động này sẽ xóa toàn bộ tiến độ học tập, bài thi, bình luận và dữ liệu liên quan. Không thể hoàn tác!')) return;
   try {
     const res = await fetch(`${BASE_URL}/api/v1/concepts/admin/users/${userId}`, { method: 'DELETE', headers: getAuthHeaders() });
     if (res.ok) { alert('Đã xóa tài khoản thành công!'); emit('refresh-dashboard'); await loadUsers(currentPage.value); }

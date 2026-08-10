@@ -3,8 +3,12 @@ import { PseudocodeSyncEngine, type AnimationFrameForSync } from '../engine/Pseu
 export interface AnimationStoreSync {
   frames: Array<{ activeLogicalLineId?: string; variables?: Record<string, string | number> }>;
   currentIndex: number;
+  /** Hợp đồng: `goToFrame` PHẢI tự pause playback (useAnimationStore.goToFrame đã làm) — helpers không gọi pause() lại (PS-022). */
   goToFrame(frameIndex: number): void;
-  pause(): void;
+  /** PS-021/PS-006: nguồn frame đang phát (có thể vắng nếu store nguồn tối thiểu). */
+  currentFrame?: { activeLogicalLineId?: string; variables?: Record<string, string | number> } | null;
+  /** PS-006: tốc độ phát — `>= 2.0` kích hoạt debounce highlight 50ms. Mặc định 1.0 khi không cung cấp. */
+  playbackSpeed?: number;
 }
 
 export function getSyncFrames(
@@ -20,19 +24,16 @@ export function getSyncFrames(
 export function snapToLogicalLine(animStore: AnimationStoreSync, logicalId: string): void {
   const syncFrames = getSyncFrames(animStore.frames);
   const targetIdx = PseudocodeSyncEngine.findFirstFrameIndexForLogicalLine(logicalId, syncFrames);
-  if (targetIdx !== -1) {
-    animStore.goToFrame(targetIdx);
-    animStore.pause();
-  }
+  // PS-022: không gọi animStore.pause() — `goToFrame` (useAnimationStore.ts:239)
+  // đã dừng playback ngay trong thân hàm.
+  if (targetIdx !== -1) animStore.goToFrame(targetIdx);
 }
 
 export function snapToNextOccurrence(animStore: AnimationStoreSync, logicalId: string): void {
   const syncFrames = getSyncFrames(animStore.frames);
   const nextIdx = PseudocodeSyncEngine.getNextCycleFrameIndex(logicalId, animStore.currentIndex, syncFrames);
-  if (nextIdx !== -1) {
-    animStore.goToFrame(nextIdx);
-    animStore.pause();
-  }
+  // PS-022: không gọi animStore.pause() — `goToFrame` đã dừng playback.
+  if (nextIdx !== -1) animStore.goToFrame(nextIdx);
 }
 
 export function getOccurrenceInfo(

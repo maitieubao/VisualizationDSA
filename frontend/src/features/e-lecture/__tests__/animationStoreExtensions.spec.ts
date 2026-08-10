@@ -1,3 +1,4 @@
+﻿// @vitest-environment jsdom
 import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest';
 import { setActivePinia, createPinia } from 'pinia';
 import { useAnimationStore } from '../../animation-engine/store/useAnimationStore';

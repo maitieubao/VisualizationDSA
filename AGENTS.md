@@ -8,7 +8,7 @@ Tài liệu này đóng vai trò hướng dẫn phân vai, vận hành và quy c
 
 ## 🏛️ Bản Đồ Phân Vai Tác Nhân AI (AI Agent Role Directory)
 
-Hệ thống được chia nhỏ thành 5 Tổ chuyên môn chính nằm tại thư mục `skills/`. Mỗi AI Agent khi tiếp quản dự án bắt buộc phải tự động nạp (load) các tệp tin kỹ năng tương ứng trước khi viết code:
+Hệ thống được chia nhỏ thành 6 Tổ chuyên môn chính nằm tại thư mục `skills/`. Mỗi AI Agent khi tiếp quản dự án bắt buộc phải tự động nạp (load) các tệp tin kỹ năng tương ứng trước khi viết code:
 
 ### 1. Tổ Kiến Trúc & Nghiệp Vụ Backend (`skills/backend/`)
 
@@ -16,26 +16,31 @@ Hệ thống được chia nhỏ thành 5 Tổ chuyên môn chính nằm tại t
 - **[api-design.md (API Contract Specialist)](./skills/backend/api-design.md)**: Chuyên gia thiết lập giao ước API RESTful chuẩn hóa, nén payload và chuẩn hóa mã phản hồi lỗi.
 - **[dotnet-core-specialist.md (.NET Core Specialist)](./skills/backend/dotnet-core-specialist.md)**: Chuyên gia Clean Architecture, Dependency Injection và tối ưu cấu hình khởi chạy ASP.NET Core.
 
-### 2. Tổ Giao Diện & Trải Nghiệm Frontend (`skills/frontend/`)
+### 2. Tổ Lõi & Kiến Trúc Hệ Thống (`skills/core/`)
+
+- **[feature-builder.md (Fullstack Feature Builder)](./skills/core/feature-builder.md)**: Chiến binh thực thi tính năng từ A đến Z, nhận Module/Feature từ `deep-decomposition` và code xuyên suốt Backend API đến Frontend UI.
+- **[project-architect.md (Project Architect)](./skills/core/project-architect.md)**: Kiến trúc sư hệ thống thiết kế Blueprint kết nối Backend (.NET) và Frontend (Vue), đặc biệt là lõi Animation Engine.
+
+### 3. Tổ Giao Diện & Trải Nghiệm Frontend (`skills/frontend/`)
 
 - **[abstract-concept-ui-specialist.md (Abstract Concept UI Specialist)](./skills/frontend/abstract-concept-ui-specialist.md)**: Chuyên gia mô phỏng khái niệm trừu tượng OOP/SOLID thành mô hình hạt khói và rạn nứt chuyển động sinh động.
 - **[dsa-ui-specialist.md (DSA UI Specialist)](./skills/frontend/dsa-ui-specialist.md)**: Chuyên gia toán hình học uốn cong Parabol hoán vị mảng và dựng cây nhị phân cân đối.
 - **[ui-component-builder.md (UI Component Builder)](./skills/frontend/ui-component-builder.md)**: Chuyên gia dựng cấu trúc mờ kính (Glassmorphic layout) hổ phách phát sáng và các thành phần VCR Playback.
 - **[vue-state-management.md (Vue State Manager)](./skills/frontend/vue-state-management.md)**: Kỹ sư quản lý Pinia Store điều phối timeline VCR Playback an toàn.
 
-### 3. Tổ Đồ Họa & Trực Quan Hóa (`skills/visualization/`)
+### 4. Tổ Đồ Họa & Trực Quan Hóa (`skills/visualization/`)
 
 - **[animation-timeline-manager.md (Animation Timeline Manager)](./skills/visualization/animation-timeline-manager.md)**: Đạo diễn vòng lặp thời gian hoạt ảnh Lerp chính xác mili-giây.
 - **[canvas-rendering-engine.md (Canvas Rendering Engine Core)](./skills/visualization/canvas-rendering-engine.md)**: Chuyên gia xây dựng lõi vẽ đồ họa sắc nét Retina DPI và ma trận Camera zoom-pan chuột.
 - **[graph-drawing-tool.md (Graph Drawing Tool Specialist)](./skills/visualization/graph-drawing-tool.md)**: Kỹ sư lập trình sự kiện vẽ kéo thả node/edge đồ thị tự động co giãn bằng phương trình vật lý Coulomb & Hooke.
 
-### 4. Tổ Kế Hoạch & Thiết Kế Sản Phẩm (`skills/product/`)
+### 5. Tổ Kế Hoạch & Thiết Kế Sản Phẩm (`skills/product/`)
 
 - **[instructional-designer.md (Instructional Designer)](./skills/product/instructional-designer.md)**: Kỹ sư sư phạm biên soạn giải thích, giảm tải nhận thức và soạn JSON trắc nghiệm ngắt mạch hoạt ảnh.
 - **[product-owner.md (Product Owner)](./skills/product/product-owner.md)**: Người gác đền tầm nhìn sản phẩm, kiểm soát PRD 4 trụ cột và chỉ tiêu nghiệm thu tổng quát.
 - **[sprint-management.md (Sprint Manager)](./skills/product/sprint-management.md)**: Scrum Master phân chia chặng song hành loại bỏ blockers và kiểm tra PR sáp nhập.
 
-### 5. Tổ Kiểm Soát Chất Lượng & Sửa Lỗi (`skills/quality/`)
+### 6. Tổ Kiểm Soát Chất Lượng & Sửa Lỗi (`skills/quality/`)
 
 - **[bug-fixer.md (Debugging Specialist)](./skills/quality/bug-fixer.md)**: Cảnh sát tuần tra sửa lỗi rò rỉ RAM và xử lý sự cố tràn đệ quy StackOverflowException.
 - **[qa-strategist.md (QA Strategist & Automation Engineer)](./skills/quality/qa-strategist.md)**: Gatekeeper thiết lập bộ kịch bản kiểm thử Vitest kẹp biên an toàn timeline.
@@ -57,10 +62,11 @@ graph TD
 ```
 
 1. **Bước 1 (Định hình):** `Product Owner` và `Instructional Designer` bàn giao file đặc tả sư phạm PRD, phân rã task song song vào `sprint-management.md`.
-2. **Bước 2 (Chốt chặn trước):** `QA Strategist` lập tức viết bộ TestCase và chuẩn bị khung Mock API dựa trên giao ước JSON được xác lập trước trong `api-design.md`.
-3. **Bước 3 (Thực thi Lõi):** `Backend Specialist` dựng C# State Generator sinh luồng JSON. Song song đó, `UI Component Builder` dựng Shell Panel tĩnh mờ kính.
-4. **Bước 4 (Hội tụ hoạt ảnh):** `Canvas Rendering Engine Core` và `Animation Timeline Manager` nạp JSON State từ Backend, áp dụng toán hình học Lerp/Parabol để vẽ chuyển động trơn tru.
-5. **Bước 5 (Đóng gói):** `Bug Fixer` rà soát Profile bộ nhớ RAM xem có leak particle nào không; `QA Strategist` bấm nút chạy bộ test tích hợp tự động hóa trước khi Scrum Master duyệt merge.
+2. **Bước 2 (Kiến trúc):** `Project Architect` thiết kế Blueprint kết nối Backend-Frontend, xác lập giao thức JSON và kiến trúc Animation Engine.
+3. **Bước 3 (Chốt chặn trước):** `QA Strategist` lập tức viết bộ TestCase và chuẩn bị khung Mock API dựa trên giao ước JSON được xác lập trước trong `api-design.md`.
+4. **Bước 4 (Thực thi Lõi):** `Backend Specialist` dựng C# State Generator sinh luồng JSON. `Feature Builder` tích hợp xuyên suốt Backend API đến Frontend UI. Song song đó, `UI Component Builder` dựng Shell Panel tĩnh mờ kính.
+5. **Bước 5 (Hội tụ hoạt ảnh):** `Canvas Rendering Engine Core` và `Animation Timeline Manager` nạp JSON State từ Backend, áp dụng toán hình học Lerp/Parabol để vẽ chuyển động trơn tru.
+6. **Bước 6 (Đóng gói):** `Bug Fixer` rà soát Profile bộ nhớ RAM xem có leak particle nào không; `QA Strategist` bấm nút chạy bộ test tích hợp tự động hóa trước khi Scrum Master duyệt merge.
 
 ---
 
@@ -79,11 +85,12 @@ graph TD
 ```
 
 - **Bước 1 (Khởi tạo):** Lập tức khởi chạy công cụ `todo_list` để mô tả lộ trình và đánh dấu nhiệm vụ hiện tại là `in_progress`.
-- **Bước 2 (Chuyển vai Product):** Đọc hiểu kỹ PRD, Technical Spec liên quan trong `@C:\Users\maiti\OneDrive\Desktop\LearningEnglishApp\VisualizationDSA\plan\features\deep-decomposition\`. Chủ động nạp file kĩ năng `skills/product/product-owner.md` và `skills/product/instructional-designer.md`.
+- **Bước 2 (Chuyển vai Product):** Đọc hiểu kỹ PRD, Technical Spec liên quan trong `plan/features/deep-decomposition/`. Chủ động nạp file kĩ năng `skills/product/product-owner.md` và `skills/product/instructional-designer.md`.
 - **Bước 3 (Chuyển vai QA thiết lập trước):** Thiết lập tệp tin kiểm thử `.spec.ts` trước khi code (Test-Driven Development), cấu trúc các biên an toàn cho timeline (Clamping).
-- **Bước 4 (Chuyển vai Fullstack Dev):**
+- **Bước 4 (Chuyển vai Developer):**
   - _Nếu là Backend:_ Tạo khung API hoặc bổ sung cấu trúc sinh Frame đệ quy an toàn (có giới hạn Depth tối đa để tránh StackOverflow).
   - _Nếu là Frontend:_ Code component mờ kính Glassmorphic, cài đặt động cơ ticker requestAnimationFrame kết hợp nội suy Lerp/Parabol 60 FPS, nói KHÔNG với types `any`/`dynamic`.
+  - _Nếu là Fullstack Feature Builder:_ Tích hợp xuyên suốt Backend API đến Frontend UI theo đặc tả trong `feature-builder.md`.
 - **Bước 5 (Chuyển vai QA xác thực):** Thực thi lệnh kiểm thử `vitest` hoặc `dotnet test`. Khắc phục triệt để mọi lỗi rò rỉ bộ nhớ (Memory Leak) hoặc cảnh báo Console Warning trước khi tiếp tục.
 - **Bước 6 (Chuyển vai Sprint Manager đóng chặng):** Tự động cập nhật đồng thời 3 file tracking (`progress.md`, `features-tested.md`, `decisions.md` nếu có ADR mới) và chuyển trạng thái todo sang `completed`.
 

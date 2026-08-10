@@ -1,8 +1,17 @@
 <template>
   <Transition name="quiz-overlay">
-    <div v-if="quizStore.isQuizActive" class="quiz-overlay-wrapper" @click.self="() => {}">
-      <div 
-        class="quiz-dialog-card" 
+    <div
+      v-if="quizStore.isQuizActive"
+      class="quiz-overlay-wrapper"
+      :class="{ 'quiz-overlay-passive': quizStore.isCanvasTargetMode && !quizStore.isSubmitted }"
+      role="dialog"
+      aria-modal="true"
+      aria-label="Câu hỏi trắc nghiệm đột xuất"
+    >
+      <div
+        ref="dialogCardRef"
+        class="quiz-dialog-card"
+        tabindex="-1"
         :class="{
           'correct': quizStore.isSubmitted && quizStore.isCorrect,
           'status-incorrect': quizStore.isSubmitted && !quizStore.isCorrect,
@@ -41,7 +50,7 @@
 
         
         <Transition name="feedback-fade">
-          <div v-if="quizStore.isSubmitted" class="feedback-panel">
+          <div v-if="quizStore.isSubmitted" class="feedback-panel" role="status" aria-live="polite">
             <div class="feedback-title" :class="quizStore.isCorrect ? 'correct' : 'incorrect'">
               <svg v-if="quizStore.isCorrect" class="w-4.5 h-4.5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m5 12 5 5L20 7" /></svg>
               <svg v-else class="w-4.5 h-4.5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10" /><path d="M18 6 6 18M6 6l12 12" /></svg>
@@ -64,7 +73,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue';
+import { computed, ref, watch, nextTick, onBeforeUnmount } from 'vue';
 import { useQuizStore } from '../store/useQuizStore';
 import QuizOptionsList from './QuizOptionsList.vue';
 
@@ -76,6 +85,70 @@ const questionTypeLabel = computed(() => {
 });
 
 const selectOption = (idx: number): void => { if (!quizStore.isSubmitted) quizStore.submitOptionAnswer(idx); };
+
+// ─── QZ-038: Focus trap cơ bản cho dialog ───
+// Khi quiz kích hoạt: giữ focus bên trong thẻ, Tab quay vòng giữa các phần tử
+// focusable; khi đóng: trả focus về phần tử đã hoạt động trước đó.
+const dialogCardRef = ref<HTMLElement | null>(null);
+let previouslyFocused: HTMLElement | null = null;
+let trapKeyHandler: ((event: KeyboardEvent) => void) | null = null;
+
+function getFocusableElements(root: HTMLElement): HTMLElement[] {
+  return Array.from(root.querySelectorAll<HTMLElement>(
+    'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])',
+  )).filter(el => !el.hasAttribute('disabled'));
+}
+
+function activateFocusTrap(): void {
+  const card = dialogCardRef.value;
+  if (!card) return;
+  previouslyFocused = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+  card.focus({ preventScroll: true });
+  trapKeyHandler = (event: KeyboardEvent) => {
+    if (event.key !== 'Tab') return;
+    const focusables = getFocusableElements(card);
+    if (focusables.length === 0) return;
+    const first = focusables[0];
+    const last = focusables[focusables.length - 1];
+    const active = document.activeElement;
+    const isInside = active !== null && card.contains(active);
+    if (event.shiftKey) {
+      if (active === first || !isInside) {
+        event.preventDefault();
+        last.focus();
+      }
+    } else if (active === last || !isInside) {
+      event.preventDefault();
+      first.focus();
+    }
+  };
+  document.addEventListener('keydown', trapKeyHandler);
+}
+
+function deactivateFocusTrap(): void {
+  if (trapKeyHandler !== null) {
+    document.removeEventListener('keydown', trapKeyHandler);
+    trapKeyHandler = null;
+  }
+  if (previouslyFocused !== null) {
+    previouslyFocused.focus({ preventScroll: true });
+    previouslyFocused = null;
+  }
+}
+
+watch(
+  () => quizStore.isQuizActive,
+  (active) => {
+    if (active) {
+      void nextTick(activateFocusTrap);
+    } else {
+      deactivateFocusTrap();
+    }
+  },
+  { flush: 'post' },
+);
+
+onBeforeUnmount(deactivateFocusTrap);
 </script>
 
 <style scoped>

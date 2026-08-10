@@ -15,11 +15,17 @@ namespace VisualizationDSA.Domain.Input
                 { "insertion-sort", 50 },
                 { "quick-sort", 150 },
                 { "merge-sort", 150 },
+                { "heap-sort", 150 },
+                { "radix-sort", 100 },
+                { "counting-sort", 100 },
+                { "bucket-sort", 100 },
                 { "stack", 20 },
                 { "queue", 20 },
                 { "bst", 15 },
                 { "tsp-backtracking", 10 }
             };
+
+        private const int DefaultLimit = 15;
 
         public static int GetAllowedLimit(string algorithmId)
         {
@@ -27,7 +33,7 @@ namespace VisualizationDSA.Domain.Input
             {
                 return maxLimit;
             }
-            return 10;
+            return DefaultLimit;
         }
 
         public static bool ValidateSize(string algorithmId, int currentSize, out int allowedLimit)

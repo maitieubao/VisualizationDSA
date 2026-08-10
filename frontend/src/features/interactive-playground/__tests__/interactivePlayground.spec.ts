@@ -375,6 +375,14 @@ describe('GraphParser', () => {
     expect(payload.adjacencyList['C']).toEqual([{ target: 'B', weight: 5 }]);
   });
 
+  it('converts to adjacency list (directed: only 1 direction, IP-042)', () => {
+    const payload = GraphParser.toAdjacencyList(nodes, edges, 'dijkstra', 'directed');
+    expect(payload.adjacencyList['A']).toEqual([{ target: 'B', weight: 10 }]);
+    expect(payload.adjacencyList['B']).toEqual([{ target: 'C', weight: 5 }]);
+    expect(payload.adjacencyList['C']).toEqual([]);
+    expect(payload.adjacencyList['B']).not.toContainEqual({ target: 'A', weight: 10 });
+  });
+
   it('finds isolated nodes (disconnected graph)', () => {
     const nodes: NodeDTO[] = [
       { id: 'n1', label: 'A', x: 100, y: 150, radius: 20 },
@@ -425,5 +433,208 @@ describe('GraphParser', () => {
     const singleNode = [{ id: 'n1', label: 'A', x: 100, y: 100, radius: 20 }];
     const isolated = GraphParser.findIsolatedNodes(singleNode, []);
     expect(isolated).toEqual([]); 
+  });
+});
+
+
+
+
+describe('GraphParser.importFromJSON — biên malformed (#8, IP-001/IP-003/IP-031)', () => {
+  beforeEach(() => {
+    setActivePinia(createPinia());
+  });
+
+  it('weight 0 / âm / NaN bị loại bỏ kèm lỗi chi tiết (IP-003)', () => {
+    const json = JSON.stringify({
+      nodes: [
+        { id: 'n1', label: 'A', x: 0, y: 0, radius: 20 },
+        { id: 'n2', label: 'B', x: 10, y: 10, radius: 20 },
+      ],
+      edges: [
+        { id: 'e1', from: 'n1', to: 'n2', weight: 0 },
+        { id: 'e2', from: 'n1', to: 'n2', weight: -7 },
+        { id: 'e3', from: 'n1', to: 'n2', weight: 'abc' },
+        { id: 'e4', from: 'n1', to: 'n2', weight: 5 },
+      ],
+    });
+    const result = GraphParser.importFromJSON(json)!;
+    expect(result.edges).toHaveLength(1);
+    expect(result.edges[0].id).toBe('e4');
+    expect(result.errors.length).toBe(3);
+    expect(result.errors.join('\n')).toContain('trọng số không hợp lệ');
+  });
+
+  it('node thiếu x/y hoặc x="abc" bị loại bỏ kèm lỗi (IP-001)', () => {
+    const json = JSON.stringify({
+      nodes: [
+        { id: 'n1', label: 'A', radius: 20 },
+        { id: 'n2', label: 'B', x: 'abc', y: 5, radius: 20 },
+        { id: 'n3', label: 'C', x: 1, y: 2, radius: 20 },
+      ],
+      edges: [],
+    });
+    const result = GraphParser.importFromJSON(json)!;
+    expect(result.nodes).toHaveLength(1);
+    expect(result.nodes[0].label).toBe('C');
+    expect(result.errors.length).toBe(2);
+    expect(result.errors.join('\n')).toContain('tọa độ không hợp lệ');
+  });
+
+  it('edge trỏ node không tồn tại (dangling edge) bị loại bỏ (IP-003)', () => {
+    const json = JSON.stringify({
+      nodes: [{ id: 'n1', label: 'A', x: 0, y: 0, radius: 20 }],
+      edges: [{ id: 'e1', from: 'n1', to: 'missing', weight: 2 }],
+    });
+    const result = GraphParser.importFromJSON(json)!;
+    expect(result.edges).toHaveLength(0);
+    expect(result.errors.join('\n')).toContain('không tồn tại');
+  });
+
+  it('import 40 node qua parser không giới hạn, nhưng store.importGraph chặn ở 30 (IP-003)', () => {
+    const nodes = Array.from({ length: 40 }, (_, i) => ({ id: `n${i}`, label: `L${i}`, x: i, y: i, radius: 20 }));
+    const json = JSON.stringify({ nodes, edges: [] });
+    const parsed = GraphParser.importFromJSON(json)!;
+    expect(parsed.nodes).toHaveLength(40);
+
+    const store = usePlaygroundStore();
+    const outcome = store.importGraph(parsed.nodes, parsed.edges);
+    expect(outcome.success).toBe(false);
+    expect(store.nodes).toHaveLength(30);
+    expect(outcome.errors.join('\n')).toContain('Vượt quá giới hạn 30 đỉnh');
+  });
+
+  it('nhãn trùng bị loại bỏ bởi store.importGraph (IP-003)', () => {
+    const json = JSON.stringify({
+      nodes: [
+        { id: 'n1', label: 'A', x: 0, y: 0, radius: 20 },
+        { id: 'n2', label: 'A', x: 10, y: 10, radius: 20 },
+      ],
+      edges: [],
+    });
+    const parsed = GraphParser.importFromJSON(json)!;
+    const store = usePlaygroundStore();
+    const outcome = store.importGraph(parsed.nodes, parsed.edges);
+    expect(outcome.success).toBe(false);
+    expect(store.nodes).toHaveLength(1);
+    expect(outcome.errors.join('\n')).toContain('trùng nhãn');
+  });
+
+  it('x/y/radius được clamp vào [0,1000] thay vì NaN (IP-031)', () => {
+    const json = JSON.stringify({
+      nodes: [{ id: 'n1', label: 'A', x: -50, y: 5000, radius: 0 }],
+      edges: [],
+    });
+    const result = GraphParser.importFromJSON(json)!;
+    expect(result.nodes[0].x).toBe(0);
+    expect(result.nodes[0].y).toBe(1000);
+    expect(result.nodes[0].radius).toBe(1);
+  });
+
+  it('node trùng id bị loại bỏ (IP-003)', () => {
+    const json = JSON.stringify({
+      nodes: [
+        { id: 'n1', label: 'A', x: 0, y: 0, radius: 20 },
+        { id: 'n1', label: 'B', x: 10, y: 10, radius: 20 },
+      ],
+      edges: [],
+    });
+    const result = GraphParser.importFromJSON(json)!;
+    expect(result.nodes).toHaveLength(1);
+    expect(result.errors.join('\n')).toContain('trùng id');
+  });
+});
+
+
+
+
+describe('usePlaygroundStore — biên an toàn (#8)', () => {
+  beforeEach(() => {
+    setActivePinia(createPinia());
+  });
+
+  it('updateEdgeWeight với id không tồn tại là no-op', () => {
+    const store = usePlaygroundStore();
+    const a = store.addNode(100, 100)!;
+    const b = store.addNode(200, 200)!;
+    store.addEdge(a.id, b.id);
+    store.updateEdgeWeight('edge_ghost', 42);
+    expect(store.edges[0].weight).toBe(1);
+  });
+
+  it('updateEdgeWeight với NaN là no-op', () => {
+    const store = usePlaygroundStore();
+    const a = store.addNode(100, 100)!;
+    const b = store.addNode(200, 200)!;
+    const edge = store.addEdge(a.id, b.id)!;
+    store.updateEdgeWeight(edge.id, Number.NaN);
+    expect(store.edges[0].weight).toBe(1);
+  });
+
+  it('addEdge với id node không tồn tại trả null + lastEdgeError (IP-003)', () => {
+    const store = usePlaygroundStore();
+    const edge = store.addEdge('ghost-a', 'ghost-b');
+    expect(edge).toBeNull();
+    expect(store.edges).toHaveLength(0);
+    expect(store.lastEdgeError).toContain('không tồn tại');
+  });
+
+  it('deleteNode với id không tồn tại là no-op', () => {
+    const store = usePlaygroundStore();
+    store.addNode(100, 100);
+    store.deleteNode('ghost');
+    expect(store.nodes).toHaveLength(1);
+  });
+
+  it('deleteEdge với id không tồn tại là no-op', () => {
+    const store = usePlaygroundStore();
+    const a = store.addNode(100, 100)!;
+    const b = store.addNode(200, 200)!;
+    store.addEdge(a.id, b.id);
+    store.deleteEdge('ghost');
+    expect(store.edges).toHaveLength(1);
+  });
+
+  it('IP-009: deleteNode giải phóng selectedEdgeId (cascade)', () => {
+    const store = usePlaygroundStore();
+    const a = store.addNode(100, 100)!;
+    const b = store.addNode(200, 200)!;
+    const edge = store.addEdge(a.id, b.id)!;
+    store.selectEdge(edge.id);
+    expect(store.selectedEdgeId).toBe(edge.id);
+    store.deleteNode(a.id);
+    expect(store.selectedEdgeId).toBeNull();
+  });
+
+  it('IP-004: addEdge directed cho phép cặp đảo A→B và B→A', () => {
+    const store = usePlaygroundStore();
+    const a = store.addNode(100, 100)!;
+    const b = store.addNode(200, 200)!;
+    store.setGraphType('directed');
+    const e1 = store.addEdge(a.id, b.id);
+    const e2 = store.addEdge(b.id, a.id);
+    expect(e1).not.toBeNull();
+    expect(e2).not.toBeNull();
+    expect(store.edges).toHaveLength(2);
+  });
+
+  it('IP-004: undirected vẫn chặn cặp đảo', () => {
+    const store = usePlaygroundStore();
+    const a = store.addNode(100, 100)!;
+    const b = store.addNode(200, 200)!;
+    store.addEdge(a.id, b.id);
+    const rev = store.addEdge(b.id, a.id);
+    expect(rev).toBeNull();
+    expect(store.edges).toHaveLength(1);
+    expect(store.lastEdgeError).toContain('đã tồn tại');
+  });
+
+  it('IP-004: graphTypeOverride của addEdge thắng graphType store', () => {
+    const store = usePlaygroundStore();
+    const a = store.addNode(100, 100)!;
+    const b = store.addNode(200, 200)!;
+    const e1 = store.addEdge(a.id, b.id, 'directed');
+    const e2 = store.addEdge(b.id, a.id, 'directed');
+    expect(e1).not.toBeNull();
+    expect(e2).not.toBeNull();
   });
 });

@@ -89,11 +89,10 @@ describe('Lesson — P2 User Stories', () => {
       expect(store.activeStep).toBe(1);
     });
 
-    it('LessonStepTheory mounts and shows step 1', () => {
+    it('LessonStepTheory mounts and shows title', () => {
       const wrapper = mount(LessonStepTheory, {
         props: { title: 'Quick Sort', content: '# Theory content' },
       });
-      expect(wrapper.text()).toContain('Bước 1 / 4');
       expect(wrapper.text()).toContain('Quick Sort');
     });
   });
@@ -160,20 +159,19 @@ describe('Lesson — P2 User Stories', () => {
   });
 
   describe('US-LN-005 (P2): Continue quiz button', () => {
-    it('LessonStepViz shows "Tiếp Tục Làm Quiz" button', () => {
+    it('LessonStepViz does not show floating "Tiếp Tục Làm Quiz" button (moved to StepTabs)', () => {
       const wrapper = mount(LessonStepViz, {
         props: { vizTitle: 'Test', sandboxType: '', sandboxConfig: '' },
       });
-      expect(wrapper.text()).toContain('Tiếp Tục Làm Quiz');
+      expect(wrapper.text()).not.toContain('Tiếp Tục Làm Quiz');
     });
 
-    it('clicking "Tiếp Tục Làm Quiz" emits completeStep', async () => {
+    it('LessonStepViz emits watched on mount (for step progression)', async () => {
       const wrapper = mount(LessonStepViz, {
         props: { vizTitle: 'Test', sandboxType: '', sandboxConfig: '' },
       });
-      const btn = wrapper.find('button');
-      await btn.trigger('click');
-      expect(wrapper.emitted('completeStep')).toBeTruthy();
+      await flushPromises();
+      expect(wrapper.emitted('watched')).toBeTruthy();
     });
   });
 

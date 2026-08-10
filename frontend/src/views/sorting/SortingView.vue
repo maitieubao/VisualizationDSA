@@ -21,7 +21,7 @@
           <span class="w-2 h-2 rounded-full bg-accent animate-pulse"></span>
           VISUALGO-MODE 60FPS
         </span>
-        <span class="text-text-muted text-[9px]">Space: Play/Pause | <BaseIcon name="arrow-left" class="w-2.5 h-2.5 inline align-middle" /> <BaseIcon name="arrow-right" class="w-2.5 h-2.5 inline align-middle" />: Step</span>
+        <span class="text-text-muted text-[9px]">Space: Play/Pause | <BaseIcon name="arrow-left" class="w-2.5 h-2.5 inline align-middle" /> <BaseIcon name="arrow-right" class="w-2.5 h-2.5 inline align-middle" />: Step | R: Reset</span>
         <button
           class="w-5 h-5 flex items-center justify-center rounded text-text-secondary hover:text-accent hover:bg-bg-hover transition-all cursor-pointer"
           title="Xem lại hướng dẫn"
@@ -65,16 +65,28 @@ import { DSAPlayer } from '../../features/dsa-modules';
 import BaseIcon from '../../shared/components/BaseIcon.vue';
 import HelpButton from '../../features/guided-tour/components/HelpButton.vue';
 import { useGuidedTourStore } from '../../features/guided-tour/store/useGuidedTourStore';
+import { useAnimationStore } from '../../features/animation-engine/store/useAnimationStore';
+import { MultilingualCodePanel } from '../../features/pseudocode-sync';
+import { usePseudocodeStore } from '../../features/pseudocode-sync/store/usePseudocodeStore';
+import { loadPseudocodeScript } from '../../features/pseudocode-sync/scripts/scriptLoader';
 
 const activeTab = ref('sorting');
 const tourStore = useGuidedTourStore();
 const vcrStore = useVcrStore();
+const animStore = useAnimationStore();
 
 function handleKeydown(e: KeyboardEvent) {
   const tag = (e.target as HTMLElement)?.tagName;
   if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT' || tag === 'BUTTON') return;
 
   if (activeTab.value !== 'sorting') return;
+
+  // Chặn hotkey khi E-Lecture/Quiz đang khóa tương tác (guard giống usePlaybackHotkeys.ts).
+  if (animStore.interactionLocked) return;
+
+  // Chặn phím lặp cho Space/R — tránh toggle rung nhấp nháy;
+  // Arrow cho phép repeat.
+  if (e.repeat && (e.key === ' ' || e.key === 'r' || e.key === 'R')) return;
 
   switch (e.key.toLowerCase()) {
     case ' ':
@@ -128,8 +140,33 @@ const SortingSandbox = defineComponent({
   }
 });
 
+// PS-002: Mount Pseudocode Sync (code panel + watch panel) cạnh DSAPlayer —
+// DSAPlayer đẩy frame qua animStore.loadResult nên store pseudocode (bind
+// useAnimationStore) đồng bộ được highlight theo frame thực tế.
+const DsaWithPseudocode = defineComponent({
+  name: 'DsaWithPseudocode',
+  setup(_, { attrs }) {
+    const pseudocodeStore = usePseudocodeStore();
+    // Đồng bộ script theo thuật toán đang chạy — mirror logic VisualizationPlayer
+    watch(() => animStore.algorithmId, (newId) => {
+      if (newId) {
+        const script = loadPseudocodeScript(newId);
+        if (script) pseudocodeStore.loadPseudocodeScript(script.languages);
+        else pseudocodeStore.resetStore();
+      }
+    }, { immediate: true });
+    onUnmounted(() => pseudocodeStore.resetStore());
+    return () => h('div', { class: 'relative w-full h-full flex flex-row overflow-hidden' }, [
+      h(DSAPlayer, { class: 'flex-1 min-w-0 h-full', ...attrs }),
+      h(MultilingualCodePanel, {
+        class: 'w-[340px] shrink-0 h-full border-l border-border-default bg-bg-surface/60'
+      })
+    ]);
+  }
+});
+
 const activeComponent = computed(() => {
-  return activeTab.value === 'sorting' ? SortingSandbox : DSAPlayer;
+  return activeTab.value === 'sorting' ? SortingSandbox : DsaWithPseudocode;
 });
 
 const activeProps = computed(() => {

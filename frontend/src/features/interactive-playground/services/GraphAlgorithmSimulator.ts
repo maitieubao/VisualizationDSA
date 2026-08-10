@@ -160,7 +160,9 @@ export class GraphAlgorithmSimulator {
         visitedNodes: Array.from(visited),
         activeNodes: [currId],
         visitedEdges: [...visitedEdges],
-        queueStack: [currLabel, ...qLabels]
+        // IP-028: chỉ hiển thị các đỉnh CÒN trong Queue — đỉnh vừa dequeue
+        // (currLabel) không được liệt kê để tránh hiểu nhầm trực quan.
+        queueStack: qLabels
       });
 
       
@@ -200,10 +202,14 @@ export class GraphAlgorithmSimulator {
       }
     }
 
+    // IP-019: nếu đồ thị không liên thông, cảnh báo đỉnh không đến được.
+    const unreachableLabels = nodes.filter(n => !visited.has(n.id)).map(n => n.label);
     frames.push({
       stepId: stepId++,
       activeLine: 4,
-      explanation: 'Queue rỗng. Quá trình duyệt BFS hoàn tất.',
+      explanation: unreachableLabels.length > 0
+        ? `Queue rỗng. Quá trình duyệt BFS hoàn tất. Cảnh báo: ${unreachableLabels.length} đỉnh không đến được từ nguồn: ${unreachableLabels.join(', ')}.`
+        : 'Queue rỗng. Quá trình duyệt BFS hoàn tất.',
       visitedNodes: Array.from(visited),
       activeNodes: [],
       visitedEdges: [...visitedEdges],
@@ -296,10 +302,12 @@ export class GraphAlgorithmSimulator {
           }
         }
       } else {
-        
+        // IP-029: đây là nhánh else của `if curr is not visited` (dòng 5
+        // trong script) — KHÔNG đánh dấu visited nên không được highlight
+        // dòng 6 "label curr as visited".
         frames.push({
           stepId: stepId++,
-          activeLine: 6,
+          activeLine: 5,
           explanation: `Đỉnh ${currLabel} đã được duyệt từ trước, bỏ qua.`,
           visitedNodes: Array.from(visited),
           activeNodes: [currId],
@@ -309,10 +317,14 @@ export class GraphAlgorithmSimulator {
       }
     }
 
+    // IP-019: nếu đồ thị không liên thông, cảnh báo đỉnh không đến được.
+    const unreachableLabels = nodes.filter(n => !visited.has(n.id)).map(n => n.label);
     frames.push({
       stepId: stepId++,
       activeLine: 4,
-      explanation: 'Stack rỗng. Quá trình duyệt DFS hoàn tất.',
+      explanation: unreachableLabels.length > 0
+        ? `Stack rỗng. Quá trình duyệt DFS hoàn tất. Cảnh báo: ${unreachableLabels.length} đỉnh không đến được từ nguồn: ${unreachableLabels.join(', ')}.`
+        : 'Stack rỗng. Quá trình duyệt DFS hoàn tất.',
       visitedNodes: Array.from(visited),
       activeNodes: [],
       visitedEdges: [...visitedEdges],
@@ -396,7 +408,12 @@ export class GraphAlgorithmSimulator {
 
         const alt = dist[currId] + edge.weight;
 
-        
+        // IP-011: capture dist CŨ trước lệnh gán — explanation phải hiển thị
+        // giá trị trước cập nhật ("5 < dist[B] (10)"), không phải giá trị mới.
+        const oldDist = dist[neighborId];
+
+        // Frame "xét cạnh": distances xuất TRƯỚC khi cập nhật (pre-update) —
+        // vì dist[neighborId] chưa được gán tại thời điểm này.
         frames.push({
           stepId: stepId++,
           activeLine: 8,
@@ -407,7 +424,7 @@ export class GraphAlgorithmSimulator {
           distances: { ...dist }
         });
 
-        if (alt < dist[neighborId]) {
+        if (alt < oldDist) {
           dist[neighborId] = alt;
           parentEdge[neighborId] = edge.id; 
 
@@ -415,7 +432,7 @@ export class GraphAlgorithmSimulator {
           frames.push({
             stepId: stepId++,
             activeLine: 10,
-            explanation: `Khoảng cách mới ${alt} < dist[${neighborLabel}] (${dist[neighborId] === Infinity ? '∞' : dist[neighborId]}). Cập nhật dist[${neighborLabel}] = ${alt}.`,
+            explanation: `Khoảng cách mới ${alt} < dist[${neighborLabel}] (${oldDist === Infinity ? '∞' : oldDist}). Cập nhật dist[${neighborLabel}] = ${alt}.`,
             visitedNodes: Array.from(visited),
             activeNodes: [currId, neighborId],
             visitedEdges: [...updatedVisitedEdges],
@@ -425,7 +442,7 @@ export class GraphAlgorithmSimulator {
           frames.push({
             stepId: stepId++,
             activeLine: 9,
-            explanation: `Khoảng cách mới ${alt} >= dist[${neighborLabel}] (${dist[neighborId]}). Không cập nhật.`,
+            explanation: `Khoảng cách mới ${alt} >= dist[${neighborLabel}] (${oldDist === Infinity ? '∞' : oldDist}). Không cập nhật.`,
             visitedNodes: Array.from(visited),
             activeNodes: [currId, neighborId],
             visitedEdges: [...currentVisitedEdges],
@@ -435,10 +452,14 @@ export class GraphAlgorithmSimulator {
       }
     }
 
+    // IP-019: nếu đồ thị không liên thông, cảnh báo đỉnh không đến được (dist = ∞).
+    const unreachableLabels = nodes.filter(n => !visited.has(n.id)).map(n => n.label);
     frames.push({
       stepId: stepId++,
       activeLine: 0,
-      explanation: 'Thuật toán Dijkstra hoàn tất. Đường đi ngắn nhất từ đỉnh nguồn đã được xác định.',
+      explanation: unreachableLabels.length > 0
+        ? `Thuật toán Dijkstra hoàn tất. Cảnh báo: ${unreachableLabels.length} đỉnh không đến được từ đỉnh nguồn (dist = ∞): ${unreachableLabels.join(', ')}.`
+        : 'Thuật toán Dijkstra hoàn tất. Đường đi ngắn nhất từ đỉnh nguồn đã được xác định.',
       visitedNodes: Array.from(visited),
       activeNodes: [],
       visitedEdges: Object.values(parentEdge),

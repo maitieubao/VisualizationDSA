@@ -7,6 +7,7 @@ import { join } from 'path';
 
 import AlgorithmDashboard from '../components/AlgorithmDashboard.vue';
 import DSAPlayer from '../components/DSAPlayer.vue';
+import DSAInputForm from '../components/DSAInputForm.vue';
 import PseudocodeViewer from '../components/PseudocodeViewer.vue';
 import Legend from '../components/Legend.vue';
 import AnimationVcrControls from '../../animation-engine/components/AnimationVcrControls.vue';
@@ -403,9 +404,9 @@ describe('AnimationVcrControls', () => {
     });
 
     const options = wrapper.findAll('.speed-select option');
-    expect(options.length).toBe(5);
-    expect(options[0].text()).toBe('0.5x');
-    expect(options[4].text()).toBe('10x');
+    expect(options.length).toBe(8);
+    expect(options[0].text()).toBe('0.1x');
+    expect(options[7].text()).toBe('5x');
   });
 
   it('renders step counter showing current/total', () => {
@@ -572,5 +573,129 @@ describe('ALGORITHM_CATALOG data integrity (P0)', () => {
     for (const id of featuredIds) {
       expect(ALGORITHM_CATALOG.some((a) => a.id === id)).toBe(true);
     }
+  });
+});
+
+describe('DSAInputForm — generateRandom', () => {
+  beforeEach(() => {
+    setActivePinia(createPinia());
+    vi.restoreAllMocks();
+  });
+
+  it('generates sorting input with correct count', async () => {
+    const wrapper = mount(DSAInputForm, {
+      props: { modelValue: '', algorithmCategory: 'Sorting', algorithmId: 'bubble-sort' },
+      global: { stubs: { BaseIcon: { template: '<span />' } } },
+    });
+
+    const btn = wrapper.find('button', { text: 'Sinh ngẫu nhiên' });
+    await btn.trigger('click');
+
+    const emitted = wrapper.emitted('update:modelValue');
+    expect(emitted).toBeTruthy();
+    const value = emitted![0][0] as string;
+    const nums = value.split(',').map(Number);
+    expect(nums.length).toBe(8);
+    expect(nums.every(n => n >= 1 && n <= 50)).toBe(true);
+  });
+
+  it('generates searching input with sorted array + target', async () => {
+    const wrapper = mount(DSAInputForm, {
+      props: { modelValue: '', algorithmCategory: 'Searching', algorithmId: 'binary-search' },
+      global: { stubs: { BaseIcon: { template: '<span />' } } },
+    });
+
+    const btn = wrapper.find('button', { text: 'Sinh ngẫu nhiên' });
+    await btn.trigger('click');
+
+    const emitted = wrapper.emitted('update:modelValue');
+    const value = emitted![0][0] as string;
+    const nums = value.split(',').map(Number);
+    expect(nums.length).toBe(9);
+    const sorted = nums.slice(0, -1);
+    for (let i = 0; i < sorted.length - 1; i++) {
+      expect(sorted[i]).toBeLessThanOrEqual(sorted[i + 1]);
+    }
+  });
+
+  it('generates graph input with edge format', async () => {
+    const wrapper = mount(DSAInputForm, {
+      props: { modelValue: '', algorithmCategory: 'Graph', algorithmId: 'dijkstra' },
+      global: { stubs: { BaseIcon: { template: '<span />' } } },
+    });
+
+    const btn = wrapper.find('button', { text: 'Sinh ngẫu nhiên' });
+    await btn.trigger('click');
+
+    const emitted = wrapper.emitted('update:modelValue');
+    const value = emitted![0][0] as string;
+    expect(value).toMatch(/^\d+-\d+-\d+/);
+  });
+});
+
+describe('DSAInputForm — placeholder', () => {
+  beforeEach(() => {
+    setActivePinia(createPinia());
+    vi.restoreAllMocks();
+  });
+
+  it('shows sorting placeholder for sorting algorithms', () => {
+    const wrapper = mount(DSAInputForm, {
+      props: { modelValue: '', algorithmCategory: 'Sorting', algorithmId: 'bubble-sort' },
+      global: { stubs: { BaseIcon: { template: '<span />' } } },
+    });
+    const textarea = wrapper.find('textarea');
+    expect(textarea.attributes('placeholder')).toContain('5, 3, 8');
+  });
+
+  it('shows graph placeholder for dijkstra', () => {
+    const wrapper = mount(DSAInputForm, {
+      props: { modelValue: '', algorithmCategory: 'Graph', algorithmId: 'dijkstra' },
+      global: { stubs: { BaseIcon: { template: '<span />' } } },
+    });
+    const textarea = wrapper.find('textarea');
+    expect(textarea.attributes('placeholder')).toContain('0-1-4');
+  });
+
+  it('shows bfs placeholder for bfs', () => {
+    const wrapper = mount(DSAInputForm, {
+      props: { modelValue: '', algorithmCategory: 'Graph', algorithmId: 'bfs' },
+      global: { stubs: { BaseIcon: { template: '<span />' } } },
+    });
+    const textarea = wrapper.find('textarea');
+    expect(textarea.attributes('placeholder')).toContain('0-1,0-2');
+  });
+});
+
+describe('DSAPlayer — generateDefaultInput', () => {
+  beforeEach(() => {
+    setActivePinia(createPinia());
+    vi.restoreAllMocks();
+  });
+
+  it('generates different input per category', async () => {
+    const wrapper = mount(DSAPlayer, {
+      global: {
+        stubs: {
+          AlgorithmDashboard: true,
+          AlgorithmVisualizer: true,
+          DSAHeader: true,
+          DSAInputForm: true,
+          PseudocodeViewer: true,
+          AnimationVcrControls: true,
+          TheoryCollapsiblePanel: true,
+        },
+      },
+    });
+
+    const store = useAlgorithmStore();
+    store.algorithms = [...ALGORITHM_CATALOG];
+
+    const sortingAlgo = ALGORITHM_CATALOG.find(a => a.id === 'bubble-sort')!;
+    store.selectAlgorithm(sortingAlgo);
+
+    await wrapper.vm.$nextTick();
+    const inputText = wrapper.vm.$refs?.inputText ?? (wrapper.vm as any).inputText;
+    expect(String(inputText)).toContain(',');
   });
 });

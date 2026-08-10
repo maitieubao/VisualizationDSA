@@ -155,6 +155,28 @@ describe('PseudocodeSyncEngine', () => {
       const result = PseudocodeSyncEngine.transformVariablesForWatch({ count: 42 });
       expect(result).toEqual([{ name: 'count', value: 42 }]);
     });
+
+    it('filters out out-of-scope undefined/null values (BEHAVIOR_SPEC §3)', () => {
+      const variables = { a: undefined, b: null } as unknown as Record<string, string | number>;
+      expect(PseudocodeSyncEngine.transformVariablesForWatch(variables)).toEqual([]);
+      const mixed = { a: undefined, b: null, c: 0 } as unknown as Record<string, string | number>;
+      expect(PseudocodeSyncEngine.transformVariablesForWatch(mixed)).toEqual([
+        { name: 'c', value: 0 },
+      ]);
+    });
+
+    it('formats numbers/strings/floats consistently in one pass', () => {
+      const result = PseudocodeSyncEngine.transformVariablesForWatch({
+        count: 7,
+        ratio: 3.14159,
+        label: 'value',
+      });
+      expect(result).toEqual([
+        { name: 'count', value: 7 },
+        { name: 'ratio', value: 3.14 },
+        { name: 'label', value: 'value' },
+      ]);
+    });
   });
 
   describe('getOccurrenceCount', () => {

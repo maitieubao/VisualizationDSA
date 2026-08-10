@@ -77,14 +77,21 @@ async function deleteQuiz(quizId: string, title: string): Promise<void> {
   try {
     const res = await fetch(`${BASE_URL}/api/v1/concepts/admin/quizzes/${quizId}`, { method: 'DELETE', headers: getAuthHeaders() });
     if (res.ok) { quizzesList.value = quizzesList.value.filter(q => q.id !== quizId); pushLog('INFO', `Đã xóa quiz "${title}"`); emit('refresh-dashboard'); }
-    else alert('Lỗi khi xóa Quiz.');
+    else {
+      const err = await res.json();
+      if (err.error === 'QUIZ_REFERENCED') {
+        alert(`Không thể xóa quiz "${title}"!\n\nQuiz đang được sử dụng trong: ${err.referencedByCourses.join(', ')}\nVui lòng gỡ liên kết quiz khỏi khóa học trước.`);
+      } else {
+        alert(err.message || 'Lỗi khi xóa Quiz.');
+      }
+    }
   } catch { alert('Lỗi kết nối khi xóa Quiz.'); }
 }
 
 async function toggleQuizDetails(quizId: string): Promise<void> {
   if (expandedQuizId.value === quizId) { expandedQuizId.value = null; quizDetails.value = []; return; }
   expandedQuizId.value = quizId; quizDetails.value = []; quizDetailsLoading.value = true;
-  try { const res = await fetch(`${BASE_URL}/api/v1/concepts/quiz/${quizId}`, { headers: getAuthHeaders() }); if (res.ok) { const data = await res.json(); quizDetails.value = data.questions ?? []; } }
+  try { const res = await fetch(`${BASE_URL}/api/v1/concepts/quiz/${quizId}?withAnswers=true`, { headers: getAuthHeaders() }); if (res.ok) { const data = await res.json(); quizDetails.value = data.questions ?? []; } }
   catch { pushLog('ERROR', 'Lỗi tải chi tiết câu hỏi.'); } finally { quizDetailsLoading.value = false; }
 }
 

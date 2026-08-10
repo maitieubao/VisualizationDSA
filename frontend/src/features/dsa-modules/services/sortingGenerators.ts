@@ -1,24 +1,29 @@
 import type { AlgorithmResult, FrameDTO, HighlightIndices } from '../types/algorithm.types';
-
-function defaultHighlights(overrides?: Partial<HighlightIndices>): HighlightIndices {
-  return { compare: [], swap: [], sorted: [], dimmed: [], active: [], ...overrides };
-}
+import { defaultHighlights } from './highlightHelpers';
 
 export function generateBubbleSort(inputData: number[]): AlgorithmResult {
   const arr = [...inputData], n = arr.length, frames: FrameDTO[] = [], sortedIndices: number[] = [];
   let stepId = 0;
   const pseudoCode = ['for i from 0 to N-1', '  for j from 0 to N-i-2', '    if A[j] > A[j+1]', '      swap(A[j], A[j+1])'];
-  frames.push({ stepId: ++stepId, activeLine: 0, explanation: 'Bắt đầu Bubble Sort.', dataState: [...arr], highlights: defaultHighlights() });
+  frames.push({ stepId: ++stepId, activeLine: 0, explanation: 'Bắt đầu Bubble Sort.', dataState: [...arr], highlights: defaultHighlights(), activeLogicalLineId: 'FUNC_DECL', variables: { n } });
   for (let i = 0; i < n - 1; i++) {
+    frames.push({ stepId: ++stepId, activeLine: 0, explanation: `Bắt đầu vòng lặp ngoài — pass ${i + 1}: so sánh các cặp phần tử liền kề.`, dataState: [...arr], highlights: defaultHighlights({ sorted: [...sortedIndices] }), activeLogicalLineId: 'OUTER_LOOP', variables: { i, n } });
     for (let j = 0; j < n - i - 1; j++) {
-      frames.push({ stepId: ++stepId, activeLine: 2, explanation: `So sánh A[${j}] (${arr[j]}) và A[${j+1}] (${arr[j+1]})`, dataState: [...arr], highlights: defaultHighlights({ compare: [j, j+1], sorted: [...sortedIndices] }) });
-      if (arr[j] > arr[j+1]) { [arr[j], arr[j+1]] = [arr[j+1], arr[j]]; frames.push({ stepId: ++stepId, activeLine: 3, explanation: `Hoán vị A[${j}] và A[${j+1}]`, dataState: [...arr], highlights: defaultHighlights({ swap: [j, j+1], sorted: [...sortedIndices] }) }); }
+      if (j === 0) {
+        frames.push({ stepId: ++stepId, activeLine: 1, explanation: `Bắt đầu vòng lặp trong — duyệt j từ 0 đến ${n - i - 2}.`, dataState: [...arr], highlights: defaultHighlights({ sorted: [...sortedIndices] }), activeLogicalLineId: 'INNER_LOOP', variables: { i, j, n } });
+      }
+      frames.push({ stepId: ++stepId, activeLine: 2, explanation: `So sánh A[${j}] (${arr[j]}) và A[${j+1}] (${arr[j+1]})`, dataState: [...arr], highlights: defaultHighlights({ compare: [j, j+1], sorted: [...sortedIndices] }), activeLogicalLineId: 'COMPARE_STEP', variables: { i, j, n } });
+      if (arr[j] > arr[j+1]) {
+        const temp = arr[j];
+        [arr[j], arr[j+1]] = [arr[j+1], arr[j]];
+        frames.push({ stepId: ++stepId, activeLine: 3, explanation: `Hoán vị A[${j}] và A[${j+1}]`, dataState: [...arr], highlights: defaultHighlights({ swap: [j, j+1], sorted: [...sortedIndices] }), activeLogicalLineId: 'SWAP_STEP', variables: { i, j, n, temp } });
+      }
     }
     sortedIndices.push(n - i - 1);
-    frames.push({ stepId: ++stepId, activeLine: 0, explanation: `Phần tử ${arr[n-i-1]} cố định tại index ${n-i-1}.`, dataState: [...arr], highlights: defaultHighlights({ sorted: [...sortedIndices] }) });
+    frames.push({ stepId: ++stepId, activeLine: 0, explanation: `Phần tử ${arr[n-i-1]} cố định tại index ${n-i-1}.`, dataState: [...arr], highlights: defaultHighlights({ sorted: [...sortedIndices] }), activeLogicalLineId: 'OUTER_LOOP', variables: { i, n } });
   }
   sortedIndices.push(0);
-  frames.push({ stepId: ++stepId, activeLine: 0, explanation: 'Mảng đã sắp xếp hoàn chỉnh!', dataState: [...arr], highlights: defaultHighlights({ sorted: [...sortedIndices] }) });
+  frames.push({ stepId: ++stepId, activeLine: 0, explanation: 'Mảng đã sắp xếp hoàn chỉnh!', dataState: [...arr], highlights: defaultHighlights({ sorted: [...sortedIndices] }), activeLogicalLineId: 'FUNC_DECL', variables: { n } });
   return { algorithmId: 'bubble-sort', pseudoCode, frames };
 }
 
@@ -61,7 +66,7 @@ export function generateInsertionSort(inputData: number[]): AlgorithmResult {
 export function generateQuickSort(inputData: number[]): AlgorithmResult {
   const arr = [...inputData], frames: FrameDTO[] = [];
   let stepId = 0;
-  const pseudoCode = ['quickSort(A, low, high)', '  if low < high', '    pivotIdx = partition(A, low, high)', '    quickSort(A, low, pivotIdx-1)', '    quickSort(A, pivotIdx+1, high)'];
+  const pseudoCode = ['quickSort(A, low, high)', '  while low < high', '    pivotIdx = partition(A, low, high)', '    if pivotIdx-1 > low: push(low, pivotIdx-1)', '    if pivotIdx+1 < high: push(pivotIdx+1, high)'];
   frames.push({ stepId: ++stepId, activeLine: 0, explanation: 'Bắt đầu Quick Sort.', dataState: [...arr], highlights: defaultHighlights() });
   function partition(low: number, high: number): number {
     const pivot = arr[high]; let i = low - 1;
@@ -74,8 +79,17 @@ export function generateQuickSort(inputData: number[]): AlgorithmResult {
     frames.push({ stepId: ++stepId, activeLine: 2, explanation: `Đưa Pivot về vị trí ${i+1}`, dataState: [...arr], highlights: defaultHighlights({ swap: [i+1, high] }) });
     return i + 1;
   }
-  function quickSort(low: number, high: number): void { if (low < high) { const p = partition(low, high); quickSort(low, p-1); quickSort(p+1, high); } }
-  quickSort(0, arr.length - 1);
+  const stack: number[] = [];
+  stack.push(0, arr.length - 1);
+  while (stack.length > 0) {
+    const high = stack.pop()!;
+    const low = stack.pop()!;
+    if (low < high) {
+      const p = partition(low, high);
+      if (p - 1 > low) stack.push(low, p - 1);
+      if (p + 1 < high) stack.push(p + 1, high);
+    }
+  }
   frames.push({ stepId: ++stepId, activeLine: 0, explanation: 'Mảng đã sắp xếp hoàn chỉnh!', dataState: [...arr], highlights: defaultHighlights({ sorted: Array.from({ length: arr.length }, (_, i) => i) }) });
   return { algorithmId: 'quick-sort', pseudoCode, frames };
 }
@@ -370,12 +384,32 @@ export function generateCountingSort(inputData: number[]): AlgorithmResult {
 export function generateBucketSort(inputData: number[]): AlgorithmResult {
   const arr = [...inputData], frames: FrameDTO[] = [];
   let stepId = 0;
-  const pseudoCode = ['buckets[0..3] = []', 'distribute elements', 'sort each bucket', 'collect'];
-  const buckets: number[][] = [[], [], [], []];
-  const getBucket = (v: number) => v < 25 ? 0 : v < 50 ? 1 : v < 75 ? 2 : 3;
+  const n = arr.length;
+  const pseudoCode = ['create buckets', 'distribute elements', 'sort each bucket', 'collect'];
 
-  frames.push({ stepId: ++stepId, activeLine: 0, explanation: 'Khởi tạo Bucket Sort. 4 xô: [0-25), [25-50), [50-75), [75-100].', dataState: [...arr], highlights: defaultHighlights() });
-  for (let i = 0; i < arr.length; i++) { const b = getBucket(arr[i]); buckets[b].push(arr[i]); frames.push({ stepId: ++stepId, activeLine: 1, explanation: `A[${i}]=${arr[i]} → Bucket ${b}.`, dataState: [...arr], highlights: defaultHighlights({ compare: [i] }) }); }
+  if (n === 0) {
+    frames.push({ stepId: ++stepId, activeLine: 0, explanation: 'Mảng rỗng.', dataState: [], highlights: defaultHighlights() });
+    return { algorithmId: 'bucket-sort', pseudoCode, frames };
+  }
+
+  // Dynamic range: phân xô theo khoảng [min, max] thực tế, không hardcode 0-100,
+  // nên hỗ trợ cả số âm và khoảng giá trị bất kỳ.
+  const numBuckets = 4;
+  const minVal = Math.min(...arr);
+  const maxVal = Math.max(...arr);
+  const range = maxVal - minVal;
+  const bucketWidth = range / numBuckets;
+
+  const getBucket = (v: number): number => {
+    if (range === 0) return 0;
+    const b = Math.floor((v - minVal) / bucketWidth);
+    return Math.min(numBuckets - 1, Math.max(0, b));
+  };
+
+  const buckets: number[][] = Array.from({ length: numBuckets }, () => []);
+
+  frames.push({ stepId: ++stepId, activeLine: 0, explanation: `Khởi tạo Bucket Sort. ${numBuckets} xô theo khoảng [${minVal}, ${maxVal}], mỗi xô rộng ${range === 0 ? 0 : bucketWidth}.`, dataState: [...arr], highlights: defaultHighlights() });
+  for (let i = 0; i < n; i++) { const b = getBucket(arr[i]); buckets[b].push(arr[i]); frames.push({ stepId: ++stepId, activeLine: 1, explanation: `A[${i}]=${arr[i]} → Bucket ${b}.`, dataState: [...arr], highlights: defaultHighlights({ compare: [i] }) }); }
   for (const b of buckets) b.sort((a, c) => a - c);
   frames.push({ stepId: ++stepId, activeLine: 2, explanation: 'Các bucket đã sắp xếp.', dataState: [...arr], highlights: defaultHighlights() });
   const result = buckets.flat();

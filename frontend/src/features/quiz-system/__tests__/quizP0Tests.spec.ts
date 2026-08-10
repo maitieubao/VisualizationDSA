@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { setActivePinia, createPinia } from 'pinia';
-import { mount, type VueWrapper } from '@vue/test-utils';
+import { mount, flushPromises, type VueWrapper } from '@vue/test-utils';
 import { useQuizStore } from '../store/useQuizStore';
 import { statelessQuizApi } from '../service/statelessQuizApi';
 import type { StatelessQuizSummary, StatelessQuizDetail, StatelessAttemptResult } from '../service/statelessQuizApi';
@@ -14,6 +14,20 @@ vi.mock('../service/statelessQuizApi', () => ({
     submitAttempt: vi.fn(),
   },
 }));
+
+vi.mock('../../../../shared/components/BaseIcon.vue', () => ({
+  default: { name: 'BaseIcon', props: ['name', 'class'], template: '<svg class="base-icon"><title>{{ name }}</title></svg>' },
+}));
+
+vi.mock('../../../../components/SkeletonLoader.vue', () => ({
+  default: { name: 'SkeletonLoader', props: ['variant', 'width', 'height', 'rounded'], template: '<div class="skeleton-loader"></div>' },
+}));
+
+vi.mock('../../../composables/useConfetti', () => ({
+  useConfetti: () => ({ fireQuizPass: vi.fn() }),
+}));
+
+import BackendQuizWorkspace from '../components/BackendQuizWorkspace.vue';
 
 const mockSummary: StatelessQuizSummary = {
   id: 'quiz-1',
@@ -168,20 +182,39 @@ describe('Quiz System — P0/P1 User Stories', () => {
   });
 
   describe('US-QS-009 (P1): Cảnh báo XP tối đa', () => {
-    it('khi đã nhận XP max → không tăng XP thêm', async () => {
-      const maxXpResult: StatelessAttemptResult = {
-        ...mockResult,
-        xpAwarded: 100,
-      };
-      vi.mocked(statelessQuizApi.getQuizById).mockResolvedValueOnce(mockDetail);
-      vi.mocked(statelessQuizApi.submitAttempt).mockResolvedValueOnce(maxXpResult);
+    // QZ-050: test cũ tautological (mock trả xpAwarded:100 rồi assert 100).
+    // Viết lại theo hành vi THẬT của UI: nhánh "+N XP" vs nhánh "không nhận thêm XP".
+    it('pass nhưng xpAwarded=0 → hiển thị cảnh báo "đã nhận XP tối đa"', async () => {
+      vi.mocked(statelessQuizApi.getAllQuizzes).mockResolvedValue([]);
+      vi.mocked(statelessQuizApi.getQuizById).mockResolvedValue(mockDetail);
+      vi.mocked(statelessQuizApi.submitAttempt).mockResolvedValueOnce({ ...mockResult, passed: true, xpAwarded: 0 });
       const store = useQuizStore();
       await store.startBackendQuiz('quiz-1');
-
+      store.backendAnswers = [1, 0, 3];
       await store.submitBackendQuiz();
 
-      expect(store.backendResult?.xpAwarded).toBe(100);
-      expect(store.backendResult?.xpAwarded).toBeLessThanOrEqual(100);
+      expect(store.backendResult?.passed).toBe(true);
+      expect(store.backendResult?.xpAwarded).toBe(0);
+
+      const wrapper = mount(BackendQuizWorkspace, { global: { stubs: { BaseIcon: true } } });
+      await flushPromises();
+      expect(wrapper.text()).toContain('Bạn đã nhận XP tối đa');
+      expect(wrapper.text()).not.toContain('+0 XP');
+    });
+
+    it('pass với xpAwarded>0 → hiển thị "+N XP" thay vì cảnh báo cap', async () => {
+      vi.mocked(statelessQuizApi.getAllQuizzes).mockResolvedValue([]);
+      vi.mocked(statelessQuizApi.getQuizById).mockResolvedValue(mockDetail);
+      vi.mocked(statelessQuizApi.submitAttempt).mockResolvedValueOnce({ ...mockResult, passed: true, xpAwarded: 50 });
+      const store = useQuizStore();
+      await store.startBackendQuiz('quiz-1');
+      store.backendAnswers = [1, 0, 3];
+      await store.submitBackendQuiz();
+
+      const wrapper = mount(BackendQuizWorkspace, { global: { stubs: { BaseIcon: true } } });
+      await flushPromises();
+      expect(wrapper.text()).toContain('+50 XP');
+      expect(wrapper.text()).not.toContain('Bạn đã nhận XP tối đa');
     });
   });
 

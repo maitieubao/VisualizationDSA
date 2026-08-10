@@ -1,5 +1,5 @@
 <template>
-  <div v-if="show" class="fixed inset-0 bg-bg-secondary backdrop-blur-md flex items-center justify-center p-4 z-50 animate-fade-in">
+  <div v-if="show" class="fixed inset-0 bg-bg-secondary backdrop-blur-md flex items-center justify-center p-4 z-50 animate-fade-in" @click.self="$emit('close')">
     <div class="bg-bg-secondary border border-border-subtle rounded-3xl p-8 max-w-md w-full text-center shadow-2xl relative overflow-hidden">
       <div class="w-16 h-16 rounded-full bg-accent-green/20 border border-accent-green/30 flex items-center justify-center text-accent-green mx-auto mb-4">
         <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">

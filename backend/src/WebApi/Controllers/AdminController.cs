@@ -1,6 +1,7 @@
 using Asp.Versioning;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.Collections.Concurrent;
 using System.Text;
 using System.Text.Json;
 using System.Security.Cryptography;
@@ -27,6 +28,11 @@ namespace VisualizationDSA.WebApi.Controllers
         private readonly ApplicationDbContext _dbContext;
         private readonly StatelessAuthStrategy _authStrategy;
         private readonly QuizBankStrategy _quizBank;
+
+        // A2-GUARD: Rate limit impersonation để tránh lạm dụng (5 lần/phút/admin).
+        private static readonly ConcurrentDictionary<string, (DateTime WindowStart, int Count)> _impersonationRateLimiter = new();
+        private const int IMPERSONATION_RATE_LIMIT = 5;
+        private const int IMPERSONATION_RATE_WINDOW_MINUTES = 1;
 
         public AdminController(
             ApplicationDbContext dbContext,
@@ -177,6 +183,15 @@ namespace VisualizationDSA.WebApi.Controllers
                 return NotFound(new { error = "USER_NOT_FOUND" });
 
             var oldRole = user.Role;
+
+            // A1-GUARD: Ngăn self-demotion của admin cuối cùng — tránh mất quyền quản lý hệ thống.
+            if (oldRole == "Admin" && request.Role != "Admin")
+            {
+                var totalAdmins = await _dbContext.Users.CountAsync(u => u.Role == "Admin" && u.Id != user.Id && u.IsActive);
+                if (totalAdmins <= 0)
+                    return BadRequest(new { error = "LAST_ADMIN_PROTECTED", message = "Không thể thay đổi vai trò của admin cuối cùng trong hệ thống." });
+            }
+
             user.SetRole(request.Role);
             await _dbContext.SaveChangesAsync();
             
@@ -239,14 +254,25 @@ namespace VisualizationDSA.WebApi.Controllers
                 return BadRequest(new { error = "USER_EXISTS", message = "Email hoặc Username đã được sử dụng." });
             }
 
-            var passwordHash = BCrypt.Net.BCrypt.HashPassword(request.Password, workFactor: 12);
+             var passwordHash = BCrypt.Net.BCrypt.HashPassword(request.Password, workFactor: 12);
             var newUser = new User(request.Email, request.Username, passwordHash);
             
             newUser.SetRole(request.Role);
             newUser.SetPremiumStatus(request.IsPremium);
 
             _dbContext.Users.Add(newUser);
-            await _dbContext.SaveChangesAsync();
+
+            // A6-GUARD: Atomic create — catch race condition giữa check-and-insert (unique index violation).
+            try
+            {
+                await _dbContext.SaveChangesAsync();
+            }
+            catch (Microsoft.EntityFrameworkCore.DbUpdateException ex)
+                   when (ex.InnerException?.Message.Contains("UNIQUE constraint") == true
+                      || ex.InnerException?.Message.Contains("duplicate key") == true)
+            {
+                return Conflict(new { error = "USER_EXISTS", message = "Email hoặc Username đã được sử dụng." });
+            }
 
             
             _authStrategy.AddUser(
@@ -292,6 +318,32 @@ namespace VisualizationDSA.WebApi.Controllers
                 return NotFound(new { error = "USER_NOT_FOUND", message = "Không tìm thấy người dùng." });
             }
 
+            // A3-GUARD: Cascade delete orphaned data trước khi xóa User để tránh FK violation.
+            var dependentQuery = _dbContext.UserLessonProgresses
+                .Where(p => p.UserId == user.Id)
+                .ExecuteDeleteAsync();
+            await _dbContext.UserModuleItemProgresses
+                .Where(p => p.UserId == user.Id)
+                .ExecuteDeleteAsync();
+            await _dbContext.QuizAttempts
+                .Where(q => q.UserId == user.Id)
+                .ExecuteDeleteAsync();
+            await _dbContext.LessonComments
+                .Where(c => c.UserId == user.Id)
+                .ExecuteDeleteAsync();
+            await _dbContext.ClassroomEnrollments
+                .Where(e => e.StudentId == user.Id)
+                .ExecuteDeleteAsync();
+            await _dbContext.RefreshTokens
+                .Where(t => t.UserId == user.Id)
+                .ExecuteDeleteAsync();
+            await _dbContext.Notifications
+                .Where(n => n.UserId == user.Id)
+                .ExecuteDeleteAsync();
+            await _dbContext.UserBadges
+                .Where(ub => ub.UserId == user.Id)
+                .ExecuteDeleteAsync();
+
             _dbContext.Users.Remove(user);
             await _dbContext.SaveChangesAsync();
 
@@ -301,7 +353,7 @@ namespace VisualizationDSA.WebApi.Controllers
             
             if (Guid.TryParse(id, out var targetGuid))
             {
-                await LogAdminAction("DeleteUser", targetGuid, $"Xóa người dùng {user.Username} ({user.Email}) khỏi hệ thống.");
+                await LogAdminAction("DeleteUser", targetGuid, $"Xóa người dùng {user.Username} ({user.Email}) khỏi hệ thống, kèm cascade xóa dữ liệu liên quan.");
             }
 
             return Ok(new { message = $"Đã xóa người dùng {user.Username} ({user.Email}) thành công." });
@@ -406,15 +458,28 @@ namespace VisualizationDSA.WebApi.Controllers
             if (quiz == null)
                 return NotFound(new { error = "QUIZ_NOT_FOUND" });
 
+            // A4-GUARD: Ngăn xóa quiz nếu đang được tham chiếu trong ModuleItems (cả Course và Classroom).
+            var referencingCourseItems = await _dbContext.ModuleItems
+                .Where(m => m.QuizId.ToString() == id && !m.IsDeleted)
+                .Select(m => m.Module.Course.Title)
+                .Distinct()
+                .ToListAsync();
+
+            if (referencingCourseItems.Any())
+            {
+                return Conflict(new
+                {
+                    error = "QUIZ_REFERENCED",
+                    message = $"Quiz \"{quiz.Title}\" đang được sử dụng trong khóa học: {string.Join(", ", referencingCourseItems)}. Vui lòng gỡ liên kết trước khi xóa.",
+                    referencedByCourses = referencingCourseItems
+                });
+            }
+
             _dbContext.Quizzes.Remove(quiz);
             await _dbContext.SaveChangesAsync();
 
             return Ok(new { message = $"Đã xóa quiz \"{quiz.Title}\"." });
         }
-
-        
-        
-        
         
         [HttpGet("analytics/quiz")]
         [RequireJwtRole("Teacher,Admin")]  
@@ -459,7 +524,14 @@ namespace VisualizationDSA.WebApi.Controllers
                 return NotFound(new { error = "USER_NOT_FOUND" });
 
             user.SetActiveStatus(request.IsActive);
-            await _dbContext.SaveChangesAsync();
+
+            // A5-GUARD: Khi khóa tài khoản, thu hẹp refresh tokens để buộc logout thiết bị.
+            if (!request.IsActive)
+            {
+                _authStrategy.RevokeAllRefreshTokens(id);
+            }
+
+            await _dbContext.SaveChangesAsync();;
 
             // Đồng bộ trạng thái ban vào stateless memory — chặn login ngay cả khi DB down.
             _authStrategy.SetUserActive(user.Id.ToString(), request.IsActive);
@@ -475,8 +547,26 @@ namespace VisualizationDSA.WebApi.Controllers
         [HttpPost("users/{id}/impersonate")]
         public async Task<IActionResult> ImpersonateUser(string id)
         {
-
             var adminId = JwtHelper.ExtractSubFromToken(Request) ?? "unknown-admin";
+
+            // A2-GUARD: Rate limit impersonation — max 5 lần/phút cho mỗi admin.
+            var now = DateTime.UtcNow;
+            var rateKey = adminId;
+            var rateEntry = _impersonationRateLimiter.GetOrAdd(rateKey, (now, 0));
+            if ((now - rateEntry.WindowStart).TotalMinutes > IMPERSONATION_RATE_WINDOW_MINUTES)
+            {
+                rateEntry = (now, 1);
+            }
+            else
+            {
+                if (rateEntry.Count >= IMPERSONATION_RATE_LIMIT)
+                {
+                    _impersonationRateLimiter[rateKey] = rateEntry;
+                    return StatusCode(429, new { error = "RATE_LIMITED", message = "Quá nhiều yêu cầu đóng vai. Vui lòng thử lại sau 1 phút." });
+                }
+                rateEntry = (rateEntry.WindowStart, rateEntry.Count + 1);
+            }
+            _impersonationRateLimiter[rateKey] = rateEntry;
 
             string email, username, role;
             int level;

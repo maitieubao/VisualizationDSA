@@ -1,4 +1,4 @@
-# ⚠️ Nhật Ký Lỗi Và Sự Cố Thường Gặp - Error Codes & Failover Scenarios
+﻿# ⚠️ Nhật Ký Lỗi Và Sự Cố Thường Gặp - Error Codes & Failover Scenarios
 
 > **⚠️ GHI CHÚ PHỤC HỒI (2026-08-02):** Vùng tail của file này (từ mục "Lỗi 174" trở đi, ~18 entries) đã bị hỏng UTF-16LE từ commit `fa5d844` — byte gốc đã mất vĩnh viễn, chỉ còn các ký tự replacement `U+FFFD` và không thể tự động phục hồi hoàn hảo. Toàn bộ phần phía trên (Lỗi 101 → 173) đã được khôi phục chuẩn 100% bằng script cp1252→UTF-8 reverse (khớp chính xác với phiên bản sạch tại commit `4f8d4c3`). Vùng tail hỏng được giữ nguyên để bảo toàn tối đa nội dung còn đọc được; cần tái tạo thủ công nếu muốn phục hồi đầy đủ.
 
@@ -1515,3 +1515,177 @@ px vue-tsc --noEmit exit code 0 (toan bo type check pass).
 | :-- | :-- | :-- | :-- |
 | 346 | Preflight tu `http://localhost:5173` den backend `:5055` tra 204 nhung thieu `Access-Control-Allow-Origin` vi `START-PROJECT.bat` khoi dong backend bang Production, trong khi Production CORS chi cho domain deploy | Dat `ASPNETCORE_ENVIRONMENT=Development` trong launcher va them `launchSettings.json` de `dotnet run` local mac dinh dung Development CORS | `FIXED` — runtime verify: OPTIONS login/courses co Allow-Origin, GET courses 200 |
 | 347 | Login demo tra 401 sau khi backend tung chay Production: production seeder da disable credential cong khai trong DB; khi quay lai Development, seeder chi set role nen `IsActive=false` van con. Frontend lai thu refresh token tren chinh request login 401 | Development seeder reactivate + reset password cho 3 credential development; fetch interceptor bo attach/refresh token tren login/register/refresh/logout/demo-credentials | `FIXED` — runtime login demo 200, role Teacher; Vite build pass |
+
+### UI Redesign Review — Business Logic & UX Fixes — 2026-08-07
+| Lo | Mo ta | Cach khac phuc | Trang thai |
+| :-- | :-- | :-- | :-- |
+| 348 | BreadcrumbsBar: separator render SAU tat ca links thay vi GIUA chung — do 2 v-for loop rieng biet, DOM order: [link1][link2][link3][sep1][sep2] | Gop vao 1 template v-for duy nhat, moi item: router-link + separator | `FIXED` |
+| 349 | goToStep(3) bi block neu user da pass quiz truoc do nhung vua load lesson — hasWatchedVisualizer reset false trong loadLesson, guard chi cho phep neu da watch viz | Relax guard: `stepNumber === 3 && !hasWatchedVisualizer.value && !quizPassed.value` | `FIXED` |
+| 350 | Sidebar khong auto-scroll toi lesson hien tai khi navigate qua bottom nav buttons | Watch currentLessonId + querySelector('.border-l-accent') + scrollIntoView({ block: 'nearest', behavior: 'smooth' }) | `FIXED` |
+
+### UI Redesign Round 2 — Review Fixes — 2026-08-07
+| Lo | Mo ta | Cach khac phuc | Trang thai |
+| :-- | :-- | :-- | :-- |
+| 351 | CourseDetailView: `useRouter` imported but never used — dead code | Removed unused import + `const router = useRouter()` declaration | `FIXED` |
+| 352 | CodeLab: `activeTab.value = 'testcases'` on every Run click overrides user's active tab (Problem/Hints) | Removed forced tab switch — user stays on current tab after Run | `FIXED` |
+| 353 | Completion modal has no click-outside-to-close — user must click one of 3 buttons to dismiss | Added `@click.self="$emit('close')"` on backdrop div | `FIXED` |
+| 354 | Breadcrumb first item label inconsistent: CourseDetail "Khóa học" vs LessonStudy "Trang chủ" — both point to /courses | Unified to 'Khóa học' across both views | `FIXED` |
+
+### UI Redesign — New Component Unit Tests (2026-08-07)
+| Lo | Mo ta | Cach khac phuc | Trang thai |
+| :-- | :-- | :-- | :-- |
+| 355 | uiRedesignComponents.spec.ts: CourseSidebar emit test failed — Pinia not set up, `useCourseStore()` threw `getActivePinia()` error | Added `beforeEach(() => setActivePinia(createPinia()))` to CourseSidebar describe block | `FIXED` |
+| 356 | uiRedesignComponents.spec.ts: CourseSidebar emit test — RouterLink stub did not forward `@click` events, `findComponents` + `findAll('a.rl-stub')` approach failed | Changed stub to explicitly emit 'click' on root `<a>` with `emits: ['click']`; used `findComponents(RouterLinkStub)` + index fix (links[2] = l2 due to back-to-course link at index 0) | `FIXED` |
+
+### EC Execution Control Batch � VCR Playback UI/UX Fixes � 2026-08-09
+| Lo | Mo ta | Cach khac phuc | Trang thai |
+| :-- | :-- | :-- | :-- |
+| 357 | EC-003: Nut Play "chet" o frame cuoi - thieu Replay | VcrDockBar: icon refresh-cw + title/aria-label "Phat lai tu dau" khi isAtEnd && !isPlaying | FIXED |
+| 358 | EC-007: Option toc do 10x vuot tran spec (max 5.0x) | 2 noi (VcrDockBar + AnimationVcrControls) dung chung SPEED_PRESETS [0.1..5.0] | FIXED |
+| 359 | EC-013: Thieu @mousedown pause + throttle 30FPS cho scrub | @mousedown=vcrStore.pause() + throttle 33ms (performance.now guard) trong handleScrub | FIXED |
+| 360 | EC-014: Scrubber VcrDockBar mat thumb + fill progress | style scoped .vcr-scrubber: thumb 20px trang vien #06B6D4 + gradient fill qua --scrub-progress | FIXED |
+| 361 | EC-015: AnimationVcrControls thieu disabled states + counter 1/0 | disabled stepBack/stepForward/ca 4 nut+slider khi totalSteps===0; counter 0 / 0 | FIXED |
+| 362 | EC-025: Phim tat khong chan e.repeat (Space toggle rung) | guard e.repeat cho Space/R o usePlaybackHotkeys, useDSAKeyboard, SortingView; Arrow giu repeat | FIXED |
+| 363 | EC-027: Title nut play tinh | title/aria-label computed dong theo isPlaying/isAtEnd (VcrDockBar) | FIXED |
+| 364 | EC-028: Nut icon-only thieu aria-label (AnimationVcrControls) | them aria-label + title cho 4 nut | FIXED |
+| 365 | EC-029: Counter thieu aria-live | aria-live=polite cho counter VcrDockBar + AnimationVcrControls | FIXED |
+| 366 | EC-030: Thieu phim tat R: Reset trong huong dan SortingView | them "| R: Reset" vao hint bar | FIXED |
+| 367 | EC-031: VcrDockBar lech visual phase2 S1 (rounded-lg) | rounded-full + bg-slate-900/45 + border-white/10 + backdrop-blur (capsule glassmorphic) | FIXED |
+| 368 | EC-036: SortingView hotkey khong check interactionLocked | guard animStore.interactionLocked truoc switch (tuong tu usePlaybackHotkeys:15) | FIXED |
+| � | Ghi nhan: 2 test cu pin SPEED_PRESETS cu (5 options 0.5x-10x) se fail sau EC-007 (drift EC-044) � animationP0Tests 'renders speed selector with correct options' + dsaP0Tests 'renders speed selector with all options' | � | INFO |
+
+### Interactive Playground Canvas & Physics Fixes (IP-006..IP-030 + EC-018) — 2026-08-10
+| Lo | Mo ta | Cach khac phuc | Trang thai |
+| :-- | :-- | :-- | :-- |
+| 369 | EC-018/IP-030: Vong lap idle draw full-graph 12.5FPS vi vinh vien (khong dung isStable) | PlaygroundCanvas.vue: dirty-flag render loop — loop chi chay khi busy (algorithm mode/drag/pan/ve canh/physics dang hoi tu) hoac markDirty(); khi physics isStable(energy) ve 1 frame cuoi roi dung han (bo idleTimer 80ms) | FIXED |
+| 370 | IP-006: Clamp keo-tha node dung view-space ap len world-space (zoom 0.5 node dung giua man hinh) | canvasEventHandlers.handleMouseMove nhan them zoom+pan, clamp qua GraphGeometryEngine.worldBoundsFromViewport + clampPointToBounds (minX=-pan.x/zoom+20, maxX=(width-pan.x)/zoom-20) | FIXED |
+| 371 | IP-007: Hover highlight dead code — setHoveredNodeId/setHoveredEdgeId khong bao gio duoc goi | handleMouseMove (khong drag, khong ve canh): hitTestNode uu tien thang hitTestEdge, set hover theo bien doi; onPointerLeave clear hover | FIXED |
+| 372 | IP-010: Tao canh "ma" khi kéo ra ngoai canvas (mouseleave = mouseup) | Bo @mouseleave="onMouseUp"; dang ky window pointerup/pointercancel khi bat dau interaction — chi commit addEdge khi release TRONG canvas, ngoai canvas thi cancel | FIXED |
+| 373 | IP-012: Thieu DPI/Retina (text/grid mo nhoe tren HiDPI) | draw()/resizeCanvas(): canvas.width = cssW*dpr, setTransform(dpr,0,0,dpr,0,0); bo binding :width/:height template; sua vi tri popover weight bo nhan rect.width/canvas.width (getMousePos giu nguyen nhan ty le) | FIXED |
+| 374 | IP-013: Snap 40px + hit-test edge 8px tinh theo world vo UX khi zoom | isWithinSnapDistance + hitTestEdge nhan them param zoom: threshold/zoom, toi thieu 5px screen | FIXED |
+| 375 | IP-014: Khong co touch/pointer events | Chuyen canvas sang Pointer Events (pointerdown/move/up/cancel/leave) + setPointerCapture/releasePointerCapture + CSS touch-action:none; touch single pointer hoat dong nhu chuot; TODO pinch zoom | FIXED |
+| 376 | IP-015: Zoom bi tre ~80ms (khong nam trong busy list) | onWheel goi markDirty() ngay — render loop dirty flag ve ngay khong cho idle timer | FIXED |
+| 377 | IP-016: Physics clamp quen tru panOffset (node bi day ra ngoai man hinh khi pan) | ForceDirectedEngine.tick nhan optional worldBounds (minX/maxX/minY/maxY world-space tu pan/zoom); PlaygroundCanvas truyen getPhysicsWorldBounds() | FIXED |
+| 378 | IP-017: Grid khong phu vung visible khi pan + lineWidth khong theo zoom | drawGrid ve tu -pan.x/zoom -> (width-pan.x)/zoom (snap boi so gridSize 40), ctx.lineWidth = 1/zoom | FIXED |
+| 379 | IP-018: Hai node trung toa do dx=dy=0 -> luc day = 0 -> chong lan vinh vien | ForceDirectedEngine: khi dist===0 chon huong jitter (dx=1, dy=0) ca vong repulsion lan spring | FIXED |
+| 380 | IP-024: hitTestEdge threshold 8px world — zoom<1 khong bam duoc canh | GraphGeometryEngine.hitTestEdge them param zoom: screenThreshold = Math.max(threshold/zoom, 5) | FIXED |
+| 381 | IP-027: store.zoomLevel khong reset khi unmount (header % sai khi quay lai view) | onUnmounted: store.resetZoom?.() neu co, nguoc lai store.zoomLevel = 100 (TODO khi store them action) | FIXED |
+| � | Ghi nhan: addEdge chua nhan graphType (IP-004 cho agent store) — PlaygroundCanvas con TODO comment nối directed | � | INFO |
+
+### Interactive Playground Test Hardening (IP-033..IP-041) — 2026-08-10
+| Lo | Mo ta | Cach khac phuc | Trang thai |
+| :-- | :-- | :-- | :-- |
+| 382 | IP-033: graphP2Tests tautological (zoom/pan/legend/guide/header assert tren gia tri tu tinh) | Xoa test sao chep bieu thuc; thay bang mount PlaygroundCanvas/InteractivePlayground + assert DOM/canvas that: wheel→store.zoomLevel+ctx.scale+clamp 20-300%, pan→ctx.translate, legend aria-label, guide overlay text+nut "Da hieu", header counter — graphComponentTests.spec.ts | FIXED |
+| 383 | IP-034: graphP0Tests "exportGraph" tu JSON.stringify store (store khong co ham export) | Thay bang mount InteractivePlayground + click nut "Xuat JSON" (aria-label) + spy URL.createObjectURL/HTMLAnchorElement.click + doc noi dung Blob + toast — graphP0Tests.spec.ts + graphComponentTests.spec.ts | FIXED |
+| 384 | IP-035: graphP2Tests "loadTemplate" tu addNode/addEdge tay, khong goi loadTemplate that | Thay bang mount GraphView + click nut Triangle/Square/Star → kiem tra store that (3N/3E, 4N/4E, 6N/5E) — graphComponentTests.spec.ts | FIXED |
+| 385 | IP-036: Simulator chi test undirected — nhanh resolveNeighbor directed 0 test | Them 12 tests directed: BFS/DFS/Dijkstra chi di theo muoi ten, dist nguoc huong=Infinity, 2 canh nguoc chieu A->B+B->A, trong so dung chieu — graphAlgorithmSimulator.spec.ts | FIXED |
+| 386 | IP-038: Mock canvas graphP0Tests thieu save/restore/translate/scale... | Tao __tests__/canvasMock.ts: context mock day du (save/restore/translate/scale/rotate/setTransform/arc/fill/stroke/beginPath/closePath/clearRect/fillText/measureText/setLineDash/getLineDash + style props), installCanvasMock() dung chung graphP0Tests + graphComponentTests | FIXED |
+| 387 | IP-039: Tracking lech + 0 test component cho PlaygroundCanvas/InteractivePlayground/canvasEventHandlers | graphComponentTests.spec.ts (33 tests mount PlaygroundCanvas: ADD_NODE, ADD_EDGE snap, IP-010 release ngoai canvas, khoa ve; InteractivePlayground: weight popover Enter/Blur/Esc + 0/1000/NaN, import toast, phim tat that, toolbar lock, legend/guide/header) + canvasEventHandlersTests.spec.ts (21 tests unit 5 mode × hit/miss) + cap nhat progress.md/features-tested.md | FIXED |
+| 388 | IP-040: 0 test component InteractivePlayground.vue (weight popover, import, shortcuts, lock) | Phu het trong graphComponentTests.spec.ts — popover weight (Enter/Blur/Esc, gia tri 0/1000/NaN), toast import invalid/valid, phim tat V/N/E/W/Del/Backspace qua handleKeydown that, lock toolbar khi isAlgorithmMode (an export/import/physics/clear + chan ve canvas) | FIXED |
+| 389 | IP-041: mockKeydownHandler nhan ban logic that cua handleKeydown (nguy co drift) | Xoa mockKeydownHandler + stubs window khong con dung; phim tat test qua mount InteractivePlayground + dispatch KeyboardEvent that tren window (handleKeydown that, InteractivePlayground.vue:386-403) | FIXED |
+| � | Ghi nhan: BEHAVIOR_SPEC S3 (lock toolbar chua disable tool buttons khi isAlgorithmMode — tool buttons van click duoc) — component dang xem xet | Tool buttons (Select/Node/Edge/Weight/Delete) van hien + click duoc trong algorithm mode; test chi assert phan da implement (an nut hanh dong + chan vẽ canvas + chan phim tat) | INFO |
+| � | Ghi nhan: import JSON component (InteractivePlayground.vue:314-319) van dung clearAll+push thay vi store.importGraph (TODO IP-003) — test component viet theo hanh vi hien tai | Khi component chuyen sang importGraph, kiem tra lai test "JSON hop le" (toast text "Đã nhập 1 đỉnh, 0 cạnh.") | INFO |
+
+### Pseudocode Sync Data Source Fixes (PS-001, PS-009, PS-010, PS-024, CC-009) — 2026-08-10
+| Lo | Mo ta | Cach khac phuc | Trang thai |
+| :-- | :-- | :-- | :-- |
+| 390 | PS-001/CC-009: Frame khong bao gio mang activeLogicalLineId/variables — toan bo pseudocode highlight chet | FrameDTO.cs them `ActiveLogicalLineId` (string?) + `Variables` (Dictionary<string,object>?); `AlgorithmBase.CaptureState` them 2 optional param (backward-compatible); `BubbleSortStrategy.cs` emit FUNC_DECL/OUTER_LOOP/INNER_LOOP/COMPARE_STEP/SWAP_STEP + variables (i/j/n/temp); fallback `sortingGenerators.generateBubbleSort` bo sung dong bo. WebApi camelCase + WhenWritingNull tu dong serialize dung | FIXED |
+| 391 | PS-009: temp trong frame swap hien thi sai (capture sau swap) | `const temp = arr[j]` TRUOC lenh swap o ca 3 nguon: `algorithmApi.ts` (dummy), `sortingGenerators.ts`, `BubbleSortStrategy.cs` | FIXED |
+| 392 | PS-010: INNER_LOOP khong bao gio duoc emit (dong "for j" khong bao gio highlight) | Them frame `INNER_LOOP` dau moi pass (j===0) o ca 3 nguon sinh frame | FIXED |
+| 393 | PS-024: OUTER_LOOP chi phat CUOI moi pass thay vi dau pass | Them frame `OUTER_LOOP` ngay dau moi pass (i++ bat dau pass); giu frame tong ket cuoi pass (semantics loop header re-eval) | FIXED |
+
+### Pseudocode Sync UI Fixes (PS-003, PS-004, PS-005, PS-008, PS-012, PS-013, PS-014, PS-015, PS-018, PS-019, PS-020, PS-033, PS-034, PS-035, PS-036, PS-037, PS-039) — 2026-08-10
+
+| Lo | Mo ta | Cach khac phuc | Trang thai |
+| :-- | :-- | :-- | :-- |
+| 394 | PS-003 (P0): `highlightSyntax` regex chay tren HTML da chen span → chu rac CSS `#60a5fa` | Viet lai tokenizer 1 luot tren TEXT GOC: alternation `(comment|string|apiFunc|keyword|number|punct)`, escape tung token (`&` `<` `>`), khong bao gio regex tren HTML da sinh; verify jsdom (comment nguyen khoi, `&gt;` khong du, khong con `#60a5fa` rac) | FIXED |
+| 395 | PS-039: keyword set chung moi ngon ngu (def/in/range/len to ca trong C++) | Tach bang KEYWORDS/API_FUNCS theo language — `def/in/range/len` chi trong python, `print` chi API python; `highlightSyntax(text, language?)` them param language | FIXED |
+| 396 | PS-005 (P1): Auto-scroll sai he toa do (`offsetTop` theo body vs `scrollTop` viewport) → scroll ve day moi frame | Rect math: `top = aRect.top - vRect.top + viewportEl.scrollTop` (getBoundingClientRect), so sanh voi scrollTop/clientHeight | FIXED |
+| 397 | PS-012: class `white-space-pre` khong ton tai → mat thut le | Doi thanh `whitespace-pre` (Tailwind) + CSS `white-space: pre` tren `.code-line` (dam bao khong phu thuoc scanner) | FIXED |
+| 398 | PS-013: O(L×F) moi render — getOccurrenceInfo/goi 2 lan/dong trong v-for | Computed `occurrenceMap: Map<logicalId, {current,total}>` tinh 1 lan moi khi frames/currentIndex/script doi; template doc tu map | FIXED |
+| 399 | PS-014: Tab preventDefault vo dieu kien → bay focus | Tab giu focus mac dinh; chi Ctrl+Tab/Alt+Tab (Shift de lui) moi doi ngon ngu | FIXED |
+| 400 | PS-015: Badge watch order nhay theo Object.entries frame; panel bien mat khi frame thieu variables | Sort alphabet theo ten trong component; bo `v-if` + `min-height: 96px` cho `.watch-panel-card` | FIXED |
+| 401 | PS-018: ref callback bo qua null → lineRefs giu node detached khi doi ngon ngu | Ref callback `else { delete lineRefs[line.lineNumber] }` khi el = null | FIXED |
+| 402 | PS-019: smooth-scroll xep hang jank khi seek nhanh | `behavior: animStore.isPlaying ? 'auto' : 'smooth'` | FIXED |
+| 403 | PS-020: badge hien "2/5" cho dong chua thuc thi | Badge chi render khi `line.logicalId === pseudocodeStore.activeLogicalLineId && total > 1` | FIXED |
+| 404 | PS-004 (P1): doi thuật toan khong co script → pseudocode cu hien sai | VisualizationPlayer.vue: `else pseudocodeStore.resetStore()` khi `loadPsScript(newId)` tra null | FIXED |
+| 405 | PS-008 (P1): onUnmounted khong reset pseudocode store | `pseudocodeStore.resetStore()` trong onUnmounted (truoc quizStore.resetQuizStore + animStore.destroy) | FIXED |
+| 406 | PS-033/PS-034: a11y — tabs thieu role/aria, dong code khong tabindex, viewport outline:none mat focus ring | Tablist/Tab + aria-selected + aria-controls; viewport role=tabpanel + aria-label + aria-labelledby; dong code tabindex=0 + role=button + Enter snap; focus-visible ring cho tab/viewport/code-line | FIXED |
+| 407 | PS-035: Lech CSS spec 02-ui-ux.md | Active line `text-shadow: 0 0 10px` neon green; gutter 28px/margin 16px; code-line padding 6/20; lang-btn font 13px; watch card margin 16px/padding 16px/radius 16px | FIXED |
+| 408 | PS-036: Empty line hien thi `//` gia | `highlightSyntax` tra `''` khi text rong/whitespace-only | FIXED |
+| 409 | PS-037: dieu kien thua `!isLineExecutable(x) && x === 'NO_ACTION'` | Don gian thanh `'comment': !isLineExecutable(line.logicalId)` | FIXED |
+| 410 | PS-038: `VariableState` thieu `type: 'index'|'pointer'|'temporary'` (TECHNICAL_SPEC §1) | TODO comment trong VariableWatchPanel.vue — file types/* do agent khac so huu; chua sua | TODO |
+| 411 | PS-006 (P1): Thieu debounce highlight 50ms khi speed >= 2.0 (BEHAVIOR_SPEC section 1) | usePseudocodeStore: watcher flush:'sync' theo currentFrame/language/script; speed >= 2 -> trailing debounce 50ms + xoa highlight ngay khi vao cua so (skip intermediate, chi hien dong dich cuoi); speed < 2 -> cap nhat dong bo; timer clear khi reset + onScopeDispose (khong leak timer) | FIXED |
+| 412 | PS-016 (P2): usePseudocodeStore tu viet lai lookup line | Chuyen sang duy nhat PseudocodeSyncEngine.getPhysicalLineNumbers (bien the cua getPhysicalLineNumber tra danh sach) - 1 nguon logic duy nhat | FIXED |
+| 413 | PS-017 (P2): in operator trong scriptLoader -> hasPseudocodeScript('toString') true, loadPseudocodeScript('constructor') crash | Thay bang Object.hasOwn(registry, id) o ca 2 ham | FIXED |
+| 414 | PS-021 (P2): usePseudocodeStore hardcode useAnimationStore() | Them indAnimationStore(store)/unbindAnimationStore() (module-level binder; KHONG dung tham so setup store vi pinia 2.3+ goi setup({action}) chiem cho tham so); default giu useAnimationStore() | FIXED |
+| 415 | PS-022 (P2): pause() goi 2 lan trong snap helpers | Bo ca 2 nimStore.pause() (goToFrame da pause); interface AnimationStoreSync ghi hop dong goToFrame tu pause | FIXED |
+| 416 | PS-023 (P2): scriptLoader khong validate cau truc script khi dang ky | alidatePseudocodeScript + egisterPseudocodeScript fail-fast (throw + console.error): languages non-empty, language hop le, lines non-empty, lineNumber duong & duy nhat, text/logicalId non-empty; registry duyet qua register | FIXED |
+| 417 | PS-011 (P2): Nhieu dong cung logicalId -> chi dong dau sang (Java 5,6,7 SWAP_STEP; Python/JS 2 dong FUNC_DECL) | Chon huong ENGINE TRA DANH SACH (it pha vo test nhat): them PseudocodeSyncEngine.getPhysicalLineNumbers tra toan bo line khop + store expose ctivePhysicalLineNumbers: number[] (giu ctivePhysicalLineNumber first-match de tuong thich); TODO agent component: MultilingualCodePanel chuyen sang danh sach de ca 3 dong Java cung sang | FIXED (phan engine/store; con TODO component) |
+| 418 | PS-010 (P2): INNER_LOOP khong bao gio duoc emit (phan dsa-modules sortingGenerators.ts) | Dummy generator animation-engine + backend da emit INNER_LOOP dau moi vong j (agent khac fix); sortingGenerators.ts (dsa-modules) van chua gan activeLogicalLineId - TODO agent dsa-modules (da ghi comment trong bubble-sort.pseudocode.ts) | TODO (agent khac) |
+| 419 | PS-009/PS-024 (P2): temp trong frame swap sai + OUTER_LOOP phat cuoi pass | Da fix o animation-engine/services/algorithmApi.ts + sortingGenerators.ts + backend (agent khac) - xac nhan nhin code 2026-08-10 | FIXED (agent khac) |
+| 420 | QZ-010 (P1): Validator khong check can tren correctOptionIndex + khong Number.isInteger | QuizSchemaValidator.ts: them Number.isInteger + >= 0 + `< options.length` (loi "ngoai dai phuong an") | FIXED 2026-08-10 |
+| 421 | QZ-011 (P1): question.type khong hop le bi bo qua im lang | QuizSchemaValidator.ts: else branch day loi `Kieu cau hoi khong ho tro: <type>` | FIXED 2026-08-10 |
+| 422 | QZ-012 (P1): Validator crash TypeError khi checkpoint la null | QuizSchemaValidator.ts: guard `!cp || typeof cp !== 'object'` dau vong lap + bao loi | FIXED 2026-08-10 |
+| 423 | QZ-013 (P1): saveAttempt crash khi localStorage hop le JSON nhung sai shape | QuizStatsManager.ts: normalizeStats validate shape sau parse (completedQuizzes la array, field la so nguyen khong am) + fallback default + try/catch bao | FIXED 2026-08-10 |
+| 424 | QZ-020 (P2): checkpoints: [] duoc chap nhan (isValid true) | QuizSchemaValidator.ts: checkpoints rong -> loi "Quiz khong co cau hoi nao." | FIXED 2026-08-10 |
+| 425 | QZ-021 (P2): frameIndex 5.5 pass validate nhung checkpoint chet am tham | QuizSchemaValidator.ts: them Number.isInteger(frameIndex) | FIXED 2026-08-10 |
+| 426 | QZ-022 (P2): Khong phat hien trung frameIndex / trung question.id | QuizSchemaValidator.ts: Set<number> + Set<string> do trung lap, day loi cu the | FIXED 2026-08-10 |
+| 427 | QZ-023 (P2): Streak lifetime toan cuc (sai 1 cau tuan truoc -> streak ve 0); thieu getAccuracy | quiz.types.ts: them `bestStreak` (lifetime ky luc khong giam), giu `streak` (phien, reset khi sai) backward-compat voi QuizSummaryCard; QuizStatsManager.getAccuracy() = round(correct/total*100) | FIXED 2026-08-10 |
+| 428 | QZ-038 (P2, phan types): TRUE_FALSE khong ep dung 2 options; options khong ep la chuoi khong rong; radius node khong check | QuizSchemaValidator.ts: TRUE_FALSE dung 2 phuong an; moi option phai la chuoi khong rong; optional `nodes` radius > 0 | FIXED 2026-08-10 |
+| 429 | QZ-049 (P3): QuizStatsManager.spec thieu test partial JSON (thieu field) | QuizStatsManager.spec.ts: them 5 test moi (partial JSON, wrong-shape fields, saveAttempt tren storage sai shape, bestStreak lifetime, getAccuracy) | FIXED 2026-08-10 |
+| 430 | QZ-006 (P1): syncSessionToServer dead code + POST sai URL /api/v1/quizzes/attempt | quizApi.ts: doi URL thanh /api/v1/concepts/quiz/submit, payload { quizId, answers: number[] } khop StatelessQuizAttemptRequest, response StatelessQuizAttemptResult; retry 1 lan (mang/5xx/timeout, khong retry 4xx); xpSyncError state; goi trong dismissQuestionAndContinue khi hoan tat toan bo checkpoint; loadCheckpoints(quizCheckpoints, quizId?) - TODO agent PS: truyen script.algorithmId tu VisualizationPlayer | FIXED 2026-08-10 (phia store/service; TODO wire player) |
+| 431 | QZ-007 (P1): Race thoat quiz khi submitBackendQuiz in-flight -> state cu song lai | exitBackendQuiz guard isBackendQuizSubmitting (chan thoat giua chung submit) + generation-token backendQuizGeneration cho start/submit - response cu bi loai bo sau exit (mau useLectureStore:17) | FIXED 2026-08-10 |
+| 432 | QZ-008 (P1): statelessQuizApi thieu timeout -> treo vinh vien | Ca 4 ham fetch dung AbortSignal.timeout(10000); TimeoutError/AbortError -> throw Error('timeout') -> backendQuizError | FIXED 2026-08-10 |
+| 433 | QZ-017 (P1): submitQuizAttempt payload thieu answers -> 400 im lang | QuizAttemptPayload = { quizId, answers: number[] } (khop StatelessQuizAttemptRequest.Answers); QuizAttemptResponse = StatelessQuizAttemptResult; throw loi ro thay vi console.warn + return null (QZ-031) | FIXED 2026-08-10 |
+| 434 | QZ-018 (P1): Checkpoint completed TRUOC khi tra loi dung | triggerCheckpointQuestion khong con push; markCheckpointCompleted chi push khi isCorrect===true (BEHAVIOR_SPEC 3); tra loi sai -> tua lai van retry | FIXED 2026-08-10 |
+| 435 | QZ-019 (P1): Dismiss khong resume playback -> lecture ket isWaitingForAnimation | useLectureStore.them resumeLecturePlayback(): resume tu currentIndex, nhanh isWaitingForAnimation chay lai playUntilFrame; dismissQuestionAndContinue goi sau unlock | FIXED 2026-08-10 |
+| 436 | QZ-024 (P2): quizLoader khong validate script khi dang ky | registerQuizScript fail-fast: key === script.algorithmId + QuizSchemaValidator.validateQuizJson({ checkpoints }) | FIXED 2026-08-10 |
+| 437 | QZ-025 (P2): 401 khong tu refresh/retry | statelessQuizApi: 401 -> authStore.refreshAccessToken() -> retry 1 lan voi token moi; refresh that bai -> giu loi HTTP goc | FIXED 2026-08-10 |
+| 438 | QZ-026 (P2): Double-click "Lam lai" -> 2 GET song song; retry fail giu quiz cu | startBackendQuiz guard isBackendQuizLoading (chan double-call); catch fail -> xoa activeBackendQuiz + isBackendQuizMode=false | FIXED 2026-08-10 |
+| 439 | QZ-027 (P2): isBackendQuizLoading dung chung cho submit -> UI skeleton thay vi "Dang gui..." | submitBackendQuiz chi set isBackendQuizSubmitting, khong con set isBackendQuizLoading | FIXED 2026-08-10 |
+| 440 | QZ-029 (P2): CANVAS_TARGET khong loi thoat (data mismatch) | handleCanvasClickAnswer: data mismatch (nodes rong / khong co targetNodeId) -> nop tu dong (sai) mo nut "Tiep tuc"; click trong > 5 lan (MAX_CANVAS_BLANK_CLICKS) -> bo qua an toan; reset counter o trigger/load/reset | FIXED 2026-08-10 (phan store; nut "Bo qua" overlay ngoai quyen - TODO agent component) |
+| 441 | QZ-030 (P2): Cast res.json() khong validate runtime | Type guards: isQuizSummary/isQuizDetail/isAttemptResult/topics array; shape sai -> Error ro rang -> backendQuizError; TODO component: an fallback khi backendQuizError != null | FIXED 2026-08-10 (API layer; TODO component) |
+| 442 | QZ-031 (P2): Lesson flow khong error surface | submitQuizAttempt throw loi ro (HTTP/network/thieu token) -> syncSessionToServer catch -> xpSyncError + console.error | FIXED 2026-08-10 |
+| 443 | QZ-032 (P2): Fallback localStorage.getItem('token') vo dung | getAuthToken chi dung useAuthStore().getAccessToken(); pinia chua active -> null | FIXED 2026-08-10 |
+| 444 | QZ-033 (P2): Khong luu tien trinh quiz; backend quiz khong ghi QuizStatsManager | sessionStorage 'dsa_backend_quiz_progress_v1' luu {quizId,index,answers} tren select/next/prev/start; restore 1 lan/page-load trong loadQuizCatalog (flag module - test-isolation an toan); submit thanh cong -> saveAttempt theo questionResults + xoa progress; exit -> xoa | FIXED 2026-08-10 |
+| 445 | QZ-034 (P2): exitBackendQuiz khong reset loading | Reset ca isBackendQuizLoading + isBackendQuizSubmitting + backendQuizError + xoa progress | FIXED 2026-08-10 |
+| 446 | QZ-035 (P2): fetchQuizHistory sai URL + dead | URL dung /api/v1/concepts/quiz/history (khop StatelessQuizController.GetHistory); type QuizHistoryEntry[]; van chua caller - TODO khi dung trang lich su | FIXED 2026-08-10 |
+| 447 | QZ-036 (P2): Timeout submit 5000ms qua ngan | SUBMIT_TIMEOUT_MS = 15000 | FIXED 2026-08-10 |
+| 448 | QZ-005 (frontend part): lesson awardXp vs syncSessionToServer trung XP | Ra soat: useLessonStore.submitQuiz -> awardXp (lessonApi) va quiz-system sync -> /concepts/quiz/submit la 2 duong XP tach biet cho 2 loai quiz khac nhau, khong goi trung o frontend; backend da dong ledger QuizXpGrant (QZ-001/002, ADR-39) | RÀ SOÁT XONG 2026-08-10 (khong co double-call frontend) |
+
+## BugFix Campaign 2026-08-10 — Tổng kết chiến dịch fix 4 feature (16 sub agent)
+
+- **Kết quả cuối:** frontend 2712/2712 test PASS, backend 372/372 PASS (build 0 lỗi).
+- **Còn mở:** QZ-048 (bank quiz không ghi QuizAttempt — cần materialize bank hoặc thêm cột QuizKey, đã DEFERRED trong DATN_ERRORS.md); CC-011 (type drift pre-existing ở dsa-modules renderers/tests: FrameDTO.dataState optional nhưng renderers chưa guard — ue-tsc còn ~143 lỗi; nằm ngoài scope 4 feature, cần batch riêng).
+- **Contract mới cần lưu ý:** GET /api/v1/concepts/quiz/{id} mặc định KHÔNG trả correctIndex/explanation (anti-cheat QZ-003) — lesson/teacher/admin phải gửi ?withAnswers=true (đã cập nhật useLessonStore.ts, TeacherQuizTab.vue, AdminQuizzesTab.vue).
+
+## Review Round 2 — 2026-08-10 (6 lỗi mới từ review tổng hợp)
+
+| ID | Mức | Fix |
+| :--- | :--- | :--- |
+| IP-042 | High | toAdjacencyList nhận graphType — directed chỉ 1 chiều + test 2 mode (GraphParser.ts, InteractivePlayground.vue:378) |
+| IP-043 | Medium | PlaygroundCanvas watch zoomLevel -> store.setZoomLevel action |
+| IP-044 | Low | Xóa TODO stale addEdge graphType |
+| EC-048 | Low | Inline SVG chevron -> BaseIcon arrow-down |
+| EC-049 | Low | Alias code/sourceCode đảo vai trò + DEFAULT_INPUT_RAW/ARRAY vao vcrDefaults |
+| QZ-053 | Test | mountQuiz() stub BaseIcon (quizP2Tests 20+ mount + quizP0Tests 2 mount) — het warning quiz-system |
+| CC-012 | Open | Warning BaseIcon pre-existing o dsa-modules/export-share/dashboard (ngoai scope) |
+
+- **Kết quả:** frontend 2713/2713 PASS (them 1 test directed IP-042).
+
+## Deep Review Round 3 — 2026-08-10 (9 lỗi mới, 839 tests xanh)
+
+| ID | Mức | Fix |
+| :--- | :--- | :--- |
+| QZ-006 (bổ sung) | High | VisualizationPlayer truyen quizId vao loadCheckpoints (2 cho) + 2 test sync XP |
+| IP-045 | High | return sau toast loi import — khong ghi de bang toast success |
+| IP-046 | Medium | Cache getComputedStyle module-level (playgroundCanvasDraw) |
+| IP-047 | Medium | Goi store.resetZoom() truc tiep, xoa cast/dead code |
+| IP-048/049 | Medium | Toast vao usePlaygroundStore (single source) + GraphView import feedback |
+| EC-050 | Medium | Comment hop dong customCompileFn (host tu reset index) |
+| QZ-054 | Medium | Clamp answers vao 0..options.length-1 khi restore sessionStorage |
+| QZ-055 | Low | Action setBackendQuizError — component khong gan state truc tiep |
+| QZ-056 | Low | selectBackendAnswer dung reassignment thay splice |
+
+- **Kết quả:** frontend 2715/2715 PASS (2713 + 2 test QZ-006).

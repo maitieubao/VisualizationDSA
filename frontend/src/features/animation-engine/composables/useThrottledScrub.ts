@@ -1,12 +1,26 @@
 import { ref } from 'vue';
 import { useAnimationStore } from '../store/useAnimationStore';
 
-const THROTTLE_MS = 33; 
-
 export function useThrottledScrub() {
   const animStore = useAnimationStore();
   const isScrubbing = ref(false);
-  let lastScrubTime = 0;
+
+  // ─── Throttle scrub thật (EC-020) ───
+  // `updateScrubPosition` trước đây gọi thẳng theo từng sự kiện `input` của
+  // slider (60-120Hz): mỗi lần pause() + set index + re-render HUD → nguồn jank.
+  // Nay mọi sự kiện trong cùng 1 khung hình được gom lại, chỉ `scrubTo` 1 lần
+  // tại rAF cuối với giá trị cuối cùng (last-write-wins).
+  let rafId: number | null = null;
+  let pendingFrameIndex: number | null = null;
+
+  function commitScrub(): void {
+    rafId = null;
+    if (pendingFrameIndex !== null) {
+      const frameIndex = pendingFrameIndex;
+      pendingFrameIndex = null;
+      animStore.scrubTo(frameIndex);
+    }
+  }
 
   function startScrub(): void {
     isScrubbing.value = true;
@@ -14,20 +28,25 @@ export function useThrottledScrub() {
   }
 
   function updateScrubPosition(frameIndex: number): void {
-    if (!isScrubbing.value) {
-      animStore.scrubTo(frameIndex);
-      return;
+    pendingFrameIndex = frameIndex;
+    if (rafId === null) {
+      rafId = requestAnimationFrame(commitScrub);
     }
-
-    const now = Date.now();
-    if (now - lastScrubTime < THROTTLE_MS) return;
-    lastScrubTime = now;
-
-    animStore.scrubTo(frameIndex);
   }
 
   function endScrub(): void {
     isScrubbing.value = false;
+    if (rafId !== null) {
+      cancelAnimationFrame(rafId);
+      rafId = null;
+    }
+    // Flush nốt vị trí cuối khi thả chuột: đảm bảo frame "đỗ" đúng nơi nhả kéo
+    // kể cả khi mousemove cuối chưa kịp đi qua rAF.
+    if (pendingFrameIndex !== null) {
+      const frameIndex = pendingFrameIndex;
+      pendingFrameIndex = null;
+      animStore.scrubTo(frameIndex);
+    }
   }
 
   return { isScrubbing, startScrub, updateScrubPosition, endScrub };

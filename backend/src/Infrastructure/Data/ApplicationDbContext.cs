@@ -108,6 +108,7 @@ namespace VisualizationDSA.Infrastructure.Data
                 entity.HasKey(e => e.Id);
                 entity.HasIndex(e => new { e.ClassroomId, e.OrderIndex }).IsUnique();
                 entity.Property(e => e.Title).IsRequired().HasMaxLength(200);
+                entity.Property(e => e.RowVersion).IsRowVersion();
                 entity.HasOne(e => e.Classroom)
                       .WithMany(c => c.Modules)
                       .HasForeignKey(e => e.ClassroomId)
@@ -115,11 +116,12 @@ namespace VisualizationDSA.Infrastructure.Data
                 entity.HasQueryFilter(e => !e.IsDeleted);
             });
 
-            
+
             modelBuilder.Entity<ClassroomModuleItem>(entity =>
             {
                 entity.HasKey(e => e.Id);
                 entity.HasIndex(e => new { e.ModuleId, e.OrderIndex }).IsUnique();
+                entity.Property(e => e.RowVersion).IsRowVersion();
                 entity.HasOne(e => e.Module)
                       .WithMany(m => m.Items)
                       .HasForeignKey(e => e.ModuleId)
@@ -266,6 +268,14 @@ namespace VisualizationDSA.Infrastructure.Data
             modelBuilder.Entity<CodelabHintReveal>(entity =>
             {
                 entity.HasIndex(e => new { e.UserId, e.CodelabHintId }).IsUnique();
+            });
+
+            // QZ-001/QZ-002/QZ-005: unique (UserId, QuizKey) — 1 user chỉ được cấp XP 1 lần
+            // cho cùng 1 quiz bất kể kênh (lesson/workspace/bank). Check-then-act không atomic:
+            // constraint là hàng rào cuối chống race double-XP khi 2 submit song song.
+            modelBuilder.Entity<QuizXpGrant>(entity =>
+            {
+                entity.HasIndex(e => new { e.UserId, e.QuizKey }).IsUnique();
             });
             base.OnModelCreating(modelBuilder);
 

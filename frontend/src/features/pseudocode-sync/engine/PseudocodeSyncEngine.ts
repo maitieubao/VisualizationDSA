@@ -7,14 +7,34 @@ export interface AnimationFrameForSync {
 }
 
 export class PseudocodeSyncEngine {
+  /**
+   * PS-011: Trả về DANH SÁCH toàn bộ dòng vật lý ứng với một logicalId trong
+   * ngôn ngữ hiện tại. Một logicalId có thể xuất hiện trên nhiều dòng vật lý
+   * (vd Java: 3 dòng thực thi SWAP_STEP: `temp = arr[j]`, `arr[j] = arr[j+1]`,
+   * `arr[j+1] = temp`) — UI highlight toàn bộ các dòng này, không chỉ dòng đầu.
+   */
+  static getPhysicalLineNumbers(
+    logicalLineId: string,
+    language: string,
+    codeLanguages: LanguageCode[],
+  ): number[] {
+    const matched = codeLanguages.find((lang) => lang.language === language);
+    if (!matched) return [];
+    const lineNumbers: number[] = [];
+    for (const line of matched.lines) {
+      if (line.logicalId === logicalLineId) lineNumbers.push(line.lineNumber);
+    }
+    return lineNumbers;
+  }
+
   static getPhysicalLineNumber(
     logicalLineId: string,
     language: string,
     codeLanguages: LanguageCode[],
   ): number | null {
-    const matched = codeLanguages.find((lang) => lang.language === language);
-    const matchedLine = matched?.lines.find((line) => line.logicalId === logicalLineId);
-    return matchedLine ? matchedLine.lineNumber : null;
+    // PS-016: 1 nguồn lookup duy nhất — dòng đầu tiên trong danh sách khớp.
+    const lineNumbers = this.getPhysicalLineNumbers(logicalLineId, language, codeLanguages);
+    return lineNumbers.length > 0 ? lineNumbers[0] : null;
   }
 
   static findFirstFrameIndexForLogicalLine(

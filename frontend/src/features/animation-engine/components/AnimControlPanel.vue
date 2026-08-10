@@ -22,6 +22,7 @@
         :tooltip-x="sliderTooltip.tooltip.value.x"
         :tooltip-step="sliderTooltip.tooltip.value.step"
         :tooltip-text="truncateText(sliderTooltip.tooltip.value.text, 55)"
+        :tooltip-html="sliderTooltip.tooltip.value.html"
         @hover="onSliderHover"
         @leave="sliderTooltip.hideTooltip()"
         @scrub-start="scrubEngine.startScrub()"
@@ -32,11 +33,21 @@
 
       
       <div class="speed-controls-right">
-        <select v-model.number="playbackSpeedModel" class="speed-select-dropdown" :disabled="store.interactionLocked" aria-label="Tốc độ phát">
-          <option v-for="speed in SPEED_PRESETS" :key="speed" :value="speed">
-            {{ speed }}x{{ speed === 1.0 ? ' (Mặc định)' : '' }}
-          </option>
-        </select>
+        <div class="speed-input-group" :class="{ 'disabled-group': store.interactionLocked }">
+          <input
+            type="number"
+            :value="store.playbackSpeed"
+            @change="onCustomSpeedChange"
+            @keydown.enter="($event.target as HTMLInputElement).blur()"
+            min="0.1"
+            max="10"
+            step="0.1"
+            class="speed-number-input"
+            :disabled="store.interactionLocked"
+            aria-label="Tốc độ phát tùy chỉnh"
+          />
+          <span class="speed-unit">x</span>
+        </div>
       </div>
     </div>
 
@@ -57,7 +68,7 @@
 <script setup lang="ts">
 import { computed, ref, onMounted, onBeforeUnmount } from 'vue';
 import { useAnimationStore } from '../store/useAnimationStore';
-import { SPEED_PRESETS, useSpeedPreferences } from '../composables/useSpeedPreferences';
+import { useSpeedPreferences } from '../composables/useSpeedPreferences';
 import { useThrottledScrub } from '../composables/useThrottledScrub';
 import { usePlaybackHotkeys } from '../composables/usePlaybackHotkeys';
 import { useSliderTooltip, truncateText } from '../composables/useSliderTooltip';
@@ -85,10 +96,18 @@ const playbackStateLabel = computed(() => {
   return labels[store.playbackState] ?? store.playbackState;
 });
 
-const playbackSpeedModel = computed({
-  get: () => store.playbackSpeed,
-  set: (val: number) => { store.setSpeed(val); speedPrefs.saveSpeed(val); },
-});
+function onCustomSpeedChange(event: Event): void {
+  const input = event.target as HTMLInputElement;
+  const raw = parseFloat(input.value);
+  if (isNaN(raw) || raw <= 0) {
+    input.value = String(store.playbackSpeed);
+    return;
+  }
+  const clamped = Math.max(0.1, Math.min(10, Math.round(raw * 10) / 10));
+  store.setSpeed(clamped);
+  speedPrefs.saveSpeed(clamped);
+  input.value = String(clamped);
+}
 
 const sliderProgressStyle = computed(() => {
   const percent = store.totalSteps <= 1 ? 0 : (store.currentIndex / (store.totalSteps - 1)) * 100;
@@ -109,7 +128,11 @@ function onSliderHover(event: MouseEvent): void {
 
 let cleanupHotkeys: (() => void) | null = null;
 onMounted(() => { speedPrefs.initSpeedFromStorage(); cleanupHotkeys = registerHotkeys(); });
-onBeforeUnmount(() => { if (cleanupHotkeys) cleanupHotkeys(); });
+onBeforeUnmount(() => {
+  if (cleanupHotkeys) cleanupHotkeys();
+  // Hủy rAF tooltip/scrub đang chờ — tránh tick orphan thao tác store sau unmount
+  sliderTooltip.dispose();
+});
 </script>
 
 <style scoped>
@@ -130,21 +153,40 @@ onBeforeUnmount(() => { if (cleanupHotkeys) cleanupHotkeys(); });
 .vcr-row               { display: flex; align-items: center; gap: 16px; flex: 1; min-height: 0; }
 .speed-controls-right  { flex-shrink: 0; }
 
-.speed-select-dropdown {
-  padding: 6px 10px;
+.speed-input-group {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  border: 1px solid var(--color-border-default);
   border-radius: var(--radius-md);
   background: var(--color-bg-surface);
-  border: 1px solid var(--color-border-default);
-  color: var(--color-text-secondary);
-  font-size: 12px;
-  font-weight: 600;
-  cursor: pointer;
-  outline: none;
+  padding: 4px 8px;
   transition: var(--transition-fast);
 }
-.speed-select-dropdown:hover    { border-color: var(--color-accent-green); color: var(--color-accent-green); }
-.speed-select-dropdown:focus    { border-color: var(--color-accent-green); box-shadow: 0 0 8px var(--color-accent-green-glow); }
-.speed-select-dropdown:disabled { opacity: 0.4; cursor: not-allowed; }
+.speed-input-group:hover    { border-color: var(--color-accent-green); }
+.speed-input-group:focus-within { border-color: var(--color-accent-green); box-shadow: 0 0 8px var(--color-accent-green-glow); }
+.speed-input-group.disabled-group { opacity: 0.4; pointer-events: none; }
+
+.speed-number-input {
+  width: 42px;
+  background: transparent;
+  border: none;
+  outline: none;
+  color: var(--color-text-primary);
+  font-size: 12px;
+  font-weight: 600;
+  font-family: 'JetBrains Mono', monospace;
+  text-align: right;
+  -moz-appearance: textfield;
+}
+.speed-number-input::-webkit-outer-spin-button,
+.speed-number-input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+
+.speed-unit {
+  font-size: 11px;
+  color: var(--color-text-muted);
+  font-weight: 500;
+}
 
 
 .state-indicator-row { display: flex; align-items: center; gap: 8px; }

@@ -245,6 +245,22 @@ namespace VisualizationDSA.WebApi.Controllers
                 return StatusCode(403, new { error = "FORBIDDEN", message = "Bạn không có quyền xóa bài học này." });
             }
 
+            // T2-GUARD: Cascade delete progress data trước khi xóa Lesson + ModuleItem.
+            // Xóa UserLessonProgress liên quan đến lesson này.
+            await _dbContext.UserLessonProgresses
+                .Where(p => p.LessonId == lessonId)
+                .ExecuteDeleteAsync();
+
+            // Xóa UserModuleItemProgress liên quan đến ModuleItem này.
+            await _dbContext.UserModuleItemProgresses
+                .Where(p => p.ModuleItemId == moduleItem.Id)
+                .ExecuteDeleteAsync();
+
+            // Xóa ClassroomLesson references nếu lesson được import vào classroom.
+            await _dbContext.ClassroomLessons
+                .Where(cl => cl.LessonId == lessonId)
+                .ExecuteDeleteAsync();
+
             _dbContext.Lessons.Remove(lesson);
             _dbContext.ModuleItems.Remove(moduleItem);
             await _dbContext.SaveChangesAsync();

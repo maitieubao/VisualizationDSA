@@ -1,7 +1,14 @@
 <template>
   <Transition name="lecture-fade">
-    <div v-if="lectureStore.isActive" class="absolute inset-0 z-[900] transition-colors duration-400 ease-[cubic-bezier(.25,.8,.25,1)]" :class="lectureStore.isMinimized ? '' : 'lecture-overlay'">
-      <div class="lecture-panel absolute top-[10%] left-[5%] w-[380px] min-h-[250px] p-5 backdrop-blur-md border border-border-subtle rounded-2xl shadow-[0_20px_25px_-5px_rgba(0,0,0,0.3),0_10px_10px_-5px_rgba(0,0,0,0.2)] z-[1000] flex flex-col gap-3.5 transition-all duration-400 ease-[cubic-bezier(.25,.8,.25,1)]" :class="lectureStore.isMinimized ? 'opacity-15 scale-[0.88] -translate-x-5 pointer-events-none' : 'opacity-100 scale-100 translate-x-0 translate-y-0 pointer-events-auto'">
+    <div
+      v-if="lectureStore.isActive"
+      class="absolute inset-0 z-[900] transition-colors duration-400 ease-[cubic-bezier(.25,.8,.25,1)]"
+      :class="lectureStore.isMinimized ? '' : 'lecture-overlay'"
+    >
+      <div
+        class="lecture-panel absolute top-[10%] left-[5%] w-[380px] min-h-[250px] p-5 backdrop-blur-md border border-border-subtle rounded-2xl shadow-[0_20px_25px_-5px_rgba(0,0,0,0.3),0_10px_10px_-5px_rgba(0,0,0,0.2)] z-[1000] flex flex-col gap-3.5 transition-all duration-400 ease-[cubic-bezier(.25,.8,.25,1)]"
+        :class="lectureStore.isMinimized ? 'opacity-15 scale-[0.88] -translate-x-5 pointer-events-none' : 'opacity-100 scale-100 translate-x-0 translate-y-0 pointer-events-auto'"
+      >
         
         <div class="flex items-center justify-between">
           <div class="flex items-center gap-2">

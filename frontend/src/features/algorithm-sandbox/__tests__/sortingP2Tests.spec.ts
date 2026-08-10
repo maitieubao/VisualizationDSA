@@ -77,22 +77,28 @@ describe('Algorithm Sandbox — Sorting P2 Tests', () => {
   // ── US-AS-005 (P2): Tab switching ───────────────────────────────────────
   describe('US-AS-005 (P2): Tab switching', () => {
     it('VCR store giữ state khi chuyển thuật toán', () => {
-      const store = useVcrStore();
-      const sorting = useSortingAnimation();
+      vi.useFakeTimers(); // mock performance.now để vượt debounce step 100ms (EC-005)
+      try {
+        const store = useVcrStore();
+        const sorting = useSortingAnimation();
 
-      sorting.selectAlgorithm('bubble');
-      const bubbleFrames = sorting.sortFrames.value.length;
-      expect(bubbleFrames).toBeGreaterThan(0);
+        sorting.selectAlgorithm('bubble');
+        const bubbleFrames = sorting.sortFrames.value.length;
+        expect(bubbleFrames).toBeGreaterThan(0);
 
-      store.stepNext();
-      store.stepNext();
-      expect(store.currentFrameIndex).toBe(2);
+        store.stepNext();
+        vi.advanceTimersByTime(101);
+        store.stepNext();
+        expect(store.currentFrameIndex).toBe(2);
 
-      sorting.selectAlgorithm('quick');
-      expect(store.currentFrameIndex).toBe(0);
+        sorting.selectAlgorithm('quick');
+        expect(store.currentFrameIndex).toBe(0);
 
-      sorting.selectAlgorithm('bubble');
-      expect(store.totalFrames).toBe(bubbleFrames);
+        sorting.selectAlgorithm('bubble');
+        expect(store.totalFrames).toBe(bubbleFrames);
+      } finally {
+        vi.useRealTimers();
+      }
     });
   });
 

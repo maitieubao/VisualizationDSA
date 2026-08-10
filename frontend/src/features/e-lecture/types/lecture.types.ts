@@ -1,8 +1,3 @@
-
-
-
-
-
 export type SlideCommand = 'RESET_CANVAS' | 'PLAY_UNTIL' | 'PAUSE';
 
 export type SlideType = 'theory' | 'guided-animation' | 'interactive-check';
@@ -24,11 +19,4 @@ export interface LectureScript {
   algorithmId: string;
   title: string;
   slides: Slide[];
-}
-
-export interface LectureErrorResponse {
-  status: number;
-  title: string;
-  errorType: string;
-  message: string;
 }

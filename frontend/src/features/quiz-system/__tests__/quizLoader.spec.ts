@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { loadQuizScript, hasQuizScript } from '../scripts/quizLoader';
+import { QuizSchemaValidator } from '../engine/QuizSchemaValidator';
 
 describe('quizLoader', () => {
   it('should load bubble-sort quiz script', () => {
@@ -36,5 +37,22 @@ describe('quizLoader', () => {
         expect(typeof cp.question.correctOptionIndex).toBe('number');
       }
     }
+  });
+
+  it('QZ-045 (ADR-12): registry nhất quán — mọi key đăng ký phải load được chính algorithmId của nó', () => {
+    // ADR-12: "thêm thuật toán mới = chỉ thêm 1 quiz script file + register vào
+    // quizLoader". Kiểm tra hợp đồng key↔algorithmId cho script duy nhất hiện có.
+    // TODO (agent sở hữu scripts/quizLoader.ts): expose hàm liệt kê registry
+    // (vd listQuizScriptIds()) để test duyệt được toàn bộ key thay vì hardcode.
+    const bubbleSort = loadQuizScript('bubble-sort');
+    expect(bubbleSort).not.toBeNull();
+    expect(hasQuizScript(bubbleSort!.algorithmId)).toBe(true);
+    expect(loadQuizScript(bubbleSort!.algorithmId)).toBe(bubbleSort);
+
+    const validation = QuizSchemaValidator.validateQuizJson({
+      algorithmId: bubbleSort!.algorithmId,
+      checkpoints: bubbleSort!.checkpoints,
+    });
+    expect(validation.isValid).toBe(true);
   });
 });

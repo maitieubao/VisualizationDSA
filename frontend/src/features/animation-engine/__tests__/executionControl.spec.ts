@@ -20,7 +20,7 @@ function createTestResult(): AlgorithmResult {
 
 describe('Execution Control — Speed Presets', () => {
   it('SPEED_PRESETS contains plan-specified values', () => {
-    expect(SPEED_PRESETS).toEqual([0.25, 0.5, 1.0, 2.0, 4.0]);
+    expect(SPEED_PRESETS).toEqual([0.1, 0.25, 0.5, 1.0, 1.5, 2.0, 4.0, 5.0]);
   });
 });
 
@@ -160,10 +160,15 @@ describe('Execution Control — Keyboard Hotkeys', () => {
   beforeEach(() => {
     setActivePinia(createPinia());
     vi.useFakeTimers();
+    vi.stubGlobal('requestAnimationFrame', (cb: FrameRequestCallback) => {
+      return setTimeout(() => cb(performance.now()), 16) as unknown as number;
+    });
+    vi.stubGlobal('cancelAnimationFrame', (id: number) => clearTimeout(id));
   });
 
   afterEach(() => {
     vi.useRealTimers();
+    vi.unstubAllGlobals();
   });
 
   it('createHotkeyHandler returns a function', () => {
@@ -200,6 +205,7 @@ describe('Execution Control — Keyboard Hotkeys', () => {
     const event = new KeyboardEvent('keydown', { code: 'ArrowRight' });
     Object.defineProperty(event, 'preventDefault', { value: vi.fn() });
     handler(event);
+    vi.advanceTimersByTime(200);
 
     expect(store.currentIndex).toBe(1);
   });
@@ -208,7 +214,9 @@ describe('Execution Control — Keyboard Hotkeys', () => {
     const store = useAnimationStore();
     store.loadResult(createTestResult());
     store.stepForward();
+    vi.advanceTimersByTime(200);
     store.stepForward();
+    vi.advanceTimersByTime(200);
 
     const { createHotkeyHandler } = usePlaybackHotkeys();
     const handler = createHotkeyHandler();
@@ -216,6 +224,7 @@ describe('Execution Control — Keyboard Hotkeys', () => {
     const event = new KeyboardEvent('keydown', { code: 'ArrowLeft' });
     Object.defineProperty(event, 'preventDefault', { value: vi.fn() });
     handler(event);
+    vi.advanceTimersByTime(200);
 
     expect(store.currentIndex).toBe(1);
   });

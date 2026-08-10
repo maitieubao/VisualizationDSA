@@ -2,7 +2,7 @@ import { ref, computed, onMounted, onBeforeUnmount } from 'vue';
 import { useInputStore } from '../store/useInputStore';
 import type { GenerationType } from '../store/useInputStore';
 
-export function useCustomInputForm() {
+export function useCustomInputForm(algorithmId: string) {
   const inputStore = useInputStore();
   const showDropdown = ref(false);
   const dropdownRef = ref<HTMLElement | null>(null);
@@ -62,7 +62,7 @@ export function useCustomInputForm() {
   }
 
   function onExecute(): void {
-    inputStore.submitCustomInput('bubble-sort');
+    inputStore.submitCustomInput(algorithmId);
   }
 
   function onKeydown(e: KeyboardEvent): void {

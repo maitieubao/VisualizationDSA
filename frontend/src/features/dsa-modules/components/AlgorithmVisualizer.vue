@@ -44,7 +44,6 @@
 import { computed, type Component } from 'vue';
 import { useAnimationStore } from '../../animation-engine/store/useAnimationStore';
 import { useAlgorithmStore } from '../store/useAlgorithmStore';
-import type { FrameDTO } from '../types/algorithm.types';
 import BarChartRenderer from './renderers/BarChartRenderer.vue';
 import BoxArrayRenderer from './renderers/BoxArrayRenderer.vue';
 import TreeRenderer from './renderers/TreeRenderer.vue';
@@ -54,9 +53,7 @@ import GraphRenderer from './renderers/GraphRenderer.vue';
 const animStore = useAnimationStore();
 const algoStore = useAlgorithmStore();
 
-// Store dùng FrameDTO thu gọn (animation-engine); frame thực tế từ DSA module
-// chứa thêm graphNodes/treeNodes/distances — ép kiểu an toàn để đọc theo hợp đồng DTO
-const currentFrame = computed<FrameDTO | null>(() => animStore.currentFrame as unknown as FrameDTO | null);
+const currentFrame = computed(() => animStore.currentFrame);
 const totalSteps = computed(() => animStore.totalSteps);
 const progressPercent = computed(() => animStore.progressPercent);
 

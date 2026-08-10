@@ -18,3 +18,9 @@ for (let i = 0; i < array.length - 1; i++) {
 }
 // Đánh dấu phần tử đầu tiên đã xếp xong
 highlight(0);`;
+
+/** Chuỗi input mặc định hiển thị trong ô nhập dữ liệu (EC-049: gom hằng số tránh hardcode rải rác). */
+export const DEFAULT_INPUT_RAW = '45, 12, 85, 32, 9, 60';
+
+/** Mảng input fallback khi user xóa trống ô nhập (EC-049) — trước đây hardcode trùng trong useVcrStore. */
+export const DEFAULT_INPUT_ARRAY: number[] = [45, 12, 85, 32, 9, 60];

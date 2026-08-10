@@ -210,7 +210,8 @@
     </div>
 
     <PlaygroundJsonPanel v-if="jsonOutput" :json="jsonOutput" @close="jsonOutput = null" />
-    <PlaygroundToast v-if="toast.visible" :message="toast.message" :type="toast.type" />
+    <!-- IP-048: toast dùng chung qua store (GraphView + InteractivePlayground cùng hiển thị) -->
+    <PlaygroundToast v-if="store.toast.visible" :message="store.toast.message" :type="store.toast.type" />
   </div>
 </template>
 
@@ -232,10 +233,8 @@ const animStore = usePlaygroundAnimationStore();
 const weightInputRef = ref<HTMLInputElement | null>(null);
 const canvasAreaRef = ref<HTMLElement | null>(null);
 const jsonOutput = ref<string | null>(null);
-let toastTimer: ReturnType<typeof setTimeout> | null = null;
 
 const weightPopover = ref({ visible: false, edgeId: '', x: 0, y: 0, value: 1 });
-const toast = ref({ visible: false, message: '', type: 'info' as 'info' | 'error' | 'success' });
 
 const tools = [
   { mode: 'SELECT', icon: 'mouse', label: 'Select', title: 'Di chuyển đỉnh (V)' },
@@ -246,9 +245,8 @@ const tools = [
 ] as const;
 
 const showToast = (message: string, type: 'info' | 'error' | 'success' = 'info') => {
-  if (toastTimer) clearTimeout(toastTimer);
-  toast.value = { visible: true, message, type };
-  toastTimer = setTimeout(() => { toast.value.visible = false; }, 3000);
+  // IP-048: toast nằm trong store (single source of truth) — GraphView.vue gọi store.showToast.
+  store.showToast(message, type);
 };
 
 const setAlgorithm = (value: string) => {
@@ -298,7 +296,8 @@ const handleExport = () => {
     download: `graph-${Date.now()}.json`,
   });
   link.click();
-  URL.revokeObjectURL(link.href);
+  // IP-025: hoãn revoke để Safari/Firefox kịp bắt đầu download.
+  setTimeout(() => URL.revokeObjectURL(link.href), 1000);
   showToast('Đã xuất đồ thị thành công!', 'success');
 };
 
@@ -313,10 +312,16 @@ const handleImport = () => {
     reader.onload = (ev) => {
       const result = GraphParser.importFromJSON(ev.target?.result as string);
       if (!result) return showToast('File JSON không hợp lệ.', 'error');
-      store.clearAll();
-      store.nodes.push(...result.nodes);
-      store.edges.push(...result.edges);
-      showToast(`Đã nhập ${result.nodes.length} đỉnh, ${result.edges.length} cạnh.`, 'success');
+      // IP-003: import qua action store (validate ≤30 node, trùng label, dangling edge, weight...) —
+      // trước đây clearAll + push trực tiếp bypass toàn bộ ràng buộc.
+      const outcome = store.importGraph(result.nodes, result.edges);
+      // IP-045: toast lỗi phải return NGAY — trước đây toast success (cùng call stack)
+      // ghi đè toast lỗi → user không bao giờ thấy lý do từ chối (dangling edge, trùng label...).
+      if (outcome.errors.length > 0) {
+        showToast(outcome.errors.join(' '), 'error');
+        return;
+      }
+      showToast(`Đã nhập ${store.nodes.length} đỉnh, ${store.edges.length} cạnh.`, 'success');
     };
     reader.readAsText(file);
   };
@@ -329,12 +334,9 @@ const handleAutoLayout = () => {
   if (!area) return;
   const cx = area.clientWidth / 2;
   const cy = area.clientHeight / 2;
-  const radius = Math.min(cx, cy) * 0.6;
-  store.nodes.forEach((node, i) => {
-    const angle = (2 * Math.PI * i) / store.nodes.length - Math.PI / 2;
-    node.x = cx + radius * Math.cos(angle);
-    node.y = cy + radius * Math.sin(angle);
-  });
+  // IP-022/IP-026: autoLayout là action chung duy nhất trong store (single source of truth) —
+  // cả InteractivePlayground lẫn GraphView gọi action này cho kết quả giống hệt nhau.
+  store.autoLayout(Math.min(cx, cy) * 0.35, -Math.PI / 2, { x: cx, y: cy });
 };
 
 const runSimulation = () => {
@@ -344,7 +346,27 @@ const runSimulation = () => {
   }
   if (!store.sourceNodeId || !store.nodes.some(n => n.id === store.sourceNodeId)) {
     const nodeA = store.nodes.find(n => n.label === 'A');
-    store.sourceNodeId = nodeA ? nodeA.id : store.nodes[0].id;
+    // IP-026: dùng action thay vì gán store.sourceNodeId trực tiếp.
+    store.setSourceNodeId(nodeA ? nodeA.id : store.nodes[0].id);
+  }
+  // IP-005: BEHAVIOR_SPEC §2.2 — Dijkstra (và Prim) yêu cầu đồ thị liên thông.
+  if (store.selectedAlgorithm === 'DIJKSTRA') {
+    const isolatedLabels = GraphParser.findIsolatedNodes(store.nodes, store.edges);
+    if (isolatedLabels.length > 0) {
+      animStore.stop();
+      jsonOutput.value = null;
+      // IP-005: đánh dấu id các đỉnh cô lập để Canvas vẽ flash đỏ.
+      const isolatedIds = store.nodes
+        .filter(n => isolatedLabels.includes(n.label))
+        .map(n => n.id);
+      store.setIsolatedNodeIds(isolatedIds);
+      showToast(
+        `Thuật toán Dijkstra yêu cầu đồ thị phải liên thông hoàn toàn. Hãy nối hoặc xóa đỉnh cô lập đang nhấp nháy: ${isolatedLabels.join(', ')}.`,
+        'error',
+      );
+      return;
+    }
+    store.setIsolatedNodeIds([]);
   }
   const result = GraphAlgorithmSimulator.simulate(
     store.selectedAlgorithm,
@@ -352,6 +374,14 @@ const runSimulation = () => {
     store.edges,
     store.sourceNodeId,
     store.graphType,
+  );
+  // IP-020: hiển thị Adjacency List Payload (README §6, API_REFERENCE §1.2) —
+  // jsonOutput trước đây không bao giờ được gán nên PlaygroundJsonPanel là dead code.
+  // IP-042: truyền graphType — directed chỉ thêm cạnh 1 chiều (A→B thì B không chứa A).
+  jsonOutput.value = JSON.stringify(
+    GraphParser.toAdjacencyList(store.nodes, store.edges, store.selectedAlgorithm.toLowerCase(), store.graphType),
+    null,
+    2,
   );
   animStore.loadResult({
     algorithmId: result.algorithmId,

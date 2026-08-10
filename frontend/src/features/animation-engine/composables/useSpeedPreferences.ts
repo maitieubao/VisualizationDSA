@@ -1,6 +1,6 @@
 import { useAnimationStore } from '../store/useAnimationStore';
 
-export const SPEED_PRESETS = [0.25, 0.5, 1.0, 2.0, 4.0] as const;
+export const SPEED_PRESETS = [0.1, 0.25, 0.5, 1.0, 1.5, 2.0, 4.0, 5.0] as const;
 export const DSA_PREFERENCES_KEY = 'dsa_preferences';
 
 interface DsaPreferences {

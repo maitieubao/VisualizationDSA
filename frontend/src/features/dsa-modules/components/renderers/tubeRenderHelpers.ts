@@ -21,7 +21,8 @@ export function renderStack(
   frame: FrameDTO,
   colors: TubeColors
 ): void {
-  const n = frame.dataState.length;
+  const n = frame.dataState?.length ?? 0;
+  if (n === 0) return;
   const totalH = n * (CELL_H + GAP) - GAP;
   const startY = Math.max(MARGIN, (h - totalH) / 2);
   const cx = w / 2;
@@ -64,7 +65,8 @@ export function renderQueue(
   frame: FrameDTO,
   colors: TubeColors
 ): void {
-  const n = frame.dataState.length;
+  const n = frame.dataState?.length ?? 0;
+  if (n === 0) return;
   const totalW = n * (CELL_W + GAP) - GAP;
   const startX = Math.max(MARGIN, (w - totalW) / 2);
   const cy = h / 2;

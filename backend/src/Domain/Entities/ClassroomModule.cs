@@ -11,9 +11,10 @@ namespace VisualizationDSA.Domain.Entities
         public string Description { get; private set; } = string.Empty;
         public int OrderIndex { get; private set; }
         public bool IsDeleted { get; private set; }
-        public bool IsHidden { get; private set; }
-        public DateTime? UnlockAt { get; private set; }
+         public bool IsHidden { get; private set; }
+         public DateTime? UnlockAt { get; private set; }
         public DateTime CreatedAt { get; private set; }
+        public byte[] RowVersion { get; private set; } = new byte[8];
 
         
         public virtual Classroom Classroom { get; private set; } = null!;

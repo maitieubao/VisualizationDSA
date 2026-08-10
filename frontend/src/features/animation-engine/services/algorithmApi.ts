@@ -54,7 +54,29 @@ export function generateDummyBubbleSortResult(inputData: number[]): AlgorithmRes
   });
 
   for (let i = 0; i < n - 1; i++) {
+    frames.push({
+      stepId: ++stepId,
+      activeLine: 0,
+      explanation: `Bắt đầu vòng lặp ngoài — pass ${i + 1}: so sánh các cặp phần tử liền kề.`,
+      dataState: [...arr],
+      highlights: { compare: [], swap: [], sorted: [...sortedIndices] },
+      activeLogicalLineId: 'OUTER_LOOP',
+      variables: { i, n },
+    });
+
     for (let j = 0; j < n - i - 1; j++) {
+      if (j === 0) {
+        frames.push({
+          stepId: ++stepId,
+          activeLine: 1,
+          explanation: `Bắt đầu vòng lặp trong — duyệt j từ 0 đến ${n - i - 2}.`,
+          dataState: [...arr],
+          highlights: { compare: [], swap: [], sorted: [...sortedIndices] },
+          activeLogicalLineId: 'INNER_LOOP',
+          variables: { i, j, n },
+        });
+      }
+
       frames.push({
         stepId: ++stepId,
         activeLine: 2,
@@ -66,6 +88,7 @@ export function generateDummyBubbleSortResult(inputData: number[]): AlgorithmRes
       });
 
       if (arr[j] > arr[j + 1]) {
+        const temp = arr[j];
         [arr[j], arr[j + 1]] = [arr[j + 1], arr[j]];
 
         frames.push({
@@ -75,7 +98,7 @@ export function generateDummyBubbleSortResult(inputData: number[]): AlgorithmRes
           dataState: [...arr],
           highlights: { compare: [], swap: [j, j + 1], sorted: [...sortedIndices] },
           activeLogicalLineId: 'SWAP_STEP',
-          variables: { i, j, n, temp: arr[j] },
+          variables: { i, j, n, temp },
         });
       }
     }

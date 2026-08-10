@@ -14,6 +14,10 @@ export function usePlaybackHotkeys() {
       if (animStore.playbackState === 'UNINITIALIZED') return;
       if (animStore.interactionLocked) return;
 
+      // Chặn phím lặp (giữ phím) cho Space/R — tránh toggle rung nhấp nháy.
+      // Arrow cho phép repeat vì store đã có debounce 100ms cho step.
+      if (event.repeat && (event.code === 'Space' || event.code === 'KeyR')) return;
+
       switch (event.code) {
         case 'Space':
           event.preventDefault();

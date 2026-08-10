@@ -9,12 +9,21 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: var(--z-modal);
+  /* QZ-041: spec 02-ui-ux.md:27 yêu cầu z-index 2000 (theme.css --z-modal chỉ = 1000). */
+  z-index: 2000;
+}
+
+/* QZ-004: CANVAS_TARGET phải "xuyên thủng" backdrop để click thẳng vào canvas —
+   card vẫn giữ pointer-events để thao tác nút bên trong. */
+.quiz-overlay-wrapper.quiz-overlay-passive {
+  pointer-events: none;
 }
 
 .quiz-dialog-card {
   width: 90%;
-  max-w: 520px;
+  /* QZ-028: `max-w` là thuộc tính KHÔNG hợp lệ — phải `max-width` (02-ui-ux.md:34). */
+  max-width: 520px;
+  pointer-events: auto;
   background-color: color-mix(in srgb, var(--color-bg-surface) 92%, transparent);
   border: 1px solid var(--color-border-strong);
   border-radius: var(--radius-2xl);

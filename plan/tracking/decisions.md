@@ -734,3 +734,20 @@ TEST-APPEND-OK
 - **Ngu canh:** Khoa hoc dai nhieu module/lesson gay chat luong bai hoc khong deu; user quyet dinh xoa toan bo khoa cu va chuyen sang mô hình lesson doc lap.
 - **Quyet dinh:** 39 lesson doc lap (content + quiz 10 cau + demo), 3 Roadmap = Course container (Cơ bản 12 / Trung cấp 15 / Nâng cao 12, moi roadmap 2 Module chang, ModuleItem tham chieu Lesson — 1 lesson co the thuoc nhieu roadmap). Roadmap isPremium=false de lộ trình chính mở cho moi nguoi. Guard seeder theo lesson marker 'Two Pointers'.
 - **He qua:** Noi dung viet 1 lan tai dung nhieu noi; them lesson moi khong pha roadmap; E2E xac nhan quiz lien ket dung tung lesson; frontend doi title + truyen courseId khi vao lesson.
+## ADR-38: Nguon Chan Ly Lecture = Frontend Bundle; Backend Repository = Extension Point (2026-08-08)
+
+- **Van de:** Kich ban E-Lecture bubble-sort duoc duplicat o 2 noi (frontend JSON bundle va backend seed) nhung da lech nhau sau chinh sua -> maintenance hazard.
+- **Quyet dinh:** Frontend bundle (offline-first, khop pattern pseudocode/quiz scripts) la nguon duy nhat. LectureRepository tro thanh instance class (DI singleton), bo seed trung lap. Backend API giu contract cho lecture server cung cap tuong lai.
+- **Dong thoi:** isLectureAvailable() async (bundle truoc, API list sau) giup UI hien nut E-Lecture cho ca lecture tu server; xoa dead type LectureErrorResponse.
+- **Files:** lectureLoader.ts, VisualizationPlayer.vue, LectureRepository.cs, LecturesController.cs, Program.cs.
+
+## ADR-39: Chống farm XP Quiz dùng chung ledger `QuizXpGrant` unique (UserId, QuizKey) (2026-08-10)
+
+- **Vấn đề (QZ-001/002/005):** Endpoint `/concepts/quiz/submit` cấp XP qua 2 đường không thống nhất — DB quiz dùng `QuizAttempt` (check-then-act không atomic → 2 request song song cùng thấy 0 pass → cả 2 được thưởng XP), bank quiz dùng `QuizXpGrants` (AnyAsync → Add → SaveChanges cũng không atomic).
+- **Quyết định:** Bất kể kênh nào, XP chỉ được cấp 1 lần cho mỗi `(UserId, QuizKey)`:
+  1. Thêm **unique index `(UserId, QuizKey)`** cho `QuizXpGrant` (`ApplicationDbContext.OnModelCreating` + migration `20260809182125_AddQuizXpGrantUniqueIndex`) — đây là hàng rào atomic cuối cùng thay cho check-then-act.
+  2. **DB path:** commit `QuizAttempt` TRƯỚC khi đọc `previousAttempts` (serialize hóa: request thứ 2 luôn thấy attempt đã commit của request thứ 1); reward lần đầu cũng ghi `QuizXpGrant(key = quiz.Id.ToString())` trong cùng `SaveChanges` với `AwardXP` — nếu vi phạm unique → `DbUpdateException` → reload user, `xpAwarded = 0` (attempt vẫn được giữ).
+  3. **Bank path:** bỏ `AnyAsync → Add`; trực tiếp `Add + SaveChangesAsync`, bắt `DbUpdateException` khi vi phạm unique → `xpAwarded = 0`.
+  4. Rule bonus cải thiện ≥20% (2 lần thưởng cho 1 quiz) giữ nguyên — chỉ reward LẦN ĐẦU ghi grant, bonus cải thiện không chèn grant mới.
+- **Giới hạn:** Kênh XP client-side của lesson flow (`useLessonStore.submitQuiz → awardXp`) nằm ở frontend — backend không kiểm soát được; khi frontend đồng bộ submit qua `/concepts/quiz/submit` thì ledger này chặn farm.
+- **Files:** `ApplicationDbContext.cs`, `Migrations/20260809182125_AddQuizXpGrantUniqueIndex.*`, `StatelessQuizController.cs`, `QuizSystemTests.cs` (16 tests — gồm 2 test race song song 2 connection).

@@ -93,7 +93,7 @@
               </button>
               <button
                 v-if="store.isAlgorithmMode"
-                @click="store.setAlgorithmMode(false)"
+                @click="exitAlgorithmMode"
                 class="w-full px-3 py-2 rounded-lg bg-bg-hover border border-border-subtle text-accent-red hover:text-accent-red hover:border-accent-red/20 text-[11px] font-semibold transition-all cursor-pointer flex items-center gap-2"
               >
                 <BaseIcon name="x" class="w-3.5 h-3.5" aria-hidden="true" />
@@ -162,7 +162,10 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted } from 'vue';
+// IP-008: xung đột 2 handler phím tắt trên window đã được giải quyết —
+// InteractivePlayground.vue giữ vai trò nguồn hotkey duy nhất (có guard
+// isAlgorithmMode + confirm xóa node); handler trùng này đã bị gỡ bỏ.
+import { ref } from 'vue';
 import { usePlaygroundStore } from '../../features/interactive-playground/store/usePlaygroundStore';
 import { parseEmojiToSvg } from '../../utils/emojiParser';
 import InteractivePlayground from '../../features/interactive-playground/components/InteractivePlayground.vue';
@@ -182,20 +185,27 @@ const tools = [
 const algorithmOptions = ['BFS', 'DFS', 'DIJKSTRA'] as const;
 
 function startAlgorithm(algo: typeof algorithmOptions[number]) {
+  // IP-021: reset tool về SELECT khi vào mô phỏng — tránh tool DELETE/ADD_EDGE
+  // còn kích hoạt ẩn dưới lớp animation (BEHAVIOR_SPEC §3 khóa tương tác vẽ).
+  store.setMode('SELECT');
   store.setSelectedAlgorithm(algo);
   store.setAlgorithmMode(true);
+}
+
+// IP-021: thoát mô phỏng phải đưa tool về SELECT, nếu không click nhầm sau đó
+// sẽ kích hoạt tool DELETE/WEIGHT... gây xoá đỉnh ngoài ý muốn.
+function exitAlgorithmMode() {
+  store.setMode('SELECT');
+  store.setAlgorithmMode(false);
 }
 
 function triggerAutoLayout() {
   if (store.nodes.length === 0) return;
   const cx = canvasContainerRef.value?.clientWidth ?? 800;
   const cy = canvasContainerRef.value?.clientHeight ?? 500;
-  const radius = Math.min(cx, cy) * 0.35;
-  store.nodes.forEach((node, i) => {
-    const angle = (2 * Math.PI * i) / store.nodes.length;
-    node.x = cx / 2 + radius * Math.cos(angle);
-    node.y = cy / 2 + radius * Math.sin(angle);
-  });
+  // IP-022/IP-026: autoLayout là action chung duy nhất trong store (single source of truth) —
+  // cả InteractivePlayground lẫn GraphView gọi action này cho kết quả giống hệt nhau.
+  store.autoLayout(Math.min(cx, cy) * 0.35, -Math.PI / 2, { x: cx / 2, y: cy / 2 });
 }
 
 const templates: Record<string, () => void> = {
@@ -264,7 +274,8 @@ function handleExport() {
     download: `graph-${Date.now()}.json`,
   });
   link.click();
-  URL.revokeObjectURL(link.href);
+  // IP-025: hoãn revoke để Safari/Firefox kịp bắt đầu download.
+  setTimeout(() => URL.revokeObjectURL(link.href), 1000);
 }
 
 function handleImport() {
@@ -277,34 +288,25 @@ function handleImport() {
     const reader = new FileReader();
     reader.onload = (ev) => {
       const result = GraphParser.importFromJSON(ev.target?.result as string);
-      if (!result) return;
-      store.clearAll();
-      store.nodes.push(...result.nodes);
-      store.edges.push(...result.edges);
+      if (!result) {
+        // IP-049: feedback lỗi import — trước đây bỏ qua errors hoàn toàn.
+        store.showToast('File JSON không hợp lệ.', 'error');
+        return;
+      }
+      // IP-003: import qua action store (validate ≤30 node, trùng label, dangling edge, weight...) —
+      // trước đây clearAll + push trực tiếp bypass toàn bộ ràng buộc.
+      const outcome = store.importGraph(result.nodes, result.edges);
+      if (outcome.errors.length > 0) {
+        // IP-049: import 1 phần (dangling edge/trùng label...) phải có feedback rõ ràng.
+        store.showToast(outcome.errors.join(' '), 'error');
+        return;
+      }
+      store.showToast(`Đã nhập ${store.nodes.length} đỉnh, ${store.edges.length} cạnh.`, 'success');
     };
     reader.readAsText(file);
   };
   input.click();
 }
-
-const shortcutMap: Record<string, () => void> = {
-  v: () => store.setMode('SELECT'),
-  n: () => store.setMode('ADD_NODE'),
-  e: () => store.setMode('ADD_EDGE'),
-  w: () => store.setMode('WEIGHT'),
-  delete: () => store.setMode('DELETE'),
-  backspace: () => store.setMode('DELETE'),
-};
-
-function handleKeydown(e: KeyboardEvent) {
-  const target = e.target as HTMLElement;
-  if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable) return;
-  const handler = shortcutMap[e.key.toLowerCase()];
-  if (handler) { e.preventDefault(); handler(); }
-}
-
-onMounted(() => { window.addEventListener('keydown', handleKeydown); });
-onUnmounted(() => { window.removeEventListener('keydown', handleKeydown); });
 </script>
 
 <style scoped>

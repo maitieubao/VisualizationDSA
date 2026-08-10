@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia';
 import { ref, computed } from 'vue';
 import { useAnimationStore } from '../../animation-engine/store/useAnimationStore';
-import { generateDummyBubbleSortResult } from '../../animation-engine/services/algorithmApi';
+import { generateDummyResult } from '../../dsa-modules/services/dummyGenerators';
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:5055';
 
@@ -9,20 +9,32 @@ const ARRAY_FORMAT_REGEX = /^([+-]?\d+)(\s*,\s*[+-]?\d+)*$/;
 
 export type GenerationType = 'random' | 'nearly-sorted' | 'reversed';
 
+export const ALGORITHM_LIMITS: Record<string, number> = {
+  'linear-search': 100,
+  'binary-search': 150,
+  'bubble-sort': 50,
+  'selection-sort': 50,
+  'insertion-sort': 50,
+  'quick-sort': 150,
+  'merge-sort': 150,
+  'heap-sort': 150,
+  'radix-sort': 100,
+  'counting-sort': 100,
+  'bucket-sort': 100,
+  'stack': 20,
+  'queue': 20,
+  'bst': 15,
+};
+
+const DEFAULT_LIMIT = 15;
+
 export const useInputStore = defineStore('input', () => {
   const animationStore = useAnimationStore();
 
-  
-  
-  
   const rawText = ref<string>('');
   const maxLimit = ref<number>(15);
   const isLoading = ref<boolean>(false);
   const apiErrorMessage = ref<string>('');
-
-  
-  
-  
 
   const parsedArray = computed<number[]>(() => {
     const cleanText = rawText.value.trim();
@@ -54,12 +66,16 @@ export const useInputStore = defineStore('input', () => {
     );
   });
 
-  
-  
-  
+  const hasLargeValues = computed<boolean>(() => {
+    return parsedArray.value.some(v => v > 10000 || v < -10000);
+  });
 
   function setLimit(limit: number): void {
     maxLimit.value = limit;
+  }
+
+  function setAlgorithmLimit(algorithmId: string): void {
+    maxLimit.value = ALGORITHM_LIMITS[algorithmId] ?? DEFAULT_LIMIT;
   }
 
   function generateRandomInput(type: GenerationType, size: number = 10): void {
@@ -115,9 +131,9 @@ export const useInputStore = defineStore('input', () => {
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Lỗi không xác định';
       apiErrorMessage.value = message.startsWith('HTTP')
-        ? `Máy chủ báo lỗi (${message}). Đang chạy mô phỏng mẫu cục bộ.`
-        : 'Không kết nối được máy chủ — đang chạy mô phỏng mẫu cục bộ.';
-      const fallbackResult = generateDummyBubbleSortResult(parsedArray.value);
+        ? `Máy chủ báo lỗi (${message}). Đang dùng dữ liệu mô phỏng cục bộ.`
+        : `Không kết nối được máy chủ. Đang dùng dữ liệu mô phỏng cục bộ cho thuật toán '${algorithmId}'.`;
+      const fallbackResult = generateDummyResult(algorithmId, parsedArray.value);
       animationStore.loadResult(fallbackResult);
     } finally {
       isLoading.value = false;
@@ -140,7 +156,9 @@ export const useInputStore = defineStore('input', () => {
     isValidFormat,
     isWithinLimit,
     canExecute,
+    hasLargeValues,
     setLimit,
+    setAlgorithmLimit,
     generateRandomInput,
     submitCustomInput,
     clear,

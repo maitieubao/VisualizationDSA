@@ -11,6 +11,17 @@ interface GraphAnimationFrame {
   distances?: Record<string, number>;
 }
 
+// IP-046: `getComputedStyle` mỗi frame = forced style recalc (antipattern perf).
+// CSS variable --color-bg-active hiếm khi đổi → cache 1 lần kèm retry khi null.
+let cachedLabelBg: string | null = null;
+function getLabelBackground(): string {
+  if (cachedLabelBg) return cachedLabelBg;
+  if (typeof window === 'undefined' || !document.documentElement) return '#1e293b';
+  const value = window.getComputedStyle(document.documentElement).getPropertyValue('--color-bg-active').trim();
+  cachedLabelBg = value || '#1e293b';
+  return cachedLabelBg;
+}
+
 export function drawPlayground(
   ctx: CanvasRenderingContext2D,
   nodes: NodeDTO[],
@@ -22,10 +33,10 @@ export function drawPlayground(
   selectedAlgorithm?: string,
   hoveredNodeId?: string | null,
   hoveredEdgeId?: string | null,
-  graphType: GraphType = 'undirected'
+  graphType: GraphType = 'undirected',
+  isolatedNodeIds: string[] = []
 ) {
-  const rootStyle = typeof window !== 'undefined' ? window.getComputedStyle(document.documentElement) : null;
-  const labelBg = rootStyle?.getPropertyValue('--color-bg-active').trim() || '#1e293b';
+  const labelBg = getLabelBackground();
 
   for (const edge of edges) {
     const fromNode = nodes.find(n => n.id === edge.from);
@@ -141,6 +152,18 @@ export function drawPlayground(
       ctx.arc(node.x, node.y, node.radius + 6, 0, Math.PI * 2);
       ctx.fillStyle = 'rgba(245, 158, 11, 0.3)';
       ctx.fill();
+    }
+
+    // IP-005: flash đỏ đỉnh cô lập khi bị chặn bởi quy tắc liên thông (BEHAVIOR_SPEC §2.2).
+    const isIsolated = isolatedNodeIds.includes(node.id);
+    if (isIsolated) {
+      ctx.beginPath();
+      ctx.arc(node.x, node.y, node.radius + 10, 0, Math.PI * 2);
+      ctx.fillStyle = 'rgba(239, 68, 68, 0.25)';
+      ctx.fill();
+      ctx.strokeStyle = 'rgba(239, 68, 68, 0.9)';
+      ctx.lineWidth = 3;
+      ctx.stroke();
     }
 
     ctx.beginPath();

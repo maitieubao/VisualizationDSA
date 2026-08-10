@@ -1,8 +1,5 @@
 import type { AlgorithmResult, FrameDTO, GraphNodeDTO, GraphEdgeDTO, HighlightIndices } from '../types/algorithm.types';
-
-function defaultHighlights(overrides?: Partial<HighlightIndices>): HighlightIndices {
-  return { compare: [], swap: [], sorted: [], dimmed: [], active: [], ...overrides };
-}
+import { defaultHighlights } from './highlightHelpers';
 
 function buildGraphFrame(
   stepId: number,

@@ -86,21 +86,20 @@ namespace VisualizationDSA.WebApi.Controllers
         
         
         [HttpGet("{quizId}")]
-        public async Task<IActionResult> GetById(string quizId)
+        public async Task<IActionResult> GetById(string quizId, [FromQuery] bool withAnswers = false)
         {
-            // Token hợp lệ → trả đủ đáp án (lesson flow chấm điểm trên client sau khi học viên đăng nhập);
-            // công khai → chỉ trả câu hỏi (chống lộ đề trước khi làm bài).
+            // QZ-003: đáp án chỉ trả khi client CHỦ ĐỘNG yêu cầu withAnswers=true (lesson flow thật sự,
+            // teacher/admin sửa quiz). Workspace (mặc định false) không nhận CorrectIndex/Explanation
+            // → không lộ đáp án trước khi nộp; submit vẫn chấm server-side (backend giữ đáp án).
             var authenticated = JwtHelper.RequireToken(Request) == null;
+            var includeAnswers = authenticated && withAnswers;
 
             // DB là nguồn chính (seed + quiz giảng viên tạo); bank chỉ là fallback khi DB down.
             // Parse Guid trước để tránh phụ thuộc cách EF translate Id.ToString() trên SQLite.
-            var dbQuiz = Guid.TryParse(quizId, out var quizGuid)
-                ? await _dbContext.Quizzes
-                    .Include(q => q.Questions)
-                    .FirstOrDefaultAsync(q => q.Id == quizGuid)
-                : await _dbContext.Quizzes
-                    .Include(q => q.Questions)
-                    .FirstOrDefaultAsync(q => q.Title == quizId);
+            var (dbQuiz, ambiguityError) = await FindQuizByReferenceAsync(quizId);
+            if (ambiguityError != null)
+                return Conflict(new { error = "QUIZ_AMBIGUOUS_TITLE", message = ambiguityError });
+
             if (dbQuiz != null)
             {
                 return Ok(new StatelessQuizPublicDto
@@ -111,7 +110,7 @@ namespace VisualizationDSA.WebApi.Controllers
                     Difficulty = DifficultyToLabel(dbQuiz.Difficulty),
                     XpReward = dbQuiz.XPReward,
                     Questions = dbQuiz.Questions
-                        .Select(q => authenticated
+                        .Select(q => includeAnswers
                             ? new StatelessQuestionPublicDto
                             {
                                 Id = q.Id.ToString(),
@@ -133,13 +132,13 @@ namespace VisualizationDSA.WebApi.Controllers
             var quiz = _quizBank.GetQuizById(quizId);
             if (quiz != null)
             {
-                return Ok(ToPublicDto(quiz, authenticated));
+                return Ok(ToPublicDto(quiz, includeAnswers));
             }
 
             return NotFound(new { error = "QUIZ_NOT_FOUND", quizId, supportedQuizzes = _quizBank.GetAllQuizzes().Select(q => q.Id) });
         }
 
-        private static StatelessQuizPublicDto ToPublicDto(StatelessQuizDto quiz, bool authenticated)
+        private static StatelessQuizPublicDto ToPublicDto(StatelessQuizDto quiz, bool includeAnswers)
         {
             return new StatelessQuizPublicDto
             {
@@ -149,7 +148,7 @@ namespace VisualizationDSA.WebApi.Controllers
                 Difficulty = quiz.Difficulty,
                 XpReward = quiz.XpReward,
                 Questions = quiz.Questions
-                    .Select(q => authenticated
+                    .Select(q => includeAnswers
                         ? new StatelessQuestionPublicDto
                         {
                             Id = q.Id,
@@ -173,9 +172,11 @@ namespace VisualizationDSA.WebApi.Controllers
         
         
         [HttpGet("topic/{topic}")]
-        public async Task<IActionResult> GetByTopic(string topic)
+        public async Task<IActionResult> GetByTopic(string topic, [FromQuery] bool withAnswers = false)
         {
+            // QZ-003: cùng chính sách ẩn đáp án như GetById — mặc định false.
             var authenticated = JwtHelper.RequireToken(Request) == null;
+            var includeAnswers = authenticated && withAnswers;
 
             var dbQuizzes = await _dbContext.Quizzes
                 .Include(q => q.Questions)
@@ -193,7 +194,7 @@ namespace VisualizationDSA.WebApi.Controllers
                     Difficulty = DifficultyToLabel(q.Difficulty),
                     XpReward = q.XPReward,
                     Questions = q.Questions
-                        .Select(question => authenticated
+                        .Select(question => includeAnswers
                             ? new StatelessQuestionPublicDto
                             {
                                 Id = question.Id.ToString(),
@@ -210,7 +211,7 @@ namespace VisualizationDSA.WebApi.Controllers
                             })
                         .ToList()
                 })
-                .Concat(bankQuizzes.Select(q => ToPublicDto(q, authenticated)))
+                .Concat(bankQuizzes.Select(q => ToPublicDto(q, includeAnswers)))
                 .GroupBy(q => q.Title, StringComparer.OrdinalIgnoreCase)
                 .Select(g => g.First());
 
@@ -225,17 +226,17 @@ namespace VisualizationDSA.WebApi.Controllers
         [RequireJwtRole]  
         public async Task<IActionResult> SubmitAttempt([FromBody] StatelessQuizAttemptRequest request)
         {
+            // QZ-014: body null → 400 thay vì NRE 500.
+            if (request == null)
+                return BadRequest(new { error = "INVALID_REQUEST", message = "Dữ liệu bài làm trống." });
+
             try
             {
                 // Quiz từ DB (seed/giảng viên tạo) → chấm trực tiếp từ câu hỏi trong DB;
                 // quiz bank in-memory → chấm qua QuizBankStrategy.
-                var dbQuiz = Guid.TryParse(request.QuizId, out var quizGuid)
-                    ? await _dbContext.Quizzes
-                        .Include(q => q.Questions)
-                        .FirstOrDefaultAsync(q => q.Id == quizGuid)
-                    : await _dbContext.Quizzes
-                        .Include(q => q.Questions)
-                        .FirstOrDefaultAsync(q => q.Title == request.QuizId);
+                var (dbQuiz, ambiguityError) = await FindQuizByReferenceAsync(request.QuizId);
+                if (ambiguityError != null)
+                    return Conflict(new { error = "QUIZ_AMBIGUOUS_TITLE", message = ambiguityError });
 
                 StatelessQuizAttemptResult result;
                 if (dbQuiz != null)
@@ -276,7 +277,9 @@ namespace VisualizationDSA.WebApi.Controllers
                     result = _quizBank.EvaluateAttempt(request);
 
                     // Quiz bank (in-memory, không có Guid) — trước đây không bao giờ cấp XP thật dù UI báo.
-                    // Cấp XP lần đầu đạt + ghi QuizXpGrant để chống farm khi submit lặp lại.
+                    // QZ-002: cấp XP lần đầu đạt + ghi QuizXpGrant để chống farm khi submit lặp lại.
+                    // BỎ check-then-act (AnyAsync → Add): dựa vào unique (UserId, QuizKey) làm hàng rào
+                    // atomic — 2 request song song cùng thêm đều chạy, kẻ thua DbUpdateException → 0 XP.
                     if (result.Passed && result.XpAwarded > 0)
                     {
                         var bankUserIdStr = JwtHelper.ExtractSubFromToken(Request);
@@ -286,18 +289,18 @@ namespace VisualizationDSA.WebApi.Controllers
 
                         if (bankUser != null)
                         {
-                            var alreadyGranted = await _dbContext.QuizXpGrants
-                                .AnyAsync(g => g.UserId == bankUser.Id && g.QuizKey == request.QuizId);
-
-                            if (!alreadyGranted)
+                            try
                             {
                                 bankUser.AwardXP(result.XpAwarded);
                                 bankUser.RecordActivity();
                                 _dbContext.QuizXpGrants.Add(new VisualizationDSA.Domain.Entities.QuizXpGrant(bankUser.Id, request.QuizId));
                                 await _dbContext.SaveChangesAsync();
                             }
-                            else
+                            catch (DbUpdateException ex) when (IsXpGrantConflict(ex))
                             {
+                                // Unique (UserId, QuizKey) bị vi phạm → request song song đã cấp XP.
+                                // SaveChanges thất bại nên chưa persist gì; khôi phục memory + báo 0 XP.
+                                await _dbContext.Entry(bankUser).ReloadAsync();
                                 result.XpAwarded = 0;
                             }
                         }
@@ -330,12 +333,12 @@ namespace VisualizationDSA.WebApi.Controllers
                         );
                         _dbContext.QuizAttempts.Add(attempt);
 
-                        
-                        
-                        
-                        
-                        
+                        // QZ-001: commit attempt TRƯỚC khi đọc previousAttempts — chống race double XP
+                        // (2 request đồng thời cùng thấy 0 pass → cả 2 được thưởng). Mẫu QuizService.cs:88-91.
+                        await _dbContext.SaveChangesAsync();
+
                         int xpEarned = 0;
+                        bool isFirstReward = false;
                         if (result.Passed)
                         {
                             var previousAttempts = await _dbContext.QuizAttempts
@@ -351,6 +354,7 @@ namespace VisualizationDSA.WebApi.Controllers
                             {
                                 
                                 xpEarned = quiz.XPReward;
+                                isFirstReward = true;
                             }
                             else
                             {
@@ -392,9 +396,26 @@ namespace VisualizationDSA.WebApi.Controllers
                         {
                             user.AwardXP(xpEarned);
                             user.RecordActivity();
-                        }
 
-                        await _dbContext.SaveChangesAsync();
+                            if (isFirstReward)
+                            {
+                                // QZ-005: ghi chung ledger QuizXpGrant (unique UserId+QuizKey) —
+                                // cùng 1 quiz chỉ được cấp XP 1 lần bất kể kênh lesson/workspace.
+                                _dbContext.QuizXpGrants.Add(new VisualizationDSA.Domain.Entities.QuizXpGrant(user.Id, quiz.Id.ToString()));
+                            }
+
+                            try
+                            {
+                                await _dbContext.SaveChangesAsync();
+                            }
+                            catch (DbUpdateException ex) when (isFirstReward && IsXpGrantConflict(ex))
+                            {
+                                // Unique (UserId, QuizKey) bị vi phạm → kênh khác đã cấp XP cho quiz này.
+                                // Attempt đã commit ở bước trên (giữ lại — bài làm hợp lệ); chỉ huỷ XP.
+                                await _dbContext.Entry(user).ReloadAsync();
+                                result.XpAwarded = 0;
+                            }
+                        }
                     }
                 }
 
@@ -543,14 +564,10 @@ namespace VisualizationDSA.WebApi.Controllers
 
             
             // DB là nguồn duy nhất — không ghi bank (trước đây 2 nguồn lệch nhau).
-            // Parse Guid trước để tránh phụ thuộc cách EF translate Id.ToString() trên SQLite.
-            var dbQuiz = Guid.TryParse(quizId, out var updateGuid)
-                ? await _dbContext.Quizzes
-                    .Include(q => q.Questions)
-                    .FirstOrDefaultAsync(q => q.Id == updateGuid)
-                : await _dbContext.Quizzes
-                    .Include(q => q.Questions)
-                    .FirstOrDefaultAsync(q => q.Title == quizId);
+            // QZ-047: lookup theo Guid trước; theo Title chỉ khi không parse được — trùng title → 409.
+            var (dbQuiz, ambiguityError) = await FindQuizByReferenceAsync(quizId);
+            if (ambiguityError != null)
+                return Conflict(new { error = "QUIZ_AMBIGUOUS_TITLE", message = ambiguityError });
             if (dbQuiz == null)
                 return NotFound(new { error = "QUIZ_NOT_FOUND", message = $"Không tìm thấy quiz với ID {quizId} để cập nhật." });
 
@@ -587,12 +604,10 @@ namespace VisualizationDSA.WebApi.Controllers
             
             var deletedInMemory = _quizBank.DeleteQuiz(quizId);
 
-            
-            var dbQuiz = Guid.TryParse(quizId, out var deleteGuid)
-                ? await _dbContext.Quizzes
-                    .FirstOrDefaultAsync(q => q.Id == deleteGuid)
-                : await _dbContext.Quizzes
-                    .FirstOrDefaultAsync(q => q.Title == quizId);
+            // QZ-047: lookup theo Guid trước; theo Title chỉ khi không parse được — trùng title → 409.
+            var (dbQuiz, ambiguityError) = await FindQuizByReferenceAsync(quizId, includeQuestions: false);
+            if (ambiguityError != null)
+                return Conflict(new { error = "QUIZ_AMBIGUOUS_TITLE", message = ambiguityError });
             if (dbQuiz != null)
             {
                 _dbContext.Quizzes.Remove(dbQuiz);
@@ -724,6 +739,33 @@ namespace VisualizationDSA.WebApi.Controllers
 
             return Ok(attempts);
         }
+
+        // QZ-047: lookup quiz theo reference (Guid ưu tiên, Title fallback). Khi nhiều quiz trùng
+        // Title → trả lỗi ambiguity (409) thay vì FirstOrDefault bất định. Parse Guid trước để tránh
+        // phụ thuộc cách EF translate Id.ToString() trên SQLite.
+        private async Task<(Quiz? Quiz, string? AmbiguityError)> FindQuizByReferenceAsync(string quizId, bool includeQuestions = true)
+        {
+            if (Guid.TryParse(quizId, out var quizGuid))
+            {
+                var byId = includeQuestions
+                    ? await _dbContext.Quizzes.Include(q => q.Questions).FirstOrDefaultAsync(q => q.Id == quizGuid)
+                    : await _dbContext.Quizzes.FirstOrDefaultAsync(q => q.Id == quizGuid);
+                return (byId, null);
+            }
+
+            var byTitle = includeQuestions
+                ? await _dbContext.Quizzes.Include(q => q.Questions).Where(q => q.Title == quizId).ToListAsync()
+                : await _dbContext.Quizzes.Where(q => q.Title == quizId).ToListAsync();
+
+            if (byTitle.Count > 1)
+                return (null, $"Tồn tại nhiều quiz trùng tiêu đề '{quizId}' — hãy dùng ID để phân biệt.");
+
+            return (byTitle.FirstOrDefault(), null);
+        }
+
+        // QZ-001/QZ-002: xác định DbUpdateException do vi phạm unique (UserId, QuizKey) — không nuốt lỗi khác.
+        private static bool IsXpGrantConflict(DbUpdateException ex)
+            => ex.Entries.Any(e => e.Entity is VisualizationDSA.Domain.Entities.QuizXpGrant);
 
         private static string NormalizeText(string text)
         {

@@ -18,6 +18,21 @@ const containerRef = ref<HTMLDivElement | null>(null);
 const canvasRef = ref<HTMLCanvasElement | null>(null);
 let resizeObserver: ResizeObserver | null = null;
 
+let cachedColors: Record<string, string> = {};
+
+function cacheColors(): void {
+  const style = getComputedStyle(document.documentElement);
+  cachedColors = {
+    bg: style.getPropertyValue('--canvas-bg').trim() || '#080808',
+    cell: style.getPropertyValue('--color-bg-active').trim() || '#232323',
+    border: style.getPropertyValue('--color-border-default').trim() || '#475569',
+    active: style.getPropertyValue('--color-accent-cyan').trim() || '#38BDF8',
+    remove: style.getPropertyValue('--color-accent-red').trim() || '#EF4444',
+    text: style.getPropertyValue('--color-text-primary').trim() || '#FFFFFF',
+    muted: style.getPropertyValue('--color-text-muted').trim() || '#94A3B8',
+  };
+}
+
 function resizeCanvas(): void {
   const canvas = canvasRef.value;
   const container = containerRef.value;
@@ -35,15 +50,14 @@ function renderCanvas(): void {
   const ctx = canvas.getContext('2d');
   if (!ctx) return;
 
-  const style = getComputedStyle(document.documentElement);
-  const colorBg = style.getPropertyValue('--canvas-bg').trim() || '#080808';
+  const colorBg = cachedColors.bg || '#080808';
   const colors = {
-    cell: style.getPropertyValue('--color-bg-active').trim() || '#232323',
-    border: style.getPropertyValue('--color-border-default').trim() || '#475569',
-    active: style.getPropertyValue('--color-accent-cyan').trim() || '#38BDF8',
-    remove: style.getPropertyValue('--color-accent-red').trim() || '#EF4444',
-    text: style.getPropertyValue('--color-text-primary').trim() || '#FFFFFF',
-    muted: style.getPropertyValue('--color-text-muted').trim() || '#94A3B8',
+    cell: cachedColors.cell || '#232323',
+    border: cachedColors.border || '#475569',
+    active: cachedColors.active || '#38BDF8',
+    remove: cachedColors.remove || '#EF4444',
+    text: cachedColors.text || '#FFFFFF',
+    muted: cachedColors.muted || '#94A3B8',
   };
 
   const dpr = window.devicePixelRatio || 1;
@@ -76,6 +90,7 @@ function renderCanvas(): void {
 watch([() => props.frame, () => props.mode], renderCanvas, { deep: true });
 
 onMounted(() => {
+  cacheColors();
   resizeObserver = new ResizeObserver(resizeCanvas);
   if (containerRef.value) resizeObserver.observe(containerRef.value);
   resizeCanvas();

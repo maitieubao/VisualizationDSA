@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, afterEach } from 'vitest';
-import { loadLecture, hasLecture, getAvailableLectureIds } from '../services/lectureLoader';
+import { loadLecture, hasLecture, getAvailableLectureIds, isLectureAvailable } from '../services/lectureLoader';
 
 describe('lectureLoader', () => {
   afterEach(() => {
@@ -62,5 +62,65 @@ describe('lectureLoader', () => {
       expect(['RESET_CANVAS', 'PLAY_UNTIL', 'PAUSE']).toContain(slide.action.command);
       expect(slide.action.targetFrame).toBeGreaterThanOrEqual(0);
     }
+  });
+});
+
+describe('isLectureAvailable', () => {
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  it('trả về true cho lecture bundled mà không gọi API', async () => {
+    const fetchSpy = vi.spyOn(globalThis, 'fetch');
+
+    const result = await isLectureAvailable('bubble-sort');
+
+    expect(result).toBe(true);
+    expect(fetchSpy).not.toHaveBeenCalled();
+  });
+
+  it('trả về true khi HEAD request thành công (lecture tồn tại trên server)', async () => {
+    const fetchMock = vi.spyOn(globalThis, 'fetch').mockResolvedValueOnce({
+      ok: true,
+      status: 200,
+    } as unknown as Response);
+
+    const result = await isLectureAvailable('quick-sort');
+
+    expect(result).toBe(true);
+    expect(fetchMock).toHaveBeenCalledWith(
+      expect.stringContaining('/api/v1/lectures/quick-sort'),
+      { method: 'HEAD' },
+    );
+  });
+
+  it('trả về false khi HEAD trả về 404 (lecture không tồn tại)', async () => {
+    vi.spyOn(globalThis, 'fetch').mockResolvedValueOnce({
+      ok: false,
+      status: 404,
+    } as unknown as Response);
+
+    const result = await isLectureAvailable('dijkstra');
+
+    expect(result).toBe(false);
+  });
+
+  it('trả về false khi API không ok', async () => {
+    vi.spyOn(globalThis, 'fetch').mockResolvedValueOnce({
+      ok: false,
+      status: 500,
+    } as unknown as Response);
+
+    const result = await isLectureAvailable('dijkstra');
+
+    expect(result).toBe(false);
+  });
+
+  it('trả về false khi API lỗi mạng', async () => {
+    vi.spyOn(globalThis, 'fetch').mockRejectedValueOnce(new Error('Network error'));
+
+    const result = await isLectureAvailable('dijkstra');
+
+    expect(result).toBe(false);
   });
 });

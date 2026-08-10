@@ -140,7 +140,7 @@ public class PrimStrategy : GraphStrategyBase
 
         var distDict = key.Select((k, i) => k < INF ? new { Key = i, Value = k } : null)
             .Where(x => x != null).ToDictionary(x => x.Key, x => x.Value);
-        var prevDict = parent.Where(p => p.HasValue).ToDictionary(p => Array.IndexOf(parent, p), p => p.Value);
+        var prevDict = BuildPrevDict(parent);
 
         var mstNodeSet = new HashSet<int>();
         for (int i = 0; i < V; i++) if (inMST[i]) mstNodeSet.Add(i);

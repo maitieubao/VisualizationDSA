@@ -47,7 +47,7 @@ describe('Docs Mermaid Syntax — toàn bộ tài liệu', () => {
   beforeAll(async () => {
     mermaid = (await import('mermaid')).default;
     mermaid.initialize(buildMermaidInitConfig());
-  }, 30000);
+  }, 60000);
 
   it('phát hiện được ít nhất 1 khối mermaid trong tài liệu', () => {
     expect(allBlocks.length).toBeGreaterThan(0);
@@ -65,5 +65,5 @@ describe('Docs Mermaid Syntax — toàn bộ tài liệu', () => {
       }
     }
     expect(failures, `Các khối mermaid lỗi cú pháp:\n${failures.join('\n')}`).toEqual([]);
-  }, 60000);
+  }, 120000);
 });

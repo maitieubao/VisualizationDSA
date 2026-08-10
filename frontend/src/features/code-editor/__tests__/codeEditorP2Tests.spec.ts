@@ -351,7 +351,8 @@ describe('CE-010 (P2): Reload on Monaco fail', () => {
 
     await flushPromises();
 
-    const button = wrapper.find('button');
+    const alert = wrapper.find('[role="alert"]');
+    const button = alert.find('button');
     expect(button.exists()).toBe(true);
     expect(button.text()).toContain('Tải lại trang');
 

@@ -1,5 +1,14 @@
 <template>
-  <div class="flex flex-col h-full w-full gap-3 p-4 bg-bg-secondary/80 overflow-auto">
+  <div class="relative flex flex-col h-full w-full gap-3 p-4 bg-bg-secondary/80 overflow-auto">
+    
+    <div v-if="inputStore.isLoading" class="absolute inset-0 z-10 flex items-center justify-center bg-bg-secondary/60 backdrop-blur-sm rounded-xl">
+      <div class="flex flex-col items-center gap-2">
+        <svg class="w-6 h-6 animate-spin text-accent-cyan" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="10" class="opacity-25" /><path d="M4 12a8 8 0 018-8" class="opacity-75" />
+        </svg>
+        <span class="text-xs font-medium text-text-secondary">Đang xử lý...</span>
+      </div>
+    </div>
     
     <div class="flex items-center gap-2">
       <BaseIcon name="edit" class="w-3.5 h-3.5 text-accent-yellow" />
@@ -18,7 +27,9 @@
         <span v-if="statusText" :class="statusClasses">{{ statusText }}</span>
       </div>
       <div v-if="errorText" class="text-[11px] font-mono" :class="formState === 'limit-error' ? 'text-accent-yellow' : 'text-accent-red'">{{ errorText }}</div>
+      <div v-if="inputStore.hasLargeValues" class="text-[11px] font-mono text-accent-yellow">Cảnh báo: Có phần tử vượt quá 10,000 — có thể gây tràn số nguyên 32-bit.</div>
       <div v-if="inputStore.apiErrorMessage" class="text-[11px] font-mono text-accent-red">{{ inputStore.apiErrorMessage }}</div>
+      <div class="text-[10px] text-text-muted mt-0.5">Ctrl+Enter: Chạy · Ctrl+Shift+R: Random · Esc: Xóa</div>
     </div>
 
     
@@ -61,11 +72,15 @@
 <script setup lang="ts">
 import { useCustomInputForm } from '../composables/useCustomInputForm';
 
+const props = defineProps<{
+  algorithmId: string;
+}>();
+
 const {
   inputStore, showDropdown, dropdownRef, generationOptions,
   formState, textareaClasses, counterClasses, statusText, statusClasses, errorText, executeButtonClasses,
   onGenerate, onExecute, onKeydown,
-} = useCustomInputForm();
+} = useCustomInputForm(props.algorithmId);
 </script>
 
 <style scoped>

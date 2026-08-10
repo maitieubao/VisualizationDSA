@@ -197,7 +197,7 @@ public class AStarStrategy : GraphStrategyBase
             .Where(x => x != null).ToDictionary(x => x.Key, x => x.Value);
         var fDict = fScore.Select((f, i) => f < INF ? new { Key = i, Value = f } : null)
             .Where(x => x != null).ToDictionary(x => x.Key, x => x.Value);
-        var prevDict = prev.Where(p => p.HasValue).ToDictionary(p => Array.IndexOf(prev, p), p => p.Value);
+        var prevDict = BuildPrevDict(prev);
 
         var mstNodeSet = new HashSet<int>(closedSet); 
 

@@ -217,7 +217,7 @@ vi.mock('../../../features/payment/components/CheckoutSuccessScreen.vue', () => 
   },
 }));
 
-vi.mock('../../../features/e-lecture/components/NotificationBell.vue', () => ({
+vi.mock('../../../features/notifications/components/NotificationBell.vue', () => ({
   default: { template: '<div class="notification-bell" />' },
 }));
 

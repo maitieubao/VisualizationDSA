@@ -85,6 +85,7 @@ import DSAInputForm from './DSAInputForm.vue';
 import PseudocodeViewer from './PseudocodeViewer.vue';
 import AnimationVcrControls from '../../animation-engine/components/AnimationVcrControls.vue';
 import { useDSAKeyboard } from '../composables/useDSAKeyboard';
+import { useToastStore } from '../../../composables/useToast';
 import TheoryCollapsiblePanel from '../../../shared/components/TheoryCollapsiblePanel.vue';
 import type { TheoryDocument } from '../../../shared/types/theory.types';
 
@@ -94,6 +95,7 @@ const props = defineProps<{
 
 const algoStore   = useAlgorithmStore();
 const animStore   = useAnimationStore();
+const toastStore  = useToastStore();
 const inputText   = ref('5, 3, 8, 1, 9, 2, 7');
 const isExecuting = ref(false);
 
@@ -196,18 +198,24 @@ async function executeVisualization(): Promise<void> {
   if (!algoStore.currentAlgorithm || isExecuting.value) return;
   isExecuting.value = true;
   try {
-    // Parse nghiêm ngặt: chỉ giữ token số nguyên đầy đủ (tránh parseInt('0-1-4') = 0
-    // làm hỏng toàn bộ đồ thị). Giao ước inputData là mảng giá trị node.
     const data = inputText.value
       .split(',')
       .map((s) => s.trim())
       .filter((s) => /^-?\d+$/.test(s))
       .map((s) => Number(s));
     if (data.length === 0) return;
-    const result = await executeDSAAlgorithm(algoStore.currentAlgorithm.id, data);
+    const { result, isFallback, errorMessage } = await executeDSAAlgorithm(algoStore.currentAlgorithm.id, data);
     animStore.loadResult(result);
-  } catch (error) { console.error('Lỗi thực thi trực quan hóa:', error); }
-  finally { isExecuting.value = false; }
+    if (isFallback && errorMessage) {
+      toastStore.warning(errorMessage, 'Fallback dữ liệu mẫu');
+    }
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Lỗi thực thi trực quan hóa không xác định.';
+    console.error('Lỗi thực thi trực quan hóa:', error);
+    toastStore.error(message, 'Không thể thực thi');
+  } finally {
+    isExecuting.value = false;
+  }
 }
 
 function goBack(): void { animStore.stop(); algoStore.clearActive(); }

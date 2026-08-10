@@ -170,7 +170,7 @@
 import { useAuthStore } from '../features/auth/store/useAuthStore';
 import { useGuidedTourStore } from '../features/guided-tour/store/useGuidedTourStore';
 import { useThemeStore } from '../shared/store/useThemeStore';
-import NotificationBell from '../features/e-lecture/components/NotificationBell.vue';
+import NotificationBell from '../features/notifications/components/NotificationBell.vue';
 import { APP_TABS } from '../appTabs';
 import type { TabGroup, TabItem } from '../appTabs';
 import { computed } from 'vue';

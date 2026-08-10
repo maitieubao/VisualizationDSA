@@ -189,7 +189,7 @@ describe('US-AE-013 (P0): Play/Pause toggle', () => {
     expect(store.isPlaying).toBe(false);
   });
 
-  it('play does nothing when already finished', () => {
+  it('play replays from the start when already finished', () => {
     const store = useAnimationStore();
     store.loadResult({
       algorithmId: 'test',
@@ -199,7 +199,8 @@ describe('US-AE-013 (P0): Play/Pause toggle', () => {
 
     store.scrubTo(0);
     store.play();
-    expect(store.isPlaying).toBe(false);
+    expect(store.isPlaying).toBe(true);
+    expect(store.currentIndex).toBe(0);
   });
 });
 
@@ -521,9 +522,8 @@ describe('US-AE-020 (P1): AnimationVcrControls standalone', () => {
     const select = wrapper.find('.speed-select');
     expect(select.exists()).toBe(true);
     const options = select.findAll('option');
-    expect(options.length).toBe(5);
-    expect(options[0].text()).toBe('0.5x');
-    expect(options[4].text()).toBe('10x');
+    expect(options.length).toBe(8);
+    expect(options.map((o) => o.text())).toEqual(['0.1x', '0.25x', '0.5x', '1x', '1.5x', '2x', '4x', '5x']);
   });
 
   it('emits scrub when timeline slider changes', async () => {

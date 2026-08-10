@@ -20,8 +20,18 @@ const isBFSOrDFS = computed(() => {
 });
 
 const containerRef = ref<HTMLDivElement | null>(null);
-const canvasRef    = ref<HTMLCanvasElement | null>(null);
+const canvasRef = ref<HTMLCanvasElement | null>(null);
 let resizeObserver: ResizeObserver | null = null;
+
+let cachedColors: Record<string, string> = {};
+
+function cacheColors(): void {
+  const style = getComputedStyle(document.documentElement);
+  cachedColors = {
+    bg: style.getPropertyValue('--canvas-bg').trim() || '#080808',
+    muted: style.getPropertyValue('--color-text-muted').trim() || '#64748B',
+  };
+}
 
 interface NodePosition { id: number; value: number; x: number; y: number; leftId: number | null; rightId: number | null; }
 
@@ -66,10 +76,8 @@ function renderCanvas(): void {
   const ctx = canvas.getContext('2d');
   if (!ctx) return;
 
-  
-  const style = getComputedStyle(document.documentElement);
-  const colorBg = style.getPropertyValue('--canvas-bg').trim() || '#080808';
-  const colorMuted = style.getPropertyValue('--color-text-muted').trim() || '#64748B';
+  const colorBg = cachedColors.bg || '#080808';
+  const colorMuted = cachedColors.muted || '#64748B';
 
   const dpr = window.devicePixelRatio || 1;
   const w = canvas.width / dpr;
@@ -116,6 +124,7 @@ function renderCanvas(): void {
 watch(() => props.frame, renderCanvas, { deep: true });
 
 onMounted(() => {
+  cacheColors();
   resizeObserver = new ResizeObserver(resizeCanvas);
   if (containerRef.value) resizeObserver.observe(containerRef.value);
   resizeCanvas();

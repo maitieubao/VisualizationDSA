@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest';
 import { setActivePinia, createPinia } from 'pinia';
 import { useAnimationStore, usePlaygroundAnimationStore } from '../store/useAnimationStore';
 import type { AlgorithmResult, FrameDTO } from '../types/animation.types';
@@ -16,6 +16,16 @@ function makeResult(seed: number, frameCount = 1): AlgorithmResult {
 describe('usePlaygroundAnimationStore — cô lập khỏi useAnimationStore', () => {
   beforeEach(() => {
     setActivePinia(createPinia());
+    vi.useFakeTimers();
+    vi.stubGlobal('requestAnimationFrame', (cb: FrameRequestCallback) => {
+      return setTimeout(() => cb(performance.now()), 16) as unknown as number;
+    });
+    vi.stubGlobal('cancelAnimationFrame', (id: number) => clearTimeout(id));
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+    vi.unstubAllGlobals();
   });
 
   it('loadResult vào playground không ảnh hưởng store chính (GraphView v-show)', () => {
@@ -44,14 +54,16 @@ describe('usePlaygroundAnimationStore — cô lập khỏi useAnimationStore', (
     const main = useAnimationStore();
     const playground = usePlaygroundAnimationStore();
 
+    main.loadResult(makeResult(1, 4));
     playground.loadResult(makeResult(3, 4));
     playground.stepForward();
+    vi.advanceTimersByTime(200);
     main.play();
 
     expect(main.isPlaying).toBe(true);
     expect(playground.isPlaying).toBe(false);
     expect(playground.currentIndex).toBe(1);
-    expect(main.currentFrame).toBeNull();
+    expect(main.currentFrame).not.toBeNull();
 
     main.pause();
     playground.pause();

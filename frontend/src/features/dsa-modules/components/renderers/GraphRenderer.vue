@@ -58,6 +58,18 @@ const containerRef = ref<HTMLDivElement | null>(null);
 const canvasRef = ref<HTMLCanvasElement | null>(null);
 let resizeObserver: ResizeObserver | null = null;
 
+let cachedColors: Record<string, string> = {};
+
+function cacheColors(): void {
+  const style = getComputedStyle(document.documentElement);
+  cachedColors = {
+    bg: style.getPropertyValue('--canvas-bg').trim() || '#080808',
+    edge: style.getPropertyValue('--color-border-strong').trim() || '#475569',
+    edgeHighlight: style.getPropertyValue('--color-accent-yellow').trim() || '#FBBF24',
+    activeGlow: style.getPropertyValue('--color-accent-primary').trim() || '#FBBF24',
+  };
+}
+
 
 const zoom = ref(1);
 const panX = ref(0);
@@ -265,12 +277,11 @@ function renderCanvas(): void {
   const ctx = canvas.getContext('2d');
   if (!ctx) return;
 
-  const style = getComputedStyle(document.documentElement);
-  const colorBg = style.getPropertyValue('--canvas-bg').trim() || '#080808';
-  const colorEdge = style.getPropertyValue('--color-border-strong').trim() || '#475569';
-  const colorEdgeHighlight = style.getPropertyValue('--color-accent-yellow').trim() || '#FBBF24';
+  const colorBg = cachedColors.bg || '#080808';
+  const colorEdge = cachedColors.edge || '#475569';
+  const colorEdgeHighlight = cachedColors.edgeHighlight || '#FBBF24';
   const colorEdgeMST = '#A855F7';
-  const activeGlow = style.getPropertyValue('--color-accent-primary').trim() || '#FBBF24';
+  const activeGlow = cachedColors.activeGlow || '#FBBF24';
   const visitedColor = '#10B981';
   const queueColor = '#06B6D4';
 
@@ -470,9 +481,12 @@ function renderCanvas(): void {
   }
 }
 
-watch(() => props.frame, () => { animFrameId = requestAnimationFrame(renderCanvas); }, { deep: true });
+// EC-023: frame là object bất biến — watch theo identity đủ, bỏ `deep` để không
+// duyệt toàn bộ cây dataState mỗi lần frame thay đổi.
+watch(() => props.frame, () => { animFrameId = requestAnimationFrame(renderCanvas); });
 
 onMounted(() => {
+  cacheColors();
   resizeObserver = new ResizeObserver(resizeCanvas);
   if (containerRef.value) resizeObserver.observe(containerRef.value);
 

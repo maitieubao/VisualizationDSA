@@ -6,9 +6,11 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using VisualizationDSA.Application.DTOs;
 using VisualizationDSA.Application.Services;
 using MediatR;
+using VisualizationDSA.Infrastructure.Data;
 using VisualizationDSA.Application.Features.Classrooms.Queries;
 using VisualizationDSA.Application.Features.Classrooms.Commands;
 
@@ -24,15 +26,18 @@ namespace VisualizationDSA.WebApi.Controllers
         private readonly IMediator _mediator;
         private readonly IClassroomGradingService _gradingService;
         private readonly IClassroomExcelExportService _excelExportService;
+        private readonly ApplicationDbContext _dbContext;
 
         public ClassroomController(
             IMediator mediator,
             IClassroomGradingService gradingService,
-            IClassroomExcelExportService excelExportService)
+            IClassroomExcelExportService excelExportService,
+            ApplicationDbContext dbContext)
         {
             _mediator = mediator;
             _gradingService = gradingService;
             _excelExportService = excelExportService;
+            _dbContext = dbContext;
         }
 
         private Guid GetUserId()
@@ -291,7 +296,71 @@ namespace VisualizationDSA.WebApi.Controllers
                 return StatusCode(StatusCodes.Status403Forbidden, new { Message = ex.Message });
             }
         }
-    
+
+        [HttpDelete("{id:guid}")]
+        [RequireJwtRole("Teacher")]
+        public async Task<IActionResult> DeleteClassroom(Guid id)
+        {
+            try
+            {
+                var teacherId = GetUserId();
+
+                var classroom = await _dbContext.Classrooms
+                    .Include(c => c.Enrollments)
+                    .Include(c => c.Announcements)
+                    .Include(c => c.Quizzes)
+                    .Include(c => c.Lessons)
+                    .Include(c => c.Modules)
+                        .ThenInclude(m => m.Items)
+                    .Include(c => c.ModuleItemOverrides)
+                    .FirstOrDefaultAsync(c => c.Id == id);
+
+                if (classroom == null)
+                    return NotFound(new { Message = "Classroom not found." });
+
+                if (classroom.OwnerTeacherId != teacherId)
+                    throw new UnauthorizedAccessException("Bạn không có quyền xóa lớp học này.");
+
+                // T3-GUARD: Cascade delete theo thứ tự FK để tránh orphan/referential integrity errors.
+                // 1. ClassroomQuizAttempts (nếu có)
+                await _dbContext.ClassroomQuizAttempts
+                    .Where(a => classroom.Quizzes.Select(q => q.Id).Contains(a.ClassroomQuizId))
+                    .ExecuteDeleteAsync();
+
+                // 2. ClassroomQuizzes
+                _dbContext.ClassroomQuizzes.RemoveRange(classroom.Quizzes);
+
+                // 3. ClassroomLessons
+                _dbContext.ClassroomLessons.RemoveRange(classroom.Lessons);
+
+                // 4. ClassroomModuleItemOverrides
+                _dbContext.ClassroomModuleItemOverrides.RemoveRange(classroom.ModuleItemOverrides);
+
+                // 5. ClassroomModuleItems → ClassroomModules
+                foreach (var module in classroom.Modules)
+                {
+                    _dbContext.ClassroomModuleItems.RemoveRange(module.Items);
+                    _dbContext.ClassroomModules.Remove(module);
+                }
+
+                // 6. Announcements
+                _dbContext.ClassroomAnnouncements.RemoveRange(classroom.Announcements);
+
+                // 7. Enrollments (student enrollments)
+                _dbContext.ClassroomEnrollments.RemoveRange(classroom.Enrollments);
+
+                // 8. Classroom chính
+                _dbContext.Classrooms.Remove(classroom);
+
+                await _dbContext.SaveChangesAsync();
+
+                return Ok(new { message = $"Đã xóa lớp học \"{classroom.Name}\" thành công!", classroomId = id });
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                return StatusCode(StatusCodes.Status403Forbidden, new { Message = ex.Message });
+            }
+        }
         [HttpPut("{id:guid}/override/{moduleId:guid}")]
         [RequireJwtRole("Teacher")]
         public async Task<IActionResult> UpdateModuleItemOverride(Guid id, Guid moduleId, [FromBody] UpdateClassroomModuleItemOverrideCommand command)

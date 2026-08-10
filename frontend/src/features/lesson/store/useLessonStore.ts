@@ -4,9 +4,11 @@ import type { Lesson, QuizQuestion } from '../types/lesson.types';
 import { LESSONS } from '../../../data/lessons';
 import { useAuthStore } from '../../auth/store/useAuthStore';
 import { fetchLessonProgress, saveLessonProgress, awardXp, fetchLessonDetail, getLessonAuthToken, type LessonDetailResponse } from '../services/lessonApi';
+import { courseApi } from '../../../services/courseApi';
 import { statelessQuizApi } from '../../quiz-system/service/statelessQuizApi';
 import { CODELAB_TASK_REGISTRY } from '../utils/codelabTaskRegistry';
 import { parseSandboxDemo } from '../utils/sandboxConfig';
+import type { Course } from '../../courses/types/course.types';
 
 /** Thông tin bổ sung từ backend (không nằm trong Lesson local). */
 export interface LessonMeta {
@@ -52,9 +54,11 @@ export const useLessonStore = defineStore('lessonStudy', () => {
 
   // ── State ──
   const currentLesson = ref<Lesson | null>(null);
+  const currentCourse = ref<Course | null>(null);
   const lessonMeta = ref<LessonMeta | null>(null);
   const activeStep = ref<number>(1);
   const isLoading = ref<boolean>(false);
+  const isLoadingCourse = ref<boolean>(false);
   const error = ref<string | null>(null);
   // Dữ liệu đang hiển thị là bản local (API lỗi) — để UI hiển thị cảnh báo.
   const isOfflineFallback = ref<boolean>(false);
@@ -189,7 +193,7 @@ export const useLessonStore = defineStore('lessonStudy', () => {
     let quizQuestions: QuizQuestion[] = local?.quizQuestions ?? [];
     if (detail.quizId) {
       try {
-        const quiz = await statelessQuizApi.getQuizById(detail.quizId);
+        const quiz = await statelessQuizApi.getQuizById(detail.quizId, true);
         if (quiz?.questions && quiz.questions.length > 0) {
           quizQuestions = mapBackendQuizQuestions(quiz.questions);
         }
@@ -415,17 +419,36 @@ export const useLessonStore = defineStore('lessonStudy', () => {
   }
 
   function goToStep(stepNumber: number) {
-    if (stepNumber === 3 && !hasWatchedVisualizer.value) return;
+    if (stepNumber === 3 && !hasWatchedVisualizer.value && !quizPassed.value) return;
     if (stepNumber === 4 && !quizPassed.value) return;
     if (stepNumber === 4 && !currentLesson.value?.codelabTask) return;
     activeStep.value = stepNumber;
   }
 
+  // ── Course detail for sidebar ──
+  async function loadCourseDetail(courseId: string) {
+    if (currentCourse.value?.id === courseId) return;
+    isLoadingCourse.value = true;
+    try {
+      const data = await courseApi.getCourseById(courseId);
+      currentCourse.value = {
+        ...data,
+        coverImage: data.coverImageUrl ?? data.coverImage,
+      } as unknown as Course;
+    } catch (e) {
+      console.warn('Không tải được chi tiết khóa học cho sidebar:', e);
+    } finally {
+      isLoadingCourse.value = false;
+    }
+  }
+
   return {
     currentLesson,
+    currentCourse,
     lessonMeta,
     activeStep,
     isLoading,
+    isLoadingCourse,
     error,
     isOfflineFallback,
     hasWatchedVisualizer,
@@ -441,6 +464,7 @@ export const useLessonStore = defineStore('lessonStudy', () => {
     isLessonComplete,
 
     loadLesson,
+    loadCourseDetail,
     markVisualizerWatched,
     submitQuiz,
     resetQuiz,

@@ -37,7 +37,8 @@ export function drawBoxArray(
   colors: BoxArrayColors,
   anim?: AnimatedState
 ): void {
-  const n = frame.dataState.length;
+  const n = frame.dataState?.length ?? 0;
+  if (n === 0) return;
   
   
   const maxTotalW = w - MARGIN * 2;

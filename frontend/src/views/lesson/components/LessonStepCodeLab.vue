@@ -34,11 +34,7 @@
         <div v-show="activeTab === 'problem'" class="flex-1 overflow-y-auto p-5 space-y-4">
           <div class="flex items-center justify-between border-b border-border-subtle pb-3">
             <div>
-              <div class="flex items-center gap-1.5 text-xs font-bold text-accent uppercase tracking-wider">
-                <BaseIcon name="code" class="w-4 h-4" />
-                <span>Step 4 / 4 — Code Lab</span>
-              </div>
-              <h2 class="text-lg font-extrabold text-text-primary mt-0.5">{{ problemTitle }}</h2>
+              <h2 class="text-lg font-extrabold text-text-primary">{{ problemTitle }}</h2>
             </div>
             <span class="px-2.5 py-1 rounded-full text-[10px] font-bold bg-accent-green/80 text-accent-green border border-accent-green/30">
               Cơ bản
@@ -206,7 +202,6 @@ async function runTestcases(): Promise<void> {
   if (!props.codelabTask || isRunning.value) return;
   isRunning.value = true;
   runError.value = null;
-  activeTab.value = 'testcases';
   try {
     const result = await runCodelabTask(
       currentCode(),

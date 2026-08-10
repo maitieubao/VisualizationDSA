@@ -127,7 +127,7 @@ describe('Integration — Luồng Học Viên: Khóa học + Quiz Backend (giả
       await quizStore.loadQuizCatalog();
       expect(quizStore.quizCatalog).toHaveLength(1);
       expect(quizStore.quizCatalog[0].title).toBe('Bubble Sort');
-      expect(fetchMock).toHaveBeenCalledWith(`${API_ROOT}/concepts/quiz/all`);
+      expect(fetchMock).toHaveBeenCalledWith(`${API_ROOT}/concepts/quiz/all`, expect.anything());
 
       await quizStore.startBackendQuiz('quiz-1');
       expect(quizStore.isBackendQuizMode).toBe(true);

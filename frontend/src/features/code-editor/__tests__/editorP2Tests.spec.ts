@@ -392,7 +392,7 @@ describe('PS-003 (P2): Tab language', () => {
     vi.useRealTimers();
   });
 
-  it('pressing Tab key cycles to next language', () => {
+  it('pressing Ctrl+Tab cycles to next language (PS-014: Tab giữ focus mặc định)', () => {
     const pseudocodeStore = usePseudocodeStore();
     const animStore = useAnimationStore();
 
@@ -431,13 +431,13 @@ describe('PS-003 (P2): Tab language', () => {
     expect(pseudocodeStore.selectedLanguage).toBe('cpp');
 
     const viewport = wrapper.find('.code-viewport');
-    viewport.trigger('keydown', { key: 'Tab' });
+    viewport.trigger('keydown', { key: 'Tab', ctrlKey: true });
     expect(pseudocodeStore.selectedLanguage).toBe('java');
 
-    viewport.trigger('keydown', { key: 'Tab' });
+    viewport.trigger('keydown', { key: 'Tab', ctrlKey: true });
     expect(pseudocodeStore.selectedLanguage).toBe('python');
 
-    viewport.trigger('keydown', { key: 'Tab' });
+    viewport.trigger('keydown', { key: 'Tab', ctrlKey: true });
     expect(pseudocodeStore.selectedLanguage).toBe('cpp');
   });
 
@@ -575,7 +575,8 @@ describe('PS-006 (P2): Badge count', () => {
       { activeLogicalLineId: 'SWAP_STEP', variables: {} },
       { activeLogicalLineId: 'SWAP_STEP', variables: {} },
     ];
-    animStore.currentIndex = 0;
+    // PS-020: badge chỉ hiện trên dòng ACTIVE có nhiều occurrence — đặt vào frame SWAP_STEP
+    animStore.currentIndex = 2;
 
     const wrapper = mount(MultilingualCodePanel, {
       global: {

@@ -42,6 +42,13 @@ export interface VerificationResult {
 export interface UserQuizStats {
   totalAttempts: number;
   correctAnswers: number;
+  /**
+   * Streak ngữ nghĩa PHIÊN (session streak): số câu trả lời đúng LIÊN TIẾP
+   * kể từ lần trả lời sai gần nhất. Trả lời sai → reset về 0.
+   * KHÔNG mang nghĩa "thành tích lịch sử" — kỷ lục dài nhất nằm ở `bestStreak`.
+   */
   streak: number;
+  /** Streak ngữ nghĩa LIFETIME (best streak): kỷ lục streak dài nhất từng đạt được, không bao giờ giảm. */
+  bestStreak: number;
   completedQuizzes: string[];
 }

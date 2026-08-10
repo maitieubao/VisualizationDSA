@@ -1,13 +1,5 @@
 <template>
   <div class="lesson-step-viz flex flex-col h-full w-full bg-bg-secondary relative overflow-hidden">
-    <button
-      @click="$emit('completeStep')"
-      class="absolute top-3 right-4 z-30 px-3.5 py-1.5 bg-accent/90 hover:bg-accent text-white rounded-xl text-xs font-bold transition-all shadow-lg backdrop-blur-md cursor-pointer border border-accent/30 flex items-center gap-1.5"
-    >
-      <span>Tiếp Tục Làm Quiz</span>
-      <BaseIcon name="arrow-right" class="w-3.5 h-3.5" />
-    </button>
-
     <div class="flex-1 min-h-0 relative w-full h-full">
       <AlgoPlaygroundWorkspace
         v-if="resolved.demoId"

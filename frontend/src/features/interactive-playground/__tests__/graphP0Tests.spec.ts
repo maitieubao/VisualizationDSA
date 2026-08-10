@@ -1,22 +1,18 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { setActivePinia, createPinia } from 'pinia';
+// @vitest-environment jsdom
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
+import { mount } from '@vue/test-utils';
+import { setActivePinia, createPinia, type Pinia } from 'pinia';
 import { usePlaygroundStore } from '../store/usePlaygroundStore';
 import { GraphAlgorithmSimulator } from '../services/GraphAlgorithmSimulator';
+import InteractivePlayground from '../components/InteractivePlayground.vue';
+import { installCanvasMock } from './canvasMock';
 import type { NodeDTO, EdgeDTO } from '../store/usePlaygroundStore';
 
-vi.stubGlobal('HTMLCanvasElement', class HTMLCanvasElement {});
-(globalThis as any).HTMLCanvasElement.prototype.getContext = vi.fn(() => ({
-  fillRect: vi.fn(),
-  clearRect: vi.fn(),
-  fillText: vi.fn(),
-  measureText: vi.fn(() => ({ width: 10 })),
-  beginPath: vi.fn(),
-  arc: vi.fn(),
-  fill: vi.fn(),
-  stroke: vi.fn(),
-  moveTo: vi.fn(),
-  lineTo: vi.fn(),
-})) as any;
+class MockResizeObserver {
+  observe() {}
+  unobserve() {}
+  disconnect() {}
+}
 
 describe('Interactive Playground — Store & Simulator (P0/P1)', () => {
 
@@ -218,40 +214,76 @@ describe('Interactive Playground — Store & Simulator (P0/P1)', () => {
     });
   });
 
-  describe('IP-008 (P1): Export JSON', () => {
-    it('exportGraph() returns valid JSON string representing the graph', () => {
-      const store = usePlaygroundStore();
-      const n1 = store.addNode(100, 100);
-      const n2 = store.addNode(200, 200);
-      store.addEdge(n1!.id, n2!.id);
-      const jsonStr = JSON.stringify({
-        type: store.graphType,
-        nodes: store.nodes,
-        edges: store.edges,
-      });
-      expect(typeof jsonStr).toBe('string');
-      const parsed = JSON.parse(jsonStr);
-      expect(parsed.type).toBe('undirected');
-      expect(parsed.nodes.length).toBe(2);
-      expect(parsed.edges.length).toBe(1);
-      expect(parsed.nodes[0].label).toBe('A');
+  describe('IP-034 (P1): Export JSON — hành vi thật qua component', () => {
+    let pinia: Pinia;
+
+    beforeEach(() => {
+      pinia = createPinia();
+      setActivePinia(pinia);
+      installCanvasMock();
+      vi.stubGlobal('ResizeObserver', MockResizeObserver);
+      vi.useFakeTimers();
+      vi.stubGlobal('requestAnimationFrame', (cb: FrameRequestCallback) => setTimeout(() => cb(performance.now()), 16) as unknown as number);
+      vi.stubGlobal('cancelAnimationFrame', (id: number) => clearTimeout(id));
     });
 
-    it('exported JSON can be round-tripped back to equivalent data', () => {
+    afterEach(() => {
+      vi.unstubAllGlobals();
+      vi.useRealTimers();
+    });
+
+    async function settle(wrapper: ReturnType<typeof mount>): Promise<void> {
+      await wrapper.vm.$nextTick();
+      await wrapper.vm.$nextTick();
+    }
+
+    it('click nút "Xuất JSON" tạo Blob JSON đúng đồ thị hiện tại + toast thành công', async () => {
       const store = usePlaygroundStore();
-      store.addNode(50, 50);
-      store.addNode(150, 150);
-      store.setGraphType('directed');
-      const jsonStr = JSON.stringify({
-        type: store.graphType,
-        nodes: store.nodes,
-        edges: store.edges,
+      const n1 = store.addNode(100, 100)!;
+      const n2 = store.addNode(200, 200)!;
+      const edge = store.addEdge(n1!.id, n2!.id)!;
+      const wrapper = mount(InteractivePlayground, {
+        global: { plugins: [pinia], stubs: { BaseIcon: true } },
       });
-      const parsed = JSON.parse(jsonStr);
-      const store2 = usePlaygroundStore();
-      store2.setGraphType(parsed.type);
-      expect(store2.graphType).toBe('directed');
-      expect(parsed.nodes.length).toBe(2);
+      await settle(wrapper);
+
+      const createObjectURL = vi.spyOn(URL, 'createObjectURL').mockReturnValue('blob:mock');
+      const revokeObjectURL = vi.spyOn(URL, 'revokeObjectURL').mockImplementation(() => {});
+      const clickSpy = vi.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(() => {});
+
+      await wrapper.find('button[aria-label="Xuất JSON"]').trigger('click');
+      await settle(wrapper);
+
+      expect(createObjectURL).toHaveBeenCalledTimes(1);
+      expect(clickSpy).toHaveBeenCalledTimes(1);
+      const blob = createObjectURL.mock.calls[0][0] as Blob;
+      const parsed = JSON.parse(await blob.text());
+      expect(parsed.nodes).toHaveLength(2);
+      expect(parsed.nodes[0].label).toBe('A');
+      expect(parsed.edges).toHaveLength(1);
+      expect(parsed.edges[0].id).toBe(edge.id);
+      expect(wrapper.text()).toContain('Đã xuất đồ thị thành công!');
+
+      clickSpy.mockRestore();
+      createObjectURL.mockRestore();
+      revokeObjectURL.mockRestore();
+      wrapper.unmount();
+    });
+
+    it('export đồ thị rỗng → toast lỗi, không tạo Blob', async () => {
+      const wrapper = mount(InteractivePlayground, {
+        global: { plugins: [pinia], stubs: { BaseIcon: true } },
+      });
+      await settle(wrapper);
+
+      const createObjectURL = vi.spyOn(URL, 'createObjectURL').mockReturnValue('blob:mock');
+      await wrapper.find('button[aria-label="Xuất JSON"]').trigger('click');
+      await settle(wrapper);
+
+      expect(createObjectURL).not.toHaveBeenCalled();
+      expect(wrapper.text()).toContain('Không có đồ thị nào để xuất.');
+      createObjectURL.mockRestore();
+      wrapper.unmount();
     });
   });
 });

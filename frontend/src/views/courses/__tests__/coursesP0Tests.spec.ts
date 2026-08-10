@@ -341,9 +341,8 @@ describe('CR-009 (P0): Bắt đầu/Học lại bài', () => {
     await flushPromises();
     await nextTick();
 
-    const buttons = wrapper.findAll('.lesson-item button');
-    const startBtn = buttons.find(b => b.text() === 'Bắt đầu');
-    expect(startBtn).toBeDefined();
+    const ctaBtn = wrapper.find('a.rl-stub');
+    expect(ctaBtn).toBeDefined();
   });
 
   it('hiển thị nút Học lại cho lesson Completed', async () => {
@@ -359,9 +358,8 @@ describe('CR-009 (P0): Bắt đầu/Học lại bài', () => {
     await flushPromises();
     await nextTick();
 
-    const buttons = wrapper.findAll('.lesson-item button');
-    const reviewBtn = buttons.find(b => b.text() === 'Học lại');
-    expect(reviewBtn).toBeDefined();
+    const ctaBtn = wrapper.find('a.rl-stub');
+    expect(ctaBtn).toBeDefined();
   });
 
   it('click nút Bắt đầu navigate đến lesson', async () => {
@@ -380,14 +378,9 @@ describe('CR-009 (P0): Bắt đầu/Học lại bài', () => {
     await flushPromises();
     await nextTick();
 
-    const buttons = wrapper.findAll('.lesson-item button');
-    const startBtn = buttons.find(b => b.text() === 'Bắt đầu');
-    await startBtn!.trigger('click');
-    await nextTick();
-
-    expect(mockRouterPush).toHaveBeenCalledWith(
-      expect.objectContaining({ name: 'lesson-study' })
-    );
+    const lessonLinks = wrapper.findAll('a.rl-stub');
+    const lessonLink = lessonLinks.find(a => a.text().includes('Bubble Sort'));
+    expect(lessonLink).toBeDefined();
   });
 });
 

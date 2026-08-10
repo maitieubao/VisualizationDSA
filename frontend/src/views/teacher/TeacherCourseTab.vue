@@ -327,11 +327,14 @@ async function uploadCoverImage(event: Event) {
 }
 
 async function deleteCourse(courseId: string) {
-  if (!confirm('Bạn có chắc chắn muốn xóa khóa học này?')) return;
+  const course = coursesList.value.find(c => c.id === courseId);
+  const lessonCount = course?.totalLessons ?? 0;
+  if (!confirm(`Bạn có chắc chắn muốn xóa khóa học "${course?.title}"?` + `\n\nHành động này sẽ xóa vĩnh viễn ${lessonCount} bài giảng và toàn bộ dữ liệu liên quan (tiến độ học tập, bình luận, quiz attempts).` + '\n\nKHÔNG THỂ HOÀN TẤT!')) return;
   try {
     const res = await fetch(`${BASE_URL}/api/v1/concepts/courses/${courseId}`, { method: 'DELETE', headers: getAuthHeaders() });
-    if (res.ok) { alert('Xóa thành công!'); await loadCourses(); }
-  } catch (err) { console.error(err); }
+    if (res.ok) { const data = await res.json(); alert(data.message || 'Xóa thành công!'); await loadCourses(); }
+    else { const err = await res.json(); alert(err.message || 'Lỗi khi xóa khóa học.'); }
+  } catch (err) { console.error(err); alert('Lỗi kết nối.'); }
 }
 
 function addNewLessonToCourse(c: any) {
@@ -365,6 +368,7 @@ async function deleteLesson(lessonId: string, courseId: string) {
   try {
     const res = await fetch(`${BASE_URL}/api/v1/concepts/lessons/${lessonId}`, { method: 'DELETE', headers: getAuthHeaders() });
     if (res.ok) { alert('Xóa thành công!'); await loadCourseLessons(courseId); await loadCourses(); }
+    else { const err = await res.json(); alert(err.message || 'Lỗi khi xóa bài giảng.'); }
   } catch (err) { console.error(err); }
 }
 

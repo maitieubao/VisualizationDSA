@@ -199,6 +199,23 @@ namespace VisualizationDSA.Domain.Strategies
             _refreshTokens.TryRemove(refreshTokenValue, out _);
         }
 
+        /// <summary>
+        /// Thu hẹn toàn bộ refresh tokens của một user — dùng khi Admin ban tài khoản.
+        /// Trước đây chỉ revoke 1 token, các thiết bị khác vẫn dùng refresh token cũ truy cập được.
+        /// </summary>
+        public void RevokeAllRefreshTokens(string userId)
+        {
+            var tokensToRemove = _refreshTokens
+                .Where(kvp => kvp.Value.UserId == userId)
+                .Select(kvp => kvp.Key)
+                .ToList();
+
+            foreach (var token in tokensToRemove)
+            {
+                _refreshTokens.TryRemove(token, out _);
+            }
+        }
+
         public StatelessUserDto UpdateProfile(string userId, string? newUsername, string? newNickname = null, string? newBio = null, string? newUniversity = null)
         {
             if (!_usersById.TryGetValue(userId, out var user))

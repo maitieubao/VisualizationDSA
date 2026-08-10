@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { setActivePinia, createPinia } from 'pinia';
-import { useInputStore } from '../store/useInputStore';
+import { useInputStore, ALGORITHM_LIMITS } from '../store/useInputStore';
 
 describe('useInputStore', () => {
   beforeEach(() => {
@@ -294,12 +294,121 @@ describe('useInputStore', () => {
       expect(store.isLoading).toBe(false);
     });
 
+    it('sets isLoading to true during submission', async () => {
+      let resolveFetch: (value: Response) => void;
+      const fetchPromise = new Promise<Response>((resolve) => { resolveFetch = resolve; });
+      vi.spyOn(globalThis, 'fetch').mockReturnValue(fetchPromise);
+
+      const store = useInputStore();
+      store.rawText = '5, 3, 8';
+      const submitPromise = store.submitCustomInput('bubble-sort');
+      expect(store.isLoading).toBe(true);
+
+      resolveFetch!(new Response(JSON.stringify({
+        algorithmId: 'bubble-sort', pseudoCode: ['line1'],
+        frames: [{ stepId: 1, activeLine: 0, explanation: 'test', dataState: [1, 2], highlights: { compare: [], swap: [], sorted: [] } }],
+      }), { status: 200 }));
+      await submitPromise;
+      expect(store.isLoading).toBe(false);
+    });
+
+    it('clears apiErrorMessage before new submission', async () => {
+      const store = useInputStore();
+      store.rawText = '5, 3, 8';
+      store.apiErrorMessage = 'previous error';
+      vi.spyOn(globalThis, 'fetch').mockResolvedValue(
+        new Response(JSON.stringify({
+          algorithmId: 'bubble-sort', pseudoCode: ['line1'],
+          frames: [{ stepId: 1, activeLine: 0, explanation: 'test', dataState: [1], highlights: { compare: [], swap: [], sorted: [] } }],
+        }), { status: 200 }),
+      );
+      await store.submitCustomInput('bubble-sort');
+      expect(store.apiErrorMessage).toBe('');
+    });
+
+    it('sets apiErrorMessage when API returns HTTP error', async () => {
+      vi.spyOn(globalThis, 'fetch').mockResolvedValue(
+        new Response(JSON.stringify({ message: 'Internal Server Error' }), { status: 500 }),
+      );
+      const store = useInputStore();
+      store.rawText = '5, 3, 8';
+      await store.submitCustomInput('bubble-sort');
+      expect(store.apiErrorMessage).toContain('Máy chủ báo lỗi');
+      expect(store.isLoading).toBe(false);
+    });
+
+    it('sets apiErrorMessage when network fails', async () => {
+      vi.spyOn(globalThis, 'fetch').mockRejectedValue(new Error('Network error'));
+      const store = useInputStore();
+      store.rawText = '5, 3, 8';
+      await store.submitCustomInput('bubble-sort');
+      expect(store.apiErrorMessage).toContain('Không kết nối được máy chủ');
+      expect(store.isLoading).toBe(false);
+    });
+
     it('uses dummy fallback when API is unreachable', async () => {
       vi.spyOn(globalThis, 'fetch').mockRejectedValue(new Error('Network error'));
       const store = useInputStore();
       store.rawText = '5, 3, 8';
       await store.submitCustomInput('bubble-sort');
       expect(store.isLoading).toBe(false);
+    });
+  });
+
+  describe('ALGORITHM_LIMITS', () => {
+    it('has correct limits for sorting algorithms', () => {
+      expect(ALGORITHM_LIMITS['bubble-sort']).toBe(50);
+      expect(ALGORITHM_LIMITS['quick-sort']).toBe(150);
+      expect(ALGORITHM_LIMITS['merge-sort']).toBe(150);
+      expect(ALGORITHM_LIMITS['heap-sort']).toBe(150);
+      expect(ALGORITHM_LIMITS['selection-sort']).toBe(50);
+      expect(ALGORITHM_LIMITS['insertion-sort']).toBe(50);
+    });
+
+    it('has correct limits for searching algorithms', () => {
+      expect(ALGORITHM_LIMITS['linear-search']).toBe(100);
+      expect(ALGORITHM_LIMITS['binary-search']).toBe(150);
+    });
+
+    it('has correct limits for data structure algorithms', () => {
+      expect(ALGORITHM_LIMITS['stack']).toBe(20);
+      expect(ALGORITHM_LIMITS['queue']).toBe(20);
+      expect(ALGORITHM_LIMITS['bst']).toBe(15);
+    });
+  });
+
+  describe('setAlgorithmLimit', () => {
+    it('sets maxLimit to bubble-sort limit (50)', () => {
+      const store = useInputStore();
+      store.setAlgorithmLimit('bubble-sort');
+      expect(store.maxLimit).toBe(50);
+    });
+
+    it('sets maxLimit to binary-search limit (150)', () => {
+      const store = useInputStore();
+      store.setAlgorithmLimit('binary-search');
+      expect(store.maxLimit).toBe(150);
+    });
+
+    it('sets maxLimit to stack limit (20)', () => {
+      const store = useInputStore();
+      store.setAlgorithmLimit('stack');
+      expect(store.maxLimit).toBe(20);
+    });
+
+    it('falls back to DEFAULT_LIMIT for unknown algorithm', () => {
+      const store = useInputStore();
+      store.setAlgorithmLimit('unknown-algo');
+      expect(store.maxLimit).toBe(15);
+    });
+
+    it('updates canExecute after changing limit', () => {
+      const store = useInputStore();
+      store.rawText = '1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16';
+      expect(store.canExecute).toBe(false);
+
+      store.setAlgorithmLimit('binary-search');
+      expect(store.canExecute).toBe(true);
     });
   });
 });
