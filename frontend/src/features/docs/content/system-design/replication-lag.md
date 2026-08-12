@@ -79,7 +79,9 @@ Lag = Thời_gian_Replica_áp_dụng - Thời_gian_Primary_ghi
 
 ### Giới hạn lag hợp lệ {#valid-range}
 
-| Loại hệ thống | Lag tối đa chấp nhận được |
+> Các con số dưới đây là **giá trị minh họa (giả định mô phỏng)** dùng cho các ví dụ trong bài — không phải quy tắc chung của ngành. Lag thực tế phụ thuộc hạ tầng cụ thể (mạng, kích thước bản ghi, tần suất ghi...).
+
+| Loại hệ thống | Lag tối đa chấp nhận được (minh họa) |
 | :--- | :--- |
 | Web thông thường | 100ms - 1s |
 | E-commerce | 100ms - 500ms |
@@ -126,7 +128,7 @@ const sleep = (ms: number) => new Promise<void>(resolve => setTimeout(resolve, m
 
 ### Scenario: Lag không hợp lệ {#invalid-lag}
 
-- Lag được cấu hình trong khoảng **[100ms, 5000ms]**.
+- Trong mô phỏng này, lag được cấu hình (clamp) trong khoảng **[100ms, 5000ms]** — các giá trị này chỉ là thông số của mô phỏng để minh họa cơ chế chặn biên.
 - Nếu cố đặt lag = 10ms → hệ thống tự động **ép về 100ms** (giới hạn tối thiểu).
 - Nếu cố đặt lag = 10000ms → hệ thống tự động **ép về 5000ms** (giới hạn tối đa).
 

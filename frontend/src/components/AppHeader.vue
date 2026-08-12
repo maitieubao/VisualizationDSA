@@ -1,5 +1,6 @@
 <template>
-  <header class="app-header z-[999999]" style="position: relative; z-index: 999999 !important;">
+  <!-- CU-033: bỏ z-[999999] + !important trùng — App.css .app-header đã giữ 1 tầng z-index duy nhất -->
+  <header ref="headerRef" class="app-header">
     <div class="app-header__inner">
 
       
@@ -20,24 +21,40 @@
       </div>
 
       
+      <!-- CU-005: dropdown mở bằng click/focus/mouse — aria-expanded + haspopup + Esc -->
       <nav class="header-nav flex-1 flex justify-center items-center px-4 hidden lg:flex space-x-1">
         <template v-for="tabOrGroup in filteredTabs" :key="'groupName' in tabOrGroup ? tabOrGroup.groupName : tabOrGroup.id">
           
           
-          <div v-if="'groupName' in tabOrGroup" class="relative group header-nav-item z-[999999]">
-            <button class="flex items-center space-x-1 px-3 py-2 text-sm font-medium text-text-secondary hover:text-text-primary rounded-md transition-colors group-hover:bg-bg-hover">
+          <div
+            v-if="'groupName' in tabOrGroup"
+            class="relative header-nav-item"
+            @mouseenter="openGroup = tabOrGroup.groupName"
+            @mouseleave="closeGroup(tabOrGroup.groupName)"
+            @focusout="handleGroupFocusOut(tabOrGroup.groupName, $event)"
+          >
+            <button
+              type="button"
+              class="flex items-center space-x-1 px-3 py-2 text-sm font-medium text-text-secondary hover:text-text-primary rounded-md transition-colors"
+              :class="{ 'bg-bg-hover text-text-primary': openGroup === tabOrGroup.groupName }"
+              :aria-expanded="openGroup === tabOrGroup.groupName"
+              aria-haspopup="true"
+              @click="toggleGroup(tabOrGroup.groupName)"
+              @keydown.esc.prevent="closeGroup(tabOrGroup.groupName)"
+            >
               <span>{{ tabOrGroup.groupName }}</span>
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="opacity-70 group-hover:opacity-100 transition-transform group-hover:rotate-180">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="opacity-70 transition-transform" :class="{ 'rotate-180': openGroup === tabOrGroup.groupName }">
                 <polyline points="6 9 12 15 18 9"></polyline>
               </svg>
             </button>
             
-            <div class="absolute left-0 mt-0 w-48 pt-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-[999999]" style="z-index: 999999 !important;">
-              <div class="bg-bg-surface border border-border-default rounded-lg shadow-xl py-1 relative z-[999999]">
+            <div v-show="openGroup === tabOrGroup.groupName" class="nav-dropdown-panel absolute left-0 mt-0 w-48 pt-2" role="menu" @click="closeGroup(tabOrGroup.groupName)">
+              <div class="bg-bg-surface border border-border-default rounded-lg shadow-xl py-1">
                 <router-link 
                   v-for="item in tabOrGroup.items" 
                   :key="item.id" 
                   :to="item.path"
+                  role="menuitem"
                   class="block px-4 py-2 text-sm text-text-secondary hover:text-accent hover:bg-bg-hover transition-colors"
                   active-class="text-accent bg-bg-active font-medium"
                 >
@@ -67,14 +84,41 @@
       <div class="header-controls">
 
         
+        <!-- CU-004: hamburger mở drawer mobile (<1024px nav không còn mất trắng) -->
+        <button
+          type="button"
+          class="btn-icon btn-icon--ghost lg:hidden"
+          aria-label="Mở menu điều hướng"
+          aria-haspopup="dialog"
+          :aria-expanded="mobileMenuOpen"
+          aria-controls="mobile-nav-drawer"
+          @click="mobileMenuOpen = true"
+        >
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+            <line x1="3" y1="6" x2="21" y2="6"></line>
+            <line x1="3" y1="12" x2="21" y2="12"></line>
+            <line x1="3" y1="18" x2="21" y2="18"></line>
+          </svg>
+        </button>
+
+        
         <template v-if="authStore.isAuthenticated">
           
           <NotificationBell />
           
           <span v-if="authStore.isPremium" class="premium-crown" title="Thành viên Premium"><BaseIcon name="crown" class="w-4 h-4" /></span>
-          <div class="user-badge" :class="{ 'user-badge--premium': authStore.isPremium }" @click="$router.push('/profile')" title="Xem hồ sơ cá nhân">
+          <!-- CU-019: user-badge là button — keyboard accessible -->
+          <button
+            type="button"
+            class="user-badge"
+            :class="{ 'user-badge--premium': authStore.isPremium }"
+            @click="$router.push('/profile')"
+            title="Xem hồ sơ cá nhân"
+          >
             <div class="user-badge__avatar" :class="{ 'user-badge__avatar--premium': authStore.isPremium }">
-              {{ authStore.userName.charAt(0).toUpperCase() }}
+              <!-- AU-052: fallback regex [A-Za-zÀ-ỹ] trước charAt(0); không khớp → icon user mặc định -->
+              <template v-if="avatarLetter">{{ avatarLetter }}</template>
+              <BaseIcon v-else name="user" class="w-4 h-4" />
             </div>
             <div class="user-badge__info">
               <div class="user-badge__name-row">
@@ -87,7 +131,7 @@
                 <span class="meta-xp">{{ authStore.userXP }} XP</span>
               </div>
             </div>
-          </div>
+          </button>
           <button
             class="btn-icon btn-icon--ghost"
             title="Đăng xuất"
@@ -164,16 +208,78 @@
 
     </div>
   </header>
+
+  
+  <!-- CU-004: drawer mobile — nav không mất trắng < 1024px (pattern DocsLayout DC-001) -->
+  <Teleport to="body">
+    <Transition name="mobile-nav-fade">
+      <div
+        v-if="mobileMenuOpen"
+        class="mobile-nav-overlay"
+        aria-hidden="true"
+        @click="mobileMenuOpen = false"
+      ></div>
+    </Transition>
+    <Transition name="mobile-nav-slide">
+      <aside
+        v-if="mobileMenuOpen"
+        id="mobile-nav-drawer"
+        class="mobile-nav-drawer"
+        role="dialog"
+        aria-modal="true"
+        aria-label="Menu điều hướng"
+      >
+        <div class="mobile-nav-header">
+          <span class="mobile-nav-brand">~/ VisualizationDSA</span>
+          <button
+            type="button"
+            class="mobile-nav-close"
+            aria-label="Đóng menu điều hướng"
+            @click="mobileMenuOpen = false"
+          >
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+              <line x1="18" y1="6" x2="6" y2="18"></line>
+              <line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
+          </button>
+        </div>
+        <nav class="mobile-nav-body">
+          <template v-for="tabOrGroup in filteredTabs" :key="'groupName' in tabOrGroup ? tabOrGroup.groupName : tabOrGroup.id">
+            <div v-if="'groupName' in tabOrGroup" class="mobile-nav-group">
+              <p class="mobile-nav-group-title">{{ tabOrGroup.groupName }}</p>
+              <router-link
+                v-for="item in tabOrGroup.items"
+                :key="item.id"
+                :to="item.path"
+                class="mobile-nav-link"
+                @click="mobileMenuOpen = false"
+              >
+                {{ item.name }}
+              </router-link>
+            </div>
+            <router-link
+              v-else
+              :to="tabOrGroup.path"
+              class="mobile-nav-link mobile-nav-link--solo"
+              @click="mobileMenuOpen = false"
+            >
+              {{ tabOrGroup.name }}
+            </router-link>
+          </template>
+        </nav>
+      </aside>
+    </Transition>
+  </Teleport>
 </template>
 
 <script setup lang="ts">
+import { ref, computed, watch, onBeforeUnmount } from 'vue';
 import { useAuthStore } from '../features/auth/store/useAuthStore';
 import { useGuidedTourStore } from '../features/guided-tour/store/useGuidedTourStore';
 import { useThemeStore } from '../shared/store/useThemeStore';
 import NotificationBell from '../features/notifications/components/NotificationBell.vue';
 import { APP_TABS } from '../appTabs';
 import type { TabGroup, TabItem } from '../appTabs';
-import { computed } from 'vue';
 
 const authStore = useAuthStore();
 const tourStore = useGuidedTourStore();
@@ -183,6 +289,15 @@ defineEmits<{
   (e: 'logout'): void;
   (e: 'openLogin'): void;
 }>();
+
+// AU-052: ký tự đầu tiên là chữ (hỗ trợ tiếng Việt); username số/ký tự đặc biệt → null (dùng icon).
+const avatarLetter = computed(() => {
+  const name = authStore.userName.trim();
+  for (const ch of name) {
+    if (/[A-Za-zÀ-ỹ]/.test(ch)) return ch.toUpperCase();
+  }
+  return null;
+});
 
 const filteredTabs = computed(() => {
   return APP_TABS.filter((tabOrGroup) => {
@@ -213,4 +328,199 @@ function isTabVisible(tab: TabItem): boolean {
   }
   return true;
 }
+
+// ─── CU-005: dropdown trạng thái mở — click/focus-within/mouse, đóng bằng Esc hoặc click ngoài ───
+const openGroup = ref<string | null>(null);
+const headerRef = ref<HTMLElement | null>(null);
+
+function toggleGroup(groupName: string): void {
+  openGroup.value = openGroup.value === groupName ? null : groupName;
+}
+
+function closeGroup(groupName: string): void {
+  if (openGroup.value === groupName) openGroup.value = null;
+}
+
+function handleGroupFocusOut(groupName: string, e: FocusEvent): void {
+  const related = e.relatedTarget as HTMLElement | null;
+  if (!related || !(e.currentTarget as HTMLElement).contains(related)) {
+    closeGroup(groupName);
+  }
+}
+
+// Đóng dropdown khi click ra ngoài header.
+watch(openGroup, (val) => {
+  if (val) {
+    document.addEventListener('click', onDocumentClick);
+  } else {
+    document.removeEventListener('click', onDocumentClick);
+  }
+});
+
+function onDocumentClick(e: MouseEvent): void {
+  const target = e.target as HTMLElement | null;
+  if (!target || !headerRef.value?.contains(target)) {
+    openGroup.value = null;
+  }
+}
+
+onBeforeUnmount(() => {
+  document.removeEventListener('click', onDocumentClick);
+  document.removeEventListener('keydown', onMobileMenuKeydown);
+  document.body.style.overflow = '';
+});
+
+// ─── CU-004: drawer mobile — Esc đóng + khóa scroll body ───
+const mobileMenuOpen = ref(false);
+
+function onMobileMenuKeydown(e: KeyboardEvent): void {
+  if (e.key === 'Escape' && mobileMenuOpen.value) {
+    mobileMenuOpen.value = false;
+  }
+}
+
+watch(mobileMenuOpen, (open) => {
+  if (open) {
+    document.body.style.overflow = 'hidden';
+    document.addEventListener('keydown', onMobileMenuKeydown);
+  } else {
+    document.body.style.overflow = '';
+    document.removeEventListener('keydown', onMobileMenuKeydown);
+  }
+});
 </script>
+
+<style scoped>
+/* CU-019: reset mặc định button cho user-badge (vốn là div @click) */
+.user-badge {
+  font-family: inherit;
+  text-align: left;
+}
+.user-badge:focus-visible {
+  outline: 2px solid var(--color-accent-primary);
+  outline-offset: 2px;
+}
+
+/* CU-005: dropdown nổi trong stacking context của header — không cần z-index khổng lồ */
+.nav-dropdown-panel {
+  z-index: 50;
+}
+
+/* ─── CU-004: drawer mobile (Teleport) ─── */
+.mobile-nav-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.55);
+  z-index: 100000;
+  backdrop-filter: blur(2px);
+}
+
+.mobile-nav-drawer {
+  position: fixed;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  width: min(320px, 85vw);
+  z-index: 100001;
+  display: flex;
+  flex-direction: column;
+  background: color-mix(in srgb, var(--color-bg-surface) 88%, transparent);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-right: 1px solid var(--color-border-default);
+  box-shadow: 12px 0 32px rgba(0, 0, 0, 0.35);
+}
+
+.mobile-nav-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--color-border-default);
+}
+
+.mobile-nav-brand {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--color-text-primary);
+}
+
+.mobile-nav-close {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background: transparent;
+  border: none;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.mobile-nav-close:hover {
+  background: var(--color-bg-hover);
+  color: var(--color-text-primary);
+}
+
+.mobile-nav-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 12px 8px 24px;
+}
+
+.mobile-nav-group-title {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--color-text-muted);
+  padding: 14px 12px 6px;
+}
+
+.mobile-nav-link {
+  display: block;
+  padding: 10px 12px;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--color-text-secondary);
+  transition: all 0.15s;
+}
+.mobile-nav-link:hover,
+.mobile-nav-link.router-link-active {
+  background: var(--color-bg-hover);
+  color: var(--color-accent-primary);
+}
+
+.mobile-nav-link--solo {
+  margin-top: 4px;
+}
+
+/* Desktop ≥1024px: drawer mở sẵn cũng ẩn (chỉ hamburger mới mở được). */
+@media (min-width: 1024px) {
+  .mobile-nav-overlay,
+  .mobile-nav-drawer {
+    display: none;
+  }
+}
+
+.mobile-nav-fade-enter-active,
+.mobile-nav-fade-leave-active {
+  transition: opacity 0.25s ease;
+}
+.mobile-nav-fade-enter-from,
+.mobile-nav-fade-leave-to {
+  opacity: 0;
+}
+
+.mobile-nav-slide-enter-active,
+.mobile-nav-slide-leave-active {
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.mobile-nav-slide-enter-from,
+.mobile-nav-slide-leave-to {
+  transform: translateX(-100%);
+}
+</style>

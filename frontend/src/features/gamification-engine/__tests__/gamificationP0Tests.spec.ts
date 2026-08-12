@@ -89,7 +89,7 @@ describe('GM-002 (P0): Badges render', () => {
       global: { components: { BaseIcon } },
       props: {
         allBadges: BADGE_TEMPLATES,
-        unlockedBadges: ['sorting-champion', 'streak-warrior'],
+        unlockedBadges: ['sorting-wizard', 'streak-keeper'],
       },
     });
     const unlocked = wrapper.findAll('.badge-unlocked');
@@ -102,7 +102,7 @@ describe('GM-002 (P0): Badges render', () => {
       global: { components: { BaseIcon } },
       props: {
         allBadges: BADGE_TEMPLATES,
-        unlockedBadges: ['sorting-champion'],
+        unlockedBadges: ['sorting-wizard'],
       },
     });
     const locked = wrapper.findAll('.badge-locked');
@@ -118,9 +118,9 @@ describe('GM-002 (P0): Badges render', () => {
         unlockedBadges: [],
       },
     });
-    expect(wrapper.text()).toContain('Recursion Master');
-    expect(wrapper.text()).toContain('SOLID Architect');
-    expect(wrapper.text()).toContain('Sorting Champion');
+    expect(wrapper.text()).toContain('Sorting Wizard');
+    expect(wrapper.text()).toContain('OOP Guru');
+    expect(wrapper.text()).toContain('DSA Champion');
   });
 });
 
@@ -212,7 +212,7 @@ describe('GM-007 (P1): Mở khóa badge', () => {
     store.earnXPLocal(200);
     store.earnXPLocal(200);
     store.completedAlgorithms.push('sorting');
-    store.setStreakForTesting(3);
+    store.activeStreak = 3;
     store.checkAndUnlockBadges();
     expect(store.unlockedBadges.length).toBeGreaterThan(0);
   });
@@ -221,9 +221,9 @@ describe('GM-007 (P1): Mở khóa badge', () => {
     const store = useGamificationStore();
     store.earnXPLocal(200);
     store.earnXPLocal(200);
-    store.setStreakForTesting(3);
+    store.activeStreak = 3;
     store.checkAndUnlockBadges();
-    expect(store.unlockedBadges).not.toContain('sorting-champion');
+    expect(store.unlockedBadges).not.toContain('sorting-wizard');
   });
 
   it('checkAndUnlockBadges không mở lại badge đã unlock', () => {
@@ -231,7 +231,7 @@ describe('GM-007 (P1): Mở khóa badge', () => {
     store.earnXPLocal(200);
     store.earnXPLocal(200);
     store.completedAlgorithms.push('sorting');
-    store.setStreakForTesting(3);
+    store.activeStreak = 3;
     store.checkAndUnlockBadges();
     const firstCount = store.unlockedBadges.length;
     store.checkAndUnlockBadges();
@@ -244,7 +244,7 @@ describe('GM-007 (P1): Mở khóa badge', () => {
     store.earnXPLocal(200);
     store.earnXPLocal(200);
     store.completedAlgorithms.push('sorting');
-    store.setStreakForTesting(3);
+    store.activeStreak = 3;
     store.checkAndUnlockBadges();
     expect(store.lockedBadges.length).toBeLessThan(BADGE_TEMPLATES.length);
   });
@@ -294,10 +294,10 @@ describe('GM-012 (P1): Streak calculator', () => {
     expect(result.shouldUpdate).toBe(true);
   });
 
-  it('calculateUpdatedStreak không dùng freeze nếu streak <= 1', () => {
+  it('calculateUpdatedStreak dùng freeze cả khi streak = 1 (gap đúng 1 ngày)', () => {
     const result = StreakCalculator.calculateUpdatedStreak('2026-05-16', 1, '2026-05-18', 3);
     expect(result.nextStreak).toBe(1);
-    expect(result.freezeUsed).toBeUndefined();
+    expect(result.freezeUsed).toBe(true);
   });
 
   it('calculateUpdatedStreak bắt đầu streak mới từ 1', () => {

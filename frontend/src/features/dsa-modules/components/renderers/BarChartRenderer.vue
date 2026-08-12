@@ -6,7 +6,7 @@
 
 <script setup lang="ts">
 import { ref, watch, onMounted, onBeforeUnmount } from 'vue';
-import type { FrameDTO } from '../../types/algorithm.types';
+import type { FrameDTO, HighlightIndices } from '../../types/algorithm.types';
 
 const props = defineProps<{
   frame: FrameDTO | null;
@@ -49,10 +49,11 @@ function resizeCanvas(): void {
 }
 
 function determineColor(index: number, frame: FrameDTO, colors: Record<string, string>): string {
-  if (frame.highlights.sorted.includes(index)) return colors.sorted;
-  if (frame.highlights.pivot === index) return colors.pivot;
-  if (frame.highlights.swap.includes(index)) return colors.swap;
-  if (frame.highlights.compare.includes(index)) return colors.compare;
+  const highlights: HighlightIndices = frame.highlights ?? { compare: [], swap: [], sorted: [] };
+  if (highlights.sorted.includes(index)) return colors.sorted;
+  if (highlights.pivot === index) return colors.pivot;
+  if (highlights.swap.includes(index)) return colors.swap;
+  if (highlights.compare.includes(index)) return colors.compare;
   return colors.default;
 }
 
@@ -83,14 +84,16 @@ function renderCanvas(): void {
   ctx.fillRect(0, 0, w, h);
 
   const frame = props.frame;
-  if (!frame || frame.dataState.length === 0) return;
+  if (!frame) return;
+  const dataState = frame.dataState ?? [];
+  if (dataState.length === 0) return;
 
-  const n = frame.dataState.length;
+  const n = dataState.length;
   // EC-022: `Math.max(...frame.dataState, 1)` spread vỡ stack với mảng lớn
   // (RangeError: Maximum call stack size exceeded) — duyệt vòng lặp O(n) thay thế.
   let maxVal = 1;
   for (let i = 0; i < n; i++) {
-    const v = frame.dataState[i];
+    const v = dataState[i];
     if (v > maxVal) maxVal = v;
   }
   
@@ -100,7 +103,7 @@ function renderCanvas(): void {
   const drawableHeight = h - PADDING_TOP - MARGIN_BOTTOM;
 
   for (let i = 0; i < n; i++) {
-    const val = frame.dataState[i];
+    const val = dataState[i];
     const barH = (val / maxVal) * drawableHeight;
     const x = MARGIN + i * (colW + gapVal);
     const y = h - MARGIN_BOTTOM - barH;

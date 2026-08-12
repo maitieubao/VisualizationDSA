@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach, vi, type Mock } from 'vitest';
 import { ref } from 'vue';
 import { handleMouseDown, handleMouseMove } from '../components/canvasEventHandlers';
 import type { NodeDTO, EdgeDTO } from '../store/usePlaygroundStore';
@@ -8,16 +8,16 @@ type StoreMock = {
   isAlgorithmMode: boolean;
   hoveredNodeId: string | null;
   hoveredEdgeId: string | null;
-  setSourceNodeId: ReturnType<typeof vi.fn>;
-  selectNode: ReturnType<typeof vi.fn>;
-  clearSelection: ReturnType<typeof vi.fn>;
-  addNode: ReturnType<typeof vi.fn>;
-  selectEdge: ReturnType<typeof vi.fn>;
-  deleteNode: ReturnType<typeof vi.fn>;
-  deleteEdge: ReturnType<typeof vi.fn>;
-  moveNode: ReturnType<typeof vi.fn>;
-  setHoveredNodeId: ReturnType<typeof vi.fn>;
-  setHoveredEdgeId: ReturnType<typeof vi.fn>;
+  setSourceNodeId: Mock<(id: string) => void>;
+  selectNode: Mock<(id: string) => void>;
+  clearSelection: Mock<() => void>;
+  addNode: Mock<(x: number, y: number) => void>;
+  selectEdge: Mock<(id: string) => void>;
+  deleteNode: Mock<(id: string) => void>;
+  deleteEdge: Mock<(id: string) => void>;
+  moveNode: Mock<(id: string, x: number, y: number) => void>;
+  setHoveredNodeId: Mock<(id: string | null) => void>;
+  setHoveredEdgeId: Mock<(id: string | null) => void>;
 };
 
 const NODES: NodeDTO[] = [

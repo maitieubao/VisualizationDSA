@@ -42,6 +42,13 @@ namespace VisualizationDSA.Application.Features.Classrooms.Queries.GetStudentCla
         public Guid? LessonId { get; set; }
         public Guid? QuizId { get; set; }
         public Guid? CodelabId { get; set; }
+
+        // CR-003: nội dung bài Lesson (contentMd/sandboxType/sandboxConfig) — thiếu trước đây
+        // khiến ClassroomItemPlayer render bài Lesson classroom trống "Không có nội dung lý thuyết".
+        public string? ContentMd { get; set; }
+        public string? ContentMarkdown { get; set; }
+        public string? SandboxType { get; set; }
+        public string? SandboxConfig { get; set; }
         
         
         public string Status { get; set; } = "NotStarted";

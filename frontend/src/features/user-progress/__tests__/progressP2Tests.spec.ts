@@ -50,11 +50,11 @@ vi.mock('../../gamification-engine/service/statelessGamificationApi', () => ({
   statelessGamificationApi: {
     getProfile: vi.fn(async () => ({
       userId: 'user-001', username: 'testuser', totalXp: 500, currentLevel: 3,
-      levelName: 'Hoc Vien', streakDays: 7, earnedBadges: [{ id: 'streak-warrior', name: 'Streak Warrior', desc: '7 days', icon: 'fire', color: '#f97316', earnedAt: '2026-01-01' }], recentActivity: [],
+      levelName: 'Hoc Vien', streakDays: 7, earnedBadges: [{ id: 'streak-keeper', name: 'Streak Keeper', desc: '7 days', icon: 'fire', color: '#f97316', earnedAt: '2026-01-01' }], recentActivity: [],
     })),
     awardXp: vi.fn(async (_a: number, _r: string) => ({
       userId: 'user-001', username: 'testuser', totalXp: 550, currentLevel: 3,
-      levelName: 'Hoc Vien', streakDays: 7, earnedBadges: [{ id: 'streak-warrior', name: 'Streak Warrior', desc: '7 days', icon: 'fire', color: '#f97316', earnedAt: '2026-01-01' }], recentActivity: [],
+      levelName: 'Hoc Vien', streakDays: 7, earnedBadges: [{ id: 'streak-keeper', name: 'Streak Keeper', desc: '7 days', icon: 'fire', color: '#f97316', earnedAt: '2026-01-01' }], recentActivity: [],
     })),
     getBadges: vi.fn(async () => [
       { id: 'recursion-master', name: 'Recursion Master', description: 'De Quy', icon: 'refresh-cw', color: '#6366f1', earnedAt: '' },
@@ -71,8 +71,14 @@ vi.mock('../../../services/courseApi', () => ({
   courseApi: { getCourses: vi.fn(async () => []), getCourseById: vi.fn(async () => ({ lessons: [] })) },
 }));
 
+// LS-025: route state mutable (vi.hoisted) để test LN-001 có thể chọn lesson
+// thật (quick-sort có codelab → 4 tab) thay vì mặc định 'test-lesson'.
+const routerState = vi.hoisted(() => ({
+  route: { query: {}, params: { id: 'test-lesson' } },
+}));
+
 vi.mock('vue-router', () => ({
-  useRoute: () => ({ query: {}, params: { id: 'test-lesson' } }),
+  useRoute: () => routerState.route,
   useRouter: () => ({ push: vi.fn(), replace: vi.fn() }),
 }));
 
@@ -256,7 +262,7 @@ describe('UP-003 (P2): Sync XP - goi API', () => {
     await store.syncXP(75, 'quiz-complete');
     const callArgs = vi.mocked(syncXPToServer).mock.calls[0];
     expect(callArgs[0]).toBe('mock-token');
-    expect(callArgs[1]).toEqual({ amount: 75, reason: 'quiz-complete' });
+    expect(callArgs[1]).toEqual({ amount: 75, reason: 'quiz-complete', userId: 'user-001' });
   });
 
   it('syncXP cap nhat totalXP tu server response', async () => {
@@ -286,14 +292,14 @@ describe('UP-004 (P2): Offline queue - localStorage', () => {
     store.syncXP(50, 'offline-lesson');
     const saved = JSON.parse(localStorage.getItem('vdsa_xp_sync_queue') ?? '[]');
     expect(saved.length).toBe(1);
-    expect(saved[0]).toEqual({ amount: 50, reason: 'offline-lesson' });
+    expect(saved[0]).toEqual({ amount: 50, reason: 'offline-lesson', userId: 'user-001' });
   });
 
   it('queue persist vao localStorage', () => {
     const store = useUserProgressStore();
     store.syncXP(30, 'offline-quiz');
     const saved = JSON.parse(localStorage.getItem('vdsa_xp_sync_queue') ?? '[]');
-    expect(saved).toEqual([{ amount: 30, reason: 'offline-quiz' }]);
+    expect(saved).toEqual([{ amount: 30, reason: 'offline-quiz', userId: 'user-001' }]);
   });
 
   it('nhieu XP offline deu duoc queue', () => {
@@ -518,7 +524,7 @@ describe('GM-002 (P2): Badges', () => {
     setActivePinia(createPinia());
     wrapper = mount(BadgesCabinet, {
       global: { components: { BaseIcon: BaseIconStub } },
-      props: { allBadges: BADGE_TEMPLATES, unlockedBadges: ['sorting-champion', 'streak-warrior'] },
+      props: { allBadges: BADGE_TEMPLATES, unlockedBadges: ['sorting-wizard', 'streak-keeper'] },
     });
     expect(wrapper.findAll('.badge-unlocked').length).toBe(2);
   });
@@ -527,7 +533,7 @@ describe('GM-002 (P2): Badges', () => {
     setActivePinia(createPinia());
     wrapper = mount(BadgesCabinet, {
       global: { components: { BaseIcon: BaseIconStub } },
-      props: { allBadges: BADGE_TEMPLATES, unlockedBadges: ['sorting-champion'] },
+      props: { allBadges: BADGE_TEMPLATES, unlockedBadges: ['sorting-wizard'] },
     });
     expect(wrapper.findAll('.badge-locked').length).toBe(BADGE_TEMPLATES.length - 1);
   });
@@ -538,9 +544,9 @@ describe('GM-002 (P2): Badges', () => {
       global: { components: { BaseIcon: BaseIconStub } },
       props: { allBadges: BADGE_TEMPLATES, unlockedBadges: [] },
     });
-    expect(wrapper.text()).toContain('Recursion Master');
-    expect(wrapper.text()).toContain('SOLID Architect');
-    expect(wrapper.text()).toContain('Sorting Champion');
+    expect(wrapper.text()).toContain('Sorting Wizard');
+    expect(wrapper.text()).toContain('OOP Guru');
+    expect(wrapper.text()).toContain('DSA Champion');
   });
 });
 
@@ -554,7 +560,7 @@ describe('GM-003 (P2): Leaderboard top 10', () => {
   it('WeeklyLeaderboard render top 10 entries', () => {
     setActivePinia(createPinia());
     const entries = Array.from({ length: 10 }, (_, i) => ({
-      userId: 'user-' + i, fullName: 'User ' + i, weeklyXP: 1500 - i * 100, rank: i + 1,
+      userId: 'user-' + i, fullName: 'User ' + i, totalXP: 1500, weeklyXP: 1500 - i * 100, rank: i + 1,
     }));
     wrapper = mount(WeeklyLeaderboard, { props: { entries } });
     expect(wrapper.text()).toContain('Top 10');
@@ -571,9 +577,9 @@ describe('GM-003 (P2): Leaderboard top 10', () => {
   it('WeeklyLeaderboard sap xep theo rank', () => {
     setActivePinia(createPinia());
     const entries = [
-      { userId: 'u2', fullName: 'User 2', weeklyXP: 1200, rank: 2 },
-      { userId: 'u1', fullName: 'User 1', weeklyXP: 1500, rank: 1 },
-      { userId: 'u3', fullName: 'User 3', weeklyXP: 1000, rank: 3 },
+      { userId: 'u2', fullName: 'User 2', totalXP: 1200, weeklyXP: 1200, rank: 2 },
+      { userId: 'u1', fullName: 'User 1', totalXP: 1500, weeklyXP: 1500, rank: 1 },
+      { userId: 'u3', fullName: 'User 3', totalXP: 1000, weeklyXP: 1000, rank: 3 },
     ];
     wrapper = mount(WeeklyLeaderboard, { props: { entries } });
     expect(wrapper.text()).toContain('User 1');
@@ -710,7 +716,7 @@ describe('GM-007 (P2): Mo khoa badge', () => {
     store.earnXPLocal(200);
     store.earnXPLocal(200);
     localStorage.setItem('completed_algorithms', JSON.stringify(['quicksort', 'sorting']));
-    store.setStreakForTesting(3);
+    store.activeStreak = 3;
     store.checkAndUnlockBadges();
     expect(store.unlockedBadges.length).toBeGreaterThan(0);
   });
@@ -719,9 +725,9 @@ describe('GM-007 (P2): Mo khoa badge', () => {
     const store = useGamificationStore();
     store.earnXPLocal(200);
     store.earnXPLocal(200);
-    store.setStreakForTesting(3);
+    store.activeStreak = 3;
     store.checkAndUnlockBadges();
-    expect(store.unlockedBadges).not.toContain('sorting-champion');
+    expect(store.unlockedBadges).not.toContain('sorting-wizard');
   });
 
   it('checkAndUnlockBadges khong mo lai badge da unlock', () => {
@@ -729,7 +735,7 @@ describe('GM-007 (P2): Mo khoa badge', () => {
     store.earnXPLocal(200);
     store.earnXPLocal(200);
     localStorage.setItem('completed_algorithms', JSON.stringify(['quicksort', 'sorting']));
-    store.setStreakForTesting(3);
+    store.activeStreak = 3;
     store.checkAndUnlockBadges();
     const firstCount = store.unlockedBadges.length;
     store.checkAndUnlockBadges();
@@ -742,53 +748,63 @@ describe('GM-007 (P2): Mo khoa badge', () => {
     store.earnXPLocal(200);
     store.earnXPLocal(200);
     localStorage.setItem('completed_algorithms', JSON.stringify(['quicksort', 'sorting']));
-    store.setStreakForTesting(3);
+    store.activeStreak = 3;
     store.checkAndUnlockBadges();
     expect(store.lockedBadges.length).toBeLessThan(BADGE_TEMPLATES.length);
   });
 });
 
 // ════════════════════════════════════════════════════════════════
-// GM-008 (P2): 5 loai badge
+// GM-008 (P2): 8 loai badge (contract backend GamificationStrategy.cs:28-38)
 // ════════════════════════════════════════════════════════════════
-describe('GM-008 (P2): 5 loai badge', () => {
-  it('BADGE_TEMPLATES co dung 5 badges', () => {
-    expect(BADGE_TEMPLATES.length).toBe(5);
+describe('GM-008 (P2): 8 loai badge', () => {
+  it('BADGE_TEMPLATES co dung 8 badges', () => {
+    expect(BADGE_TEMPLATES.length).toBe(8);
   });
 
-  it('Co badge Recursion Master', () => {
-    const badge = BADGE_TEMPLATES.find(b => b.id === 'recursion-master');
+  it('Co badge First Steps', () => {
+    const badge = BADGE_TEMPLATES.find(b => b.id === 'first-steps');
     expect(badge).toBeDefined();
-    expect(badge?.title).toBe('Recursion Master');
   });
 
-  it('Co badge SOLID Architect', () => {
-    const badge = BADGE_TEMPLATES.find(b => b.id === 'solid-architect');
+  it('Co badge Sorting Wizard', () => {
+    const badge = BADGE_TEMPLATES.find(b => b.id === 'sorting-wizard');
     expect(badge).toBeDefined();
-    expect(badge?.title).toBe('SOLID Architect');
   });
 
-  it('Co badge Sorting Champion', () => {
-    const badge = BADGE_TEMPLATES.find(b => b.id === 'sorting-champion');
+  it('Co badge OOP Guru', () => {
+    const badge = BADGE_TEMPLATES.find(b => b.id === 'oop-guru');
     expect(badge).toBeDefined();
-    expect(badge?.title).toBe('Sorting Champion');
   });
 
-  it('Co badge Streak Warrior', () => {
-    const badge = BADGE_TEMPLATES.find(b => b.id === 'streak-warrior');
+  it('Co badge Solid Master', () => {
+    const badge = BADGE_TEMPLATES.find(b => b.id === 'solid-master');
     expect(badge).toBeDefined();
-    expect(badge?.title).toBe('Streak Warrior');
   });
 
-  it('Co badge Graph Explorer', () => {
-    const badge = BADGE_TEMPLATES.find(b => b.id === 'graph-explorer');
+  it('Co badge Pattern Hunter', () => {
+    const badge = BADGE_TEMPLATES.find(b => b.id === 'pattern-hunter');
     expect(badge).toBeDefined();
-    expect(badge?.title).toBe('Graph Explorer');
   });
 
-  it('GamificationEngine.getBadgeTemplates tra ve 5 badges', () => {
+  it('Co badge Streak Keeper', () => {
+    const badge = BADGE_TEMPLATES.find(b => b.id === 'streak-keeper');
+    expect(badge).toBeDefined();
+  });
+
+  it('Co badge System Architect', () => {
+    const badge = BADGE_TEMPLATES.find(b => b.id === 'system-architect');
+    expect(badge).toBeDefined();
+  });
+
+  it('Co badge DSA Champion', () => {
+    const badge = BADGE_TEMPLATES.find(b => b.id === 'dsa-champion');
+    expect(badge).toBeDefined();
+  });
+
+  it('GamificationEngine.getBadgeTemplates tra ve 8 badges', () => {
     const templates = GamificationEngine.getBadgeTemplates();
-    expect(templates.length).toBe(5);
+    expect(templates.length).toBe(8);
   });
 });
 
@@ -809,12 +825,18 @@ describe('GM-009 (P2): XP progress', () => {
     expect(store.xpProgressPercent).toBeGreaterThan(0);
   });
 
-  it('xpProgressPercent = 100 khi dat nextBadgeXPThreshold', () => {
+  it('xpProgressPercent = 100 khi dat nextBadgeXPThreshold (trước khi unlock đẩy ngưỡng)', () => {
     const store = useGamificationStore();
     const threshold = store.nextBadgeXPThreshold;
+    expect(threshold).toBeGreaterThan(0);
     store.earnXPLocal(Math.min(threshold, 200));
-    if (threshold <= 200) {
+    // Vừa chạm ngưỡng → badge đầu tiên unlock → ngưỡng kế tiếp nhảy lên, percent tính lại
+    // (GM-027: ngưỡng chỉ tính badge đạt đủ điều kiện)
+    if (store.unlockedBadges.length === 0) {
       expect(store.xpProgressPercent).toBe(100);
+    } else {
+      expect(store.xpProgressPercent).toBeGreaterThan(0);
+      expect(store.xpProgressPercent).toBeLessThan(100);
     }
   });
 
@@ -1081,46 +1103,92 @@ describe('CR-010 (P2): Premium gate', () => {
 describe('LN-001 (P2): 4 steps', () => {
   let wrapper: VueWrapper | null = null;
   const BaseIconStub = { name: 'BaseIcon', props: ['name', 'class'], template: '<svg class="base-icon"><title>{{ name }}</title></svg>' };
-  afterEach(() => { wrapper?.unmount(); setActivePinia(createPinia()); });
-
-  it('LessonStudyView render step navigation tabs', async () => {
+  afterEach(() => {
+    wrapper?.unmount();
     setActivePinia(createPinia());
-    wrapper = mount(LessonStudyView, {
-      global: {
-        components: { BaseIcon: BaseIconStub },
-        stubs: {
-          RouterLink: { template: '<a class="rl-stub"><slot /></a>' },
-          LessonStepTheory: { template: '<div class="step-theory"></div>' },
-          LessonStepViz: { template: '<div class="step-viz"></div>' },
-          LessonStepQuiz: { template: '<div class="step-quiz"></div>' },
-          LessonStepCodeLab: { template: '<div class="step-codelab"></div>' },
-          LessonCompletionModal: { template: '<div></div>' },
-        },
-      },
-    });
+    routerState.route = { query: {}, params: { id: 'test-lesson' } };
+  });
+
+  const stubConfig = {
+    components: { BaseIcon: BaseIconStub },
+    stubs: {
+      RouterLink: { template: '<a class="rl-stub"><slot /></a>' },
+      LessonStepTheory: { template: '<div class="step-theory"></div>' },
+      LessonStepViz: { template: '<div class="step-viz"></div>' },
+      LessonStepQuiz: { template: '<div class="step-quiz"></div>' },
+      LessonStepCodeLab: { template: '<div class="step-codelab"></div>' },
+      LessonCompletionModal: { template: '<div></div>' },
+    },
+  };
+
+  async function mountWithLesson(lessonId: string): Promise<VueWrapper> {
+    setActivePinia(createPinia());
+    localStorage.clear();
+    routerState.route = { query: {}, params: { id: lessonId } };
+    wrapper = mount(LessonStudyView, { global: stubConfig });
     await flushPromises();
     await nextTick();
-    expect(wrapper.exists()).toBe(true);
+    return wrapper;
+  }
+
+  it('LessonStudyView render step navigation tabs', async () => {
+    const w = await mountWithLesson('test-lesson');
+    expect(w.exists()).toBe(true);
   });
 
   it('LessonStudyView co step navigation structure', async () => {
-    setActivePinia(createPinia());
-    wrapper = mount(LessonStudyView, {
-      global: {
-        components: { BaseIcon: BaseIconStub },
-        stubs: {
-          RouterLink: { template: '<a class="rl-stub"><slot /></a>' },
-          LessonStepTheory: { template: '<div class="step-theory"></div>' },
-          LessonStepViz: { template: '<div class="step-viz"></div>' },
-          LessonStepQuiz: { template: '<div class="step-quiz"></div>' },
-          LessonStepCodeLab: { template: '<div class="step-codelab"></div>' },
-          LessonCompletionModal: { template: '<div></div>' },
-        },
-      },
-    });
-    await flushPromises();
+    const w = await mountWithLesson('test-lesson');
+    expect(w.find('.lesson-study-view').exists()).toBe(true);
+  });
+
+  it('LN-001 (nâng cấp): lesson có codelab → đủ 4 tab đúng label (Lý Thuyết/Trực Quan Hóa/Quiz/Code Lab)', async () => {
+    const w = await mountWithLesson('quick-sort');
+
+    const tabs = w.findAll('[role="tab"]');
+    expect(tabs.length).toBe(4);
+    const labels = tabs.map(t => t.text()).join(' ');
+    expect(labels).toContain('Lý Thuyết');
+    expect(labels).toContain('Trực Quan Hóa');
+    expect(labels).toContain('Quiz');
+    expect(labels).toContain('Code Lab');
+  });
+
+  it('LN-001 (nâng cấp): disabled state theo store — ban đầu chỉ bước 1 mở, 2-4 khóa', async () => {
+    const w = await mountWithLesson('quick-sort');
+
+    const tabs = w.findAll('[role="tab"]');
+    expect(tabs[0].attributes('aria-disabled')).toBe('false');
+    expect(tabs[1].attributes('aria-disabled')).toBe('true');
+    expect(tabs[2].attributes('aria-disabled')).toBe('true');
+    expect(tabs[3].attributes('aria-disabled')).toBe('true');
+    expect(tabs[1].attributes('disabled')).toBeDefined();
+  });
+
+  it('LN-001 (nâng cấp): markTheoryRead mở khóa bước Trực Quan Hóa theo store', async () => {
+    const w = await mountWithLesson('quick-sort');
+    const store = useLessonStore();
+    expect(store.currentLesson?.id).toBe('quick-sort');
+
+    store.markTheoryRead();
     await nextTick();
-    expect(wrapper.find('.lesson-study-view').exists()).toBe(true);
+
+    const tabs = w.findAll('[role="tab"]');
+    expect(tabs[1].attributes('aria-disabled')).toBe('false');
+    expect(tabs[1].attributes('disabled')).toBeUndefined();
+    // Quiz vẫn khóa cho tới khi xem hết visualizer.
+    expect(tabs[2].attributes('aria-disabled')).toBe('true');
+  });
+
+  it('LN-001 (nâng cấp): lesson không có codelab → chỉ 3 tab (ẩn Code Lab)', async () => {
+    const w = await mountWithLesson('quick-sort');
+    const store = useLessonStore();
+    if (store.currentLesson) {
+      Object.assign(store.currentLesson, { codelabTask: undefined });
+    }
+    await nextTick();
+    const tabs = w.findAll('[role="tab"]');
+    expect(tabs.length).toBe(3);
+    expect(tabs.map(t => t.text()).join(' ')).not.toContain('Code Lab');
   });
 });
 

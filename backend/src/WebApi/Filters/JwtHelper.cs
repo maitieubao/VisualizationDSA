@@ -54,6 +54,19 @@ namespace VisualizationDSA.WebApi.Filters
                 var expTime = DateTimeOffset.FromUnixTimeSeconds(expUnix);
                 if (expTime < DateTimeOffset.UtcNow)
                     return new UnauthorizedObjectResult(new { error = "UNAUTHORIZED", message = "Phiên đăng nhập đã hết hạn." });
+
+                // AU-035: validate iss/aud theo cấu hình (khớp chuẩn JwtBearer) — fail-closed:
+                // claim thiếu hoặc sai khi đã cấu hình → từ chối token.
+                if (JwtSigningConfig.Issuer is { } expectedIssuer)
+                {
+                    if (!doc.RootElement.TryGetProperty("iss", out var issEl) || issEl.GetString() != expectedIssuer)
+                        return new UnauthorizedObjectResult(new { error = "UNAUTHORIZED", message = "Mã xác thực không hợp lệ." });
+                }
+                if (JwtSigningConfig.Audience is { } expectedAudience)
+                {
+                    if (!doc.RootElement.TryGetProperty("aud", out var audEl) || audEl.GetString() != expectedAudience)
+                        return new UnauthorizedObjectResult(new { error = "UNAUTHORIZED", message = "Mã xác thực không hợp lệ." });
+                }
             }
             catch
             {

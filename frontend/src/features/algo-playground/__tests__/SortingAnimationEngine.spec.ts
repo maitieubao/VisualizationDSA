@@ -1,6 +1,7 @@
 // @vitest-environment jsdom
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { SortingAnimationEngine } from '../engine/SortingAnimationEngine';
+import { minWithFallback, maxWithFallback } from '../renderer/algoCanvasHelpers';
 
 type CtxMock = {
   setTransform: ReturnType<typeof vi.fn>;
@@ -192,8 +193,162 @@ describe('SortingAnimationEngine', () => {
     engine.setSnapshots(s1 as never, s1 as never);
     engine.play();
     (engine as unknown as { progress: number }).progress = 0.99;
-    rafCb?.(500_000);
+    // AL-021: ts động theo performance.now() — tránh flaky khi đồng hồ vượt hằng số cứng
+    rafCb?.(performance.now() + 1000);
     expect(onAdvance).toHaveBeenCalledTimes(1);
     engine.destroy();
+  });
+
+  // ── AL-029 (P2): setSpeed / pause giữa transition / destroy khi play / swap OOB ──
+  // ── AL-033t (P3): minWithFallback/maxWithFallback thay spread ở mảng lớn ──
+
+  it('AL-029: setSpeed đổi duration — advance nhanh gấp đôi khi speed 2x', () => {
+    const ctx = makeCtx();
+    const canvas = {
+      width: 0, height: 0, clientWidth: 400, clientHeight: 300,
+      getContext: () => ctx,
+    };
+    const onAdvance = vi.fn();
+    const engine = new SortingAnimationEngine();
+    engine.start(canvas as unknown as HTMLCanvasElement, onAdvance);
+    const prev = { array: [5, 3, 8, 4, 2], highlightedIndices: [] };
+    const curr = { array: [3, 5, 8, 4, 2], swappingIndices: [0, 1] as [number, number], highlightedIndices: [] };
+    engine.setSnapshots(prev as never, curr as never);
+
+    // Speed 2x: transition swap duration 400/2 = 200ms → 7 tick × 32ms = 224ms ≥ 200 → advance
+    engine.setSpeed(2);
+    expect((engine as unknown as { _speed: number })._speed).toBe(2);
+    engine.play();
+    const t0 = performance.now();
+    for (let i = 0; i < 7; i++) rafCb?.(t0 + 32 * (i + 1));
+    expect(onAdvance).toHaveBeenCalledTimes(1);
+
+    // Speed 1x (default): duration 400ms → 7 tick × 32ms = 224ms < 400 → chưa advance
+    const onAdvance2 = vi.fn();
+    const engine2 = new SortingAnimationEngine();
+    engine2.start(canvas as unknown as HTMLCanvasElement, onAdvance2);
+    engine2.setSnapshots(prev as never, curr as never);
+    engine2.play();
+    for (let i = 0; i < 7; i++) rafCb?.(t0 + 32 * (i + 1));
+    expect(onAdvance2).not.toHaveBeenCalled();
+    for (let i = 7; i < 13; i++) rafCb?.(t0 + 32 * (i + 1)); // 13×32=416 ≥ 400 → advance
+    expect(onAdvance2).toHaveBeenCalledTimes(1);
+
+    engine.destroy();
+    engine2.destroy();
+  });
+
+  it('AL-029: pause giữa transition dừng vòng lặp (cancel rAF), snapToCurrent đưa về frame tĩnh', () => {
+    const ctx = makeCtx();
+    const canvas = {
+      width: 0, height: 0, clientWidth: 400, clientHeight: 300,
+      getContext: () => ctx,
+    };
+    const engine = new SortingAnimationEngine();
+    engine.start(canvas as unknown as HTMLCanvasElement, vi.fn());
+    const prev = { array: [5, 3, 8, 4, 2], highlightedIndices: [] };
+    const curr = { array: [3, 5, 8, 4, 2], swappingIndices: [0, 1] as [number, number], highlightedIndices: [] };
+    engine.setSnapshots(prev as never, curr as never);
+    engine.play();
+    (engine as unknown as { progress: number }).progress = 0.5;
+    rafCb?.(performance.now() + 32); // vẽ transition dở giữa chừng
+    const midProgress = (engine as unknown as { progress: number }).progress;
+    expect(midProgress).toBeGreaterThan(0);
+    expect(midProgress).toBeLessThan(1);
+
+    engine.pause();
+    expect(engine.isPlaying).toBe(false);
+    expect(vi.mocked(cancelAnimationFrame)).toHaveBeenCalled();
+    expect((engine as unknown as { progress: number }).progress).toBeCloseTo(midProgress, 10); // progress giữ nguyên
+
+    engine.snapToCurrent();
+    expect((engine as unknown as { progress: number }).progress).toBe(1); // snap về frame tĩnh
+    expect(ctx.clearRect).toHaveBeenCalled();
+    engine.destroy();
+  });
+
+  it('AL-029: destroy khi đang play hủy rAF và chặn mọi advance tiếp theo', () => {
+    const ctx = makeCtx();
+    const canvas = {
+      width: 0, height: 0, clientWidth: 400, clientHeight: 300,
+      getContext: () => ctx,
+    };
+    const onAdvance = vi.fn();
+    const engine = new SortingAnimationEngine();
+    engine.start(canvas as unknown as HTMLCanvasElement, onAdvance);
+    const prev = { array: [5, 3, 8, 4, 2], highlightedIndices: [] };
+    const curr = { array: [3, 5, 8, 4, 2], swappingIndices: [0, 1] as [number, number], highlightedIndices: [] };
+    engine.setSnapshots(prev as never, curr as never);
+    engine.play();
+    expect(vi.mocked(cancelAnimationFrame)).not.toHaveBeenCalled();
+
+    engine.destroy();
+    expect(vi.mocked(cancelAnimationFrame)).toHaveBeenCalled();
+    expect((engine as unknown as { _running: boolean })._running).toBe(false);
+    expect((engine as unknown as { canvas: unknown }).canvas).toBeNull();
+    expect((engine as unknown as { ctx: unknown }).ctx).toBeNull();
+
+    // Tick sau destroy: canvas đã null → loop tự dừng, KHÔNG advance
+    (engine as unknown as { progress: number }).progress = 0.99;
+    rafCb?.(performance.now() + 1000);
+    expect(onAdvance).not.toHaveBeenCalled();
+  });
+
+  it('AL-029: swap pair ngoài biên mảng ([0, 99] trên 5 phần tử) không throw', () => {
+    const ctx = makeCtx();
+    const canvas = {
+      width: 0, height: 0, clientWidth: 400, clientHeight: 300,
+      getContext: () => ctx,
+    };
+    const engine = new SortingAnimationEngine();
+    engine.start(canvas as unknown as HTMLCanvasElement, vi.fn());
+    const prev = { array: [5, 3, 8, 4, 2], highlightedIndices: [] };
+    const curr = { array: [3, 5, 8, 4, 2], swappingIndices: [0, 99] as [number, number], highlightedIndices: [] };
+    engine.play(); // play trước → setSnapshots không vẽ tĩnh (tránh nhánh drawPlaybackFrame)
+    engine.setSnapshots(prev as never, curr as never);
+    (engine as unknown as { progress: number }).progress = 0.5;
+    expect(() => rafCb?.(performance.now() + 32)).not.toThrow(); // drawSwap guard OOB
+    engine.destroy();
+  });
+
+  it('AL-029: mảng rỗng / 1 phần tử / toàn số âm không throw khi vẽ', () => {
+    const ctx = makeCtx();
+    const canvas = {
+      width: 0, height: 0, clientWidth: 400, clientHeight: 300,
+      getContext: () => ctx,
+    };
+    const engine = new SortingAnimationEngine();
+    engine.start(canvas as unknown as HTMLCanvasElement, vi.fn());
+
+    expect(() => engine.setSnapshots(
+      { array: [], highlightedIndices: [] } as never,
+      { array: [], highlightedIndices: [] } as never,
+    )).not.toThrow();
+
+    expect(() => engine.setSnapshots(
+      { array: [42], highlightedIndices: [] } as never,
+      { array: [42], highlightedIndices: [0] } as never,
+    )).not.toThrow();
+
+    expect(() => engine.setSnapshots(
+      { array: [-5, -3, -10], highlightedIndices: [] } as never,
+      { array: [-10, -3, -5], swappingIndices: [0, 2] as [number, number], highlightedIndices: [] } as never,
+    )).not.toThrow();
+    expect(() => engine.snapToCurrent()).not.toThrow();
+    engine.destroy();
+  });
+
+  it('AL-033t: minWithFallback/maxWithFallback xử lý mảng 100.000 phần tử không tràn stack', () => {
+    // AL-036: helpers dùng chung (thay spread Math.min/max — EC-022)
+    const big = Array.from({ length: 100_000 }, (_, i) => (i % 1000) - 500);
+    big[42] = -9999;
+    big[777] = 9999;
+    expect(minWithFallback(big, 0)).toBe(-9999);
+    expect(maxWithFallback(big, 1)).toBe(9999);
+    // fallback đúng ngữ nghĩa spread cũ khi mảng rỗng
+    expect(minWithFallback([], 0)).toBe(0);
+    expect(maxWithFallback([], 1)).toBe(1);
+    expect(minWithFallback([1, 2, 3], -1)).toBe(-1);
+    expect(maxWithFallback([1, 2, 3], 99)).toBe(99);
   });
 });

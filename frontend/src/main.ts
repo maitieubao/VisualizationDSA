@@ -24,7 +24,6 @@ window.fetch = async function (input: RequestInfo | URL, init?: RequestInit): Pr
 
   
   const isApiRequest = url.includes('/api/v1/') || url.includes('/api/v1/concepts/');
-  const isRefreshRequest = url.includes('/auth/refresh') || url.includes('/concepts/auth/refresh');
   const isAuthSessionRequest = [
     '/auth/login',
     '/auth/register',
@@ -35,7 +34,8 @@ window.fetch = async function (input: RequestInfo | URL, init?: RequestInit): Pr
 
   let headers = new Headers(init?.headers);
 
-  
+  // Lớp DUY NHẤT gắn Authorization (AU-044): apiClient không gắn nữa.
+  // Login/register/refresh/logout là request công khai — không cần Bearer.
   if (isApiRequest && !isAuthSessionRequest) {
     const token = authStore.getAccessToken();
     if (token) {
@@ -52,8 +52,6 @@ window.fetch = async function (input: RequestInfo | URL, init?: RequestInit): Pr
   let response = await originalFetch(input, newInit);
 
   
-  
-  
   if (response.status === 401 && isApiRequest && !isAuthSessionRequest) {
     console.warn(`[Fetch Interceptor] 401 Unauthorized detected for ${url}. Attempting token refresh...`);
     try {
@@ -67,7 +65,15 @@ window.fetch = async function (input: RequestInfo | URL, init?: RequestInit): Pr
         });
       }
     } catch (refreshErr) {
-      console.error('[Fetch Interceptor] Token refresh failed:', refreshErr);
+      // refreshAccessToken đã tự xử lý: xóa phiên + toast + redirect khi lỗi auth thật (AU-007).
+      // Chỉ log khi lỗi thực sự bất thường (mạng/5xx); lỗi auth hoặc thiếu refresh token
+      // là chuyện thường của request public → không spam console (AU-042).
+      const status = (refreshErr as { status?: number } | null)?.status;
+      const isAuthFailure = status !== undefined && status >= 400 && status < 500 && status !== 429;
+      const isMissingToken = refreshErr instanceof Error && /No refresh token available/.test(refreshErr.message);
+      if (!isAuthFailure && !isMissingToken) {
+        console.error('[Fetch Interceptor] Token refresh failed:', refreshErr);
+      }
     }
   } else if (response.status === 403 && isApiRequest) {
     console.warn(`[Fetch Interceptor] 403 Forbidden for ${url} — permission denied, NOT clearing auth state.`);
@@ -80,6 +86,9 @@ window.fetch = async function (input: RequestInfo | URL, init?: RequestInit): Pr
 
 const authStore     = useAuthStore()
 const progressStore = useUserProgressStore()
+
+// Route nguồn người dùng định mở trước khi khởi động xong — dùng để re-navigate (AU-041).
+const initialHash = window.location.hash.replace(/^#/, '');
 
 // Nếu backend treo (không trả response), init sẽ không bao giờ resolve → app không
 // bao giờ mount. Thêm timeout an toàn để ứng dụng vẫn khởi chạy với trạng thái ẩn danh.
@@ -97,4 +106,12 @@ Promise.race([authInit, initTimeout]).finally(() => {
   router.isReady().then(() => {
     app.mount('#app')
   })
+})
+
+// Khi init resolve MUỘN hơn timeout (AU-041): phiên đã có nhưng user đang kẹt ở landing
+// (guard lúc mount chưa thấy isAuthenticated) → điều hướng lại route đã định.
+authInit.finally(() => {
+  if (authStore.isAuthenticated && router.currentRoute.value.name === 'landing') {
+    router.replace(initialHash && initialHash !== '/' ? initialHash : { name: 'dashboard' });
+  }
 })

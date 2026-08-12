@@ -31,7 +31,9 @@ export const EXPORT_MIN_SCALE = 1;
 export const EXPORT_MAX_SCALE = 4;
 export const EXPORT_DEFAULT_SCALE = 3;
 
-export const MAX_COMPRESSED_STATE_LENGTH = 20_000;
+// Giới hạn ≤2500 ký tự để QR Code (dung lượng thực ~2953 ký tự EC-L) không bao giờ tràn:
+// nếu vượt, store từ chối tạo link (EX-003).
+export const MAX_COMPRESSED_STATE_LENGTH = 2_500;
 
 export const SHARE_BASE_URL = 'https://visualization-dsa.edu.vn';
 

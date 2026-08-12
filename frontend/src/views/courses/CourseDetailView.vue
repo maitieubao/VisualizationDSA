@@ -16,6 +16,13 @@
       <BaseIcon name="warning" class="w-12 h-12 text-accent-red mx-auto mb-4" />
       <h3 class="text-lg font-bold text-text-secondary">{{ error }}</h3>
       <p class="text-text-muted mt-2 text-sm">Vui lòng thử lại sau hoặc liên hệ hỗ trợ.</p>
+      <!-- LM-069: nút Thử lại khi tải chi tiết khóa học thất bại. -->
+      <button
+        @click="loadCourseDetail"
+        class="mt-4 px-5 py-2 bg-accent text-white font-semibold rounded-xl hover:bg-accent-dark transition-colors text-sm cursor-pointer"
+      >
+        Thử lại
+      </button>
     </div>
 
     <!-- Content -->
@@ -98,7 +105,8 @@
                     >
                       <BaseIcon v-if="getLessonStatus(lesson.id) === 'completed'" name="check" class="w-3 h-3" />
                       <span v-else-if="getLessonStatus(lesson.id) === 'in-progress'" class="w-2 h-2 rounded-full bg-accent-yellow" />
-                      <span v-else>{{ lIdx + 1 }}</span>
+                      <!-- LM-063: đánh số toàn cục (không reset theo chặng). -->
+                      <span v-else>{{ mIdx * MODULE_SIZE + lIdx + 1 }}</span>
                     </div>
 
                     <!-- Lesson info -->
@@ -191,6 +199,7 @@ import { courseApi } from '../../services/courseApi';
 import CourseCover from '../../features/courses/components/CourseCover.vue';
 import CourseProgressBar from '../../features/courses/components/CourseProgressBar.vue';
 import BreadcrumbsBar from '../../features/courses/components/BreadcrumbsBar.vue';
+import { resolveLessonRoute, resolveStartCourseUrl } from '../../features/courses/utils/courseAccess';
 
 interface LessonDto {
   id: string;
@@ -236,14 +245,18 @@ const totalXp = computed(() => {
 
 const courseProgress = computed(() => {
   if (!course.value) return { progressPercent: 0, isCompleted: false, completedLessonIds: [] as string[] };
-  return courseStore.getCourseProgress(course.value.id);
+  // Truyền lessonIds từ detail để đếm progress không phụ thuộc list API (LM-014).
+  return courseStore.getCourseProgress(
+    course.value.id,
+    course.value.lessons.map(l => l.id),
+  );
 });
 
 // Group lessons into modules (every 5 lessons = 1 module)
+const MODULE_SIZE = 5;
 const modules = computed<ModuleGroup[]>(() => {
   if (!course.value) return [];
   const lessons = course.value.lessons;
-  const MODULE_SIZE = 5;
   const result: ModuleGroup[] = [];
   for (let i = 0; i < lessons.length; i += MODULE_SIZE) {
     const chunk = lessons.slice(i, i + MODULE_SIZE);
@@ -259,9 +272,9 @@ const modules = computed<ModuleGroup[]>(() => {
 const startCourseUrl = computed(() => {
   if (!course.value) return '/courses';
   const firstUncompleted = courseStore.getFirstUncompletedLesson(course.value.id);
-  if (firstUncompleted) return `/lessons/${firstUncompleted}?courseId=${course.value.id}`;
-  if (course.value.lessons.length > 0) return `/lessons/${course.value.lessons[0].id}?courseId=${course.value.id}`;
-  return `/courses/${course.value.id}`;
+  const hasPremium = authStore.currentUser?.isPremium === true;
+  // Gating Premium dùng chung (LM-037): không Premium → /checkout.
+  return resolveStartCourseUrl(course.value, firstUncompleted, hasPremium);
 });
 
 const categoryMap: Record<string, string> = {
@@ -323,26 +336,32 @@ function toggleModule(idx: number) {
 
 function startLesson(lesson: LessonDto): string {
   const hasPremium = authStore.currentUser?.isPremium === true;
-  if (course.value?.isPremium && !hasPremium) return '/checkout';
-  return `/lessons/${lesson.id}?courseId=${course.value?.id}`;
+  // Gating Premium dùng chung (LM-037): khóa học Premium + user thường → /checkout.
+  return resolveLessonRoute(course.value, lesson.id, hasPremium);
 }
 
+// Race-token chống request cũ ghi đè khi đổi khóa học nhanh.
+let detailRequestId = 0;
+
 async function loadCourseDetail() {
+  const requestId = ++detailRequestId;
   loading.value = true;
   error.value = null;
   const courseId = route.params.id as string;
 
   try {
     const data = await courseApi.getCourseById(courseId);
+    if (requestId !== detailRequestId) return;
     course.value = {
       ...data,
       coverImage: data.coverImageUrl ?? data.coverImage,
     } as unknown as CourseDetailDto;
   } catch (err) {
+    if (requestId !== detailRequestId) return;
     console.error('Failed to load course detail:', err);
     error.value = 'Không thể kết nối đến máy chủ.';
   } finally {
-    loading.value = false;
+    if (requestId === detailRequestId) loading.value = false;
   }
 }
 

@@ -3,6 +3,9 @@ import { useAuthStore } from '../../features/auth/store/useAuthStore';
 
 const BASE_URL = import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:5055';
 
+// AD-019: timeout tối đa cho mọi request admin — request treo không kẹt spinner vĩnh viễn.
+const ADMIN_REQUEST_TIMEOUT_MS = 15000;
+
 interface AuditLog {
   time: string;
   type: 'INFO' | 'WARN' | 'ERROR';
@@ -26,6 +29,33 @@ export function useAdminApi() {
     };
   }
 
+  // AD-019: fetch admin chuẩn cho mọi tab — timeout 15s (AbortController) + 401 →
+  // authStore.refreshAccessToken() → retry 1 lần với token mới. Trước đây request treo
+  // vô hạn và 401 im lặng khiến spinner kẹt.
+  async function adminRequest(url: string, init: RequestInit = {}): Promise<Response> {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), ADMIN_REQUEST_TIMEOUT_MS);
+    try {
+      const baseHeaders = getAuthHeaders();
+      const extraHeaders = (init.headers ?? {}) as Record<string, string>;
+
+      const doFetch = async (bearerToken?: string): Promise<Response> => {
+        const headers: Record<string, string> = { ...baseHeaders, ...extraHeaders };
+        if (bearerToken) headers['Authorization'] = `Bearer ${bearerToken}`;
+        return fetch(url, { ...init, headers, signal: controller.signal });
+      };
+
+      let res = await doFetch();
+      if (res.status === 401) {
+        const newToken = await authStore.refreshAccessToken();
+        if (newToken) res = await doFetch(newToken);
+      }
+      return res;
+    } finally {
+      clearTimeout(timeoutId);
+    }
+  }
+
   function pushLog(type: 'INFO' | 'WARN' | 'ERROR', message: string): void {
     const d = new Date();
     const time = d.toTimeString().split(' ')[0];
@@ -45,6 +75,7 @@ export function useAdminApi() {
     auditLogs,
     getAuthHeaders,
     pushLog,
-    getDifficultyLabel
+    getDifficultyLabel,
+    adminRequest
   };
 }

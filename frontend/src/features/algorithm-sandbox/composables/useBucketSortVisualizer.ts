@@ -33,7 +33,15 @@ export function useBucketSortVisualizer(frame: () => SortFrame | null) {
   const activeInputIndex = computed(() => currentFrame.value?.comparingIndices?.[0] ?? -1);
   const activeOutputIndex = computed(() => currentFrame.value?.comparingIndices?.[0] ?? -1);
   const rangeLabels = computed(() => currentFrame.value?.bucketRangeLabels ?? ['Bucket 0', 'Bucket 1', 'Bucket 2', 'Bucket 3']);
-  const maxMagnitude = computed(() => Math.max(1, ...inputItems.value.map(item => Math.abs(item.value))));
+  // SV-008 (EC-022): max 1 pass thay Math.max(1, ...spread) — mảng lớn không RangeError
+  const maxMagnitude = computed(() => {
+    let max = 1;
+    for (const item of inputItems.value) {
+      const abs = Math.abs(item.value);
+      if (abs > max) max = abs;
+    }
+    return max;
+  });
   const explanation = computed(() => currentFrame.value?.description ?? 'Chọn dữ liệu và bắt đầu Bucket Sort.');
   const isComplete = computed(() => currentFrame.value?.sortedIndices.length === inputItems.value.length && inputItems.value.length > 0);
 

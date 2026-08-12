@@ -279,14 +279,14 @@ describe('CI-014 (P1): Keyboard shortcuts', () => {
     expect(store.rawText).toBe('');
   });
 
-  it('Ctrl+Shift+R generates random input', async () => {
+  it('Ctrl+Alt+R generates random input (AL-016: Ctrl+Shift+R là tổ hợp trình duyệt)', async () => {
     const wrapper = mount(CustomInputForm, {
       props: DEFAULT_PROPS,
       global: { stubs: { BaseIcon: { template: '<span />' } } },
     });
 
     const textarea = wrapper.find('textarea');
-    await textarea.trigger('keydown', { key: 'r', ctrlKey: true, shiftKey: true });
+    await textarea.trigger('keydown', { key: 'r', ctrlKey: true, altKey: true });
 
     const store = useInputStore();
     expect(store.rawText).not.toBe('');

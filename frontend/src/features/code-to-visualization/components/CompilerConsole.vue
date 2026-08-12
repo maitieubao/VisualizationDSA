@@ -1,5 +1,5 @@
 <template>
-  <div class="flex flex-col h-full" style="background: color-mix(in srgb, var(--color-bg-terminal) 85%, transparent);">
+  <div class="flex flex-col h-full" data-tour-id="code-ide-console" style="background: color-mix(in srgb, var(--color-bg-terminal) 85%, transparent);">
     
     <div class="flex items-center justify-between px-4 py-2 border-b"
       style="border-color: var(--color-border-subtle); background: color-mix(in srgb, var(--color-bg-secondary) 40%, transparent);"
@@ -64,8 +64,11 @@ watch(
   () => logs.value.length,
   async () => {
     await nextTick();
-    if (scrollContainerRef.value) {
-      scrollContainerRef.value.scrollTop = scrollContainerRef.value.scrollHeight;
+    const el = scrollContainerRef.value;
+    if (!el) return;
+    const nearBottom = el.scrollTop + el.clientHeight >= el.scrollHeight - 24;
+    if (nearBottom) {
+      el.scrollTop = el.scrollHeight;
     }
   },
 );
@@ -99,6 +102,11 @@ function logBadgeText(type: ConsoleLogEntry['type']): string {
 </script>
 
 <style scoped>
+.console-log-line {
+  overflow-wrap: break-word;
+  word-break: break-word;
+}
+
 .status-success {
   color: var(--color-accent-cyan);
   text-shadow: 0 0 8px color-mix(in srgb, var(--color-accent-cyan) 25%, transparent);

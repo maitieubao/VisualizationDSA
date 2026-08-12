@@ -271,18 +271,20 @@ flowchart TD
         style E3_3 fill:#f59e0b,color:#fff
     end
     
-    subgraph Step4 ["Bước 4: 30 > 20? Có -> Swap"]
+    subgraph Step4 ["Bước 4: 30 không còn con nào -> Dừng"]
         direction TB
         E4_0((7)) --> E4_1((15))
         E4_0 --> E4_2((8))
-        E4_1 --> E4_3((20))
-        E4_1 --> E4_4((30))
+        E4_1 --> E4_3((30))
+        E4_1 --> E4_4((20))
         E4_2 --> E4_5((25))
-        style E4_4 fill:#10b981,color:#fff
+        style E4_3 fill:#10b981,color:#fff
     end
     
     Step1 ==> Step2 ==> Step3 ==> Step4
 ```
+
+**Kết quả:** 30 đang ở index 3 — con trái (`2×3+1 = 7`) và con phải (`2×3+2 = 8`) đều vượt quá `size = 6`, tức 30 **không có con** → vòng lặp Sift Down dừng ngay, 30 **giữ nguyên** tại chỗ. Mảng cuối cùng: `[7, 15, 8, 30, 20, 25]` — Heap Property được khôi phục hoàn toàn (root = 7 là giá trị nhỏ nhất).
 
 ---
 
@@ -523,7 +525,7 @@ public ListNode MergeKLists(ListNode[] lists)
 <details class="vt-quiz">
 <summary>❓ Quiz 1: Tại sao Build Heap từ mảng chỉ mất O(N) thay vì O(N log N)?</summary>
 
-**Đáp án:** Khi gọi `Heapify` từ dưới lên (từ node `n/2 - 1` xuống 0), các node ở **tầng sâu** (đa số) chỉ cần **Sift Down ít bước** (tầng cao = ít bước). Node ở tầng `h` chỉ cần `h` bước. Tổng công: `Σ(h * số node tầng h) = Σ(h * 2^(H-h)) = O(N)`. Đây là lý do tại sự tồn tại của **Build Heap O(N)**.
+**Đáp án:** Khi gọi `Heapify` từ dưới lên (từ node `n/2 - 1` xuống 0), các node ở **tầng sâu** (đa số) chỉ cần **Sift Down ít bước** (tầng cao = ít bước). Node ở tầng `h` chỉ cần `h` bước. Tổng công: `Σ(h * số node tầng h) = Σ(h * 2^(H-h)) = O(N)`. Đây chính là lý do giải thích sự tồn tại của **Build Heap O(N)**.
 </details>
 
 <details class="vt-quiz">

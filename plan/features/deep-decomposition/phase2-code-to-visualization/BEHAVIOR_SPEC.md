@@ -23,8 +23,8 @@ Vì Web Worker thực thi mã nguồn JavaScript tùy ý do sinh viên soạn th
 Để bảo đảm tài nguyên CPU Client-side chạy mượt mà, hệ thống áp đặt 2 lớp bảo vệ chống treo:
 
 ### Lớp bảo vệ 1: Giới hạn số lượt lặp (AST Counter Limit)
-*   **Quy định:** Mỗi cấu trúc lặp `for`, `while` hoặc `do-while` sau khi được tiêm mã chống treo không được phép lặp vượt quá **5,000 lần** trong suốt tiến trình giải thuật.
-*   **Xử lý lỗi:** Nếu vượt quá, Worker chủ động ném lỗi `LOOP_LIMIT_EXCEEDED` và kết thúc ngay lập tức.
+*   **Quy định:** Mỗi cấu trúc lặp `for`, `while`, `do-while`, `for-in` hoặc `for-of` sau khi được tiêm mã chống treo không được phép lặp vượt quá **20,000 lần** trong suốt tiến trình giải thuật (ngưỡng nâng từ 5,000 lên 20,000 — CV-108).
+*   **Xử lý lỗi:** Nếu vượt quá, Worker chủ động ném lỗi có sentinel `[LOOP_LIMIT_EXCEEDED]` và kết thúc ngay lập tức. Sentinel giúp Main Thread phân biệt lỗi do vượt ngưỡng lặp với lỗi Timeout (CV-129).
 
 ### Lớp bảo vệ 2: Giới hạn thời gian (Execution Timeout Guard)
 *   **Quy định:** Dù vì bất kỳ lý do gì (ví dụ: đệ quy vô hạn làm tràn bộ nhớ stack), Web Worker không được phép chiếm dụng CPU của Client quá **1.5 giây**.

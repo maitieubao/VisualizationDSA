@@ -167,6 +167,13 @@ builder.Services.AddDbContextPool<ApplicationDbContext>(options =>
         
         .AddInterceptors(new ImmutableAuditInterceptor()));
 
+// AD-008: DbContext RIÊNG cho audit (IDbContextFactory) — AuditEventService tự tạo context
+// con mỗi lần ghi, KHÔNG dùng chung ChangeTracker với action đang thực thi (chống commit nhầm).
+builder.Services.AddDbContextFactory<ApplicationDbContext>(options =>
+    options
+        .UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection"))
+        .AddInterceptors(new ImmutableAuditInterceptor()));
+
 builder.Services.AddScoped<VisualizationDSA.Application.Interfaces.IApplicationDbContext>(provider => provider.GetRequiredService<VisualizationDSA.Infrastructure.Data.ApplicationDbContext>());
 
 
@@ -176,18 +183,32 @@ builder.Services.AddSingleton<VisualizationDSA.Domain.Lectures.LectureRepository
 
 
 // Dùng chung khóa ký JWT từ cấu hình cho hệ stateless (JwtHelper/StatelessAuthStrategy/AdminController).
+// AU-009: KHÔNG fallback key hardcode — ép đọc từ env/config ở MỌI môi trường.
 var jwtKey = builder.Configuration["Jwt:Key"];
+var isJwtKeyPlaceholder = string.IsNullOrWhiteSpace(jwtKey) ||
+    jwtKey.Contains("REPLACE_WITH_SECURE", StringComparison.OrdinalIgnoreCase) ||
+    jwtKey.Contains("your-super-secret", StringComparison.OrdinalIgnoreCase);
 
-// Fail-fast: không bao giờ chạy production với key mặc định/placeholder (JWT giả mạo được).
-if (builder.Environment.IsProduction() &&
-    (string.IsNullOrWhiteSpace(jwtKey) ||
-     jwtKey.Contains("REPLACE_WITH_SECURE", StringComparison.OrdinalIgnoreCase) ||
-     jwtKey.Contains("your-super-secret", StringComparison.OrdinalIgnoreCase)))
+if (isJwtKeyPlaceholder)
 {
-    throw new InvalidOperationException(
-        "Jwt:Key phải được cấu hình bằng chuỗi bí mật thực (không dùng placeholder) khi chạy Production.");
+    if (builder.Environment.IsDevelopment())
+    {
+        // Development: sinh key ngẫu nhiên + log warning rõ ràng (không ai ký được token giả).
+        jwtKey = Convert.ToBase64String(System.Security.Cryptography.RandomNumberGenerator.GetBytes(48));
+        builder.Configuration["Jwt:Key"] = jwtKey;
+        Log.Warning("Jwt:Key chưa được cấu hình trong Development — đã sinh key ngẫu nhiên. Mọi token cũ sẽ vô hiệu sau restart; đặt biến môi trường Jwt:Key để giữ phiên ổn định.");
+    }
+    else
+    {
+        // Fail-fast ở mọi môi trường không phải Development: key placeholder/thiếu = chặn khởi động.
+        throw new InvalidOperationException(
+            "Jwt:Key phải được cấu hình bằng chuỗi bí mật thực (không dùng placeholder) — đặt biến môi trường Jwt:Key trước khi chạy.");
+    }
 }
-VisualizationDSA.Domain.JwtSigningConfig.Configure(jwtKey);
+VisualizationDSA.Domain.JwtSigningConfig.Configure(
+    jwtKey,
+    builder.Configuration["Jwt:Issuer"],
+    builder.Configuration["Jwt:Audience"]);
 
 // Tài khoản demo/admin mặc định CHỈ ở Development (tránh backdoor credential công khai ở production).
 VisualizationDSA.Domain.Strategies.StatelessAuthStrategy.EnableDemoAccounts = builder.Environment.IsDevelopment();
@@ -201,6 +222,10 @@ builder.Services.AddScoped<IAnalyticsService, AnalyticsService>();
 builder.Services.AddScoped<IPaymentService, PaymentService>();
 builder.Services.AddScoped<ISemanticGraphService, SemanticGraphService>();
 builder.Services.AddScoped<IAuditEventService, AuditEventService>();
+
+// NT-002: NotificationService chưa từng được đăng ký DI → controller/service không dùng được,
+// real-time chết 2 đầu. Đăng ký scoped (dùng chung ApplicationDbContext scoped).
+builder.Services.AddScoped<INotificationService, NotificationService>();
 
 
 builder.Services.Configure<JudgeOptions>(builder.Configuration.GetSection(JudgeOptions.SectionName));
@@ -274,7 +299,9 @@ builder.Services.AddRateLimiter(options =>
             partitionKey: RateLimitKey(context),
             factory: _ => new FixedWindowRateLimiterOptions
             {
-                PermitLimit          = 10,
+                // AU-036: nới limit cho các endpoint unauthenticated (register/login/refresh/logout)
+                // dùng chung IP sau NAT trường học — 10/min/IP cũ gây 429 hàng loạt.
+                PermitLimit          = 20,
                 Window               = TimeSpan.FromMinutes(1),
                 QueueLimit           = 0,  
                 QueueProcessingOrder = QueueProcessingOrder.OldestFirst
@@ -304,6 +331,19 @@ builder.Services.AddRateLimiter(options =>
                 QueueProcessingOrder = QueueProcessingOrder.OldestFirst
             }));
 
+    // PM-012: webhook SePay là endpoint AllowAnonymous — giới hạn riêng theo IP để
+    // chống spam payload giả (SePay gửi ít webhook hơn nhiều so với traffic người dùng).
+    options.AddPolicy("webhook", context =>
+        RateLimitPartition.GetFixedWindowLimiter(
+            partitionKey: context.Connection.RemoteIpAddress?.ToString() ?? "unknown",
+            factory: _ => new FixedWindowRateLimiterOptions
+            {
+                PermitLimit          = 20,
+                Window               = TimeSpan.FromMinutes(1),
+                QueueLimit           = 0,  
+                QueueProcessingOrder = QueueProcessingOrder.OldestFirst
+            }));
+
     
     options.OnRejected = async (context, token) =>
     {
@@ -317,13 +357,21 @@ builder.Services.AddRateLimiter(options =>
 
 // Partition rate limit theo USER đã đăng nhập (sub) thay vì IP — trường học/office dùng
 // chung IP (NAT) trước đây gộp toàn lớp vào 1 bucket -> 429 hàng loạt khi cùng login.
+// AU-036: unauthenticated partition theo IP + CỔNG NGUỒN (RemotePort) — mỗi client sau NAT
+// có source port riêng → không gộp cả lớp vào 1 bucket. Lưu ý: kẻ tấn công đổi cổng có thể
+// lách limit — chấp nhận vì mục tiêu ưu tiên là không khóa nhầm user thật sau NAT.
 static string RateLimitKey(HttpContext ctx)
 {
     var userId = ctx.User?.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value
                  ?? ctx.User?.FindFirst("sub")?.Value;
-    return !string.IsNullOrEmpty(userId)
-        ? $"u:{userId}"
-        : (ctx.Connection.RemoteIpAddress?.ToString() ?? "global");
+    if (!string.IsNullOrEmpty(userId))
+        return $"u:{userId}";
+
+    var forwardedFor = ctx.Request.Headers["X-Forwarded-For"].FirstOrDefault();
+    var ip = !string.IsNullOrWhiteSpace(forwardedFor)
+        ? forwardedFor.Split(',')[0].Trim()
+        : ctx.Connection.RemoteIpAddress?.ToString() ?? "unknown";
+    return $"ip:{ip}:{ctx.Connection.RemotePort}";
 }
 
 builder.Services.AddAuthorization();

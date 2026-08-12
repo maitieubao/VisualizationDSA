@@ -8,19 +8,23 @@
       isDragOver && 'drag-over',
       item.isHidden && 'hidden'
     ]"
-    draggable="true"
-    @dragstart="onDragStart"
     @dragover.prevent="onDragOver"
+    @dragenter="onDragEnter"
     @dragleave="onDragLeave"
     @dragend="onDragEnd"
     @drop.prevent="onDrop"
   >
+    <!-- LS-033: chỉ handle mới kéo được (native HTML5) — bấm/click nội dung không kéo nhầm. -->
     <button 
       type="button" 
       class="drag-handle"
-      @mousedown.stop
+      draggable="true"
+      :aria-label="'Kéo để sắp xếp: ' + displayTitle"
+      title="Kéo để sắp xếp (dùng phím ↑ ↓ khi focus)"
+      @dragstart="onDragStart"
       @click.stop
-      aria-label="Drag to reorder"
+      @keydown.up.prevent="onMoveByKeyboard(-1)"
+      @keydown.down.prevent="onMoveByKeyboard(1)"
     >
       <BaseIcon name="grip-vertical" class="w-5 h-5" />
     </button>
@@ -30,7 +34,7 @@
         class="type-badge"
         :class="typeBadgeClass"
       >
-        {{ item.itemType }}
+        {{ typeLabel }}
       </span>
       
       <span 
@@ -92,7 +96,8 @@
         type="button" 
         class="action-btn"
         @click.stop="$emit('duplicate', item)"
-        title="Nhân bản"
+        :disabled="item.itemType === 'CustomLesson'"
+        :title="item.itemType === 'CustomLesson' ? 'Chưa hỗ trợ nhân bản bài tự soạn' : 'Nhân bản'"
       >
         <BaseIcon name="copy" class="w-4 h-4" />
       </button>
@@ -145,7 +150,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue';
+import { computed, ref } from 'vue';
 import BaseIcon from '@/shared/components/BaseIcon.vue';
 
 interface Props {
@@ -158,10 +163,13 @@ interface Props {
 
 const props = defineProps<Props>();
 
-const emit = defineEmits(['edit', 'delete', 'duplicate', 'toggle-hidden', 'toggle-required', 'override-settings', 'drag-start', 'drag-over', 'drag-end', 'drag-leave', 'drop']);
+const emit = defineEmits(['edit', 'delete', 'duplicate', 'toggle-hidden', 'toggle-required', 'override-settings', 'drag-start', 'drag-over', 'drag-leave', 'drag-end', 'drop', 'move']);
+
+// LS-033: đếm dragenter/dragleave để hết flicker khi con trỏ lướt qua child element.
+const dragDepth = ref(0);
 
 const displayTitle = computed(() => 
-  props.item.overrideTitle || props.item.lessonTitle || props.item.quizTitle || props.item.codelabTitle || 'Untitled'
+  props.item.overrideTitle || props.item.lessonTitle || props.item.quizTitle || props.item.codelabTitle || props.item.customLessonTitle || 'Untitled'
 );
 
 const typeBadgeClass = computed(() => {
@@ -169,7 +177,19 @@ const typeBadgeClass = computed(() => {
     case 'Lesson': return 'badge-lesson';
     case 'Quiz': return 'badge-quiz';
     case 'Codelab': return 'badge-codelab';
+    case 'CustomLesson': return 'badge-custom-lesson';
     default: return 'badge-default';
+  }
+});
+
+// LS-030: nhãn tiếng Việt cho badge loại bài.
+const typeLabel = computed(() => {
+  switch (props.item.itemType) {
+    case 'Lesson': return 'Bài học';
+    case 'Quiz': return 'Trắc nghiệm';
+    case 'Codelab': return 'Codelab';
+    case 'CustomLesson': return 'Tự soạn';
+    default: return props.item.itemType ?? 'Unknown';
   }
 });
 
@@ -211,29 +231,47 @@ function getPrerequisiteIndex(prereqId: string): number | string {
 function onDragStart(e: DragEvent) {
   e.dataTransfer!.effectAllowed = 'move';
   e.dataTransfer!.setData('text/plain', props.item.id);
-  emit('drag-start', props.item);
+  emit('drag-start', props.item, props.module);
+}
+
+function onDragEnter(e: DragEvent) {
+  e.preventDefault();
+  dragDepth.value += 1;
+  if (dragDepth.value === 1) {
+    emit('drag-over', props.item, props.module);
+  }
 }
 
 function onDragOver(e: DragEvent) {
   e.preventDefault();
   e.dataTransfer!.dropEffect = 'move';
-  emit('drag-over', props.item);
+  emit('drag-over', props.item, props.module);
 }
 
 function onDragLeave(e: DragEvent) {
-  emit('drag-leave', props.item);
+  dragDepth.value = Math.max(0, dragDepth.value - 1);
+  if (dragDepth.value === 0) {
+    emit('drag-leave', props.item, props.module);
+  }
 }
 
 function onDragEnd(e: DragEvent) {
-  emit('drag-end', props.item);
+  dragDepth.value = 0;
+  emit('drag-end', props.item, props.module);
 }
 
 function onDrop(e: DragEvent) {
+  dragDepth.value = 0;
   e.preventDefault();
   const draggedId = e.dataTransfer!.getData('text/plain');
   if (draggedId && draggedId !== props.item.id) {
     emit('drop', { draggedId, targetId: props.item.id });
   }
+}
+
+// LS-026: hỗ trợ bàn phím — di chuyển lên/xuống trong module.
+function onMoveByKeyboard(delta: -1 | 1) {
+  emit('move', props.item, delta);
 }
 </script>
 
@@ -315,6 +353,7 @@ function onDrop(e: DragEvent) {
 .type-badge.badge-lesson { background: color-mix(in srgb, var(--color-accent-primary) 20%, transparent); color: var(--color-accent-primary-light); }
 .type-badge.badge-quiz { background: color-mix(in srgb, var(--color-accent-purple) 20%, transparent); color: var(--color-accent-primary-light); }
 .type-badge.badge-codelab { background: color-mix(in srgb, var(--color-accent-green) 20%, transparent); color: var(--color-accent-green); }
+.type-badge.badge-custom-lesson { background: color-mix(in srgb, var(--color-accent-yellow) 20%, transparent); color: var(--color-accent-yellow); }
 .type-badge.badge-default { background: color-mix(in srgb, var(--color-text-muted) 20%, transparent); color: var(--color-text-muted); }
 
 .prerequisite-indicator {
@@ -424,6 +463,16 @@ function onDrop(e: DragEvent) {
 .action-btn:hover {
   color: var(--color-accent-primary-light);
   background: color-mix(in srgb, var(--color-accent-primary) 15%, transparent);
+}
+
+.action-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.action-btn:disabled:hover {
+  color: var(--color-text-muted);
+  background: transparent;
 }
 
 .action-btn.active {

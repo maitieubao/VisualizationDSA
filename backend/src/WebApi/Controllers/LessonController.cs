@@ -18,11 +18,13 @@ namespace VisualizationDSA.WebApi.Controllers
     {
         private readonly ApplicationDbContext _dbContext;
         private readonly VisualizationDSA.Application.Services.IProgressRuleEngine _progressRuleEngine;
+        private readonly VisualizationDSA.Application.Services.INotificationService? _notificationService;
 
-        public LessonController(ApplicationDbContext dbContext, VisualizationDSA.Application.Services.IProgressRuleEngine progressRuleEngine)
+        public LessonController(ApplicationDbContext dbContext, VisualizationDSA.Application.Services.IProgressRuleEngine progressRuleEngine, VisualizationDSA.Application.Services.INotificationService? notificationService = null)
         {
             _dbContext = dbContext;
             _progressRuleEngine = progressRuleEngine;
+            _notificationService = notificationService;
         }
 
         private bool IsOwnerOrAdmin(Course course, Guid currentUserId)
@@ -81,12 +83,24 @@ namespace VisualizationDSA.WebApi.Controllers
 
             // Quiz liên kết nằm trên ModuleItem riêng (ItemType=Quiz) trong CÙNG module
             // với lesson — không nằm trên Lesson item (LessonId item có QuizId=null).
-            // Khớp theo OrderIndex: quiz item của lesson N có order nằm ngay sau lesson item N.
+            // LM-028: heuristic "quiz ngay sau lesson" — quiz chỉ gắn cho lesson khi KHÔNG
+            // có lesson item nào chen giữa (order quiz nằm giữa lesson này và lesson kế tiếp).
+            var nextLessonOrder = await _dbContext.ModuleItems
+                .Where(i => i.ModuleId == moduleItem.ModuleId
+                    && i.ItemType == ModuleItemType.Lesson
+                    && !i.IsDeleted
+                    && i.OrderIndex > moduleItem.OrderIndex)
+                .OrderBy(i => i.OrderIndex)
+                .Select(i => (int?)i.OrderIndex)
+                .FirstOrDefaultAsync() ?? int.MaxValue;
+
             var linkedQuizId = await _dbContext.ModuleItems
                 .Where(i => i.ModuleId == moduleItem.ModuleId
                     && i.ItemType == ModuleItemType.Quiz
                     && i.QuizId != null
-                    && i.OrderIndex > moduleItem.OrderIndex)
+                    && !i.IsDeleted
+                    && i.OrderIndex > moduleItem.OrderIndex
+                    && i.OrderIndex < nextLessonOrder)
                 .OrderBy(i => i.OrderIndex)
                 .Select(i => i.QuizId)
                 .FirstOrDefaultAsync();
@@ -138,68 +152,91 @@ namespace VisualizationDSA.WebApi.Controllers
             var accessBlock = await CheckLessonAccessAsync(lesson, course);
             if (accessBlock != null) return accessBlock;
 
-            var user = await _dbContext.Users.FindAsync(userId);
-            if (user == null) return NotFound(new { error = "USER_NOT_FOUND" });
-
-            var progress = await _dbContext.UserLessonProgresses
-                .FirstOrDefaultAsync(p => p.UserId == userId && p.LessonId == lessonId);
-
-            bool firstTime = false;
-            if (progress == null)
+            // LM-009: upsert ATOMIC — 2 request song song cùng bài không được tạo 2 dòng
+            // UserLessonProgress (duplicate key → 500) hay cộng XP 2 lần. Nếu SaveChanges
+            // văng DbUpdateException (race), retry 1 lần với dữ liệu mới từ DB.
+            for (var attempt = 0; attempt < 2; attempt++)
             {
-                progress = new UserLessonProgress(userId, lessonId, "Completed");
-                progress.MarkAsCompleted(lesson.XPReward);
-                _dbContext.UserLessonProgresses.Add(progress);
-                firstTime = true;
-            }
-            else if (progress.Status != "Completed")
-            {
-                progress.MarkAsCompleted(lesson.XPReward);
-                firstTime = true;
-            }
+                if (attempt > 0) _dbContext.ChangeTracker.Clear();
 
-            if (firstTime)
-            {
-                user.AwardXP(lesson.XPReward);
-                user.RecordActivity();
-            }
+                var user = await _dbContext.Users.FindAsync(userId);
+                if (user == null) return NotFound(new { error = "USER_NOT_FOUND" });
 
-            
-            var moduleItems = await _dbContext.ModuleItems
-                .Where(m => m.LessonId == lessonId && !m.IsDeleted)
-                .ToListAsync();
+                var progress = await _dbContext.UserLessonProgresses
+                    .FirstOrDefaultAsync(p => p.UserId == userId && p.LessonId == lessonId);
 
-            // Khử N+1: gom toàn bộ progress trong 1 query.
-            var moduleItemIds = moduleItems.Select(m => m.Id).ToList();
-            var existingProgress = moduleItemIds.Count > 0
-                ? (await _dbContext.UserModuleItemProgresses
-                    .Where(p => p.UserId == userId && moduleItemIds.Contains(p.ModuleItemId))
-                    .ToListAsync())
-                    .ToDictionary(p => p.ModuleItemId)
-                : new Dictionary<Guid, UserModuleItemProgress>();
-
-            foreach (var mi in moduleItems)
-            {
-                existingProgress.TryGetValue(mi.Id, out var itemProgress);
-
-                if (itemProgress == null)
+                bool firstTime = false;
+                if (progress == null)
                 {
-                    itemProgress = new UserModuleItemProgress(userId, mi.Id);
-                    _dbContext.UserModuleItemProgresses.Add(itemProgress);
+                    progress = new UserLessonProgress(userId, lessonId, "Completed");
+                    progress.MarkAsCompleted(lesson.XPReward);
+                    _dbContext.UserLessonProgresses.Add(progress);
+                    firstTime = true;
                 }
-                
-                itemProgress.UpdateProgress(activeFrame: 0, scrollPercent: 100, isCompleted: true, score: null);
-                await _progressRuleEngine.ProcessCompletionAsync(userId, mi.Id);
+                else if (progress.Status != "Completed")
+                {
+                    progress.MarkAsCompleted(lesson.XPReward);
+                    firstTime = true;
+                }
+
+                if (firstTime)
+                {
+                    user.AwardXP(lesson.XPReward);
+                    user.RecordActivity();
+                }
+
+                var moduleItems = await _dbContext.ModuleItems
+                    .Where(m => m.LessonId == lessonId && !m.IsDeleted)
+                    .ToListAsync();
+
+                // Khử N+1: gom toàn bộ progress trong 1 query.
+                var moduleItemIds = moduleItems.Select(m => m.Id).ToList();
+                var existingProgress = moduleItemIds.Count > 0
+                    ? (await _dbContext.UserModuleItemProgresses
+                        .Where(p => p.UserId == userId && moduleItemIds.Contains(p.ModuleItemId))
+                        .ToListAsync())
+                        .ToDictionary(p => p.ModuleItemId)
+                    : new Dictionary<Guid, UserModuleItemProgress>();
+
+                foreach (var mi in moduleItems)
+                {
+                    existingProgress.TryGetValue(mi.Id, out var itemProgress);
+
+                    if (itemProgress == null)
+                    {
+                        itemProgress = new UserModuleItemProgress(userId, mi.Id);
+                        _dbContext.UserModuleItemProgresses.Add(itemProgress);
+                    }
+                    
+                    itemProgress.UpdateProgress(activeFrame: 0, scrollPercent: 100, isCompleted: true, score: null);
+                    await _progressRuleEngine.ProcessCompletionAsync(userId, mi.Id);
+                }
+
+                try
+                {
+                    await _dbContext.SaveChangesAsync();
+                    return Ok(new
+                    {
+                        message = "Đã hoàn thành bài học thành công!",
+                        xpAwarded = firstTime ? lesson.XPReward : 0,
+                        totalXp = user.TotalXP,
+                        currentLevel = user.CurrentLevel
+                    });
+                }
+                catch (DbUpdateException)
+                {
+                    // Race: request song song đã commit trước — retry đọc lại sẽ thấy Completed
+                    // → firstTime=false → không cộng XP lần 2 (idempotent).
+                }
             }
 
-            await _dbContext.SaveChangesAsync();
-
+            var fallbackUser = await _dbContext.Users.FindAsync(userId);
             return Ok(new
             {
                 message = "Đã hoàn thành bài học thành công!",
-                xpAwarded = firstTime ? lesson.XPReward : 0,
-                totalXp = user.TotalXP,
-                currentLevel = user.CurrentLevel
+                xpAwarded = 0,
+                totalXp = fallbackUser?.TotalXP ?? 0,
+                currentLevel = fallbackUser?.CurrentLevel ?? 1
             });
         }
 
@@ -222,7 +259,10 @@ namespace VisualizationDSA.WebApi.Controllers
 
             lesson.Update(dto.Title, dto.ContentMd, dto.SandboxType, dto.SandboxConfig, dto.XPReward);
             moduleItem.UpdateQuizId(dto.QuizId);
-            moduleItem.Update(moduleItem.OverrideTitle, dto.OrderIndex, moduleItem.IsRequired);
+            // TC-023: cùng thang đo với CreateDraftLesson (OrderIndex * 1000) — trước đây update
+            // giữ giá trị thô làm module item mới tạo (1000, 2000...) trộn thứ tự với item sửa (1, 2...).
+            var normalizedOrder = dto.OrderIndex > 0 ? dto.OrderIndex * 1000 : moduleItem.OrderIndex;
+            moduleItem.Update(moduleItem.OverrideTitle, normalizedOrder, moduleItem.IsRequired);
             await _dbContext.SaveChangesAsync();
 
             return Ok(new { message = "Cập nhật bài học thành công!", lesson });
@@ -274,6 +314,10 @@ namespace VisualizationDSA.WebApi.Controllers
         {
             var userIdStr = JwtHelper.ExtractSubFromToken(Request);
             if (userIdStr == null || !Guid.TryParse(userIdStr, out var userId)) return Unauthorized();
+
+            // LM-060: validate range dữ liệu tiến độ — chặn frame âm / scroll > 100%.
+            if (dto.LastActiveFrameIndex < 0 || dto.LastScrollPercent < 0 || dto.LastScrollPercent > 100)
+                return BadRequest(new { error = "INVALID_PROGRESS", message = "Dữ liệu tiến độ không hợp lệ (frame không âm, scroll 0–100%)." });
 
             // Gate thống nhất: không ghi progress vào bài Draft/premium không được phép.
             var moduleItem = await _dbContext.ModuleItems.Include(m => m.Module).ThenInclude(m => m.Course).Include(m => m.Lesson).FirstOrDefaultAsync(i => i.LessonId == lessonId);
@@ -372,9 +416,21 @@ namespace VisualizationDSA.WebApi.Controllers
                     var lesson = await _dbContext.Lessons.FindAsync(lessonId);
                     var sender = await _dbContext.Users.FindAsync(userId);
                     var notificationContent = $"{sender?.Username} đã trả lời bình luận của bạn trong bài học '{lesson?.Title}'.";
-                    var notification = new Notification(parentComment.UserId, notificationContent, $"/lessons/{lessonId}?tab=discussion");
-                    _dbContext.Notifications.Add(notification);
-                    await _dbContext.SaveChangesAsync();
+                    var linkUrl = $"/lessons/{lessonId}?tab=discussion";
+
+                    // NT-002: tạo notification qua service (gom code path) + push real-time qua
+                    // broker → NotificationHub đẩy "NewNotification" đúng Clients.User(parent.UserId).
+                    if (_notificationService != null)
+                    {
+                        await _notificationService.NotifyUserAsync(parentComment.UserId, notificationContent, linkUrl);
+                    }
+                    else
+                    {
+                        // Fallback an toàn khi service không được inject (unit test gọi controller trực tiếp).
+                        var notification = new Notification(parentComment.UserId, notificationContent, linkUrl);
+                        _dbContext.Notifications.Add(notification);
+                        await _dbContext.SaveChangesAsync();
+                    }
                 }
             }
 

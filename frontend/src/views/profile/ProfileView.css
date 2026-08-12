@@ -155,6 +155,16 @@
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
+  overflow: hidden;
+}
+
+/* PR-005: ảnh đại diện hiển thị thay chữ cái đầu */
+.user-avatar-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 50%;
+  display: block;
 }
 
 .user-avatar--pro {
@@ -244,6 +254,16 @@
   width: 3px;
   background-color: var(--color-accent-primary, #6366f1);
   border-radius: 2px;
+}
+
+/* PR-004: viền focus rõ ràng cho tab điều hướng bằng bàn phím */
+.nav-item:focus-visible,
+.segment-btn:focus-visible,
+.toggle-switch:focus-visible,
+.modal-close-btn:focus-visible,
+.pm-btn:focus-visible {
+  outline: 2px solid var(--color-accent-primary, #6366f1);
+  outline-offset: 1px;
 }
 
 .nav-icon {
@@ -404,6 +424,17 @@
   background-color: var(--color-accent-primary-dark, #4f46e5);
 }
 
+.pm-btn--ghost {
+  background: transparent;
+  border: 1px solid var(--color-border-subtle, #3f3f46);
+  color: var(--color-text-secondary, #a1a1aa);
+}
+
+.pm-btn--ghost:hover:not(:disabled) {
+  border-color: var(--color-accent-primary, #6366f1);
+  color: var(--color-text-heading, #f4f4f5);
+}
+
 .pm-btn:disabled {
   opacity: 0.5;
   cursor: not-allowed;
@@ -433,6 +464,16 @@
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
+  overflow: hidden;
+}
+
+/* PR-005: ảnh đại diện trong hero card */
+.summary-avatar-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 50%;
+  display: block;
 }
 
 .summary-avatar--pro {
@@ -671,12 +712,73 @@
   border-radius: 6px;
 }
 
+/* PR-014: error state riêng tách khỏi empty state */
+.error-state-box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  padding: 2.5rem 1.5rem;
+  background-color: color-mix(in srgb, var(--color-accent-red) 6%, var(--color-bg-surface, #18181b));
+  border: 1px dashed color-mix(in srgb, var(--color-accent-red) 40%, transparent);
+  border-radius: 6px;
+  text-align: center;
+}
+
+.error-state-icon {
+  color: var(--color-accent-red-light, #f87171);
+  margin-bottom: 0.25rem;
+}
+
+.error-retry-btn {
+  margin-top: 0.75rem;
+}
+
+.history-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.6rem;
+  padding-top: 0.35rem;
+}
+
+.history-pagination-info {
+  font-size: 0.75rem;
+  color: var(--color-text-muted, #71717a);
+}
+
+/* PR-025: dòng streak + ngày hoạt động gần nhất trong thẻ XP */
+.xp-streak-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  padding-top: 0.15rem;
+}
+
+.xp-last-active {
+  font-size: 0.7rem;
+  color: var(--color-text-muted, #71717a);
+}
+
 
 .pm-table-container {
   background-color: var(--color-bg-surface, #18181b);
   border: 1px solid var(--color-border-subtle, #27272a);
   border-radius: 6px;
   overflow: hidden;
+}
+
+/* PR-032: mobile không kẹt bảng — cuộn ngang khi màn hình hẹp */
+.pm-table-container--scroll {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.pm-table--wide {
+  min-width: 640px;
 }
 
 .pm-table {

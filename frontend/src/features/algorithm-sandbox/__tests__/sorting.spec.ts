@@ -95,13 +95,20 @@ describe('Sprint 2: Sorting Algorithm Frame Generators', () => {
       }
     });
 
-    it('should preserve FIFO order — earlier-distributed elements appear first in collect', () => {
-      
-      const arr = [21, 31, 41];
-      const frames = generateRadixSortFrames(arr);
+    it('SV-041: FIFO đúng thứ tự — [11,12,21] phơi bày thứ tự qua id trong frame collect', () => {
+      // Sau pass đơn vị: b1=[11(id0),21(id2)], b2=[12(id1)] → arr [11(0),21(2),12(1)].
+      // Pass hàng chục: b1=[11(id0),12(id1)] → nếu LIFO sẽ thu 12 trước 11 → final sai thứ tự.
+      const frames = generateRadixSortFrames([11, 12, 21]);
       const final = frames[frames.length - 1];
-      
-      expect(final.arrayState).toEqual([21, 31, 41]);
+
+      expect(final.arrayState).toEqual([11, 12, 21]);
+      expect(final.arrayStateWithIds!.map(e => e.id)).toEqual([0, 1, 2]);
+
+      // Frame thu hồi hàng chục (exp=10): phần tử thu đầu tiên phải là 11 (id0) — FIFO
+      const tensCollect = frames.filter(f => f.radixStep === 'collect' && f.activeDigitPlace === 10);
+      expect(tensCollect.length).toBeGreaterThan(0);
+      expect(tensCollect[0].description).toContain('Thu hồi 11');
+      expect(tensCollect[tensCollect.length - 1].arrayStateWithIds!.map(e => e.id)).toEqual([0, 1, 2]);
     });
   });
 

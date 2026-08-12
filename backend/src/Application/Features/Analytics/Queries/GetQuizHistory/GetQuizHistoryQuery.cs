@@ -57,8 +57,9 @@ namespace VisualizationDSA.Application.Features.Analytics.Queries.GetQuizHistory
                 .Select(a => new QuizAttemptDto
                 {
                     Id = a.Id,
-                    QuizId = a.QuizId,
-                    QuizTitle = a.Quiz.Title,
+                    // PR-002: QuizId nullable (attempt bank quiz không có row DB) — fallback Guid.Empty.
+                    QuizId = a.QuizId ?? Guid.Empty,
+                    QuizTitle = a.Quiz != null ? a.Quiz.Title : (a.QuizTitle ?? string.Empty),
                     Score = a.Score,
                     MaxScore = a.MaxScore,
                     Passed = a.Passed,

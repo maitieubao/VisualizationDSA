@@ -12,15 +12,16 @@ namespace VisualizationDSA.Domain.Entities
         public DateTime? DueAt { get; private set; }
         public int? MaxAttempts { get; private set; }
         public bool IsHiddenForStudent { get; private set; }
-        public int? PrerequisiteItemId { get; private set; }
+        public Guid? PrerequisiteItemId { get; private set; }
         public bool IsSequential { get; private set; }
+        public bool IsRequired { get; private set; } = true;
 
         public virtual Classroom Classroom { get; private set; } = null!;
-        public virtual ModuleItem ModuleItem { get; private set; } = null!;
+        public virtual ClassroomModuleItem ModuleItem { get; private set; } = null!;
 
         private ClassroomModuleItemOverride() { }
 
-        public ClassroomModuleItemOverride(Guid classroomId, Guid moduleItemId, DateTime? openAt = null, DateTime? dueAt = null, int? maxAttempts = null, bool isHiddenForStudent = false, int? prerequisiteItemId = null, bool isSequential = true)
+        public ClassroomModuleItemOverride(Guid classroomId, Guid moduleItemId, DateTime? openAt = null, DateTime? dueAt = null, int? maxAttempts = null, bool isHiddenForStudent = false, Guid? prerequisiteItemId = null, bool isSequential = true, bool isRequired = true)
         {
             Id = Guid.NewGuid();
             ClassroomId = classroomId;
@@ -31,9 +32,10 @@ namespace VisualizationDSA.Domain.Entities
             IsHiddenForStudent = isHiddenForStudent;
             PrerequisiteItemId = prerequisiteItemId;
             IsSequential = isSequential;
+            IsRequired = isRequired;
         }
 
-        public void Update(DateTime? openAt, DateTime? dueAt, int? maxAttempts, bool isHiddenForStudent, int? prerequisiteItemId = null, bool isSequential = true)
+        public void Update(DateTime? openAt, DateTime? dueAt, int? maxAttempts, bool isHiddenForStudent, Guid? prerequisiteItemId = null, bool isSequential = true, bool isRequired = true)
         {
             OpenAt = openAt;
             DueAt = dueAt;
@@ -41,6 +43,7 @@ namespace VisualizationDSA.Domain.Entities
             IsHiddenForStudent = isHiddenForStudent;
             PrerequisiteItemId = prerequisiteItemId;
             IsSequential = isSequential;
+            IsRequired = isRequired;
         }
     }
 }

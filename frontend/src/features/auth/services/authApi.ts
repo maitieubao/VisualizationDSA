@@ -21,6 +21,8 @@ export interface AuthUserDto {
   nickname?:    string;
   bio?:         string;
   university?:  string;
+  // PR-005: avatar upload (PB-103) — URL ảnh đã lưu, null nếu chưa có (mirror StatelessUserDto).
+  avatarUrl?:   string;
 }
 
 export interface AuthResponse {
@@ -103,10 +105,3 @@ export async function logout(accessToken: string, refreshToken: string): Promise
   });
 }
 
-
-export async function getMe(accessToken: string): Promise<AuthUserDto> {
-  const res = await fetch(`${API_BASE}/api/v1/auth/me`, {
-    headers: { 'Authorization': `Bearer ${accessToken}` },
-  });
-  return handleResponse<AuthUserDto>(res);
-}

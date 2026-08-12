@@ -15,22 +15,21 @@ describe('useCourseStore — Khóa học', () => {
   beforeEach(() => {
     setActivePinia(createPinia());
     localStorage.clear();
-    vi.useFakeTimers();
-    vi.mocked(courseApi.getCourses).mockResolvedValue(COURSES as never);
+    vi.clearAllMocks();
+    vi.mocked(courseApi.getCourses).mockResolvedValue(COURSES);
   });
 
   afterEach(() => {
-    vi.useRealTimers();
+    vi.restoreAllMocks();
   });
 
   describe('loadCourses', () => {
     it('chỉ nạp các khóa học đã xuất bản (isPublished = true)', async () => {
       const store = useCourseStore();
 
-      store.loadCourses();
+      const p = store.loadCourses();
       expect(store.isLoading).toBe(true);
-
-      await vi.advanceTimersByTimeAsync(300);
+      await p;
 
       const expected = COURSES.filter(c => c.isPublished);
       expect(store.courses).toHaveLength(expected.length);
@@ -41,8 +40,7 @@ describe('useCourseStore — Khóa học', () => {
     it('không nạp các khóa học chưa xuất bản', async () => {
       const store = useCourseStore();
 
-      store.loadCourses();
-      await vi.advanceTimersByTimeAsync(300);
+      await store.loadCourses();
 
       const unpublished = COURSES.filter(c => !c.isPublished);
       for (const course of unpublished) {
@@ -53,9 +51,7 @@ describe('useCourseStore — Khóa học', () => {
 
   describe('filteredCourses', () => {
     beforeEach(async () => {
-      const store = useCourseStore();
-      store.loadCourses();
-      await vi.advanceTimersByTimeAsync(300);
+      await useCourseStore().loadCourses();
     });
 
     it('lọc theo category', () => {
@@ -112,8 +108,7 @@ describe('useCourseStore — Khóa học', () => {
   describe('categories & difficulties', () => {
     it('luôn có "All" đầu tiên và danh sách unique từ khóa học đã xuất bản', async () => {
       const store = useCourseStore();
-      store.loadCourses();
-      await vi.advanceTimersByTimeAsync(300);
+      await store.loadCourses();
 
       expect(store.categories[0]).toBe('All');
       expect(store.difficulties[0]).toBe('All');
@@ -131,8 +126,7 @@ describe('useCourseStore — Khóa học', () => {
   describe('getCourseById', () => {
     it('trả đúng khóa học theo id', async () => {
       const store = useCourseStore();
-      store.loadCourses();
-      await vi.advanceTimersByTimeAsync(300);
+      await store.loadCourses();
 
       const course = store.getCourseById('sorting-101');
       expect(course).toBeDefined();
@@ -148,9 +142,7 @@ describe('useCourseStore — Khóa học', () => {
 
   describe('getCourseProgress', () => {
     beforeEach(async () => {
-      const store = useCourseStore();
-      store.loadCourses();
-      await vi.advanceTimersByTimeAsync(300);
+      await useCourseStore().loadCourses();
     });
 
     it('trả 0% khi chưa hoàn thành lesson nào', () => {
@@ -254,9 +246,7 @@ describe('useCourseStore — Khóa học', () => {
 
   describe('getFirstUncompletedLesson', () => {
     beforeEach(async () => {
-      const store = useCourseStore();
-      store.loadCourses();
-      await vi.advanceTimersByTimeAsync(300);
+      await useCourseStore().loadCourses();
     });
 
     it('trả lesson đầu tiên khi chưa bắt đầu khóa học', () => {

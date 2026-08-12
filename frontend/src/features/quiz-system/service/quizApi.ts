@@ -87,21 +87,42 @@ export async function submitQuizAttempt(
 }
 
 /**
+ * Lỗi lịch sử quiz có gắn HTTP status — PR-014: ProfileHistoryTab cần phân biệt
+ * 401 (phiên hết hạn) vs 5xx/timeout/mạng (banner + Thử lại) thay vì nuốt im lặng.
+ * status = 0 cho lỗi mạng/timeout (không có HTTP response).
+ */
+export class QuizHistoryError extends Error {
+  public readonly status: number;
+  constructor(message: string, status: number) {
+    super(message);
+    this.name = 'QuizHistoryError';
+    this.status = status;
+  }
+}
+
+/**
  * Lịch sử quiz — QZ-035: URL sai cũ `/quizzes/history` → sửa thành
  * `/concepts/quiz/history` (backend có sẵn, StatelessQuizController.GetHistory).
+ * PR-011: caller duy nhất là ProfileHistoryTab; lỗi NÉM ra kèm status thay vì
+ * trả null — caller dựng error state riêng (empty ≠ error).
  */
-export async function fetchQuizHistory(token: string): Promise<QuizHistoryEntry[] | null> {
-  if (!token) return null;
+export async function fetchQuizHistory(token: string): Promise<QuizHistoryEntry[]> {
+  if (!token) throw new QuizHistoryError('Chưa đăng nhập — không thể tải lịch sử.', 401);
+  let response: Response;
   try {
-    const response = await fetch(`${BASE_URL}/api/v1/concepts/quiz/history`, {
+    response = await fetch(`${BASE_URL}/api/v1/concepts/quiz/history`, {
       headers: { 'Authorization': `Bearer ${token}` },
       signal: AbortSignal.timeout(HISTORY_TIMEOUT_MS),
     });
-    if (!response.ok) return null;
-    const data: unknown = await response.json();
-    if (!Array.isArray(data)) return null;
-    return data as QuizHistoryEntry[];
-  } catch {
-    return null;
+  } catch (err) {
+    const isTimeout = err instanceof Error && (err.name === 'TimeoutError' || err.name === 'AbortError');
+    throw new QuizHistoryError(
+      isTimeout ? 'Yêu cầu bị quá hạn, vui lòng thử lại.' : 'Không thể kết nối tới máy chủ.',
+      0,
+    );
   }
+  if (!response.ok) throw new QuizHistoryError(`HTTP ${response.status}`, response.status);
+  const data: unknown = await response.json();
+  if (!Array.isArray(data)) throw new QuizHistoryError('Dữ liệu lịch sử không hợp lệ.', 500);
+  return data as QuizHistoryEntry[];
 }

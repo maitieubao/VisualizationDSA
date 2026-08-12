@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.Text.Json.Serialization;
 
 namespace VisualizationDSA.Application.DTOs
 {
@@ -73,6 +74,8 @@ namespace VisualizationDSA.Application.DTOs
 
         
         [Obsolete("Sử dụng AccessToken thay thế. Sẽ bị loại bỏ trong v2.")]
+        // AU-031: không serialize field trùng "token" ra payload nữa.
+        [JsonIgnore]
         public string Token => AccessToken;
     }
 
@@ -104,5 +107,9 @@ namespace VisualizationDSA.Application.DTOs
         public List<string>     CompletedModuleIds  { get; set; } = new();
         public List<BadgeDto>   Badges              { get; set; } = new();
         public bool             IsPremium           { get; set; }
+
+        // GM-008: server là source of truth của streak — ngày hoạt động gần nhất THẬT (UTC),
+        // frontend không tự tính lại streak theo giờ local.
+        public DateTime?        LastActiveDate      { get; set; }
     }
 }

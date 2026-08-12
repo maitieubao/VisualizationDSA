@@ -21,6 +21,10 @@ export interface CodeLabTask {
   entryFunction?: string;
   /** Gợi ý phân tầng (tiered hints). */
   hints?: string[];
+  /** Độ khó hiển thị trên badge (LM-043) — mặc định "Cơ bản". */
+  difficulty?: string;
+  /** Giới hạn thời gian chạy (ms) hiển thị trên giao diện (LM-043). */
+  timeLimitMs?: number;
 }
 
 export interface Lesson {

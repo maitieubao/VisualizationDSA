@@ -22,8 +22,12 @@
       </span>
     </div>
 
-    <AlgoPlaygroundWorkspace v-if="mode === 'algo'" class="flex-1 min-h-0" :demo-id="algoDemoId" />
-    <PlaygroundWorkspace v-else class="flex-1 min-h-0 w-full" />
+    <!-- HT-011: KeepAlive giữ workspace sống khi đổi mode — Monaco không bị destroy/remount,
+         undo history + scroll position được bảo toàn. -->
+    <KeepAlive>
+      <AlgoPlaygroundWorkspace v-if="mode === 'algo'" class="flex-1 min-h-0" :demo-id="algoDemoId" />
+      <PlaygroundWorkspace v-else class="flex-1 min-h-0 w-full" />
+    </KeepAlive>
   </section>
 </template>
 
@@ -33,12 +37,14 @@ import { useRoute, useRouter } from 'vue-router';
 import { PlaygroundWorkspace, useHtmlPlaygroundStore } from '../../features/html-playground';
 import AlgoPlaygroundWorkspace from '../../features/algo-playground/components/AlgoPlaygroundWorkspace.vue';
 import { playgroundAlgoDemos } from '../../features/algo-playground/engine/playgroundAlgoDemos';
+import { useToastStore } from '../../composables/useToast';
 
 type PlaygroundMode = 'free' | 'algo';
 
 const route = useRoute();
 const router = useRouter();
 const store = useHtmlPlaygroundStore();
+const toastStore = useToastStore();
 
 const algoDemoId = computed<string | undefined>(() => {
   const demo = route.query.demo;
@@ -46,6 +52,12 @@ const algoDemoId = computed<string | undefined>(() => {
 });
 
 const mode = ref<PlaygroundMode>(algoDemoId.value ? 'algo' : 'free');
+
+/** HT-012: đọc query `?code=` hiện tại (payload chia sẻ mode free) để bảo toàn khi đổi mode. */
+const currentCodeQuery = (): string | undefined => {
+  const code = route.query.code;
+  return typeof code === 'string' && code.length > 0 ? code : undefined;
+};
 
 // Validate: ?demo= không hợp lệ → fallback bubble-sort (giữ mode algo)
 function sanitizeDemoQuery(): void {
@@ -57,14 +69,16 @@ function sanitizeDemoQuery(): void {
 sanitizeDemoQuery();
 
 function switchMode(next: PlaygroundMode): void {
+  if (next === mode.value) return;
+  // HT-012: lưu `?code=` trước khi đổi mode rồi merge vào query mới —
+  // switch sang algo rồi quay lại free vẫn giữ code/share link khi refresh.
+  const preservedCode = currentCodeQuery();
   mode.value = next;
   router.replace({
     query:
       next === 'algo'
-        ? { demo: algoDemoId.value ?? 'bubble-sort' }
-        : algoDemoId.value
-          ? {}
-          : undefined,
+        ? { demo: algoDemoId.value ?? 'bubble-sort', ...(preservedCode !== undefined ? { code: preservedCode } : {}) }
+        : { ...(preservedCode !== undefined ? { code: preservedCode } : {}) },
   });
 }
 
@@ -72,7 +86,10 @@ const applyPayloadFromRoute = () => {
   const payload = typeof route.query.code === 'string' ? route.query.code : '';
   if (payload) {
     const ok = store.loadFromSharePayload(payload);
-    if (!ok) console.warn('Playground URL code không hợp lệ, dùng code mặc định.');
+    if (!ok) {
+      // HT-025: payload chia sẻ hỏng → toast rõ ràng thay vì chỉ console.warn
+      toastStore.warning('Link chia sẻ không hợp lệ');
+    }
   }
 };
 

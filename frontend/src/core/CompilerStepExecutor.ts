@@ -153,6 +153,14 @@ export function isPlaybackFrame(frame: unknown): frame is PlaybackFrame {
   return typeof frame === 'object' && frame !== null && 'canvasStateSnapshot' in frame;
 }
 
+/** Việt hóa lỗi kỹ thuật phổ biến (đệ quy tràn stack) trước khi hiển thị cho sinh viên. */
+export function toFriendlyCompileError(message: string): string {
+  if (/call stack|stack size/i.test(message)) {
+    return 'Đệ quy quá sâu — kiểm tra điều kiện dừng (base case) của hàm đệ quy.';
+  }
+  return message;
+}
+
 export class CompilerStepExecutor {
 
 
@@ -167,12 +175,12 @@ export class CompilerStepExecutor {
     try {
       return CompilerStepExecutor.compileJavaScript(sourceCode, initialArray, options);
     } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : String(err);
+      const message = toFriendlyCompileError(err instanceof Error ? err.message : String(err));
       if (message.includes("Vượt quá giới hạn thực thi")) {
-        throw err;
+        throw new Error(message);
       }
       if (options?.fallbackToRegex === false) {
-        throw err;
+        throw new Error(message);
       }
       console.warn("Chuyển sang cơ chế biên dịch Regex tĩnh:", message);
       return CompilerStepExecutor.compilePseudocodeRegex(sourceCode, initialArray);
@@ -878,7 +886,7 @@ export class CompilerStepExecutor {
           const loopScope: Scope = { names: new Set() };
           if (init?.type === 'VariableDeclaration') {
             const kind = (init as unknown as { kind: string }).kind;
-            if (kind === 'let' || kind === 'const') {
+            if (kind === 'let' || kind === 'const' || kind === 'var') {
               for (const d of (init as unknown as { declarations: Array<{ id?: BabelNode }> }).declarations) {
                 if (d.id?.type === 'Identifier') loopScope.names.add((d.id as unknown as { name: string }).name);
               }
@@ -908,7 +916,7 @@ export class CompilerStepExecutor {
           const loopScope: Scope = { names: new Set() };
           if (left?.type === 'VariableDeclaration') {
             const kind = (left as unknown as { kind: string }).kind;
-            if (kind === 'let' || kind === 'const') {
+            if (kind === 'let' || kind === 'const' || kind === 'var') {
               for (const d of (left as unknown as { declarations: Array<{ id?: BabelNode }> }).declarations) {
                 if (d.id?.type === 'Identifier') loopScope.names.add((d.id as unknown as { name: string }).name);
               }
@@ -1026,15 +1034,7 @@ export class CompilerStepExecutor {
             }
           });
         } else {
-          mockArray = [...mockArray].reverse();
-          frames.push({
-            stepIndex: currentStep++,
-            lineNumber: lineNum,
-            description: `Thực thi hoán vị mảng: [${mockArray.join(', ')}]`,
-            canvasStateSnapshot: {
-              array: [...mockArray]
-            }
-          });
+          // Swap ngoài biên mảng: bỏ qua (trước đây reverse() tùy tiện làm hỏng dữ liệu giả lập).
         }
       } else if (compareMatch) {
         const idx1 = parseInt(compareMatch[1], 10);

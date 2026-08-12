@@ -13,9 +13,10 @@ import { CompilerStepExecutor } from '../../../core/CompilerStepExecutor';
 const EXPECTED_CATEGORIES: readonly AlgoDemoCategory[] = ['sorting', 'searching', 'stack-queue', 'tree-graph'];
 
 describe('playgroundAlgoDemos', () => {
-  it('registers 21 unique demos', () => {
-    expect(algoDemoIds).toHaveLength(21);
-    expect(new Set(algoDemoIds).size).toBe(21);
+  it('registers all demos with unique ids (AL-047: nguồn thật, không hardcode 21)', () => {
+    expect(algoDemoIds).toHaveLength(Object.keys(playgroundAlgoDemos).length);
+    expect(algoDemoIds).toEqual(Object.keys(playgroundAlgoDemos));
+    expect(new Set(algoDemoIds).size).toBe(algoDemoIds.length);
   });
 
   it('has at least one demo per category', () => {

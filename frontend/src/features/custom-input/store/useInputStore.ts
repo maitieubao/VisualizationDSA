@@ -102,8 +102,17 @@ export const useInputStore = defineStore('input', () => {
     apiErrorMessage.value = '';
   }
 
+  // AL-006: requestId + AbortController chống race 2 request — response cũ không ghi đè mới
+  let requestId = 0;
+  let abortController: AbortController | null = null;
+
   async function submitCustomInput(algorithmId: string): Promise<void> {
     if (!canExecute.value) return;
+
+    const seq = ++requestId;
+    abortController?.abort();
+    const controller = new AbortController();
+    abortController = controller;
 
     isLoading.value = true;
     apiErrorMessage.value = '';
@@ -119,7 +128,10 @@ export const useInputStore = defineStore('input', () => {
           algorithmId,
           rawInput: rawText.value,
         }),
+        signal: controller.signal,
       });
+
+      if (seq !== requestId) return; // request cũ hơn đã bị thay thế — bỏ response
 
       if (!response.ok) {
         const errData = await response.json().catch(() => null);
@@ -127,8 +139,10 @@ export const useInputStore = defineStore('input', () => {
       }
 
       const result = await response.json();
+      if (seq !== requestId) return; // bỏ kết quả cũ lọt về sau khi có request mới
       animationStore.loadResult(result);
     } catch (err) {
+      if (seq !== requestId) return; // bỏ AbortError / lỗi của request cũ
       const message = err instanceof Error ? err.message : 'Lỗi không xác định';
       apiErrorMessage.value = message.startsWith('HTTP')
         ? `Máy chủ báo lỗi (${message}). Đang dùng dữ liệu mô phỏng cục bộ.`
@@ -136,14 +150,25 @@ export const useInputStore = defineStore('input', () => {
       const fallbackResult = generateDummyResult(algorithmId, parsedArray.value);
       animationStore.loadResult(fallbackResult);
     } finally {
-      isLoading.value = false;
+      if (seq === requestId) {
+        isLoading.value = false;
+        if (abortController === controller) abortController = null;
+      }
     }
   }
 
   function clear(): void {
+    requestId++;
+    abortController?.abort();
+    abortController = null;
     rawText.value = '';
     apiErrorMessage.value = '';
     isLoading.value = false;
+  }
+
+  // AL-041: action thay cho v-model mutation trực tiếp từ component
+  function setRawText(text: string): void {
+    rawText.value = text;
   }
 
   return {
@@ -162,5 +187,6 @@ export const useInputStore = defineStore('input', () => {
     generateRandomInput,
     submitCustomInput,
     clear,
+    setRawText,
   };
 });

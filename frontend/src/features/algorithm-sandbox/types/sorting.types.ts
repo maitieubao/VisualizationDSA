@@ -5,6 +5,18 @@
 
 export type BarStatus = "IDLE" | "COMPARING" | "PIVOT" | "SWAPPED" | "SORTED";
 
+/** CC-009: bản đồ highlight chuẩn hóa theo hợp đồng chung (tương thích FrameDTO.highlights của dsa-modules) */
+export interface SortHighlights {
+  compare: number[];
+  swap: number[];
+  sorted: number[];
+  /** Gán đơn 1 phần tử (VD phép ghi đè arr[k] trong Merge) — khác hoán vị 2 phần tử */
+  assign?: number[];
+  pivot?: number | null;
+  dimmed?: number[];
+  active?: number[];
+}
+
 export interface SubArray {
   start: number;
   end: number;
@@ -64,6 +76,13 @@ export interface SortFrame {
   bucketSortActiveIdx?: number | null;
   bucketSortComparingBucketIndices?: [number, number] | null;
   bucketSortOutputWithIds?: Array<{ id: number; value: number } | null>;
+
+  /** CC-009: dòng vật lý trong Monaco/pseudocode panel tương ứng bước này (≥ 1; 0/undefined = chưa ánh xạ) */
+  lineNumber?: number;
+  /** CC-009: logicalId chuẩn của pseudocode script tương ứng bước này (VD OUTER_LOOP, COMPARE_STEP...) */
+  activeLogicalLineId?: string;
+  /** CC-009: highlight chuẩn hóa cho renderer chung — KHÔNG thay thế comparingIndices/swappedIndices cũ */
+  highlights?: SortHighlights;
 }
 
 export type SortAlgorithm = "bubble" | "quick" | "merge" | "heap" | "radix" | "counting" | "bucket";

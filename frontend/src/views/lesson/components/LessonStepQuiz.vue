@@ -2,7 +2,10 @@
   <div class="lesson-step-quiz flex flex-col h-full overflow-y-auto p-6 text-text-primary font-sans max-w-3xl mx-auto w-full">
     <div class="pb-4 mb-4 text-center">
       <h2 class="text-xl font-extrabold text-text-primary">Kiểm Tra Nhận Thức Nhanh</h2>
-      <p class="text-xs text-text-muted mt-1">Hoàn thành bài Quiz (đạt ≥ 70%) để mở khóa phần Code Lab.</p>
+      <!-- Nhãn động theo bài có codelab hay không (LM-035). -->
+      <p class="text-xs text-text-muted mt-1">
+        Hoàn thành bài Quiz (đạt ≥ 70%) để {{ hasCodelab ? 'mở khóa phần Code Lab.' : 'hoàn thành bài học.' }}
+      </p>
     </div>
 
     <div v-if="questions.length > 0" class="flex flex-col gap-6 flex-1">
@@ -79,12 +82,13 @@
             Nộp Bài Quiz
           </button>
 
+          <!-- LM-035: nhãn động — không có codelab → "Hoàn thành bài học" -->
           <button
             v-if="isSubmitted && quizPassed"
             @click="completeStep"
             class="px-6 py-3 bg-accent-green hover:bg-accent-green/80 text-white rounded-xl text-xs font-bold transition-all shadow-lg cursor-pointer"
           >
-            Mở Khóa Code Lab <BaseIcon name="arrow-right" class="w-4 h-4 inline ml-1 align-middle" />
+            {{ hasCodelab ? 'Mở Khóa Code Lab' : 'Hoàn thành bài học' }} <BaseIcon name="arrow-right" class="w-4 h-4 inline ml-1 align-middle" />
           </button>
         </div>
       </div>
@@ -92,12 +96,38 @@
 
     <div v-else class="flex flex-col items-center justify-center flex-1 text-center py-12">
       <div class="w-16 h-16 rounded-2xl bg-accent/20 border border-accent/30 flex items-center justify-center text-accent mb-4">
-        <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+        <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2" aria-hidden="true">
           <path stroke-linecap="round" stroke-linejoin="round" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 01-2 2h-0a2 2 0 01-2-2v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
         </svg>
       </div>
       <h3 class="text-base font-bold text-text-primary">Kiểm Tra Trắc Nghiệm</h3>
       <p class="text-xs text-text-muted mt-1 max-w-md">Không có câu hỏi nào cho bước này.</p>
+    </div>
+
+    <!-- Dialog xác nhận nộp khi còn câu trống (LM-064 — thay window.confirm native). -->
+    <div v-if="showIncompleteConfirm" class="fixed inset-0 z-50 flex items-center justify-center p-4" role="dialog" aria-modal="true" aria-label="Xác nhận nộp bài quiz">
+      <div class="absolute inset-0 bg-black/50 backdrop-blur-sm" @click="cancelConfirm" aria-hidden="true" />
+      <div class="relative bg-bg-secondary border border-border-subtle rounded-2xl p-6 max-w-sm w-full text-center shadow-2xl">
+        <div class="w-12 h-12 mx-auto mb-3 rounded-full bg-accent-yellow/20 border border-accent-yellow/30 flex items-center justify-center text-accent-yellow">
+          <BaseIcon name="warning" class="w-6 h-6" />
+        </div>
+        <h3 class="text-base font-bold text-text-primary">Bạn chưa chọn hết đáp án</h3>
+        <p class="text-xs text-text-muted mt-2">Các câu bỏ trống sẽ bị tính là sai. Bạn có chắc chắn muốn nộp?</p>
+        <div class="flex gap-3 mt-5">
+          <button
+            @click="cancelConfirm"
+            class="flex-1 py-2.5 bg-bg-surface hover:bg-bg-hover text-text-primary rounded-xl text-xs font-bold transition-all cursor-pointer"
+          >
+            Tiếp tục làm
+          </button>
+          <button
+            @click="doSubmit"
+            class="flex-1 py-2.5 bg-accent hover:bg-accent-dark text-white rounded-xl text-xs font-bold transition-all cursor-pointer"
+          >
+            Vẫn nộp
+          </button>
+        </div>
+      </div>
     </div>
   </div>
 </template>
@@ -108,8 +138,11 @@ import type { QuizQuestion } from '../../../features/lesson/types/lesson.types';
 
 const props = withDefaults(defineProps<{
   questions?: QuizQuestion[];
+  /** Bài có Code Lab hay không — đổi nhãn nút hoàn thành (LM-035). */
+  hasCodelab?: boolean;
 }>(), {
   questions: () => [],
+  hasCodelab: true,
 });
 
 const emit = defineEmits<{
@@ -121,6 +154,8 @@ const PASS_THRESHOLD = 0.7;
 
 const userAnswers = ref<Record<string, number>>({});
 const isSubmitted = ref(false);
+// Dialog xác nhận thay window.confirm native (LM-064).
+const showIncompleteConfirm = ref(false);
 
 const answeredCount = computed(() => Object.keys(userAnswers.value).length);
 
@@ -140,9 +175,19 @@ const quizPassed = computed(() => {
 function submitQuiz(): void {
   if (isSubmitted.value) return;
   if (answeredCount.value < props.questions.length) {
-    const isConfirmed = window.confirm('Bạn chưa chọn hết đáp án. Các câu bỏ trống sẽ bị tính là sai. Bạn có chắc chắn muốn nộp?');
-    if (!isConfirmed) return;
+    // LM-064: hiển thị dialog xác nhận trong app thay window.confirm native.
+    showIncompleteConfirm.value = true;
+    return;
   }
+  doSubmit();
+}
+
+function cancelConfirm(): void {
+  showIncompleteConfirm.value = false;
+}
+
+function doSubmit(): void {
+  showIncompleteConfirm.value = false;
   isSubmitted.value = true;
   emit('submit', { ...userAnswers.value });
 }

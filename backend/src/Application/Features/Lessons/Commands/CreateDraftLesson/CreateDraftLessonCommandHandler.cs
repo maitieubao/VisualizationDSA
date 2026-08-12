@@ -77,6 +77,30 @@ namespace VisualizationDSA.Application.Features.Lessons.Commands.CreateDraftLess
             _context.ModuleItems.Add(moduleItem);
             await _context.SaveChangesAsync(cancellationToken);
 
+            // TC-011: quiz liên kết — tạo ModuleItem loại Quiz ngay sau lesson (cùng module).
+            // Heuristic trong GetLessonById tìm quiz nằm giữa lesson này và lesson kế tiếp,
+            // nên đặt quiz ở orderIndex + 500 (nằm trong khoảng (lesson, lesson + 1000]).
+            if (request.QuizId.HasValue)
+            {
+                var quiz = await _context.Quizzes
+                    .FirstOrDefaultAsync(q => q.Id == request.QuizId.Value, cancellationToken);
+                if (quiz == null)
+                    throw new ArgumentException("Quiz not found.");
+
+                // Chỉ được gắn quiz mình tạo hoặc seed quiz chung — không nhận quiz của teacher khác.
+                if (quiz.CreatedByTeacherId != null && quiz.CreatedByTeacherId != request.TeacherId)
+                    throw new UnauthorizedAccessException("You cannot link a quiz owned by another teacher.");
+
+                var quizOrderIndex = orderIndex + 500;
+                var quizItem = new ModuleItem(
+                    module.Id, null, ModuleItemType.Quiz,
+                    null, quiz.Id, null,
+                    quiz.Title, quizOrderIndex, true
+                );
+                _context.ModuleItems.Add(quizItem);
+                await _context.SaveChangesAsync(cancellationToken);
+            }
+
             return lesson.Id;
         }
     }

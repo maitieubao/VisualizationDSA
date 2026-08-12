@@ -42,15 +42,12 @@ flowchart TD
     Root --> B["b"]
     
     A --> P1["p"]
-    P1 --> P2["p"]
+    P1 --> P2["p (end: app)"]
     P2 --> L1["l"]
-    P2 --> E["e"]
     P2 --> R["r"]
     
     L1 --> E1["e"]
     E1 --> Star1["* (end: apple)"]
-    
-    E --> Star2["* (end: app)"]
     
     R --> I["i"]
     I --> C["c"]
@@ -67,8 +64,8 @@ flowchart TD
     L2 --> Star5["* (end: ball)"]
     
     style Root fill:#3b82f6,color:#fff
+    style P2 fill:#10b981,color:#fff
     style Star1 fill:#10b981,color:#fff
-    style Star2 fill:#10b981,color:#fff
     style Star3 fill:#10b981,color:#fff
     style Star4 fill:#10b981,color:#fff
     style Star5 fill:#10b981,color:#fff
@@ -76,7 +73,7 @@ flowchart TD
 
 **Giải thích:**
 - Từ "apple": Root → a → p → p → l → e → *(end)*
-- Từ "app": Root → a → p → p → *(end)* (Là tiền từ của "apple" nhưng cũng là từ độc lập)
+- Từ "app": Root → a → p → **p (end)** (Là tiền từ của "apple" nhưng cũng là từ độc lập — end marker nằm ngay tại node `p` cuối cùng)
 - Từ "bat": Root → b → a → t → *(end)*
 
 ---

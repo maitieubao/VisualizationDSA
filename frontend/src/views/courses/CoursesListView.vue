@@ -66,10 +66,23 @@
       </div>
     </div>
 
-    <div v-else-if="sortedCourses.length === 0" class="empty-state text-center py-20 bg-bg-surface rounded-lg border border-border-default mt-6" role="status">
+    <div v-else-if="!errorMessage && sortedCourses.length === 0" class="empty-state text-center py-20 bg-bg-surface rounded-lg border border-border-default mt-6" role="status">
       <div class="text-5xl mb-4" aria-hidden="true"><BaseIcon name="search" class="w-14 h-14 text-text-muted mx-auto" /></div>
       <h3 class="text-xl font-bold text-text-primary">Không tìm thấy khóa học phù hợp</h3>
       <p class="text-text-secondary mt-2">Vui lòng thay đổi bộ lọc hoặc quay lại sau.</p>
+    </div>
+
+    <!-- LM-038: error state THAY THẾ empty state (không hiện cả hai cùng lúc). -->
+    <div v-else-if="errorMessage" class="mt-6 text-center py-10 bg-bg-surface rounded-lg border border-border-default">
+      <div class="text-5xl mb-4"><BaseIcon name="warning" class="w-14 h-14 text-accent-red mx-auto" /></div>
+      <h3 class="text-xl font-bold text-text-primary">Không thể tải khóa học</h3>
+      <p class="text-text-secondary mt-2">{{ errorMessage }}</p>
+      <button
+        @click="loadCourses"
+        class="mt-4 px-6 py-2.5 bg-accent text-white font-semibold rounded-xl hover:bg-accent-dark transition-colors"
+      >
+        Thử lại
+      </button>
     </div>
 
     <div v-else class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6 mt-6" role="list" aria-label="Danh sách khóa học">
@@ -91,18 +104,6 @@
         class="px-8 py-3 bg-bg-surface border border-border-default text-text-primary font-semibold rounded-xl hover:bg-bg-hover hover:border-accent/30 transition-all"
       >
         Xem thêm
-      </button>
-    </div>
-
-    <div v-if="errorMessage" class="mt-6 text-center py-10 bg-bg-surface rounded-lg border border-border-default">
-      <div class="text-5xl mb-4"><BaseIcon name="warning" class="w-14 h-14 text-accent-red mx-auto" /></div>
-      <h3 class="text-xl font-bold text-text-primary">Không thể tải khóa học</h3>
-      <p class="text-text-secondary mt-2">{{ errorMessage }}</p>
-      <button
-        @click="loadCourses"
-        class="mt-4 px-6 py-2.5 bg-accent text-white font-semibold rounded-xl hover:bg-accent-dark transition-colors"
-      >
-        Thử lại
       </button>
     </div>
   </div>
@@ -152,26 +153,37 @@ watch([selectedSort, () => courseStore.filteredCourses], () => {
   page.value = 1;
 });
 
+// Race-token chống request cũ ghi đè danh sách mới (LM-032).
+let loadRequestId = 0;
+
 async function loadCourses() {
+  const requestId = ++loadRequestId;
   errorMessage.value = null;
   courseStore.isLoading = true;
   try {
     const courses = await courseApi.getCourses();
+    if (requestId !== loadRequestId) return;
     const mapped = courses.map(c => ({
       ...c,
       coverImage: c.coverImageUrl ?? c.coverImage,
     }));
     courseStore.courses = mapped.filter(c => c.isPublished);
   } catch (err) {
+    if (requestId !== loadRequestId) return;
     console.error('Failed to load courses:', err);
     errorMessage.value = 'Không thể kết nối đến máy chủ. Vui lòng kiểm tra kết nối và thử lại.';
   } finally {
-    courseStore.isLoading = false;
+    if (requestId === loadRequestId) courseStore.isLoading = false;
   }
 }
 
 onMounted(() => {
   loadCourses();
+});
+
+// Reload danh sách khi đổi tài khoản (mỗi user có tiến độ khác nhau — LM-032).
+watch(() => authStore.currentUser?.id, (newId, oldId) => {
+  if (newId !== undefined && newId !== oldId) void loadCourses();
 });
 </script>
 

@@ -17,8 +17,15 @@ export const MAX_ARRAY_LENGTH = 100;
 export class AlgoInputParser {
   public static parse(raw: string, kind: AlgoInputKind): AlgoInputOptions {
     switch (kind) {
-      case 'array':
-        return { array: AlgoInputParser.parseNumberArray(raw) };
+      case 'array': {
+        const array = AlgoInputParser.parseNumberArray(raw);
+        // AL-011: chặn mảng rỗng trước khi chạy — trước đây Counting Sort vỡ
+        // RangeError "Invalid array length" tiếng Anh từ `Math.min(...[])`.
+        if (array.length === 0) {
+          throw new Error('Mảng rỗng — hãy nhập ít nhất một số (ví dụ: 5, 3, 8, 4, 2)!');
+        }
+        return { array };
+      }
       case 'tree':
         return { treeNodes: AlgoInputParser.buildTreeFromArray(AlgoInputParser.parseNumberArray(raw)) };
       case 'graph':
@@ -37,8 +44,14 @@ export class AlgoInputParser {
     const result: number[] = [];
     for (const part of parts) {
       const num = Number(part);
-      if (Number.isNaN(num)) {
-        throw new Error(`Giá trị '${part}' không phải là số hợp lệ!`);
+      // AL-010: Number('Infinity')/'1e999' không NaN nhưng KHÔNG hữu hạn → bar vẽ méo.
+      // Chặn sớm bằng lỗi rõ ràng thay vì để chạy rồi vẽ vô nghĩa.
+      if (Number.isNaN(num) || !Number.isFinite(num)) {
+        throw new Error(
+          Number.isNaN(num)
+            ? `Giá trị '${part}' không phải là số hợp lệ!`
+            : `Giá trị '${part}' không phải là số hữu hạn (Infinity/-Infinity/1e999 không được chấp nhận)!`,
+        );
       }
       result.push(num);
     }

@@ -19,7 +19,9 @@ Dưới đây là bảng tổng hợp "kim chỉ nam" giúp bạn dễ dàng đ�
 | **Heap Sort** | O(N log N) | O(N log N) | O(N log N) | O(1) | ❌ Không | ✅ Có |
 | **Counting Sort**| O(N + K) | O(N + K) | O(N + K) | O(N + K) | ✅ Có | ❌ Không |
 | **Radix Sort** | O(d(N+K)) | O(d(N+K)) | O(d(N+K)) | O(N + K) | ✅ Có | ❌ Không |
-| **Bucket Sort** | O(N + K) | O(N + K) | O(N²) | O(N + K) | ✅ Có | ❌ Không |
+| **Bucket Sort** | O(N + K) | O(N + K) | O(N²) | O(N + K) | ✅ Có (tùy thuộc) | ⚠️ Một phần |
+
+> ⚠️ **Bucket Sort không thuần "non-comparison"** như Counting Sort/Radix Sort: chỉ bước chia xô (Scatter) là không dùng so sánh, nhưng bước sắp xếp nội bộ trong từng xô (thường là Insertion Sort) **dựa trên so sánh**. Tương tự, tính ổn định (stable) của nó tùy thuộc thuật toán sắp xếp dùng bên trong mỗi xô.
 
 ## Bí quyết Lựa chọn (Best Practices) {#how-to-choose}
 

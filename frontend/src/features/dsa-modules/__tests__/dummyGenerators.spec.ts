@@ -59,8 +59,8 @@ describe('dummyGenerators', () => {
       
       const stepWithWindow = result.frames.find(f => f.explanation.includes('Cửa sổ đạt kích thước'));
       expect(stepWithWindow).toBeDefined();
-      expect(stepWithWindow!.highlights.low).toBe(0);
-      expect(stepWithWindow!.highlights.high).toBe(2);
+      expect(stepWithWindow!.highlights?.low).toBe(0);
+      expect(stepWithWindow!.highlights?.high).toBe(2);
     });
   });
 
@@ -72,7 +72,7 @@ describe('dummyGenerators', () => {
       
       const pushFrame = result.frames.find(f => f.explanation.includes('Đẩy index'));
       expect(pushFrame).toBeDefined();
-      expect(pushFrame!.dataState.length).toBeGreaterThan(0);
+      expect(pushFrame!.dataState?.length).toBeGreaterThan(0);
     });
   });
 
@@ -80,19 +80,19 @@ describe('dummyGenerators', () => {
     it('finds target (last element is target)', () => {
       const result = generateDummyResult('linear-search', [5, 3, 8, 1, 3]);
       expect(result.algorithmId).toBe('linear-search');
-      const foundFrames = result.frames.filter((f) => f.highlights.found != null);
+      const foundFrames = result.frames.filter((f) => f.highlights?.found != null);
       expect(foundFrames.length).toBe(1);
       for (const frame of result.frames) {
-        expect(frame.highlights.target).toBe(3);
+        expect(frame.highlights?.target).toBe(3);
       }
     });
 
     it('handles not found case', () => {
       const result = generateDummyResult('linear-search', [5, 3, 8, 1, 99]);
-      const foundFrames = result.frames.filter((f) => f.highlights.found != null);
+      const foundFrames = result.frames.filter((f) => f.highlights?.found != null);
       expect(foundFrames.length).toBe(0);
       for (const frame of result.frames) {
-        expect(frame.highlights.target).toBe(99);
+        expect(frame.highlights?.target).toBe(99);
       }
     });
   });
@@ -101,16 +101,16 @@ describe('dummyGenerators', () => {
     it('finds target in sorted array', () => {
       const result = generateDummyResult('binary-search', [1, 3, 5, 8, 12, 5]);
       expect(result.algorithmId).toBe('binary-search');
-      const foundFrames = result.frames.filter((f) => f.highlights.found != null);
+      const foundFrames = result.frames.filter((f) => f.highlights?.found != null);
       expect(foundFrames.length).toBe(1);
       for (const frame of result.frames) {
-        expect(frame.highlights.target).toBe(5);
+        expect(frame.highlights?.target).toBe(5);
       }
     });
 
     it('has low/mid/high pointers', () => {
       const result = generateDummyResult('binary-search', [1, 3, 5, 8, 12, 5]);
-      const pointerFrames = result.frames.filter((f) => f.highlights.mid != null);
+      const pointerFrames = result.frames.filter((f) => f.highlights?.mid != null);
       expect(pointerFrames.length).toBeGreaterThan(0);
     });
   });

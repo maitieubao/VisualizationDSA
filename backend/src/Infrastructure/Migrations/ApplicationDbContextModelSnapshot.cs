@@ -399,6 +399,9 @@ namespace Infrastructure.Migrations
                     b.Property<bool>("IsHiddenForStudent")
                         .HasColumnType("INTEGER");
 
+                    b.Property<bool>("IsRequired")
+                        .HasColumnType("INTEGER");
+
                     b.Property<bool>("IsSequential")
                         .HasColumnType("INTEGER");
 
@@ -411,8 +414,8 @@ namespace Infrastructure.Migrations
                     b.Property<DateTime?>("OpenAt")
                         .HasColumnType("TEXT");
 
-                    b.Property<int?>("PrerequisiteItemId")
-                        .HasColumnType("INTEGER");
+                    b.Property<Guid?>("PrerequisiteItemId")
+                        .HasColumnType("TEXT");
 
                     b.HasKey("Id");
 
@@ -1114,6 +1117,9 @@ namespace Infrastructure.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("TEXT");
 
+                    b.Property<DateTime>("ExpiresAt")
+                        .HasColumnType("TEXT");
+
                     b.Property<string>("PaymentCode")
                         .IsRequired()
                         .HasMaxLength(50)
@@ -1150,6 +1156,9 @@ namespace Infrastructure.Migrations
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid?>("CreatedByTeacherId")
                         .HasColumnType("TEXT");
 
                     b.Property<string>("Description")
@@ -1201,7 +1210,15 @@ namespace Infrastructure.Migrations
                     b.Property<bool>("Passed")
                         .HasColumnType("INTEGER");
 
-                    b.Property<Guid>("QuizId")
+                    b.Property<Guid?>("QuizId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("QuizKey")
+                        .HasMaxLength(100)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("QuizTitle")
+                        .HasMaxLength(200)
                         .HasColumnType("TEXT");
 
                     b.Property<int>("Score")
@@ -1519,6 +1536,12 @@ namespace Infrastructure.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("TEXT");
 
+                    b.Property<string>("AvatarUrl")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Bio")
+                        .HasColumnType("TEXT");
+
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("TEXT");
 
@@ -1544,6 +1567,9 @@ namespace Infrastructure.Migrations
                     b.Property<DateTime?>("LastLoginAt")
                         .HasColumnType("TEXT");
 
+                    b.Property<string>("Nickname")
+                        .HasColumnType("TEXT");
+
                     b.Property<string>("PasswordHash")
                         .IsRequired()
                         .HasColumnType("TEXT");
@@ -1564,6 +1590,9 @@ namespace Infrastructure.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER")
                         .HasDefaultValue(0);
+
+                    b.Property<string>("University")
+                        .HasColumnType("TEXT");
 
                     b.Property<string>("Username")
                         .IsRequired()
@@ -1825,7 +1854,7 @@ namespace Infrastructure.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("VisualizationDSA.Domain.Entities.ModuleItem", "ModuleItem")
+                    b.HasOne("VisualizationDSA.Domain.Entities.ClassroomModuleItem", "ModuleItem")
                         .WithMany()
                         .HasForeignKey("ModuleItemId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -2115,9 +2144,7 @@ namespace Infrastructure.Migrations
                 {
                     b.HasOne("VisualizationDSA.Domain.Entities.Quiz", "Quiz")
                         .WithMany("Attempts")
-                        .HasForeignKey("QuizId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("QuizId");
 
                     b.HasOne("VisualizationDSA.Domain.Entities.User", "User")
                         .WithMany("QuizAttempts")

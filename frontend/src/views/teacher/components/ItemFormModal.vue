@@ -39,7 +39,7 @@
               <select 
                 v-model="linkedContentId" 
                 class="form-input" 
-                :disabled="!linkedContentOptions.length"
+                :disabled="optionsLoading || !linkedContentOptions.length"
                 @change="updateLinkedContent"
               >
                 <option :value="null" disabled>-- Chọn {{ linkedContentLabel.toLowerCase() }} --</option>
@@ -51,7 +51,10 @@
                   {{ opt.title }} {{ opt.sandboxType ? `(${opt.sandboxType})` : '' }}
                 </option>
               </select>
-              <p v-if="!linkedContentOptions.length" class="form-hint">
+              <p v-if="optionsLoading" class="form-hint">
+                Đang tải danh sách {{ linkedContentLabel.toLowerCase() }}...
+              </p>
+              <p v-else-if="!linkedContentOptions.length" class="form-hint">
                 Chưa có {{ linkedContentLabel.toLowerCase() }} nào. Hãy tạo trước ở tab quản lý.
               </p>
             </div>
@@ -159,16 +162,16 @@
             </div>
             
             
-            <div class="form-field" v-if="parentModule && parentModule.items.length > 1">
+            <div class="form-field" v-if="prerequisiteOptions.length > 1">
               <label class="form-label">Điều kiện mở khóa (Prerequisite)</label>
               <select v-model="form.prerequisiteItemId" class="form-input">
                 <option value="">Không có (Mở ngay khi module mở)</option>
                 <option 
-                  v-for="item in parentModule.items" 
+                  v-for="item in prerequisiteOptions" 
                   :key="item.id" 
                   :value="item.id"
                 >
-                  {{ item.overrideTitle || item.lessonTitle || item.quizTitle || item.codelabTitle || 'Untitled' }} (Bước {{ parentModule.items.indexOf(item) + 1 }})
+                  {{ item.overrideTitle || item.lessonTitle || item.quizTitle || item.codelabTitle || 'Untitled' }} (Bước {{ prerequisiteOptions.indexOf(item) + 1 }})
                 </option>
               </select>
               <p class="form-hint">Chỉ mở khóa khi bài học trước đã hoàn thành</p>
@@ -209,6 +212,12 @@ import { ref, computed, watch, reactive } from 'vue';
 import BaseIcon from '@/shared/components/BaseIcon.vue';
 import CustomMarkdownEditor from '@/components/editor/CustomMarkdownEditor.vue';
 
+interface LinkedOption {
+  id: string;
+  title: string;
+  sandboxType?: string;
+}
+
 interface Props {
   show: boolean;
   editingItem: any | null;
@@ -225,6 +234,19 @@ const emit = defineEmits<Emits>();
 
 const saving = ref(false);
 const linkedContentId = ref<string | null>(null);
+// LS-005: danh sách nội dung liên kết nạp THẬT từ API (thay vì return [] vô hiệu).
+const linkedContentOptions = ref<LinkedOption[]>([]);
+const optionsLoading = ref(false);
+
+const BASE_URL = import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:5055';
+
+function getAuthHeaders(): Record<string, string> {
+  const token = localStorage.getItem('accessToken');
+  return {
+    'Content-Type': 'application/json',
+    ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+  };
+}
 
 const itemTypes: Array<{ value: 'Lesson' | 'Quiz' | 'Codelab' | 'CustomLesson'; label: string; icon: string }> = [
   { value: 'Lesson', label: 'Bài học (Lesson)', icon: 'book-open' },
@@ -251,11 +273,6 @@ const form = reactive({
   isSequential: true
 });
 
-const linkedContentOptions = computed(() => {
-  
-  return [] as any[];
-});
-
 const linkedContentLabel = computed(() => {
   switch (form.itemType) {
     case 'Lesson': return 'Bài học';
@@ -275,6 +292,12 @@ const isValid = computed(() => {
   return true;
 });
 
+// LS-032: prerequisite không được chọn chính item đang edit (chống tự khóa vòng).
+const prerequisiteOptions = computed(() => {
+  const items = props.parentModule?.items ?? [];
+  return items.filter((i: any) => !props.editingItem || i.id !== props.editingItem.id);
+});
+
 function getLinkedContentId() {
   switch (form.itemType) {
     case 'Lesson': return form.lessonId;
@@ -289,6 +312,63 @@ function updateLinkedContent() {
     case 'Lesson': form.lessonId = linkedContentId.value; break;
     case 'Quiz': form.quizId = linkedContentId.value; break;
     case 'Codelab': form.codelabId = linkedContentId.value; break;
+  }
+}
+
+// ── LS-005: nạp danh sách Lesson/Quiz/Codelab thật từ API ──
+async function loadLinkedContentOptions() {
+  optionsLoading.value = true;
+  linkedContentOptions.value = [];
+  linkedContentId.value = getLinkedContentId();
+  try {
+    if (form.itemType === 'Lesson') {
+      const res = await fetch(`${BASE_URL}/api/v1/concepts/courses`, { headers: getAuthHeaders() });
+      if (res.ok) {
+        const courses = await res.json();
+        const published = (Array.isArray(courses) ? courses : courses.items ?? [])
+          .filter((c: any) => c.isPublished && !c.isDeleted);
+        const perCourse = await Promise.all(
+          published.map(async (c: any) => {
+            try {
+              const detailRes = await fetch(`${BASE_URL}/api/v1/concepts/courses/${c.id}`, { headers: getAuthHeaders() });
+              if (!detailRes.ok) return [] as LinkedOption[];
+              const detail = await detailRes.json();
+              return (detail.lessons ?? []).map((l: any): LinkedOption => ({
+                id: l.id,
+                title: l.title,
+                sandboxType: l.sandboxType
+              }));
+            } catch {
+              return [] as LinkedOption[];
+            }
+          })
+        );
+        linkedContentOptions.value = perCourse.flat();
+      }
+    } else if (form.itemType === 'Quiz') {
+      const res = await fetch(`${BASE_URL}/api/v1/quizzes`, { headers: getAuthHeaders() });
+      if (res.ok) {
+        const data = await res.json();
+        const quizzes = data.quizzes ?? data ?? [];
+        linkedContentOptions.value = (Array.isArray(quizzes) ? quizzes : [])
+          .map((q: any): LinkedOption => ({ id: q.id, title: q.title }));
+      }
+    } else if (form.itemType === 'Codelab') {
+      const res = await fetch(`${BASE_URL}/api/v1/codelabs?page=1&pageSize=100`, { headers: getAuthHeaders() });
+      if (res.ok) {
+        const data = await res.json();
+        const codelabs = Array.isArray(data) ? data : (data.items ?? []);
+        linkedContentOptions.value = codelabs.map((c: any): LinkedOption => ({
+          id: c.id,
+          title: c.title,
+          sandboxType: c.language || c.allowedLanguages
+        }));
+      }
+    }
+  } catch {
+    // Giữ danh sách rỗng — form hiển thị gợi ý "tạo trước ở tab quản lý".
+  } finally {
+    optionsLoading.value = false;
   }
 }
 
@@ -311,6 +391,7 @@ watch(() => props.show, (newShow) => {
     form.prerequisiteItemId = item.prerequisiteItemId || '';
     form.isSequential = item.isSequential;
     linkedContentId.value = getLinkedContentId();
+    void loadLinkedContentOptions();
   } else if (newShow) {
     
     form.itemType = 'Lesson';
@@ -329,7 +410,18 @@ watch(() => props.show, (newShow) => {
     form.prerequisiteItemId = '';
     form.isSequential = true;
     linkedContentId.value = null;
+    void loadLinkedContentOptions();
   }
+});
+
+// Đổi loại nội dung → nạp lại danh sách tương ứng + reset liên kết đang chọn.
+watch(() => form.itemType, (newType) => {
+  if (newType === 'CustomLesson' || !props.show) return;
+  form.lessonId = null;
+  form.quizId = null;
+  form.codelabId = null;
+  linkedContentId.value = null;
+  void loadLinkedContentOptions();
 });
 
 async function handleSubmit() {

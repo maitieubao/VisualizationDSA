@@ -73,15 +73,16 @@ const JSON_HEADERS: HeadersInit = { 'Content-Type': 'application/json' };
 /**
  * Lấy access token đang hoạt động — backend xác định người dùng từ token
  * (KHÔNG tin userId client gửi, chống IDOR/cấp premium cho người khác).
+ * PM-041: Chỉ lấy token từ authStore (qua interceptor chung) — bỏ fallback
+ * localStorage.getItem('token') vì key đó không tồn tại trong hệ thống.
  */
 function getAuthToken(): string | null {
   try {
-    const fromStore = useAuthStore().getAccessToken();
-    if (fromStore) return fromStore;
+    return useAuthStore().getAccessToken();
   } catch {
-    // Pinia chưa active (test edge)
+    // Pinia chưa active (test edge) — không fallback, token chỉ đến từ store.
+    return null;
   }
-  return localStorage.getItem('token');
 }
 
 function authHeaders(): HeadersInit {
@@ -94,16 +95,33 @@ function authGetHeaders(): HeadersInit {
   return token ? { 'Authorization': `Bearer ${token}` } : {};
 }
 
+// PM-023: Timeout + AbortController cho mọi fetch — tránh startCheckout treo vô hạn
+// khi backend không phản hồi (mất mạng/5xx nuốt request).
+const REQUEST_TIMEOUT_MS = 10_000;
 
+async function fetchWithTimeout(input: RequestInfo | URL, init: RequestInit = {}): Promise<Response> {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
+  try {
+    return await fetch(input, { ...init, signal: controller.signal });
+  } catch (err) {
+    if (controller.signal.aborted) {
+      throw new Error('Yêu cầu thanh toán hết thời gian chờ, vui lòng thử lại.');
+    }
+    throw err;
+  } finally {
+    clearTimeout(timer);
+  }
+}
 
 export const statelessPaymentApi = {
   async getConfig(): Promise<StatelessPaymentConfig> {
-    const res = await fetch(`${BASE_URL}/api/v1/concepts/payment/config`);
+    const res = await fetchWithTimeout(`${BASE_URL}/api/v1/concepts/payment/config`);
     return handleResponse<StatelessPaymentConfig>(res);
   },
 
   async checkout(paymentMethod = 'vietqr'): Promise<StatelessOrderDto> {
-    const res = await fetch(`${BASE_URL}/api/v1/concepts/payment/checkout`, {
+    const res = await fetchWithTimeout(`${BASE_URL}/api/v1/concepts/payment/checkout`, {
       method: 'POST',
       headers: authHeaders(),
       body: JSON.stringify({ paymentMethod }),
@@ -112,7 +130,7 @@ export const statelessPaymentApi = {
   },
 
   async verify(orderId: string): Promise<StatelessOrderDto> {
-    const res = await fetch(`${BASE_URL}/api/v1/concepts/payment/verify`, {
+    const res = await fetchWithTimeout(`${BASE_URL}/api/v1/concepts/payment/verify`, {
       method: 'POST',
       headers: authHeaders(),
       body: JSON.stringify({ orderId }),
@@ -121,14 +139,14 @@ export const statelessPaymentApi = {
   },
 
   async getOrderStatus(orderId: string): Promise<StatelessOrderDto> {
-    const res = await fetch(`${BASE_URL}/api/v1/concepts/payment/orders/${orderId}/status`, {
+    const res = await fetchWithTimeout(`${BASE_URL}/api/v1/concepts/payment/orders/${orderId}/status`, {
       headers: authGetHeaders(),
     });
     return handleResponse<StatelessOrderDto>(res);
   },
 
   async simulateWebhook(orderId: string): Promise<StatelessOrderDto> {
-    const res = await fetch(`${BASE_URL}/api/v1/concepts/payment/simulate-webhook`, {
+    const res = await fetchWithTimeout(`${BASE_URL}/api/v1/concepts/payment/simulate-webhook`, {
       method: 'POST',
       headers: authHeaders(),
       body: JSON.stringify({ orderId }),
@@ -137,21 +155,21 @@ export const statelessPaymentApi = {
   },
 
   async getPremiumStatus(): Promise<StatelessPremiumStatus> {
-    const res = await fetch(`${BASE_URL}/api/v1/concepts/payment/premium-status`, {
+    const res = await fetchWithTimeout(`${BASE_URL}/api/v1/concepts/payment/premium-status`, {
       headers: authGetHeaders(),
     });
     return handleResponse<StatelessPremiumStatus>(res);
   },
 
   async checkFeatureAccess(featureId: string): Promise<{ hasAccess: boolean }> {
-    const res = await fetch(`${BASE_URL}/api/v1/concepts/payment/check-access?featureId=${encodeURIComponent(featureId)}`, {
+    const res = await fetchWithTimeout(`${BASE_URL}/api/v1/concepts/payment/check-access?featureId=${encodeURIComponent(featureId)}`, {
       headers: authGetHeaders(),
     });
     return handleResponse<{ hasAccess: boolean }>(res);
   },
 
   async getTransactions(): Promise<StatelessTransactionLog[]> {
-    const res = await fetch(`${BASE_URL}/api/v1/concepts/payment/transactions`, {
+    const res = await fetchWithTimeout(`${BASE_URL}/api/v1/concepts/payment/transactions`, {
       headers: authGetHeaders(),
     });
     return handleResponse<StatelessTransactionLog[]>(res);

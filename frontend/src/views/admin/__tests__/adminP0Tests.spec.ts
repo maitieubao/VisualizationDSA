@@ -1,4 +1,4 @@
-// @vitest-environment jsdom
+﻿// @vitest-environment jsdom
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { nextTick } from 'vue';
 import { mount, flushPromises, type VueWrapper } from '@vue/test-utils';
@@ -31,10 +31,21 @@ vi.mock('./useAdminApi', () => ({
   }),
 }));
 
+type FetchCallTuple = [input: RequestInfo | URL, init?: RequestInit];
 const mockFetch = vi.fn();
 global.fetch = mockFetch;
 
-const defaultDashboardData = {
+interface AdminTopUser { email: string; username: string; totalXP: number; currentLevel: number; role: string; }
+interface AdminDashboardData {
+  users: { total: number; students: number; teachers: number; admins: number; premium: number };
+  quizzes: { total: number };
+  orders: { total: number; paid: number };
+  topUsers: AdminTopUser[];
+  registrationsLast7Days: Array<{ date: string; count: number }>;
+  popularCourses: Array<{ courseId: string; title: string; enrollmentsCount: number }>;
+}
+
+const defaultDashboardData: AdminDashboardData = {
   users: { total: 0, students: 0, teachers: 0, admins: 0, premium: 0 },
   quizzes: { total: 0 },
   orders: { total: 0, paid: 0 },
@@ -43,7 +54,11 @@ const defaultDashboardData = {
   popularCourses: [],
 };
 
-function setupMockFetch(dashboardData: any = defaultDashboardData) {
+function notFoundResponse(): Response {
+  return { ok: false, status: 404, statusText: 'Not Found', json: async () => ({}) } as unknown as Response;
+}
+
+function setupMockFetch(dashboardData: AdminDashboardData = defaultDashboardData) {
   mockFetch.mockImplementation(async (url: string) => {
     if (url.includes('/admin/dashboard')) {
       return { ok: true, json: async () => dashboardData };
@@ -60,8 +75,31 @@ function setupMockFetch(dashboardData: any = defaultDashboardData) {
     if (url.includes('/concepts/quiz/')) {
       return { ok: true, json: async () => ({ questions: [] }) };
     }
-    return { ok: true, json: async () => ({}) };
+    // AD-035: URL không thuộc allowlist → trả 404 (thay vì ok:true để không nuốt lỗi URL/payload sai).
+    return notFoundResponse();
   });
+}
+
+// AD-035: allowlist endpoint hợp lệ của Admin Panel — mọi fetch phải nằm trong tập này.
+const ADMIN_ALLOWED_URL_PARTS: readonly string[] = [
+  '/api/v1/concepts/admin/dashboard',
+  '/api/v1/concepts/admin/users',
+  '/api/v1/concepts/admin/quizzes',
+  '/api/v1/concepts/admin/audit-logs',
+  '/api/v1/concepts/quiz/',
+  '/health',
+  '/api/v1/diagnostics/health',
+];
+
+// AD-013t: shape DashboardAuditLog từ GET /admin/audit-logs (dashboard + audit tab dùng chung).
+interface DashboardAuditLog {
+  id: string;
+  action: string;
+  actorId: string;
+  actorName: string;
+  targetId: string | null;
+  details: string;
+  createdAt: string;
 }
 
 import AdminPanelView from '../AdminPanelView.vue';
@@ -234,6 +272,10 @@ describe('AdminPanelView — P0 Tests', () => {
     });
 
     it('renders audit logs in dashboard', async () => {
+      const systemLogs: DashboardAuditLog[] = [
+        { id: 'log1', action: 'CreateUser', actorId: 'admin-1', actorName: 'Super Admin', targetId: 'user-1', details: 'Hệ thống Admin khởi động hoàn tất', createdAt: '2024-08-01T10:00:00Z' },
+        { id: 'log2', action: 'TogglePremium', actorId: 'admin-1', actorName: 'Super Admin', targetId: 'user-2', details: 'Đã kết nối cơ sở dữ liệu PostgreSQL', createdAt: '2024-08-01T10:01:00Z' },
+      ];
       setupMockFetch({
         users: { total: 50, students: 40, teachers: 3, admins: 1, premium: 15 },
         quizzes: { total: 20 },
@@ -241,6 +283,22 @@ describe('AdminPanelView — P0 Tests', () => {
         topUsers: [],
         registrationsLast7Days: [],
         popularCourses: [],
+      });
+      mockFetch.mockImplementation(async (url: string) => {
+        if (url.includes('/admin/dashboard')) {
+          return { ok: true, json: async () => ({
+            users: { total: 50, students: 40, teachers: 3, admins: 1, premium: 15 },
+            quizzes: { total: 20 },
+            orders: { total: 25, paid: 20 },
+            topUsers: [],
+            registrationsLast7Days: [],
+            popularCourses: [],
+          }) };
+        }
+        if (url.includes('/admin/audit-logs')) {
+          return { ok: true, json: async () => ({ logs: systemLogs }) };
+        }
+        return notFoundResponse();
       });
 
       const w = await mountAdminPanel();
@@ -273,7 +331,7 @@ describe('AdminPanelView — P0 Tests', () => {
         if (url.includes('/admin/audit-logs')) {
           return { ok: true, json: async () => ({ logs: [] }) };
         }
-        return { ok: true, json: async () => ({}) };
+        return notFoundResponse();
       });
     });
 
@@ -297,7 +355,7 @@ describe('AdminPanelView — P0 Tests', () => {
         if (url.includes('/admin/users')) {
           return { ok: true, json: async () => ({ users: [], total: 0 }) };
         }
-        return { ok: true, json: async () => ({}) };
+        return notFoundResponse();
       });
 
       const w = await mountAdminPanel();
@@ -318,7 +376,7 @@ describe('AdminPanelView — P0 Tests', () => {
         if (url.includes('/admin/users')) {
           return { ok: true, json: async () => ({ users: [], total: 0 }) };
         }
-        return { ok: true, json: async () => ({}) };
+        return notFoundResponse();
       });
 
       const w = await mountAdminPanel();
@@ -412,7 +470,7 @@ describe('AdminPanelView — P0 Tests', () => {
         if (url.includes('/concepts/quiz/')) {
           return { ok: true, json: async () => ({ questions: [{ text: 'What is BFS?', options: ['A','B','C','D'], correctIndex: 0, explanation: 'Breadth-first search' }] }) };
         }
-        return { ok: true, json: async () => ({}) };
+        return notFoundResponse();
       });
     });
 
@@ -454,16 +512,55 @@ describe('AdminPanelView — P0 Tests', () => {
     });
   });
 
+  describe('AD-035: URL allowlist — mọi request phải thuộc endpoint Admin Panel', () => {
+    it('đi qua toàn bộ tab chỉ gọi endpoint thuộc allowlist (không gọi URL lạ)', async () => {
+      const w = await mountAdminPanel();
+      const tabNames = ['Người dùng', 'Quản lý Quiz', 'Hệ thống', 'Nhật ký Quản trị'];
+      for (const name of tabNames) {
+        const tab = w.findAll('.tab-btn').find((el) => el.text().includes(name));
+        expect(tab, `Không tìm thấy tab "${name}"`).toBeTruthy();
+        await tab!.trigger('click');
+        await flushPromises();
+        await nextTick();
+      }
+
+      const calls = (mockFetch.mock.calls as FetchCallTuple[]).map((call) => String(call[0]));
+      expect(calls.length).toBeGreaterThan(0);
+      for (const url of calls) {
+        const isAllowed = ADMIN_ALLOWED_URL_PARTS.some((part) => url.includes(part));
+        expect(isAllowed, `Request tới endpoint ngoài allowlist: ${url}`).toBe(true);
+      }
+    });
+
+    it('URL không thuộc allowlist bị mock từ chối (ok:false) — không nuốt payload sai', async () => {
+      const res = await mockFetch('http://localhost:5055/api/v1/concepts/admin/does-not-exist', {});
+      expect(res.ok).toBe(false);
+      expect(res.status).toBe(404);
+    });
+  });
+
   describe('System Status + Audit Log', () => {
     it('renders system status info', async () => {
+      mockFetch.mockImplementation(async (url: string) => {
+        if (url.includes('/api/v1/diagnostics/health')) {
+          return { ok: true, json: async () => ({ success: true, environment: 'Development' }) };
+        }
+        if (url.includes('/health')) {
+          return { ok: true, json: async () => ({ status: 'Healthy', checks: [{ name: 'database', latency: 25 }], totalDuration: 30 }) };
+        }
+        return notFoundResponse();
+      });
+
       const w = await mountAdminPanel();
       const systemTab = w.findAll('.tab-btn').find((el) => el.text().includes('Hệ thống'));
       await systemTab!.trigger('click');
       await nextTick();
+      await flushPromises();
 
       expect(w.text()).toContain('API Base URL');
       expect(w.text()).toContain('Trạng thái kết nối CSDL');
       expect(w.text()).toContain('Đang kết nối (PostgreSQL)');
+      expect(w.text()).toContain('Development');
     });
 
     it('renders system settings toggles', async () => {
@@ -499,7 +596,7 @@ describe('AdminPanelView — P0 Tests', () => {
         if (url.includes('/admin/audit-logs')) {
           return { ok: true, json: async () => ({ logs: mockLogs }) };
         }
-        return { ok: true, json: async () => ({}) };
+        return notFoundResponse();
       });
 
       const w = await mountAdminPanel();
@@ -527,7 +624,7 @@ describe('AdminPanelView — P0 Tests', () => {
         if (url.includes('/admin/audit-logs')) {
           return { ok: true, json: async () => ({ logs: mockLogs }) };
         }
-        return { ok: true, json: async () => ({}) };
+        return notFoundResponse();
       });
 
       const w = await mountAdminPanel();
@@ -548,7 +645,8 @@ describe('AdminPanelView — P0 Tests', () => {
       await nextTick();
       await flushPromises();
 
-      const refreshBtn = w.find('.btn-create-user');
+      // AD-059: nút Làm mới dùng class riêng .btn-refresh-audit (không dùng chung .btn-create-user).
+      const refreshBtn = w.find('.btn-refresh-audit');
       expect(refreshBtn).toBeTruthy();
       expect(refreshBtn.text()).toContain('Làm mới');
     });

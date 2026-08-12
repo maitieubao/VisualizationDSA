@@ -1,13 +1,13 @@
 ---
 title: Sắp xếp Nhanh (Quick Sort)
-description: Đi sâu vào trái tim của mọi hệ thống phần mềm. Khám phá cơ chế Chia để trị và thuật toán Phân mảnh (Partition) tạo nên sự vượt trội của Quick Sort.
+description: Đi sâu vào trái tim của mọi hệ thống phần mềm. Khám phá cơ chế Chia để trị và thuật toán Phân hoạch (Partition) tạo nên sự vượt trội của Quick Sort.
 ---
 
 # Sắp xếp Nhanh (Quick Sort) {#quick-sort}
 
 :::info Mục tiêu bài học
 - Nắm vững tư duy **Chia để trị (Divide & Conquer)** đằng sau thuật toán Quick Sort.
-- Bóc tách chi tiết kỹ thuật **Phân mảnh (Partition)** – linh hồn của thuật toán (Sử dụng kỹ thuật Lomuto).
+- Bóc tách chi tiết kỹ thuật **Phân hoạch (Partition)** – linh hồn của thuật toán (Sử dụng kỹ thuật Lomuto).
 - Mô phỏng quá trình đệ quy (Call Stack) để hiểu cách mảng được chia nhỏ và gom lại.
 - Phân tích rủi ro tử huyệt O(N²) và cách các ngôn ngữ lập trình lớn (C#, Java) vá lỗi bằng IntroSort.
 :::
@@ -27,7 +27,7 @@ Hãy tưởng tượng bạn là cô giáo cần xếp hàng cho 40 học sinh l
 
 ---
 
-## 2. Kỹ thuật Phân mảnh (Partitioning) {#partition}
+## 2. Kỹ thuật Phân hoạch (Partitioning) {#partition}
 
 Trái tim của Quick Sort là hàm `Partition`. Quá trình này sẽ chọn một phần tử làm **Chốt (Pivot)**, sau đó sắp xếp lại mảng sao cho:
 1. Mọi phần tử nhỏ hơn Pivot bị đẩy về bên trái.
@@ -92,12 +92,12 @@ flowchart LR
 - `j = 4` (40): Nhỏ hơn 70! Tăng `i=2`, Swap `80` và `40`. 
 - `j = 5` (50): Nhỏ hơn 70! Tăng `i=3`, Swap `90` và `50`.
 
-Mảng lúc này: `[10, 30, 40, 50, 90, 80, 70]`. Biên giới `i` đang chốt hạ ở vị trí chứa số `50`.
+Mảng lúc này: `[10, 30, 40, 50, 80, 90, 70]`. Biên giới `i` đang chốt hạ ở vị trí chứa số `50`.
 
 **Bước Cuối (Chốt hạ Pivot):**
 Vòng lặp `j` đã chạy xong. Ta chỉ cần nhấc Pivot (70) nhét vào đúng ngay sau đường biên giới.
-Tăng `i` lên `4` (Vị trí đang chứa số 90). Swap `arr[i]` và `Pivot`.
-Mảng cuối cùng: `[10, 30, 40, 50, 70, 80, 90]`.
+Tăng `i` lên `4` (Vị trí đang chứa số 80). Swap `arr[i]` và `Pivot`.
+Mảng sau khi chốt hạ Pivot: `[10, 30, 40, 50, 70, 90, 80]`. Lưu ý nửa bên phải `[90, 80]` vẫn **chưa được sắp xếp** — nó sẽ được xử lý bởi lời gọi đệ quy QuickSort ở bước sau.
 
 > Chúc mừng! Số 70 đã "đắc đạo" tọa lạc ở đúng vị trí vĩnh viễn của nó. Mọi số bên trái đều nhỏ hơn 70, bên phải đều lớn hơn 70.
 
@@ -211,7 +211,7 @@ Hành động này làm Cây đệ quy dài thòng lõng (giống hệt Linked L
 
 ## Next Steps {#next-steps}
 
-Bạn đã chinh phục được trái tim của Quick Sort: tư duy Chia để Trị và kỹ thuật Phân mảnh. Tuy nhiên, đừng quên rằng Quick Sort không ổn định (Không stable) và dễ suy thoái xuống `O(N²)` nếu gặp mảng đã sắp xếp sẵn.
+Bạn đã chinh phục được trái tim của Quick Sort: tư duy Chia để Trị và kỹ thuật Phân hoạch. Tuy nhiên, đừng quên rằng Quick Sort không ổn định (Không stable) và dễ suy thoái xuống `O(N²)` nếu gặp mảng đã sắp xếp sẵn.
 
 Bài học tiếp theo sẽ giới thiệu một thuật toán Chia để Trị khác, có tính ổn định tuyệt đối và không bao giờ suy thoái xuống `O(N²)`: **Sắp xếp Trộn (Merge Sort)**. So sánh điểm mạnh, điểm yếu của hai gã khổng lồ này sẽ giúp bạn chọn đúng công cụ cho từng tình huống thực tế.
 

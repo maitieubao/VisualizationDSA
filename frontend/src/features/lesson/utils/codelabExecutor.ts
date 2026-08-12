@@ -1,4 +1,7 @@
 import type { TestCase } from '../types/lesson.types';
+import * as acorn from 'acorn';
+import * as escodegen from 'escodegen';
+import type { Node } from 'estree';
 
 export interface CodelabCaseResult {
   input: string;
@@ -30,9 +33,168 @@ export interface CodelabWorkerResponse {
   results?: CodelabCaseResult[];
 }
 
-/** Chuẩn hóa output: bỏ toàn bộ khoảng trắng để so sánh mảng/chuỗi linh hoạt. */
+/** Ngưỡng tối đa lượt lặp trong code sinh viên — sentinel chặn `while(true)` (LM-004). */
+export const CODELAB_LOOP_LIMIT = 20000;
+const LOOP_LIMIT_SENTINEL = '[LOOP_LIMIT_EXCEEDED]';
+
+/**
+ * LM-024: chuẩn hóa output THEO KIỂU dữ liệu — string chỉ trim 2 đầu, array/object được
+ * chuẩn hóa đệ quy (string phần tử trim). KHÔNG strip toàn bộ whitespace như cũ
+ * (trước đây '"a b"' ≡ '"ab"' → pass giả).
+ */
 export function normalizeOutput(raw: string): string {
-  return raw.replace(/\s+/g, '');
+  if (raw == null) return '';
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(raw);
+  } catch {
+    return raw.trim();
+  }
+  return JSON.stringify(normalizeValue(parsed));
+}
+
+function normalizeValue(value: unknown): unknown {
+  if (typeof value === 'string') return value.trim();
+  if (Array.isArray(value)) return value.map(normalizeValue);
+  if (value !== null && typeof value === 'object') {
+    const out: Record<string, unknown> = {};
+    for (const [key, val] of Object.entries(value)) out[key] = normalizeValue(val);
+    return out;
+  }
+  return value;
+}
+
+/**
+ * LM-004: chèn sentinel đếm vòng lặp vào code sinh viên (cùng mẫu LOOP_LIMIT/sentinel
+ * của CompilerStepExecutor/ASTInstrumentationEngine). Vượt ngưỡng → ném lỗi rõ ràng
+ * thay vì treo tới khi worker bị terminate. Lỗi cú pháp → trả nguyên code (new Function báo sau).
+ */
+export function injectLoopLimit(code: string, limit: number = CODELAB_LOOP_LIMIT): string {
+  let ast: Node;
+  try {
+    ast = acorn.parse(code, { ecmaVersion: 2022 }) as unknown as Node;
+  } catch {
+    return code;
+  }
+
+  const guardName = '__codelabLoopGuard';
+  const counterName = '__codelabLoopCount';
+  const loopBodies: Array<{ node: Node }> = [];
+
+  collectLoopBodies(ast, loopBodies);
+
+  if (loopBodies.length === 0) return code;
+
+  const guardCall: Node = {
+    type: 'ExpressionStatement',
+    expression: {
+      type: 'CallExpression',
+      callee: { type: 'Identifier', name: guardName },
+      arguments: [],
+      optional: false,
+    },
+  } as unknown as Node;
+
+  for (const { node } of loopBodies) {
+    const body = (node as { body: Node }).body;
+    if (body.type === 'BlockStatement') {
+      (body.body as Node[]).unshift({ ...guardCall });
+    } else {
+      (node as { body: Node }).body = {
+        type: 'BlockStatement',
+        body: [{ ...guardCall }, body],
+      } as Node;
+    }
+  }
+
+  const program = ast as unknown as { body: Node[] };
+  const counterDecl: Node = {
+    type: 'VariableDeclaration',
+    kind: 'var',
+    declarations: [
+      {
+        type: 'VariableDeclarator',
+        id: { type: 'Identifier', name: counterName } as Node,
+        init: { type: 'Literal', value: 0 },
+      },
+    ],
+  } as unknown as Node;
+  const guardFn: Node = {
+    type: 'FunctionDeclaration',
+    id: { type: 'Identifier', name: guardName } as Node,
+    params: [],
+    body: {
+      type: 'BlockStatement',
+      body: [
+        {
+          type: 'IfStatement',
+          test: {
+            type: 'BinaryExpression',
+            operator: '>',
+            left: {
+              type: 'UpdateExpression',
+              operator: '++',
+              prefix: true,
+              argument: { type: 'Identifier', name: counterName } as Node,
+            },
+            right: { type: 'Literal', value: limit },
+          },
+          consequent: {
+            type: 'ThrowStatement',
+            argument: {
+              type: 'NewExpression',
+              callee: { type: 'Identifier', name: 'Error' },
+              arguments: [
+                {
+                  type: 'Literal',
+                  value: `${LOOP_LIMIT_SENTINEL} Phát hiện vượt ngưỡng lặp: code đã chạy quá ${limit} lượt lặp — có thể có vòng lặp vô hạn!`,
+                },
+              ],
+            },
+          },
+          alternate: null,
+        },
+      ],
+    },
+    generator: false,
+    async: false,
+    expression: false,
+  } as unknown as Node;
+
+  // Chèn sau directive đầu tiên (vd "use strict") để không demote strict mode.
+  let insertAt = 0;
+  while (
+    insertAt < program.body.length &&
+    program.body[insertAt].type === 'ExpressionStatement' &&
+    (program.body[insertAt] as { expression: Node }).expression.type === 'Literal' &&
+    typeof ((program.body[insertAt] as { expression: { value?: unknown } }).expression.value) === 'string'
+  ) {
+    insertAt++;
+  }
+  program.body.splice(insertAt, 0, counterDecl, guardFn);
+
+  return escodegen.generate(ast as unknown as Node);
+}
+
+function collectLoopBodies(node: Node, acc: Array<{ node: Node }>): void {
+  if (!node || typeof node !== 'object') return;
+  const n = node as unknown as Record<string, unknown>;
+  if (n.type === 'ForStatement' || n.type === 'ForInStatement' || n.type === 'ForOfStatement' || n.type === 'WhileStatement' || n.type === 'DoWhileStatement') {
+    acc.push({ node });
+  }
+  for (const key of Object.keys(n)) {
+    if (key === 'type' || key === 'loc' || key === 'start' || key === 'end' || key === 'range') continue;
+    const value = n[key];
+    if (Array.isArray(value)) {
+      for (const child of value) {
+        if (child && typeof child === 'object' && typeof (child as { type?: unknown }).type === 'string') {
+          collectLoopBodies(child as Node, acc);
+        }
+      }
+    } else if (value && typeof value === 'object' && typeof (value as { type?: unknown }).type === 'string') {
+      collectLoopBodies(value as Node, acc);
+    }
+  }
 }
 
 /** Chạy code user qua từng testcase (thuần — dùng chung cho worker và test). */
@@ -46,8 +208,10 @@ export function executeCodelab(
 
   let fn: ((...args: unknown[]) => unknown) | null = null;
   try {
+    // LM-004: chèn sentinel LOOP_LIMIT trước khi biên dịch — while(true) bị chặn ngay trong worker.
+    const instrumented = injectLoopLimit(code);
     // eslint-disable-next-line no-new-func
-    fn = new Function('...__args__', `${code}\n;return ${entry}(...__args__);`) as (...args: unknown[]) => unknown;
+    fn = new Function('...__args__', `${instrumented}\n;return ${entry}(...__args__);`) as (...args: unknown[]) => unknown;
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : String(err);
     return {
@@ -160,7 +324,25 @@ export function runCodelabTask(
       resolve({ ok: false, error: event.message || 'Lỗi không xác định khi chạy code.', results: [] });
     };
 
+    // LM-055: worker nhận payload không hiểu được (shape sai) → không treo promise tới timeout.
+    worker.onmessageerror = () => {
+      clearTimeout(timer);
+      worker.terminate();
+      resolve({ ok: false, error: 'Phản hồi từ môi trường chạy code không hợp lệ.', results: [] });
+    };
+
     const payload: CodelabWorkerRequest = { requestId, code, testCases, entryFunction };
-    worker.postMessage(payload);
+    // LM-023: postMessage hỏng (worker chết giữa chừng) → resolve lỗi ngay + dọn timer,
+    // tránh unhandled rejection và timer treo rò rỉ.
+    try {
+      worker.postMessage(payload);
+    } catch (err: unknown) {
+      clearTimeout(timer);
+      worker.terminate();
+      const message = err instanceof Error ? err.message : String(err);
+      resolve({ ok: false, error: `Không gửi được code tới môi trường chạy: ${message}`, results: [] });
+    }
+    // TODO (LM-058): hiện mỗi run tạo worker mới + timeout toàn cục — 1 testcase treo giết cả
+    // lượt. Tối ưu sau: pool worker tái sử dụng + timeout theo testcase.
   });
 }

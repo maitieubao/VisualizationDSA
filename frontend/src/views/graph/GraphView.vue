@@ -17,6 +17,9 @@
 
     <div class="flex-1 min-h-0 flex relative">
 
+      
+      <div v-if="isEmbedReadonly" class="embed-readonly-overlay" />
+
       <aside class="graph-sidebar w-56 flex-shrink-0 border-r border-border-subtle bg-bg-secondary/40 flex flex-col overflow-y-auto" data-tour-id="graph-sidebar">
         <div class="p-4 space-y-4">
 
@@ -165,7 +168,8 @@
 // IP-008: xung đột 2 handler phím tắt trên window đã được giải quyết —
 // InteractivePlayground.vue giữ vai trò nguồn hotkey duy nhất (có guard
 // isAlgorithmMode + confirm xóa node); handler trùng này đã bị gỡ bỏ.
-import { ref } from 'vue';
+import { computed, onMounted, ref } from 'vue';
+import { useRoute } from 'vue-router';
 import { usePlaygroundStore } from '../../features/interactive-playground/store/usePlaygroundStore';
 import { parseEmojiToSvg } from '../../utils/emojiParser';
 import InteractivePlayground from '../../features/interactive-playground/components/InteractivePlayground.vue';
@@ -173,6 +177,52 @@ import { GraphParser } from '../../features/interactive-playground/services/Grap
 
 const store = usePlaygroundStore();
 const canvasContainerRef = ref<HTMLElement | null>(null);
+const route = useRoute();
+// EW-003: mount không qua router (test/một số embed) → route undefined — fallback an toàn.
+const routeQuery = computed(() => route?.query ?? {});
+
+// ─── EW-003: tiêu thụ route.query khi view được mount ở chế độ embed widget ───
+// (URL dạng /embed?algo=graph-bfs&interactive=false...). Chỉ đọc query — không
+// đổi hành vi khi truy cập trực tiếp /graph thông thường.
+function readQueryParam(value: unknown): string {
+  if (Array.isArray(value)) {
+    return typeof value[0] === 'string' ? value[0] : '';
+  }
+  return typeof value === 'string' ? value : '';
+}
+
+const isEmbedMode = computed(() => routeQuery.value.algo !== undefined);
+const embedAlgo = computed(() => readQueryParam(routeQuery.value.algo).trim().toLowerCase());
+const embedInteractive = computed(() => readQueryParam(routeQuery.value.interactive).trim() !== 'false');
+
+// interactive=false → widget chỉ hiển thị, overlay chặn mọi thao tác chuột.
+const isEmbedReadonly = computed(() => isEmbedMode.value && !embedInteractive.value);
+
+// Map id algo embed → thuật toán thật của Graph Playground (BFS/DFS/DIJKSTRA).
+const EMBED_TO_GRAPH_ALGO: Record<string, 'BFS' | 'DFS' | 'DIJKSTRA'> = {
+  'graph-bfs': 'BFS',
+  'bst': 'BFS',
+  'graph-dfs': 'DFS',
+  'dijkstra': 'DIJKSTRA',
+};
+
+// ─── EW-003: mount widget → nạp template cây (nếu đồ thị trống) + kích hoạt
+// mô phỏng đúng thuật toán theo ?algo= ───
+onMounted(() => {
+  if (!isEmbedMode.value) return;
+  const algo = embedAlgo.value;
+  if (!algo) return;
+  if (store.nodes.length === 0) {
+    store.clearAll();
+    loadTemplate('tree');
+  }
+  const graphAlgo = EMBED_TO_GRAPH_ALGO[algo];
+  if (graphAlgo) {
+    store.setMode('SELECT');
+    store.setSelectedAlgorithm(graphAlgo);
+    store.setAlgorithmMode(true);
+  }
+});
 
 const tools = [
   { mode: 'SELECT', label: 'Select', icon: '🖱', shortcut: 'V' },
@@ -321,5 +371,13 @@ function handleImport() {
 .graph-sidebar {
   flex-shrink: 0;
   scrollbar-width: thin;
+}
+
+.embed-readonly-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 50;
+  background: transparent;
+  cursor: default;
 }
 </style>

@@ -19,10 +19,11 @@
       <div class="flex items-center gap-3 font-mono text-[10px] uppercase tracking-wider text-text-secondary select-none">
         <span class="flex items-center gap-1.5 text-accent font-bold">
           <span class="w-2 h-2 rounded-full bg-accent animate-pulse"></span>
-          VISUALGO-MODE 60FPS
+          VCR PLAYBACK
         </span>
         <span class="text-text-muted text-[9px]">Space: Play/Pause | <BaseIcon name="arrow-left" class="w-2.5 h-2.5 inline align-middle" /> <BaseIcon name="arrow-right" class="w-2.5 h-2.5 inline align-middle" />: Step | R: Reset</span>
         <button
+          v-if="!isEmbedMode"
           class="w-5 h-5 flex items-center justify-center rounded text-text-secondary hover:text-accent hover:bg-bg-hover transition-all cursor-pointer"
           title="Xem lại hướng dẫn"
           @click="tourStore.startPageTour('/sorting', true)"
@@ -42,11 +43,11 @@
 
       <template v-if="activeTab === 'sorting'">
         <div class="absolute bottom-3 left-0 right-0 z-30 px-4 flex items-center justify-center pointer-events-none gap-2">
-          <div class="pointer-events-auto flex-1 min-w-0 flex justify-center max-w-2xl">
+          <div v-if="showVcrDock" class="pointer-events-auto flex-1 min-w-0 flex justify-center max-w-2xl">
             <VcrDockBar />
           </div>
 
-          <div class="pointer-events-auto shrink-0">
+          <div v-if="showTraceDrawer" class="pointer-events-auto shrink-0">
             <SortingDrawerTrace />
           </div>
         </div>
@@ -57,13 +58,15 @@
 
 <script setup lang="ts">
 import { ref, computed, defineComponent, h, watch, onMounted, onUnmounted } from 'vue';
+import { useRoute } from 'vue-router';
 import { ArrayBarVisualizer } from '../../features/algorithm-sandbox';
 import SortingDrawerTrace from '../../features/algorithm-sandbox/components/SortingDrawerTrace.vue';
+import { useSharedSortingAnimation } from '../../features/algorithm-sandbox/composables/useSortingAnimation';
+import type { SortAlgorithm } from '../../features/algorithm-sandbox/types/sorting.types';
 import { VcrDockBar } from '../../features/vcr-player';
 import { useVcrStore } from '../../features/vcr-player/store/useVcrStore';
 import { DSAPlayer } from '../../features/dsa-modules';
 import BaseIcon from '../../shared/components/BaseIcon.vue';
-import HelpButton from '../../features/guided-tour/components/HelpButton.vue';
 import { useGuidedTourStore } from '../../features/guided-tour/store/useGuidedTourStore';
 import { useAnimationStore } from '../../features/animation-engine/store/useAnimationStore';
 import { MultilingualCodePanel } from '../../features/pseudocode-sync';
@@ -74,6 +77,53 @@ const activeTab = ref('sorting');
 const tourStore = useGuidedTourStore();
 const vcrStore = useVcrStore();
 const animStore = useAnimationStore();
+const route = useRoute();
+
+// ─── EW-003: tiêu thụ route.query khi view được mount ở chế độ embed widget ───
+// (URL dạng /embed?algo=bubble-sort&theme=glass&vcr=false&watch=false&interactive=true).
+// Chỉ đọc query, không đổi hành vi khi truy cập trực tiếp /sorting thông thường.
+function readQueryParam(value: unknown): string {
+  if (Array.isArray(value)) {
+    return typeof value[0] === 'string' ? value[0] : '';
+  }
+  return typeof value === 'string' ? value : '';
+}
+
+const isEmbedMode = computed(() => route.query.algo !== undefined);
+const embedAlgo = computed(() => readQueryParam(route.query.algo).trim().toLowerCase());
+const embedVcr = computed(() => readQueryParam(route.query.vcr).trim());
+const embedWatch = computed(() => readQueryParam(route.query.watch).trim());
+
+// vcr=false → ẩn VcrDockBar; watch=false → ẩn trace drawer (tắt auto-scroll/highlight).
+const showVcrDock = computed(() => !isEmbedMode.value || embedVcr.value !== 'false');
+const showTraceDrawer = computed(() => !isEmbedMode.value || embedWatch.value !== 'false');
+
+// Map id algo embed → thuật toán thật của Sorting Sandbox (bubble/quick/merge/heap).
+// selection-sort/insertion-sort chưa có generator trong sandbox → giữ mặc định
+// của sandbox (bubble) nhưng vẫn ghi algorithmId để pseudocode/timeline đúng.
+const EMBED_TO_SORT_ALGO: Record<string, SortAlgorithm> = {
+  'bubble-sort': 'bubble',
+  'quick-sort': 'quick',
+  'quicksort-recursion': 'quick',
+  'merge-sort': 'merge',
+  'heap-sort': 'heap',
+};
+
+const sharedSorting = useSharedSortingAnimation();
+
+// ─── EW-003: đặt algorithmId + chọn thuật toán đúng theo ?algo= khi mount widget ───
+onMounted(() => {
+  window.addEventListener('keydown', handleKeydown);
+  if (!isEmbedMode.value) {
+    tourStore.startPageTour('/sorting');
+    return;
+  }
+  if (embedAlgo.value) {
+    animStore.algorithmId = embedAlgo.value;
+    const sortAlgo = EMBED_TO_SORT_ALGO[embedAlgo.value];
+    if (sortAlgo) sharedSorting.selectAlgorithm(sortAlgo);
+  }
+});
 
 function handleKeydown(e: KeyboardEvent) {
   const tag = (e.target as HTMLElement)?.tagName;
@@ -107,11 +157,6 @@ function handleKeydown(e: KeyboardEvent) {
       break;
   }
 }
-
-onMounted(() => {
-  window.addEventListener('keydown', handleKeydown);
-  tourStore.startPageTour('/sorting');
-});
 
 onUnmounted(() => {
   window.removeEventListener('keydown', handleKeydown);

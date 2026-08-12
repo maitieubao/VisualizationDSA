@@ -1,7 +1,16 @@
 <template>
-  <div v-if="store.isExporting" class="export-progress-section">
+  <div
+    v-if="store.isExporting"
+    class="export-progress-section"
+    role="progressbar"
+    :aria-valuenow="store.exportProgress"
+    aria-valuemin="0"
+    aria-valuemax="100"
+    aria-live="polite"
+    :aria-label="progressLabel"
+  >
     <div class="progress-label">
-      <span class="progress-text">Đang đóng gói quy tắc CSS & kết xuất pixel...</span>
+      <span class="progress-text">{{ progressLabel }}</span>
       <span class="progress-percent">{{ store.exportProgress }}%</span>
     </div>
     <div class="export-progress-bar-container">
@@ -14,9 +23,18 @@
 </template>
 
 <script setup lang="ts">
+import { computed } from 'vue';
 import { useExportShareStore } from '../store/useExportShareStore';
 
 const store = useExportShareStore();
+
+// EX-025 (phần view): nhãn tiến trình khớp đúng định dạng đang xuất — SVG không
+// chạy đoạn kết xuất pixel Retina (chỉ PNG mới có), tránh text sai format.
+const progressLabel = computed(() =>
+  store.selectedFormat === 'png-3x'
+    ? 'Đang kết xuất pixel Retina 3x...'
+    : 'Đang đóng gói vector SVG...',
+);
 </script>
 
 <style scoped>

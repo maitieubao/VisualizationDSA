@@ -43,12 +43,15 @@ while (i < n) {
 }
 
 // Đoạn mã sau khi tiêm chống treo
-let __loopCounter = 0;
-while (i < n) {
-  if (++__loopCounter > 10000) {
-    throw new Error("Phát hiện lỗi lặp vô hạn! Thuật toán đã vượt ngưỡng 10,000 lượt lặp.");
+// Mỗi vòng lặp có biến đếm riêng, khai báo tại chỗ và reset qua khối bọc
+{
+  let __loopCounter0 = 0;
+  while (i < n) {
+    if (++__loopCounter0 > 20000) {
+      throw new Error("[LOOP_LIMIT_EXCEEDED] Phát hiện vượt ngưỡng lặp: thuật toán đã chạy quá 20000 lượt lặp — có thể do cấu trúc lặp vô hạn hoặc thuật toán chạy quá lâu.");
+    }
+    // Lập trình xử lý...
   }
-  // Lập trình xử lý...
 }
 ```
 
@@ -69,7 +72,7 @@ Do mã nguồn tự viết của học sinh có thể chứa các mã độc ho�
                +---> 3. Lắng nghe các hàm traceCompare, traceAssign tích lũy mảng Frame
                +---> 4. Báo cáo mảng Frame kết quả qua postMessage
                |
-               v Nhận kết quả hoặc lỗi sau 1.0 giây
+               v Nhận kết quả hoặc lỗi sau 1.5 giây
 [Trình diễn hoạt ảnh trên Canvas]
 ```
-Nếu luồng Worker mất hơn 1.0 giây để hoàn tất, Main UI Thread tự động gọi `worker.terminate()` và ném lỗi timeout trực quan lên bảng Console Logs của học sinh.
+Nếu luồng Worker mất hơn 1.5 giây để hoàn tất, Main UI Thread tự động gọi `worker.terminate()` và ném lỗi timeout trực quan lên bảng Console Logs của học sinh.

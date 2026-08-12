@@ -10,7 +10,8 @@
 }
 
 .share-export-dialog-card {
-  width: 460px;
+  width: min(460px, 100vw);
+  max-width: 100vw;
   max-height: 90vh;
   overflow-y: auto;
   background: var(--glass-bg);
@@ -21,6 +22,15 @@
   display: flex;
   flex-direction: column;
   gap: 24px;
+}
+
+@media (max-width: 480px) {
+  .share-export-dialog-card {
+    max-height: 92vh;
+    border-radius: 16px;
+    padding: 20px 16px;
+    gap: 18px;
+  }
 }
 
 .share-dialog-title {

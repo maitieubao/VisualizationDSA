@@ -298,7 +298,7 @@ function renderCanvas(): void {
 
   const frame = props.frame;
   if (!frame || !frame.graphNodes?.length) {
-    if (!frame || frame.dataState.length === 0) {
+    if (!frame || (frame.dataState?.length ?? 0) === 0) {
       ctx.fillStyle = '#94A3B8';
       ctx.font = `${14 * zoom.value}px sans-serif`;
       ctx.textAlign = 'center';

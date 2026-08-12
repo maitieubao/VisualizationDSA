@@ -34,10 +34,14 @@ namespace VisualizationDSA.UnitTests.Features.Quizzes
         private static string CreateToken(string userId, string role = "Student")
         {
             var header = JwtSigningConfig.Base64UrlEncode(Encoding.UTF8.GetBytes("{\"alg\":\"HS256\",\"typ\":\"JWT\"}"));
+            // iss/aud theo JwtSigningConfig (fail-closed của JwtHelper.RequireToken khi đã cấu hình)
+            // — giữ token test luôn hợp lệ bất kể global config (giống GenerateMockJwt của strategy).
             var payloadJson = JsonSerializer.Serialize(new
             {
                 sub = userId,
                 role,
+                iss = JwtSigningConfig.Issuer ?? "VisualizationDSA",
+                aud = JwtSigningConfig.Audience ?? "VisualizationDSA-Client",
                 exp = DateTimeOffset.UtcNow.AddMinutes(15).ToUnixTimeSeconds()
             });
             var payload = JwtSigningConfig.Base64UrlEncode(Encoding.UTF8.GetBytes(payloadJson));
@@ -329,7 +333,7 @@ namespace VisualizationDSA.UnitTests.Features.Quizzes
         // ── Bank path ────────────────────────────────────────────────────────
 
         [Fact]
-        public async Task Submit_BankQuiz_GrantsXpButDoesNotWriteQuizAttempt()
+        public async Task Submit_BankQuiz_WritesQuizAttempt_WithKeyAndTitleReference()
         {
             using var setup = new DbSetup();
             var ctx = setup.Context;
@@ -347,10 +351,41 @@ namespace VisualizationDSA.UnitTests.Features.Quizzes
             ctx.Entry(user).Reload();
             user.TotalXP.Should().Be(BankReward);
 
-            // QZ-048 note: QuizAttempt yêu cầu QuizId Guid (FK bắt buộc) — bank quiz không có
-            // row DB nên không thể ghi attempt với schema hiện tại; ledger là QuizXpGrant.
-            ctx.QuizAttempts.Count().Should().Be(0);
+            // PR-002: attempt bank quiz PHẢI được ghi — QuizId null + QuizKey/QuizTitle làm reference
+            // (trước đây không ghi được vì QuizId là Guid FK bắt buộc → history gần như rỗng).
+            var attempt = ctx.QuizAttempts.Single(a => a.UserId == user.Id);
+            attempt.QuizId.Should().BeNull();
+            attempt.QuizKey.Should().Be("sorting-fundamentals");
+            attempt.QuizTitle.Should().Be("Cơ bản về Sắp xếp");
+            attempt.Score.Should().Be(5);
+            attempt.MaxScore.Should().Be(5);
+            attempt.Passed.Should().BeTrue();
             ctx.QuizXpGrants.Count(g => g.UserId == user.Id && g.QuizKey == "sorting-fundamentals").Should().Be(1);
+        }
+
+        [Fact]
+        public async Task Submit_BankQuiz_HistoryShowsAttempt_WithTitleFallback()
+        {
+            using var setup = new DbSetup();
+            var ctx = setup.Context;
+            var user = CreateUser(ctx);
+            var controller = CreateController(ctx, user.Id.ToString());
+
+            await controller.SubmitAttempt(
+                new StatelessQuizAttemptRequest { QuizId = "sorting-fundamentals", Answers = new List<int> { 2, 2, 1, 0, 2 } });
+
+            var history = await controller.GetHistory(null);
+            var ok = history.Should().BeOfType<OkObjectResult>().Subject;
+            using var doc = JsonDocument.Parse(JsonSerializer.Serialize(ok.Value, new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase }));
+            doc.RootElement.GetArrayLength().Should().Be(1);
+            var first = doc.RootElement[0];
+            first.GetProperty("quizId").ValueKind.Should().Be(JsonValueKind.Null);
+            first.GetProperty("quizTitle").GetString().Should().Be("Cơ bản về Sắp xếp");
+            first.GetProperty("quizTopic").GetString().Should().Be("sorting-fundamentals");
+            first.GetProperty("score").GetInt32().Should().Be(5);
+            first.GetProperty("passed").GetBoolean().Should().BeTrue();
+            // PR-024: không lộ đáp án thô trong lịch sử.
+            first.TryGetProperty("answers", out _).Should().BeFalse();
         }
 
         [Fact]

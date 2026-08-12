@@ -12,7 +12,6 @@ export interface MonacoEditorForHighlight {
 export interface LineMapping {
   stepIndex: number;
   lineNumber: number;
-  codeSnippet: string;
 }
 
 export class PseudocodeSyncer {
@@ -22,24 +21,9 @@ export class PseudocodeSyncer {
     this.mappings = mappings;
   }
 
-  
-
-
-  public getLineForStep(stepIndex: number): number | null {
-    const found = this.mappings.find(m => m.stepIndex === stepIndex);
-    return found ? found.lineNumber : null;
-  }
-
-  
-
-
-  public getFirstStepForLine(lineNumber: number): number | null {
-    const found = this.mappings.find(m => m.lineNumber === lineNumber);
-    return found ? found.stepIndex : null;
-  }
-
-  
-
+  // SV-022: getLineForStep/getFirstStepForLine/codeSnippet đã bị xóa — dead API chỉ
+  // được test dùng, production (AlgoPlaygroundWorkspace, MonacoLineSyncerCoordinator)
+  // chỉ gọi static highlightMonacoLine.
 
   public static highlightMonacoLine(
     editorInstance: MonacoEditorForHighlight,
@@ -48,8 +32,7 @@ export class PseudocodeSyncer {
   ): string[] {
     if (!editorInstance) return previousDecorations;
 
-    
-    editorInstance.revealLineInCenter(lineNumber, 0); 
+    editorInstance.revealLineInCenter(lineNumber, 0); // cuộn dòng active vào giữa editor
 
     const newDecorations = [
       {
@@ -61,13 +44,12 @@ export class PseudocodeSyncer {
         },
         options: {
           isWholeLine: true,
-          className: 'monaco-pseudocode-active-line-glow', 
+          className: 'monaco-pseudocode-active-line-glow', // CSS glow toàn dòng
           marginClassName: 'monaco-pseudocode-gutter-decorator'
         }
       }
     ];
 
-    
     return editorInstance.deltaDecorations(previousDecorations, newDecorations);
   }
 }

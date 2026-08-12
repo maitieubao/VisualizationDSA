@@ -1,13 +1,29 @@
 ﻿// @vitest-environment jsdom
 
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { setActivePinia, createPinia } from 'pinia';
 import { useExportShareStore } from '../store/useExportShareStore';
+import { WorkspaceStateCompressor } from '../engine/WorkspaceStateCompressor';
 import type { WorkspaceState } from '../types/export-share.types';
+
+const originalClipboardDescriptor = Object.getOwnPropertyDescriptor(
+  navigator,
+  'clipboard',
+);
 
 describe('useExportShareStore', () => {
   beforeEach(() => {
     setActivePinia(createPinia());
+  });
+
+  afterEach(() => {
+    // EX-019: restore navigator.clipboard về trạng thái gốc để không làm
+    // nhiễu các test khác trong cùng file / suite.
+    if (originalClipboardDescriptor) {
+      Object.defineProperty(navigator, 'clipboard', originalClipboardDescriptor);
+    } else {
+      delete (navigator as { clipboard?: unknown }).clipboard;
+    }
   });
 
   describe('initial state', () => {
@@ -196,12 +212,38 @@ describe('useExportShareStore', () => {
     });
   });
 
+  describe('EX-007 (P1): Share-link roundtrip qua URLSearchParams', () => {
+    const unicodeState: WorkspaceState = {
+      algorithmId: 'thuật-toán-sắp-xếp',
+      layoutNodes: [
+        { id: 'nút-đầu 📦', x: 12.5, y: 34 },
+        { id: 'nút+đặc+biệt', x: -10, y: 99.75 },
+        { id: 'payload-with-=sign', x: 0, y: 1 },
+      ],
+      currentStepIndex: 3,
+    };
+
+    it('generateShareLink → new URL(...).searchParams → deserializeState → deep-equal', async () => {
+      const store = useExportShareStore();
+      await store.generateShareLink(unicodeState);
+
+      const url = new URL(store.generatedShareLink);
+      expect(url.pathname).toBe('/s/');
+
+      const payload = url.searchParams.get('state');
+      expect(payload).toBeTruthy();
+
+      const restored = WorkspaceStateCompressor.deserializeState(payload as string);
+      expect(restored).not.toBeNull();
+      expect(restored).toEqual(unicodeState);
+    });
+  });
+
   describe('copyShareLinkToClipboard', () => {
     it('should set isLinkCopied to true on success', async () => {
       const store = useExportShareStore();
       store.generatedShareLink = 'https://example.com/s/test';
 
-      
       Object.defineProperty(navigator, 'clipboard', {
         value: {
           writeText: vi.fn().mockResolvedValue(undefined),
@@ -228,32 +270,37 @@ describe('useExportShareStore', () => {
         configurable: true,
       });
 
-      const result = await store.copyShareLinkToClipboard();
-      expect(result).toBe(false);
-
-      consoleSpy.mockRestore();
+      try {
+        const result = await store.copyShareLinkToClipboard();
+        expect(result).toBe(false);
+        expect(consoleSpy).toHaveBeenCalled();
+      } finally {
+        consoleSpy.mockRestore();
+      }
     });
 
-    it('should auto-reset isLinkCopied after 2 seconds', async () => {
+    it('should auto-reset isLinkCopied after 2 seconds (try/finally — EX-019)', async () => {
       vi.useFakeTimers();
-      const store = useExportShareStore();
-      store.generatedShareLink = 'https://example.com/s/test';
+      try {
+        const store = useExportShareStore();
+        store.generatedShareLink = 'https://example.com/s/test';
 
-      Object.defineProperty(navigator, 'clipboard', {
-        value: {
-          writeText: vi.fn().mockResolvedValue(undefined),
-        },
-        writable: true,
-        configurable: true,
-      });
+        Object.defineProperty(navigator, 'clipboard', {
+          value: {
+            writeText: vi.fn().mockResolvedValue(undefined),
+          },
+          writable: true,
+          configurable: true,
+        });
 
-      await store.copyShareLinkToClipboard();
-      expect(store.isLinkCopied).toBe(true);
+        await store.copyShareLinkToClipboard();
+        expect(store.isLinkCopied).toBe(true);
 
-      vi.advanceTimersByTime(2000);
-      expect(store.isLinkCopied).toBe(false);
-
-      vi.useRealTimers();
+        vi.advanceTimersByTime(2000);
+        expect(store.isLinkCopied).toBe(false);
+      } finally {
+        vi.useRealTimers();
+      }
     });
   });
 

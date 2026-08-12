@@ -1,6 +1,7 @@
 <template>
   <Transition name="modal-fade">
-    <div v-if="show" class="modal-overlay" @click.self="$emit('update:show', false)">
+    <!-- TC-028: role=dialog + aria-modal + focus trap + Esc (useModalA11y) -->
+    <div v-if="show" ref="overlayEl" class="modal-overlay" role="dialog" aria-modal="true" aria-label="Lịch sử phiên bản bài viết" @click.self="$emit('update:show', false)">
       <div class="modal-container modal-lg">
         <div class="modal-header">
           <h3 class="modal-title">
@@ -49,6 +50,11 @@
                 </div>
               </div>
               
+              <!-- TC-029: icon mắt "Xem đầy đủ" — hiển thị nội dung đầy đủ inline -->
+              <div v-if="expandedVersionId === version.id" class="mt-3 p-3 rounded-lg bg-bg-secondary border border-border-subtle">
+                <p class="text-xs text-text-secondary leading-relaxed whitespace-pre-wrap max-h-72 overflow-y-auto">{{ version.contentMd || 'Phiên bản này không có nội dung.' }}</p>
+              </div>
+
               <div class="version-actions flex items-center justify-end gap-2 mt-3 pt-3 border-t border-border-subtle">
                 <button 
                   type="button" 
@@ -82,8 +88,9 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue';
+import { ref, computed, toRef } from 'vue';
 import BaseIcon from '@/shared/components/BaseIcon.vue';
+import { useModalA11y } from '../../composables/useModalA11y';
 
 interface Props {
   show: boolean;
@@ -97,6 +104,12 @@ interface Emits {
 
 const props = defineProps<Props>();
 const emit = defineEmits<Emits>();
+
+// TC-028: focus trap + Esc + khóa scroll + hoàn trả focus.
+const { overlayEl } = useModalA11y(toRef(props, 'show'));
+
+// TC-029: id phiên bản đang xem đầy đủ (expand inline).
+const expandedVersionId = ref<string | null>(null);
 
 function getVersionNumber(versions: any[], index: number | string): number {
   return versions.length - Number(index);
@@ -116,9 +129,9 @@ function stripHtml(html: string): string {
   return html.replace(/<[^>]*>/g, '').replace(/&nbsp;/g, ' ').replace(/&/g, '&');
 }
 
+// TC-029: xem đầy đủ — expand/collapse nội dung phiên bản (không console.log).
 function viewFullVersion(version: any) {
-  
-  console.log('View full version:', version);
+  expandedVersionId.value = expandedVersionId.value === version.id ? null : version.id;
 }
 </script>
 

@@ -1,5 +1,34 @@
 import type { CanvasStateSnapshot, TreeSnapshotNode } from '../../../core/CompilerStepExecutor';
+import { easeInOut, easeOut, lerp } from '@/utils/math';
 
+// AL-036: ease/lerp dùng chung cho cả 3 animation engine (MergeSort/HeapSort/Sorting)
+// tái xuất từ nguồn chuẩn '@/utils/math' — tránh định nghĩa lặp trong từng engine.
+export { easeInOut, easeOut, lerp };
+
+/**
+ * Tìm min/max trong vòng lặp O(n) kèm fallback — thay thế `Math.min(...arr)` / `Math.max(...arr)`
+ * (spread vỡ stack khi mảng hàng chục nghìn phần tử — EC-022/AL-033).
+ */
+export function minWithFallback(arr: number[], fallback: number): number {
+  let min = fallback;
+  for (let i = 0; i < arr.length; i++) {
+    const v = arr[i];
+    if (v < min) min = v;
+  }
+  return min;
+}
+
+export function maxWithFallback(arr: number[], fallback: number): number {
+  let max = fallback;
+  for (let i = 0; i < arr.length; i++) {
+    const v = arr[i];
+    if (v > max) max = v;
+  }
+  return max;
+}
+
+// AL-036: bảng màu dùng chung cho toàn bộ hệ canvas (renderer chung + 3 engine con).
+// Các màu riêng của Heap Sort có prefix "heap" — tránh đè màu node/bar chung khác giá trị.
 export const COLORS = {
   barDefault: '#6366f1',
   barCompare: '#f59e0b',
@@ -33,13 +62,35 @@ export const COLORS = {
   targetText: '#06b6d4',
   depthText: '#a78bfa',
   foundGlow: '#fbbf24',
+  // ── Màu riêng Merge Sort (engine con) ──
+  barSegment: '#f59e0b',
+  chipBg: 'rgba(51,65,85,0.55)',
+  chipActive: 'rgba(245,158,11,0.85)',
+  chipOut: '#10b981',
+  chipSlot: 'rgba(16,185,129,0.15)',
+  text: '#e2e8f0',
+  textDim: '#94a3b8',
+  // ── Màu riêng Heap Sort (engine con) — prefix "heap" tránh đè màu node/bar chung ──
+  heapNodeDefault: '#818cf8',
+  heapNodeActive: '#fbbf24',
+  heapText: '#f8fafc',
+  heapBarDefault: '#818cf8',
+  nodeExtracted: 'rgba(52,211,153,0.55)',
+  nodeBeyond: 'rgba(71,85,105,0.45)',
+  edge: 'rgba(148,163,184,0.5)',
+  barExtracted: 'rgba(52,211,153,0.6)',
+  barBeyond: 'rgba(71,85,105,0.4)',
+  regionHeap: 'rgba(251,191,36,0.10)',
+  regionSorted: 'rgba(52,211,153,0.12)',
+  captionBg: 'rgba(15,23,42,0.9)',
 };
 
 function clearCanvas(ctx: CanvasRenderingContext2D, w: number, h: number): void {
   ctx.clearRect(0, 0, w, h);
 }
 
-function roundRect(ctx: CanvasRenderingContext2D, x: number, y: number, w: number, h: number, r: number): void {
+/** Vẽ hình chữ nhật bo góc bằng path (dùng chung cho renderer + 3 engine con — AL-036). */
+export function roundRect(ctx: CanvasRenderingContext2D, x: number, y: number, w: number, h: number, r: number): void {
   ctx.beginPath();
   ctx.moveTo(x + r, y);
   ctx.arcTo(x + w, y, x + w, y + h, r);
@@ -52,7 +103,12 @@ function roundRect(ctx: CanvasRenderingContext2D, x: number, y: number, w: numbe
 function drawLegend(ctx: CanvasRenderingContext2D, w: number, h: number, items: Array<{ color: string; label: string }>, y: number): void {
   const x = w - 12;
   const lineH = 16;
-  const maxW = Math.max(...items.map(it => ctx.measureText(it.label).width)) + 24;
+  let maxW = 0;
+  for (const it of items) {
+    const tw = ctx.measureText(it.label).width;
+    if (tw > maxW) maxW = tw;
+  }
+  maxW += 24;
 
   ctx.fillStyle = COLORS.legendBg;
   roundRect(ctx, x - maxW - 8, y, maxW + 16, items.length * lineH + 12, 6);
@@ -117,8 +173,8 @@ function drawArrayBars(ctx: CanvasRenderingContext2D, w: number, h: number, snap
 
   const margin = 32;
   const gap = 3;
-  const minVal = Math.min(...array, 0);
-  const maxVal = Math.max(...array, 1);
+  const minVal = minWithFallback(array, 0);
+  const maxVal = maxWithFallback(array, 1);
   const span = Math.max(maxVal - minVal, 1);
   const usableW = w - margin * 2;
   const barW = Math.max(2, (usableW - gap * (array.length - 1)) / array.length);
@@ -444,7 +500,7 @@ export function drawGraph(ctx: CanvasRenderingContext2D, w: number, h: number, s
 // Transition rendering (nội suy màu trạng thái giữa 2 frame cho tree/graph)
 // ═══════════════════════════════════════════
 
-function parseHexColor(hex: string): { r: number; g: number; b: number; a: number } {
+function parseColor(hex: string): { r: number; g: number; b: number; a: number } {
   if (hex.startsWith('rgb')) {
     const m = hex.match(/[\d.]+/g);
     return {
@@ -463,10 +519,11 @@ function parseHexColor(hex: string): { r: number; g: number; b: number; a: numbe
   };
 }
 
-function lerpColorHex(from: string, to: string, t: number): string {
+/** Nội suy màu giữa 2 chuỗi hex/rgb (giữ alpha khi có — dùng chung cho engine + renderer — AL-036). */
+export function lerpColor(from: string, to: string, t: number): string {
   if (from === to) return from;
-  const f = parseHexColor(from);
-  const g = parseHexColor(to);
+  const f = parseColor(from);
+  const g = parseColor(to);
   const r = Math.round(f.r + (g.r - f.r) * t);
   const gg = Math.round(f.g + (g.g - f.g) * t);
   const b = Math.round(f.b + (g.b - f.b) * t);
@@ -500,7 +557,7 @@ function drawTreeTransition(ctx: CanvasRenderingContext2D, w: number, h: number,
       const toPruned = (curr.prunedNodeIds ?? []).includes(node.id) || (curr.prunedNodeIds ?? []).includes(childId);
       const fromColor = fromPruned ? COLORS.nodePruned : COLORS.edgeDefault;
       const toColor = toPruned ? COLORS.nodePruned : COLORS.edgeDefault;
-      ctx.strokeStyle = lerpColorHex(fromColor, toColor, t);
+      ctx.strokeStyle = lerpColor(fromColor, toColor, t);
       ctx.lineWidth = toPruned ? 1 : 1.5;
       ctx.setLineDash(toPruned ? [4, 4] : []);
       ctx.beginPath();
@@ -519,7 +576,7 @@ function drawTreeTransition(ctx: CanvasRenderingContext2D, w: number, h: number,
     const pruned = (curr.prunedNodeIds ?? []).includes(node.id);
     ctx.beginPath();
     ctx.arc(cx, cy, nodeR, 0, Math.PI * 2);
-    ctx.fillStyle = lerpColorHex(nodeStateColor(prev, node.id), nodeStateColor(curr, node.id), t);
+    ctx.fillStyle = lerpColor(nodeStateColor(prev, node.id), nodeStateColor(curr, node.id), t);
     ctx.fill();
     ctx.strokeStyle = pruned ? COLORS.nodePruned : COLORS.nodeBorder;
     ctx.lineWidth = pruned ? 1 : 1.5;
@@ -553,7 +610,7 @@ function drawGraphTransition(ctx: CanvasRenderingContext2D, w: number, h: number
     const y2 = toNode.y * h;
 
     const highlighted = isEdgeHighlighted(curr.highlightedEdges, edge.from, edge.to);
-    ctx.strokeStyle = lerpColorHex(edgeStateColor(prev, edge.from, edge.to), edgeStateColor(curr, edge.from, edge.to), t);
+    ctx.strokeStyle = lerpColor(edgeStateColor(prev, edge.from, edge.to), edgeStateColor(curr, edge.from, edge.to), t);
     ctx.lineWidth = highlighted ? 3 : 1.5;
     ctx.setLineDash(highlighted ? [6, 4] : []);
     ctx.beginPath();
@@ -594,7 +651,7 @@ function drawGraphTransition(ctx: CanvasRenderingContext2D, w: number, h: number
     const cy = node.y * h;
     ctx.beginPath();
     ctx.arc(cx, cy, nodeR, 0, Math.PI * 2);
-    ctx.fillStyle = lerpColorHex(nodeStateColor(prev, node.id), nodeStateColor(curr, node.id), t);
+    ctx.fillStyle = lerpColor(nodeStateColor(prev, node.id), nodeStateColor(curr, node.id), t);
     ctx.fill();
     ctx.strokeStyle = COLORS.nodeBorder;
     ctx.lineWidth = 1.5;

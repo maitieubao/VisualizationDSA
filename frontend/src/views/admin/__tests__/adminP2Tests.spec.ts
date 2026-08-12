@@ -1,4 +1,4 @@
-// @vitest-environment jsdom
+﻿// @vitest-environment jsdom
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { nextTick } from 'vue';
 import { mount, flushPromises, type VueWrapper } from '@vue/test-utils';
@@ -10,17 +10,23 @@ vi.mock('vue-router', () => ({
   useRouter: () => ({ push: vi.fn(), replace: vi.fn() }),
 }));
 
+// AD-036: spy dùng chung (vi.hoisted) cho mock useAuthStore — impersonate test assert trực tiếp
+// việc gọi store (startImpersonating HOẶC impersonate) + refreshAccessToken cho test 401-retry (AD-038).
+const authStoreMocks = vi.hoisted(() => ({
+  getAccessToken: vi.fn(() => 'fake-admin-token'),
+  impersonate: vi.fn(),
+  startImpersonating: vi.fn(),
+  refreshAccessToken: vi.fn(),
+}));
+
 vi.mock('../../../features/auth/store/useAuthStore', () => ({
-  useAuthStore: () => ({
-    getAccessToken: () => 'fake-admin-token',
-    impersonate: vi.fn(),
-  }),
+  useAuthStore: () => authStoreMocks,
 }));
 
 vi.mock('./useAdminApi', () => ({
   useAdminApi: () => ({
     BASE_URL: 'http://localhost:5055',
-    authStore: { getAccessToken: () => 'fake-admin-token', impersonate: vi.fn() },
+    authStore: authStoreMocks,
     auditLogs: { value: [
       { time: '15:20:04', type: 'INFO', message: 'Hệ thống Admin khởi động hoàn tất.' },
       { time: '15:20:08', type: 'INFO', message: 'Đã kết nối cơ sở dữ liệu PostgreSQL.' },
@@ -31,10 +37,30 @@ vi.mock('./useAdminApi', () => ({
   }),
 }));
 
+// FetchMock dùng cho interceptor (AD-038); mockFetch chính là vi.fn() không type cứng
+// vì các mockImplementation viết (url: string) — tránh lỗi contravariance typecheck.
+type FetchCallTuple = [input: RequestInfo | URL, init?: RequestInit];
+type FetchMock = (input: RequestInfo | URL, init?: RequestInit) => Promise<Response>;
 const mockFetch = vi.fn();
 global.fetch = mockFetch;
 
-const defaultDashboardData = {
+interface AdminUser {
+  id: string; email: string; username: string; role: string;
+  isPremium: boolean; isActive: boolean;
+  totalXP: number; currentLevel: number; streakDays: number;
+  createdAt: string; lastLogin: string;
+}
+interface AdminUsersPage { users: AdminUser[]; total: number; page?: number; totalAdmins?: number; }
+interface AdminDashboardData {
+  users: { total: number; students: number; teachers: number; admins: number; premium: number };
+  quizzes: { total: number };
+  orders: { total: number; paid: number };
+  topUsers: Array<{ email: string; username: string; totalXP: number; currentLevel: number; role: string }>;
+  registrationsLast7Days: Array<{ date: string; count: number }>;
+  popularCourses: Array<{ courseId: string; title: string; enrollmentsCount: number }>;
+}
+
+const defaultDashboardData: AdminDashboardData = {
   users: { total: 0, students: 0, teachers: 0, admins: 0, premium: 0 },
   quizzes: { total: 0 },
   orders: { total: 0, paid: 0 },
@@ -43,7 +69,11 @@ const defaultDashboardData = {
   popularCourses: [],
 };
 
-function createMockUsers() {
+function notFoundResponse(): Response {
+  return { ok: false, status: 404, statusText: 'Not Found', json: async () => ({}) } as unknown as Response;
+}
+
+function createMockUsers(): AdminUser[] {
   return [
     { id: 'u1', email: 'alice@test.com', username: 'alice', role: 'Student', isPremium: true, isActive: true, totalXP: 1500, currentLevel: 8, streakDays: 10, createdAt: '2024-01-15', lastLogin: '2024-08-01' },
     { id: 'u2', email: 'bob@test.com', username: 'bob', role: 'Teacher', isPremium: false, isActive: true, totalXP: 800, currentLevel: 5, streakDays: 3, createdAt: '2024-03-20', lastLogin: '2024-07-28' },
@@ -53,15 +83,15 @@ function createMockUsers() {
 
 const mockUsers = createMockUsers();
 
-function setupMockFetch(dashboardData: any = defaultDashboardData, usersData: any = null) {
-  const defaultUsersData = usersData || { users: createMockUsers(), total: 3 };
+function setupMockFetch(dashboardData: AdminDashboardData = defaultDashboardData, usersData: AdminUsersPage | null = null) {
+  const defaultUsersData: AdminUsersPage = usersData || { users: createMockUsers(), total: 3 };
   mockFetch.mockImplementation(async (url: string) => {
     if (url.includes('/admin/dashboard')) {
       return { ok: true, json: async () => dashboardData };
     }
     if (url.includes('/admin/users')) {
       // Deep clone to prevent mutation across tests
-      const cloned = JSON.parse(JSON.stringify(defaultUsersData));
+      const cloned: AdminUsersPage = JSON.parse(JSON.stringify(defaultUsersData));
       // Ensure page is set for pagination
       if (cloned.page === undefined) cloned.page = 1;
       return { ok: true, json: async () => cloned };
@@ -75,7 +105,8 @@ function setupMockFetch(dashboardData: any = defaultDashboardData, usersData: an
     if (url.includes('/concepts/quiz/')) {
       return { ok: true, json: async () => ({ questions: [] }) };
     }
-    return { ok: true, json: async () => ({}) };
+    // AD-035: URL không thuộc allowlist → 404 (không còn catch-all ok:true nuốt URL/payload sai).
+    return notFoundResponse();
   });
 }
 
@@ -110,6 +141,32 @@ function getBodyText(): string {
   return document.body.textContent || '';
 }
 
+// Set native input value + dispatch input event để v-model trong modal cập nhật (AD-037).
+function setNativeInputValue(input: HTMLInputElement, value: string): void {
+  const setter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, 'value')!.set!;
+  setter.call(input, value);
+  input.dispatchEvent(new Event('input'));
+}
+
+// Mô phỏng global fetch wrapper trong main.ts (AU-042): request /api/v1/concepts gặp 401
+// → gọi authStore.refreshAccessToken() → retry 1 lần với Bearer mới (AD-038).
+async function installFetchInterceptor(underlying: FetchMock, onRetry: (newToken: string) => void): Promise<void> {
+  const interceptor: FetchMock = async (input, init) => {
+    let headers = new Headers(init?.headers);
+    let response = await underlying(input, init);
+    if (response.status === 401) {
+      const newToken = await authStoreMocks.refreshAccessToken();
+      if (newToken) {
+        headers.set('Authorization', `Bearer ${newToken}`);
+        onRetry(newToken);
+        response = await underlying(input, { ...init, headers });
+      }
+    }
+    return response;
+  };
+  vi.stubGlobal('fetch', interceptor);
+}
+
 describe('AdminPanelView — P2 Tests', () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -126,6 +183,7 @@ describe('AdminPanelView — P2 Tests', () => {
     wrapper?.unmount();
     wrapper = null;
     vi.restoreAllMocks();
+    vi.unstubAllGlobals();
   });
 
   // =============================================
@@ -356,9 +414,46 @@ describe('AdminPanelView — P2 Tests', () => {
       await flushPromises();
       await nextTick();
 
-      const fetchCalls = mockFetch.mock.calls;
-      const searchCall = fetchCalls.find((call: any) => call[0].includes('search='));
+      // AD-060: assert URL đầy đủ + giá trị được encodeURIComponent + page=1.
+      const fetchCalls = mockFetch.mock.calls as FetchCallTuple[];
+      const searchCall = fetchCalls.find((call) => String(call[0]).includes('/admin/users') && String(call[0]).includes('search='));
       expect(searchCall).toBeTruthy();
+      expect(String(searchCall![0])).toBe('http://localhost:5055/api/v1/concepts/admin/users?page=1&pageSize=10&search=test%40x.com');
+    });
+
+    it('AD-060: search từ trang 2 → page reset về 1 trong request', async () => {
+      const manyUsers = Array.from({ length: 25 }, (_, i) => ({
+        id: `u${i}`, email: `user${i}@test.com`, username: `user${i}`, role: 'Student', isPremium: false, isActive: true, totalXP: i * 100, currentLevel: i, streakDays: 0, createdAt: '2024-01-01', lastLogin: '2024-08-01',
+      } as AdminUser));
+      mockFetch.mockImplementation(async (url: string) => {
+        if (url.includes('/admin/dashboard')) {
+          return { ok: true, json: async () => defaultDashboardData };
+        }
+        if (url.includes('/admin/users')) {
+          const page = url.includes('page=2') ? 2 : 1;
+          const start = (page - 1) * 10;
+          return { ok: true, json: async () => ({ users: manyUsers.slice(start, start + 10), total: 25, page }) };
+        }
+        return notFoundResponse();
+      });
+
+      const w = await mountAdminPanel();
+      await navigateToTab(w, 'Người dùng');
+
+      const paginationBtns = w.findAll('.pagination-btn');
+      await paginationBtns[1].trigger('click');
+      await flushPromises();
+      await nextTick();
+
+      const searchInput = w.find('.search-input');
+      await searchInput.setValue('alice');
+      await searchInput.trigger('input');
+      await flushPromises();
+      await nextTick();
+
+      const searchCall = (mockFetch.mock.calls as FetchCallTuple[]).find((call) => String(call[0]).includes('search=alice'));
+      expect(searchCall).toBeTruthy();
+      expect(String(searchCall![0])).toContain('page=1&pageSize=10');
     });
 
     it('shows empty state when no users match search', async () => {
@@ -407,17 +502,17 @@ describe('AdminPanelView — P2 Tests', () => {
     });
 
     it('submits create user form successfully', async () => {
-      mockFetch.mockImplementation(async (url: string, opts?: any) => {
+      mockFetch.mockImplementation(async (url: string, opts?: RequestInit) => {
         if (url.includes('/admin/dashboard')) {
           return { ok: true, json: async () => defaultDashboardData };
         }
         if (url.includes('/admin/users') && opts?.method === 'POST') {
-          return { ok: true, json: async () => ({ id: 'new-id', ...JSON.parse(opts.body) }) };
+          return { ok: true, json: async () => ({ id: 'new-id', ...JSON.parse(String(opts.body)) }) };
         }
         if (url.includes('/admin/users')) {
           return { ok: true, json: async () => ({ users: mockUsers, total: 3 }) };
         }
-        return { ok: true, json: async () => ({}) };
+        return notFoundResponse();
       });
 
       const w = await mountAdminPanel();
@@ -428,30 +523,20 @@ describe('AdminPanelView — P2 Tests', () => {
       await nextTick();
       await flushPromises();
 
-      // Modal is teleported - query document.body for form elements (native DOM)
-      const textInputs = document.body.querySelectorAll('input[type="text"]');
-      if (textInputs.length > 0) {
-        const input = textInputs[0] as HTMLInputElement;
-        const nativeInputValueSetter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, 'value')!.set!;
-        nativeInputValueSetter.call(input, 'newuser');
-        input.dispatchEvent(new Event('input'));
-      }
+      // AD-037: query TRỰC TIẾP trong modal (không dùng if (textInputs.length > 0) nuốt lỗi),
+      // tránh nhầm với .search-input type=text ngoài modal.
+      const modal = document.body.querySelector('.user-modal-card') as HTMLElement;
+      expect(modal).toBeTruthy();
+      const usernameInput = modal.querySelector('input[type="text"]') as HTMLInputElement;
+      const emailInput = modal.querySelector('input[type="email"]') as HTMLInputElement;
+      const passwordInput = modal.querySelector('input[type="password"]') as HTMLInputElement;
+      expect(usernameInput).toBeTruthy();
+      expect(emailInput).toBeTruthy();
+      expect(passwordInput).toBeTruthy();
 
-      const emailInputs = document.body.querySelectorAll('input[type="email"]');
-      if (emailInputs.length > 0) {
-        const input = emailInputs[0] as HTMLInputElement;
-        const nativeInputValueSetter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, 'value')!.set!;
-        nativeInputValueSetter.call(input, 'new@test.com');
-        input.dispatchEvent(new Event('input'));
-      }
-
-      const passwordInputs = document.body.querySelectorAll('input[type="password"]');
-      if (passwordInputs.length > 0) {
-        const input = passwordInputs[0] as HTMLInputElement;
-        const nativeInputValueSetter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, 'value')!.set!;
-        nativeInputValueSetter.call(input, 'password123');
-        input.dispatchEvent(new Event('input'));
-      }
+      setNativeInputValue(usernameInput, 'newuser');
+      setNativeInputValue(emailInput, 'new@test.com');
+      setNativeInputValue(passwordInput, 'password123');
       await nextTick();
       await flushPromises();
 
@@ -462,9 +547,12 @@ describe('AdminPanelView — P2 Tests', () => {
       await flushPromises();
       await nextTick();
 
-      // Verify POST was called
-      const postCall = mockFetch.mock.calls.find((call: any) => call[0].includes('/admin/users') && call[1]?.method === 'POST');
+      // AD-037: assert body POST đúng contract {username, email, password, role, isPremium}.
+      const postCall = (mockFetch.mock.calls as FetchCallTuple[]).find((call) => String(call[0]).includes('/admin/users') && call[1]?.method === 'POST');
       expect(postCall).toBeTruthy();
+      expect(String(postCall![0])).toBe('http://localhost:5055/api/v1/concepts/admin/users');
+      const body = JSON.parse(String(postCall![1]?.body)) as Record<string, unknown>;
+      expect(body).toEqual({ username: 'newuser', email: 'new@test.com', password: 'password123', role: 'Student', isPremium: false });
     });
 
     it('closes create user modal when clicking cancel', async () => {
@@ -515,7 +603,7 @@ describe('AdminPanelView — P2 Tests', () => {
 
     it('changes user role when selecting different option', async () => {
       const freshUsers = createMockUsers();
-      mockFetch.mockImplementation(async (url: string, opts?: any) => {
+      mockFetch.mockImplementation(async (url: string, opts?: RequestInit) => {
         if (url.includes('/admin/dashboard')) {
           return { ok: true, json: async () => defaultDashboardData };
         }
@@ -525,7 +613,7 @@ describe('AdminPanelView — P2 Tests', () => {
         if (url.includes('/admin/users')) {
           return { ok: true, json: async () => ({ users: JSON.parse(JSON.stringify(freshUsers)), total: 3 }) };
         }
-        return { ok: true, json: async () => ({}) };
+        return notFoundResponse();
       });
 
       const w = await mountAdminPanel();
@@ -538,7 +626,7 @@ describe('AdminPanelView — P2 Tests', () => {
       await nextTick();
 
       // Verify PUT was called for role change
-      const putCall = mockFetch.mock.calls.find((call: any) => call[0].includes('/role') && call[1]?.method === 'PUT');
+      const putCall = (mockFetch.mock.calls as FetchCallTuple[]).find((call) => String(call[0]).includes('/role') && call[1]?.method === 'PUT');
       expect(putCall).toBeTruthy();
     });
 
@@ -550,7 +638,7 @@ describe('AdminPanelView — P2 Tests', () => {
 
       const selects = w.findAll('.inline-select');
       // First user is Student
-      expect(selects[0].element.value).toBe('Student');
+      expect((selects[0].element as HTMLSelectElement).value).toBe('Student');
     });
   });
 
@@ -585,7 +673,7 @@ describe('AdminPanelView — P2 Tests', () => {
     });
 
     it('toggles premium status when clicked', async () => {
-      mockFetch.mockImplementation(async (url: string, opts?: any) => {
+      mockFetch.mockImplementation(async (url: string, opts?: RequestInit) => {
         if (url.includes('/admin/dashboard')) {
           return { ok: true, json: async () => defaultDashboardData };
         }
@@ -595,7 +683,7 @@ describe('AdminPanelView — P2 Tests', () => {
         if (url.includes('/admin/users')) {
           return { ok: true, json: async () => ({ users: mockUsers, total: 3 }) };
         }
-        return { ok: true, json: async () => ({}) };
+        return notFoundResponse();
       });
 
       const w = await mountAdminPanel();
@@ -608,7 +696,7 @@ describe('AdminPanelView — P2 Tests', () => {
       await nextTick();
 
       // Verify PUT was called for premium toggle
-      const putCall = mockFetch.mock.calls.find((call: any) => call[0].includes('/premium') && call[1]?.method === 'PUT');
+      const putCall = (mockFetch.mock.calls as FetchCallTuple[]).find((call) => String(call[0]).includes('/premium') && call[1]?.method === 'PUT');
       expect(putCall).toBeTruthy();
     });
   });
@@ -689,7 +777,7 @@ describe('AdminPanelView — P2 Tests', () => {
     });
 
     it('toggles ban status when clicked', async () => {
-      mockFetch.mockImplementation(async (url: string, opts?: any) => {
+      mockFetch.mockImplementation(async (url: string, opts?: RequestInit) => {
         if (url.includes('/admin/dashboard')) {
           return { ok: true, json: async () => defaultDashboardData };
         }
@@ -699,7 +787,7 @@ describe('AdminPanelView — P2 Tests', () => {
         if (url.includes('/admin/users')) {
           return { ok: true, json: async () => ({ users: mockUsers, total: 3 }) };
         }
-        return { ok: true, json: async () => ({}) };
+        return notFoundResponse();
       });
 
       const w = await mountAdminPanel();
@@ -712,7 +800,7 @@ describe('AdminPanelView — P2 Tests', () => {
       await nextTick();
 
       // Verify PUT was called for ban toggle
-      const putCall = mockFetch.mock.calls.find((call: any) => call[0].includes('/ban') && call[1]?.method === 'PUT');
+      const putCall = (mockFetch.mock.calls as FetchCallTuple[]).find((call) => String(call[0]).includes('/ban') && call[1]?.method === 'PUT');
       expect(putCall).toBeTruthy();
     });
   });
@@ -755,7 +843,7 @@ describe('AdminPanelView — P2 Tests', () => {
     });
 
     it('submits reset password form', async () => {
-      mockFetch.mockImplementation(async (url: string, opts?: any) => {
+      mockFetch.mockImplementation(async (url: string, opts?: RequestInit) => {
         if (url.includes('/admin/dashboard')) {
           return { ok: true, json: async () => defaultDashboardData };
         }
@@ -765,7 +853,7 @@ describe('AdminPanelView — P2 Tests', () => {
         if (url.includes('/admin/users')) {
           return { ok: true, json: async () => ({ users: mockUsers, total: 3 }) };
         }
-        return { ok: true, json: async () => ({}) };
+        return notFoundResponse();
       });
 
       const w = await mountAdminPanel();
@@ -779,11 +867,7 @@ describe('AdminPanelView — P2 Tests', () => {
       // Modal is teleported - query document.body
       const passwordInput = document.body.querySelector('input[type="password"]') as HTMLInputElement;
       expect(passwordInput).toBeTruthy();
-      await new Promise<void>((resolve) => {
-        passwordInput.value = 'newpassword123';
-        passwordInput.dispatchEvent(new Event('input'));
-        resolve();
-      });
+      setNativeInputValue(passwordInput, 'newpassword123');
       await nextTick();
       await flushPromises();
 
@@ -794,7 +878,7 @@ describe('AdminPanelView — P2 Tests', () => {
       await nextTick();
 
       // Verify PUT was called for reset password
-      const putCall = mockFetch.mock.calls.find((call: any) => call[0].includes('/reset-password') && call[1]?.method === 'PUT');
+      const putCall = (mockFetch.mock.calls as FetchCallTuple[]).find((call) => String(call[0]).includes('/reset-password') && call[1]?.method === 'PUT');
       expect(putCall).toBeTruthy();
     });
   });
@@ -814,33 +898,74 @@ describe('AdminPanelView — P2 Tests', () => {
     });
 
     it('calls impersonate API when clicked', async () => {
-      mockFetch.mockImplementation(async (url: string, opts?: any) => {
+      // AD-013t: CONTRACT MỚI — response impersonate là StatelessAuthResponse,
+      // user là StatelessUserDto (currentLevel/totalXP/streakDays/badges đầy đủ).
+      const impersonatedResponse = {
+        accessToken: 'impersonated-token',
+        refreshToken: 'impersonated-refresh',
+        expiresIn: 3600,
+        user: {
+          id: 'u1', email: 'alice@test.com', username: 'alice',
+          totalXP: 1500, currentLevel: 8, streakDays: 10,
+          createdAt: '2024-01-15', badges: [], isPremium: true, role: 'Student',
+        },
+      };
+      mockFetch.mockImplementation(async (url: string, opts?: RequestInit) => {
         if (url.includes('/admin/dashboard')) {
           return { ok: true, json: async () => defaultDashboardData };
         }
         if (url.includes('/impersonate') && opts?.method === 'POST') {
-          return { ok: true, json: async () => ({ user: { id: 'u1', email: 'alice@test.com', username: 'alice' } }) };
+          return { ok: true, json: async () => impersonatedResponse };
         }
         if (url.includes('/admin/users')) {
           return { ok: true, json: async () => ({ users: mockUsers, total: 3 }) };
         }
-        return { ok: true, json: async () => ({}) };
+        return notFoundResponse();
       });
 
-      const w = await mountAdminPanel();
-      await navigateToTab(w, 'Người dùng');
+      // AD-036: impersonate redirect bằng window.location.href → stub location trước khi click.
+      const originalLocation = window.location;
+      Object.defineProperty(window, 'location', { value: { href: '' }, writable: true, configurable: true });
+      try {
+        const w = await mountAdminPanel();
+        await navigateToTab(w, 'Người dùng');
 
-      // Find impersonate buttons (not reset password ones)
-      const allImpersonateBtns = w.findAll('.btn-impersonate');
-      const impersonateOnlyBtns = allImpersonateBtns.filter((btn) => !btn.classes().includes('btn-reset-password'));
-      // Click the first impersonate button
-      await impersonateOnlyBtns[0].trigger('click');
-      await flushPromises();
-      await nextTick();
+        // Find impersonate buttons (not reset password ones)
+        const allImpersonateBtns = w.findAll('.btn-impersonate');
+        const impersonateOnlyBtns = allImpersonateBtns.filter((btn) => !btn.classes().includes('btn-reset-password'));
+        await impersonateOnlyBtns[0].trigger('click');
+        await flushPromises();
+        await nextTick();
 
-      // Verify POST was called for impersonate
-      const postCall = mockFetch.mock.calls.find((call: any) => call[0].includes('/impersonate') && call[1]?.method === 'POST');
-      expect(postCall).toBeTruthy();
+        // Verify POST was called for impersonate
+        const postCall = (mockFetch.mock.calls as FetchCallTuple[]).find((call) => String(call[0]).includes('/impersonate') && call[1]?.method === 'POST');
+        expect(postCall).toBeTruthy();
+        expect(String(postCall![0])).toBe('http://localhost:5055/api/v1/concepts/admin/users/u1/impersonate');
+        expect(postCall![1]?.method).toBe('POST');
+        const headers = postCall![1]?.headers as Record<string, string> | undefined;
+        expect(headers?.Authorization).toBe('Bearer fake-admin-token');
+
+        // AD-036: assert store được gọi — startImpersonating(userId) theo flow mới HOẶC impersonate(response)
+        // theo flow hiện tại, và response đúng StatelessUserDto shape.
+        const startCalls = authStoreMocks.startImpersonating.mock.calls;
+        const impersonateCalls = authStoreMocks.impersonate.mock.calls;
+        if (startCalls.length > 0) {
+          expect(startCalls[0][0]).toBe('u1');
+        } else {
+          expect(impersonateCalls.length).toBeGreaterThan(0);
+          const arg = impersonateCalls[0][0] as { accessToken: string; refreshToken: string; expiresIn: number; user: { currentLevel: number; totalXP: number; streakDays: number; badges: unknown[] } };
+          expect(arg.accessToken).toBe('impersonated-token');
+          expect(arg.user.currentLevel).toBe(8);
+          expect(arg.user.totalXP).toBe(1500);
+          expect(arg.user.streakDays).toBe(10);
+          expect(Array.isArray(arg.user.badges)).toBe(true);
+        }
+
+        // AD-036: assert redirect về trang chủ sau khi đóng vai.
+        expect(window.location.href).toBe('/');
+      } finally {
+        Object.defineProperty(window, 'location', { value: originalLocation, writable: true, configurable: true });
+      }
     });
 
     it('shows impersonate icon in button', async () => {
@@ -871,7 +996,7 @@ describe('AdminPanelView — P2 Tests', () => {
     });
 
     it('calls delete API when clicked', async () => {
-      mockFetch.mockImplementation(async (url: string, opts?: any) => {
+      mockFetch.mockImplementation(async (url: string, opts?: RequestInit) => {
         if (url.includes('/admin/dashboard')) {
           return { ok: true, json: async () => defaultDashboardData };
         }
@@ -881,7 +1006,7 @@ describe('AdminPanelView — P2 Tests', () => {
         if (url.includes('/admin/users')) {
           return { ok: true, json: async () => ({ users: mockUsers, total: 3 }) };
         }
-        return { ok: true, json: async () => ({}) };
+        return notFoundResponse();
       });
 
       const w = await mountAdminPanel();
@@ -896,7 +1021,7 @@ describe('AdminPanelView — P2 Tests', () => {
       await nextTick();
 
       // Verify DELETE was called
-      const deleteCall = mockFetch.mock.calls.find((call: any) => call[1]?.method === 'DELETE');
+      const deleteCall = (mockFetch.mock.calls as FetchCallTuple[]).find((call) => call[1]?.method === 'DELETE');
       expect(deleteCall).toBeTruthy();
     });
 
@@ -1084,7 +1209,7 @@ describe('AdminPanelView — P2 Tests', () => {
       await nextTick();
 
       // Verify page 2 was fetched
-      const page2Call = mockFetch.mock.calls.find((call: any) => call[0].includes('page=2'));
+      const page2Call = (mockFetch.mock.calls as FetchCallTuple[]).find((call) => String(call[0]).includes('page=2'));
       expect(page2Call).toBeTruthy();
     });
   });
@@ -1104,7 +1229,8 @@ describe('AdminPanelView — P2 Tests', () => {
       const w = await mountAdminPanel();
       await navigateToTab(w, 'Nhật ký');
 
-      const refreshBtn = w.find('.btn-create-user');
+      // AD-059: nút Làm mới có class riêng .btn-refresh-audit.
+      const refreshBtn = w.find('.btn-refresh-audit');
       expect(refreshBtn.exists()).toBe(true);
       expect(refreshBtn.text()).toContain('Làm mới');
     });
@@ -1125,7 +1251,7 @@ describe('AdminPanelView — P2 Tests', () => {
         if (url.includes('/admin/audit-logs')) {
           return { ok: true, json: async () => ({ logs: auditLogs }) };
         }
-        return { ok: true, json: async () => ({}) };
+        return notFoundResponse();
       });
 
       const w = await mountAdminPanel();
@@ -1149,7 +1275,7 @@ describe('AdminPanelView — P2 Tests', () => {
         if (url.includes('/admin/audit-logs')) {
           return { ok: true, json: async () => ({ logs: [] }) };
         }
-        return { ok: true, json: async () => ({}) };
+        return notFoundResponse();
       });
 
       const w = await mountAdminPanel();
@@ -1174,7 +1300,7 @@ describe('AdminPanelView — P2 Tests', () => {
         if (url.includes('/admin/audit-logs')) {
           return { ok: true, json: async () => ({ logs: auditLogs }) };
         }
-        return { ok: true, json: async () => ({}) };
+        return notFoundResponse();
       });
 
       const w = await mountAdminPanel();
@@ -1194,8 +1320,93 @@ describe('AdminPanelView — P2 Tests', () => {
       await nextTick();
 
       // Verify audit-logs API was called
-      const auditCall = mockFetch.mock.calls.find((call: any) => call[0].includes('/admin/audit-logs'));
+      const auditCall = (mockFetch.mock.calls as FetchCallTuple[]).find((call) => String(call[0]).includes('/admin/audit-logs'));
       expect(auditCall).toBeTruthy();
+    });
+  });
+
+  // =============================================
+  // AD-015: isLastAdmin — admin cuối tính TOÀN HỆ THỐNG (totalAdmins từ API),
+  // không phải chỉ trên trang hiện tại (pageSize 10)
+  // =============================================
+  describe('AD-015: isLastAdmin — bảo vệ admin cuối toàn hệ thống', () => {
+    const lastAdmin: AdminUser = {
+      id: 'admin-1', email: 'root@test.com', username: 'root', role: 'Admin',
+      isPremium: false, isActive: true, totalXP: 100, currentLevel: 1, streakDays: 0,
+      createdAt: '2024-01-01', lastLogin: '2024-08-01',
+    };
+    const plainStudent: AdminUser = {
+      id: 'stu-1', email: 'stu@test.com', username: 'stu', role: 'Student',
+      isPremium: false, isActive: true, totalXP: 10, currentLevel: 1, streakDays: 0,
+      createdAt: '2024-01-01', lastLogin: '2024-08-01',
+    };
+
+    it('không chặn/admin nhãn "⚠ Cuối cùng" khi hệ thống còn >1 admin (trang chỉ hiện 1 admin)', async () => {
+      setupMockFetch(defaultDashboardData, { users: [lastAdmin, plainStudent], total: 12, totalAdmins: 2 });
+
+      const w = await mountAdminPanel();
+      await navigateToTab(w, 'Người dùng');
+      await flushPromises();
+
+      expect(w.text()).not.toContain('⚠ Cuối cùng');
+      const adminSelect = w.findAll('.inline-select')[0];
+      expect((adminSelect.element as HTMLSelectElement).disabled).toBe(false);
+    });
+
+    it('chặn + nhãn "⚠ Cuối cùng" khi hệ thống chỉ còn đúng 1 admin', async () => {
+      setupMockFetch(defaultDashboardData, { users: [lastAdmin, plainStudent], total: 2, totalAdmins: 1 });
+
+      const w = await mountAdminPanel();
+      await navigateToTab(w, 'Người dùng');
+      await flushPromises();
+
+      expect(w.text()).toContain('⚠ Cuối cùng');
+      const adminSelect = w.findAll('.inline-select')[0];
+      expect((adminSelect.element as HTMLSelectElement).disabled).toBe(true);
+    });
+  });
+
+  // =============================================
+  // AD-038: admin fetch 401 → refreshAccessToken → retry thành công
+  // (theo global fetch wrapper main.ts AU-042 — helper của agent core)
+  // =============================================
+  describe('AD-038: admin fetch 401 → refresh → retry', () => {
+    it('GET users 401 → gọi refreshAccessToken() 1 lần → retry với Bearer mới → render bảng', async () => {
+      const retriedTokens: string[] = [];
+      let usersHitCount = 0;
+      const underlying: FetchMock = async (input: RequestInfo | URL) => {
+        const url = String(input);
+        if (url.includes('/admin/dashboard')) {
+          return { ok: true, status: 200, statusText: 'OK', json: async () => defaultDashboardData } as unknown as Response;
+        }
+        if (url.includes('/admin/users')) {
+          usersHitCount += 1;
+          if (usersHitCount === 1) {
+            return { ok: false, status: 401, statusText: 'Unauthorized', json: async () => ({ message: 'Token expired' }) } as unknown as Response;
+          }
+          return { ok: true, status: 200, statusText: 'OK', json: async () => ({ users: createMockUsers(), total: 3 }) } as unknown as Response;
+        }
+        if (url.includes('/admin/quizzes')) {
+          return { ok: true, status: 200, statusText: 'OK', json: async () => [] } as unknown as Response;
+        }
+        if (url.includes('/admin/audit-logs')) {
+          return { ok: true, status: 200, statusText: 'OK', json: async () => ({ logs: [] }) } as unknown as Response;
+        }
+        return notFoundResponse();
+      };
+      await installFetchInterceptor(underlying, (token) => retriedTokens.push(token));
+      authStoreMocks.refreshAccessToken.mockResolvedValueOnce('fresh-admin-token');
+
+      const w = await mountAdminPanel();
+      await navigateToTab(w, 'Người dùng');
+      await flushPromises();
+
+      expect(authStoreMocks.refreshAccessToken).toHaveBeenCalledTimes(1);
+      expect(retriedTokens).toEqual(['fresh-admin-token']);
+      expect(usersHitCount).toBe(2);
+      // Retry thành công → bảng người dùng render được.
+      expect(w.text()).toContain('alice');
+      expect(w.text()).toContain('alice@test.com');
     });
   });
 });

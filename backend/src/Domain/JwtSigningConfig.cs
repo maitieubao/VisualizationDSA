@@ -9,15 +9,30 @@ namespace VisualizationDSA.Domain
     /// </summary>
     public static class JwtSigningConfig
     {
-        // Fallback chỉ cho môi trường dev; Program.cs sẽ ghi đè bằng Jwt:Key từ cấu hình.
-        private static byte[] _key = Encoding.UTF8.GetBytes("VisualizationDSA-Stateless-Dev-Secret-Key-2024-Phase6-256bit!");
+        // AU-009: xóa fallback key hardcode — chưa Configure thì Key là rỗng (fail-closed ở các
+        // điểm dùng thật: Program.cs luôn gọi Configure trước khi serve request).
+        private static byte[] _key = Array.Empty<byte>();
+        private static string? _issuer;
+        private static string? _audience;
 
         public static byte[] Key => _key;
 
-        public static void Configure(string? key)
+        /// <summary>Issuer/audience chuẩn để JwtHelper validate token stateless (AU-035).</summary>
+        public static string? Issuer => _issuer;
+        public static string? Audience => _audience;
+
+        /// <summary>
+        /// Gán khóa bí mật + issuer/audience. KHÔNG có fallback: key null/placeholder → throw
+        /// (Program.cs ở Development tự sinh key ngẫu nhiên trước khi gọi hàm này).
+        /// </summary>
+        public static void Configure(string? key, string? issuer = null, string? audience = null)
         {
-            if (!string.IsNullOrWhiteSpace(key))
-                _key = Encoding.UTF8.GetBytes(key);
+            if (string.IsNullOrWhiteSpace(key))
+                throw new InvalidOperationException(
+                    "Jwt:Key chưa được cấu hình. Đặt biến môi trường Jwt:Key (hoặc để Development tự sinh key ngẫu nhiên).");
+            _key = Encoding.UTF8.GetBytes(key);
+            _issuer = issuer;
+            _audience = audience;
         }
 
         /// <summary>Base64Url không padding theo chuẩn RFC 7515.</summary>

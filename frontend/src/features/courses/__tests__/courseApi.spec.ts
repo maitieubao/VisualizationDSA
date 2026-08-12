@@ -96,7 +96,7 @@ describe('courseApi — Giao tiếp Backend Khóa học', () => {
       expect(result?.id).toBe('sorting-101');
     });
 
-    it('GET từ /concepts/courses/{id} trả về undefined khi không tìm thấy', async () => {
+    it('GET từ /concepts/courses/{id} trả về null khi không tìm thấy', async () => {
       mockedApi.get.mockResolvedValueOnce(null);
 
       const result = await courseApi.getCourseById('unknown-id');

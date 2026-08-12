@@ -1,6 +1,6 @@
 <template>
   <div class="text-center py-6">
-    <div class="w-20 h-20 mx-auto mb-6 bg-accent-green/10 border border-accent-green/30 rounded-full flex items-center justify-center shadow-[0_0_20px_var(--color-emerald-glow)] success-check animate-bounce">
+    <div class="w-20 h-20 mx-auto mb-6 bg-accent-green/10 border border-accent-green/30 rounded-full flex items-center justify-center shadow-[0_0_20px_var(--color-emerald-glow)] success-check success-bounce">
       <BaseIcon name="success" class="w-10 h-10 text-accent-green" />
     </div>
     <h3 class="text-2xl font-bold text-accent-green mb-2">Thanh Toán Thành Công!</h3>
@@ -23,4 +23,20 @@ defineEmits<{ finish: [] }>();
 <style scoped>
 .success-check { animation: pop 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
 @keyframes pop { 0% { transform: scale(0.5); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
+
+/* PM-051: bounce đúng 1 lần thay vì animate-bounce lặp vô hạn */
+.success-bounce { animation: bounce-once 0.9s ease 0.15s both; }
+@keyframes bounce-once {
+  0%, 100% { transform: translateY(0); }
+  20% { transform: translateY(-14px); }
+  40% { transform: translateY(0); }
+  60% { transform: translateY(-7px); }
+  80% { transform: translateY(0); }
+}
+
+/* Tôn trọng prefers-reduced-motion */
+@media (prefers-reduced-motion: reduce) {
+  .success-check,
+  .success-bounce { animation: none; }
+}
 </style>

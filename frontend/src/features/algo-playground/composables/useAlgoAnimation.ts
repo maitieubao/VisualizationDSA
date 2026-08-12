@@ -51,7 +51,15 @@ export function useAlgoAnimation(
   });
 
   watch(() => store.frames, () => {
-    engine.pause();
+    // AL-003: watcher isPlaying chạy TRƯỚC watcher frames khi Play→compile→auto-play
+    // (engine.pause() cứng ở đây ghi đè play vừa bật) → store isPlaying=true nhưng
+    // engine đứng im frame 0. Nay theo đúng trạng thái store: đang play thì play(),
+    // không thì pause() (snapToCurrent để frame tĩnh do watcher isPlaying lo).
+    if (store.isPlaying) {
+      engine.play();
+    } else {
+      engine.pause();
+    }
     syncSnapshots();
   });
 

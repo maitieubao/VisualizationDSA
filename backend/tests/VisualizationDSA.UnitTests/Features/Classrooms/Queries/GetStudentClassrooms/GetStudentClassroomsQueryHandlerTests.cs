@@ -62,6 +62,8 @@ public class GetStudentClassroomsQueryHandlerTests
         result.Should().ContainSingle();
         result[0].Name.Should().Be("Class 1");
         result[0].InviteCode.Should().BeNull(); // Security: no invite code for students
+        // CR-042: response phải kèm Role để FE hiển thị badge.
+        result[0].Role.Should().Be("Student");
     }
 
     [Fact]

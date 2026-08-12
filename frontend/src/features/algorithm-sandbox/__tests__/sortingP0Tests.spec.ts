@@ -6,7 +6,12 @@ import { mount } from '@vue/test-utils';
 import { useVcrStore } from '../../vcr-player/store/useVcrStore';
 import { useSortingAnimation } from '../composables/useSortingAnimation';
 import { generateBubbleSortFrames } from '../algorithms/bubbleSort';
+import { generateQuickSortFrames } from '../algorithms/quickSort';
+import { generateMergeSortFrames } from '../algorithms/mergeSort';
+import { generateHeapSortFrames } from '../algorithms/heapSort';
+import { generateRadixSortFrames } from '../algorithms/radixSort';
 import { generateCountingSortFrames } from '../algorithms/countingSort';
+import { generateBucketSortFrames } from '../algorithms/bucketSort';
 import { enrichFramesWithIds } from '../helpers/sortingIdEnricher';
 import SortingVisualizerDispatcher from '../components/SortingVisualizerDispatcher.vue';
 import type { SortFrame } from '../types/sorting.types';
@@ -54,7 +59,7 @@ describe('Algorithm Sandbox — Sorting P0/P1 Tests', () => {
       });
 
       expect(wrapper.text()).toContain('Chưa có dữ liệu hoạt ảnh');
-      expect(wrapper.text()).toContain('Hãy tạo mảng mới hoặc chọn một thuật toán');
+      expect(wrapper.text()).toContain('Chọn một preset mảng');
     });
 
     it('không render bất kỳ visualizer nào khi frame = null', () => {
@@ -281,6 +286,70 @@ describe('Algorithm Sandbox — Sorting P0/P1 Tests', () => {
       // Frame 1: A[1] = 2, digit = 2 → comparingIndices = [1, 2]
       expect(countFrames[1].comparingIndices![0]).toBe(1);
       expect(countFrames[1].comparingIndices![1]).toBe(2);
+    });
+  });
+
+  // ── SV-002t (P1): CC-009 contract lineNumber/activeLogicalLineId/highlights ─
+  describe('SV-002t (P1): CC-009 — mỗi engine emit lineNumber/activeLogicalLineId/highlights', () => {
+    const contractGenerators: Array<[string, (input: number[]) => SortFrame[]]> = [
+      ['bubble', generateBubbleSortFrames],
+      ['quick', generateQuickSortFrames],
+      ['merge', generateMergeSortFrames],
+      ['heap', generateHeapSortFrames],
+      ['radix', generateRadixSortFrames],
+      ['counting', generateCountingSortFrames],
+      ['bucket', generateBucketSortFrames],
+    ];
+
+    it.each(contractGenerators)('%s: mọi frame emit lineNumber hợp lệ (> 0)', (_name, gen) => {
+      const frames = gen([5, 3, 8, 4, 2]);
+      expect(frames.length).toBeGreaterThan(0);
+      for (const f of frames) {
+        expect(f.lineNumber, `frame ${f.stepIndex} thiếu lineNumber`).toBeTypeOf('number');
+        expect(f.lineNumber!).toBeGreaterThan(0);
+      }
+    });
+
+    it.each(contractGenerators)('%s: mọi frame có activeLogicalLineId + highlights chuẩn hóa', (_name, gen) => {
+      const frames = gen([5, 3, 8, 4, 2]);
+      for (const f of frames) {
+        expect(f.activeLogicalLineId, `frame ${f.stepIndex} thiếu activeLogicalLineId`).toBeTypeOf('string');
+        expect((f.activeLogicalLineId ?? '').length).toBeGreaterThan(0);
+        expect(f.highlights, `frame ${f.stepIndex} thiếu highlights`).toBeDefined();
+        expect(Array.isArray(f.highlights!.compare)).toBe(true);
+        expect(Array.isArray(f.highlights!.swap)).toBe(true);
+        expect(Array.isArray(f.highlights!.sorted)).toBe(true);
+      }
+    });
+
+    it.each([
+      ['bubble', generateBubbleSortFrames],
+      ['quick', generateQuickSortFrames],
+      ['merge', generateMergeSortFrames],
+      ['heap', generateHeapSortFrames],
+    ] as Array<[string, (input: number[]) => SortFrame[]]>)(
+      '%s: highlights.compare khớp comparingIndices khi có phép so sánh',
+      (_name, gen) => {
+        const frames = gen([5, 3, 8, 4, 2]);
+        const compareFrames = frames.filter(f => f.comparingIndices !== null);
+        expect(compareFrames.length).toBeGreaterThan(0);
+        for (const f of compareFrames) {
+          for (const idx of f.comparingIndices!) {
+            expect(f.highlights!.compare, `frame ${f.stepIndex} thiếu highlight compare ${idx}`).toContain(idx);
+          }
+        }
+      },
+    );
+
+    it('sau stepNext, currentLineNumber > 0 (Coordinator/pseudocode không chết im lặng)', () => {
+      const store = useVcrStore();
+      const sorting = useSortingAnimation();
+
+      sorting.selectAlgorithm('bubble');
+      expect(store.currentLineNumber).toBeGreaterThan(0);
+
+      store.stepNext();
+      expect(store.currentLineNumber).toBeGreaterThan(0);
     });
   });
 });

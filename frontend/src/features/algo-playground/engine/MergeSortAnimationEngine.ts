@@ -1,15 +1,5 @@
 import type { CanvasStateSnapshot, MergeSortState } from '../../../core/CompilerStepExecutor';
-
-const COLORS = {
-  barDefault: '#6366f1',
-  barSegment: '#f59e0b',
-  chipBg: 'rgba(51,65,85,0.55)',
-  chipActive: 'rgba(245,158,11,0.85)',
-  chipOut: '#10b981',
-  chipSlot: 'rgba(16,185,129,0.15)',
-  text: '#e2e8f0',
-  textDim: '#94a3b8',
-};
+import { COLORS, maxWithFallback, minWithFallback, roundRect } from '../renderer/algoCanvasHelpers';
 
 /**
  * Animation engine RIÊNG cho Merge Sort.
@@ -73,9 +63,16 @@ export class MergeSortAnimationEngine {
     M: number,
   ): void {
     if (arr.length === 0) return;
-    const maxV = Math.max(...arr, 1);
+    const minV = minWithFallback(arr, 0);
+    const maxV = maxWithFallback(arr, 1);
+    const span = Math.max(maxV - minV, 1);
     const gap = 3;
     const barW = Math.max(3, (w - M * 2 - gap * (arr.length - 1)) / arr.length);
+    // AL-039: baseline 0 như SortingAnimationEngine.computeGeo — số âm đâm xuống dưới
+    // baseline (trước đây mọi giá trị âm vẽ bar 3px nằm đáy).
+    const usableH = h - 16;
+    const baseY = y + h;
+    const zeroY = baseY - ((0 - minV) / span) * usableH;
 
     // Vùng segment [low..high] — nửa trái / nửa phải tô mờ khác màu (không kẻ viền)
     if (st.low <= st.high && st.high < arr.length) {
@@ -91,11 +88,13 @@ export class MergeSortAnimationEngine {
     }
 
     for (let i = 0; i < arr.length; i++) {
-      const barH = Math.max(3, (arr[i] / maxV) * (h - 16));
+      const v = arr[i];
+      const top = zeroY - ((v - minV) / span) * usableH;
+      const barH = Math.max(3, v >= 0 ? zeroY - top : top - zeroY);
       const x = M + i * (barW + gap);
-      const by = y + h - barH;
+      const by = v >= 0 ? top : zeroY;
       const inSeg = i >= st.low && i <= st.high;
-      this.roundRect(ctx, x, by, barW, barH, 3);
+      roundRect(ctx, x, by, barW, barH, 3);
       ctx.fillStyle = inSeg ? COLORS.barSegment : COLORS.barDefault;
       ctx.fill();
       if (barW >= 6 && barH >= 8) {
@@ -146,7 +145,7 @@ export class MergeSortAnimationEngine {
     for (let i = 0; i < values.length; i++) {
       const cx = M + labelW + i * (chipW + gap);
       const active = i === activeIdx;
-      this.roundRect(ctx, cx, y + 4, chipW, h - 8, 4);
+      roundRect(ctx, cx, y + 4, chipW, h - 8, 4);
       ctx.fillStyle = active ? COLORS.chipActive : COLORS.chipBg;
       ctx.fill();
       ctx.fillStyle = '#fff';
@@ -181,7 +180,7 @@ export class MergeSortAnimationEngine {
       const v = st.output[i];
       if (v === null || v === undefined) continue;
       const cx = M + labelW + i * (chipW + gap);
-      this.roundRect(ctx, cx, y + 4, chipW, h - 8, 4);
+      roundRect(ctx, cx, y + 4, chipW, h - 8, 4);
       ctx.fillStyle = COLORS.chipOut;
       ctx.fill();
       ctx.fillStyle = '#fff';
@@ -194,7 +193,7 @@ export class MergeSortAnimationEngine {
     const nextIdx = st.output.length;
     if (nextIdx < (st.high - st.low + 1)) {
       const cx = M + labelW + nextIdx * (chipW + gap);
-      this.roundRect(ctx, cx, y + 4, chipW, h - 8, 4);
+      roundRect(ctx, cx, y + 4, chipW, h - 8, 4);
       ctx.fillStyle = COLORS.chipSlot;
       ctx.fill();
     }
@@ -209,15 +208,5 @@ export class MergeSortAnimationEngine {
     ctx.textAlign = 'right';
     ctx.textBaseline = 'top';
     ctx.fillText(`${phaseLabel} · width=${st.width} · [${st.low}..${st.high}]`, w - 12, y + 6);
-  }
-
-  private roundRect(ctx: CanvasRenderingContext2D, x: number, y: number, w: number, h: number, r: number): void {
-    ctx.beginPath();
-    ctx.moveTo(x + r, y);
-    ctx.arcTo(x + w, y, x + w, y + h, r);
-    ctx.arcTo(x + w, y + h, x, y + h, r);
-    ctx.arcTo(x, y + h, x, y, r);
-    ctx.arcTo(x, y, x + w, y, r);
-    ctx.closePath();
   }
 }

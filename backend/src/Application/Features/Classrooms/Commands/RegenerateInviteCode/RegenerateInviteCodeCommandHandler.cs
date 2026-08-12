@@ -34,7 +34,8 @@ namespace VisualizationDSA.Application.Features.Classrooms.Commands.RegenerateIn
                 newCode = GenerateInviteCode();
             } while (await _context.Classrooms.AnyAsync(c => c.InviteCode == newCode, cancellationToken));
 
-            classroom.UpdateInviteCode(newCode);
+            // CR-034: regenerate cũng gia hạn 30 ngày.
+            classroom.UpdateInviteCode(newCode, DateTime.UtcNow.AddDays(30));
             await _context.SaveChangesAsync(cancellationToken);
 
             return newCode;

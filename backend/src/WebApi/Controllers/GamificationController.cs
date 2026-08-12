@@ -1,31 +1,27 @@
 using Microsoft.AspNetCore.Mvc;
 using Asp.Versioning;
+using System.Linq;
+using VisualizationDSA.Domain.Strategies;
 
 namespace VisualizationDSA.WebApi.Controllers
 {
-    
-    
-    
-    
+    /// <summary>
+    /// Cấu hình gamification — GM-019: bảng level dùng chung GamificationLevelTable (1 nguồn duy nhất
+    /// với GamificationService/Strategy), trước đây tự khai báo bảng riêng → drift khi thay đổi.
+    /// GM-009: id huy hiệu chuẩn là first-steps... (đồng bộ với GamificationStrategy).
+    /// </summary>
     [ApiVersion("1.0")]
     [ApiController]
     [Route("api/v{version:apiVersion}/[controller]")]
     public class GamificationController : ControllerBase
     {
-        
-        
-        private static readonly object[] LevelDefinitions = new[]
-        {
-            new { level = 1, name = "Novice",       xpRequired = 0,    color = "#64748b" },
-            new { level = 2, name = "Explorer",     xpRequired = 100,  color = "#22c55e" },
-            new { level = 3, name = "Learner",      xpRequired = 300,  color = "#3b82f6" },
-            new { level = 4, name = "Practitioner", xpRequired = 600,  color = "#8b5cf6" },
-            new { level = 5, name = "Expert",       xpRequired = 1000, color = "#f59e0b" },
-            new { level = 6, name = "Master",       xpRequired = 1500, color = "#ef4444" },
-            new { level = 7, name = "Grandmaster",  xpRequired = 2200, color = "#ec4899" },
-            new { level = 8, name = "Legend",       xpRequired = 3000, color = "#f97316" },
-        };
+        // GM-019: map từ bảng dùng chung — giữ nguyên shape JSON cũ (level/name/xpRequired/color).
+        private static readonly object[] LevelDefinitions = GamificationLevelTable.Levels
+            .Select(l => new { level = l.Level, name = l.Name, xpRequired = l.XpRequired, color = l.Color })
+            .Cast<object>()
+            .ToArray();
 
+        // GM-009: id huy hiệu chuẩn hoá của backend — frontend map template theo id này.
         private static readonly object[] BadgeDefinitions = new[]
         {
             new { id = "first-steps",      name = "First Steps",      description = "Hoàn thành bài trắc nghiệm đầu tiên",     icon = "🎯", color = "#22c55e" },

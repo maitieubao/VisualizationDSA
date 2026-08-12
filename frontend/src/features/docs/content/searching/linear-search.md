@@ -62,8 +62,9 @@ public int LinearSearchSentinel(int[] array, int target)
 
     // 5. Kiểm tra kết quả
     // Nếu i < n-1: Tìm thấy ở giữa mảng
-    // Nếu i == n-1: Chỉ tìm thấy Sentinel -> Không có trong mảng gốc
-    return (i < n - 1) ? i : -1;
+    // Nếu i == n-1 VÀ last == target: Phần tử cuối mảng gốc chính là target -> Tìm thấy
+    // Nếu i == n-1 VÀ last != target: Chỉ tìm thấy Sentinel -> Không có trong mảng gốc
+    return (i < n - 1 || last == target) ? i : -1;
 }
 ```
 

@@ -21,7 +21,13 @@ vi.mock('./useTeacherApi', () => ({
   useTeacherApi: () => ({
     BASE_URL: 'http://localhost:5055',
     getAuthHeaders: () => ({ 'Content-Type': 'application/json', 'Authorization': 'Bearer fake-token' }),
-    formatTopic: (t: string) => ({ 'sorting': 'Sắp xếp', 'graph': 'Đồ thị', 'oop': 'Hướng đối tượng', 'solid': 'Nguyên lý SOLID', 'di': 'DI/IoC', 'array': 'Mảng', 'linked-list': 'Danh sách liên kết', 'design-patterns': 'Mẫu thiết kế' }[t] || t),
+    // TC-013: mock teacherRequest — đi qua global.fetch để mockFetch chặn được URL/method/body.
+    teacherRequest: async (url: string, init: RequestInit = {}) => {
+      const base = { 'Content-Type': 'application/json', 'Authorization': 'Bearer fake-token' };
+      const extra = (init.headers ?? {}) as Record<string, string>;
+      return globalThis.fetch(url, { ...init, headers: { ...base, ...extra } });
+    },
+    formatTopic: (t: string) => ({ 'sorting': 'Sắp xếp', 'graph': 'Đồ thị', 'oop': 'Hướng đối tượng', 'solid': 'Nguyên lý SOLID', 'di': 'DI/IoC', 'array': 'Mảng', 'linked-list': 'Danh sách liên kết', 'design-patterns': 'Mẫu thiết kế', 'DataStructure': 'Cấu trúc dữ liệu', 'Algorithm': 'Thuật toán', 'Sorting': 'Sắp xếp', 'Patterns': 'Mẫu thiết kế', 'SystemDesign': 'Thiết kế hệ thống' }[t] || t),
     formatDifficulty: (d: string) => ({ 'easy': 'Dễ', 'medium': 'Trung bình', 'hard': 'Khó' }[d] || d),
     formatDate: (d: string) => d,
     formatAttemptDate: (d: string) => d,
@@ -225,7 +231,9 @@ describe('TeacherPanelView — P0 Tests', () => {
       });
     });
 
-    it('calls API on quiz submit', async () => {
+    // TC-035: không chỉ đếm calls — assert URL + method + body deep-equal
+    // contract: POST /api/v1/concepts/quiz/manage + payload {title, topic, questions[{text, options, correctIndex}]}.
+    it('calls API on quiz submit with exact URL and payload (TC-035)', async () => {
       const w = await mountTeacherPanel();
       const quizTab = w.findAll('.pb-3').find((el) => el.text() === 'Quản lý Trắc nghiệm');
       await quizTab!.trigger('click');
@@ -256,10 +264,25 @@ describe('TeacherPanelView — P0 Tests', () => {
       await flushPromises();
       await nextTick();
 
-      const postCalls = mockFetch.mock.calls.filter(
-        (call) => call[1] && (call[1] as RequestInit).method === 'POST'
+      const manageCalls = mockFetch.mock.calls.filter(
+        (call) => typeof call[0] === 'string' && call[0].endsWith('/api/v1/concepts/quiz/manage') && call[1]?.method === 'POST'
       );
-      expect(postCalls.length).toBeGreaterThan(0);
+      expect(manageCalls).toHaveLength(1);
+      const [url, init] = manageCalls[0] as [string, RequestInit];
+      expect(url).toBe('http://localhost:5055/api/v1/concepts/quiz/manage');
+      expect(init.method).toBe('POST');
+      const body = JSON.parse(String(init.body)) as Record<string, unknown>;
+      expect(body.title).toBe('Test Quiz Title');
+      expect(body.topic).toBe('sorting');
+      const questions = body.questions as Array<Record<string, unknown>>;
+      expect(questions).toHaveLength(1);
+      expect(questions[0]).toEqual({
+        id: 'custom-q1',
+        text: 'What is sorting?',
+        options: ['Option A', 'Option B', 'Option C', 'Option D'],
+        correctIndex: 0,
+        explanation: '',
+      });
     });
 
     it('shows quizzes list when API returns data', async () => {
@@ -339,7 +362,7 @@ describe('TeacherPanelView — P0 Tests', () => {
       await flushPromises();
       await nextTick();
 
-      expect(w.text()).toContain('Không tìm thấy học viên nào');
+      expect(w.text()).toContain('Chưa có học viên nào trong hệ thống');
     });
   });
 
@@ -363,6 +386,121 @@ describe('TeacherPanelView — P0 Tests', () => {
       await nextTick();
 
       expect(w.text()).toContain('Vui lòng chọn một lớp học');
+    });
+
+    // TC-005t (P0): Analytics phải gọi /api/v1/classrooms (có segment v1) —
+    // URL cũ /api/Classroom/* sẽ 404 ở backend. Test bắt 404 bằng cách chỉ
+    // mock dữ liệu ở đường dẫn mới: nếu source còn gọi đường cũ → classroom
+    // không load được → test FAIL.
+    it('loads classrooms from GET /api/v1/classrooms/mine (TC-005t)', async () => {
+      mockFetch.mockImplementation(async (url: string) => {
+        if (url.includes('/api/v1/classrooms/mine')) {
+          return { ok: true, json: async () => [{ id: 'c1', name: 'Class A' }] };
+        }
+        if (url.includes('/api/v1/classrooms/') && url.includes('/statistics')) {
+          return { ok: true, json: async () => ({
+            totalStudents: 5, avgScore: 70.0, passRate: 60.0, completionRate: 0.65,
+            quizTitles: {}, codelabTitles: {}, studentScores: [],
+          }) };
+        }
+        return { ok: false, status: 404, json: async () => ({}) };
+      });
+
+      const w = await mountTeacherPanel();
+      const analyticsTab = w.findAll('.pb-3').find((el) => el.text() === 'Báo cáo & Phân tích');
+      await analyticsTab!.trigger('click');
+      await flushPromises();
+      await nextTick();
+
+      const mineCall = mockFetch.mock.calls.find((call) => String(call[0]).includes('classrooms/mine'));
+      expect(mineCall).toBeTruthy();
+      expect(String(mineCall![0])).toBe('http://localhost:5055/api/v1/classrooms/mine');
+      expect(String(mineCall![0])).not.toContain('/api/Classroom');
+    });
+
+    it('fetches statistics at /api/v1/classrooms/{id}/statistics when classroom selected (TC-005t)', async () => {
+      mockFetch.mockImplementation(async (url: string) => {
+        if (url.includes('/api/v1/classrooms/mine')) {
+          return { ok: true, json: async () => [{ id: 'c1', name: 'Class A' }] };
+        }
+        if (url.includes('/api/v1/classrooms/') && url.includes('/statistics')) {
+          return { ok: true, json: async () => ({
+            totalStudents: 5, avgScore: 70.0, passRate: 60.0, completionRate: 0.65,
+            quizTitles: { q1: 'Sorting' }, codelabTitles: {}, studentScores: [],
+          }) };
+        }
+        return { ok: false, status: 404, json: async () => ({}) };
+      });
+
+      const w = await mountTeacherPanel();
+      const analyticsTab = w.findAll('.pb-3').find((el) => el.text() === 'Báo cáo & Phân tích');
+      await analyticsTab!.trigger('click');
+      await flushPromises();
+      await nextTick();
+
+      const classroomSelect = w.find('.form-select');
+      await classroomSelect.setValue('c1');
+      await classroomSelect.trigger('change');
+      await flushPromises();
+      await nextTick();
+      await flushPromises();
+
+      const statsCall = mockFetch.mock.calls.find((call) => String(call[0]).includes('/statistics'));
+      expect(statsCall).toBeTruthy();
+      expect(String(statsCall![0])).toBe('http://localhost:5055/api/v1/classrooms/c1/statistics');
+      expect(String(statsCall![0])).not.toContain('/api/Classroom');
+      expect(w.text()).toContain('Học viên tham gia');
+    });
+
+    it('exports Excel at /api/v1/classrooms/{id}/export-excel (TC-005t)', async () => {
+      mockFetch.mockImplementation(async (url: string) => {
+        if (url.includes('/api/v1/classrooms/mine')) {
+          return { ok: true, json: async () => [{ id: 'c1', name: 'Class A' }] };
+        }
+        if (url.includes('/api/v1/classrooms/') && url.includes('/statistics')) {
+          return { ok: true, json: async () => ({
+            totalStudents: 5, avgScore: 70.0, passRate: 60.0, completionRate: 0.65,
+            quizTitles: {}, codelabTitles: {}, studentScores: [],
+          }) };
+        }
+        if (url.includes('/api/v1/classrooms/') && url.includes('/export-excel')) {
+          return { ok: true, blob: async () => new Blob(['xlsx']) };
+        }
+        return { ok: false, status: 404, json: async () => ({}) };
+      });
+
+      const originalCreate = window.URL.createObjectURL;
+      const originalRevoke = window.URL.revokeObjectURL;
+      window.URL.createObjectURL = vi.fn(() => 'blob:mock') as unknown as typeof URL.createObjectURL;
+      window.URL.revokeObjectURL = vi.fn() as unknown as typeof URL.revokeObjectURL;
+      try {
+        const w = await mountTeacherPanel();
+        const analyticsTab = w.findAll('.pb-3').find((el) => el.text() === 'Báo cáo & Phân tích');
+        await analyticsTab!.trigger('click');
+        await flushPromises();
+        await nextTick();
+
+        const classroomSelect = w.find('.form-select');
+        await classroomSelect.setValue('c1');
+        await classroomSelect.trigger('change');
+        await flushPromises();
+        await nextTick();
+        await flushPromises();
+
+        const excelBtn = w.findAll('button').find((b) => b.text().includes('Xuất Excel'));
+        expect(excelBtn).toBeTruthy();
+        await excelBtn!.trigger('click');
+        await flushPromises();
+        await nextTick();
+
+        const exportCall = mockFetch.mock.calls.find((call) => String(call[0]).includes('/export-excel'));
+        expect(exportCall).toBeTruthy();
+        expect(String(exportCall![0])).toBe('http://localhost:5055/api/v1/classrooms/c1/export-excel');
+        expect(String(exportCall![0])).not.toContain('/api/Classroom');
+      } finally {
+        window.URL.createObjectURL = originalCreate;
+        window.URL.revokeObjectURL = originalRevoke;
+      }
     });
   });
 });

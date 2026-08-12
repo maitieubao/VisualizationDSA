@@ -1,38 +1,49 @@
-import { describe, it, expect, beforeEach } from 'vitest';
-import { PseudocodeSyncer, type LineMapping } from '../engine/PseudocodeSyncer';
+import { describe, it, expect, vi } from 'vitest';
+import { PseudocodeSyncer, type MonacoEditorForHighlight } from '../engine/PseudocodeSyncer';
 import { CompilerStepExecutor } from '../../../core/CompilerStepExecutor';
 
-describe('Sprint 3 Pseudocode Synchronization Unit Tests', () => {
-  let syncer: PseudocodeSyncer;
-  let mockMappings: LineMapping[];
+// SV-022: getLineForStep/getFirstStepForLine/codeSnippet là dead API chỉ test dùng —
+// đã bị xóa khỏi PseudocodeSyncer. Contract còn lại: static highlightMonacoLine.
 
-  beforeEach(() => {
-    mockMappings = [
-      { stepIndex: 0, lineNumber: 5, codeSnippet: 'let pivot = arr[high]' },
-      { stepIndex: 1, lineNumber: 8, codeSnippet: 'swap(arr, i, j)' },
-      { stepIndex: 2, lineNumber: 12, codeSnippet: 'return i + 1' }
-    ];
-    syncer = new PseudocodeSyncer(mockMappings);
+describe('SV-016 (P2): PseudocodeSyncer.highlightMonacoLine', () => {
+  it('highlightMonacoLine trả về decoration id từ deltaDecorations', () => {
+    const editor: MonacoEditorForHighlight = {
+      revealLineInCenter: vi.fn(),
+      deltaDecorations: vi.fn(() => ['monaco-dec-7']),
+    };
+
+    const result = PseudocodeSyncer.highlightMonacoLine(editor, 7, ['dec-old']);
+
+    expect(result).toEqual(['monaco-dec-7']);
+    expect(editor.revealLineInCenter).toHaveBeenCalledWith(7, 0);
+    expect(editor.deltaDecorations).toHaveBeenCalledWith(
+      ['dec-old'],
+      [
+        expect.objectContaining({
+          range: expect.objectContaining({ startLineNumber: 7, endLineNumber: 7 }),
+          options: expect.objectContaining({ isWholeLine: true, className: 'monaco-pseudocode-active-line-glow' }),
+        }),
+      ],
+    );
   });
 
-  it('Should correctly find matching line number for current playback step index', () => {
-    const line = syncer.getLineForStep(1);
-
-    expect(line).toBe(8); 
+  it('highlightMonacoLine với editor null → trả về decorations cũ (không crash)', () => {
+    const result = PseudocodeSyncer.highlightMonacoLine(
+      null as unknown as MonacoEditorForHighlight,
+      3,
+      ['dec-old']
+    );
+    expect(result).toEqual(['dec-old']);
   });
 
-  it('Should successfully seek to first algorithm step when clicking line number', () => {
-    const step = syncer.getFirstStepForLine(12);
-
-    expect(step).toBe(2); 
-  });
-
-  it('Should return null for non-existent step indices or line bounds', () => {
-    const line = syncer.getLineForStep(99);
-    expect(line).toBeNull();
-
-    const step = syncer.getFirstStepForLine(99);
-    expect(step).toBeNull();
+  it('highlightMonacoLine: line mới thay thế decoration cũ (previousDecorations truyền nguyên vẹn)', () => {
+    const editor: MonacoEditorForHighlight = {
+      revealLineInCenter: vi.fn(),
+      deltaDecorations: vi.fn((old: string[]) => [...old, 'monaco-dec-9']),
+    };
+    const result = PseudocodeSyncer.highlightMonacoLine(editor, 9, ['dec-a', 'dec-b']);
+    expect(editor.deltaDecorations).toHaveBeenCalledWith(['dec-a', 'dec-b'], expect.any(Array));
+    expect(result).toEqual(['dec-a', 'dec-b', 'monaco-dec-9']);
   });
 });
 

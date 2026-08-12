@@ -1,4 +1,31 @@
-import type { SortFrame } from "../types/sorting.types";
+import type { SortFrame, SortHighlights } from "../types/sorting.types";
+
+// CC-009: ánh xạ bước thuật toán → dòng vật lý + logicalId (giả định khối mã CountingSort
+// được nạp vào Monaco: line 1 = hàm, line 3 = đếm tần suất, line 4 = prefix sum, line 5 = dựng output)
+const LINE_FUNC_DECL = 1;
+const LINE_COUNT_STEP = 3;
+const LINE_ACCUMULATE_STEP = 4;
+const LINE_OUTPUT_STEP = 5;
+
+function mkHighlights(
+  sorted: number[],
+  extras: Partial<SortHighlights> = {}
+): SortHighlights {
+  return { compare: [], swap: [], sorted: [...sorted], ...extras };
+}
+
+// SV-008 (EC-022): min/max 1 pass thay Math.min/max(...arr) — mảng lớn không RangeError
+function minMax(values: number[]): { min: number; max: number } {
+  if (values.length === 0) return { min: 0, max: 0 };
+  let min = values[0];
+  let max = values[0];
+  for (let i = 1; i < values.length; i++) {
+    const v = values[i];
+    if (v < min) min = v;
+    if (v > max) max = v;
+  }
+  return { min, max };
+}
 
 export function generateCountingSortFrames(arr: number[]): SortFrame[] {
   const frames: SortFrame[] = [];
@@ -11,9 +38,8 @@ export function generateCountingSortFrames(arr: number[]): SortFrame[] {
   }));
 
   // Miền đếm: dịch chuyển toàn bộ giá trị về >= 0 để chữ số luôn hợp lệ [0..9]
-  const minVal = currentArray.length ? Math.min(...currentArray) : 0;
+  const { min: minVal, max: maxVal } = minMax(currentArray);
   const offset = minVal < 0 ? -minVal : 0;
-  const maxVal = currentArray.length ? Math.max(...currentArray) : 0;
   const shiftedMax = maxVal + offset;
 
   const output: Array<number | null> = Array(currentArray.length).fill(null);
@@ -44,7 +70,10 @@ export function generateCountingSortFrames(arr: number[]): SortFrame[] {
     place: number,
     comp: [number, number] | null,
     useMerged: boolean,
-    vars: Record<string, string | number>
+    vars: Record<string, string | number>,
+    lineNumber: number,
+    activeLogicalLineId: string,
+    highlightExtras: Partial<SortHighlights> = {}
   ) => {
     frames.push({
       stepIndex: stepIndex++,
@@ -64,6 +93,9 @@ export function generateCountingSortFrames(arr: number[]): SortFrame[] {
       outputArray: [...output],
       outputArrayWithIds: [...outputIds],
       variables: vars,
+      lineNumber,
+      activeLogicalLineId,
+      highlights: mkHighlights([], highlightExtras),
     });
   };
 
@@ -85,6 +117,9 @@ export function generateCountingSortFrames(arr: number[]): SortFrame[] {
     outputArray: [...output],
     outputArrayWithIds: [...outputIds],
     variables: { phase: "init", i: "-", digit: "-", countVal: 0, outputIdx: "-", place: 1 },
+    lineNumber: LINE_FUNC_DECL,
+    activeLogicalLineId: "FUNC_DECL",
+    highlights: mkHighlights([]),
   });
 
   for (let exp = 1; Math.floor(shiftedMax / exp) > 0; exp *= 10) {
@@ -105,7 +140,10 @@ export function generateCountingSortFrames(arr: number[]): SortFrame[] {
         exp,
         [i, digit],
         false,
-        { phase: "count", i, digit, countVal: count[digit], outputIdx: "-", place: exp }
+        { phase: "count", i, digit, countVal: count[digit], outputIdx: "-", place: exp },
+        LINE_COUNT_STEP,
+        "COUNT_STEP",
+        { compare: [i, digit] }
       );
     }
 
@@ -116,7 +154,9 @@ export function generateCountingSortFrames(arr: number[]): SortFrame[] {
       exp,
       null,
       false,
-      { phase: "accumulate", i: "-", digit: "-", countVal: "-", outputIdx: "-", place: exp }
+      { phase: "accumulate", i: "-", digit: "-", countVal: "-", outputIdx: "-", place: exp },
+      LINE_ACCUMULATE_STEP,
+      "ACCUMULATE_STEP"
     );
 
     for (let j = 1; j < count.length; j++) {
@@ -129,7 +169,10 @@ export function generateCountingSortFrames(arr: number[]): SortFrame[] {
         exp,
         [j - 1, j],
         false,
-        { phase: "accumulate", i: j, digit: "-", countVal: count[j], outputIdx: "-", place: exp }
+        { phase: "accumulate", i: j, digit: "-", countVal: count[j], outputIdx: "-", place: exp },
+        LINE_ACCUMULATE_STEP,
+        "ACCUMULATE_STEP",
+        { compare: [j - 1, j] }
       );
     }
 
@@ -140,7 +183,9 @@ export function generateCountingSortFrames(arr: number[]): SortFrame[] {
       exp,
       null,
       false,
-      { phase: "output", i: "-", digit: "-", countVal: "-", outputIdx: "-", place: exp }
+      { phase: "output", i: "-", digit: "-", countVal: "-", outputIdx: "-", place: exp },
+      LINE_OUTPUT_STEP,
+      "OUTPUT_STEP"
     );
 
     for (let i = currentArray.length - 1; i >= 0; i--) {
@@ -158,7 +203,10 @@ export function generateCountingSortFrames(arr: number[]): SortFrame[] {
         exp,
         [i, outputIdx],
         true,
-        { phase: "output", i, digit, countVal: count[digit], outputIdx, place: exp }
+        { phase: "output", i, digit, countVal: count[digit], outputIdx, place: exp },
+        LINE_OUTPUT_STEP,
+        "OUTPUT_STEP",
+        { assign: [outputIdx] }
       );
     }
 
@@ -190,6 +238,9 @@ export function generateCountingSortFrames(arr: number[]): SortFrame[] {
     outputArray: [...currentArray],
     outputArrayWithIds: [...arrayStateWithIds],
     variables: { phase: "done", i: "-", digit: "-", countVal: "-", outputIdx: "-", place: "-" },
+    lineNumber: LINE_FUNC_DECL,
+    activeLogicalLineId: "FUNC_DECL",
+    highlights: mkHighlights(finalSortedIndices),
   });
 
   return frames;

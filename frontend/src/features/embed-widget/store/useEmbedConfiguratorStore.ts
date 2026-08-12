@@ -41,21 +41,22 @@ export const useEmbedConfiguratorStore = defineStore('embedConfigurator', () => 
     })
   );
 
+  // EW-024: 1 computed URL duy nhất — generatedIframeCode dùng lại iframeSrcUrl,
+  // không duy trì 2 nguồn sự thật trùng logic.
+  const iframeSrcUrl = computed(() => {
+    return `${EMBED_BASE_URL}?${widgetQueryParams.value.toString()}`;
+  });
+
   const generatedIframeCode = computed(() => {
-    const iframeUrl = `${EMBED_BASE_URL}?${widgetQueryParams.value.toString()}`;
     return [
       `<iframe`,
-      `  src="${iframeUrl}"`,
+      `  src="${iframeSrcUrl.value}"`,
       `  width="${widgetWidth.value}"`,
       `  height="${widgetHeight.value}"`,
       `  style="border: none; border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.15);"`,
       `  sandbox="allow-scripts allow-same-origin"`,
       `></iframe>`,
     ].join('\n');
-  });
-
-  const iframeSrcUrl = computed(() => {
-    return `${EMBED_BASE_URL}?${widgetQueryParams.value.toString()}`;
   });
 
   const algorithmLabel = computed(() => {
@@ -107,8 +108,12 @@ export const useEmbedConfiguratorStore = defineStore('embedConfigurator', () => 
   }
 
   function setDimensions(width: number, height: number): void {
-    widgetWidth.value = Math.max(300, Math.min(1400, width));
-    widgetHeight.value = Math.max(200, Math.min(900, height));
+    // EW-023: guard NaN/Infinity trước khi clamp — nếu không phải số hữu hạn
+    // thì giữ nguyên giá trị hiện tại (fail-closed), tránh width="NaN"px.
+    const safeWidth = Number.isFinite(width) ? width : widgetWidth.value;
+    const safeHeight = Number.isFinite(height) ? height : widgetHeight.value;
+    widgetWidth.value = Math.max(300, Math.min(1400, safeWidth));
+    widgetHeight.value = Math.max(200, Math.min(900, safeHeight));
   }
 
   function toggleVcrControls(): void {
@@ -124,6 +129,12 @@ export const useEmbedConfiguratorStore = defineStore('embedConfigurator', () => 
   }
 
   function resetConfigurator(): void {
+    // EW-025: hủy timer đặt lại trạng thái "Đã sao chép" trước khi reset,
+    // tránh timer cũ bật isCopied = false đè trạng thái mới.
+    if (copyResetTimer !== null) {
+      clearTimeout(copyResetTimer);
+      copyResetTimer = null;
+    }
     selectedTheme.value = 'glass';
     showVcrControls.value = true;
     showWatchVariables.value = true;

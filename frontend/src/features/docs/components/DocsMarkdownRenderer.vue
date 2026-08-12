@@ -41,14 +41,69 @@
   </div>
 </template>
 
+<script lang="ts">
+// Module scope — chạy ĐÚNG MỘT LẦN khi import (khác <script setup> chạy mỗi lần mount):
+// nơi duy nhất giữ singleton Highlighter (DC-014) và đăng ký DOMPurify hook một lần (DC-018).
+import { createHighlighter, type Highlighter } from 'shiki';
+import { parseEmojiToSvg, escapeHtmlText } from '../../../utils/emojiParser';
+import DOMPurify from 'dompurify';
+
+// Shiki Highlighter dùng chung toàn cục (singleton promise) — tránh khởi tạo lại 200-400ms mỗi lần điều hướng (DC-014).
+const SHIKI_LANGS = ['csharp', 'json', 'typescript', 'bash', 'javascript', 'html', 'css', 'vue', 'ini', 'plaintext', 'text'];
+const SUPPORTED_SHIKI_LANGS = new Set<string>(SHIKI_LANGS);
+
+let highlighterPromise: Promise<Highlighter> | null = null;
+const getHighlighter = (): Promise<Highlighter> => {
+  if (!highlighterPromise) {
+    highlighterPromise = createHighlighter({ themes: ['one-dark-pro'], langs: SHIKI_LANGS });
+  }
+  return highlighterPromise;
+};
+
+// Ngôn ngữ chưa đăng ký (vd ```ini trước đây) → quy về 'text' để vẫn có highlight + nút copy (DC-017).
+const normalizeLang = (lang: string): string => SUPPORTED_SHIKI_LANGS.has(lang) ? lang : 'text';
+
+// Thu hẹp inline style sau khi DOMPurify cho phép ADD_ATTR style (DC-018):
+// Shiki cần style="color:..." để highlight, nhưng chặn url()/expression/@import → chống CSS exfil.
+const SAFE_INLINE_STYLE_PROPS = [
+  'color', 'background-color', 'font-family', 'font-size', 'font-style', 'font-weight',
+  'line-height', 'text-align', 'display', 'padding', 'margin', 'border', 'border-radius',
+  'overflow-x', 'opacity', 'fill', 'stroke', 'stroke-width', 'vertical-align',
+];
+const UNSAFE_STYLE_VALUE = /url\s*\(|expression\s*\(|@import|behavior\s*:|javascript:/i;
+
+DOMPurify.addHook('afterSanitizeAttributes', (node) => {
+  if (!node || typeof node.getAttribute !== 'function' || typeof node.hasAttribute !== 'function') return;
+  if (!node.hasAttribute('style')) return;
+  const rawStyle = node.getAttribute('style') ?? '';
+  const kept: string[] = [];
+  for (const decl of rawStyle.split(';')) {
+    const sep = decl.indexOf(':');
+    if (sep === -1) continue;
+    const prop = decl.slice(0, sep).trim().toLowerCase();
+    const value = decl.slice(sep + 1).trim();
+    if (!SAFE_INLINE_STYLE_PROPS.includes(prop)) continue;
+    if (UNSAFE_STYLE_VALUE.test(value)) continue;
+    kept.push(`${prop}:${value}`);
+  }
+  if (kept.length > 0) node.setAttribute('style', kept.join(';'));
+  else node.removeAttribute('style');
+});
+
+// Emoji → SVG chỉ áp dụng NGOÀI code block (pre/inline code) — tránh phá nội dung code (DC-026).
+const parseEmojiOutsideCodeBlocks = (html: string): string => {
+  return html
+    .split(/(<pre\b[^>]*>[\s\S]*?<\/pre>|<code\b[^>]*>[\s\S]*?<\/code>)/gi)
+    .map((part, index) => (index % 2 === 1) ? part : parseEmojiToSvg(part))
+    .join('');
+};
+</script>
+
 <script setup lang="ts">
 import { ref, watch, onMounted, onBeforeUnmount, nextTick } from 'vue';
-import { useRouter } from 'vue-router';
+import { useRoute, useRouter } from 'vue-router';
 import { marked, type Tokens } from 'marked';
-import { createHighlighter, type Highlighter } from 'shiki';
 import BaseIcon from '@/shared/components/BaseIcon.vue';
-import { parseEmojiToSvg } from '../../../utils/emojiParser';
-import DOMPurify from 'dompurify';
 import { buildMermaidInitConfig } from '../../../utils/mermaidTheme';
 import { getPlaygroundDemo } from '../../html-playground/demos/playgroundDemos';
 import '../styles/vue-docs-theme.css';
@@ -64,6 +119,7 @@ const emit = defineEmits<{
 }>();
 
 const router = useRouter();
+const route = useRoute();
 
 const title = ref('');
 const description = ref('');
@@ -71,17 +127,23 @@ const htmlContent = ref('');
 const loading = ref(true);
 const markdownContainer = ref<HTMLElement | null>(null);
 
-let highlighter: Highlighter | null = null;
-let containerListenersAttached = false;
+// Generation counter chống race async khi điều hướng nhanh (DC-008).
+let renderSeq = 0;
 
 const errorMessage = (error: unknown): string => error instanceof Error ? error.message : String(error);
 
-const ensureContainerListeners = () => {
-  if (containerListenersAttached || !markdownContainer.value) return;
-  containerListenersAttached = true;
-  markdownContainer.value.addEventListener('click', handleContainerClick);
-  markdownContainer.value.addEventListener('change', handleContainerChange);
-};
+// Listener delegation gắn theo lifecycle của container ref — gỡ cờ module-level vốn không reset
+// khi container bị v-if hủy-tạo lại mỗi lần điều hướng (DC-004).
+watch(markdownContainer, (newEl, oldEl) => {
+  if (oldEl) {
+    oldEl.removeEventListener('click', handleContainerClick);
+    oldEl.removeEventListener('change', handleContainerChange);
+  }
+  if (newEl) {
+    newEl.addEventListener('click', handleContainerClick);
+    newEl.addEventListener('change', handleContainerChange);
+  }
+});
 
 const handleContainerClick = (event: Event) => {
   const target = (event.target as HTMLElement).closest('a.playground-demo-link');
@@ -93,6 +155,18 @@ const handleContainerClick = (event: Event) => {
       const params = new URLSearchParams(query || '');
       const demo = params.get('demo');
       router.push({ path: '/playground', query: demo ? { demo } : {} });
+    }
+    return;
+  }
+
+  // Anchor heading "#id" — preventDefault để không phá vỡ hash router (DC-002), chỉ cuộn mượt.
+  // Chỉ intercept anchor thuần "#section", KHÔNG nuốt link router "#/docs/..." (DC-027).
+  const anchor = (event.target as HTMLElement).closest('a[href^="#"]:not([href^="#/"])');
+  if (anchor) {
+    event.preventDefault();
+    const id = anchor.getAttribute('href')?.slice(1);
+    if (id) {
+      document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' });
     }
     return;
   }
@@ -181,19 +255,28 @@ const extractHeadings = (html: string) => {
   emit('headings-parsed', headings);
 };
 
+// Deep-link `#section` (DC-028): heading chưa render lúc scrollBehavior chạy (await shiki async),
+// nên cuộn lại ở đây — sau khi content đã vào DOM. Chỉ xử lý hash "#section", bỏ qua "#/docs..." (path router).
+const scrollToHashSection = (): void => {
+  const hash = route.hash;
+  if (!hash || hash.startsWith('#/') || hash === '#') return;
+  const el = document.getElementById(hash.slice(1));
+  if (el) el.scrollIntoView({ behavior: 'smooth' });
+};
+
 const renderMarkdown = async () => {
+  const seq = ++renderSeq;
   loading.value = true;
   try {
-    if (!highlighter) {
-      highlighter = await createHighlighter({
-        themes: ['one-dark-pro'],
-        langs: ['csharp', 'json', 'typescript', 'bash', 'javascript', 'html', 'css', 'vue']
-      });
-    }
+    const highlighter = await getHighlighter();
+    if (seq !== renderSeq) return;
 
     const contentWithoutFm = preprocessMarkdown(props.rawMarkdown);
     
     const renderer = new marked.Renderer();
+    
+    // Đếm heading id đã dùng để dedup trùng lặp bằng suffix -1, -2 (DC-010).
+    const usedHeadingIds = new Map<string, number>();
     
     
     renderer.heading = function({ depth, text: rawText, raw }: Tokens.Heading) {
@@ -219,6 +302,11 @@ const renderMarkdown = async () => {
           .replace(/^-+|-+$/g, '');
       }
 
+      if (!id) id = 'section';
+      const duplicateCount = usedHeadingIds.get(id) ?? 0;
+      usedHeadingIds.set(id, duplicateCount + 1);
+      if (duplicateCount > 0) id = `${id}-${duplicateCount}`;
+
       // Render inline markdown trong heading (bold/backtick) — trước đây hiển thị thô **...**.
       const renderedText = text
         .replace(/\*\*(.*?)\*\*/g, '<strong class="font-bold">$1</strong>')
@@ -231,8 +319,17 @@ const renderMarkdown = async () => {
     };
 
     // Link nội bộ /docs/... phải đi qua hash router — tránh reload toàn trang về trang chủ.
+    // Link tương đối dạng [x](other.md) được quy về /docs/<slug> (DC-019).
     renderer.link = function({ href: rawHref, title: tokenTitle, tokens }: Tokens.Link) {
       let href = rawHref ?? '';
+      const mdLinkMatch = href.match(/^(.+?)\.md(#.*)?$/i);
+      if (
+        !href.startsWith('/') && !href.startsWith('#') && !href.startsWith('http') &&
+        !href.startsWith('mailto:') && mdLinkMatch
+      ) {
+        const target = mdLinkMatch[1].replace(/^\.\//, '');
+        href = `#/docs/${target}`;
+      }
       if (href.startsWith('/')) {
         href = '#' + href;
       }
@@ -249,7 +346,7 @@ const renderMarkdown = async () => {
       if (validLang === 'mermaid') {
         
         const encoded = encodeURIComponent(code);
-        return parseEmojiToSvg(`<div class="mermaid-diagram flex justify-center my-6" data-mermaid-code="${encoded}"><div style="color:var(--color-text-muted);font-size:14px;">Đang vẽ biểu đồ...</div></div>`);
+        return parseEmojiOutsideCodeBlocks(`<div class="mermaid-diagram flex justify-center my-6" data-mermaid-code="${encoded}"><div style="color:var(--color-text-muted);font-size:14px;">Đang vẽ biểu đồ...</div></div>`);
       }
       
       
@@ -284,14 +381,14 @@ const renderMarkdown = async () => {
           let jsHtml = '';
           let csHtml = '';
           try {
-            jsHtml = highlighter!.codeToHtml(demo.source.js, { lang: 'javascript', theme: 'one-dark-pro' });
+            jsHtml = highlighter.codeToHtml(demo.source.js, { lang: 'javascript', theme: 'one-dark-pro' });
           } catch (e) {
-            jsHtml = `<pre><code>${demo.source.js}</code></pre>`;
+            jsHtml = `<pre><code>${escapeHtmlText(demo.source.js)}</code></pre>`;
           }
           try {
-            csHtml = highlighter!.codeToHtml(code, { lang: 'csharp', theme: 'one-dark-pro' });
+            csHtml = highlighter.codeToHtml(code, { lang: 'csharp', theme: 'one-dark-pro' });
           } catch (e) {
-            csHtml = `<pre><code>${code}</code></pre>`;
+            csHtml = `<pre><code>${escapeHtmlText(code)}</code></pre>`;
           }
           
           return `<div class="dual-code-block" data-demo-id="${demo.id}">
@@ -309,8 +406,8 @@ const renderMarkdown = async () => {
       }
       
       try {
-        const highlighted = highlighter!.codeToHtml(code, {
-          lang: validLang,
+        const highlighted = highlighter.codeToHtml(code, {
+          lang: normalizeLang(validLang),
           theme: 'one-dark-pro'
         });
         
@@ -325,7 +422,7 @@ const renderMarkdown = async () => {
           ${highlighted}
         </div>`;
       } catch (e) {
-        return `<pre><code>${code}</code></pre>`;
+        return `<pre><code>${escapeHtmlText(code)}</code></pre>`;
       }
     };
 
@@ -370,17 +467,19 @@ const renderMarkdown = async () => {
     marked.use({ renderer, gfm: true, breaks: true });
 
     // marked không tự sanitize — DOMPurify loại script/event handler khỏi HTML đã render.
-    // ADD_ATTR style giữ layout dual-code/mermaid; nội dung docs là markdown nội bộ.
+    // ADD_ATTR style giữ layout dual-code/mermaid; giá trị style được thu hẹp bởi hook an toàn (DC-018).
     const parsedHtml = marked.parse(contentWithoutFm);
     const sanitized = DOMPurify.sanitize(typeof parsedHtml === 'string' ? parsedHtml : await parsedHtml, { ADD_ATTR: ['style'] });
-    htmlContent.value = parseEmojiToSvg(sanitized);
+    if (seq !== renderSeq) return;
+    htmlContent.value = parseEmojiOutsideCodeBlocks(sanitized);
     loading.value = false; 
     
     await nextTick(); 
     
-    ensureContainerListeners();
+    if (seq !== renderSeq) return;
     
     extractHeadings(htmlContent.value);
+    scrollToHashSection();
     
     if (!markdownContainer.value) return;
     const diagrams = markdownContainer.value.querySelectorAll('.mermaid-diagram');
@@ -388,6 +487,8 @@ const renderMarkdown = async () => {
     
     try {
       const { default: mermaid } = await import('mermaid');
+      // Re-check seq sau await — điều hướng nhanh có thể đã hủy container (DC-031).
+      if (seq !== renderSeq) return;
       mermaid.initialize(buildMermaidInitConfig());
       
       for (let i = 0; i < diagrams.length; i++) {
@@ -398,23 +499,29 @@ const renderMarkdown = async () => {
         const code = decodeURIComponent(encoded);
         try {
           const { svg } = await mermaid.render(`mermaid-svg-${Date.now()}-${i}`, code);
+          if (seq !== renderSeq) return;
           el.innerHTML = svg;
         } catch (renderErr: unknown) {
-          el.innerHTML = parseEmojiToSvg(`<div style="background:color-mix(in srgb, var(--color-accent-red) 15%, transparent);border:1px solid var(--color-accent-red);padding:16px;border-radius:8px;color:var(--color-accent-red);font-size:13px;text-align:left;width:100%;">
+          if (seq !== renderSeq) return;
+          // Escape message trước khi nhét HTML — phòng XSS khi nội dung chuyển sang nguồn backend (DC-009).
+          el.innerHTML = parseEmojiOutsideCodeBlocks(`<div style="background:color-mix(in srgb, var(--color-accent-red) 15%, transparent);border:1px solid var(--color-accent-red);padding:16px;border-radius:8px;color:var(--color-accent-red);font-size:13px;text-align:left;width:100%;">
             <strong>Lỗi cú pháp Mermaid:</strong><br/>
-            <pre style="margin-top:8px;font-size:11px;overflow-x:auto;">${errorMessage(renderErr)}</pre>
+            <pre style="margin-top:8px;font-size:11px;overflow-x:auto;">${escapeHtmlText(errorMessage(renderErr))}</pre>
           </div>`);
         }
       }
+      scrollToHashSection();
     } catch (err: unknown) {
+      if (seq !== renderSeq) return;
       console.error("Lỗi tải Mermaid:", err);
       diagrams.forEach(el => {
-        el.innerHTML = parseEmojiToSvg(`<div style="color:var(--color-accent-red);">Không thể tải thư viện Mermaid: ${errorMessage(err)}</div>`);
+        el.innerHTML = parseEmojiOutsideCodeBlocks(`<div style="color:var(--color-accent-red);">Không thể tải thư viện Mermaid: ${escapeHtmlText(errorMessage(err))}</div>`);
       });
     }
   } catch (error: unknown) {
+    if (seq !== renderSeq) return;
     console.error("Lỗi khi render markdown:", error);
-    htmlContent.value = `<div class="text-accent-red">Lỗi khi phân giải tài liệu: ${errorMessage(error)}</div>`;
+    htmlContent.value = `<div class="text-accent-red">Lỗi khi phân giải tài liệu: ${escapeHtmlText(errorMessage(error))}</div>`;
     loading.value = false;
   }
 };
@@ -428,10 +535,9 @@ onMounted(() => {
 });
 
 onBeforeUnmount(() => {
-  if (markdownContainer.value && containerListenersAttached) {
+  if (markdownContainer.value) {
     markdownContainer.value.removeEventListener('click', handleContainerClick);
     markdownContainer.value.removeEventListener('change', handleContainerChange);
-    containerListenersAttached = false;
   }
 });
 </script>

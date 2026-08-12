@@ -22,8 +22,9 @@ Thay vì chia mảng dựa trên chỉ số (index), Bucket Sort **chia mảng d
 
 - Ta chuẩn bị 10 cái xô (index từ 0 đến 9).
 - Bỏ `0.78` vào xô số 7 (vì $10 \times 0.78 = 7.8$).
-- Bỏ `0.17` vào xô số 1.
-- Bỏ `0.21`, `0.23`, `0.26` vào xô số 2...
+- Bỏ `0.17`, `0.12` vào xô số 1.
+- Bỏ `0.26`, `0.21`, `0.23` vào xô số 2, `0.39` vào xô số 3.
+- Bỏ `0.68` vào xô số 6 (vì $10 \times 0.68 = 6.8$), `0.72` vào xô số 7, `0.94` vào xô số 9.
 - Sắp xếp độc lập bên trong từng xô.
 - Nối các xô lại với nhau từ 0 đến 9, ta có mảng hoàn chỉnh!
 
@@ -34,6 +35,7 @@ flowchart TD
         B1["Xô 1\n[0.17, 0.12]"]
         B2["Xô 2\n[0.26, 0.21, 0.23]"]
         B3["Xô 3\n[0.39]"]
+        B6["Xô 6\n[0.68]"]
         B7["Xô 7\n[0.78, 0.72]"]
         B9["Xô 9\n[0.94]"]
     end
@@ -41,20 +43,23 @@ flowchart TD
     subgraph "3. Sắp xếp trong Xô (Sort)"
         S1["[0.12, 0.17]"]
         S2["[0.21, 0.23, 0.26]"]
+        S6["[0.68]"]
         S7["[0.72, 0.78]"]
     end
     
     subgraph "4. Gộp lại (Gather)"
-        O["[0.12, 0.17, 0.21, 0.23, 0.26, 0.39, 0.72, 0.78, 0.94]"]
+        O["[0.12, 0.17, 0.21, 0.23, 0.26, 0.39, 0.68, 0.72, 0.78, 0.94]"]
     end
     
     B1 --> S1
     B2 --> S2
+    B6 --> S6
     B7 --> S7
     
     S1 --> O
     S2 --> O
     B3 --> O
+    S6 --> O
     S7 --> O
     B9 --> O
     

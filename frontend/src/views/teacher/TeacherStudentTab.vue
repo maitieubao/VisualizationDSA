@@ -7,13 +7,20 @@
       </div>
     </div>
 
+    <!-- TC-020: banner lỗi tách khỏi empty state -->
+    <div v-if="loadError" class="error-banner mb-6 flex items-center justify-between gap-3 rounded-xl border border-accent-red/30 bg-accent-red/10 px-4 py-3">
+      <span class="text-sm text-accent-red"><BaseIcon name="alert-circle" class="w-4 h-4 inline mr-1 align-middle" />{{ loadError }}</span>
+      <button type="button" class="btn-secondary text-xs px-3 py-1.5" @click="loadStudents">Thử lại</button>
+    </div>
+
     <div class="quizzes-list-container">
       <div v-if="loadingStudents" class="loading-state">
         <div class="spinner"></div>
         <span>Đang tải danh sách học viên...</span>
       </div>
+      <!-- TC-044: phân biệt empty state "chưa gõ gì / rỗng thật" vs "search không có kết quả" -->
       <div v-else-if="studentsList.length === 0" class="empty-state">
-        Không tìm thấy học viên nào phù hợp với từ khóa tìm kiếm.
+        {{ searchStudentQuery.trim() ? 'Không tìm thấy học viên nào phù hợp với từ khóa tìm kiếm.' : 'Chưa có học viên nào trong hệ thống.' }}
       </div>
       <div v-else class="table-responsive">
         <table class="quizzes-table">
@@ -134,10 +141,11 @@
 import { ref, computed } from 'vue';
 import { useTeacherApi } from './useTeacherApi';
 
-const { BASE_URL, getAuthHeaders, formatDate, formatAttemptDate } = useTeacherApi();
+const { BASE_URL, teacherRequest, formatDate, formatAttemptDate } = useTeacherApi();
 
 const studentsList = ref<any[]>([]);
 const loadingStudents = ref(false);
+const loadError = ref('');
 const searchStudentQuery = ref('');
 const studentsPage = ref(1);
 const totalStudents = ref(0);
@@ -152,10 +160,14 @@ const loadingStudentQuizHistory = ref(false);
 
 async function loadStudents(): Promise<void> {
   loadingStudents.value = true;
+  loadError.value = '';
   try {
-    const res = await fetch(`${BASE_URL}/api/v1/concepts/admin/users?page=${studentsPage.value}&pageSize=${studentsPageSize}&search=${encodeURIComponent(searchStudentQuery.value)}`, { headers: getAuthHeaders() });
-    if (res.ok) { const data = await res.json(); studentsList.value = data.users || []; totalStudents.value = data.total || 0; }
-  } catch (err) { console.error('Failed to load students:', err); }
+    const res = await teacherRequest(`${BASE_URL}/api/v1/concepts/admin/users?page=${studentsPage.value}&pageSize=${studentsPageSize}&search=${encodeURIComponent(searchStudentQuery.value)}`);
+    if (!res.ok) throw new Error('Không thể tải danh sách học viên.');
+    const data = await res.json(); studentsList.value = data.users || []; totalStudents.value = data.total || 0;
+  } catch (err) {
+    loadError.value = err instanceof Error ? err.message : 'Lỗi khi tải học viên.';
+  }
   finally { loadingStudents.value = false; }
 }
 
@@ -177,11 +189,11 @@ async function viewStudentProgress(student: any): Promise<void> {
   studentCourseProgress.value = [];
   studentQuizHistory.value = [];
   try {
-    const res = await fetch(`${BASE_URL}/api/v1/concepts/courses?userId=${student.id}`, { headers: getAuthHeaders() });
+    const res = await teacherRequest(`${BASE_URL}/api/v1/concepts/courses?userId=${student.id}`);
     if (res.ok) studentCourseProgress.value = await res.json();
   } catch (err) { console.error(err); } finally { loadingStudentCourseProgress.value = false; }
   try {
-    const res = await fetch(`${BASE_URL}/api/v1/concepts/quiz/history?userId=${student.id}`, { headers: getAuthHeaders() });
+    const res = await teacherRequest(`${BASE_URL}/api/v1/concepts/quiz/history?userId=${student.id}`);
     if (res.ok) studentQuizHistory.value = await res.json();
   } catch (err) { console.error(err); } finally { loadingStudentQuizHistory.value = false; }
 }

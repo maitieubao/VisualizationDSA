@@ -1,5 +1,6 @@
 <template>
   <div
+    data-tour-id="code-ide-editor"
     class="flex flex-col h-full"
     :class="{ 'compile-failed-glow': hasCompileError, 'compile-success-glow': showSuccessGlow }"
   >
@@ -35,19 +36,31 @@
 import { ref, onMounted, onBeforeUnmount, watch, computed } from 'vue';
 import { useLiveCompilerStore } from '../store/useLiveCompilerStore';
 import loader from '@monaco-editor/loader';
+import type * as monacoNs from 'monaco-editor/esm/vs/editor/editor.api.js';
+
+type MonacoApi = typeof import('monaco-editor/esm/vs/editor/editor.api.js');
 
 const compilerStore = useLiveCompilerStore();
 const editorContainerRef = ref<HTMLDivElement | null>(null);
 const showSuccessGlow = ref(false);
 const editorLoadError = ref(false);
 
+let successGlowTimer: ReturnType<typeof setTimeout> | null = null;
+
+function clearSuccessGlow(): void {
+  if (successGlowTimer !== null) {
+    clearTimeout(successGlowTimer);
+    successGlowTimer = null;
+  }
+  showSuccessGlow.value = false;
+}
+
 function reloadPage() {
   window.location.reload();
 }
 
-let editorInstance: ReturnType<typeof createEditorType> | null = null;
-type EditorType = { getValue: () => string; setValue: (v: string) => void; dispose: () => void; onDidChangeModelContent: (cb: () => void) => void; layout: () => void };
-function createEditorType(): EditorType { return null as unknown as EditorType; }
+let monacoApi: MonacoApi | null = null;
+let editorInstance: monacoNs.editor.IStandaloneCodeEditor | null = null;
 
 const hasCompileError = computed(() => compilerStore.hasCompileError);
 
@@ -57,10 +70,30 @@ const statusDotClass = computed(() => {
   return 'bg-accent-green';
 });
 
+function applyCompileMarkers(errorLine: number | null): void {
+  const api = monacoApi;
+  const editor = editorInstance;
+  if (!api || !editor) return;
+  const model = editor.getModel();
+  if (!model) return;
+  const markers: monacoNs.editor.IMarkerData[] = errorLine === null
+    ? []
+    : [{
+        severity: api.MarkerSeverity.Error,
+        message: 'Lỗi biên dịch — kiểm tra lại dòng này.',
+        startLineNumber: errorLine,
+        startColumn: 1,
+        endLineNumber: errorLine,
+        endColumn: Number.MAX_SAFE_INTEGER,
+      }];
+  api.editor.setModelMarkers(model, 'liveCompiler', markers);
+}
+
 onMounted(async () => {
   if (!editorContainerRef.value) return;
+  const container = editorContainerRef.value;
 
-  let monaco;
+  let monaco: MonacoApi | null = null;
   try {
     monaco = await loader.init();
   } catch (err) {
@@ -68,11 +101,13 @@ onMounted(async () => {
     editorLoadError.value = true;
     return;
   }
+  if (!monaco) return;
+  monacoApi = monaco;
 
   const style = getComputedStyle(document.documentElement);
   const editorBg = style.getPropertyValue('--color-bg-active').trim() || '#1e293b';
 
-  monaco.editor.defineTheme('visualizationdsa-dark', {
+  monacoApi.editor.defineTheme('visualizationdsa-dark', {
     base: 'vs-dark',
     inherit: true,
     rules: [
@@ -93,7 +128,7 @@ onMounted(async () => {
     },
   });
 
-  const editor = monaco.editor.create(editorContainerRef.value, {
+  editorInstance = monacoApi.editor.create(container, {
     value: compilerStore.sourceCode,
     language: 'javascript',
     theme: 'visualizationdsa-dark',
@@ -117,30 +152,56 @@ onMounted(async () => {
     },
   });
 
-  editorInstance = editor as unknown as EditorType;
-
-  editor.onDidChangeModelContent(() => {
-    const value = editor.getValue();
+  editorInstance.onDidChangeModelContent(() => {
+    const value = editorInstance?.getValue() ?? '';
     compilerStore.setSourceCode(value);
   });
+
+  applyCompileMarkers(compilerStore.compileErrorLine);
 });
 
 onBeforeUnmount(() => {
+  clearSuccessGlow();
   if (editorInstance) {
+    const model = editorInstance.getModel();
+    if (model) model.dispose();
     editorInstance.dispose();
     editorInstance = null;
   }
 });
 
 watch(
-  () => compilerStore.hasCompileError,
-  (hasError, prevError) => {
-    if (!hasError && prevError) {
-      showSuccessGlow.value = true;
-      setTimeout(() => {
-        showSuccessGlow.value = false;
-      }, 2000);
+  () => compilerStore.lastCompileSucceeded,
+  (succeeded) => {
+    if (successGlowTimer !== null) {
+      clearTimeout(successGlowTimer);
+      successGlowTimer = null;
     }
+    if (succeeded) {
+      showSuccessGlow.value = true;
+      successGlowTimer = setTimeout(() => {
+        showSuccessGlow.value = false;
+        successGlowTimer = null;
+      }, 2000);
+    } else {
+      showSuccessGlow.value = false;
+    }
+  },
+);
+
+watch(
+  () => compilerStore.hasCompileError,
+  (hasError) => {
+    if (hasError) {
+      clearSuccessGlow();
+    }
+  },
+);
+
+watch(
+  () => compilerStore.compileErrorLine,
+  (errorLine) => {
+    applyCompileMarkers(errorLine);
   },
 );
 </script>

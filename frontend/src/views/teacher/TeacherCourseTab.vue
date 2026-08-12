@@ -8,6 +8,12 @@
       </button>
     </div>
 
+    <!-- TC-020: banner lỗi tách khỏi empty state -->
+    <div v-if="loadError" class="error-banner mb-6 flex items-center justify-between gap-3 rounded-xl border border-accent-red/30 bg-accent-red/10 px-4 py-3">
+      <span class="text-sm text-accent-red"><BaseIcon name="alert-circle" class="w-4 h-4 inline mr-1 align-middle" />{{ loadError }}</span>
+      <button type="button" class="btn-secondary text-xs px-3 py-1.5" @click="loadCourses">Thử lại</button>
+    </div>
+
     
     <form v-if="activeCourseForm !== 'none'" class="quiz-form mb-8 animate-fade-in" @submit.prevent="submitCourse">
       <h3 class="form-title-context">
@@ -20,7 +26,7 @@
       </div>
       <div class="form-row">
         <label class="form-label">Mô tả ngắn</label>
-        <textarea v-model="courseForm.description" class="form-input h-24 py-2" placeholder="Nhập mô tả chi tiết khóa học..." required></textarea>
+        <textarea v-model="courseForm.description" class="form-input h-24 py-2" placeholder="Nhập mô tả chi tiết khóa học..."></textarea>
       </div>
       <div class="form-row form-row--inline">
         <div>
@@ -101,9 +107,10 @@
         </div>
         <div>
           <label class="form-label">Bài trắc nghiệm liên kết (Không bắt buộc)</label>
+          <!-- TC-016: fetch danh sách quiz riêng (không phụ thuộc TeacherQuizTab ref) -->
           <select v-model="lessonForm.quizId" class="form-select">
             <option :value="null">Không liên kết quiz</option>
-            <option v-for="q in quizzesList" :key="q.id" :value="q.id">{{ q.title }}</option>
+            <option v-for="q in quizOptions" :key="q.id" :value="q.id">{{ q.title }}</option>
           </select>
         </div>
       </div>
@@ -153,6 +160,8 @@
                 <td class="font-bold text-text-primary">
                   <span class="inline-block mr-1 transition-transform duration-200" :style="expandedCourseId === String(c.id) ? 'transform: rotate(90deg)' : ''">▶</span>
                   {{ c.title }}
+                  <!-- TC-041: đánh dấu khóa học của chính giảng viên -->
+                  <span v-if="isOwnedCourse(c)" class="badge badge-emerald text-[10px] ml-1 align-middle">Của tôi</span>
                 </td>
                 <td><span class="topic-badge" :class="'topic-' + c.category">{{ formatTopic(c.category) }}</span></td>
                 <td><span class="diff-badge" :class="'diff-' + c.difficulty?.toLowerCase()">{{ formatDifficulty(c.difficulty?.toLowerCase()) }}</span></td>
@@ -220,35 +229,77 @@
 <script setup lang="ts">
 import { ref, reactive } from 'vue';
 import { useTeacherApi } from './useTeacherApi';
+import { useAuthStore } from '../../features/auth/store/useAuthStore';
+import { useToastStore } from '../../composables/useToast';
+import { getActivePinia } from 'pinia';
 
-const props = defineProps<{ quizzesList: any[] }>();
+// TC-016: prop giữ optional để tương thích mount cũ; danh sách quiz giờ lấy độc lập.
+const props = defineProps<{ quizzesList?: any[] }>();
 
-const { BASE_URL, getAuthHeaders, formatTopic, formatDifficulty } = useTeacherApi();
+const { BASE_URL, teacherRequest, formatTopic, formatDifficulty } = useTeacherApi();
+const authStore = useAuthStore();
+
+// Toast an toàn khi Pinia chưa active (edge test mount) — không crash setup.
+function toastSuccess(message: string): void {
+  if (!getActivePinia()) return;
+  useToastStore().success(message);
+}
+function toastError(err: unknown, fallback: string): void {
+  if (!getActivePinia()) return;
+  useToastStore().handleApiError(err, fallback);
+}
 
 const coursesList = ref<any[]>([]);
 const loadingCourses = ref(false);
+const loadError = ref('');
 const expandedCourseId = ref<string | null>(null);
 const courseLessons = ref<Record<string, any[]>>({});
 const loadingCourseLessons = ref<Record<string, boolean>>({});
 const submitting = ref(false);
 const uploadingImage = ref(false);
 
+// TC-016: danh sách quiz cho dropdown liên kết — fetch riêng, không phụ thuộc TeacherQuizTab.
+const quizOptions = ref<Array<{ id: string; title: string }>>([]);
+
 const activeCourseForm = ref<'none' | 'create' | 'edit'>('none');
 const editingCourseId = ref<string | null>(null);
-const courseForm = reactive({ title: '', description: '', category: 'sorting', difficulty: 'Beginner', isPremium: false, coverImageUrl: '', isPublished: true });
+// TC-033: category mặc định 'Sorting' khớp option có sẵn (trước đây 'sorting' không tồn tại).
+const courseForm = reactive({ title: '', description: '', category: 'Sorting', difficulty: 'Beginner', isPremium: false, coverImageUrl: '', isPublished: true });
 
 const activeLessonForm = ref<'none' | 'create' | 'edit'>('none');
 const editingLessonId = ref<string | null>(null);
 const activeCourseForLesson = ref<any | null>(null);
 const lessonForm = reactive({ title: '', contentMd: '', sandboxType: 'sorting', sandboxConfig: '{}', quizId: null as string | null, xpReward: 20, orderIndex: 1 });
 
+// TC-041: khóa học thuộc về chính giảng viên (Course.TeacherId == authStore.currentUser.id)
+function isOwnedCourse(c: any): boolean {
+  const teacherId = authStore.currentUser?.id;
+  return Boolean(teacherId && c.teacherId && String(c.teacherId) === String(teacherId));
+}
+
 async function loadCourses(): Promise<void> {
   loadingCourses.value = true;
+  loadError.value = '';
   try {
-    const res = await fetch(`${BASE_URL}/api/v1/concepts/courses`, { headers: getAuthHeaders() });
-    if (res.ok) coursesList.value = await res.json();
-  } catch (err) { console.error('Failed to load courses:', err); }
+    const res = await teacherRequest(`${BASE_URL}/api/v1/concepts/courses`);
+    if (!res.ok) throw new Error('Không thể tải danh sách khóa học.');
+    coursesList.value = await res.json();
+  } catch (err) {
+    loadError.value = err instanceof Error ? err.message : 'Lỗi khi tải khóa học.';
+  }
   finally { loadingCourses.value = false; }
+}
+
+// TC-016: tải độc lập danh sách quiz cho dropdown liên kết bài giảng.
+async function loadQuizOptions(): Promise<void> {
+  try {
+    const res = await teacherRequest(`${BASE_URL}/api/v1/concepts/quiz/all`);
+    if (res.ok) {
+      const data = await res.json();
+      const list = Array.isArray(data) ? data : (data.quizzes || []);
+      quizOptions.value = list.map((q: any) => ({ id: q.id, title: q.title }));
+    }
+  } catch (err) { console.error('Failed to load quiz options:', err); }
 }
 
 async function toggleCourseAccordion(courseId: string) {
@@ -259,7 +310,7 @@ async function toggleCourseAccordion(courseId: string) {
 async function loadCourseLessons(courseId: string) {
   loadingCourseLessons.value[courseId] = true;
   try {
-    const res = await fetch(`${BASE_URL}/api/v1/concepts/courses/${courseId}`, { headers: getAuthHeaders() });
+    const res = await teacherRequest(`${BASE_URL}/api/v1/concepts/courses/${courseId}`);
     if (res.ok) { const data = await res.json(); courseLessons.value[courseId] = data.lessons; }
   } catch (err) { console.error(err); }
   finally { loadingCourseLessons.value[courseId] = false; }
@@ -269,27 +320,39 @@ function toggleCourseForm() { if (activeCourseForm.value !== 'none') cancelCours
 
 function cancelCourseEdit() {
   activeCourseForm.value = 'none'; editingCourseId.value = null;
-  Object.assign(courseForm, { title: '', description: '', category: 'sorting', difficulty: 'Beginner', isPremium: false, coverImageUrl: '', isPublished: true });
+  Object.assign(courseForm, { title: '', description: '', category: 'Sorting', difficulty: 'Beginner', isPremium: false, coverImageUrl: '', isPublished: true });
 }
 
 async function submitCourse() {
   submitting.value = true;
   try {
     const url = editingCourseId.value ? `${BASE_URL}/api/v1/concepts/courses/${editingCourseId.value}` : `${BASE_URL}/api/v1/concepts/courses`;
-    const res = await fetch(url, { method: editingCourseId.value ? 'PUT' : 'POST', headers: getAuthHeaders(), body: JSON.stringify(courseForm) });
+    // TC-009: DTO create dùng `thumbnail` (không phải coverImageUrl) — ảnh bìa không bị mất.
+    const payload = {
+      title: courseForm.title,
+      description: courseForm.description,
+      category: courseForm.category,
+      difficulty: courseForm.difficulty,
+      isPremium: courseForm.isPremium,
+      isPublished: courseForm.isPublished,
+      thumbnail: courseForm.coverImageUrl
+    };
+    const res = await teacherRequest(url, { method: editingCourseId.value ? 'PUT' : 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
     if (res.ok) { 
       const responseData = await res.json();
-      alert(editingCourseId.value ? 'Cập nhật thành công!' : 'Tạo thành công!'); 
+      toastSuccess(editingCourseId.value ? 'Cập nhật thành công!' : 'Tạo thành công!'); 
       const isCreate = !editingCourseId.value;
+      // TC-009: response {message, courseId} — fallback cả 2 shape (courseId / course).
+      const courseId = responseData?.courseId ?? responseData?.course?.id ?? null;
       cancelCourseEdit(); 
       await loadCourses(); 
       
-      if (isCreate && responseData.course) {
-        addNewLessonToCourse(responseData.course);
+      if (isCreate && courseId) {
+        addNewLessonToCourse({ id: courseId, title: payload.title });
       }
     }
-    else { const err = await res.json(); alert(err.message || 'Lỗi khi lưu khóa học.'); }
-  } catch { alert('Không thể kết nối máy chủ.'); }
+    else { const err = await res.json(); toastError(err, 'Lỗi khi lưu khóa học.'); }
+  } catch (err) { toastError(err, 'Không thể kết nối máy chủ.'); }
   finally { submitting.value = false; }
 }
 
@@ -306,9 +369,11 @@ async function uploadCoverImage(event: Event) {
   try {
     const formData = new FormData();
     formData.append('file', file);
-    const res = await fetch(`${BASE_URL}/api/v1/upload/image`, {
+    // TC-010: KHÔNG gửi Content-Type khi body là FormData — để browser tự set multipart
+    // boundary, nếu không backend trả 400 NO_FILE. Chỉ gửi Authorization.
+    const res = await teacherRequest(`${BASE_URL}/api/v1/upload/image`, {
       method: 'POST',
-      headers: { ...getAuthHeaders() }, 
+      headers: { 'Authorization': `Bearer ${authStore.getAccessToken() || ''}` },
       body: formData
     });
     
@@ -316,11 +381,11 @@ async function uploadCoverImage(event: Event) {
       const data = await res.json();
       courseForm.coverImageUrl = data.url;
     } else {
-      const err = await res.json();
-      alert(err.message || 'Lỗi tải ảnh.');
+      const err = await res.json().catch(() => null);
+      toastError(err, 'Lỗi tải ảnh.');
     }
   } catch (err) {
-    alert('Không thể kết nối máy chủ để tải ảnh.');
+    toastError(err, 'Không thể kết nối máy chủ để tải ảnh.');
   } finally {
     uploadingImage.value = false;
   }
@@ -331,15 +396,16 @@ async function deleteCourse(courseId: string) {
   const lessonCount = course?.totalLessons ?? 0;
   if (!confirm(`Bạn có chắc chắn muốn xóa khóa học "${course?.title}"?` + `\n\nHành động này sẽ xóa vĩnh viễn ${lessonCount} bài giảng và toàn bộ dữ liệu liên quan (tiến độ học tập, bình luận, quiz attempts).` + '\n\nKHÔNG THỂ HOÀN TẤT!')) return;
   try {
-    const res = await fetch(`${BASE_URL}/api/v1/concepts/courses/${courseId}`, { method: 'DELETE', headers: getAuthHeaders() });
-    if (res.ok) { const data = await res.json(); alert(data.message || 'Xóa thành công!'); await loadCourses(); }
-    else { const err = await res.json(); alert(err.message || 'Lỗi khi xóa khóa học.'); }
-  } catch (err) { console.error(err); alert('Lỗi kết nối.'); }
+    const res = await teacherRequest(`${BASE_URL}/api/v1/concepts/courses/${courseId}`, { method: 'DELETE' });
+    if (res.ok) { const data = await res.json(); toastSuccess(data.message || 'Xóa thành công!'); await loadCourses(); }
+    else { const err = await res.json(); toastError(err, 'Lỗi khi xóa khóa học.'); }
+  } catch (err) { toastError(err, 'Lỗi kết nối.'); }
 }
 
 function addNewLessonToCourse(c: any) {
   activeLessonForm.value = 'create'; activeCourseForLesson.value = c; editingLessonId.value = null;
   Object.assign(lessonForm, { title: '', contentMd: '', sandboxType: 'sorting', sandboxConfig: '{}', quizId: null, xpReward: 20 });
+  // OrderIndex mặc định = số bài hiện có + 1 (bài mới xếp cuối).
   lessonForm.orderIndex = (courseLessons.value[c.id] ?? []).length + 1;
 }
 
@@ -350,10 +416,10 @@ async function submitLesson() {
   submitting.value = true;
   try {
     const url = editingLessonId.value ? `${BASE_URL}/api/v1/concepts/lessons/${editingLessonId.value}` : `${BASE_URL}/api/v1/concepts/courses/${activeCourseForLesson.value.id}/lessons`;
-    const res = await fetch(url, { method: editingLessonId.value ? 'PUT' : 'POST', headers: getAuthHeaders(), body: JSON.stringify(lessonForm) });
-    if (res.ok) { alert(editingLessonId.value ? 'Cập nhật thành công!' : 'Tạo thành công!'); const cid = activeCourseForLesson.value.id; cancelLessonEdit(); await loadCourseLessons(cid); await loadCourses(); }
-    else { const err = await res.json(); alert(err.message || 'Lỗi khi lưu bài giảng.'); }
-  } catch (err) { console.error(err); }
+    const res = await teacherRequest(url, { method: editingLessonId.value ? 'PUT' : 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(lessonForm) });
+    if (res.ok) { toastSuccess(editingLessonId.value ? 'Cập nhật thành công!' : 'Tạo thành công!'); const cid = activeCourseForLesson.value.id; cancelLessonEdit(); await loadCourseLessons(cid); await loadCourses(); }
+    else { const err = await res.json(); toastError(err, 'Lỗi khi lưu bài giảng.'); }
+  } catch (err) { toastError(err, 'Lỗi kết nối.'); }
   finally { submitting.value = false; }
 }
 
@@ -366,12 +432,14 @@ function editLesson(l: any, c: any) {
 async function deleteLesson(lessonId: string, courseId: string) {
   if (!confirm('Bạn có chắc chắn muốn xóa bài giảng này?')) return;
   try {
-    const res = await fetch(`${BASE_URL}/api/v1/concepts/lessons/${lessonId}`, { method: 'DELETE', headers: getAuthHeaders() });
-    if (res.ok) { alert('Xóa thành công!'); await loadCourseLessons(courseId); await loadCourses(); }
-    else { const err = await res.json(); alert(err.message || 'Lỗi khi xóa bài giảng.'); }
-  } catch (err) { console.error(err); }
+    const res = await teacherRequest(`${BASE_URL}/api/v1/concepts/lessons/${lessonId}`, { method: 'DELETE' });
+    if (res.ok) { toastSuccess('Xóa thành công!'); await loadCourseLessons(courseId); await loadCourses(); }
+    else { const err = await res.json(); toastError(err, 'Lỗi khi xóa bài giảng.'); }
+  } catch (err) { toastError(err, 'Lỗi kết nối.'); }
 }
 
 defineExpose({ coursesList, loadCourses });
 loadCourses();
+// TC-016: nạp danh sách quiz cho dropdown liên kết khi tab mở.
+loadQuizOptions();
 </script>

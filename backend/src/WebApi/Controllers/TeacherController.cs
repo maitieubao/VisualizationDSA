@@ -44,7 +44,12 @@ namespace VisualizationDSA.WebApi.Controllers
                     query = query.Where(u => u.Role == "Student");
 
                 if (!string.IsNullOrWhiteSpace(search))
-                    query = query.Where(u => u.Email.Contains(search) || u.Username.Contains(search));
+                {
+                    // TC-026: đồng bộ 2 chế độ DB + in-memory — lower cả 2 vế (SQLite LOWER translate
+                    // ổn định; trước đây DB dùng Contains nhạy hoa thường, kết quả lệch nhau).
+                    var cleanSearch = search.Trim().ToLower();
+                    query = query.Where(u => u.Email.ToLower().Contains(cleanSearch) || u.Username.ToLower().Contains(cleanSearch));
+                }
 
                 var total = await query.CountAsync();
                 var users = await query

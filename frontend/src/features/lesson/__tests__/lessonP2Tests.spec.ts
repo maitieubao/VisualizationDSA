@@ -70,6 +70,8 @@ const QUESTIONS: QuizQuestion[] = [
   { id: 'q4', questionText: 'Bubble sort best case?', options: ['O(N)', 'O(N²)'], correctIndex: 0, explanation: 'Đã sắp xếp thì O(N).' },
 ];
 
+let wrapper: VueWrapper | null = null;
+
 describe('Lesson — P2 User Stories', () => {
   beforeEach(() => {
     setActivePinia(createPinia());
@@ -79,6 +81,11 @@ describe('Lesson — P2 User Stories', () => {
   });
 
   afterEach(() => {
+    // LM-022: dọn sạch mọi timer/stub/global rò rỉ giữa các test.
+    wrapper?.unmount();
+    wrapper = null;
+    vi.useRealTimers();
+    vi.unstubAllGlobals();
     vi.restoreAllMocks();
   });
 
@@ -197,16 +204,33 @@ describe('Lesson — P2 User Stories', () => {
   });
 
   describe('US-LN-009 (P2): Warning incomplete', () => {
-    it('shows confirm dialog when submitting with incomplete answers', async () => {
-      const wrapper = mount(LessonStepQuiz, {
+    it('hiển thị dialog xác nhận (LM-064) khi nộp với câu trả lời thiếu; "Vẫn nộp" mới emit submit', async () => {
+      const w = mount(LessonStepQuiz, {
         props: { questions: QUESTIONS },
         global: { components: { 'BaseIcon': { name: 'BaseIcon', props: ['name'], template: '<svg></svg>' } } },
       });
-      const optionBtn = wrapper.findAll('button').find(b => b.text().includes('Hằng số'));
+      const optionBtn = w.findAll('button').find(b => b.text().includes('Hằng số'));
       await optionBtn!.trigger('click');
-      const submitBtn = wrapper.findAll('button').find(b => b.text().includes('Nộp Bài Quiz'));
+      const submitBtn = w.findAll('button').find(b => b.text().includes('Nộp Bài Quiz'));
       await submitBtn!.trigger('click');
-      expect(window.confirm).toHaveBeenCalled();
+
+      // Thay window.confirm native → dialog trong app (role=dialog + aria-modal).
+      const dialog = w.find('[role="dialog"]');
+      expect(dialog.exists()).toBe(true);
+      expect(dialog.attributes('aria-modal')).toBe('true');
+      expect(w.text()).toContain('Bạn chưa chọn hết đáp án');
+      expect(w.emitted('submit')).toBeUndefined();
+
+      // "Tiếp tục làm" → hủy, không nộp.
+      await w.findAll('button').find(b => b.text().includes('Tiếp tục làm'))!.trigger('click');
+      expect(w.find('[role="dialog"]').exists()).toBe(false);
+      expect(w.emitted('submit')).toBeUndefined();
+
+      // "Vẫn nộp" → submit được emit.
+      await submitBtn!.trigger('click');
+      await w.findAll('button').find(b => b.text().includes('Vẫn nộp'))!.trigger('click');
+      expect(w.emitted('submit')).toBeTruthy();
+      w.unmount();
     });
   });
 
@@ -316,7 +340,7 @@ describe('Lesson — P2 User Stories', () => {
           createdAt: '2025-01-01T00:00:00Z', parentId: null,
         }]),
       })));
-      const wrapper = mount(LessonDiscussionPanel, {
+      wrapper = mount(LessonDiscussionPanel, {
         props: { lessonId: 'lesson-1' },
         global: { components: { 'BaseIcon': { name: 'BaseIcon', props: ['name'], template: '<svg></svg>' } } },
       });
@@ -326,31 +350,41 @@ describe('Lesson — P2 User Stories', () => {
       await replyBtn!.trigger('click');
       const textareas = wrapper.findAll('textarea');
       expect(textareas.length).toBeGreaterThan(1);
-      vi.unstubAllGlobals();
     });
   });
 
   describe('US-LN-027 (P2): Search comments', () => {
     it('renders search input', () => {
-      const wrapper = mount(LessonDiscussionPanel, {
+      const w = mount(LessonDiscussionPanel, {
         props: { lessonId: 'lesson-1' },
         global: { components: { 'BaseIcon': { name: 'BaseIcon', props: ['name'], template: '<svg></svg>' } } },
       });
-      const input = wrapper.find('input[type="text"]');
+      const input = w.find('input[type="text"]');
       expect(input.exists()).toBe(true);
+      w.unmount();
     });
 
-    it('typing in search triggers debounced search', async () => {
+    it('LM-003: typing trong search → debounce 400ms → fetch URL chứa ?search=test%20query', async () => {
+      const fetchMock = vi.fn(async () => ({ ok: true, json: async () => [] }));
+      vi.stubGlobal('fetch', fetchMock);
       vi.useFakeTimers();
-      const wrapper = mount(LessonDiscussionPanel, {
-        props: { lessonId: 'lesson-1' },
-        global: { components: { 'BaseIcon': { name: 'BaseIcon', props: ['name'], template: '<svg></svg>' } } },
-      });
-      const input = wrapper.find('input[type="text"]');
-      await input.setValue('test query');
-      vi.advanceTimersByTime(500);
-      expect(wrapper.exists()).toBe(true);
-      vi.useRealTimers();
+      try {
+        wrapper = mount(LessonDiscussionPanel, {
+          props: { lessonId: 'lesson-1' },
+          global: { components: { 'BaseIcon': { name: 'BaseIcon', props: ['name'], template: '<svg></svg>' } } },
+        });
+        // fetch lúc mount (không search)
+        const input = wrapper.find('input[type="text"]');
+        await input.setValue('test query');
+        vi.advanceTimersByTime(500);
+        const calls = fetchMock.mock.calls as unknown as [string, RequestInit][];
+        expect(calls.some(([url]) => url.includes('?search=test%20query'))).toBe(true);
+        expect(calls.some(([url]) => url.includes('?search=') && !url.includes('test%20query'))).toBe(false);
+      } finally {
+        wrapper?.unmount();
+        wrapper = null;
+        vi.useRealTimers();
+      }
     });
   });
 
@@ -364,13 +398,12 @@ describe('Lesson — P2 User Stories', () => {
           createdAt: '2025-01-01T00:00:00Z', parentId: null,
         }]),
       })));
-      const wrapper = mount(LessonDiscussionPanel, {
+      wrapper = mount(LessonDiscussionPanel, {
         props: { lessonId: 'lesson-1' },
         global: { components: { 'BaseIcon': { name: 'BaseIcon', props: ['name'], template: '<svg></svg>' } } },
       });
       await flushPromises();
       expect(wrapper.text()).toContain('Admin');
-      vi.unstubAllGlobals();
     });
 
     it('shows Teacher badge for teacher comments', async () => {
@@ -382,13 +415,12 @@ describe('Lesson — P2 User Stories', () => {
           createdAt: '2025-01-01T00:00:00Z', parentId: null,
         }]),
       })));
-      const wrapper = mount(LessonDiscussionPanel, {
+      wrapper = mount(LessonDiscussionPanel, {
         props: { lessonId: 'lesson-1' },
         global: { components: { 'BaseIcon': { name: 'BaseIcon', props: ['name'], template: '<svg></svg>' } } },
       });
       await flushPromises();
       expect(wrapper.text()).toContain('Teacher');
-      vi.unstubAllGlobals();
     });
 
     it('shows Premium badge for premium users', async () => {
@@ -400,13 +432,12 @@ describe('Lesson — P2 User Stories', () => {
           createdAt: '2025-01-01T00:00:00Z', parentId: null,
         }]),
       })));
-      const wrapper = mount(LessonDiscussionPanel, {
+      wrapper = mount(LessonDiscussionPanel, {
         props: { lessonId: 'lesson-1' },
         global: { components: { 'BaseIcon': { name: 'BaseIcon', props: ['name'], template: '<svg></svg>' } } },
       });
       await flushPromises();
       expect(wrapper.text()).toContain('Premium');
-      vi.unstubAllGlobals();
     });
   });
 });

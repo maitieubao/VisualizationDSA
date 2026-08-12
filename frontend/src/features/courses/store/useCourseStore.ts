@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia';
-import { ref, computed } from 'vue';
+import { ref, computed, watch } from 'vue';
 import { COURSES } from '../../../data/courses';
-import { courseApi } from '../../../services/courseApi';
+import { courseApi, type CourseQueryParams } from '../../../services/courseApi';
 import type { Course, CourseProgress } from '../types/course.types';
 import { useAuthStore } from '../../auth/store/useAuthStore';
 
@@ -48,30 +48,73 @@ export const useCourseStore = defineStore('course', () => {
 
   
 
-  async function loadCourses() {
+  // ── Load courses ──
+  // Race-token: request cũ trả sau bị bỏ qua (LM-032).
+  let coursesLoadRequestId = 0;
+  // User mà danh sách hiện tại đã được load cho — reload khi đổi user (LM-032).
+  let loadedForUserId: string | undefined = undefined;
+
+  async function loadCourses(params?: CourseQueryParams) {
+    const requestId = ++coursesLoadRequestId;
     isLoading.value = true;
     error.value = '';
     try {
-      const apiCourses = await courseApi.getCourses();
+      const apiCourses = await courseApi.getCourses(params);
+      if (requestId !== coursesLoadRequestId) return;
       const mapped = apiCourses.map(c => ({
         ...c,
         coverImage: c.coverImageUrl ?? c.coverImage,
       }));
       courses.value = mapped.filter(c => c.isPublished);
+      loadedForUserId = authStore.currentUser?.id;
     } catch (err) {
+      if (requestId !== coursesLoadRequestId) return;
       console.warn('Không tải được khóa học từ máy chủ, dùng dữ liệu cục bộ:', err);
       error.value = 'Không kết nối được máy chủ — đang hiển thị danh sách khóa học cục bộ.';
       courses.value = COURSES.filter(c => c.isPublished);
+      loadedForUserId = authStore.currentUser?.id;
     } finally {
-      isLoading.value = false;
+      if (requestId === coursesLoadRequestId) isLoading.value = false;
     }
   }
+
+  // Reload danh sách khi chuyển tài khoản (mỗi user có bộ tiến độ riêng).
+  watch(() => authStore.currentUser?.id, (newId) => {
+    if (newId !== undefined && newId !== loadedForUserId) {
+      void loadCourses();
+    }
+  });
 
   function getCourseById(id: string): Course | undefined {
     return courses.value.find(c => c.id === id);
   }
 
-  function getCourseProgress(courseId: string): CourseProgress {
+  /** Quét toàn bộ localStorage tìm các bài học đã hoàn thành (fallback LM-014). */
+  function scanCompletedLessonIds(): string[] {
+    const completed: string[] = [];
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i);
+      if (!key || !key.startsWith('lesson_progress_')) continue;
+      const lessonId = key.slice('lesson_progress_'.length);
+      if (isLessonDone(lessonId)) completed.push(lessonId);
+    }
+    return completed;
+  }
+
+  function isLessonDone(lessonId: string): boolean {
+    const saved = localStorage.getItem(`lesson_progress_${lessonId}`);
+    if (!saved) return false;
+    try {
+      const data = JSON.parse(saved);
+      // Bài được coi là hoàn thành khi: cờ completed (lưu bởi lesson flow — bao gồm
+      // cả bài không có codelab) HOẶC codelabCompleted (dữ liệu cũ).
+      return data.completed === true || data.codelabCompleted === true;
+    } catch {
+      return false;
+    }
+  }
+
+  function getCourseProgress(courseId: string, lessonIds?: string[]): CourseProgress {
     const course = getCourseById(courseId);
     if (!course) {
       return {
@@ -84,37 +127,44 @@ export const useCourseStore = defineStore('course', () => {
       };
     }
 
-    
-    // Lưu ý: API list `/concepts/courses` KHÔNG trả lessons (chỉ totalLessons) —
-    // phải null-safe để tránh crash khi iterate.
-    const lessons = course.lessons ?? [];
+    // API list `/concepts/courses` KHÔNG trả lessons (chỉ totalLessons) — LM-014:
+    // ưu tiên lessonIds từ chi tiết khóa học, fallback dữ liệu local, cuối cùng
+    // quét localStorage `lesson_progress_*` để không phụ thuộc course.lessons.
+    let ids: string[] = [];
+    if (lessonIds && lessonIds.length > 0) {
+      ids = lessonIds;
+    } else if (course.lessons && course.lessons.length > 0) {
+      ids = course.lessons.map(l => l.id);
+    } else {
+      const localCourse = COURSES.find(c => c.id === courseId);
+      ids = localCourse?.lessons.map(l => l.id) ?? [];
+    }
+
+    const lessonKeys = ids.length > 0 ? ids : scanCompletedLessonIds();
     let completedCount = 0;
     const completedLessonIds: string[] = [];
     let xpEarned = 0;
 
-    for (const lesson of lessons) {
-      
-      const key = `lesson_progress_${lesson.id}`;
+    for (const lessonId of lessonKeys) {
+      const key = `lesson_progress_${lessonId}`;
       const saved = localStorage.getItem(key);
       if (saved) {
         try {
           const data = JSON.parse(saved);
-          // Bài được coi là hoàn thành khi: cờ completed (lưu bởi lesson flow — bao gồm
-          // cả bài không có codelab) HOẶC codelabCompleted (dữ liệu cũ).
-          const isDone = data.completed === true || data.codelabCompleted === true;
-          if (isDone) {
+          if (isLessonDone(lessonId)) {
             completedCount++;
-            completedLessonIds.push(lesson.id);
+            completedLessonIds.push(lessonId);
             xpEarned += data.xpAwarded ?? 0;
           }
         } catch (e) {
-          console.warn(`Không đọc được dữ liệu tiến độ lesson "${lesson.id}" từ localStorage:`, e);
+          console.warn(`Không đọc được dữ liệu tiến độ lesson "${lessonId}" từ localStorage:`, e);
         }
       }
     }
 
-    const progressPercent = (course.totalLessons > 0 ? course.totalLessons : lessons.length) > 0
-      ? Math.round((completedCount / (course.totalLessons > 0 ? course.totalLessons : lessons.length)) * 100)
+    const denominator = course.totalLessons > 0 ? course.totalLessons : ids.length;
+    const progressPercent = denominator > 0
+      ? Math.round((completedCount / denominator) * 100)
       : 0;
 
     return {

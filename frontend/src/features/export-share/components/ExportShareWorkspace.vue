@@ -12,7 +12,7 @@
       
       <div class="demo-area">
         <svg
-          ref="demoSvgRef"
+          ref="workspaceSvgRef"
           viewBox="0 0 800 500"
           class="demo-svg"
           xmlns="http://www.w3.org/2000/svg"
@@ -31,7 +31,7 @@
           </text>
 
           
-          <g v-for="node in demoNodes" :key="node.id">
+          <g v-for="node in liveNodes" :key="node.id">
             <rect
               :x="node.x - 60"
               :y="node.y - 20"
@@ -53,26 +53,12 @@
               {{ node.id }}
             </text>
           </g>
-
-          
-          <line
-            v-for="(edge, idx) in demoEdges"
-            :key="idx"
-            :x1="edge.x1"
-            :y1="edge.y1"
-            :x2="edge.x2"
-            :y2="edge.y2"
-            stroke="var(--color-accent-cyan)"
-            stroke-width="1"
-            stroke-dasharray="6,4"
-            opacity="0.5"
-          />
         </svg>
       </div>
 
       
       <div class="action-bar">
-        <button class="open-modal-btn" @click="store.openModal()">
+        <button class="open-modal-btn" @click="handleOpenExportModal">
           XUẤT SƠ ĐỒ / SHARE
         </button>
       </div>
@@ -80,44 +66,58 @@
 
     
     <ShareExportModal
-      :svg-element="demoSvgElement"
-      :workspace-state="currentWorkspaceState"
+      :svg-element="workspaceSvgElement"
+      :workspace-state="snapshotForExport"
     />
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue';
+import { computed, ref, watch } from 'vue';
 import { useExportShareStore } from '../store/useExportShareStore';
 import ShareExportModal from './ShareExportModal.vue';
 import type { WorkspaceState } from '../types/export-share.types';
 
+// EX-010: workspace THẬT được truyền từ ngoài qua prop (view/caller sở hữu dữ
+// liệu sơ đồ) — pipeline không còn hardcode mảng node/cạnh demo tĩnh bên trong
+// component; mọi nút trên canvas sinh ra từ chính workspace state.
+const props = defineProps<{
+  workspaceState?: WorkspaceState | null;
+}>();
+
 const store = useExportShareStore();
+const workspaceSvgRef = ref<SVGElement | null>(null);
 
-const demoSvgRef = ref<SVGElement | null>(null);
+const liveState = ref<WorkspaceState>({
+  algorithmId: 'empty-workspace',
+  layoutNodes: [],
+  currentStepIndex: 0,
+});
 
-const demoNodes = [
-  { id: 'Client', x: 200, y: 180 },
-  { id: 'Strategy', x: 400, y: 180 },
-  { id: 'ConcreteA', x: 300, y: 300 },
-  { id: 'ConcreteB', x: 500, y: 300 },
-  { id: 'Context', x: 600, y: 180 },
-];
+watch(
+  () => props.workspaceState,
+  (state) => {
+    if (state) liveState.value = state;
+  },
+  { immediate: true },
+);
 
-const demoEdges = [
-  { x1: 260, y1: 180, x2: 340, y2: 180 },
-  { x1: 400, y1: 200, x2: 300, y2: 280 },
-  { x1: 400, y1: 200, x2: 500, y2: 280 },
-  { x1: 460, y1: 180, x2: 540, y2: 180 },
-];
+const liveNodes = computed(() => liveState.value.layoutNodes);
 
-const demoSvgElement = computed(() => demoSvgRef.value);
+const workspaceSvgElement = computed(() => workspaceSvgRef.value);
 
-const currentWorkspaceState = computed<WorkspaceState>(() => ({
-  algorithmId: 'strategy-pattern-demo',
-  layoutNodes: demoNodes.map((n) => ({ id: n.id, x: n.x, y: n.y })),
-  currentStepIndex: 5,
-}));
+// EX-010: snapshot đúng tại thời điểm bấm nút export — nếu workspace thay đổi
+// sau đó, liên kết sinh ra vẫn khớp chính xác sơ đồ người dùng đang nhìn thấy.
+const snapshotForExport = ref<WorkspaceState | null>(null);
+
+function handleOpenExportModal(): void {
+  snapshotForExport.value = {
+    algorithmId: liveState.value.algorithmId,
+    layoutNodes: liveState.value.layoutNodes.map((n) => ({ id: n.id, x: n.x, y: n.y })),
+    currentStepIndex: liveState.value.currentStepIndex,
+  };
+  store.openModal();
+}
 </script>
 
 <style scoped>

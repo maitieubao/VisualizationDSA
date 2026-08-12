@@ -11,6 +11,14 @@ export interface PlaygroundTab {
   readonly label: string;
 }
 
+/** Lỗi runtime trong iframe preview được chuyển lên parent qua error bridge (HT-003). */
+export interface PlaygroundRuntimeError {
+  readonly message: string;
+  readonly source: string;
+  readonly line: number;
+  readonly col: number;
+}
+
 export const PLAYGROUND_TABS: readonly PlaygroundTab[] = [
   { id: 'html', label: 'HTML' },
   { id: 'css', label: 'CSS' },

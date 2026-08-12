@@ -1,9 +1,11 @@
 <template>
   <div class="lesson-study-view flex h-[calc(100vh-48px)] w-full overflow-hidden bg-bg-primary font-sans">
-    <!-- Sidebar toggle button (mobile) -->
+    <!-- Sidebar toggle button (mobile) — LS-036: z-30 thấp hơn overlay (z-40)
+         và sidebar mở (z-40) để không đè lên nhau. -->
     <button
       @click="nav.toggleSidebar()"
-      class="fixed bottom-4 left-4 z-50 lg:hidden p-3 rounded-full bg-accent text-white shadow-lg shadow-accent/30 cursor-pointer"
+      aria-label="Mở danh sách bài học"
+      class="fixed bottom-20 left-4 z-30 lg:hidden p-3 rounded-full bg-accent text-white shadow-lg shadow-accent/30 cursor-pointer"
     >
       <BaseIcon name="list" class="w-5 h-5" />
     </button>
@@ -17,11 +19,11 @@
       />
     </Transition>
 
-    <!-- Left Sidebar -->
+    <!-- Left Sidebar — LS-036: mobile z-40 (dưới overlay vẫn đè toggle z-30). -->
     <Transition name="slide-left">
       <div
         v-if="nav.isSidebarOpen.value || !isMobile"
-        class="shrink-0 z-50 lg:z-auto"
+        class="shrink-0 z-40 lg:z-auto"
         :class="isMobile ? 'fixed inset-y-0 left-0' : 'relative'"
       >
         <CourseSidebar
@@ -30,6 +32,7 @@
           :course-title="lessonStore.currentCourse?.title ?? lessonStore.lessonMeta?.courseTitle ?? 'Khóa học'"
           :lessons="courseLessons"
           :current-lesson-id="lessonId"
+          :is-course-premium="lessonStore.currentCourse?.isPremium === true"
           @toggle="nav.closeSidebar()"
           @select-lesson="nav.closeSidebar()"
         />
@@ -62,6 +65,7 @@
         <StepTabs
           :steps="steps"
           :active-step="lessonStore.activeStep"
+          :locked-steps="lockedSteps"
           @navigate="lessonStore.goToStep"
         />
       </header>
@@ -72,8 +76,13 @@
         <span>Không kết nối máy chủ — hiển thị nội dung cục bộ.</span>
       </div>
 
-      <!-- Content -->
-      <main class="flex-1 min-h-0 relative w-full overflow-hidden">
+      <!-- Content — role=tabpanel khớp aria-controls của StepTabs (LS-038). -->
+      <main
+        class="flex-1 min-h-0 relative w-full overflow-hidden"
+        role="tabpanel"
+        :id="'step-panel-' + lessonStore.activeStep"
+        :aria-labelledby="'step-tab-' + lessonStore.activeStep"
+      >
         <!-- Loading -->
         <div v-if="lessonStore.isLoading && !lessonStore.currentLesson" class="w-full h-full flex flex-col items-center justify-center text-center">
           <div class="inline-block w-8 h-8 border-4 border-accent/20 border-t-accent rounded-full animate-spin" />
@@ -99,7 +108,7 @@
             v-if="lessonStore.activeStep === 1"
             :title="lessonStore.currentLesson.title"
             :content="lessonStore.currentLesson.theoryContent"
-            @completeStep="lessonStore.goToStep(2)"
+            @completeStep="onTheoryComplete"
           />
 
           <LessonStepViz
@@ -114,6 +123,7 @@
           <LessonStepQuiz
             v-else-if="lessonStore.activeStep === 3"
             :questions="lessonStore.currentLesson.quizQuestions ?? []"
+            :has-codelab="!!lessonStore.currentLesson.codelabTask"
             @submit="onQuizSubmit"
             @completeStep="onQuizComplete"
           />
@@ -139,6 +149,16 @@
           <span>Bài trước</span>
         </button>
 
+        <!-- Thảo luận bài học (tích hợp nhẹ — LM-045) -->
+        <button
+          @click="showDiscussion = true"
+          aria-label="Mở thảo luận bài học"
+          class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold text-text-secondary hover:text-text-primary hover:bg-bg-hover transition-all cursor-pointer"
+        >
+          <BaseIcon name="message-circle" class="w-3.5 h-3.5" />
+          <span>Thảo luận</span>
+        </button>
+
         <div class="flex items-center gap-2">
           <button
             v-if="!isLastStep"
@@ -148,19 +168,47 @@
             <span>{{ nextStepLabel }}</span>
             <BaseIcon name="arrow-right" class="w-3.5 h-3.5" />
           </button>
+          <!-- LM-036: bài cuối vẫn cho bấm "Hoàn thành" → finishLesson() -->
           <button
             v-else
             @click="goToNextLesson"
-            :disabled="!nextLessonId"
+            :class="nextLessonId ? 'bg-accent-green text-white hover:bg-accent-green shadow-md shadow-accent-green/20' : 'bg-accent text-white hover:bg-accent-dark shadow-md shadow-accent/20'"
             class="flex items-center gap-1.5 px-4 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer"
-            :class="nextLessonId ? 'bg-accent-green text-white hover:bg-accent-green shadow-md shadow-accent-green/20' : 'bg-bg-surface text-text-muted cursor-not-allowed'"
           >
-            <span>{{ nextLessonId ? 'Bài tiếp theo' : 'Hoàn thành' }}</span>
+            <span>{{ nextLessonId ? 'Bài tiếp theo' : 'Hoàn thành bài học' }}</span>
             <BaseIcon name="arrow-right" class="w-3.5 h-3.5" />
           </button>
         </div>
       </div>
     </div>
+
+    <!-- Discussion panel (LM-045: side panel mở theo yêu cầu) —
+         LS-035: panel nằm bên PHẢI nên trượt từ phải (slide-right), không phải slide-left. -->
+    <Transition name="slide-right">
+      <div
+        v-if="showDiscussion && lessonStore.currentLesson"
+        class="fixed inset-y-0 right-0 z-40 w-[92vw] sm:w-96 bg-bg-secondary border-l border-border-subtle shadow-2xl flex flex-col"
+        role="complementary"
+        aria-label="Thảo luận bài học"
+      >
+        <div class="flex items-center justify-between px-4 py-3 border-b border-border-subtle shrink-0">
+          <span class="text-xs font-bold text-text-primary flex items-center gap-2">
+            <BaseIcon name="message-circle" class="w-4 h-4 text-accent" />
+            Thảo luận bài học
+          </span>
+          <button
+            @click="showDiscussion = false"
+            aria-label="Đóng thảo luận"
+            class="p-1 rounded-md hover:bg-bg-hover text-text-muted transition-colors cursor-pointer"
+          >
+            <BaseIcon name="x" class="w-4 h-4" />
+          </button>
+        </div>
+        <div class="flex-1 min-h-0">
+          <LessonDiscussionPanel :lesson-id="lessonId" />
+        </div>
+      </div>
+    </Transition>
 
     <!-- Completion Modal -->
     <LessonCompletionModal
@@ -178,6 +226,7 @@
 <script setup lang="ts">
 import { ref, computed, watch, onMounted, onUnmounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
+import { useAuthStore } from '../../features/auth/store/useAuthStore';
 import CourseSidebar from '../../features/courses/components/CourseSidebar.vue';
 import BreadcrumbsBar from '../../features/courses/components/BreadcrumbsBar.vue';
 import StepTabs from '../../features/lesson/components/StepTabs.vue';
@@ -186,15 +235,19 @@ import LessonStepViz from './components/LessonStepViz.vue';
 import LessonStepQuiz from './components/LessonStepQuiz.vue';
 import LessonStepCodeLab from './components/LessonStepCodeLab.vue';
 import LessonCompletionModal from './LessonCompletionModal.vue';
+import LessonDiscussionPanel from './LessonDiscussionPanel.vue';
+import { resolveLessonRoute } from '../../features/courses/utils/courseAccess';
 import { useLessonStore } from '../../features/lesson/store/useLessonStore';
 import { useCourseNavigation } from '../../features/courses/composables/useCourseNavigation';
 
 const route = useRoute();
 const router = useRouter();
+const authStore = useAuthStore();
 const lessonStore = useLessonStore();
 const nav = useCourseNavigation();
 
 const showCompletionModal = ref(false);
+const showDiscussion = ref(false);
 const nextLessonId = ref<string | null>(null);
 const isMobile = ref(window.innerWidth < 1024);
 
@@ -207,13 +260,20 @@ const courseId = computed(() => {
 
 // ── Course lessons for sidebar ──
 const courseLessons = computed(() => {
-  return (lessonStore.currentCourse?.lessons ?? []) as Array<{
+  const raw = (lessonStore.currentCourse?.lessons ?? []) as Array<{
     id: string;
     title: string;
     xpReward?: number;
     sandboxType?: string;
     quizId?: string | null;
   }>;
+  return raw.map((l) => ({
+    id: l.id,
+    title: l.title,
+    xpReward: l.xpReward ?? 0,
+    sandboxType: l.sandboxType,
+    quizId: l.quizId ?? null,
+  }));
 });
 
 // ── Navigation helpers ──
@@ -257,14 +317,27 @@ const nextStepLabel = computed(() => {
   return nextStep?.label ?? 'Tiếp theo';
 });
 
+// Các bước đang khóa cho StepTabs (mờ + ổ khóa — LM-040/LM-015).
+const lockedSteps = computed(() => {
+  const locked: number[] = [];
+  for (const step of steps.value) {
+    if (!lessonStore.canAccessStep(step.number)) locked.push(step.number);
+  }
+  return locked;
+});
+
 // ── Breadcrumbs ──
+// LS-039: breadcrumb bài học giữ ?courseId để mất context khi vào thẳng /lessons/:id.
 const breadcrumbItems = computed(() => {
   const items = [
     { label: 'Khóa học', path: '/courses' },
     { label: lessonStore.currentCourse?.title ?? lessonStore.lessonMeta?.courseTitle ?? 'Khóa học', path: courseId.value ? `/courses/${courseId.value}` : '/courses' },
   ];
   if (lessonStore.currentLesson) {
-    items.push({ label: lessonStore.currentLesson.title, path: `/lessons/${lessonId.value}` });
+    items.push({
+      label: lessonStore.currentLesson.title,
+      path: courseId.value ? `/lessons/${lessonId.value}?courseId=${encodeURIComponent(courseId.value)}` : `/lessons/${lessonId.value}`
+    });
   }
   return items;
 });
@@ -278,15 +351,26 @@ function goToNextStep() {
 }
 
 function goToPreviousLesson() {
-  if (previousLessonId.value) {
-    router.push({ name: 'lesson-study', params: { id: previousLessonId.value }, query: courseId.value ? { courseId: courseId.value } : {} });
-  }
+  if (!previousLessonId.value) return;
+  showCompletionModal.value = false;
+  router.push(lessonRouteFor(previousLessonId.value));
 }
 
 function goToNextLesson() {
-  if (nextLessonIdFromCourse.value) {
-    router.push({ name: 'lesson-study', params: { id: nextLessonIdFromCourse.value }, query: courseId.value ? { courseId: courseId.value } : {} });
+  // LM-012: luôn đóng modal completion TRƯỚC khi chuyển bài.
+  showCompletionModal.value = false;
+  // LM-036: bài cuối (không còn bài sau) → mở modal hoàn thành thay vì dead button.
+  if (!nextLessonIdFromCourse.value) {
+    void finishLesson();
+    return;
   }
+  router.push(lessonRouteFor(nextLessonIdFromCourse.value));
+}
+
+/** Đi qua helper gating Premium chung — bài khóa học Premium → /checkout (LM-037). */
+function lessonRouteFor(targetLessonId: string): string {
+  const hasPremium = authStore.currentUser?.isPremium === true;
+  return resolveLessonRoute(lessonStore.currentCourse, targetLessonId, hasPremium);
 }
 
 function goToQuiz(quizId: string) {
@@ -300,6 +384,12 @@ function goBackToCourse() {
 }
 
 // ── Handlers ──
+function onTheoryComplete() {
+  // LM-015: đánh dấu đã đọc Lý Thuyết trước khi mở khóa bước Trực Quan Hóa.
+  lessonStore.markTheoryRead();
+  lessonStore.goToStep(2);
+}
+
 function onVizWatched() {
   lessonStore.markVisualizerWatched();
 }
@@ -341,6 +431,10 @@ onUnmounted(() => {
 
 // ── Watchers ──
 watch(lessonId, (id) => {
+  // LM-012: đổi bài → đóng modal completion + panel thảo luận để không dính lên bài mới.
+  showCompletionModal.value = false;
+  nextLessonId.value = null;
+  showDiscussion.value = false;
   if (id) void lessonStore.loadLesson(id);
 }, { immediate: true });
 
@@ -366,5 +460,15 @@ watch(courseId, (id) => {
 .slide-left-enter-from,
 .slide-left-leave-to {
   transform: translateX(-100%);
+}
+
+/* LS-035: panel thảo luận bên phải — trượt từ phải sang trái khi đóng. */
+.slide-right-enter-active,
+.slide-right-leave-active {
+  transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.slide-right-enter-from,
+.slide-right-leave-to {
+  transform: translateX(100%);
 }
 </style>

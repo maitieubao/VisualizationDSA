@@ -206,8 +206,9 @@ namespace VisualizationDSA.Infrastructure.Services
 
             return attempts.Select(attempt => new QuizAttemptDto
             {
-                QuizId      = attempt.QuizId,
-                QuizTitle   = attempt.Quiz?.Title ?? "Unknown Quiz",
+                // PR-002: QuizId nullable (attempt bank quiz) — fallback Guid.Empty + QuizTitle reference.
+                QuizId      = attempt.QuizId ?? Guid.Empty,
+                QuizTitle   = attempt.Quiz?.Title ?? attempt.QuizTitle ?? "Unknown Quiz",
                 Score       = attempt.Score,
                 MaxScore    = attempt.MaxScore,
                 Passed      = attempt.Passed,

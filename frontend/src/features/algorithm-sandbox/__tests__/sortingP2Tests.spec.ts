@@ -1,5 +1,6 @@
 // @vitest-environment jsdom
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { sortingSharedOverride } from './sortingSharedOverride';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { createPinia, setActivePinia } from 'pinia';
 import { mount } from '@vue/test-utils';
 
@@ -11,6 +12,7 @@ import { generateMergeSortFrames } from '../algorithms/mergeSort';
 import { generateHeapSortFrames } from '../algorithms/heapSort';
 import { generateCountingSortFrames } from '../algorithms/countingSort';
 import { generateBucketSortFrames } from '../algorithms/bucketSort';
+import { generateRadixSortFrames } from '../algorithms/radixSort';
 import { enrichFramesWithIds } from '../helpers/sortingIdEnricher';
 import ArrayBarVisualizer from '../components/ArrayBarVisualizer.vue';
 import SortingVisualizerDispatcher from '../components/SortingVisualizerDispatcher.vue';
@@ -25,11 +27,28 @@ import MergeSortVisualizer from '../components/MergeSortVisualizer.vue';
 import HeapSortVisualizer from '../components/HeapSortVisualizer.vue';
 import CountingSortVisualizer from '../components/CountingSortVisualizer.vue';
 import BucketSortVisualizer from '../components/BucketSortVisualizer.vue';
-import type { SortFrame } from '../types/sorting.types';
+import type { SortFrame, SortAlgorithm } from '../types/sorting.types';
+
+// SV-001: chặn order-coupling — component dùng useSharedSortingAnimation sẽ nhận instance
+// test ép sẵn (gắn pinia hiện tại) thay vì singleton _sharedInstance module-scope bị khóa
+// pinia cũ từ test trước. afterEach trả về hành vi thật (override = null).
+vi.mock('../composables/useSortingAnimation', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('../composables/useSortingAnimation')>();
+  return {
+    ...actual,
+    useSharedSortingAnimation: () =>
+      sortingSharedOverride.instance ?? actual.useSharedSortingAnimation(),
+  };
+});
 
 describe('Algorithm Sandbox — Sorting P2 Tests', () => {
   beforeEach(() => {
     setActivePinia(createPinia());
+  });
+
+  afterEach(() => {
+    // SV-001: reset override sau mỗi test — hết phụ thuộc thứ tự chạy
+    sortingSharedOverride.instance = null;
   });
 
   // ── US-AS-002 (P2): Preset mảng ─────────────────────────────────────────
@@ -113,7 +132,7 @@ describe('Algorithm Sandbox — Sorting P2 Tests', () => {
         swappedIndices: null,
         sortedIndices: [],
         description: 'test',
-        algorithm: 'invalid_algo' as any,
+        algorithm: 'invalid_algo' as unknown as SortAlgorithm,
       };
 
       const wrapper = mount(SortingVisualizerDispatcher, {
@@ -220,21 +239,37 @@ describe('Algorithm Sandbox — Sorting P2 Tests', () => {
 
   // ── US-AS-013 (P2): Detail info ─────────────────────────────────────────
   describe('US-AS-013 (P2): Detail info', () => {
-    it('hiển thị tên thuật toán, số bước, so sánh, hoán đổi', async () => {
+    it('SV-001: hiển thị algoLabel trong tab Chi tiết (không phụ thuộc trace "vars")', async () => {
       const sorting = useSortingAnimation();
       sorting.selectAlgorithm('bubble');
+      // Ép panel dùng ĐÚNG instance gắn pinia hiện tại — không singleton pinia cũ
+      sortingSharedOverride.instance = sorting;
 
       const wrapper = mount(SortingDetailPanel, {
         global: { stubs: { BaseIcon: { template: '<span />' } } },
       });
 
-      expect(wrapper.text()).toContain('Bubble Sort');
-
-      // Click "Chi tiết" tab to show detail view
+      // Đổi sang tab "Chi tiết" TRƯỚC khi assert — algoLabel chỉ render trong tab này
       const tabs = wrapper.findAll('.mini-tab');
       await tabs[0].trigger('click');
+      expect(wrapper.find('.mini-tab-active').text()).toContain('Chi tiết');
 
+      expect(wrapper.text()).toContain('Bubble Sort');
       expect(wrapper.text()).toContain('Bước');
+    });
+
+    it('SV-001: algoLabel theo selectedAlgo — đổi sang quick rồi mở tab Chi tiết', async () => {
+      const sorting = useSortingAnimation();
+      sorting.selectAlgorithm('quick');
+      sortingSharedOverride.instance = sorting;
+
+      const wrapper = mount(SortingDetailPanel, {
+        global: { stubs: { BaseIcon: { template: '<span />' } } },
+      });
+
+      // quick → activeTab mặc định đã là detail (watch selectedAlgo)
+      expect(wrapper.find('.mini-tab-active').text()).toContain('Chi tiết');
+      expect(wrapper.text()).toContain('Quick Sort');
     });
   });
 
@@ -495,5 +530,94 @@ describe('Algorithm Sandbox — Sorting P2 Tests', () => {
       expect(wrapper.text()).toContain('Bucket đang hoạt động');
       expect(wrapper.text()).toContain('Đã thu gom');
     });
+  });
+
+  // ── SV-014 (P2): Race đổi input giữa playback ───────────────────────────
+  describe('SV-014 (P2): Race đổi input giữa playback', () => {
+    it('play → đổi rawInputArray → recompile → isPlaying=false, index=0, frames mới', () => {
+      vi.useFakeTimers();
+      try {
+        const store = useVcrStore();
+        const sorting = useSortingAnimation();
+
+        store.rawInputArray = '5, 3, 8, 4, 2';
+        sorting.selectAlgorithm('bubble');
+        const oldFrameCount = sorting.sortFrames.value.length;
+        const oldFirstState = sorting.sortFrames.value[0].arrayState;
+
+        store.play();
+        expect(store.isPlaying).toBe(true);
+        store.stepNext();
+        vi.advanceTimersByTime(101);
+        store.stepNext();
+        expect(store.currentFrameIndex).toBe(2);
+
+        // Đổi input giữa lúc đang play — không được giữ frame cũ / index cũ
+        store.rawInputArray = '9, 1, 7, 3, 6, 4, 8, 2, 5, 0, 1, 1, 1';
+        sorting.recompileForAlgo('bubble');
+
+        expect(store.isPlaying).toBe(false);
+        expect(store.currentFrameIndex).toBe(0);
+        expect(sorting.sortFrames.value.length).toBeGreaterThan(oldFrameCount);
+        expect(sorting.sortFrames.value[0].arrayState).not.toEqual(oldFirstState);
+        expect(store.totalFrames).toBe(sorting.sortFrames.value.length);
+      } finally {
+        vi.useRealTimers();
+      }
+    });
+  });
+
+  // ── SV-044 (P3): Dispatcher render đúng component con ───────────────────
+  describe('SV-044 (P3): Dispatcher render đúng component theo algorithm', () => {
+    function makeAlgoFrame(algo: SortAlgorithm): SortFrame {
+      return {
+        stepIndex: 0,
+        arrayState: [3, 1, 2],
+        comparingIndices: null,
+        pivotIndex: null,
+        swappedIndices: null,
+        sortedIndices: [],
+        description: 'frame mẫu',
+        algorithm: algo,
+      };
+    }
+
+    it.each([
+      ['bubble', 'BubbleSortVisualizer'],
+      ['quick', 'QuickSortVisualizer'],
+      ['merge', 'MergeSortVisualizer'],
+      ['heap', 'HeapSortVisualizer'],
+      ['radix', 'RadixSortVisualizer'],
+      ['counting', 'CountingSortVisualizer'],
+      ['bucket', 'BucketSortVisualizer'],
+    ] as Array<[SortAlgorithm, string]>)('%s → render %s', (algo, componentName) => {
+      const wrapper = mount(SortingVisualizerDispatcher, {
+        props: { frame: makeAlgoFrame(algo) },
+        global: { stubs: { BaseIcon: { template: '<span />' } } },
+      });
+
+      expect(wrapper.findComponent({ name: componentName }).exists()).toBe(true);
+      expect(wrapper.text()).not.toContain('Không nhận diện được thuật toán');
+    });
+
+    it.each([
+      ['merge-x', 'merge'],
+      ['heap-x', 'heap'],
+      ['quick-x', 'quick'],
+    ] as Array<[string, string]>)(
+      'OOB algorithm "%s" (ngoài union cho %s) → hiển thị lỗi không nhận diện',
+      (oobAlgo, _kind) => {
+        const wrapper = mount(SortingVisualizerDispatcher, {
+          props: { frame: makeAlgoFrame(oobAlgo as unknown as SortAlgorithm) },
+          global: { stubs: { BaseIcon: { template: '<span />' } } },
+        });
+
+        expect(wrapper.text()).toContain('Không nhận diện được thuật toán');
+        expect(wrapper.text()).toContain(oobAlgo);
+        expect(wrapper.findComponent({ name: 'MergeSortVisualizer' }).exists()).toBe(false);
+        expect(wrapper.findComponent({ name: 'HeapSortVisualizer' }).exists()).toBe(false);
+        expect(wrapper.findComponent({ name: 'QuickSortVisualizer' }).exists()).toBe(false);
+      },
+    );
   });
 });

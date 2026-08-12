@@ -68,7 +68,7 @@ namespace VisualizationDSA.WebApi.Controllers
             }
             catch (UnauthorizedAccessException ex)
             {
-                return StatusCode(StatusCodes.Status403Forbidden, new { Message = ex.Message });
+                return StatusCode(StatusCodes.Status403Forbidden, new { message = ex.Message });
             }
         }
 
@@ -89,15 +89,15 @@ namespace VisualizationDSA.WebApi.Controllers
             }
             catch (UnauthorizedAccessException ex)
             {
-                return StatusCode(StatusCodes.Status401Unauthorized, new { Message = ex.Message });
+                return StatusCode(StatusCodes.Status401Unauthorized, new { message = ex.Message });
             }
             catch (ArgumentException ex)
             {
-                return BadRequest(new { Message = ex.Message });
+                return BadRequest(new { message = ex.Message });
             }
             catch (InvalidOperationException ex)
             {
-                return Conflict(new { Message = ex.Message });
+                return Conflict(new { message = ex.Message });
             }
         }
 
@@ -124,7 +124,7 @@ namespace VisualizationDSA.WebApi.Controllers
             }
             catch (UnauthorizedAccessException ex)
             {
-                return StatusCode(StatusCodes.Status401Unauthorized, new { Message = ex.Message });
+                return StatusCode(StatusCodes.Status401Unauthorized, new { message = ex.Message });
             }
         }
 
@@ -144,7 +144,7 @@ namespace VisualizationDSA.WebApi.Controllers
             }
             catch (UnauthorizedAccessException ex)
             {
-                return StatusCode(StatusCodes.Status403Forbidden, new { Message = ex.Message });
+                return StatusCode(StatusCodes.Status403Forbidden, new { message = ex.Message });
             }
         }
         
@@ -163,13 +163,13 @@ namespace VisualizationDSA.WebApi.Controllers
                 var classroom = await _mediator.Send(query);
 
                 if (classroom == null)
-                    return NotFound(new { Message = "Classroom not found" });
+                    return NotFound(new { message = "Classroom not found" });
 
                 return Ok(classroom);
             }
             catch (UnauthorizedAccessException ex)
             {
-                return StatusCode(StatusCodes.Status403Forbidden, new { Message = ex.Message });
+                return StatusCode(StatusCodes.Status403Forbidden, new { message = ex.Message });
             }
         }
 
@@ -193,7 +193,7 @@ namespace VisualizationDSA.WebApi.Controllers
             }
             catch (UnauthorizedAccessException ex)
             {
-                return StatusCode(StatusCodes.Status403Forbidden, new { Message = ex.Message });
+                return StatusCode(StatusCodes.Status403Forbidden, new { message = ex.Message });
             }
         }
 
@@ -214,7 +214,7 @@ namespace VisualizationDSA.WebApi.Controllers
             }
             catch (UnauthorizedAccessException ex)
             {
-                return StatusCode(StatusCodes.Status403Forbidden, new { Message = ex.Message });
+                return StatusCode(StatusCodes.Status403Forbidden, new { message = ex.Message });
             }
         }
 
@@ -230,7 +230,7 @@ namespace VisualizationDSA.WebApi.Controllers
             }
             catch (UnauthorizedAccessException ex)
             {
-                return StatusCode(StatusCodes.Status403Forbidden, new { Message = ex.Message });
+                return StatusCode(StatusCodes.Status403Forbidden, new { message = ex.Message });
             }
         }
 
@@ -246,7 +246,7 @@ namespace VisualizationDSA.WebApi.Controllers
             }
             catch (UnauthorizedAccessException ex)
             {
-                return StatusCode(StatusCodes.Status403Forbidden, new { Message = ex.Message });
+                return StatusCode(StatusCodes.Status403Forbidden, new { message = ex.Message });
             }
         }
 
@@ -268,11 +268,11 @@ namespace VisualizationDSA.WebApi.Controllers
             }
             catch (UnauthorizedAccessException ex)
             {
-                return StatusCode(StatusCodes.Status403Forbidden, new { Message = ex.Message });
+                return StatusCode(StatusCodes.Status403Forbidden, new { message = ex.Message });
             }
             catch (ArgumentException ex)
             {
-                return BadRequest(new { Message = ex.Message });
+                return BadRequest(new { message = ex.Message });
             }
         }
 
@@ -293,7 +293,27 @@ namespace VisualizationDSA.WebApi.Controllers
             }
             catch (UnauthorizedAccessException ex)
             {
-                return StatusCode(StatusCodes.Status403Forbidden, new { Message = ex.Message });
+                return StatusCode(StatusCodes.Status403Forbidden, new { message = ex.Message });
+            }
+        }
+
+        [HttpPost("{id:guid}/leave")]
+        public async Task<IActionResult> LeaveClassroom(Guid id)
+        {
+            try
+            {
+                var studentId = GetUserId();
+                var command = new VisualizationDSA.Application.Features.Classrooms.Commands.LeaveClassroom.LeaveClassroomCommand
+                {
+                    ClassroomId = id,
+                    StudentId = studentId
+                };
+                await _mediator.Send(command);
+                return Ok(new { message = "Bạn đã rời lớp học." });
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(new { message = ex.Message });
             }
         }
 
@@ -316,7 +336,7 @@ namespace VisualizationDSA.WebApi.Controllers
                     .FirstOrDefaultAsync(c => c.Id == id);
 
                 if (classroom == null)
-                    return NotFound(new { Message = "Classroom not found." });
+                    return NotFound(new { message = "Classroom not found." });
 
                 if (classroom.OwnerTeacherId != teacherId)
                     throw new UnauthorizedAccessException("Bạn không có quyền xóa lớp học này.");
@@ -358,7 +378,7 @@ namespace VisualizationDSA.WebApi.Controllers
             }
             catch (UnauthorizedAccessException ex)
             {
-                return StatusCode(StatusCodes.Status403Forbidden, new { Message = ex.Message });
+                return StatusCode(StatusCodes.Status403Forbidden, new { message = ex.Message });
             }
         }
         [HttpPut("{id:guid}/override/{moduleId:guid}")]
@@ -378,15 +398,15 @@ namespace VisualizationDSA.WebApi.Controllers
                 command.UserId = userId;
                 
                 await _mediator.Send(command);
-                return Ok(new { Message = "Override updated successfully" });
+                return Ok(new { message = "Override updated successfully" });
             }
             catch (UnauthorizedAccessException ex)
             {
-                return StatusCode(StatusCodes.Status403Forbidden, new { Message = ex.Message });
+                return StatusCode(StatusCodes.Status403Forbidden, new { message = ex.Message });
             }
             catch (ArgumentException ex)
             {
-                return NotFound(new { Message = ex.Message });
+                return NotFound(new { message = ex.Message });
             }
         }
 

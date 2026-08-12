@@ -1,18 +1,20 @@
 <template>
   <Transition name="modal-fade">
-    <div v-if="show" class="modal-overlay" @click.self="$emit('update:show', false)">
+    <!-- TC-028: role=dialog + aria-modal + focus trap + Esc (useModalA11y) -->
+    <div v-if="show" ref="overlayEl" class="modal-overlay" role="dialog" aria-modal="true" :aria-label="modalTitle" @click.self="$emit('update:show', false)">
       <div class="modal-container modal-lg">
         <div class="modal-header">
           <h3 class="modal-title">
             <BaseIcon :name="Type === 'testcase' ? 'database' : Type === 'template' ? 'file-text' : 'lightbulb'" class="w-5 h-5 inline mr-2" />
-            {{ Type === 'testcase' ? 'Testcase' : Type === 'template' ? 'Template' : 'Gợi ý' }}: {{ editingItem ? 'Chỉnh sửa' : 'Thêm mới' }}
+            {{ modalTitle }}
           </h3>
           <button type="button" class="modal-close" @click="$emit('update:show', false)">
             <BaseIcon name="x" class="w-5 h-5" />
           </button>
         </div>
         
-        <form @submit.prevent="handleSubmit" class="modal-body">
+        <!-- TC-004: form phải có id="codelab-modal-form" để nút submit ngoài form liên kết đúng -->
+        <form id="codelab-modal-form" @submit.prevent="handleSubmit" class="modal-body">
           <template v-if="Type === 'testcase'">
             <div class="form-field">
               <label class="form-label">Input <span class="text-accent-red">*</span></label>
@@ -118,9 +120,10 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, watch } from 'vue';
+import { ref, reactive, watch, computed, toRef } from 'vue';
 import BaseIcon from '@/shared/components/BaseIcon.vue';
 import CustomMarkdownEditor from '@/components/editor/CustomMarkdownEditor.vue';
+import { useModalA11y } from '../../composables/useModalA11y';
 
 type ModalType = 'testcase' | 'template' | 'hint';
 
@@ -140,6 +143,14 @@ const props = defineProps<Props>();
 const emit = defineEmits<Emits>();
 
 const saving = ref(false);
+
+// TC-028: focus trap + Esc + khóa scroll + hoàn trả focus.
+const { overlayEl } = useModalA11y(toRef(props, 'show'));
+
+const modalTitle = computed(() => {
+  const kind = props.Type === 'testcase' ? 'Testcase' : props.Type === 'template' ? 'Template' : 'Gợi ý';
+  return `${kind}: ${props.editingItem ? 'Chỉnh sửa' : 'Thêm mới'}`;
+});
 
 const form = reactive({
   

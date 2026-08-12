@@ -75,7 +75,7 @@ export const docsNavigation: NavItem[] = [
       { id: 'tg-dfs', title: 'Duyệt theo chiều sâu (DFS)', path: '/docs/tree-graph/dfs' },
       { id: 'tg-cycle', title: 'Phát hiện chu trình (Cycle Detection)', path: '/docs/tree-graph/cycle-detection' },
       { id: 'tg-dijkstra', title: 'Thuật toán Dijkstra', path: '/docs/tree-graph/dijkstra' },
-      { id: 'tg-advanced', title: 'Cấu trúc Cây nâng cao', path: '/docs/tree-graph/advanced-trees' },
+      { id: 'tg-advanced', title: 'Cây nâng cao (Advanced Trees)', path: '/docs/tree-graph/advanced-trees' },
       { id: 'tg-summary', title: 'Tổng hợp ứng dụng Cây & Đồ thị', path: '/docs/tree-graph/tree-graph-summary' }
     ]
   },
@@ -176,7 +176,10 @@ export function getNextPrevDocs(currentPath: string): {
   
   flatten(docsNavigation);
 
-  const currentIndex = flatNav.findIndex(nav => nav.path === currentPath);
+  // Chuẩn hóa trailing slash trước khi tìm — `/docs/x/y/` khớp `/docs/x/y` (DC-012).
+  const normalized = currentPath.replace(/\/+$/, '') || currentPath;
+
+  const currentIndex = flatNav.findIndex(nav => nav.path === normalized);
   if (currentIndex === -1) return { prev: null, next: null };
 
   return {

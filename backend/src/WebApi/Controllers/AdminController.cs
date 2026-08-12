@@ -1,5 +1,6 @@
 using Asp.Versioning;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 using System.Collections.Concurrent;
 using System.Text;
@@ -7,6 +8,7 @@ using System.Text.Json;
 using System.Security.Cryptography;
 using VisualizationDSA.Domain.Strategies;
 using VisualizationDSA.Domain.Entities;
+using VisualizationDSA.Domain.Enums;
 using VisualizationDSA.Infrastructure.Data;
 using VisualizationDSA.WebApi.Filters;
 
@@ -30,7 +32,10 @@ namespace VisualizationDSA.WebApi.Controllers
         private readonly QuizBankStrategy _quizBank;
 
         // A2-GUARD: Rate limit impersonation để tránh lạm dụng (5 lần/phút/admin).
+        // AD-031: toàn bộ read-modify-write được bọc lock — không còn race giữa các request;
+        // entry hết window được reset ngay (không tích lũy Count sai).
         private static readonly ConcurrentDictionary<string, (DateTime WindowStart, int Count)> _impersonationRateLimiter = new();
+        private static readonly object _impersonationRateLock = new();
         private const int IMPERSONATION_RATE_LIMIT = 5;
         private const int IMPERSONATION_RATE_WINDOW_MINUTES = 1;
 
@@ -55,6 +60,13 @@ namespace VisualizationDSA.WebApi.Controllers
         [HttpGet("dashboard")]
         public async Task<IActionResult> GetDashboard()
         {
+            // AD-006: chỉ fallback khi DB down XÁC NHẬN (CanConnectAsync) — không che giấu
+            // lỗi logic khác. Mọi fallback đều gắn cờ isFallback=true để UI cảnh báo dữ liệu tạm.
+            if (!await IsDatabaseAvailableAsync())
+            {
+                return BuildFallbackDashboard();
+            }
+
             try
             {
                 var totalUsers   = await _dbContext.Users.CountAsync();
@@ -64,7 +76,7 @@ namespace VisualizationDSA.WebApi.Controllers
                 var premiumUsers = await _dbContext.Users.CountAsync(u => u.IsPremium);
                 var totalQuizzes = await _dbContext.Quizzes.CountAsync();
                 var totalOrders  = await _dbContext.Orders.CountAsync();
-                var paidOrders   = await _dbContext.Orders.CountAsync(o => o.Status == "Completed" || o.Status == "paid");
+                var paidOrders   = await _dbContext.Orders.CountAsync(o => o.Status == "Completed");
 
                 
                 var topUsers = await _dbContext.Users.AsNoTracking()
@@ -113,51 +125,70 @@ namespace VisualizationDSA.WebApi.Controllers
                     orders  = new { total = totalOrders, paid = paidOrders },
                     topUsers,
                     registrationsLast7Days,
-                    popularCourses
+                    popularCourses,
+                    isFallback = false
                 });
             }
-            catch (Exception ex)
+            catch (Exception ex) when (IsDatabaseUnavailable(ex))
             {
                 Serilog.Log.Warning(ex, "Không thể kết nối cơ sở dữ liệu để lấy dashboard. Fallback sang dữ liệu in-memory.");
-                var inMemoryUsers = _authStrategy.GetAllUsers();
-                var totalUsers = inMemoryUsers.Count;
-                var totalStudents = inMemoryUsers.Count(u => u.Role == "Student");
-                var totalTeachers = inMemoryUsers.Count(u => u.Role == "Teacher");
-                var totalAdmins = inMemoryUsers.Count(u => u.Role == "Admin");
-                var premiumUsers = inMemoryUsers.Count(u => u.IsPremium);
-
-                var topUsers = inMemoryUsers
-                    .OrderByDescending(u => u.TotalXP)
-                    .Take(5)
-                    .Select(u => new { u.Email, u.Username, u.TotalXP, u.CurrentLevel, u.Role })
-                    .ToList();
-
-                var registrationsLast7Days = Enumerable.Range(0, 7)
-                    .Select(i => DateTime.UtcNow.Date.AddDays(-6 + i))
-                    .Select(date => new
-                    {
-                        date = date.ToString("yyyy-MM-dd"),
-                        count = new Random().Next(0, 3)
-                    })
-                    .ToList();
-
-                var popularCourses = new[]
-                {
-                    new { courseId = Guid.NewGuid(), title = "Thuật toán Sắp xếp Cơ bản (Simulated)", enrollmentsCount = 15 },
-                    new { courseId = Guid.NewGuid(), title = "Cấu trúc dữ liệu Đồ thị (Simulated)", enrollmentsCount = 10 },
-                    new { courseId = Guid.NewGuid(), title = "Nguyên lý Thiết kế SOLID (Simulated)", enrollmentsCount = 6 }
-                };
-
-                return Ok(new
-                {
-                    users = new { total = totalUsers, students = totalStudents, teachers = totalTeachers, admins = totalAdmins, premium = premiumUsers },
-                    quizzes = new { total = _quizBank.GetAllQuizzes().Count },
-                    orders  = new { total = 0, paid = 0 },
-                    topUsers,
-                    registrationsLast7Days,
-                    popularCourses
-                });
+                return BuildFallbackDashboard();
             }
+        }
+
+        private async Task<bool> IsDatabaseAvailableAsync()
+        {
+            try
+            {
+                return await _dbContext.Database.CanConnectAsync();
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
+        /// <summary>AD-006: chỉ nhận diện lỗi kết nối CSDL (không nuốt lỗi logic khác).</summary>
+        private static bool IsDatabaseUnavailable(Exception ex)
+            => ex is System.Data.Common.DbException;
+
+        /// <summary>
+        /// AD-006: dữ liệu fallback DETERMINISTIC (bỏ Random/Guid mới) — mọi chỉ số 0/chủng loại
+        /// từ memory, kèm cờ isFallback=true để frontend hiển thị cảnh báo "dữ liệu tạm thời".
+        /// </summary>
+        private IActionResult BuildFallbackDashboard()
+        {
+            var inMemoryUsers = _authStrategy.GetAllUsers();
+            var totalUsers = inMemoryUsers.Count;
+            var totalStudents = inMemoryUsers.Count(u => u.Role == "Student");
+            var totalTeachers = inMemoryUsers.Count(u => u.Role == "Teacher");
+            var totalAdmins = inMemoryUsers.Count(u => u.Role == "Admin");
+            var premiumUsers = inMemoryUsers.Count(u => u.IsPremium);
+
+            var topUsers = inMemoryUsers
+                .OrderByDescending(u => u.TotalXP)
+                .Take(5)
+                .Select(u => new { u.Email, u.Username, u.TotalXP, u.CurrentLevel, u.Role })
+                .ToList();
+
+            var registrationsLast7Days = Enumerable.Range(0, 7)
+                .Select(i => new
+                {
+                    date = DateTime.UtcNow.Date.AddDays(-6 + i).ToString("yyyy-MM-dd"),
+                    count = 0
+                })
+                .ToList();
+
+            return Ok(new
+            {
+                users = new { total = totalUsers, students = totalStudents, teachers = totalTeachers, admins = totalAdmins, premium = premiumUsers },
+                quizzes = new { total = _quizBank.GetAllQuizzes().Count },
+                orders  = new { total = 0, paid = 0 },
+                topUsers,
+                registrationsLast7Days,
+                popularCourses = Array.Empty<object>(),
+                isFallback = true
+            });
         }
 
         
@@ -184,12 +215,20 @@ namespace VisualizationDSA.WebApi.Controllers
 
             var oldRole = user.Role;
 
+            // AD-003: chặn admin tự đổi vai trò của chính mình — không cho tự "hồi phục" quyền
+            // sau khi bị admin khác demote (role giờ đối chiếu DB nên demote là vĩnh viễn).
+            var actorSub = JwtHelper.ExtractSubFromToken(Request);
+            if (actorSub != null && Guid.TryParse(actorSub, out var actorGuid) && actorGuid == user.Id)
+            {
+                return BadRequest(new { error = "SELF_ROLE_CHANGE_FORBIDDEN", message = "Không thể tự thay đổi vai trò của chính mình." });
+            }
+
             // A1-GUARD: Ngăn self-demotion của admin cuối cùng — tránh mất quyền quản lý hệ thống.
             if (oldRole == "Admin" && request.Role != "Admin")
             {
                 var totalAdmins = await _dbContext.Users.CountAsync(u => u.Role == "Admin" && u.Id != user.Id && u.IsActive);
                 if (totalAdmins <= 0)
-                    return BadRequest(new { error = "LAST_ADMIN_PROTECTED", message = "Không thể thay đổi vai trò của admin cuối cùng trong hệ thống." });
+                    return Conflict(new { error = "LAST_ADMIN_PROTECTED", message = "Không thể thay đổi vai trò của admin cuối cùng trong hệ thống." });
             }
 
             user.SetRole(request.Role);
@@ -220,6 +259,25 @@ namespace VisualizationDSA.WebApi.Controllers
                 return NotFound(new { error = "USER_NOT_FOUND" });
 
             var oldStatus = user.IsPremium;
+
+            // AD-032: không thu hồi Premium khi user còn order Pending chưa hết hạn —
+            // webhook thanh toán sau đó sẽ bật lại, tạo trạng thái kẹt (split-brain).
+            if (!request.IsPremium)
+            {
+                var hasPendingOrder = await _dbContext.Orders.AnyAsync(o =>
+                    o.UserId == user.Id &&
+                    o.Status == OrderStatus.Pending.ToString() &&
+                    o.ExpiresAt > DateTime.UtcNow);
+                if (hasPendingOrder)
+                {
+                    return Conflict(new
+                    {
+                        error = "PENDING_ORDER_EXISTS",
+                        message = "Người dùng còn đơn hàng chờ thanh toán chưa hết hạn — không thể thu hồi Premium."
+                    });
+                }
+            }
+
             user.SetPremiumStatus(request.IsPremium);
             await _dbContext.SaveChangesAsync();
 
@@ -245,6 +303,12 @@ namespace VisualizationDSA.WebApi.Controllers
             if (string.IsNullOrWhiteSpace(request.Email) || string.IsNullOrWhiteSpace(request.Username) || string.IsNullOrWhiteSpace(request.Password))
             {
                 return BadRequest(new { error = "INVALID_INPUT", message = "Email, username và mật khẩu không được để trống." });
+            }
+
+            // AD-033: validate role trước khi tạo — role lạ không được "âm thầm" thành Student.
+            if (request.Role != "Student" && request.Role != "Teacher" && request.Role != "Admin")
+            {
+                return BadRequest(new { error = "INVALID_ROLE", message = "Role phải là Student, Teacher hoặc Admin." });
             }
 
             
@@ -287,7 +351,8 @@ namespace VisualizationDSA.WebApi.Controllers
             
             await LogAdminAction("CreateUser", newUser.Id, $"Tạo người dùng mới: {newUser.Username} ({newUser.Email}), vai trò: {newUser.Role}, Premium: {newUser.IsPremium}.");
 
-            return Ok(new
+            // AD-033: tạo mới tài nguyên → 201 Created (trước đây 200 trả như update).
+            return StatusCode(StatusCodes.Status201Created, new
             {
                 message = "Tạo người dùng mới thành công.",
                 user = new
@@ -318,8 +383,30 @@ namespace VisualizationDSA.WebApi.Controllers
                 return NotFound(new { error = "USER_NOT_FOUND", message = "Không tìm thấy người dùng." });
             }
 
+            // AD-023: admin cuối cùng không được xóa — tránh hệ thống mất quyền quản lý.
+            if (user.Role == "Admin")
+            {
+                var totalAdmins = await _dbContext.Users.CountAsync(u => u.Role == "Admin" && u.Id != user.Id && u.IsActive);
+                if (totalAdmins <= 0)
+                    return Conflict(new { error = "LAST_ADMIN_PROTECTED", message = "Không thể xóa admin cuối cùng trong hệ thống." });
+            }
+
+            // AD-005: kiểm tra FK Restrict TRƯỚC khi xóa — trả Conflict rõ ràng thay vì 500
+            // khi user còn nội dung do chính họ sở hữu (TheoryArticle/ClassroomAnnouncement/Course).
+            var articleCount = await _dbContext.TheoryArticles.IgnoreQueryFilters().CountAsync(a => a.AuthorId == user.Id);
+            var announcementCount = await _dbContext.ClassroomAnnouncements.CountAsync(c => c.AuthorId == user.Id);
+            var courseCount = await _dbContext.Courses.CountAsync(c => c.TeacherId == user.Id);
+            if (articleCount > 0 || announcementCount > 0 || courseCount > 0)
+            {
+                return Conflict(new
+                {
+                    error = "USER_HAS_CONTENT",
+                    message = $"Người dùng còn {articleCount} bài viết lý thuyết, {announcementCount} thông báo lớp học và {courseCount} khóa học. Hãy chuyển quyền sở hữu hoặc xóa nội dung trước khi xóa tài khoản."
+                });
+            }
+
             // A3-GUARD: Cascade delete orphaned data trước khi xóa User để tránh FK violation.
-            var dependentQuery = _dbContext.UserLessonProgresses
+            await _dbContext.UserLessonProgresses
                 .Where(p => p.UserId == user.Id)
                 .ExecuteDeleteAsync();
             await _dbContext.UserModuleItemProgresses
@@ -364,6 +451,7 @@ namespace VisualizationDSA.WebApi.Controllers
         
         
         [HttpPut("users/{id}/reset-password")]
+        [EnableRateLimiting("heavy")]
         public async Task<IActionResult> ResetPassword(string id, [FromBody] ResetPasswordRequest request)
         {
             if (string.IsNullOrWhiteSpace(request.NewPassword) || request.NewPassword.Length < 8)
@@ -400,7 +488,6 @@ namespace VisualizationDSA.WebApi.Controllers
         
         
         [HttpGet("quizzes")]
-        [RequireJwtRole("Teacher,Admin")]  
         public async Task<IActionResult> GetQuizzes()
         {
 
@@ -450,7 +537,6 @@ namespace VisualizationDSA.WebApi.Controllers
         
         
         [HttpDelete("quizzes/{id}")]
-        [RequireJwtRole("Teacher,Admin")]  
         public async Task<IActionResult> DeleteQuiz(string id)
         {
 
@@ -482,7 +568,6 @@ namespace VisualizationDSA.WebApi.Controllers
         }
         
         [HttpGet("analytics/quiz")]
-        [RequireJwtRole("Teacher,Admin")]  
         public async Task<IActionResult> GetQuizAnalytics()
         {
 
@@ -523,6 +608,14 @@ namespace VisualizationDSA.WebApi.Controllers
             if (user == null)
                 return NotFound(new { error = "USER_NOT_FOUND" });
 
+            // AD-023: admin cuối cùng không được khóa — tránh mất quyền quản lý hệ thống.
+            if (!request.IsActive && user.Role == "Admin")
+            {
+                var totalAdmins = await _dbContext.Users.CountAsync(u => u.Role == "Admin" && u.Id != user.Id && u.IsActive);
+                if (totalAdmins <= 0)
+                    return Conflict(new { error = "LAST_ADMIN_PROTECTED", message = "Không thể khóa admin cuối cùng trong hệ thống." });
+            }
+
             user.SetActiveStatus(request.IsActive);
 
             // A5-GUARD: Khi khóa tài khoản, thu hẹp refresh tokens để buộc logout thiết bị.
@@ -531,13 +624,21 @@ namespace VisualizationDSA.WebApi.Controllers
                 _authStrategy.RevokeAllRefreshTokens(id);
             }
 
-            await _dbContext.SaveChangesAsync();;
+            await _dbContext.SaveChangesAsync();
 
             // Đồng bộ trạng thái ban vào stateless memory — chặn login ngay cả khi DB down.
             _authStrategy.SetUserActive(user.Id.ToString(), request.IsActive);
 
-            var action = request.IsActive ? "mở khóa" : "khóa";
-            return Ok(new { message = $"Đã {action} tài khoản {user.Email}.", userId = id, isActive = request.IsActive });
+            // AD-004: Ban/Unban là hành động nhạy cảm nhất — bắt buộc ghi audit.
+            if (Guid.TryParse(id, out var targetGuid))
+            {
+                var action = request.IsActive ? "UnbanUser" : "BanUser";
+                var verb = request.IsActive ? "Mở khóa" : "Khóa";
+                await LogAdminAction(action, targetGuid, $"{verb} tài khoản {user.Username} ({user.Email}).");
+            }
+
+            var actionText = request.IsActive ? "mở khóa" : "khóa";
+            return Ok(new { message = $"Đã {actionText} tài khoản {user.Email}.", userId = id, isActive = request.IsActive });
         }
 
         
@@ -550,23 +651,26 @@ namespace VisualizationDSA.WebApi.Controllers
             var adminId = JwtHelper.ExtractSubFromToken(Request) ?? "unknown-admin";
 
             // A2-GUARD: Rate limit impersonation — max 5 lần/phút cho mỗi admin.
-            var now = DateTime.UtcNow;
+            // AD-031: read-modify-write được bọc lock (atomic) — không còn race khi
+            // nhiều request song song cùng admin; entry hết window tự reset.
             var rateKey = adminId;
-            var rateEntry = _impersonationRateLimiter.GetOrAdd(rateKey, (now, 0));
-            if ((now - rateEntry.WindowStart).TotalMinutes > IMPERSONATION_RATE_WINDOW_MINUTES)
+            lock (_impersonationRateLock)
             {
-                rateEntry = (now, 1);
-            }
-            else
-            {
-                if (rateEntry.Count >= IMPERSONATION_RATE_LIMIT)
+                var now = DateTime.UtcNow;
+                if (!_impersonationRateLimiter.TryGetValue(rateKey, out var rateEntry) ||
+                    (now - rateEntry.WindowStart).TotalMinutes > IMPERSONATION_RATE_WINDOW_MINUTES)
                 {
-                    _impersonationRateLimiter[rateKey] = rateEntry;
+                    _impersonationRateLimiter[rateKey] = (now, 1);
+                }
+                else if (rateEntry.Count >= IMPERSONATION_RATE_LIMIT)
+                {
                     return StatusCode(429, new { error = "RATE_LIMITED", message = "Quá nhiều yêu cầu đóng vai. Vui lòng thử lại sau 1 phút." });
                 }
-                rateEntry = (rateEntry.WindowStart, rateEntry.Count + 1);
+                else
+                {
+                    _impersonationRateLimiter[rateKey] = (rateEntry.WindowStart, rateEntry.Count + 1);
+                }
             }
-            _impersonationRateLimiter[rateKey] = rateEntry;
 
             string email, username, role;
             int level;
@@ -612,10 +716,23 @@ namespace VisualizationDSA.WebApi.Controllers
                 }
             }
 
+            // AD-002: CHỈ được đóng vai học viên (Student) — impersonate Admin/Teacher cho phép
+            // leo quyền dưới danh tính khác (claim isImpersonated không được validate ở tầng filter).
+            if (role != "Student")
+            {
+                return Conflict(new
+                {
+                    error = "IMPERSONATE_TARGET_NOT_STUDENT",
+                    message = "Chỉ có thể đóng vai tài khoản học viên (Student)."
+                });
+            }
+
             
             var impersonatedToken = GenerateImpersonatedJwt(id, email, username, role, level, adminId);
             var impersonatedRefreshToken = Guid.NewGuid().ToString("N") + Guid.NewGuid().ToString("N");
-            _authStrategy.ForceAddRefreshToken(impersonatedRefreshToken, id);
+            // AD-043: refresh token đóng vai mang marker impersonatedBy — khi xoay token qua
+            // /refresh, marker isImpersonated được GIỮ (không biến thành token thật).
+            _authStrategy.ForceAddRefreshToken(impersonatedRefreshToken, id, impersonatedBy: adminId);
 
             
             if (Guid.TryParse(id, out var targetGuid))
@@ -623,20 +740,16 @@ namespace VisualizationDSA.WebApi.Controllers
                 await LogAdminAction("ImpersonateUser", targetGuid, $"Đóng vai (Impersonate) tài khoản học viên {username} ({email}).");
             }
 
+            // AD-013: trả profile CHUNG StatelessUserDto (currentLevel/totalXP/streakDays/createdAt/badges)
+            // — frontend đọc currentLevel từ user.
+            var profile = _authStrategy.GetProfile(id);
+
             return Ok(new
             {
                 accessToken = impersonatedToken,
                 refreshToken = impersonatedRefreshToken,
                 expiresIn = 900, 
-                user = new
-                {
-                    id,
-                    email,
-                    username,
-                    role,
-                    level,
-                    isPremium
-                }
+                user = profile
             });
         }
 
@@ -644,6 +757,8 @@ namespace VisualizationDSA.WebApi.Controllers
         {
             var header = JwtSigningConfig.Base64UrlEncode(Encoding.UTF8.GetBytes("{\"alg\":\"HS256\",\"typ\":\"JWT\"}"));
             // JsonSerializer — username/email chứa ký tự đặc biệt không làm vỡ payload.
+            // AD-001: claim iss/aud từ JwtSigningConfig — khớp fail-closed của JwtHelper.RequireToken
+            // (trước đây thiếu 2 claim này → mọi token impersonate bị 401).
             var payloadJson = System.Text.Json.JsonSerializer.Serialize(new
             {
                 sub = userId,
@@ -651,6 +766,8 @@ namespace VisualizationDSA.WebApi.Controllers
                 name = username,
                 role,
                 level,
+                iss = JwtSigningConfig.Issuer ?? "VisualizationDSA",
+                aud = JwtSigningConfig.Audience ?? "VisualizationDSA-Client",
                 exp = DateTimeOffset.UtcNow.AddMinutes(15).ToUnixTimeSeconds(),
                 jti = Guid.NewGuid(),
                 isImpersonated = true,

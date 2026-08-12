@@ -49,7 +49,22 @@ describe('PlaygroundDocumentBuilder', () => {
       };
       const doc = PlaygroundDocumentBuilder.buildDocument(source);
       expect(doc).toContain('\\u003c/script');
-      expect(doc.match(/<\/script>/g)?.length).toBe(1);
+      // 2 thẻ đóng: 1 error bridge (HT-003) + 1 script user code
+      expect(doc.match(/<\/script>/g)?.length).toBe(2);
+    });
+
+    it('HT-003: nhúng error bridge playground-error (window error + unhandledrejection)', () => {
+      const doc = PlaygroundDocumentBuilder.buildDocument(sampleSource);
+      expect(doc).toContain("type: 'playground-error'");
+      expect(doc).toContain("window.addEventListener('error'");
+      expect(doc).toContain("window.addEventListener('unhandledrejection'");
+    });
+
+    it('HT-005/HT-007: có <base about:blank> + CSP meta ngăn user code gọi mạng', () => {
+      const doc = PlaygroundDocumentBuilder.buildDocument(sampleSource);
+      expect(doc).toContain('<base href="about:blank">');
+      expect(doc).toContain('Content-Security-Policy');
+      expect(doc).toContain("connect-src 'none'");
     });
 
     it('should not crash when js contains backslashes or template literals', () => {
@@ -60,6 +75,31 @@ describe('PlaygroundDocumentBuilder', () => {
       };
       const doc = PlaygroundDocumentBuilder.buildDocument(source);
       expect(doc).toContain('a\\nb');
+    });
+
+    it('HT-031: escape vector `<!--` trong user js (HTML comment không thoát được xẻ script)', () => {
+      const source: PlaygroundSource = {
+        html: '',
+        css: '',
+        js: '//<!--\nconst s = "<!--";',
+      };
+      const doc = PlaygroundDocumentBuilder.buildDocument(source);
+      expect(doc).toContain('\\u003c!--');
+      expect(doc).not.toContain('<!--');
+      expect(doc.match(/<script>/g)?.length).toBe(2);
+      expect(doc.match(/<\/script>/g)?.length).toBe(2);
+    });
+
+    it('HT-031: unicode + emoji đi qua builder nguyên vẹn (html/css/js)', () => {
+      const source: PlaygroundSource = {
+        html: '<h1>Xin chào thế giới 👋🎉</h1>',
+        css: 'h1::after { content: "✅"; }',
+        js: 'const msg = "tạm biệt — 再见";',
+      };
+      const doc = PlaygroundDocumentBuilder.buildDocument(source);
+      expect(doc).toContain('<h1>Xin chào thế giới 👋🎉</h1>');
+      expect(doc).toContain('content: "✅"');
+      expect(doc).toContain('const msg = "tạm biệt — 再见";');
     });
   });
 });

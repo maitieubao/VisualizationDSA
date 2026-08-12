@@ -5,9 +5,9 @@
         <BaseIcon name="diamond" class="w-8 h-8 text-accent animate-pulse" />
         <span class="text-xl font-bold tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-accent-cyan to-accent-purple">VDSA PREMIUM</span>
       </div>
-      
+
       <h2 class="text-2xl font-bold mb-4 leading-tight">Mở Khóa Toàn Bộ Sức Mạnh DSA</h2>
-      
+
       <ul class="space-y-3 text-sm text-[var(--text-secondary)] mb-8">
         <li class="flex items-start gap-2">
           <BaseIcon name="check" class="w-4 h-4 text-accent-green mt-0.5" />
@@ -30,21 +30,17 @@
 
     <div class="mt-auto border-t border-[var(--border-color)] pt-6">
       <div class="text-xs text-[var(--text-muted)] uppercase tracking-wider mb-1">Gói trọn đời (Lifetime)</div>
-      <div class="flex items-baseline gap-2">
-        <span class="text-3xl font-extrabold text-[var(--color-gold)] font-mono">{{ formatPrice(paymentStore.premiumPrice) }}</span>
-        <span class="text-xs text-[var(--text-muted)] line-through">499.000đ</span>
-      </div>
-      <p class="text-[10px] text-accent-green/80 mt-2 font-medium"><BaseIcon name="star" class="w-3 h-3 inline mr-1 align-middle" />Thanh toán một lần duy nhất, sở hữu mãi mãi.</p>
+      <!-- PM-032: giá duy nhất lấy từ config backend (store.premiumPrice); bỏ hardcode 499.000đ vì backend không trả field originalPrice -->
+      <div class="text-3xl font-extrabold text-[var(--color-gold)] font-mono">{{ formatVND(paymentStore.premiumPrice) }}</div>
+      <p class="text-[11px] text-accent-green/80 mt-2 font-medium"><BaseIcon name="star" class="w-3 h-3 inline mr-1 align-middle" />Thanh toán một lần duy nhất, sở hữu mãi mãi.</p>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
 import { usePaymentStore } from '../store/usePaymentStore';
+import { formatVND } from '../../../utils/format';
 
+// PM-031: dùng chung helper formatVND (Intl.NumberFormat vi-VN VND) thay cho chuỗi "…đ" dán.
 const paymentStore = usePaymentStore();
-
-function formatPrice(price: number): string {
-  return new Intl.NumberFormat('vi-VN').format(price) + 'đ';
-}
 </script>

@@ -1,5 +1,5 @@
 <template>
-  <div class="curriculum-sidebar bg-bg-secondary border border-border-subtle rounded-2xl p-4 h-full max-h-[calc(100vh-120px)] overflow-y-auto sticky top-24">
+  <div ref="sidebarRef" class="curriculum-sidebar bg-bg-secondary border border-border-subtle rounded-2xl p-4 h-full max-h-[calc(100vh-120px)] overflow-y-auto sticky top-24">
     
     <div class="mb-6 p-4 bg-bg-secondary border border-border-subtle rounded-xl">
       <h3 class="text-sm font-bold text-text-primary mb-3">Tiến độ tổng thể</h3>
@@ -18,7 +18,7 @@
     
     <div class="space-y-3">
       <div 
-        v-for="module in curriculum?.modules" 
+        v-for="module in visibleModules" 
         :key="module.id"
         class="module-accordion"
         :class="{ 'module-locked': isModuleLocked(module) }"
@@ -43,7 +43,7 @@
             <div class="flex-1 min-w-0">
               <h4 class="font-semibold text-text-primary truncate">{{ module.title }}</h4>
               <div class="flex items-center gap-2 mt-1 text-xs text-text-muted">
-                <span>{{ module.items?.length || 0 }} bài</span>
+                <span>{{ visibleItems(module).length }} bài</span>
                 <span v-if="module.unlockAt" class="flex items-center gap-1">
                   <BaseIcon name="clock" class="w-3 h-3" />
                   {{ formatDate(module.unlockAt) }}
@@ -54,7 +54,7 @@
           
           <div class="flex items-center gap-2">
             <span class="text-xs text-text-muted font-mono">
-              {{ getModuleCompletedCount(module) }}/{{ module.items?.length || 0 }}
+              {{ getModuleCompletedCount(module) }}/{{ visibleItems(module).length }}
             </span>
             <BaseIcon 
               :name="isModuleExpanded(module.id) ? 'chevron-up' : 'chevron-down'" 
@@ -69,15 +69,24 @@
           class="module-items mt-2 ml-4 border-l border-border-subtle pl-4 space-y-2 animate-slide-down"
         >
           <div 
-            v-for="item in module.items" 
+            v-for="item in visibleItems(module)" 
             :key="item.id"
             class="curriculum-item"
+            :data-item-id="item.id"
+            role="button"
+            tabindex="0"
+            :aria-disabled="isItemLocked(item)"
+            :aria-label="(isItemLocked(item) ? 'Đã khóa: ' : 'Mở: ') + itemDisplayTitle(item)"
+            :title="isItemLocked(item) ? lockedReason(item) : undefined"
             :class="[
               'flex items-center gap-3 p-3 rounded-xl transition-colors',
               getItemStatusClass(item),
+              isItemLocked(item) ? 'cursor-not-allowed' : 'cursor-pointer',
               currentItemId === item.id ? 'bg-accent/10 border border-accent/20' : 'hover:bg-bg-hover'
             ]"
             @click="onItemClick(item)"
+            @keydown.enter.prevent="onItemClick(item)"
+            @keydown.space.prevent="onItemClick(item)"
           >
             
             <div class="flex items-center justify-center w-8 h-8 rounded-lg flex-shrink-0" :class="getItemStatusBgClass(item)">
@@ -106,13 +115,18 @@
                 name="code" 
                 class="w-4 h-4 text-accent-green" 
               />
+              <BaseIcon 
+                v-else-if="item.itemType === 'CustomLesson'" 
+                name="file-text" 
+                class="w-4 h-4 text-accent-yellow" 
+              />
             </div>
 
             
             <div class="flex-1 min-w-0">
               <div class="flex items-center gap-2 flex-wrap">
-                <h5 class="font-medium text-text-primary truncate">{{ item.overrideTitle || item.lessonTitle || item.quizTitle || item.codelabTitle || 'Untitled' }}</h5>
-                <span class="badge text-[10px]" :class="getTypeBadgeClass(item.itemType)">{{ item.itemType }}</span>
+                <h5 class="font-medium text-text-primary truncate">{{ itemDisplayTitle(item) }}</h5>
+                <span class="badge text-[10px]" :class="getTypeBadgeClass(item.itemType)">{{ typeLabel(item.itemType) }}</span>
                 <span v-if="item.isRequired" class="badge badge-rose text-[10px]">Bắt buộc</span>
                 <span v-if="item.isHidden" class="badge badge-slate text-[10px]">Ẩn</span>
               </div>
@@ -149,7 +163,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue';
+import { ref, computed, watch, nextTick } from 'vue';
 import BaseIcon from '@/shared/components/BaseIcon.vue';
 
 interface Props {
@@ -166,9 +180,19 @@ const props = defineProps<Props>();
 const emit = defineEmits<Emits>();
 
 const expandedModuleIds = ref<Set<string>>(new Set());
+const sidebarRef = ref<HTMLElement | null>(null);
+
+// LS-007: module ẩn + item ẩn bị lọc khỏi danh sách & không tính vào progress
+// (khớp phía backend — tránh "bài ẩn vẫn hiển thị Đã khóa").
+const visibleModules = computed(() =>
+  (props.curriculum?.modules ?? []).filter((m: any) => !m.isHidden)
+);
+
+const visibleItems = (module: any) =>
+  (module?.items ?? []).filter((i: any) => !i.isHidden);
 
 const allItems = computed(() => {
-  return props.curriculum?.modules?.flatMap((m: any) => m.items || []) || [];
+  return visibleModules.value.flatMap((m: any) => visibleItems(m));
 });
 
 const totalItems = computed(() => allItems.value.length);
@@ -190,17 +214,18 @@ const toggleModule = (moduleId: string) => {
 };
 
 const getModuleIndex = (moduleId: string) => {
-  return props.curriculum?.modules?.findIndex((m: any) => m.id === moduleId) ?? -1;
+  return visibleModules.value.findIndex((m: any) => m.id === moduleId) ?? -1;
 };
 
 const getModuleCompletedCount = (module: any) => {
-  if (!module.items) return 0;
-  return module.items.filter((item: any) => item.status === 'Completed').length;
+  const items = visibleItems(module);
+  return items.filter((item: any) => item.status === 'Completed').length;
 };
 
 const isModuleCompleted = (module: any) => {
-  const items = module.items?.filter((i: any) => i.isRequired && !i.isHidden) || [];
-  if (items.length === 0) return false;
+  const items = visibleItems(module).filter((i: any) => i.isRequired);
+  // LS-010: module không có item bắt buộc → không chặn module kế tiếp.
+  if (items.length === 0) return true;
   return items.every((item: any) => item.status === 'Completed');
 };
 
@@ -209,7 +234,7 @@ const isModuleLocked = (module: any) => {
   
   const moduleIndex = getModuleIndex(module.id);
   if (moduleIndex > 0) {
-    const prevModule = props.curriculum?.modules[moduleIndex - 1];
+    const prevModule = visibleModules.value[moduleIndex - 1];
     if (prevModule && !isModuleCompleted(prevModule)) return true;
   }
   return false;
@@ -222,14 +247,31 @@ const getModuleStatusClass = (module: any) => {
 };
 
 const isItemCompleted = (item: any) => item.status === 'Completed';
+
+// LS-012: khóa sequential THẬT — ưu tiên isUnlocked từ backend, fallback tự tính:
+// prerequisite chưa hoàn thành (hoặc không tìm thấy) → khóa.
 const isItemLocked = (item: any) => {
   if (item.isHidden) return true;
   if (item.unlockAt && new Date(item.unlockAt) > new Date()) return true;
+  if (typeof item.isUnlocked === 'boolean') return !item.isUnlocked;
   if (item.isSequential && item.prerequisiteItemId) {
-    
-    return false; 
+    const prereq = allItems.value.find((i: any) => i.id === item.prerequisiteItemId);
+    if (!prereq) return true;
+    if (prereq.status !== 'Completed') return true;
   }
   return false;
+};
+
+// CR-051: tooltip giải thích lý do khóa (mở theo lịch / cần hoàn thành bài trước).
+const lockedReason = (item: any): string => {
+  if (item.unlockAt && new Date(item.unlockAt) > new Date()) {
+    return `Bài học mở khóa vào ${formatDate(item.unlockAt)}`;
+  }
+  if (item.isSequential && item.prerequisiteItemId) {
+    const prereq = allItems.value.find((i: any) => i.id === item.prerequisiteItemId);
+    return `Cần hoàn thành "${prereq ? itemDisplayTitle(prereq) : 'bài học trước'}" trước khi mở bài này`;
+  }
+  return 'Bài học hiện đang bị khóa';
 };
 
 const getItemStatusClass = (item: any) => {
@@ -251,9 +293,24 @@ const getTypeBadgeClass = (type: string) => {
     case 'Lesson': return 'badge-indigo';
     case 'Quiz': return 'badge-purple';
     case 'Codelab': return 'badge-emerald';
+    case 'CustomLesson': return 'badge-amber';
     default: return 'badge-slate';
   }
 };
+
+// LS-030: nhãn tiếng Việt cho badge + fallback tiêu đề CustomLesson.
+const typeLabel = (type: string) => {
+  switch (type) {
+    case 'Lesson': return 'Bài học';
+    case 'Quiz': return 'Trắc nghiệm';
+    case 'Codelab': return 'Codelab';
+    case 'CustomLesson': return 'Tự soạn';
+    default: return type || 'Unknown';
+  }
+};
+
+const itemDisplayTitle = (item: any) =>
+  item.overrideTitle || item.lessonTitle || item.quizTitle || item.codelabTitle || item.customLessonTitle || 'Untitled';
 
 const formatDate = (dateStr: string) => {
   if (!dateStr) return '';
@@ -268,6 +325,28 @@ function onItemClick(item: any) {
     emit('navigate', item.id);
   }
 }
+
+// LS-028: auto-expand module chứa bài đang học + scroll bài active vào tầm nhìn.
+function expandModuleContaining(itemId: string) {
+  const module = props.curriculum?.modules?.find((m: any) =>
+    m.items?.some((i: any) => i.id === itemId)
+  );
+  if (module) expandedModuleIds.value.add(module.id);
+}
+
+function scrollToActiveItem(itemId: string) {
+  void nextTick(() => {
+    if (!sidebarRef.value) return;
+    const el = sidebarRef.value.querySelector(`[data-item-id="${CSS.escape(itemId)}"]`);
+    el?.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+  });
+}
+
+watch(() => props.currentItemId, (itemId) => {
+  if (!itemId) return;
+  expandModuleContaining(itemId);
+  scrollToActiveItem(itemId);
+}, { immediate: true });
 </script>
 
 <style scoped>

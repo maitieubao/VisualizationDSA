@@ -751,3 +751,42 @@ TEST-APPEND-OK
   4. Rule bonus cải thiện ≥20% (2 lần thưởng cho 1 quiz) giữ nguyên — chỉ reward LẦN ĐẦU ghi grant, bonus cải thiện không chèn grant mới.
 - **Giới hạn:** Kênh XP client-side của lesson flow (`useLessonStore.submitQuiz → awardXp`) nằm ở frontend — backend không kiểm soát được; khi frontend đồng bộ submit qua `/concepts/quiz/submit` thì ledger này chặn farm.
 - **Files:** `ApplicationDbContext.cs`, `Migrations/20260809182125_AddQuizXpGrantUniqueIndex.*`, `StatelessQuizController.cs`, `QuizSystemTests.cs` (16 tests — gồm 2 test race song song 2 connection).
+
+## ADR-40: Gỡ vĩnh viễn 3 tính năng Phase 2 — Compare Algorithms, Concurrency Visualizer, Debug Mode (2026-08-10)
+
+- **Vấn đề:** 3 phân hệ Phase 2 (Compare Algorithms, Concurrency Visualizer, Debug Mode) đã bị chuyển vào `src/features/archived/` ở commit `90559a2f` rồi bị xóa sạch ở commit `29927a47`, nhưng tracking vẫn ghi `✅ CODE DONE` và guided-tour vẫn giữ kịch bản tour mồ côi cho route không tồn tại (`/compare`, `/concurrency`).
+- **Quyết định:** Chốt **KHÔNG RESTORE** cả 3 tính năng (phù hợp định hướng ADR-05: tập trung vào DSA animation + Docs Reference Style). Dọn dẹp triệt để:
+  1. Xóa kịch bản tour `/compare` + `/concurrency` trong `useGuidedTourStore.ts` và test tương ứng trong `useGuidedTourStore.spec.ts`.
+  2. Cập nhật `progress.md` + `deep-decomposition/README.md`: đổi trạng thái 3 feature thành `❌ ĐÃ XÓA`, ghi rõ commit gốc và nhánh phục hồi.
+- **Hệ quả:** Không còn tham chiếu mồ côi tới 3 feature trên master. Toàn bộ code gốc vẫn nằm ở nhánh `origin/devin/1779553936-phase2-compare-algorithms`, `origin/devin/1779554966-phase2-concurrency-viz`, `origin/devin/1779556334-phase2-debug-mode` và nhánh local `backup-before-scrub-2026-08-06` — có thể restore nếu thay đổi chiến lược sản phẩm.
+- **Files:** `useGuidedTourStore.ts`, `useGuidedTourStore.spec.ts`, `plan/tracking/progress.md`, `plan/features/deep-decomposition/README.md`, `plan/tracking/decisions.md` (ADR này).
+
+## ADR-41: Chốt ngưỡng Loop Guard 20000 + timeout 1.5s + sentinel `LOOP_LIMIT_EXCEEDED` (2026-08-10)
+
+- **Vấn đề:** `LOOP_LIMIT = 20000` trong `ASTInstrumentationEngine.ts` lệch `BEHAVIOR_SPEC` (5000) và `TECHNICAL_SPEC` (10000); message "Phát hiện lỗi lặp vô hạn" đổ lỗi sai cho thuật toán chạy lâu hợp lệ (CV-108); timeout 1500ms cũng mâu thuẫn PRD 1.0s (CV-130).
+- **Quyết định:**
+  1. Giữ nguyên `LOOP_LIMIT = 20000` **mỗi loop** (counter riêng `__loopCounter{N}`, reset khi loop re-enter — ADR/CV-002) — đủ cho 50 phần tử O(n²) mà không chặn thuật toán chạy dài.
+  2. Timeout worker giữ **1.5s** (đủ chạy 20000 bước, tránh false-positive code nặng); message phân biệt 3 loại: loop-limit (sentinel), code nặng vượt timeout, lỗi runtime.
+  3. Error luôn chứa sentinel **`LOOP_LIMIT_EXCEEDED`** (khớp `01-core-logic.md:81`) để UI phân biệt với runtime error.
+  4. Cập nhật 3 spec docs về ngưỡng mới: `phase2-code-to-visualization/01-core-logic.md`, `BEHAVIOR_SPEC.md`, `TECHNICAL_SPEC.md`.
+- **Hệ quả:** Hành vi loop-guard nhất quán giữa spec ↔ code ↔ UI; student code bubble sort 50 phần tử (~2450 frame) không bị cắt.
+- **Files:** `ASTInstrumentationEngine.ts`, `WorkerLifecycleCoordinator.ts`, `compiler.worker.ts`, `CompilerStepExecutor.ts`, 3 spec docs kể trên, `plan/tracking/decisions.md` (ADR này).
+
+## ADR-42: Auto-invoke entry — heuristic an toàn thay vì truyền `arr.length` bừa (2026-08-10)
+
+- **Vấn đề:** `appendAutoInvoke` truyền `arr.length` cho tham số 2 của entry ≥2 tham số → `binarySearch(arr, arr.length)` chạy sai âm thầm (CV-104).
+- **Quyết định:** Chỉ auto-invoke khi:
+  - Hàm **1 tham số** → `[arr]`.
+  - Hàm **2 tham số** và tên tham số 2 khớp `^(n|len|length|size)$` → `[arr, arr.length]` (giữ CV-005 cho `bubbleSort(arr, n)`).
+  - Ngoài ra (ví dụ `binarySearch(arr, target)`) → **skip**, kèm log gợi ý bổ sung tham số.
+- **Hệ quả:** Không còn animation sai âm thầm; học viên tự cung cấp tham số khi heuristic không đủ.
+- **Files:** `ASTInstrumentationEngine.ts`, `plan/tracking/decisions.md` (ADR này).
+
+## ADR-43: Đồng bộ sandbox chặn mạng + worker singleton request map (2026-08-10)
+
+- **Vấn đề:** Sandbox không chặn `self.fetch`/`XMLHttpRequest`/`importScripts` (CV-103); `compileWorker.ts` ghi đè handler trên worker singleton → response rơi khi 2 module dùng chung (CV-102).
+- **Quyết định:**
+  1. Che `self.fetch`/`self.XMLHttpRequest`/`self.importScripts` = undefined + guard instanceof trước `new Function` (chặn 99% đường thường, không cần CSP riêng cho feature).
+  2. `compileWorker.ts` viết lại theo map `pendingRequests: Map<number, {resolve, reject, timer}>` với 1 handler gán đúng 1 lần; **giữ nguyên API public** (`compileInWorker`, `disposeCompileWorker`, `COMPILE_TIMEOUT_MS`) — vcr-player + algo-playground không đổi lời gọi; không terminate worker dùng chung.
+- **Hệ quả:** Học viên không thể exfil dữ liệu qua worker; 2 request đồng thời không rơi response.
+- **Files:** `WorkerLifecycleCoordinator.ts`, `core/compileWorker.ts`, `plan/tracking/decisions.md` (ADR này).

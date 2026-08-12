@@ -5,8 +5,10 @@
       <button
         v-for="algo in ALGORITHMS"
         :key="algo.key"
+        type="button"
         class="px-2.5 py-1 rounded-md text-[11px] font-bold border cursor-pointer transition-all duration-150"
         :class="selectedAlgo === algo.key ? 'btn-active' : 'btn-inactive'"
+        :aria-pressed="selectedAlgo === algo.key"
         @click="$emit('select', algo.key)"
       >
         {{ algo.label }}
@@ -28,7 +30,7 @@ const ALGORITHMS: { key: SortAlgorithm; label: string }[] = [
   { key: "bucket",   label: "Bucket"   },
 ];
 
-defineProps<{
+const props = defineProps<{
   selectedAlgo: SortAlgorithm;
 }>();
 

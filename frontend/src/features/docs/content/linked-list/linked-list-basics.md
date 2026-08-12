@@ -27,17 +27,17 @@ Về mặt kỹ thuật, Linked List là một cấu trúc dữ liệu tuyến t
 flowchart LR
     Head(("Head")) --> Node1
     
-    subgraph Node 1 [Address: 0x7F...A0]
+    subgraph Node1 [Address: 0x7F...A0]
         direction LR
         D1["Data: 15"] --- P1["Next: 0x7F...C0"]
     end
     
-    subgraph Node 2 [Address: 0x7F...C0]
+    subgraph Node2 [Address: 0x7F...C0]
         direction LR
         D2["Data: 20"] --- P2["Next: 0x7F...E0"]
     end
     
-    subgraph Node 3 [Address: 0x7F...E0]
+    subgraph Node3 [Address: 0x7F...E0]
         direction LR
         D3["Data: 35"] --- P3["Next: null"]
     end

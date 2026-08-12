@@ -79,9 +79,10 @@ namespace VisualizationDSA.Application.Features.Classrooms.Commands.CreateClassr
                 request.UnlockAt,
                 request.DueAt,
                 request.MaxAttempts,
-                request.IsHidden,
+                false,
                 request.PrerequisiteItemId,
-                request.IsSequential);
+                request.IsSequential,
+                request.IsHidden);
 
             _context.ClassroomModuleItems.Add(item);
             await _context.SaveChangesAsync(cancellationToken);

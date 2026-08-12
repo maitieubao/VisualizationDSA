@@ -26,7 +26,7 @@
         <p class="text-[11px] text-text-primary leading-normal" v-html="parseEmojiToSvg(escapeHtmlText(stepDescription))"></p>
       </div>
       <div class="flex items-center gap-3 text-[10px] text-text-muted font-mono">
-        <span>Bước: <strong class="text-accent">{{ vcrStore.currentFrameIndex + 1 }}/{{ vcrStore.totalFrames }}</strong></span>
+        <span>Bước: <strong class="text-accent">{{ vcrStore.totalFrames === 0 ? '–' : vcrStore.currentFrameIndex + 1 }}/{{ vcrStore.totalFrames }}</strong></span>
         <span v-if="compareLabel" class="text-accent-cyan" v-html="parseEmojiToSvg(escapeHtmlText(compareLabel))"></span>
         <span v-if="frame?.swappedIndices" class="text-accent-red">Đổi: [{{ frame.swappedIndices[0] }}]<BaseIcon name="arrows-horizontal" class="w-3 h-3 inline mx-0.5" />[{{ frame.swappedIndices[1] }}]</span>
       </div>
@@ -81,6 +81,10 @@ const compareLabel = computed(() => {
     return f.radixStep === 'distribute'
       ? `A[${ci[0]}] → Hộp[${f.variables?.digit ?? ci[1]}]`
       : `Hộp → A[${ci[0]}]`;
+  }
+  // SV-027: bucket distribute comparingIndices=[i,i] không phải phép so sánh — label theo ngữ nghĩa phân phối
+  if (f.algorithm === 'bucket' && f.bucketStep === 'distribute') {
+    return `Đang phân phối A[${ci[0]}] → Bucket ${f.variables?.bucketIdx ?? ci[1]}`;
   }
   return `So sánh: [${ci[0]}]↔[${ci[1]}]`;
 });

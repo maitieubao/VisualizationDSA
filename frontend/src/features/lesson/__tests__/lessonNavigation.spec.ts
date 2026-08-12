@@ -1,17 +1,25 @@
 // @vitest-environment jsdom
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, vi, afterEach } from 'vitest';
 import { mount, type VueWrapper } from '@vue/test-utils';
 import LessonCompletionModal from '../../../views/lesson/LessonCompletionModal.vue';
 import BaseIcon from '../../../shared/components/BaseIcon.vue';
 
+let wrapper: VueWrapper | null = null;
+
 function mountModal(props: { quizId?: string | null; nextLessonId?: string | null; xpReward?: number }): VueWrapper {
-  return mount(LessonCompletionModal, {
+  wrapper = mount(LessonCompletionModal, {
     props: { show: true, xpReward: props.xpReward ?? 100, quizId: props.quizId ?? null, nextLessonId: props.nextLessonId ?? null },
     global: { components: { BaseIcon } },
   });
+  return wrapper;
 }
 
 describe('LessonCompletionModal.vue — điều hướng sau hoàn thành bài', () => {
+  // LM-070: unmount wrapper giữa các test — tránh DOM/event listener rò rỉ.
+  afterEach(() => {
+    wrapper?.unmount();
+    wrapper = null;
+  });
   it('TC-A5.1: có quizId → nút "Làm bài trắc nghiệm liên kết" hiển thị và emit go-quiz', async () => {
     const wrapper = mountModal({ quizId: 'quiz-abc', nextLessonId: null });
     const quizBtn = wrapper.findAll('button').find(b => b.text().includes('Làm bài trắc nghiệm liên kết'));

@@ -1,4 +1,4 @@
-import type { FrameDTO } from '../../types/algorithm.types';
+import type { FrameDTO, HighlightIndices } from '../../types/algorithm.types';
 
 export interface BoxArrayColors {
   default: string;
@@ -39,6 +39,8 @@ export function drawBoxArray(
 ): void {
   const n = frame.dataState?.length ?? 0;
   if (n === 0) return;
+  const highlights: HighlightIndices = frame.highlights ?? { compare: [], swap: [], sorted: [], dimmed: [], active: [] };
+  const dataState = frame.dataState ?? [];
   
   
   const maxTotalW = w - MARGIN * 2;
@@ -63,17 +65,17 @@ export function drawBoxArray(
   const y = (h - boxSize) / 2 + 15;
 
   
-  const low = anim ? anim.low : frame.highlights.low;
-  const lowOpacity = anim ? anim.lowOpacity : (frame.highlights.low != null ? 1.0 : 0.0);
+  const low = anim ? anim.low : highlights.low;
+  const lowOpacity = anim ? anim.lowOpacity : (highlights.low != null ? 1.0 : 0.0);
   
-  const high = anim ? anim.high : frame.highlights.high;
-  const highOpacity = anim ? anim.highOpacity : (frame.highlights.high != null ? 1.0 : 0.0);
+  const high = anim ? anim.high : highlights.high;
+  const highOpacity = anim ? anim.highOpacity : (highlights.high != null ? 1.0 : 0.0);
   
-  const mid = anim ? anim.mid : frame.highlights.mid;
-  const midOpacity = anim ? anim.midOpacity : (frame.highlights.mid != null ? 1.0 : 0.0);
+  const mid = anim ? anim.mid : highlights.mid;
+  const midOpacity = anim ? anim.midOpacity : (highlights.mid != null ? 1.0 : 0.0);
 
-  const target = frame.highlights.target;
-  const foundIdx = frame.highlights.found;
+  const target = highlights.target;
+  const foundIdx = highlights.found;
 
   
   if (target !== undefined && target !== null) {
@@ -177,8 +179,8 @@ export function drawBoxArray(
   
   for (let i = 0; i < n; i++) {
     ctx.save();
-    const isDimmed = frame.highlights.dimmed.includes(i);
-    const isCompare = frame.highlights.compare.includes(i);
+    const isDimmed = (highlights.dimmed ?? []).includes(i);
+    const isCompare = highlights.compare.includes(i);
     const isFound = foundIdx === i;
     const isMid = mid !== null && mid !== undefined && Math.round(mid) === i;
 
@@ -217,7 +219,7 @@ export function drawBoxArray(
       ctx.font = `bold ${Math.min(15, curBoxSize * 0.45)}px monospace`;
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
-      ctx.fillText(String(frame.dataState[i]), boxX + curBoxSize / 2, boxY + curBoxSize / 2);
+      ctx.fillText(String(dataState[i]), boxX + curBoxSize / 2, boxY + curBoxSize / 2);
     }
 
     
@@ -357,7 +359,7 @@ export function drawBoxArray(
     const px = startX + mid * (boxSize + gap) + boxSize / 2;
     const midTopY = y - 4;
     const targetVal = target;
-    const midVal = frame.dataState[Math.round(mid)];
+    const midVal = dataState[Math.round(mid)];
 
     if (targetVal !== undefined && targetVal !== null && midVal !== undefined) {
       let decisionText = '';

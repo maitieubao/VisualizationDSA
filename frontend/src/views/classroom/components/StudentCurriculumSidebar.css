@@ -117,7 +117,12 @@
   cursor: pointer;
 }
 
-.curriculum-item:hover {
+.curriculum-item:focus-visible {
+  outline: 2px solid var(--color-accent-primary);
+  outline-offset: 2px;
+}
+
+.curriculum-item:hover:not(.item-locked) {
   background: var(--color-bg-hover);
 }
 
@@ -263,5 +268,16 @@
   
   .item-meta {
     font-size: 9px;
+  }
+}
+
+/* CR-027: mobile (drawer) — bỏ sticky top-24 + max-height + overflow lồng nhau;
+   chỉ còn DUY NHẤT aside drawer đảm nhận scroll → hết double scrollbar. */
+@media (max-width: 1023px) {
+  .curriculum-sidebar {
+    position: static;
+    top: auto;
+    max-height: none;
+    overflow-y: visible;
   }
 }

@@ -1,13 +1,13 @@
 ---
-title: Giải mẫu 6 bài toán LeetCode
-description: Áp dụng kiến thức thuật toán và cấu trúc dữ liệu để "đè bẹp" 6 bài toán kinh điển nhất trên nền tảng LeetCode bằng C#. Tối ưu hóa Big O và sử dụng Span<T>.
+title: Giải mẫu 5 bài toán LeetCode
+description: Áp dụng kiến thức thuật toán và cấu trúc dữ liệu để "đè bẹp" 5 bài toán kinh điển nhất trên nền tảng LeetCode bằng C#, kèm kỹ thuật tối ưu Big O và sức mạnh của Span<T>.
 ---
 
-# Giải mẫu 6 bài toán LeetCode Kinh điển {#leetcode-examples}
+# Giải mẫu 5 bài toán LeetCode Kinh điển {#leetcode-examples}
 
 Bạn đã học xong lý thuyết (Big O, Sorting, Searching, Stack, Queue, Tree, Graph). Giờ là lúc mang vũ khí ra chiến trường! **LeetCode** là nền tảng luyện tập thuật toán phổ biến nhất thế giới, được hầu hết các tập đoàn công nghệ lớn (FAANG) sử dụng để phỏng vấn ứng viên.
 
-Dưới đây là 6 bài toán "Kinh điển của Kinh điển", bao phủ các dạng kỹ thuật quan trọng nhất. Mỗi bài toán đều được phân tích cặn kẽ Độ phức tạp Big O và cách vận dụng tối đa sức mạnh của ngôn ngữ C#.
+Dưới đây là 5 bài toán "Kinh điển của Kinh điển", bao phủ các dạng kỹ thuật quan trọng nhất. Mỗi bài toán đều được phân tích cặn kẽ Độ phức tạp Big O và cách vận dụng tối đa sức mạnh của ngôn ngữ C#.
 
 ---
 

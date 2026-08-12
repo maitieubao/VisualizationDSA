@@ -1,4 +1,4 @@
-import { computed, ref, watch, onMounted, onUnmounted } from 'vue';
+import { computed } from 'vue';
 import type { SortFrame } from '../types/sorting.types';
 
 export function useRadixSortVisualizer(frame: () => SortFrame | null) {
@@ -38,10 +38,14 @@ export function useRadixSortVisualizer(frame: () => SortFrame | null) {
   const arrGap = computed(() => n.value <= 8 ? '8px' : '5px');
   const cellFs = computed(() => n.value <= 8 ? '14px' : '12px');
 
+  // SV-008 (EC-022): min 1 pass thay Math.min(...values) — mảng lớn không RangeError
   const countOffset = computed(() => {
     const values = frame()?.arrayState;
     if (!values || values.length === 0) return 0;
-    const min = Math.min(...values);
+    let min = values[0];
+    for (let i = 1; i < values.length; i++) {
+      if (values[i] < min) min = values[i];
+    }
     return min < 0 ? -min : 0;
   });
 
@@ -135,14 +139,6 @@ export function useRadixSortVisualizer(frame: () => SortFrame | null) {
     return pos + 1 < s.length ? s.substring(pos + 1) : '';
   }
 
-  const childIndices = computed(() => {
-    const list: number[] = [];
-    for (let i = 1; i < n.value; i++) {
-      list.push(i);
-    }
-    return list;
-  });
-
   return {
     displayItems,
     n,
@@ -166,6 +162,5 @@ export function useRadixSortVisualizer(frame: () => SortFrame | null) {
     activeDigit,
     prefixDigits,
     suffixDigits,
-    childIndices,
   };
 }

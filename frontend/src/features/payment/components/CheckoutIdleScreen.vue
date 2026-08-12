@@ -17,14 +17,20 @@
       </span>
       <span v-else>Bắt đầu Thanh toán (VietQR)</span>
     </button>
-    <div v-if="error" class="mt-4 text-xs text-accent-red font-medium flex items-center justify-center gap-1">
+    <!-- PM-027: map lỗi raw (HTTP 500...) → tiếng Việt thân thiện -->
+    <div v-if="friendlyError" class="mt-4 text-xs text-accent-red font-medium flex items-center justify-center gap-1" role="alert">
       <BaseIcon name="warning" class="w-3.5 h-3.5" />
-      {{ error }}
+      {{ friendlyError }}
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-defineProps<{ isLoading: boolean; error: string | null }>();
+import { computed } from 'vue';
+import { getErrorMessage } from '../../../utils/format';
+
+const props = defineProps<{ isLoading: boolean; error: string | null }>();
 defineEmits<{ start: [] }>();
+
+const friendlyError = computed(() => getErrorMessage(props.error));
 </script>

@@ -36,11 +36,11 @@
                 <select v-model="form.prerequisiteItemId" class="form-input">
                   <option value="">Không có (Mở ngay khi module mở)</option>
                   <option 
-                    v-for="m in module?.items" 
+                    v-for="m in prerequisiteOptions" 
                     :key="m.id" 
                     :value="m.id"
                   >
-                    {{ m.overrideTitle || m.lessonTitle || m.quizTitle || m.codelabTitle || 'Untitled' }} (Bước {{ module.items.indexOf(m) + 1 }})
+                    {{ m.overrideTitle || m.lessonTitle || m.quizTitle || m.codelabTitle || 'Untitled' }} (Bước {{ prerequisiteOptions.indexOf(m) + 1 }})
                   </option>
                 </select>
                 <p class="form-hint">Chỉ mở khi bài học được chọn đã hoàn thành.</p>
@@ -99,7 +99,7 @@
               <div class="form-field">
                 <label class="form-label flex items-center gap-2 cursor-pointer">
                   <input 
-                    v-model="form.isHiddenForStudent" 
+                    v-model="form.isHidden" 
                     type="checkbox" 
                     class="form-checkbox"
                   >
@@ -168,7 +168,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch } from 'vue';
+import { ref, computed, watch } from 'vue';
 import BaseIcon from '@/shared/components/BaseIcon.vue';
 
 interface Props {
@@ -187,16 +187,24 @@ const emit = defineEmits<Emits>();
 
 const saving = ref(false);
 
+// LS-016: dùng đúng tên field isHidden (khớp interface ClassroomModuleItem) —
+// không còn isHiddenForStudent gây mất persist khi toggle.
 const form = ref({
   unlockAt: '',
   dueAt: '',
   maxAttempts: null as number | null,
-  isHiddenForStudent: false,
+  isHidden: false,
   isRequired: true,
   isSequential: true,
   prerequisiteItemId: '',
   overrideTitle: '',
   overrideDescription: ''
+});
+
+// LS-032: lọc bỏ chính item đang chỉnh sửa khỏi danh sách prerequisite (chống tự khóa vòng).
+const prerequisiteOptions = computed(() => {
+  const items = props.module?.items ?? [];
+  return items.filter((m: any) => !props.item || m.id !== props.item.id);
 });
 
 watch(() => props.show, (newShow) => {
@@ -205,7 +213,7 @@ watch(() => props.show, (newShow) => {
     form.value.unlockAt = item.unlockAt ? new Date(item.unlockAt).toISOString().slice(0, 16) : '';
     form.value.dueAt = item.dueAt ? new Date(item.dueAt).toISOString().slice(0, 16) : '';
     form.value.maxAttempts = item.maxAttempts;
-    form.value.isHiddenForStudent = item.isHiddenForStudent || item.isHidden;
+    form.value.isHidden = !!item.isHidden;
     form.value.isRequired = item.isRequired;
     form.value.isSequential = item.isSequential;
     form.value.prerequisiteItemId = item.prerequisiteItemId || '';
@@ -217,7 +225,7 @@ watch(() => props.show, (newShow) => {
       unlockAt: '',
       dueAt: '',
       maxAttempts: null,
-      isHiddenForStudent: false,
+      isHidden: false,
       isRequired: true,
       isSequential: true,
       prerequisiteItemId: '',

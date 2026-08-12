@@ -71,6 +71,32 @@ describe('HeapSortAnimationEngine', () => {
     expect(() => engine.draw(ctx, 400, 300, curr, prev, 0.5)).not.toThrow();
   });
 
+  it('AL-030: isSiftSwap — swap cha↔con vẽ 2 node bay cung (giá trị trao đổi)', () => {
+    const engine = HeapSortAnimationEngine.instance();
+    const ctx = makeCtx() as unknown as CanvasRenderingContext2D;
+    // activeIdx = 0 (cha), swappingIndices [0,1] (cha ↔ con trái) → isSiftSwap = true
+    const prev = makeHeapSnap({
+      array: [13, 11, 12, 5, 6, 7],
+      heapState: { phase: 'build', heapSize: 6, activeIdx: 0, siftPath: [0, 1] },
+      swappingIndices: [0, 1],
+      comparingIndices: undefined,
+    });
+    const curr = makeHeapSnap({
+      array: [11, 13, 12, 5, 6, 7],
+      heapState: { phase: 'build', heapSize: 6, activeIdx: 1, siftPath: [0, 1] },
+      swappingIndices: [0, 1],
+      comparingIndices: undefined,
+    });
+    expect(() => engine.draw(ctx, 400, 300, curr, prev, 0.5)).not.toThrow();
+
+    // Nhánh isSiftSwap: 2 giá trị bay (arr[1]=13 và arr[0]=11) được vẽ label qua fillText
+    const fillTextMock = ctx.fillText as unknown as ReturnType<typeof vi.fn>;
+    const labels = fillTextMock.mock.calls.map(c => c[0]);
+    expect(labels).toContain('13');
+    expect(labels).toContain('11');
+    expect(labels).toContain('12'); // con phải không swap vẫn vẽ ở vị trí cũ
+  });
+
   it('draw tolerates single-element and full-heap states', () => {
     const engine = HeapSortAnimationEngine.instance();
     const ctx = makeCtx() as unknown as CanvasRenderingContext2D;

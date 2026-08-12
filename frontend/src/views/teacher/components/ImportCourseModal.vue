@@ -222,7 +222,7 @@ import BaseIcon from '@/shared/components/BaseIcon.vue';
 
 interface Props {
   show: boolean;
-  teacherId: string;
+  classroomId: string;
 }
 
 interface Emits {
@@ -247,10 +247,18 @@ const form = reactive({
 
 const BASE_URL = import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:5055';
 
+function getAuthHeaders(): Record<string, string> {
+  const token = localStorage.getItem('accessToken');
+  return {
+    'Content-Type': 'application/json',
+    ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+  };
+}
+
 async function fetchCourses() {
   try {
     const res = await fetch(`${BASE_URL}/api/v1/concepts/courses`, {
-      headers: { 'Content-Type': 'application/json' }
+      headers: getAuthHeaders()
     });
     if (res.ok) {
       const data = await res.json();
@@ -275,7 +283,7 @@ async function onCourseSelect() {
     
     try {
       const res = await fetch(`${BASE_URL}/api/v1/concepts/courses/${form.courseId}`, {
-        headers: { 'Content-Type': 'application/json' }
+        headers: getAuthHeaders()
       });
       if (res.ok) {
         const data = await res.json();
@@ -296,14 +304,16 @@ async function onCourseSelect() {
   }
 }
 
+// LS-004: import theo classroomId (không phải teacherId) — khớp route
+// /classrooms/{classroomId}/import-course backend bổ sung.
 async function handleImport() {
   if (!form.courseId || form.selectedModuleIds.length === 0) return;
   
   importing.value = true;
   try {
-    const res = await fetch(`${BASE_URL}/api/v1/classrooms/${props.teacherId}/import-course`, {
+    const res = await fetch(`${BASE_URL}/api/v1/classrooms/${props.classroomId}/import-course`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: getAuthHeaders(),
       body: JSON.stringify({
         courseId: form.courseId,
         includeAllModules: form.selectedModuleIds.length === selectedCourseModules.value.length,

@@ -3,7 +3,7 @@
     <div class="tree-view-container" :style="{ height: treeContainerHeight + 'px' }">
       <div
         class="tree-scroll-area"
-        :style="{ transform: `translateY(${-visibleLevelOffset * TREE_ROW_HEIGHT}px)` }"
+        :style="{ transform: treeScrollTransform }"
       >
         <div
           v-for="level in allLevels"
@@ -25,13 +25,13 @@
             >
               <transition-group name="sort-list" tag="div" class="flex justify-center gap-1 w-full">
                 <div
-                  v-for="idx in (sub.end - sub.start + 1)"
-                  :key="sub.start + idx - 1"
+                  v-for="(item, offset) in getItemsForSubarray(sub)"
+                  :key="item.id"
                   class="subarray-item"
-                  :class="getItemClass(sub.start + idx - 1, sub)"
+                  :class="getItemClass(sub.start + offset, sub)"
                   :style="{ width: itemSize, height: itemHeight, fontSize: fontSize }"
                 >
-                  {{ getItemAt(sub.start + idx - 1)?.value }}
+                  {{ item.value }}
                 </div>
               </transition-group>
             </div>
@@ -46,7 +46,10 @@
 import { computed } from 'vue';
 import type { SortFrame, SubArray } from '../types/sorting.types';
 
-const TREE_ROW_HEIGHT = 104;
+// SV-010: TREE_ROW_HEIGHT là hằng số DUY NHẤT — khớp đúng chiều cao CSS .tree-level-row (96px)
+const TREE_ROW_HEIGHT = 96;
+// padding-top của .tree-scroll-area (8px) — bù offset để hàng chủ động nằm sát mép trên container
+const TREE_TOP_PADDING = 8;
 
 const props = defineProps<{
   frame: SortFrame | null;
@@ -88,6 +91,13 @@ const visibleLevelOffset = computed(() => {
   const active = activeSubarray.value;
   if (!active || allLevels.value.length <= 3) return 0;
   return Math.max(0, active.level - 1);
+});
+
+// SV-010: dịch chuyển = số hàng × TREE_ROW_HEIGHT + padding-top — hết lệch đầu/cuối khi cuộn sâu
+const treeScrollTransform = computed(() => {
+  const offset = visibleLevelOffset.value;
+  if (offset <= 0) return 'translateY(0px)';
+  return `translateY(${-(offset * TREE_ROW_HEIGHT + TREE_TOP_PADDING)}px)`;
 });
 
 function getLevelLabel(level: number): string {
@@ -143,8 +153,11 @@ function getItemClass(idx: number, sub: SubArray) {
   return 'dimmed-item';
 }
 
-function getItemAt(idx: number) {
-  return props.frame?.arrayStateWithIds?.[idx] || null;
+// SV-003: lấy items theo identity id (không theo vị trí) để FLIP animation trộn chạy đúng
+function getItemsForSubarray(sub: SubArray): Array<{ id: number; value: number }> {
+  const items = props.frame?.arrayStateWithIds;
+  if (!items) return [];
+  return items.slice(sub.start, sub.end + 1);
 }
 </script>
 

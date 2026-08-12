@@ -21,6 +21,7 @@ export function getLessonAuthToken(): string | null {
 export interface LessonProgressPayload {
   lessonId: string;
   hasWatchedVisualizer: boolean;
+  /** Thang 0..100 (percent) — backend clamp 0..100 và hiểu là % (LM-021). */
   quizScore: number | null;
   bestScore: number;
   quizPassed: boolean;

@@ -3,7 +3,7 @@ import { ref, computed } from 'vue';
 import type { Lesson, QuizQuestion } from '../types/lesson.types';
 import { LESSONS } from '../../../data/lessons';
 import { useAuthStore } from '../../auth/store/useAuthStore';
-import { fetchLessonProgress, saveLessonProgress, awardXp, fetchLessonDetail, getLessonAuthToken, type LessonDetailResponse } from '../services/lessonApi';
+import { fetchLessonProgress, saveLessonProgress, awardXp, fetchLessonDetail, getLessonAuthToken, type LessonDetailResponse, type LessonProgressPayload } from '../services/lessonApi';
 import { courseApi } from '../../../services/courseApi';
 import { statelessQuizApi } from '../../quiz-system/service/statelessQuizApi';
 import { CODELAB_TASK_REGISTRY } from '../utils/codelabTaskRegistry';
@@ -62,6 +62,8 @@ export const useLessonStore = defineStore('lessonStudy', () => {
   const error = ref<string | null>(null);
   // Dữ liệu đang hiển thị là bản local (API lỗi) — để UI hiển thị cảnh báo.
   const isOfflineFallback = ref<boolean>(false);
+  // Cờ đã đọc hết bước Lý Thuyết (mở khóa bước Trực Quan Hóa — LM-015).
+  const theoryRead = ref<boolean>(false);
 
   // ── Progress ──
   const hasWatchedVisualizer = ref<boolean>(false);
@@ -101,6 +103,7 @@ export const useLessonStore = defineStore('lessonStudy', () => {
   // ── Online/offline ──
   window.addEventListener('online', () => {
     isOnline.value = true;
+    void flushPendingSyncs();
     syncToServer().catch(() => {});
   });
   window.addEventListener('offline', () => {
@@ -126,6 +129,14 @@ export const useLessonStore = defineStore('lessonStudy', () => {
 
   function saveToLocalStorage() {
     if (!currentLesson.value) return;
+    const key = getStorageKey(currentLesson.value.id);
+    // Cờ `completed` là một chiều (LM-034): bài đã hoàn thành không bao giờ bị
+    // thoái lui khi "Làm lại" quiz — chỉ đọc trạng thái trước đó rồi OR thêm.
+    let previousCompleted = false;
+    try {
+      const raw = localStorage.getItem(key);
+      if (raw) previousCompleted = JSON.parse(raw).completed === true;
+    } catch { /* dữ liệu cũ hỏng — bỏ qua */ }
     const data = {
       hasWatchedVisualizer: hasWatchedVisualizer.value,
       quizScore: quizScore.value,
@@ -133,13 +144,59 @@ export const useLessonStore = defineStore('lessonStudy', () => {
       codelabCompleted: codelabCompleted.value,
       xpAwarded: xpAwarded.value,
       // Cờ hoàn thành bài: đúng cho cả bài KHÔNG có codelab (quiz pass = xong).
-      completed: isLessonComplete.value,
+      completed: previousCompleted || isLessonComplete.value,
     };
-    localStorage.setItem(getStorageKey(currentLesson.value.id), JSON.stringify(data));
+    localStorage.setItem(key, JSON.stringify(data));
+  }
+
+  /** Đúng khi `lessonId` vẫn là bài học đang hiển thị (chống race đổi bài — LM-010). */
+  function isSameLesson(lessonId: string): boolean {
+    return currentLesson.value?.id === lessonId;
+  }
+
+  /** Đổi số câu đúng (count) sang thang 0..100 (percent) khớp backend (LM-021). */
+  function quizScoreToPercent(count: number | null, total: number): number | null {
+    if (count === null || total <= 0) return null;
+    return Math.max(0, Math.min(100, Math.round((count / total) * 100)));
+  }
+
+  /** Đổi percent (server lưu thang 0..100) về số câu đúng cho UI. */
+  function quizPercentToCount(percent: number, total: number): number {
+    if (total <= 0) return percent;
+    return Math.round((percent / 100) * total);
+  }
+
+  // ── Retry sync theo (lessonId, payload) đã capture (LM-030) ──
+  const MAX_SYNC_RETRIES = 3;
+  const pendingSyncs = new Map<string, { payload: LessonProgressPayload; attempts: number }>();
+  let syncRetryTimer: ReturnType<typeof setTimeout> | null = null;
+
+  async function flushPendingSyncs(): Promise<void> {
+    if (!isOnline.value || !getLessonAuthToken() || pendingSyncs.size === 0) return;
+    for (const [lessonId, entry] of [...pendingSyncs.entries()]) {
+      if (entry.attempts >= MAX_SYNC_RETRIES) {
+        pendingSyncs.delete(lessonId);
+        continue;
+      }
+      try {
+        await saveLessonProgress(entry.payload);
+        pendingSyncs.delete(lessonId);
+      } catch {
+        entry.attempts += 1;
+      }
+    }
+    if (pendingSyncs.size > 0 && isOnline.value) {
+      if (syncRetryTimer) clearTimeout(syncRetryTimer);
+      syncRetryTimer = setTimeout(() => {
+        syncRetryTimer = null;
+        void flushPendingSyncs();
+      }, 10000);
+    }
   }
 
   async function syncToServer(force = false) {
-    if (!currentLesson.value) return;
+    const lessonId = currentLesson.value?.id;
+    if (!lessonId) return;
 
     const token = getLessonAuthToken();
     if (!token || !isOnline.value) {
@@ -149,27 +206,34 @@ export const useLessonStore = defineStore('lessonStudy', () => {
 
     if (isSyncing.value && !force) return;
 
+    // Snapshot payload NGAY tại thời điểm bắt đầu — không đọc state lúc sau
+    // (bài có thể đã đổi — LM-010/LM-030).
+    const questions = currentLesson.value?.quizQuestions ?? [];
+    const payload: LessonProgressPayload = {
+      lessonId,
+      hasWatchedVisualizer: hasWatchedVisualizer.value,
+      // Backend hiểu quizScore là thang 0..100 (percent) — LM-021.
+      quizScore: quizScoreToPercent(quizScore.value, questions.length),
+      bestScore: bestScore.value,
+      quizPassed: quizPassed.value,
+      codelabCompleted: codelabCompleted.value,
+      xpAwarded: xpAwarded.value,
+    };
+
     isSyncing.value = true;
     try {
-      const payload = {
-        lessonId: currentLesson.value.id,
-        hasWatchedVisualizer: hasWatchedVisualizer.value,
-        quizScore: quizScore.value,
-        bestScore: bestScore.value,
-        quizPassed: quizPassed.value,
-        codelabCompleted: codelabCompleted.value,
-        xpAwarded: xpAwarded.value,
-      };
-
       await saveLessonProgress(payload);
-      saveToLocalStorage();
+      if (isSameLesson(lessonId)) saveToLocalStorage();
     } catch (err) {
       console.warn('Đồng bộ thất bại, sẽ thử lại sau', err);
-      saveToLocalStorage();
+      if (isSameLesson(lessonId)) saveToLocalStorage();
 
-      setTimeout(() => {
-        if (isOnline.value) syncToServer(true);
-      }, 10000);
+      // Retry theo đúng (lessonId, payload) bị lỗi — kể cả khi user đã chuyển bài.
+      const existing = pendingSyncs.get(lessonId);
+      if (!existing || existing.attempts < MAX_SYNC_RETRIES) {
+        pendingSyncs.set(lessonId, { payload, attempts: existing?.attempts ?? 0 });
+      }
+      void flushPendingSyncs();
     } finally {
       isSyncing.value = false;
     }
@@ -224,6 +288,7 @@ export const useLessonStore = defineStore('lessonStudy', () => {
     isOfflineFallback.value = false;
 
     activeStep.value = 1;
+    theoryRead.value = false;
     hasWatchedVisualizer.value = false;
     quizScore.value = null;
     bestScore.value = 0;
@@ -281,7 +346,14 @@ export const useLessonStore = defineStore('lessonStudy', () => {
           if (requestId !== lessonLoadRequestId) return;
           if (serverData && Object.keys(serverData).length > 0) {
             hasWatchedVisualizer.value = !!serverData.hasWatchedVisualizer || hasWatchedVisualizer.value;
-            if (serverData.quizScore !== undefined) quizScore.value = serverData.quizScore;
+            // Server lưu quizScore theo thang 0..100 (percent) — quy đổi về số câu
+            // đúng theo tổng câu hỏi của bài để UI hiển thị nhất quán (LM-021).
+            const totalQuestions = currentLesson.value?.quizQuestions?.length ?? 0;
+            if (typeof serverData.quizScore === 'number' && totalQuestions > 0) {
+              quizScore.value = quizPercentToCount(serverData.quizScore, totalQuestions);
+            } else if (serverData.quizScore === null) {
+              quizScore.value = null;
+            }
             if (serverData.bestScore !== undefined && serverData.bestScore > bestScore.value) bestScore.value = serverData.bestScore;
             codelabCompleted.value = !!serverData.codelabCompleted || codelabCompleted.value;
             if (serverData.xpAwarded !== undefined && serverData.xpAwarded > xpAwarded.value) xpAwarded.value = serverData.xpAwarded;
@@ -346,15 +418,18 @@ export const useLessonStore = defineStore('lessonStudy', () => {
   }
 
   async function submitQuiz(answers: Record<string, number>) {
-    if (!currentLesson.value) return;
+    const lessonId = currentLesson.value?.id;
+    const lesson = currentLesson.value;
+    if (!lessonId || !lesson) return;
 
-    const questions = currentLesson.value.quizQuestions ?? [];
+    const questions = lesson.quizQuestions ?? [];
     let correct = 0;
 
     for (const q of questions) {
       if (answers[q.id] === q.correctIndex) correct++;
     }
 
+    // Mutate trước await — đang chắc chắn ở đúng bài (chưa có cơ hội đổi bài).
     quizScore.value = correct;
     if (correct > bestScore.value) {
       bestScore.value = correct;
@@ -362,23 +437,27 @@ export const useLessonStore = defineStore('lessonStudy', () => {
 
     saveToLocalStorage();
     await syncToServer(true);
+    if (!isSameLesson(lessonId)) return; // đã đổi bài — không ghi XP cho bài cũ
 
     if (quizPassed.value) {
       recordCompletedAlgorithm();
       // Bài KHÔNG có CodeLab: quiz pass = hoàn thành bài → nhận FULL XP.
       // Bài có CodeLab: quiz chỉ trả 50%, phần còn lại ở bước CodeLab.
-      const hasCodelab = !!currentLesson.value.codelabTask;
+      const hasCodelab = !!currentLesson.value?.codelabTask;
       const quizXpCap = hasCodelab
-        ? Math.floor(currentLesson.value.xpReward * 0.5)
-        : currentLesson.value.xpReward;
+        ? Math.floor(lesson.xpReward * 0.5)
+        : lesson.xpReward;
       if (xpAwarded.value < quizXpCap) {
         const diff = quizXpCap - xpAwarded.value;
         try {
-          await awardXp(diff, `Hoàn thành Quiz: ${currentLesson.value.title}`);
+          await awardXp(diff, `Hoàn thành Quiz: ${lesson.title}`);
+          if (!isSameLesson(lessonId)) return;
           xpAwarded.value += diff;
           saveToLocalStorage();
           await syncToServer(true);
+          if (!isSameLesson(lessonId)) return;
         } catch (e) {
+          if (!isSameLesson(lessonId)) return;
           console.warn('API award-xp lỗi, lưu XP local', e);
           xpAwarded.value += diff;
           saveToLocalStorage();
@@ -392,7 +471,9 @@ export const useLessonStore = defineStore('lessonStudy', () => {
   }
 
   async function completeCodelab() {
-    if (!currentLesson.value) return;
+    const lessonId = currentLesson.value?.id;
+    const lesson = currentLesson.value;
+    if (!lessonId || !lesson) return;
 
     if (!codelabCompleted.value) {
       codelabCompleted.value = true;
@@ -400,16 +481,20 @@ export const useLessonStore = defineStore('lessonStudy', () => {
 
       saveToLocalStorage();
       await syncToServer(true);
+      if (!isSameLesson(lessonId)) return; // đã đổi bài — không ghi XP cho bài cũ
 
-      const totalXp = currentLesson.value.xpReward;
+      const totalXp = lesson.xpReward;
       if (xpAwarded.value < totalXp) {
         const diff = totalXp - xpAwarded.value;
         try {
-          await awardXp(diff, `Hoàn thành CodeLab: ${currentLesson.value.title}`);
+          await awardXp(diff, `Hoàn thành CodeLab: ${lesson.title}`);
+          if (!isSameLesson(lessonId)) return;
           xpAwarded.value += diff;
           saveToLocalStorage();
           await syncToServer(true);
+          if (!isSameLesson(lessonId)) return;
         } catch (e) {
+          if (!isSameLesson(lessonId)) return;
           console.warn('API award-xp lỗi, lưu XP local', e);
           xpAwarded.value += diff;
           saveToLocalStorage();
@@ -418,27 +503,49 @@ export const useLessonStore = defineStore('lessonStudy', () => {
     }
   }
 
+  /** Kiểm tra bước có được phép truy cập hay không (đồng bộ với goToStep). */
+  function canAccessStep(stepNumber: number): boolean {
+    if (stepNumber === 2) {
+      // Bước 2 mở khóa khi đã đọc xong Lý Thuyết hoặc đã tiến xa hơn (LM-015).
+      return theoryRead.value || hasWatchedVisualizer.value || activeStep.value >= 2;
+    }
+    if (stepNumber === 3) {
+      return hasWatchedVisualizer.value || quizPassed.value || activeStep.value >= 3;
+    }
+    if (stepNumber === 4) {
+      return !!currentLesson.value?.codelabTask
+        && (quizPassed.value || codelabCompleted.value || activeStep.value >= 4);
+    }
+    return true;
+  }
+
+  function markTheoryRead() {
+    theoryRead.value = true;
+  }
+
   function goToStep(stepNumber: number) {
-    if (stepNumber === 3 && !hasWatchedVisualizer.value && !quizPassed.value) return;
-    if (stepNumber === 4 && !quizPassed.value) return;
-    if (stepNumber === 4 && !currentLesson.value?.codelabTask) return;
+    if (!canAccessStep(stepNumber)) return;
     activeStep.value = stepNumber;
   }
 
   // ── Course detail for sidebar ──
+  let courseLoadRequestId = 0;
   async function loadCourseDetail(courseId: string) {
+    const requestId = ++courseLoadRequestId;
     if (currentCourse.value?.id === courseId) return;
     isLoadingCourse.value = true;
     try {
       const data = await courseApi.getCourseById(courseId);
+      if (requestId !== courseLoadRequestId) return; // response cũ — bỏ qua (LM-031)
       currentCourse.value = {
         ...data,
         coverImage: data.coverImageUrl ?? data.coverImage,
       } as unknown as Course;
     } catch (e) {
+      if (requestId !== courseLoadRequestId) return;
       console.warn('Không tải được chi tiết khóa học cho sidebar:', e);
     } finally {
-      isLoadingCourse.value = false;
+      if (requestId === courseLoadRequestId) isLoadingCourse.value = false;
     }
   }
 
@@ -451,6 +558,7 @@ export const useLessonStore = defineStore('lessonStudy', () => {
     isLoadingCourse,
     error,
     isOfflineFallback,
+    theoryRead,
     hasWatchedVisualizer,
     quizScore,
     bestScore,
@@ -466,6 +574,8 @@ export const useLessonStore = defineStore('lessonStudy', () => {
     loadLesson,
     loadCourseDetail,
     markVisualizerWatched,
+    markTheoryRead,
+    canAccessStep,
     submitQuiz,
     resetQuiz,
     completeCodelab,

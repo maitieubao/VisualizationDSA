@@ -15,11 +15,10 @@
     <div class="r-row r-row--between banner-middle-row" style="padding-top:6px;margin-top:2px">
       <div class="r-row" style="gap:5px;flex-wrap:wrap">
         <span class="r-lbl">Chữ số:</span>
-        <span class="r-chip" :class="activeDigitPlace === 1 ? 'r-chip--on' : ''">Đơn vị (1s)</span>
-        <BaseIcon name="arrow-right" class="r-arrow" />
-        <span class="r-chip" :class="activeDigitPlace === 10 ? 'r-chip--on' : ''">Chục (10s)</span>
-        <BaseIcon name="arrow-right" class="r-arrow" />
-        <span class="r-chip" :class="activeDigitPlace === 100 ? 'r-chip--on' : ''">Trăm (100s)</span>
+        <template v-for="(place, pIdx) in digitPlaces" :key="place">
+          <span class="r-chip" :class="activeDigitPlace === place ? 'r-chip--on' : ''">{{ digitPlaceChipLabel(place) }}</span>
+          <BaseIcon v-if="pIdx < digitPlaces.length - 1" name="arrow-right" class="r-arrow" />
+        </template>
       </div>
       <div class="r-row" style="gap:5px;flex-wrap:wrap">
         <span class="r-dot r-dot--y"></span><span class="r-ltxt">Chữ số quét</span>
@@ -33,6 +32,7 @@
 </template>
 
 <script setup lang="ts">
+import { computed } from 'vue';
 import { useRadixSortVisualizer } from '../../composables/useRadixSortVisualizer';
 import { parseEmojiToSvg, escapeHtmlText } from '../../../../utils/emojiParser';
 import type { SortFrame } from '../../types/sorting.types';
@@ -44,6 +44,24 @@ const {
   currentStepDescription,
   miniStepExplanation
 } = useRadixSortVisualizer(() => props.frame);
+
+// SV-036: chip chữ số sinh động theo số chữ số thật của giá trị lớn nhất — hết kẹt khi >100
+const digitPlaces = computed<number[]>(() => {
+  const values = props.frame?.arrayState ?? [];
+  let maxVal = 0;
+  for (const v of values) if (v > maxVal) maxVal = v;
+  const digits = Math.max(1, Math.floor(Math.log10(maxVal)) + 1);
+  const places: number[] = [];
+  for (let exp = 0; exp < digits; exp++) places.push(Math.pow(10, exp));
+  return places;
+});
+
+function digitPlaceChipLabel(place: number): string {
+  if (place === 1) return 'Đơn vị (1s)';
+  if (place === 10) return 'Chục (10s)';
+  if (place === 100) return 'Trăm (100s)';
+  return `${place} (${place}s)`;
+}
 </script>
 
 <style scoped>

@@ -39,7 +39,17 @@ namespace VisualizationDSA.Application.Features.Classrooms.Queries.GetTeacherCla
             if (classroom.OwnerTeacherId != request.TeacherId)
                 throw new UnauthorizedAccessException("Only the classroom owner can view the curriculum.");
 
+            // LS-009: nạp overrides của classroom — merge vào curriculum để teacher thấy đúng
+            // trạng thái đã cấu hình trong OverrideSettings (openAt/dueAt/maxAttempts/ẩn/...).
+            var overrides = await _context.ClassroomModuleItemOverrides
+                .Where(o => o.ClassroomId == request.ClassroomId)
+                .ToListAsync(cancellationToken);
+
+            var overrideDict = overrides.ToDictionary(o => o.ModuleItemId);
+
+            // Lọc lại module trong projection (InMemory provider không áp dụng filtered Include).
             var modules = classroom.Modules
+                .Where(m => !m.IsDeleted)
                 .OrderBy(m => m.OrderIndex)
                 .Select(m => new TeacherClassroomModuleDto
                 {
@@ -50,8 +60,9 @@ namespace VisualizationDSA.Application.Features.Classrooms.Queries.GetTeacherCla
                     IsHidden = m.IsHidden,
                     UnlockAt = m.UnlockAt,
                     Items = m.Items
+                        .Where(i => !i.IsDeleted)
                         .OrderBy(i => i.OrderIndex)
-                        .Select(i => MapItem(i))
+                        .Select(i => MapItem(i, overrideDict))
                         .ToList()
                 })
                 .ToList();
@@ -64,8 +75,10 @@ namespace VisualizationDSA.Application.Features.Classrooms.Queries.GetTeacherCla
             };
         }
 
-        private TeacherClassroomModuleItemDto MapItem(ClassroomModuleItem item)
+        private TeacherClassroomModuleItemDto MapItem(ClassroomModuleItem item, Dictionary<Guid, ClassroomModuleItemOverride> overrideDict)
         {
+            var itemOverride = overrideDict.GetValueOrDefault(item.Id);
+
             var dto = new TeacherClassroomModuleItemDto
             {
                 Id = item.Id,
@@ -73,13 +86,13 @@ namespace VisualizationDSA.Application.Features.Classrooms.Queries.GetTeacherCla
                 OverrideTitle = item.OverrideTitle,
                 OverrideDescription = item.OverrideDescription,
                 OrderIndex = item.OrderIndex,
-                IsRequired = item.IsRequired,
-                IsHidden = item.IsHidden,
-                UnlockAt = item.UnlockAt,
-                DueAt = item.DueAt,
-                MaxAttempts = item.MaxAttempts,
-                IsSequential = item.IsSequential,
-                PrerequisiteItemId = item.PrerequisiteItemId,
+                IsRequired = itemOverride?.IsRequired ?? item.IsRequired,
+                IsHidden = item.IsHidden || (itemOverride?.IsHiddenForStudent ?? false),
+                UnlockAt = itemOverride?.OpenAt ?? item.UnlockAt,
+                DueAt = itemOverride?.DueAt ?? item.DueAt,
+                MaxAttempts = itemOverride?.MaxAttempts ?? item.MaxAttempts,
+                IsSequential = itemOverride?.IsSequential ?? item.IsSequential,
+                PrerequisiteItemId = itemOverride?.PrerequisiteItemId ?? item.PrerequisiteItemId,
                 LessonId = item.LessonId,
                 QuizId = item.QuizId,
                 CodelabId = item.CodelabId

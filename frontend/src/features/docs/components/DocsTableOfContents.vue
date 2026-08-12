@@ -1,5 +1,5 @@
 <template>
-  <div class="docs-toc hidden lg:block w-56 xl:w-64 flex-shrink-0 pt-2 sticky top-[88px] max-h-[calc(100vh-6rem)] overflow-y-auto pb-10">
+  <div ref="tocRoot" class="docs-toc hidden lg:block w-56 xl:w-64 flex-shrink-0 pt-2 sticky top-[88px] max-h-[calc(100vh-6rem)] overflow-y-auto pb-10">
     <div class="toc-container">
       <h4 class="text-[14px] font-bold text-text-primary mb-3">Nội dung bài viết</h4>
       <ul class="space-y-1">
@@ -27,42 +27,73 @@ const props = defineProps<{
 }>();
 
 const activeId = ref<string>('');
+const tocRoot = ref<HTMLElement | null>(null);
 
+// Chỉ cuộn mượt, KHÔNG history.pushState — pushState phá vỡ hash router (DC-002).
 const scrollTo = (id: string) => {
   const el = document.getElementById(id);
   if (el) {
     el.scrollIntoView({ behavior: 'smooth' });
     activeId.value = id;
-    history.pushState(null, '', `#${id}`);
   }
+};
+
+// Scroll container thật là `.app-view` (window không bao giờ scroll) (DC-003).
+let scrollTarget: HTMLElement | Window | null = null;
+
+const findScrollTarget = (): HTMLElement | Window | null => {
+  let node = tocRoot.value;
+  while (node && node !== document.body && node !== document.documentElement) {
+    if (node.classList.contains('app-view')) return node;
+    node = node.parentElement;
+  }
+  return window;
 };
 
 const onScroll = () => {
   if (!props.headings || props.headings.length === 0) return;
   
-  const sections = props.headings.map(h => document.getElementById(h.id)).filter(Boolean) as HTMLElement[];
-  if (sections.length === 0) return;
-
+  let currentActive = '';
   
-  let currentActive = sections[0].id;
-  const scrollPosition = window.scrollY + 100; 
-
-  for (const section of sections) {
-    if (section.offsetTop <= scrollPosition) {
-      currentActive = section.id;
+  // Đo trực tiếp qua getBoundingClientRect trên container thật — không phụ thuộc offsetTop ancestor.
+  for (const heading of props.headings) {
+    const section = document.getElementById(heading.id);
+    if (!section) continue;
+    if (section.getBoundingClientRect().top <= 100) {
+      currentActive = heading.id;
     }
   }
   
-  activeId.value = currentActive;
+  activeId.value = currentActive || (props.headings[0]?.id ?? '');
 };
 
+const attachScrollListener = () => {
+  detachScrollListener();
+  scrollTarget = findScrollTarget();
+  if (scrollTarget) {
+    scrollTarget.addEventListener('scroll', onScroll, { passive: true });
+  }
+};
+
+const detachScrollListener = () => {
+  if (scrollTarget) {
+    scrollTarget.removeEventListener('scroll', onScroll);
+    scrollTarget = null;
+  }
+};
+
+// Headings đổi khi chuyển bài — tính lại highlight ngay (DC-003).
+watch(() => props.headings, () => {
+  onScroll();
+});
+
 onMounted(() => {
-  window.addEventListener('scroll', onScroll, { passive: true });
-  
+  attachScrollListener();
+  // Đợi DOM heading render xong rồi mới đánh dấu mục đang xem.
   setTimeout(onScroll, 100);
 });
 
 onUnmounted(() => {
-  window.removeEventListener('scroll', onScroll);
+  detachScrollListener();
 });
 </script>

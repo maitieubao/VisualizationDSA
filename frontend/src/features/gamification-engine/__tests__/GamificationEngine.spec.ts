@@ -4,7 +4,7 @@ import type { UserProgressState } from '../types/gamification.types';
 
 describe('GamificationEngine', () => {
   describe('checkNewUnlockedBadges', () => {
-    it('should unlock Recursion Master when meeting XP and Streak thresholds', () => {
+    it('should unlock OOP Guru when meeting XP threshold', () => {
       const userState: UserProgressState = {
         userId: 'user-001',
         totalXP: 600,
@@ -15,7 +15,7 @@ describe('GamificationEngine', () => {
         completedAlgorithms: ['quicksort', 'sorting'],
       };
       const newUnlocked = GamificationEngine.checkNewUnlockedBadges(userState);
-      expect(newUnlocked).toContain('recursion-master');
+      expect(newUnlocked).toContain('oop-guru');
     });
 
     it('should not unlock badge when XP is insufficient', () => {
@@ -29,10 +29,10 @@ describe('GamificationEngine', () => {
         completedAlgorithms: ['quicksort', 'sorting'],
       };
       const newUnlocked = GamificationEngine.checkNewUnlockedBadges(userState);
-      expect(newUnlocked).not.toContain('recursion-master');
+      expect(newUnlocked).not.toContain('oop-guru');
     });
 
-    it('should not unlock badge when Streak is insufficient', () => {
+    it('should not unlock Streak Keeper when Streak is insufficient', () => {
       const userState: UserProgressState = {
         userId: 'user-001',
         totalXP: 1500,
@@ -43,7 +43,21 @@ describe('GamificationEngine', () => {
         completedAlgorithms: ['quicksort', 'sorting'],
       };
       const newUnlocked = GamificationEngine.checkNewUnlockedBadges(userState);
-      expect(newUnlocked).not.toContain('solid-architect');
+      expect(newUnlocked).not.toContain('streak-keeper');
+    });
+
+    it('should not unlock Sorting Wizard when required algorithm is missing', () => {
+      const userState: UserProgressState = {
+        userId: 'user-001',
+        totalXP: 1000,
+        activeStreak: 5,
+        lastActiveDate: '2026-05-18',
+        unlockedBadges: [],
+        streakFreezesCount: 1,
+        completedAlgorithms: ['quicksort'],
+      };
+      const newUnlocked = GamificationEngine.checkNewUnlockedBadges(userState);
+      expect(newUnlocked).not.toContain('sorting-wizard');
     });
 
     it('should not re-unlock already unlocked badges', () => {
@@ -52,15 +66,15 @@ describe('GamificationEngine', () => {
         totalXP: 600,
         activeStreak: 4,
         lastActiveDate: '2026-05-18',
-        unlockedBadges: ['recursion-master'],
+        unlockedBadges: ['oop-guru'],
         streakFreezesCount: 1,
         completedAlgorithms: ['quicksort', 'sorting'],
       };
       const newUnlocked = GamificationEngine.checkNewUnlockedBadges(userState);
-      expect(newUnlocked).not.toContain('recursion-master');
+      expect(newUnlocked).not.toContain('oop-guru');
     });
 
-    it('should unlock SOLID Architect when meeting both thresholds', () => {
+    it('should unlock SOLID Master when meeting XP threshold', () => {
       const userState: UserProgressState = {
         userId: 'user-001',
         totalXP: 1200,
@@ -71,10 +85,10 @@ describe('GamificationEngine', () => {
         completedAlgorithms: ['quicksort', 'sorting'],
       };
       const newUnlocked = GamificationEngine.checkNewUnlockedBadges(userState);
-      expect(newUnlocked).toContain('solid-architect');
+      expect(newUnlocked).toContain('solid-master');
     });
 
-    it('should unlock multiple badges at once when thresholds are met', () => {
+    it('GM-043: should unlock exact badge list when thresholds are met', () => {
       const userState: UserProgressState = {
         userId: 'user-001',
         totalXP: 1200,
@@ -85,7 +99,13 @@ describe('GamificationEngine', () => {
         completedAlgorithms: ['quicksort', 'sorting'],
       };
       const newUnlocked = GamificationEngine.checkNewUnlockedBadges(userState);
-      expect(newUnlocked.length).toBeGreaterThanOrEqual(2);
+      expect(newUnlocked).toEqual([
+        'first-steps',
+        'sorting-wizard',
+        'oop-guru',
+        'solid-master',
+        'streak-keeper',
+      ]);
     });
 
     it('should return empty array when no new badges are unlockable', () => {
@@ -108,7 +128,10 @@ describe('GamificationEngine', () => {
         totalXP: 5000,
         activeStreak: 30,
         lastActiveDate: '2026-05-18',
-        unlockedBadges: ['recursion-master', 'solid-architect', 'sorting-champion', 'streak-warrior', 'graph-explorer'],
+        unlockedBadges: [
+          'first-steps', 'sorting-wizard', 'oop-guru', 'solid-master',
+          'pattern-hunter', 'streak-keeper', 'system-architect', 'dsa-champion',
+        ],
         streakFreezesCount: 1,
         completedAlgorithms: ['quicksort', 'sorting'],
       };
@@ -116,7 +139,7 @@ describe('GamificationEngine', () => {
       expect(newUnlocked).toEqual([]);
     });
 
-    it('should unlock Streak Warrior at 7-day streak with 200+ XP', () => {
+    it('should unlock Streak Keeper at 7-day streak with 200+ XP', () => {
       const userState: UserProgressState = {
         userId: 'user-001',
         totalXP: 250,
@@ -127,7 +150,7 @@ describe('GamificationEngine', () => {
         completedAlgorithms: ['quicksort', 'sorting'],
       };
       const newUnlocked = GamificationEngine.checkNewUnlockedBadges(userState);
-      expect(newUnlocked).toContain('streak-warrior');
+      expect(newUnlocked).toContain('streak-keeper');
     });
   });
 
@@ -150,11 +173,19 @@ describe('GamificationEngine', () => {
       });
     });
 
-    it('should have positive streak thresholds for all badges', () => {
+    it('should have non-negative streak thresholds for all badges', () => {
       const badges = GamificationEngine.getBadgeTemplates();
       badges.forEach(badge => {
-        expect(badge.streakThresholdRequired).toBeGreaterThan(0);
+        expect(badge.streakThresholdRequired).toBeGreaterThanOrEqual(0);
       });
+    });
+
+    it('GM-009: badge ids đồng bộ backend GamificationStrategy.cs:28-38', () => {
+      const ids = GamificationEngine.getBadgeTemplates().map(b => b.id);
+      expect(ids).toEqual([
+        'first-steps', 'sorting-wizard', 'oop-guru', 'solid-master',
+        'pattern-hunter', 'streak-keeper', 'system-architect', 'dsa-champion',
+      ]);
     });
   });
 

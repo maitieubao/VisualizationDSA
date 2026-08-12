@@ -115,63 +115,37 @@ curl -s http://localhost:5055/api/v1/concepts/system-design/topology
 curl -s -X POST http://localhost:5055/api/v1/concepts/system-design/execute -H "Content-Type: application/json" -d '{"scenarioId":"server-failover"}'
 ```
 
-### SOLID Principles API
+### SOLID Principles API — ❌ ĐÃ XÓA (DP-001, 2026-08-10)
 ```bash
-# List scenarios
-curl -s http://localhost:5055/api/v1/concepts/solid/scenarios
-# Execute SRP scenario (4 frames)
-curl -s -X POST http://localhost:5055/api/v1/concepts/solid/execute -H "Content-Type: application/json" -d '{"scenarioId":"srp"}'
-# Execute OCP scenario (4 frames)
-curl -s -X POST http://localhost:5055/api/v1/concepts/solid/execute -H "Content-Type: application/json" -d '{"scenarioId":"ocp"}'
-# Execute LSP scenario (4 frames)
-curl -s -X POST http://localhost:5055/api/v1/concepts/solid/execute -H "Content-Type: application/json" -d '{"scenarioId":"lsp"}'
+# Các endpoint sau ĐÃ BỊ XÓA khỏi backend (ADR-05: chuyển sang Docs Reference Style):
+# /api/v1/concepts/solid/scenarios          → 404
+# POST /api/v1/concepts/solid/execute       → 404
+# Nội dung SOLID giờ nằm ở: frontend/src/features/docs/content/solid/* (srp, ocp, lsp, isp, dip)
 ```
-Supported scenario IDs: `srp`, `ocp`, `lsp`
 
-### Design Patterns API
+### Design Patterns API — ❌ ĐÃ XÓA (DP-001, 2026-08-10)
 ```bash
-# List scenarios
-curl -s http://localhost:5055/api/v1/concepts/design-patterns/scenarios
-# Execute Strategy Pattern (4 frames)
-curl -s -X POST http://localhost:5055/api/v1/concepts/design-patterns/execute -H "Content-Type: application/json" -d '{"scenarioId":"strategy-pattern"}'
-# Execute Observer Pattern (4 frames)
-curl -s -X POST http://localhost:5055/api/v1/concepts/design-patterns/execute -H "Content-Type: application/json" -d '{"scenarioId":"observer-pattern"}'
-# Execute Singleton Pattern (4 frames)
-curl -s -X POST http://localhost:5055/api/v1/concepts/design-patterns/execute -H "Content-Type: application/json" -d '{"scenarioId":"singleton-pattern"}'
+# Các endpoint sau ĐÃ BỊ XÓA khỏi backend (ADR-05):
+# /api/v1/concepts/design-patterns/scenarios → 404
+# POST /api/v1/concepts/design-patterns/execute → 404
+# Nội dung Patterns giờ nằm ở: frontend/src/features/docs/content/patterns/* (strategy, observer, factory, singleton, decorator)
 ```
-Supported scenario IDs: `strategy-pattern`, `observer-pattern`, `singleton-pattern`
 
-### DI Container API
+### DI Container API — ❌ ĐÃ XÓA (DP-001, 2026-08-10)
 ```bash
-# List scenarios
-curl -s http://localhost:5055/api/v1/concepts/di-container/scenarios
-# Execute Lifetime Demo (5 frames)
-curl -s -X POST http://localhost:5055/api/v1/concepts/di-container/execute -H "Content-Type: application/json" -d '{"scenarioId":"lifetime-demo"}'
-# Execute Cycle Detection (4 frames)
-curl -s -X POST http://localhost:5055/api/v1/concepts/di-container/execute -H "Content-Type: application/json" -d '{"scenarioId":"cycle-detection"}'
+# Các endpoint sau ĐÃ BỊ XÓA khỏi backend (ADR-05):
+# /api/v1/concepts/di-container/scenarios → 404
+# POST /api/v1/concepts/di-container/execute → 404
+# Nội dung DI giờ nằm ở: frontend/src/features/docs/content/di/* (basics, advanced, lifecycles, keyed-services)
 ```
-Supported scenario IDs: `lifetime-demo`, `cycle-detection`
 
-## Architecture Module DTO Key Names
+## Architecture Module DTO Key Names — ❌ ĐÃ XÓA (chỉ còn OOP/SystemDesign)
 
-When parsing JSON responses, use these actual property names (not what the C# class names suggest):
-
-### Design Pattern Nodes
-- `id` (not `nodeId`), `name`, `nodeType`, `attributes`, `methods`, `x`, `y`
-- Links: `id` (not `linkId`), `sourceId`, `targetId`, `linkType`, `isActive`
-
-### DI Container Registrations
-- `interfaceName`, `implementationName`, `lifetime`, `dependencies`, `isRegistered`
-- Instances: `serviceName`, `instanceId`, `lifetime`, `resolveCount`, `isNew`
-- Graph: `dependencyGraph.nodes[]`, `dependencyGraph.edges[].from`, `dependencyGraph.edges[].to`
+Khi parse JSON response của các endpoint concept còn sống, dùng đúng tên property (không theo tên class C#):
 
 ### Key Verification Points
-- **Vietnamese text**: All concept endpoints generate Vietnamese explanation text in the `explanation` field. This text exists ONLY in backend C# — if API fails, frontend fallback won't have it.
-- **SOLID**: `isViolation` flag toggles (true in violation frames, false in fix frames). `classNodes[].isViolating` marks individual nodes.
-- **Strategy Pattern**: `couplingIndex` should decrease frame-by-frame (85→40→20→15).
-- **Observer**: All `links[].isActive = true` during NOTIFY_ALL frame.
-- **DI Lifetime**: Singleton instance has `isNew=false` on second resolve. Transient always has `isNew=true`.
-- **Cycle Detection**: `hasCycle` toggles false→true→false across frames.
+- **Vietnamese text**: Các concept endpoint còn sống (OOP, SystemDesign) sinh text giải thích tiếng Việt trong field `explanation` — chỉ tồn tại trong backend C#; nếu API fail, frontend fallback sẽ không có.
+- **SOLID/Patterns/DI**: API đã bị xóa (DP-001) — không còn endpoint để verify.
 
 ## System Design Module Testing
 
@@ -207,9 +181,9 @@ Click a scenario button (e.g., "Server Failover") → enters VCR mode with backe
 3. Vietnamese explanation text confirms API connection
 4. Step through frames and verify actionName changes
 
-## SOLID/Patterns/DI Module Testing
+## SOLID/Patterns/DI Module Testing — ❌ ĐÃ XÓA (2026-08-10, DP-001/DP-003)
 
-Note: These modules have VCR integration in the Pinia stores but the workspace components may not yet render VCR scenario-selection buttons in the UI. Test primarily via backend curl commands (see Backend API Testing section above).
+Các module SOLID/Patterns/DI đã chuyển sang **Docs Reference Style** (ADR-05): visualizer + backend API + guided tour đều đã bị gỡ. Nội dung lý thuyết giờ nằm ở `frontend/src/features/docs/content/{solid,patterns,di}/*` — test = kiểm tra docs render (xem docs test suite).
 
 If VCR buttons are added to the workspace components, the testing pattern is the same as OOP/System Design:
 1. Click scenario button → VCR mode activates
@@ -217,12 +191,22 @@ If VCR buttons are added to the workspace components, the testing pattern is the
 3. Step through frames, verify actionType progression
 4. Exit VCR mode restores sandbox controls
 
+## Docs & Code-to-Visualization Test Suites (2026-08-10, Review Round 4)
+
+### Docs suite — `frontend/src/features/docs/__tests__/` (42 tests)
+- `docsMermaidSyntax.spec.ts` (2) — parse thật 95 khối mermaid / 58 file
+- `docsComponentTests.spec.ts` (35) — DocsView/Sidebar/Layout/TOC/Renderer mount thật (fallback, redirect, scrollspy, copy delegation, dedup heading id, link .md prefix, hamburger mobile...)
+- `docsNavigationConsistency.spec.ts` (5) — nav↔file 68/68, heading id unique, frontmatter
+
+### Code-to-Visualization suite — `frontend/src/features/code-to-visualization/__tests__/` (78 tests)
+- `ASTInstrumentationEngine.spec.ts` (20), `WorkerLifecycleCoordinator.spec.ts` (9), `useLiveCompilerStore.spec.ts` (13), `codeToVizP0Tests.spec.ts` (16), `codeToVizComponentTests.spec.ts` (20 — mount ArrayInputBar/CompilerConsole/MonacoEditorPanel/CodeWorkspace, mock chỉ `@monaco-editor/loader`)
+
 ## Running Unit Tests
 
 ```bash
 cd frontend && npx vitest run
 ```
-Expected: All tests pass (1528+ tests).
+Expected: All tests pass (2784+ tests; 153 files). Backend: `cd backend && dotnet test` (372 tests).
 
 ## Common Issues
 

@@ -8,7 +8,8 @@
     <div class="about-spec-grid">
       <div class="spec-card">
         <span class="spec-label">PHIÊN BẢN ỨNG DỤNG</span>
-        <span class="spec-value">VisualizationDSA v2.0.0</span>
+        <!-- PR-034: phiên bản từ import.meta.env (VITE_APP_VERSION) — không hardcode -->
+        <span class="spec-value">VisualizationDSA v{{ appVersion }}</span>
       </div>
       <div class="spec-card">
         <span class="spec-label">ĐỘNG CƠ HOẠT ẢNH</span>
@@ -39,4 +40,7 @@
 </template>
 
 <script setup lang="ts">
+// PR-034: phiên bản lấy từ VITE_APP_VERSION (xem frontend/.env.development) —
+// fallback chỉ dùng khi biến env vắng mặt trong môi trường build.
+const appVersion: string = import.meta.env.VITE_APP_VERSION ?? '2.0.0';
 </script>

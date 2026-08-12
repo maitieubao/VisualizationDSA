@@ -165,14 +165,14 @@ describe('UP-004 (P1): Offline queue', () => {
     store.syncXP(50, 'offline-lesson');
     const saved = JSON.parse(localStorage.getItem('vdsa_xp_sync_queue') ?? '[]');
     expect(saved.length).toBe(1);
-    expect(saved[0]).toEqual({ amount: 50, reason: 'offline-lesson' });
+    expect(saved[0]).toEqual({ amount: 50, reason: 'offline-lesson', userId: null });
   });
 
   it('queue persist vào localStorage', () => {
     const store = useUserProgressStore();
     store.syncXP(30, 'offline-quiz');
     const saved = JSON.parse(localStorage.getItem('vdsa_xp_sync_queue') ?? '[]');
-    expect(saved).toEqual([{ amount: 30, reason: 'offline-quiz' }]);
+    expect(saved).toEqual([{ amount: 30, reason: 'offline-quiz', userId: null }]);
   });
 
   it('nhiều XP offline đều được queue', () => {

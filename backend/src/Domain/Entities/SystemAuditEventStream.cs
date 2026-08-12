@@ -35,6 +35,10 @@ namespace VisualizationDSA.Domain.Entities
 
         private SystemAuditEventStream() { } 
 
+        // AD-040: counter tăng CHẶT bằng Interlocked — DateTime.UtcNow.Ticks trùng nhau khi
+        // 2 event tạo cùng lúc (concurrent) làm vỡ thứ tự sắp xếp theo Sequence.
+        private static long _sequenceCounter;
+
         public SystemAuditEventStream(
             string eventType,
             Guid? userId,
@@ -56,7 +60,7 @@ namespace VisualizationDSA.Domain.Entities
             StatusCode = statusCode;
             Payload = string.IsNullOrWhiteSpace(payload) ? "{}" : payload;
             
-            Sequence = DateTime.UtcNow.Ticks;
+            Sequence = Interlocked.Increment(ref _sequenceCounter);
             OccurredAt = DateTime.UtcNow;
         }
     }

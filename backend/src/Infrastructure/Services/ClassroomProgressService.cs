@@ -32,15 +32,16 @@ namespace VisualizationDSA.Infrastructure.Services
 
             
             var classroom = await _context.Classrooms
-                .Include(c => c.Modules.Where(m => !m.IsDeleted))
-                    .ThenInclude(m => m.Items.Where(i => !i.IsDeleted && !i.IsHiddenForStudent))
+                .Include(c => c.Modules.Where(m => !m.IsDeleted && !m.IsHidden))
+                    .ThenInclude(m => m.Items.Where(i => !i.IsDeleted && !i.IsHidden && !i.IsHiddenForStudent))
                 .FirstOrDefaultAsync(c => c.Id == classroomId);
 
             if (classroom == null)
                 throw new ArgumentException("Classroom not found");
 
             var itemIds = classroom.Modules
-                .SelectMany(m => m.Items)
+                .Where(m => !m.IsHidden)
+                .SelectMany(m => m.Items.Where(i => !i.IsDeleted && !i.IsHidden && !i.IsHiddenForStudent))
                 .Select(i => i.Id)
                 .ToList();
 
@@ -48,37 +49,65 @@ namespace VisualizationDSA.Infrastructure.Services
                 .Where(p => p.UserId == studentId && itemIds.Contains(p.ModuleItemId))
                 .ToListAsync();
 
-            var progressDict = progressRecords.ToDictionary(p => p.ModuleItemId);
+            // LS-008: PK là composite (UserId, ModuleItemId, AttemptNumber) — student có ≥2 attempt
+            // sẽ nổ "An item with the same key has already been added" khi ToDictionary(p => p.ModuleItemId)
+            // → 500 /my-progress. Gom theo ModuleItemId và lấy attempt mới nhất.
+            var progressDict = progressRecords
+                .GroupBy(p => p.ModuleItemId)
+                .ToDictionary(
+                    g => g.Key,
+                    g => g.OrderByDescending(p => p.AttemptNumber).First()
+                );
 
             var modules = new List<ModuleProgressDto>();
             int totalItems = 0;
             int completedItems = 0;
             int inProgressItems = 0;
+            int notStartedItems = 0;
+            int lockedItems = 0;
 
-            foreach (var module in classroom.Modules.OrderBy(m => m.OrderIndex))
+            // LM-026: khử N+1 — gom TOÀN BỘ item của classroom vào 1 query trạng thái unlock
+            // (trước đây gọi IsItemUnlockedAsync trong vòng lặp → 100 item ≈ 100+ query).
+            var unlockedIds = (await _unlockRuleEngine.GetUnlockedItemIdsAsync(classroomId, studentId)).ToHashSet();
+
+            // CR-040: trạng thái khóa module cũng batch 1 lần (trước đây IsModuleLockedAsync
+            // được gọi trong vòng lặp module — mỗi lần lại truy vấn cả classroom + progress).
+            var moduleLocked = await _unlockRuleEngine.GetModuleLockStatusesAsync(classroomId, studentId);
+
+            foreach (var module in classroom.Modules.Where(m => !m.IsHidden).OrderBy(m => m.OrderIndex))
             {
                 var moduleItems = module.Items
-                    .Where(i => !i.IsHiddenForStudent)
+                    .Where(i => !i.IsDeleted && !i.IsHidden && !i.IsHiddenForStudent)
                     .OrderBy(i => i.OrderIndex)
                     .ToList();
-
                 var moduleProgress = new ModuleProgressDto
                 {
                     ModuleId = module.Id,
                     ModuleTitle = module.Title,
                     ModuleOrder = module.OrderIndex,
                     TotalItems = moduleItems.Count,
-                    IsLocked = await _unlockRuleEngine.IsModuleLockedAsync(classroomId, module.Id, studentId)
+                    IsLocked = moduleLocked.GetValueOrDefault(module.Id, true)
                 };
 
                 foreach (var item in moduleItems)
                 {
                     var progress = progressDict.GetValueOrDefault(item.Id);
-                    var isLocked = !await _unlockRuleEngine.IsItemUnlockedAsync(classroomId, item.Id, studentId);
+                    var isLocked = !unlockedIds.Contains(item.Id);
                     var status = progress?.Status ?? "NotStarted";
 
                     if (status == "Completed") completedItems++;
                     else if (status == "InProgress") inProgressItems++;
+                    else if (status == "NotStarted")
+                    {
+                        if (isLocked) lockedItems++;
+                        else notStartedItems++;
+                    }
+                    else
+                    {
+                        // Trạng thái không chuẩn (chỉ phòng thủ) — vẫn đếm vào notStarted nếu mở khóa.
+                        if (isLocked) lockedItems++;
+                        else notStartedItems++;
+                    }
 
                     var itemProgress = new ItemProgressDto
                     {
@@ -115,7 +144,9 @@ namespace VisualizationDSA.Infrastructure.Services
                 TotalItems = totalItems,
                 CompletedItems = completedItems,
                 InProgressItems = inProgressItems,
-                LockedItems = totalItems - completedItems - inProgressItems,
+                // CR-033: LockedItems = chỉ item khóa; item mở khóa nhưng chưa bắt đầu đếm vào NotStartedItems.
+                NotStartedItems = notStartedItems,
+                LockedItems = lockedItems,
                 OverallProgressPercent = overallProgress,
                 Modules = modules
             };
@@ -131,8 +162,9 @@ namespace VisualizationDSA.Infrastructure.Services
             var enrollment = await _context.ClassroomEnrollments
                 .FirstOrDefaultAsync(e => e.ClassroomId == classroomId && e.StudentId == studentId && e.Status == VisualizationDSA.Domain.Enums.EnrollmentStatus.Active);
 
+            // CR-036: không enroll → 403 (trước đây trả 200 Success=false — controller giấu lỗi).
             if (enrollment == null)
-                return new ItemProgressResult { Success = false, Message = "Không đăng ký lớp học này" };
+                throw new UnauthorizedAccessException("Bạn chưa đăng ký lớp học này");
 
             
             if (!await _unlockRuleEngine.IsItemUnlockedAsync(classroomId, moduleItemId, studentId))
@@ -141,8 +173,11 @@ namespace VisualizationDSA.Infrastructure.Services
                 return new ItemProgressResult { Success = false, Message = reason };
             }
 
+            // CR-039: lấy attempt mới nhất (PK composite UserId+ModuleItemId+AttemptNumber).
             var progress = await _context.UserModuleItemProgresses
-                .FirstOrDefaultAsync(p => p.UserId == studentId && p.ModuleItemId == moduleItemId);
+                .Where(p => p.UserId == studentId && p.ModuleItemId == moduleItemId)
+                .OrderByDescending(p => p.AttemptNumber)
+                .FirstOrDefaultAsync();
 
             if (progress == null)
             {
@@ -171,11 +206,15 @@ namespace VisualizationDSA.Infrastructure.Services
             var enrollment = await _context.ClassroomEnrollments
                 .FirstOrDefaultAsync(e => e.ClassroomId == classroomId && e.StudentId == studentId && e.Status == VisualizationDSA.Domain.Enums.EnrollmentStatus.Active);
 
+            // CR-036: không enroll → 403.
             if (enrollment == null)
-                return new ItemProgressResult { Success = false, Message = "Không đăng ký lớp học này" };
+                throw new UnauthorizedAccessException("Bạn chưa đăng ký lớp học này");
 
+            // CR-039: attempt mới nhất.
             var progress = await _context.UserModuleItemProgresses
-                .FirstOrDefaultAsync(p => p.UserId == studentId && p.ModuleItemId == moduleItemId);
+                .Where(p => p.UserId == studentId && p.ModuleItemId == moduleItemId)
+                .OrderByDescending(p => p.AttemptNumber)
+                .FirstOrDefaultAsync();
 
             if (progress == null)
             {
@@ -184,7 +223,8 @@ namespace VisualizationDSA.Infrastructure.Services
             }
 
             var wasNotStarted = progress.Status == "NotStarted";
-            progress.UpdateProgress(activeFrame, scrollPercent, isCompleted: false, score: null);
+            // CR-041: clamp ProgressPercent trong [0,100] — scrollPercent âm/>100 không ghi thẳng.
+            progress.UpdateProgress(activeFrame, Math.Clamp(scrollPercent, 0, 100), isCompleted: false, score: null);
 
             await _context.SaveChangesAsync(default);
 
@@ -202,8 +242,9 @@ namespace VisualizationDSA.Infrastructure.Services
             var enrollment = await _context.ClassroomEnrollments
                 .FirstOrDefaultAsync(e => e.ClassroomId == classroomId && e.StudentId == studentId && e.Status == VisualizationDSA.Domain.Enums.EnrollmentStatus.Active);
 
+            // CR-036: không enroll → 403.
             if (enrollment == null)
-                return new ItemProgressResult { Success = false, Message = "Không đăng ký lớp học này" };
+                throw new UnauthorizedAccessException("Bạn chưa đăng ký lớp học này");
 
             
             if (!await _unlockRuleEngine.IsItemUnlockedAsync(classroomId, moduleItemId, studentId))
@@ -212,8 +253,11 @@ namespace VisualizationDSA.Infrastructure.Services
                 return new ItemProgressResult { Success = false, Message = reason };
             }
 
+            // CR-039: attempt mới nhất.
             var progress = await _context.UserModuleItemProgresses
-                .FirstOrDefaultAsync(p => p.UserId == studentId && p.ModuleItemId == moduleItemId);
+                .Where(p => p.UserId == studentId && p.ModuleItemId == moduleItemId)
+                .OrderByDescending(p => p.AttemptNumber)
+                .FirstOrDefaultAsync();
 
             if (progress == null)
             {
@@ -224,12 +268,15 @@ namespace VisualizationDSA.Infrastructure.Services
             var wasCompleted = progress.Status == "Completed";
             progress.UpdateProgress(activeFrame: 0, scrollPercent: 100, isCompleted: true, score);
 
+            // LM-027: chụp trạng thái unlock TRƯỚC khi lưu (trước đây gọi 2 lần cùng 1 query
+            // sau update → newlyUnlocked luôn bằng toàn bộ → dead logic).
+            var previouslyUnlocked = (await _unlockRuleEngine.GetUnlockedItemIdsAsync(classroomId, studentId)).ToHashSet();
+
             await _context.SaveChangesAsync(default);
 
-            
-            var newlyUnlocked = await _unlockRuleEngine.GetUnlockedItemIdsAsync(classroomId, studentId);
-            var previouslyUnlocked = await _unlockRuleEngine.GetUnlockedItemIdsAsync(classroomId, studentId);
-            
+            var newlyUnlocked = (await _unlockRuleEngine.GetUnlockedItemIdsAsync(classroomId, studentId))
+                .Where(id => !previouslyUnlocked.Contains(id))
+                .ToList();
 
             return new ItemProgressResult
             {

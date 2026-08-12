@@ -43,8 +43,8 @@ namespace VisualizationDSA.Application.Features.Classrooms.Commands.JoinClassroo
                 throw new ArgumentException("User not found.");
             }
 
-            // Học viên ĐÃ BỊ KICK: rejoin bằng cách Reactivate enrollment cũ (không tạo row mới —
-            // unique index (ClassroomId, StudentId) chặn Add trùng).
+            // Học viên ĐÃ BỊ KICK/BANNED: không được rejoin (CR-014 — kick = cấm quay lại lớp;
+            // unique index (ClassroomId, StudentId) chặn Add trùng nên chỉ còn đường tạo mới không khả thi).
             var existing = classroom.Enrollments.FirstOrDefault(e => e.StudentId == request.StudentId);
             if (existing != null)
             {
@@ -52,12 +52,13 @@ namespace VisualizationDSA.Application.Features.Classrooms.Commands.JoinClassroo
                 {
                     throw new InvalidOperationException("Already enrolled in this classroom.");
                 }
-                if (existing.Status == VisualizationDSA.Domain.Enums.EnrollmentStatus.Banned)
+                if (existing.Status == VisualizationDSA.Domain.Enums.EnrollmentStatus.Kicked ||
+                    existing.Status == VisualizationDSA.Domain.Enums.EnrollmentStatus.Banned)
                 {
-                    throw new InvalidOperationException("Bạn đã bị cấm khỏi lớp học này.");
+                    throw new InvalidOperationException("Bạn đã bị xóa khỏi lớp học này và không thể tham gia lại.");
                 }
 
-                // Kicked/Left → reactivate.
+                // Left → reactivate (học viên tự rời lớp được quay lại).
                 existing.Reactivate();
                 await _context.SaveChangesAsync(cancellationToken);
 

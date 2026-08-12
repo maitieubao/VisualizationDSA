@@ -80,11 +80,13 @@ import LoginModal from './features/auth/components/LoginModal.vue';
 import ToastContainer from './components/ToastContainer.vue';
 import GuidedTourOverlay from './features/guided-tour/components/GuidedTourOverlay.vue';
 import { useThemeStore } from './shared/store/useThemeStore';
+import { useToastStore } from './composables/useToast';
 
 const authStore      = useAuthStore();
 const tourStore      = useGuidedTourStore();
 const progressStore  = useUserProgressStore();
 const themeStore     = useThemeStore();
+const toastStore     = useToastStore();
 const route          = useRoute();
 const router         = useRouter();
 const showLoginModal = ref(false);
@@ -117,13 +119,14 @@ function handleOpenLogin(): void {
 
 function handleStopImpersonating(): void {
   authStore.stopImpersonating();
-  alert('Đã thoát chế độ đóng vai. Khôi phục tài khoản Admin.');
+  toastStore.success('Đã thoát chế độ đóng vai. Khôi phục tài khoản Admin.', 'Thoát đóng vai');
   router.push('/admin');
 }
 
 onMounted(() => {
   themeStore.initTheme();
-  authStore.statelessInit();
+  // AU-005: KHÔNG gọi statelessInit() ở đây nữa — main.ts đã restore qua authStore.init()
+  // (dedupe qua refreshPromise); gọi lần 2 gây 2 refresh song song cùng token → mất phiên.
   tourStore.initTour();
 });
 </script>

@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia';
 import { ref, computed, watch, shallowRef } from 'vue';
-import { CompilerStepExecutor, type PlaybackFrame } from '../../../core/CompilerStepExecutor';
+import { CompilerStepExecutor, type PlaybackFrame, type CanvasStateSnapshot } from '../../../core/CompilerStepExecutor';
 import { DEFAULT_BUBBLE_SORT_CODE, DEFAULT_INPUT_RAW, DEFAULT_INPUT_ARRAY } from './vcrDefaults';
 import { useToastStore } from '../../../composables/useToast';
 
@@ -11,6 +11,8 @@ export interface VcrBaseFrame {
   stepIndex: number;
   lineNumber?: number;
   description?: string;
+  /** Snapshot canvas do CompilerStepExecutor sinh (chỉ frame playback code-to-visualization có). */
+  canvasStateSnapshot?: CanvasStateSnapshot;
 }
 
 
@@ -66,6 +68,9 @@ export const useVcrStore = defineStore('vcr-player', () => {
 
   
   const customCompileFn = ref<(() => void) | null>(null);
+
+  // SV-034: action thay cho mutation trực tiếp rawInputArray — mọi chủ thể ghi input đều qua đây
+  const setRawInputArray = (value: string) => { rawInputArray.value = value; };
 
   
   const compileAndLoad = () => {
@@ -164,6 +169,6 @@ export const useVcrStore = defineStore('vcr-player', () => {
     isPlaying, playbackSpeed, isLooping, compilationError,
     currentFrame, currentLineNumber, totalFrames, isAtStart, isAtEnd,
     customCompileFn, compileAndLoad, play, pause, togglePlay,
-    stepNext, stepPrev, reset, jumpToFrame,
+    stepNext, stepPrev, reset, jumpToFrame, setRawInputArray,
   };
 });

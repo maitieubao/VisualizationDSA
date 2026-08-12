@@ -10,7 +10,13 @@
       </button>
     </div>
 
-    
+    <!-- TC-020: banner lỗi tách khỏi empty state -->
+    <div v-if="loadError" class="error-banner mb-6 flex items-center justify-between gap-3 rounded-xl border border-accent-red/30 bg-accent-red/10 px-4 py-3">
+      <span class="text-sm text-accent-red"><BaseIcon name="alert-circle" class="w-4 h-4 inline mr-1 align-middle" />{{ loadError }}</span>
+      <button type="button" class="btn-secondary text-xs px-3 py-1.5" @click="loadCodelabs">Thử lại</button>
+    </div>
+
+    <!-- TC-031: thang độ khó đồng bộ easy/medium/hard (dễ hiểu hơn 1-5) -->
     <div class="filters-bar mb-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 w-full">
       <div class="relative w-full sm:w-64">
         <input v-model="searchQuery" @input="debouncedSearch" type="text" placeholder="Tìm kiếm codelab..." class="appearance-none w-full bg-bg-secondary text-text-primary border border-border-subtle rounded-full pl-10 pr-4 py-2.5 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-accent/30 focus:border-accent/50 transition-all" />
@@ -39,7 +45,7 @@
       </div>
     </div>
 
-    
+    <!-- Loading -->
     <div v-if="loading" class="loading-state">
       <div class="spinner"></div>
       <span>Đang tải danh sách Codelab...</span>
@@ -97,17 +103,9 @@
                 <div v-else class="codelab-detail-panel animate-fade-in">
                   <div class="flex justify-between items-center mb-4">
                     <h4 class="detail-title text-accent font-bold m-0"><BaseIcon name="code" class="w-4 h-4 text-accent inline mr-1 align-text-bottom" /> Chi tiết: {{ c.title }}</h4>
-                    <div class="flex gap-2">
-                      <button type="button" class="btn-add-inline" @click="addTestCase(c)">
-                        <BaseIcon name="plus" class="w-3.5 h-3.5 inline mr-1 align-text-bottom" /> Testcase
-                      </button>
-                      <button type="button" class="btn-add-inline" @click="addTemplate(c)">
-                        <BaseIcon name="file-text" class="w-3.5 h-3.5 inline mr-1 align-text-bottom" /> Template
-                      </button>
-                    </div>
                   </div>
                   <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                    
+                    <!-- TC-003: Testcases — CRUD thật qua /api/v1/codelabs/{id}/testcases -->
                     <div class="space-y-3">
                       <h5 class="text-xs font-semibold text-accent uppercase tracking-wider mb-3">Testcases ({{ c.testcases?.length || 0 }})</h5>
                       <div v-if="!c.testcases?.length" class="empty-state py-4 text-center text-sm">Chưa có testcase nào</div>
@@ -128,8 +126,8 @@
                         <BaseIcon name="plus" class="w-3.5 h-3.5 inline mr-1" /> Thêm Testcase
                       </button>
                     </div>
-                    
-                    
+
+                    <!-- TC-003: Templates — CRUD thật qua /api/v1/codelabs/{id}/templates -->
                     <div class="space-y-3">
                       <h5 class="text-xs font-semibold text-accent-green uppercase tracking-wider mb-3">Starter Templates ({{ c.templates?.length || 0 }})</h5>
                       <div v-if="!c.templates?.length" class="empty-state py-4 text-center text-sm">Chưa có template nào</div>
@@ -150,8 +148,8 @@
                       </button>
                     </div>
                   </div>
-                  
-                  
+
+                  <!-- TC-003: Hints — CRUD thật qua /api/v1/codelabs/{id}/hints -->
                   <div class="mt-6">
                     <h5 class="text-xs font-semibold text-accent-purple uppercase tracking-wider mb-3">Hints ({{ c.hints?.length || 0 }})</h5>
                     <div v-if="!c.hints?.length" class="empty-state py-4 text-center text-sm">Chưa có hint nào</div>
@@ -180,38 +178,23 @@
       </table>
     </div>
 
-    
+    <!-- TC-002: CodelabEditorModal — CRUD thật -->
     <CodelabEditorModal
       v-model:show="showCodelabEditor"
       :editing-codelab="editingCodelab"
       @save="saveCodelab"
     />
 
-    
-    <TestCaseModal
-      v-model:show="showTestCaseModal"
-      :editing-testcase="editingTestCase"
-      :parent-codelab="editingCodelabForTestCase"
-      @save="saveTestCase"
+    <!-- TC-003: thay 3 modal stub (TestCase/Template/Hint) bằng CodelabItemModal thật -->
+    <CodelabItemModal
+      v-model:show="showItemModal"
+      :Type="itemModalType"
+      :editing-item="editingItem"
+      :parent-codelab-id="editingItemCodelabId"
+      @save="saveItem"
     />
 
-    
-    <TemplateModal
-      v-model:show="showTemplateModal"
-      :editing-template="editingTemplate"
-      :parent-codelab="editingCodelabForTemplate"
-      @save="saveTemplate"
-    />
-
-    
-    <HintModal
-      v-model:show="showHintModal"
-      :editing-hint="editingHint"
-      :parent-codelab="editingCodelabForHint"
-      @save="saveHint"
-    />
-
-    
+    <!-- Confirm Xóa -->
     <ConfirmModal
       v-model:show="showConfirmDelete"
       :title="confirmDeleteTitle"
@@ -224,19 +207,45 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, watch } from 'vue';
+import { ref, onMounted, watch } from 'vue';
 import { useTeacherApi } from './useTeacherApi';
+import { useToastStore } from '../../composables/useToast';
 import CodelabEditorModal from './CodelabEditorModal.vue';
-import TestCaseModal from './TestCaseModal.vue';
-import TemplateModal from './TemplateModal.vue';
-import HintModal from './HintModal.vue';
+import CodelabItemModal from './CodelabItemModal.vue';
 import ConfirmModal from '@/components/ui/ConfirmModal.vue';
 import BaseIcon from '@/shared/components/BaseIcon.vue';
 
-const { BASE_URL, getAuthHeaders } = useTeacherApi();
+// TC-002/TC-003: backend CodelabController đã có đầy đủ CRUD /api/v1/codelabs
+// (POST/PUT/DELETE + testcases/templates/hints) — implement thật, không phải stub.
 
-const codelabsList = ref<any[]>([]);
+interface CodelabListItem {
+  id: string;
+  title: string;
+  difficulty: number;
+  xpReward: number;
+  allowedLanguages: string;
+  testCaseCount: number;
+  tags: string;
+}
+
+interface CodelabDetail extends CodelabListItem {
+  description: string;
+  initialCode: string;
+  maxRuntimeMs: number;
+  maxMemoryBytes: number;
+  constraints: string;
+  examples: string;
+  testcases?: Array<{ id: string; input: string; expectedOutput: string; isHidden: boolean; orderIndex: number }>;
+  templates?: Array<{ id: string; language: string; starterCode: string }>;
+  hints?: Array<{ id: string; content: string; isTiered: boolean; xpCost: number; orderIndex: number }>;
+}
+
+const { BASE_URL, teacherRequest } = useTeacherApi();
+const toastStore = useToastStore();
+
+const codelabsList = ref<CodelabDetail[]>([]);
 const loading = ref(false);
+const loadError = ref('');
 const searchQuery = ref('');
 const filterDifficulty = ref('');
 const filterLanguage = ref('');
@@ -244,48 +253,50 @@ const expandedCodelabId = ref<string | null>(null);
 const loadingCodelabDetails = ref<Record<string, boolean>>({});
 
 const showCodelabEditor = ref(false);
-const editingCodelab = ref<any | null>(null);
-const showTestCaseModal = ref(false);
-const editingTestCase = ref<any | null>(null);
-const editingCodelabForTestCase = ref<any | null>(null);
-const showTemplateModal = ref(false);
-const editingTemplate = ref<any | null>(null);
-const editingCodelabForTemplate = ref<any | null>(null);
-const showHintModal = ref(false);
-const editingHint = ref<any | null>(null);
-const editingCodelabForHint = ref<any | null>(null);
+const editingCodelab = ref<CodelabDetail | null>(null);
+
+// CodelabItemModal (thay TestCaseModal/TemplateModal/HintModal stub)
+const showItemModal = ref(false);
+const itemModalType = ref<'testcase' | 'template' | 'hint'>('testcase');
+const editingItem = ref<any | null>(null);
+const editingItemCodelabId = ref('');
 
 const showConfirmDelete = ref(false);
 const confirmDeleteTitle = ref('');
 const confirmDeleteMessage = ref('');
-const deleteAction = ref<() => Promise<void>>();
+const deleteAction = ref<(() => Promise<void>) | null>(null);
 
 async function loadCodelabs() {
   loading.value = true;
+  loadError.value = '';
   try {
     const params = new URLSearchParams();
     if (searchQuery.value) params.append('search', searchQuery.value);
     if (filterDifficulty.value) params.append('difficulty', filterDifficulty.value);
     if (filterLanguage.value) params.append('language', filterLanguage.value);
-    
-    const res = await fetch(`${BASE_URL}/api/v1/codelabs?${params}`, { headers: getAuthHeaders() });
-    if (res.ok) codelabsList.value = await res.json();
-  } catch (err) { console.error('Failed to load codelabs:', err); }
+
+    const res = await teacherRequest(`${BASE_URL}/api/v1/codelabs?${params}`);
+    if (!res.ok) throw new Error('Không thể tải danh sách Codelab.');
+    codelabsList.value = await res.json();
+  } catch (err) {
+    loadError.value = err instanceof Error ? err.message : 'Lỗi khi tải Codelab.';
+  }
   finally { loading.value = false; }
 }
 
 async function loadCodelabDetails(codelabId: string) {
   loadingCodelabDetails.value[codelabId] = true;
   try {
-    const res = await fetch(`${BASE_URL}/api/v1/codelabs/${codelabId}`, { headers: getAuthHeaders() });
-    if (res.ok) {
-      const codelab = await res.json();
-      const idx = codelabsList.value.findIndex(c => c.id === codelabId);
-      if (idx >= 0) {
-        codelabsList.value[idx] = { ...codelabsList.value[idx], ...codelab };
-      }
+    const res = await teacherRequest(`${BASE_URL}/api/v1/codelabs/${codelabId}`);
+    if (!res.ok) throw new Error('Không thể tải chi tiết Codelab.');
+    const codelab = await res.json();
+    const idx = codelabsList.value.findIndex((c) => c.id === codelabId);
+    if (idx >= 0) {
+      codelabsList.value[idx] = { ...codelabsList.value[idx], ...codelab };
     }
-  } catch (err) { console.error(err); }
+  } catch (err) {
+    toastStore.handleApiError(err, 'Lỗi khi tải chi tiết.');
+  }
   finally { loadingCodelabDetails.value[codelabId] = false; }
 }
 
@@ -309,224 +320,146 @@ function createNewCodelab() {
   editingCodelab.value = null;
 }
 
-function editCodelab(c: any) {
+function editCodelab(c: CodelabDetail) {
   editingCodelab.value = c;
   showCodelabEditor.value = true;
 }
 
-function addTestCase(c: any) {
-  editingTestCase.value = null;
-  editingCodelabForTestCase.value = c;
-  showTestCaseModal.value = true;
+// ─── Testcase ───────────────────────────────────────────────────────────
+function openItemModal(type: 'testcase' | 'template' | 'hint', codelabId: string, item: any | null) {
+  itemModalType.value = type;
+  editingItem.value = item;
+  editingItemCodelabId.value = codelabId;
+  showItemModal.value = true;
+}
+function addTestCase(c: CodelabDetail) { openItemModal('testcase', c.id, null); }
+function editTestCase(c: CodelabDetail, tc: any) { openItemModal('testcase', c.id, tc); }
+function addTemplate(c: CodelabDetail) { openItemModal('template', c.id, null); }
+function editTemplate(c: CodelabDetail, tmpl: any) { openItemModal('template', c.id, tmpl); }
+function addHint(c: CodelabDetail) { openItemModal('hint', c.id, null); }
+function editHint(c: CodelabDetail, hint: any) { openItemModal('hint', c.id, hint); }
+
+// TC-002/TC-003: lưu testcase/template/hint qua endpoint thật.
+async function saveItem(itemData: any) {
+  if (!editingItemCodelabId.value) return;
+  const codelabId = editingItemCodelabId.value;
+  const type = itemModalType.value;
+  try {
+    let url = `${BASE_URL}/api/v1/codelabs/${codelabId}/${type === 'testcase' ? 'testcases' : type === 'template' ? 'templates' : 'hints'}`;
+    let method = 'POST';
+    if (editingItem.value?.id) {
+      url += `/${editingItem.value.id}`;
+      method = 'PUT';
+    }
+    const body: Record<string, unknown> = { ...itemData };
+    if (type === 'testcase') {
+      body.scoreWeight = itemData.scoreWeight ?? 1;
+      body.orderIndex = itemData.orderIndex ?? 1;
+    } else if (type === 'template') {
+      // API template không nhận solutionCode — chỉ gửi language + starterCode.
+      delete body.solutionCode;
+    } else if (type === 'hint') {
+      body.orderIndex = itemData.orderIndex ?? 1;
+    }
+    const res = await teacherRequest(url, { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+    if (!res.ok) {
+      const err = await res.json().catch(() => null);
+      throw new Error(err?.message || 'Lưu thất bại.');
+    }
+    toastStore.success(method === 'POST' ? 'Thêm thành công!' : 'Cập nhật thành công!');
+    showItemModal.value = false;
+    editingItem.value = null;
+    await loadCodelabDetails(codelabId);
+  } catch (err) {
+    toastStore.handleApiError(err, 'Lỗi khi lưu.');
+  }
 }
 
-function editTestCase(c: any, tc: any) {
-  editingTestCase.value = tc;
-  editingCodelabForTestCase.value = c;
-  showTestCaseModal.value = true;
+async function deleteTestCase(codelabId: string, testCaseId: string) {
+  await deleteChildItem(codelabId, testCaseId, 'testcases', 'Testcase');
+}
+async function deleteTemplate(codelabId: string, templateId: string) {
+  await deleteChildItem(codelabId, templateId, 'templates', 'Template');
+}
+async function deleteHint(codelabId: string, hintId: string) {
+  await deleteChildItem(codelabId, hintId, 'hints', 'Hint');
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-function crudNotImplemented(action: string, endpoint: string): void {
-  const msg =
-    `🚧 Chức năng "${action}" đang được phát triển.\n\n` +
-    `Backend endpoint chưa được implement:\n${endpoint}\n\n` +
-    `Vui lòng liên hệ team backend để hoàn tất command/query tương ứng.`;
-  console.warn(`[CodelabBuilderTab] ${action} → ${endpoint}`);
-  alert(msg);
+async function deleteChildItem(codelabId: string, itemId: string, resource: 'testcases' | 'templates' | 'hints', label: string) {
+  if (!confirm(`Bạn có chắc chắn muốn xóa ${label} này?`)) return;
+  try {
+    const res = await teacherRequest(`${BASE_URL}/api/v1/codelabs/${codelabId}/${resource}/${itemId}`, { method: 'DELETE' });
+    if (!res.ok) throw new Error(`Xóa ${label} thất bại.`);
+    toastStore.success(`Đã xóa ${label}.`);
+    await loadCodelabDetails(codelabId);
+  } catch (err) {
+    toastStore.handleApiError(err, `Lỗi khi xóa ${label}.`);
+  }
 }
 
-function deleteTestCase(codelabId: string, testCaseId: string) {
-  crudNotImplemented(
-    'Xóa Testcase',
-    `DELETE /api/v1/codelabs/${codelabId}/testcases/${testCaseId}`,
-  );
-  
-  
-  
-  
-  
-  
-}
-
-function addTemplate(c: any) {
-  editingTemplate.value = null;
-  editingCodelabForTemplate.value = c;
-  showTemplateModal.value = true;
-}
-
-function editTemplate(c: any, tmpl: any) {
-  editingTemplate.value = tmpl;
-  editingCodelabForTemplate.value = c;
-  showTemplateModal.value = true;
-}
-
-function deleteTemplate(codelabId: string, templateId: string) {
-  crudNotImplemented(
-    'Xóa Starter Template',
-    `DELETE /api/v1/codelabs/${codelabId}/templates/${templateId}`,
-  );
-  
-  
-  
-  
-  
-  
-}
-
-function addHint(c: any) {
-  editingHint.value = null;
-  editingCodelabForHint.value = c;
-  showHintModal.value = true;
-}
-
-function editHint(c: any, hint: any) {
-  editingHint.value = hint;
-  editingCodelabForHint.value = c;
-  showHintModal.value = true;
-}
-
-function deleteHint(codelabId: string, hintId: string) {
-  crudNotImplemented(
-    'Xóa Hint',
-    `DELETE /api/v1/codelabs/${codelabId}/hints/${hintId}`,
-  );
-  
-  
-  
-  
-  
-  
-}
-
+// TC-002: lưu Codelab (tạo/sửa) qua endpoint thật.
 async function saveCodelab(codelabData: any) {
-  
-  
-  crudNotImplemented(
-    'Lưu Codelab',
-    codelabData?.id
-      ? `PUT  /api/v1/codelabs/${codelabData.id}`
-      : `POST /api/v1/codelabs`,
-  );
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-}
-
-async function saveTestCase(testCaseData: any) {
-  
-  
-  crudNotImplemented(
-    'Lưu Testcase',
-    testCaseData?.id
-      ? `PUT  /api/v1/codelabs/${editingCodelabForTestCase.value?.id}/testcases/${testCaseData.id}`
-      : `POST /api/v1/codelabs/${editingCodelabForTestCase.value?.id}/testcases`,
-  );
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-}
-
-async function saveTemplate(templateData: any) {
-  
-  crudNotImplemented(
-    'Lưu Starter Template',
-    templateData?.id
-      ? `PUT  /api/v1/codelabs/${editingCodelabForTemplate.value?.id}/templates/${templateData.id}`
-      : `POST /api/v1/codelabs/${editingCodelabForTemplate.value?.id}/templates`,
-  );
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-}
-
-async function saveHint(hintData: any) {
-  
-  crudNotImplemented(
-    'Lưu Hint',
-    hintData?.id
-      ? `PUT  /api/v1/codelabs/${editingCodelabForHint.value?.id}/hints/${hintData.id}`
-      : `POST /api/v1/codelabs/${editingCodelabForHint.value?.id}/hints`,
-  );
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
+  const isEdit = Boolean(editingCodelab.value?.id);
+  try {
+    const payload = {
+      title: codelabData.title,
+      description: codelabData.description,
+      initialCode: codelabData.initialCode,
+      difficulty: codelabData.difficulty,
+      xpReward: codelabData.xpReward,
+      maxRuntimeMs: codelabData.maxRuntimeMs,
+      maxMemoryBytes: codelabData.maxMemoryBytes,
+      allowedLanguages: codelabData.allowedLanguages,
+      constraints: codelabData.constraints,
+      examples: codelabData.examples,
+      tags: codelabData.tags ?? '',
+      hints: (codelabData.hints || []).map((h: any, i: number) => ({
+        content: h.content,
+        isTiered: h.isTiered,
+        xpCost: h.xpCost ?? 0,
+        orderIndex: i + 1
+      }))
+    };
+    const url = isEdit ? `${BASE_URL}/api/v1/codelabs/${editingCodelab.value!.id}` : `${BASE_URL}/api/v1/codelabs`;
+    const res = await teacherRequest(url, { method: isEdit ? 'PUT' : 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+    if (!res.ok) {
+      const err = await res.json().catch(() => null);
+      throw new Error(err?.message || (isEdit ? 'Cập nhật Codelab thất bại.' : 'Tạo Codelab thất bại.'));
+    }
+    toastStore.success(isEdit ? 'Cập nhật Codelab thành công!' : 'Tạo Codelab thành công!');
+    showCodelabEditor.value = false;
+    editingCodelab.value = null;
+    await loadCodelabs();
+  } catch (err) {
+    toastStore.handleApiError(err, 'Lỗi khi lưu Codelab.');
+  }
 }
 
 function deleteCodelab(codelabId: string) {
-  
-  
   confirmDeleteTitle.value = 'Xóa Codelab';
   confirmDeleteMessage.value = 'Bạn có chắc chắn muốn xóa Codelab này? Hành động này không thể hoàn tác.';
   deleteAction.value = async () => {
-    crudNotImplemented('Xóa Codelab', `DELETE /api/v1/codelabs/${codelabId}`);
-    
-    
-    
-    
-    
-    
+    const res = await teacherRequest(`${BASE_URL}/api/v1/codelabs/${codelabId}`, { method: 'DELETE' });
+    if (!res.ok) {
+      const err = await res.json().catch(() => null);
+      throw new Error(err?.message || 'Xóa Codelab thất bại.');
+    }
+    toastStore.success('Đã xóa Codelab.');
+    codelabsList.value = codelabsList.value.filter((c) => c.id !== codelabId);
+    if (expandedCodelabId.value === codelabId) expandedCodelabId.value = null;
   };
   showConfirmDelete.value = true;
 }
 
-function executeDelete() {
-  if (deleteAction.value) deleteAction.value();
-  showConfirmDelete.value = false;
-  deleteAction.value = undefined;
+async function executeDelete() {
+  if (!deleteAction.value) return;
+  try {
+    await deleteAction.value();
+    showConfirmDelete.value = false;
+    deleteAction.value = null;
+  } catch (err) {
+    toastStore.handleApiError(err, 'Lỗi khi xóa Codelab.');
+  }
 }
 
 watch([filterDifficulty, filterLanguage], () => loadCodelabs());

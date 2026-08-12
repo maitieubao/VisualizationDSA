@@ -20,7 +20,7 @@
         </span>
       </div>
       <div class="r-stat">
-        <span class="r-stat-lbl">Phần tử</span>
+        <span class="r-stat-lbl">Số phần tử</span>
         <span class="r-stat-val">{{ frame?.arrayState.length ?? 0 }}</span>
       </div>
       <div class="r-stat">

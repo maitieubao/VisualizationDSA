@@ -77,8 +77,10 @@ export class ASTInstrumentationEngine {
             const body = node.body;
             
             // Xây dựng khối lệnh tiêm kiểm thử số lượt lặp __loopCounter
+            // Mỗi vòng lặp dùng một biến đếm riêng (__loopCounter0, __loopCounter1, ...)
+            // khai báo ngay tại chỗ lặp và được reset qua khối bọc `{ __loopCounterN = 0; ... }`
             const counterIncrementStatement = acorn.parse(
-              `if (++__loopCounter > 5000) throw new Error("LOOP_LIMIT_EXCEEDED");`,
+              `if (++__loopCounter > 20000) throw new Error("[LOOP_LIMIT_EXCEEDED] Phát hiện vượt ngưỡng lặp: thuật toán đã chạy quá 20000 lượt lặp — có thể do cấu trúc lặp vô hạn hoặc thuật toán chạy quá lâu.");`,
               { ecmaVersion: 2020 }
             ).body[0];
 
@@ -98,8 +100,10 @@ export class ASTInstrumentationEngine {
       // 3. Tái tạo mã nguồn sạch đã được tiêm mã đầy đủ
       let instrumentedCode = escodegen.generate(ast);
 
-      // Chèn khai báo biến đếm lặp ở đầu mã nguồn
-      instrumentedCode = `let __loopCounter = 0;\n` + instrumentedCode;
+      // Ngưỡng lặp tối đa: 20,000 lượt / vòng lặp (CV-108).
+      // Message lỗi có tiền tố sentinel [LOOP_LIMIT_EXCEEDED] để Worker/Main Thread
+      // phân biệt với lỗi Timeout 1.5s và lỗi cú pháp khác (CV-129).
+      const LOOP_LIMIT = 20000;
 
       return {
         success: true,

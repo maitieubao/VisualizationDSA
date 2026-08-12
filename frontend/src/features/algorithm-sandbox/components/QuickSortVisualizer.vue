@@ -33,7 +33,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue';
+import { ref, computed, watch } from 'vue';
 import type { SortFrame } from '../types/sorting.types';
 
 const props = defineProps<{
@@ -41,6 +41,9 @@ const props = defineProps<{
 }>();
 
 const hoveredIdx = ref<number | null>(null);
+
+// SV-040: frame đổi → tooltip cũ phải tắt (không giữ hoveredIdx lệch frame)
+watch(() => props.frame, () => { hoveredIdx.value = null; });
 
 const n = computed(() => props.frame?.arrayStateWithIds?.length ?? 6);
 

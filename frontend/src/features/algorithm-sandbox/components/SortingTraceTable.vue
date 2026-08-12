@@ -3,16 +3,18 @@
     <!-- Table -->
     <div class="flex-1 min-h-0 overflow-auto relative">
       <table class="w-full h-full border-collapse text-[11px] font-mono leading-tight">
+        <caption class="sr-only">Bảng biến trạng thái thuật toán sắp xếp theo từng bước</caption>
         <thead class="sticky top-0 z-10">
           <tr class="text-left" style="background: var(--color-bg-secondary); border-bottom: 1px solid var(--vis-panel-border)">
-            <th class="px-2 py-1 text-text-muted font-bold whitespace-nowrap w-8">#</th>
+            <th scope="col" class="px-2 py-1 text-text-muted font-bold whitespace-nowrap w-8">#</th>
             <th
               v-for="col in columns"
               :key="col.key"
+              scope="col"
               class="px-1.5 py-1 text-text-muted font-bold whitespace-nowrap"
               :title="col.label"
             >{{ col.label }}</th>
-            <th class="px-1.5 py-1 text-text-muted font-bold whitespace-nowrap">Mô tả</th>
+            <th scope="col" class="px-1.5 py-1 text-text-muted font-bold whitespace-nowrap">Mô tả</th>
           </tr>
         </thead>
         <tbody>
@@ -21,13 +23,17 @@
             :key="frame.stepIndex"
             :ref="(el) => { if (idx === currentIndex) activeRowRef = el as HTMLElement | null; }"
             class="cursor-pointer border-b transition-colors"
+            role="row"
+            tabindex="0"
             :class="[
               idx === currentIndex
                 ? 'bg-accent/15 text-text-primary font-bold'
                 : 'text-text-secondary hover:bg-bg-hover',
             ]"
             style="border-color: var(--vis-panel-border)"
-            @click="$emit('jump', idx)"
+            @click="handleRowClick(idx)"
+            @keydown.enter.prevent="handleRowClick(idx)"
+            @keydown.space.prevent="handleRowClick(idx)"
           >
             <td class="px-2 py-[3px] whitespace-nowrap text-text-muted">{{ idx + 1 }}</td>
             <td
@@ -64,7 +70,17 @@ import type { SortFrame, SortAlgorithm } from '../types/sorting.types';const pro
   currentIndex: number;
 }>();
 
-defineEmits<{ jump: [index: number] }>();
+const emit = defineEmits<{ jump: [index: number] }>();
+
+// SV-038: phân biệt jump chủ động (smooth) với playback tự cuộn (auto — tránh jank mỗi frame)
+let pendingUserJump = false;
+
+function handleRowClick(idx: number): void {
+  pendingUserJump = true;
+  emit('jump', idx);
+  // Click trúng chính hàng hiện tại: index không đổi nên watcher không chạy — tự dọn cờ
+  window.setTimeout(() => { pendingUserJump = false; }, 400);
+}
 
 interface TraceColumn {
   key: string;
@@ -174,7 +190,9 @@ watch(
   () => props.currentIndex,
   async () => {
     await nextTick();
-    activeRowRef.value?.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+    const behavior: ScrollBehavior = pendingUserJump ? 'smooth' : 'auto';
+    pendingUserJump = false;
+    activeRowRef.value?.scrollIntoView({ block: 'nearest', behavior });
   },
 );
 </script>

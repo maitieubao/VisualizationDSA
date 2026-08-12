@@ -21,6 +21,8 @@ namespace VisualizationDSA.Application.Services
         public int TotalItems { get; set; }
         public int CompletedItems { get; set; }
         public int InProgressItems { get; set; }
+        // CR-033: tách riêng item chưa bắt đầu (unlocked) khỏi LockedItems.
+        public int NotStartedItems { get; set; }
         public int LockedItems { get; set; }
         public double OverallProgressPercent { get; set; }
         public List<ModuleProgressDto> Modules { get; set; } = new();

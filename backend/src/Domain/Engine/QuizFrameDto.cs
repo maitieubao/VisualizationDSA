@@ -78,6 +78,11 @@ namespace VisualizationDSA.Domain.Engine
         public int CurrentLevel { get; set; }
         public string LevelName { get; set; } = string.Empty;
         public int StreakDays { get; set; }
+
+        // GM-008: server là source of truth của streak — ngày hoạt động gần nhất (UTC, yyyy-MM-dd)
+        // để frontend KHÔNG tự tính lại streak theo giờ local (trước đây lệch timezone 2 hệ).
+        public string LastActiveDate { get; set; } = string.Empty;
+
         public List<StatelessBadgeDto> EarnedBadges { get; set; } = new();
         public List<StatelessXpEvent> RecentActivity { get; set; } = new();
     }

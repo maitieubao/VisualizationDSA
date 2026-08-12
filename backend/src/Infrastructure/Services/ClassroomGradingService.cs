@@ -27,9 +27,18 @@ namespace VisualizationDSA.Infrastructure.Services
                 .ThenInclude(e => e.Student)
                 .FirstOrDefaultAsync(c => c.Id == classroomId);
 
-            if (classroom == null || classroom.OwnerTeacherId != teacherId)
+            if (classroom == null)
             {
                 throw new UnauthorizedAccessException("Classroom not found or access denied.");
+            }
+
+            // CR-035: Admin (role DB thực) được xem analytics — trước đây chỉ cho owner nên
+            // Admin đúng role vẫn luôn 403 dù attribute cho phép.
+            if (classroom.OwnerTeacherId != teacherId)
+            {
+                var isAdmin = await _context.Users.AnyAsync(u => u.Id == teacherId && u.Role == "Admin");
+                if (!isAdmin)
+                    throw new UnauthorizedAccessException("Classroom not found or access denied.");
             }
 
             var activeStudents = classroom.Enrollments.Where(e => e.Status == EnrollmentStatus.Active).ToList();
@@ -45,20 +54,21 @@ namespace VisualizationDSA.Infrastructure.Services
 
             if (!classroom.CourseId.HasValue) return result;
 
-            var moduleItems = await _context.ModuleItems
+            // CR-019: analytics phải đọc CLASSROOM Module Items (không phải ModuleItems course
+            // gốc) — giáo viên đã override/ẩn/thêm item trên classroom thì thống kê theo đó.
+            var classroomModuleItems = await _context.ClassroomModuleItems
                 .Include(m => m.Quiz)
                 .Include(m => m.Codelab)
-                .Where(m => m.Module.CourseId == classroom.CourseId)
+                .Where(m => m.Module.ClassroomId == classroomId && !m.IsDeleted && !m.IsHidden)
                 .ToListAsync();
 
-            var quizItems = moduleItems.Where(m => m.ItemType == ModuleItemType.Quiz && m.QuizId.HasValue).ToList();
-            var codelabItems = moduleItems.Where(m => m.ItemType == ModuleItemType.Codelab && m.CodelabId.HasValue).ToList();
+            var quizItems = classroomModuleItems.Where(m => m.ItemType == ModuleItemType.Quiz && m.QuizId.HasValue).ToList();
+            var codelabItems = classroomModuleItems.Where(m => m.ItemType == ModuleItemType.Codelab && m.CodelabId.HasValue).ToList();
 
-            var quizIds = quizItems.Select(m => m.QuizId.Value).ToList();
             var codelabIds = codelabItems.Select(m => m.CodelabId.Value).ToList();
-            
-            
-            var classroomQuizzes = await _context.Set<ClassroomQuiz>()
+
+            // CR-019: nguồn quiz — ClassroomQuiz thực của classroom (không kéo quiz của course khác).
+            var classroomQuizzes = await _context.ClassroomQuizzes
                 .Include(cq => cq.Attempts)
                 .Include(cq => cq.Quiz)
                 .Where(cq => cq.ClassroomId == classroomId && !cq.IsArchived)
@@ -72,7 +82,6 @@ namespace VisualizationDSA.Infrastructure.Services
                 }
             }
 
-            
             var codelabSubmissions = await _context.CodelabSubmissions
                 .Where(s => codelabIds.Contains(s.CodelabId) && studentIds.Contains(s.UserId))
                 .ToListAsync();
@@ -98,9 +107,9 @@ namespace VisualizationDSA.Infrastructure.Services
                     TotalXP = student.Student.TotalXP
                 };
 
-                
                 foreach (var cq in classroomQuizzes)
                 {
+                    // CR-013: best-attempt = điểm cao nhất (không phải attempt gần nhất).
                     var bestAttempt = cq.Attempts
                         .Where(a => a.StudentId == student.StudentId)
                         .OrderByDescending(a => a.Score)
@@ -126,7 +135,7 @@ namespace VisualizationDSA.Infrastructure.Services
                         .Where(s => s.UserId == student.StudentId && s.CodelabId == ci.CodelabId.Value)
                         .OrderByDescending(s => s.Score)
                         .FirstOrDefault();
-                    
+
                     if (bestSubmission != null)
                     {
                         int pct = bestSubmission.Score;
@@ -140,7 +149,7 @@ namespace VisualizationDSA.Infrastructure.Services
                         row.ScoresPerCodelab[ci.CodelabId.Value] = 0;
                     }
                 }
-                
+
                 result.StudentScores.Add(row);
             }
 
@@ -150,17 +159,24 @@ namespace VisualizationDSA.Infrastructure.Services
                 result.PassRate = Math.Round((double)totalPassedAssignments * 100 / totalAssignmentsTaken, 2);
             }
 
-            var allRequiredItems = await _context.ModuleItems
-                .Where(m => m.Module.CourseId == classroom.CourseId && m.IsRequired)
-                .CountAsync();
+            // CR-019: CompletionRate — CẢ 2 vế cùng lọc IsRequired và cùng scope classroom:
+            //   tử = số progress Completed trên item bắt buộc,
+            //   mẫu = (số học viên active) × (số item bắt buộc).
+            var requiredClassroomItemIds = classroomModuleItems
+                .Where(m => m.IsRequired)
+                .Select(m => m.Id)
+                .ToList();
 
-            if (activeStudents.Count > 0 && allRequiredItems > 0)
+            if (activeStudents.Count > 0 && requiredClassroomItemIds.Count > 0)
             {
-                var allProgresses = await _context.UserModuleItemProgresses
-                    .Where(p => studentIds.Contains(p.UserId) && p.Status == "Completed")
+                var completedRequiredCount = await _context.UserModuleItemProgresses
+                    .Where(p => studentIds.Contains(p.UserId)
+                        && requiredClassroomItemIds.Contains(p.ModuleItemId)
+                        && p.Status == "Completed")
                     .CountAsync();
 
-                result.CompletionRate = Math.Round((double)allProgresses / (activeStudents.Count * allRequiredItems), 2);
+                result.CompletionRate = Math.Round(
+                    (double)completedRequiredCount / (activeStudents.Count * requiredClassroomItemIds.Count), 2);
             }
 
             return result;

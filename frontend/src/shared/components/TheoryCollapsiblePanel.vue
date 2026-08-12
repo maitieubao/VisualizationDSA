@@ -8,18 +8,21 @@
     }"
   >
     
+    <!-- CU-022: aria-expanded + aria-controls cho nút mở drawer -->
     <button
       v-if="!isOpen"
       class="theory-toggle-tab"
       @click="toggleOpen"
       title="Mở Lý thuyết & Tài liệu"
+      :aria-expanded="isOpen"
+      aria-controls="theory-drawer-content"
     >
       <SvgIcon name="book" :size="15" color="currentColor" class="tab-icon-svg mb-1" />
       <span class="tab-text">Lý thuyết & Tài liệu</span>
     </button>
 
     
-    <div class="theory-drawer-content" v-if="isOpen">
+    <div class="theory-drawer-content" v-if="isOpen" id="theory-drawer-content" ref="drawerEl" tabindex="-1">
       
       <div class="drawer-header">
         <div class="flex items-center justify-between w-full">
@@ -33,6 +36,8 @@
               class="expand-toggle-btn"
               @click="toggleExpandWidth"
               :title="isExpandedWidth ? 'Thu hẹp bảng' : 'Mở rộng bảng'"
+              :aria-label="isExpandedWidth ? 'Thu hẹp bảng' : 'Mở rộng bảng'"
+              :aria-pressed="isExpandedWidth"
             >
               <svg v-if="isExpandedWidth" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M4 14h6v6M20 10h-6V4M14 10l7-7M10 14l-7 7" />
@@ -43,7 +48,7 @@
             </button>
 
             
-            <button class="close-btn" @click="closePanel" title="Thu gọn (Đóng)">
+            <button class="close-btn" @click="closePanel" title="Thu gọn (Đóng)" aria-label="Đóng bảng Lý thuyết">
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
                 <line x1="18" y1="6" x2="6" y2="18"></line>
                 <line x1="6" y1="6" x2="18" y2="18"></line>
@@ -54,7 +59,7 @@
       </div>
 
       
-      <div class="drawer-body" ref="bodyRef">
+      <div class="drawer-body">
         
         <TheorySummaryView
           v-if="!showFullDocs && document"
@@ -110,7 +115,8 @@ const emit = defineEmits<{
 const isDesktopWide = ref(false);
 const isExpandedWidth = ref(false);
 const showFullDocs = ref(false);
-const bodyRef = ref<HTMLElement | null>(null);
+// CU-022: ref drawer — focus vào drawer khi mở (thay ref bodyRef dead).
+const drawerEl = ref<HTMLElement | null>(null);
 
 const expandedSectionId = ref<string | null>(null);
 const flashedSectionId = ref<string | null>(null);
@@ -186,6 +192,19 @@ onMounted(() => {
 
 onUnmounted(() => {
   window.removeEventListener('resize', checkWidth);
+});
+
+// CU-022: khi mở drawer — focus vào phần tử tương tác đầu tiên (fallback chính drawer).
+watch(() => props.isOpen, (open) => {
+  if (!open) return;
+  nextTick(() => {
+    const el = drawerEl.value;
+    if (!el) return;
+    const focusable = el.querySelector<HTMLElement>(
+      'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
+    );
+    (focusable ?? el).focus();
+  });
 });
 
 

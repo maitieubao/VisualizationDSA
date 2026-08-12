@@ -111,10 +111,10 @@ Các router trao đổi thông tin với nhau để hội tụ bảng định tu
 | :--- | :--- | :--- |
 | Thông tin trao đổi | Bảng khoảng cách tới mọi đích | Bản đồ toàn cục của các liên kết |
 | Kiến thức về mạng | Chỉ biết qua hàng xóm | Mọi router cùng biết toàn bộ cấu trúc mạng |
-| Giao thức ví dụ | RIP, BGP | OSPF, IS-IS |
+| Giao thức ví dụ | RIP, BGP (path-vector) | OSPF, IS-IS |
 | Thuật toán lõi | Bellman-Ford (cộng dồn khoảng cách) | Dijkstra (đường đi ngắn nhất) |
 
-**OSPF** (Open Shortest Path First) là giao thức **link state** phổ biến trong mạng nội bộ (interior): mỗi router phát bản đồ liên kết của mình, sau đó dùng **Dijkstra** để tính đường đi ngắn nhất tới mọi đích. **BGP** (Border Gateway Protocol) là giao thức **distance vector** giữa các hệ thống tự trị (inter-domain) — đường đi của gói tin trên Internet được quyết định phần lớn bởi BGP.
+**OSPF** (Open Shortest Path First) là giao thức **link state** phổ biến trong mạng nội bộ (interior): mỗi router phát bản đồ liên kết của mình, sau đó dùng **Dijkstra** để tính đường đi ngắn nhất tới mọi đích. **BGP** (Border Gateway Protocol) là giao thức **path-vector** giữa các hệ thống tự trị (inter-domain) — nó kế thừa ý tưởng distance vector nhưng khác biệt ở chỗ mỗi router lưu trọn vẹn **đường đi (danh sách các AS)** thay vì chỉ cộng dồn khoảng cách, nhờ đó tránh được vòng lặp và cho phép áp dụng chính sách định tuyến — đường đi của gói tin trên Internet được quyết định phần lớn bởi BGP.
 
 ### Ví dụ chuyển tiếp gói tin {#forwarding-example}
 

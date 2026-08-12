@@ -155,8 +155,11 @@ describe('playgroundP0Tests — US-AP-015 (P0): VCR Step Forward/Backward', () =
     store.jumpToFrame(9999);
     expect(store.currentIndex).toBe(total - 1);
 
+    // AL-020: biên âm — jumpToFrame(-5) no-op (chỉ nhận index trong [0, n)).
+    // Nếu source agent clamp về 0 → đổi expectation thành 0.
     store.jumpToFrame(-5);
     expect(store.currentIndex).toBe(total - 1);
+    expect(store.currentIndex).toBeGreaterThanOrEqual(0);
   });
 
   it('US-AP-015: reset() về bước 0 và dừng playback', async () => {

@@ -97,7 +97,7 @@ function generateArray(length: number, type: PresetKey): number[] {
 }
 
 function applyArray(arr: number[], presetKey: string): void {
-  vcrStore.rawInputArray = arr.join(", ");
+  vcrStore.setRawInputArray(arr.join(", "));
   activePreset.value = presetKey;
   recompileForAlgo(selectedAlgo.value);
 }

@@ -1,12 +1,6 @@
-
-
-
-
-
+import { useAuthStore } from '../../auth/store/useAuthStore';
 
 const BASE_URL = import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:5055';
-
-import { useAuthStore } from '../../auth/store/useAuthStore';
 
 export interface StatelessUserProfile {
   userId: string;
@@ -15,6 +9,10 @@ export interface StatelessUserProfile {
   currentLevel: number;
   levelName: string;
   streakDays: number;
+  /** Số lượt Streak Freeze còn lại — GM-023: nếu backend không gửi, store dùng MAX_STREAK_FREEZES. */
+  streakFreezes?: number;
+  /** Ngày hoạt động gần nhất (YYYY-MM-DD, giờ UTC) — GM-014: ưu tiên dữ liệu thật từ server. */
+  lastActiveDate?: string;
   earnedBadges: StatelessBadge[];
   recentActivity: StatelessXpEvent[];
 }
@@ -57,14 +55,12 @@ function getAuthToken(): string | null {
 }
 
 export const statelessGamificationApi = {
-  
   async getProfile(): Promise<StatelessUserProfile> {
     const res = await fetch(`${BASE_URL}/api/v1/concepts/gamification/profile`);
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     return res.json();
   },
 
-  
   async awardXp(amount: number, reason: string): Promise<StatelessUserProfile> {
     // Endpoint yêu cầu Teacher/Admin (chống tự cày XP) — phải gửi token.
     const token = getAuthToken();
@@ -80,21 +76,18 @@ export const statelessGamificationApi = {
     return res.json();
   },
 
-  
   async getBadges(): Promise<StatelessBadge[]> {
     const res = await fetch(`${BASE_URL}/api/v1/concepts/gamification/badges`);
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     return res.json();
   },
 
-  
   async getLeaderboard(limit: number = 10): Promise<StatelessLeaderboardEntry[]> {
     const res = await fetch(`${BASE_URL}/api/v1/concepts/gamification/leaderboard?limit=${limit}`);
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     return res.json();
   },
 
-  
   async getConfig(): Promise<Record<string, unknown>> {
     const res = await fetch(`${BASE_URL}/api/v1/concepts/gamification/config`);
     if (!res.ok) throw new Error(`HTTP ${res.status}`);

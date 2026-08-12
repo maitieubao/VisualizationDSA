@@ -31,7 +31,7 @@
       :to="item.path"
       class="block px-2 py-1.5 text-sm rounded-md transition-colors select-none"
       :class="isCurrentRoute(item.path) 
-        ? 'text-accent-primary font-medium' 
+        ? 'text-accent-primary font-medium sidebar-item-active' 
         : 'text-text-secondary hover:bg-bg-hover hover:text-text-primary'"
       @click="$emit('link-clicked')"
     >
@@ -56,7 +56,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch, onMounted } from 'vue';
+import { ref, computed } from 'vue';
 import type { NavItem } from '../types/docs.types';
 import BaseIcon from '@/shared/components/BaseIcon.vue';
 
@@ -69,14 +69,33 @@ const emit = defineEmits<{
   (e: 'link-clicked'): void;
 }>();
 
-const isOpen = ref(false);
+// Giữ trạng thái collapse của từng nhóm qua các lần điều hướng (App remount view mỗi route) (DC-021).
+const COLLAPSE_STORAGE_KEY = 'docs-sidebar-collapsed';
 
-const toggle = () => {
-  isOpen.value = !isOpen.value;
+const getCollapsedIds = (): string[] => {
+  try {
+    const raw = localStorage.getItem(COLLAPSE_STORAGE_KEY);
+    return raw ? JSON.parse(raw) as string[] : [];
+  } catch {
+    return [];
+  }
 };
 
-const isCurrentRoute = (path: string) => {
-  return props.currentRoute === path || props.currentRoute + '/' === path;
+const persistCollapse = (id: string, collapsed: boolean): void => {
+  try {
+    const ids = getCollapsedIds();
+    const next = collapsed ? Array.from(new Set([...ids, id])) : ids.filter(existing => existing !== id);
+    localStorage.setItem(COLLAPSE_STORAGE_KEY, JSON.stringify(next));
+  } catch {
+    // localStorage có thể bị chặn (privacy mode) — bỏ qua, chỉ mất trạng thái lưu.
+  }
+};
+
+const isCollapsedByUser = ref(getCollapsedIds().includes(props.item.id));
+
+// Sửa điều kiện viết ngược: khớp cả đường dẫn chính xác lẫn trailing slash (DC-012).
+const isCurrentRoute = (path: string): boolean => {
+  return props.currentRoute === path || path + '/' === props.currentRoute;
 };
 
 
@@ -88,18 +107,20 @@ const containsActiveRoute = (navItem: NavItem): boolean => {
   return false;
 };
 
-
-watch(() => props.currentRoute, () => {
-  if (props.item.children && containsActiveRoute(props.item)) {
-    isOpen.value = true;
+// Nhóm chứa bài đang mở luôn hiện (auto-open); nhóm khác theo trạng thái người dùng đã thu gọn.
+const isOpen = computed({
+  get: () => props.item.children
+    ? containsActiveRoute(props.item) || !isCollapsedByUser.value
+    : false,
+  set: (value: boolean) => {
+    isCollapsedByUser.value = !value;
+    persistCollapse(props.item.id, !value);
   }
 });
 
-onMounted(() => {
-  if (props.item.children && containsActiveRoute(props.item)) {
-    isOpen.value = true;
-  }
-});
+const toggle = () => {
+  isOpen.value = !isOpen.value;
+};
 </script>
 
 <script lang="ts">

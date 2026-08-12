@@ -8,6 +8,8 @@
 
   <ItemGroup>
     <PackageReference Include="BCrypt.Net-Next" Version="4.0.3" />
+    <!-- PM-006: StatelessPaymentStrategy đọc giá/bank từ IConfiguration (1 nguồn cấu hình duy nhất). -->
+    <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="10.0.10" />
   </ItemGroup>
 
 </Project>

@@ -12,6 +12,12 @@ namespace VisualizationDSA.Domain.Entities
         public DateTime  CreatedAt      { get; private set; }
         public DateTime? LastLoginAt    { get; private set; }
 
+        // PR-001: hồ sơ cá nhân — trước đây UpdateProfile chỉ sửa in-memory, restart là mất sạch.
+        public string?   Nickname       { get; private set; }
+        public string?   Bio            { get; private set; }
+        public string?   University     { get; private set; }
+        public string?   AvatarUrl      { get; private set; }
+
         
         public int       TotalXP        { get; private set; }
         public int       CurrentLevel   { get; private set; }
@@ -95,6 +101,30 @@ namespace VisualizationDSA.Domain.Entities
         {
             _updateStreak();
             LastActivityDate = DateTime.UtcNow;
+        }
+
+        /// <summary>
+        /// PR-009t: ghi nhận hoạt động tại thời điểm CHỈ ĐỊNH (dùng cho test/sync dữ liệu cũ)
+        /// — giữ nguyên chuẩn streak của RecordActivity() mặc định.
+        /// </summary>
+        public void RecordActivity(DateTime activityDate)
+        {
+            LastActivityDate = activityDate;
+            _updateStreak();
+        }
+
+        // PR-001/PR-015: cập nhật hồ sơ cá nhân VÀO DB (controller gọi SaveChanges sau đó) —
+        // trước đây chỉ sửa in-memory qua strategy, restart/EvictIdleUsers mất sạch username/bio.
+        public void UpdateProfile(string? username, string? nickname, string? bio, string? university, string? avatarUrl)
+        {
+            // Trim đồng bộ với StatelessAuthStrategy.UpdateProfile — DB và memory cùng giá trị.
+            if (!string.IsNullOrWhiteSpace(username))
+                Username = username.Trim();
+            Nickname = nickname;
+            Bio = bio;
+            University = university;
+            AvatarUrl = avatarUrl;
+            RecordActivity();
         }
 
         public void SetPremiumStatus(bool isPremium)

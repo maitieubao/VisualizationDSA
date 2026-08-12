@@ -1,23 +1,12 @@
 import type { CanvasStateSnapshot, HeapSortState } from '../../../core/CompilerStepExecutor';
-
-const COLORS = {
-  nodeDefault: '#818cf8',
-  nodeActive: '#fbbf24',
-  nodeExtracted: 'rgba(52,211,153,0.55)',
-  nodeBeyond: 'rgba(71,85,105,0.45)',
-  edge: 'rgba(148,163,184,0.5)',
-  text: '#f8fafc',
-  textDim: '#94a3b8',
-  barDefault: '#818cf8',
-  barExtracted: 'rgba(52,211,153,0.6)',
-  barBeyond: 'rgba(71,85,105,0.4)',
-  regionHeap: 'rgba(251,191,36,0.10)',
-  regionSorted: 'rgba(52,211,153,0.12)',
-  captionBg: 'rgba(15,23,42,0.9)',
-};
-
-function lerp(a: number, b: number, t: number): number { return a + (b - a) * t; }
-function easeInOut(t: number): number { return t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t; }
+import {
+  COLORS,
+  easeInOut,
+  lerp,
+  maxWithFallback,
+  minWithFallback,
+  roundRect,
+} from '../renderer/algoCanvasHelpers';
 
 /**
  * Animation engine RIÊNG cho Heap Sort (v4 — xây lại giao diện, triết lý "mảng là chính").
@@ -57,7 +46,11 @@ export class HeapSortAnimationEngine {
     const sw = snap.swappingIndices;
     if (sw && sw.length >= 2 && arr[sw[0]] !== undefined && arr[sw[1]] !== undefined) {
       const base = `Đổi chỗ ${arr[sw[0]]} và ${arr[sw[1]]}`;
-      return st.phase === 'extract' && sw[0] === 0
+      // AL-037: chỉ coi là "root về cuối" khi đổi chỗ root với phần tử NGAY NGOÀI heap
+      // (sw[1] === heapSize). Trước đây chỉ xét sw[0]===0 → nhầm swap sift-down liên
+      // quan root (sw[0]=0, sw[1] < heapSize) thành "root về cuối mảng".
+      const isRootToEnd = st.phase === 'extract' && sw[1] === st.heapSize;
+      return isRootToEnd
         ? `${base} — root về cuối mảng, heap thu hẹp`
         : `${base} — tiếp tục sift xuống`;
     }
@@ -147,8 +140,8 @@ export class HeapSortAnimationEngine {
     progress: number,
   ): void {
     const n = arr.length;
-    const minV = Math.min(...arr, 0);
-    const maxV = Math.max(...arr, 1);
+    const minV = minWithFallback(arr, 0);
+    const maxV = maxWithFallback(arr, 1);
     const span = Math.max(maxV - minV, 1);
     const gap = 4;
     const indexH = 14;
@@ -175,8 +168,8 @@ export class HeapSortAnimationEngine {
     const barColor = (i: number): string => {
       if (extracted.includes(i)) return COLORS.barExtracted;
       if (i >= st.heapSize) return COLORS.barBeyond;
-      if (comparing.includes(i) || swapping.includes(i)) return COLORS.nodeActive;
-      return COLORS.barDefault;
+      if (comparing.includes(i) || swapping.includes(i)) return COLORS.heapNodeActive;
+      return COLORS.heapBarDefault;
     };
     const barGeo = (i: number): { x: number; y: number; h: number } => {
       const v = arr[i];
@@ -197,20 +190,20 @@ export class HeapSortAnimationEngine {
         g = { x: lerp(g.x, go.x, t), y: g.y - 28 * Math.sin(Math.PI * t), h: g.h };
       }
       const isCompared = comparing.includes(i);
-      this.roundRect(ctx, g.x, g.y, barW, g.h, 3);
+      roundRect(ctx, g.x, g.y, barW, g.h, 3);
       ctx.fillStyle = barColor(i);
       ctx.fill();
       if (isCompared && barW >= 5) {
         // Pulse: viền sáng nhẹ quanh bar đang so sánh
-        ctx.strokeStyle = COLORS.nodeActive;
+        ctx.strokeStyle = COLORS.heapNodeActive;
         ctx.lineWidth = 2;
         ctx.globalAlpha = 0.4 + 0.4 * Math.sin(easeInOut(progress) * Math.PI);
-        this.roundRect(ctx, g.x - 1, g.y - 1, barW + 2, g.h + 2, 4);
+        roundRect(ctx, g.x - 1, g.y - 1, barW + 2, g.h + 2, 4);
         ctx.stroke();
         ctx.globalAlpha = 1;
       }
       if (barW >= 7 && g.h >= 8) {
-        ctx.fillStyle = COLORS.text;
+      ctx.fillStyle = COLORS.heapText;
         ctx.font = '10px "JetBrains Mono", Consolas, monospace';
         ctx.textAlign = 'center';
         ctx.textBaseline = 'bottom';
@@ -229,7 +222,7 @@ export class HeapSortAnimationEngine {
     if (st.phase === 'extract' && st.heapSize > 0) {
       const rx = geoX(0) + barW / 2;
       const rootY = barGeo(0).y;
-      ctx.fillStyle = COLORS.nodeActive;
+      ctx.fillStyle = COLORS.heapNodeActive;
       ctx.beginPath();
       ctx.moveTo(rx, rootY - 14);
       ctx.lineTo(rx - 5, rootY - 6);
@@ -288,10 +281,10 @@ export class HeapSortAnimationEngine {
       ctx.arc(cx, cy, rr, 0, Math.PI * 2);
       if (active) {
         ctx.save();
-        ctx.shadowColor = COLORS.nodeActive;
+        ctx.shadowColor = COLORS.heapNodeActive;
         ctx.shadowBlur = 16;
       }
-      ctx.fillStyle = active ? COLORS.nodeActive : COLORS.nodeDefault;
+      ctx.fillStyle = active ? COLORS.heapNodeActive : COLORS.heapNodeDefault;
       ctx.fill();
       if (active) ctx.restore();
       ctx.fillStyle = COLORS.text;
@@ -357,15 +350,5 @@ export class HeapSortAnimationEngine {
     ctx.closePath();
     ctx.fill();
     ctx.fillText(caption, 29, y + h / 2);
-  }
-
-  private roundRect(ctx: CanvasRenderingContext2D, x: number, y: number, w: number, h: number, r: number): void {
-    ctx.beginPath();
-    ctx.moveTo(x + r, y);
-    ctx.arcTo(x + w, y, x + w, y + h, r);
-    ctx.arcTo(x + w, y + h, x, y + h, r);
-    ctx.arcTo(x, y + h, x, y, r);
-    ctx.arcTo(x, y, x + w, y, r);
-    ctx.closePath();
   }
 }

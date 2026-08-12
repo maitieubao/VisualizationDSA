@@ -20,9 +20,33 @@ export class CanvasConfettiEngine {
     this.canvas.height = window.innerHeight;
   }
 
+  /** GM-022: tôn trọng prefers-reduced-motion — giảm hoạt ảnh xuống còn 1-2 hạt tĩnh. */
+  private isReducedMotion(): boolean {
+    return typeof window.matchMedia === 'function'
+      && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  }
+
   public burst(count: number = CONFETTI_PARTICLE_COUNT): void {
     const centerX = this.canvas.width / 2;
     const centerY = this.canvas.height / 2;
+
+    // Chế độ giảm chuyển động: vẽ 2 hạt tĩnh rồi dừng ngay — không chạy vòng lặp rAF.
+    if (this.isReducedMotion()) {
+      for (let i = 0; i < 2; i++) {
+        this.particles.push({
+          x: centerX + (Math.random() - 0.5) * 40,
+          y: centerY + (Math.random() - 0.5) * 40,
+          size: Math.random() * 8 + 4,
+          color: CONFETTI_COLORS[Math.floor(Math.random() * CONFETTI_COLORS.length)],
+          speedX: 0,
+          speedY: 0,
+          rotation: Math.random() * 360,
+          rotationSpeed: 0,
+        });
+      }
+      this.tickOnce();
+      return;
+    }
 
     for (let i = 0; i < count; i++) {
       this.particles.push({
@@ -43,6 +67,17 @@ export class CanvasConfettiEngine {
   }
 
   public tick = (): void => {
+    this.tickOnce();
+
+    if (this.particles.length > 0) {
+      this.animationFrameId = requestAnimationFrame(this.tick);
+    } else {
+      this.animationFrameId = null;
+    }
+  };
+
+  /** Vẽ một khung hình duy nhất (dùng cho chế độ giảm chuyển động). */
+  private tickOnce(): void {
     this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
 
     for (let i = this.particles.length - 1; i >= 0; i--) {
@@ -64,13 +99,7 @@ export class CanvasConfettiEngine {
         this.particles.splice(i, 1);
       }
     }
-
-    if (this.particles.length > 0) {
-      this.animationFrameId = requestAnimationFrame(this.tick);
-    } else {
-      this.animationFrameId = null;
-    }
-  };
+  }
 
   public destroy(): void {
     if (this.animationFrameId) {

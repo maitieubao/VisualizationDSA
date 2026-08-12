@@ -54,10 +54,12 @@ export const useHtmlPlaygroundStore = defineStore('html-playground', () => {
     html.value = next.html;
     css.value = next.css;
     js.value = next.js;
+    // HT-021: nhất quán với resetToDefault — nạp source mới luôn quay về tab HTML
+    activeTab.value = 'html';
     revision.value += 1;
   };
 
-  const buildSharePayload = (): string => PlaygroundUrlCodec.encode(source.value);
+  const buildSharePayload = (): string | null => PlaygroundUrlCodec.encode(source.value);
 
   const loadFromSharePayload = (payload: string): boolean => {
     const decoded = PlaygroundUrlCodec.decode(payload);

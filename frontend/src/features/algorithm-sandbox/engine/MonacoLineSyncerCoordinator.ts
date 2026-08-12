@@ -11,6 +11,7 @@ interface MonacoEditorFull extends MonacoEditorForHighlight {
 interface VcrStoreForSync {
   playbackFrames: VcrBaseFrame[];
   currentLineNumber: number;
+  currentFrameIndex: number;
   jumpToFrame(index: number): void;
 }
 
@@ -34,9 +35,58 @@ export class MonacoLineSyncerCoordinator {
     this.clickInterceptor = new MonacoGutterClickInterceptor(
       this.editorInstance,
       (lineNum) => {
-        const targetFrameIndex = this.vcrStore!.playbackFrames.findIndex(
-          (f: VcrBaseFrame) => f.lineNumber === lineNum
-        );
+        const frames = this.vcrStore!.playbackFrames;
+        const current = this.vcrStore!.currentFrameIndex ?? 0;
+        let targetFrameIndex = -1;
+
+        // SV-007: ưu tiên frame khớp line GẦN currentFrameIndex nhất —
+        // lần xuất hiện KẾ TIẾP trước, lùi lại sau (không first-match)
+        for (let i = current; i < frames.length; i++) {
+          if (frames[i].lineNumber === lineNum) {
+            targetFrameIndex = i;
+            break;
+          }
+        }
+        if (targetFrameIndex === -1) {
+          for (let i = current - 1; i >= 0; i--) {
+            if (frames[i].lineNumber === lineNum) {
+              targetFrameIndex = i;
+              break;
+            }
+          }
+        }
+
+        // SV-007 (multi-line logicalId PS-011): click vào dòng TRUNG GIAN không có
+        // frame → snap sang frame có lineNumber gần nhất, NHƯNG chỉ khi dòng click
+        // nằm trong khoảng line của frames (dòng ngoài phạm vi code → không jump)
+        if (targetFrameIndex === -1 && frames.length > 0) {
+          let minLine = Infinity;
+          let maxLine = -Infinity;
+          for (const f of frames) {
+            if (f.lineNumber !== undefined) {
+              if (f.lineNumber < minLine) minLine = f.lineNumber;
+              if (f.lineNumber > maxLine) maxLine = f.lineNumber;
+            }
+          }
+          if (lineNum >= minLine && lineNum <= maxLine) {
+            let bestDist = Infinity;
+            for (let i = 0; i < frames.length; i++) {
+              const ln = frames[i].lineNumber;
+              if (ln === undefined) continue;
+              const dist = Math.abs(ln - lineNum);
+              if (dist < bestDist) {
+                bestDist = dist;
+                targetFrameIndex = i;
+              } else if (dist === bestDist) {
+                // Bằng khoảng cách → chọn frame gần current (ưu tiên kế tiếp)
+                const curDist = Math.abs(i - current);
+                const bestDistToCurrent = Math.abs(targetFrameIndex - current);
+                if (curDist < bestDistToCurrent) targetFrameIndex = i;
+              }
+            }
+          }
+        }
+
         if (targetFrameIndex !== -1) {
           this.vcrStore!.jumpToFrame(targetFrameIndex);
         }

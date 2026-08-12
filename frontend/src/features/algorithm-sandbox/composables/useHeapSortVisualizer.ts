@@ -13,8 +13,12 @@ export function useHeapSortVisualizer(frame: () => SortFrame | null) {
 
   const currentPhase = computed(() => {
     if (!frame()) return 'BUILD';
-    const total = frame()!.arrayState.length;
-    const heapSize = frame()!.heapSize ?? total;
+    const f = frame()!;
+    const total = f.arrayState.length;
+    const heapSize = f.heapSize ?? total;
+    // SV-019: frame hoàn thành phải hiển thị phase rõ ràng (DONE) — không bị
+    // xét nhầm thành 'SORT' dù heapSize không còn nhỏ hơn tổng số phần tử
+    if (/hoàn thành|hoàn tất/i.test(f.description)) return 'DONE';
     return heapSize < total ? 'SORT' : 'BUILD';
   });
 
@@ -23,30 +27,12 @@ export function useHeapSortVisualizer(frame: () => SortFrame | null) {
     return frame()!.description;
   });
 
-  const miniStepDescription = computed(() => {
-    if (!frame()) return 'Chuẩn bị dữ liệu mảng ban đầu.';
-    const desc = frame()!.description.toLowerCase();
-
-    if (desc.includes('khởi tạo')) {
-      return 'Khởi động giải thuật Heap Sort. Cây nhị phân hoàn chỉnh được xây dựng trực tiếp từ các chỉ số mảng vật lý: parent = i, left = 2i + 1, right = 2i + 2.';
-    }
-    if (desc.includes('vun đống ban đầu') || desc.includes('xây dựng max-heap')) {
-      return 'Giai đoạn Build Heap: Duyệt từ node không phải lá cuối cùng (index = floor(n/2)-1) ngược lên root để biến mảng lộn xộn thành cấu trúc Max-Heap.';
-    }
-    if (desc.includes('vun đống lại') || desc.includes('sift down')) {
-      return 'Đang vun đống (Sift Down / Heapify): So sánh node cha (vàng) với các con, phát hiện vi phạm thuộc tính (đỏ) và hoán đổi để đưa giá trị lớn lên.';
-    }
-    if (desc.includes('đưa phần tử lớn nhất') || desc.includes('trích xuất')) {
-      return 'Giai đoạn Sort: Rút phần tử lớn nhất ở root (index 0) đưa về cuối mảng để chốt vị trí đã sắp xếp (emerald), giảm kích thước Heap và vun đống lại.';
-    }
-    if (desc.includes('heap sort hoàn thành')) {
-      return 'Thuật toán hoàn tất! Toàn bộ mảng đã được vun đống và sắp xếp tăng dần thành công.';
-    }
-    if (desc.includes('max-heap hoàn thành')) {
-      return 'Giai đoạn Build Heap hoàn tất: root chứa giá trị lớn nhất toàn mảng, sẵn sàng bước vào giai đoạn trích xuất.';
-    }
-    return frame()!.description;
-  });
+  // Phần tử đã "yên vị": nằm ngoài heap (heapSize) HOẶC đã được đánh dấu sorted
+  // (frame hoàn thành heapSize = n nhưng sortedIndices đầy đủ — SV-019)
+  function isSortedNode(idx: number): boolean {
+    if (idx >= currentHeapSize.value) return true;
+    return (frame()?.sortedIndices?.includes(idx) ?? false);
+  }
 
   const maxDepth = computed(() => Math.ceil(Math.log2((n.value || 1) + 1)));
 
@@ -74,7 +60,8 @@ export function useHeapSortVisualizer(frame: () => SortFrame | null) {
   }
 
   function getParentIndex(idx: number): number {
-    return Math.floor((idx - 1) / 2);
+    // Root (idx 0) không có cha — clamp về 0 để luôn trả chỉ số hợp lệ [0, n-1]
+    return Math.max(0, Math.floor((idx - 1) / 2));
   }
 
   function isNodeInHeap(idx: number): boolean {
@@ -86,6 +73,16 @@ export function useHeapSortVisualizer(frame: () => SortFrame | null) {
     const ci = frame()!.comparingIndices;
     const si = frame()!.swappedIndices;
 
+    // SV-020: ưu tiên ci/si TRƯỚC node-violation — nếu không node đang so sánh
+    // (ci/si khác null) bị lớp violation đè màu, che mất highlight node-comparing
+    if (ci?.includes(idx)) {
+      return 'node-comparing scale-105 z-20';
+    }
+
+    if (si?.includes(idx)) {
+      return 'node-swapped scale-105 z-20';
+    }
+
     if (idx > 0) {
       const pIdx = getParentIndex(idx);
       const val = frame()!.arrayState[idx];
@@ -96,15 +93,7 @@ export function useHeapSortVisualizer(frame: () => SortFrame | null) {
       }
     }
 
-    if (ci?.includes(idx)) {
-      return 'node-comparing scale-105 z-20';
-    }
-
-    if (si?.includes(idx)) {
-      return 'node-swapped scale-105 z-20';
-    }
-
-    if (idx >= currentHeapSize.value) {
+    if (isSortedNode(idx)) {
       return 'node-sorted opacity-60';
     }
 
@@ -128,7 +117,7 @@ export function useHeapSortVisualizer(frame: () => SortFrame | null) {
       }
     }
 
-    if (idx >= currentHeapSize.value) {
+    if (isSortedNode(idx)) {
       return 'rgba(16, 185, 129, 0.08)';
     }
 
@@ -154,7 +143,7 @@ export function useHeapSortVisualizer(frame: () => SortFrame | null) {
     if (si?.includes(idx)) {
       return 'item-swapped scale-102 z-10';
     }
-    if (idx >= currentHeapSize.value) {
+    if (isSortedNode(idx)) {
       return 'item-sorted opacity-60';
     }
     return 'item-active';
@@ -222,7 +211,6 @@ export function useHeapSortVisualizer(frame: () => SortFrame | null) {
     currentHeapSize,
     currentPhase,
     currentStepDescription,
-    miniStepDescription,
     maxDepth,
     placeholderIndices,
     childIndices,

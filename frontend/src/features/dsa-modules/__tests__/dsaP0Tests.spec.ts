@@ -588,7 +588,7 @@ describe('DSAInputForm — generateRandom', () => {
       global: { stubs: { BaseIcon: { template: '<span />' } } },
     });
 
-    const btn = wrapper.find('button', { text: 'Sinh ngẫu nhiên' });
+    const btn = wrapper.findAll('button').find((b) => b.text() === 'Sinh ngẫu nhiên')!;
     await btn.trigger('click');
 
     const emitted = wrapper.emitted('update:modelValue');
@@ -605,7 +605,7 @@ describe('DSAInputForm — generateRandom', () => {
       global: { stubs: { BaseIcon: { template: '<span />' } } },
     });
 
-    const btn = wrapper.find('button', { text: 'Sinh ngẫu nhiên' });
+    const btn = wrapper.findAll('button').find((b) => b.text() === 'Sinh ngẫu nhiên')!;
     await btn.trigger('click');
 
     const emitted = wrapper.emitted('update:modelValue');
@@ -624,7 +624,7 @@ describe('DSAInputForm — generateRandom', () => {
       global: { stubs: { BaseIcon: { template: '<span />' } } },
     });
 
-    const btn = wrapper.find('button', { text: 'Sinh ngẫu nhiên' });
+    const btn = wrapper.findAll('button').find((b) => b.text() === 'Sinh ngẫu nhiên')!;
     await btn.trigger('click');
 
     const emitted = wrapper.emitted('update:modelValue');

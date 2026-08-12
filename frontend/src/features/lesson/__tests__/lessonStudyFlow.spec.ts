@@ -27,6 +27,11 @@ vi.mock('../../quiz-system/service/statelessQuizApi', () => ({
   },
 }));
 
+// LM-051: mock courseApi để view test không gọi fetch network THẬT localhost:5055.
+vi.mock('../../../services/courseApi', () => ({
+  courseApi: { getCourseById: vi.fn() },
+}));
+
 // ── Mocks cho view test (LessonStudyView) ──
 vi.mock('monaco-editor', () => ({ editor: { create: vi.fn(), setTheme: vi.fn() } }));
 vi.mock('monaco-editor/esm/vs/language/typescript/monaco.contribution', () => ({}));
@@ -53,6 +58,8 @@ let mockLessonId = 'quick-sort';
 
 import { fetchLessonDetail, fetchLessonProgress, awardXp } from '../services/lessonApi';
 import { statelessQuizApi } from '../../quiz-system/service/statelessQuizApi';
+import { courseApi } from '../../../services/courseApi';
+import type { Course } from '../../courses/types/course.types';
 import LessonStudyView from '../../../views/lesson/LessonStudyView.vue';
 
 const mockedFetchLessonDetail = vi.mocked(fetchLessonDetail);
@@ -147,15 +154,196 @@ describe('useLessonStore.loadLesson — nguồn dữ liệu bài học', () => {
     expect(store.activeStep).toBe(4);
   });
 
-  it('TC-A1.4b: tiến độ từ server được merge (quizScore server > local)', async () => {
+  it('TC-A1.4b: tiến độ từ server được merge (quizScore server percent 80 → 4/5 câu)', async () => {
     mockedFetchLessonDetail.mockRejectedValueOnce(new Error('offline'));
-    mockedFetchLessonProgress.mockResolvedValueOnce({ hasWatchedVisualizer: true, quizScore: 4, bestScore: 4, codelabCompleted: false, xpAwarded: 50 });
+    // LM-021: server lưu quizScore theo thang 0..100 (percent) — 80% của 5 câu = 4 câu.
+    mockedFetchLessonProgress.mockResolvedValueOnce({ hasWatchedVisualizer: true, quizScore: 80, bestScore: 80, codelabCompleted: false, xpAwarded: 50 });
     localStorage.setItem('token', 'token-abc');
 
     const store = useLessonStore();
     await store.loadLesson('quick-sort');
     expect(store.quizScore).toBe(4);
     expect(store.hasWatchedVisualizer).toBe(true);
+  });
+
+  it('LM-019: 403 → error Premium rõ ràng, vẫn giữ lesson local làm fallback', async () => {
+    localStorage.setItem('token', 'token-abc');
+    mockedFetchLessonDetail.mockRejectedValueOnce(Object.assign(new Error('Forbidden'), { status: 403 }));
+
+    const store = useLessonStore();
+    await store.loadLesson('quick-sort');
+
+    expect(store.error).toBe('Bài học này yêu cầu tài khoản Premium để truy cập.');
+    expect(store.currentLesson?.title).toBe('Quick Sort - Sắp xếp nhanh');
+    expect(store.isOfflineFallback).toBe(false);
+  });
+
+  it('LM-020: completeCodelab chỉ award đúng phần XP diff còn thiếu (quiz đã award 50)', async () => {
+    const store = useLessonStore();
+    await store.loadLesson('quick-sort'); // xpReward 100, có codelab
+
+    await store.submitQuiz({ q1: 3, q2: 2, q3: 1, q4: 1, q5: 0 }); // 4/5 pass → 50 XP quiz
+    expect(store.xpAwarded).toBe(50);
+
+    mockedAwardXp.mockClear();
+    await store.completeCodelab();
+
+    expect(mockedAwardXp).toHaveBeenCalledTimes(1);
+    expect(mockedAwardXp).toHaveBeenCalledWith(50, expect.stringContaining('CodeLab'));
+    expect(store.xpAwarded).toBe(100);
+    expect(store.codelabCompleted).toBe(true);
+    expect(store.isLessonComplete).toBe(true);
+  });
+
+  it('LM-020: awardXp reject → XP local vẫn tăng, không ném lỗi', async () => {
+    const store = useLessonStore();
+    await store.loadLesson('quick-sort');
+
+    mockedAwardXp.mockRejectedValueOnce(new Error('network down'));
+    await expect(store.completeCodelab()).resolves.toBeUndefined();
+
+    expect(store.xpAwarded).toBe(100);
+    expect(store.codelabCompleted).toBe(true);
+    const saved = JSON.parse(localStorage.getItem('lesson_progress_quick-sort') ?? '{}');
+    expect(saved.xpAwarded).toBe(100);
+  });
+
+  it('LM-047: goToStep(3)/(4) bị chặn theo gating đúng', async () => {
+    const store = useLessonStore();
+    await store.loadLesson('quick-sort');
+    expect(store.activeStep).toBe(1);
+
+    // Chưa xem viz, chưa pass quiz → cả 3 và 4 đều bị chặn.
+    store.goToStep(3);
+    expect(store.activeStep).toBe(1);
+    store.goToStep(4);
+    expect(store.activeStep).toBe(1);
+
+    // Đã xem visualizer → mở step 3.
+    localStorage.setItem('lesson_progress_quick-sort', JSON.stringify({ hasWatchedVisualizer: true, quizScore: null, bestScore: 0, codelabCompleted: false, xpAwarded: 0 }));
+    await store.loadLesson('quick-sort');
+    expect(store.activeStep).toBe(2);
+    store.goToStep(3);
+    expect(store.activeStep).toBe(3);
+
+    // Chưa pass quiz → step 4 vẫn chặn.
+    store.goToStep(4);
+    expect(store.activeStep).toBe(3);
+
+    // Pass quiz (có codelab) → mở step 4.
+    await store.submitQuiz({ q1: 3, q2: 2, q3: 1, q4: 1, q5: 0 });
+    expect(store.quizPassed).toBe(true);
+    store.goToStep(4);
+    expect(store.activeStep).toBe(4);
+  });
+
+  it('LM-047: isLessonComplete — bài có codelab cần hoàn tất codelab', async () => {
+    const store = useLessonStore();
+    await store.loadLesson('quick-sort');
+    expect(store.isLessonComplete).toBe(false);
+
+    await store.submitQuiz({ q1: 3, q2: 2, q3: 1, q4: 1, q5: 0 });
+    expect(store.quizPassed).toBe(true);
+    expect(store.isLessonComplete).toBe(false);
+
+    await store.completeCodelab();
+    expect(store.isLessonComplete).toBe(true);
+  });
+
+  it('LM-047: isLessonComplete — bài không quiz không codelab → xem viz = complete', async () => {
+    localStorage.setItem('token', 'token-abc');
+    mockedFetchLessonDetail.mockResolvedValue({
+      id: 'theory-only',
+      courseId: 'c1',
+      courseTitle: 'Course',
+      title: 'Lý thuyết thuần',
+      contentMd: '# Lý thuyết',
+      sandboxType: '',
+      sandboxConfig: '',
+      quizId: null,
+      xpReward: 10,
+      orderIndex: 1,
+      status: 'NotStarted',
+      lastActiveFrameIndex: 0,
+      lastScrollPercent: 0,
+    });
+
+    const store = useLessonStore();
+    await store.loadLesson('theory-only');
+    expect(store.currentLesson?.codelabTask).toBeUndefined();
+    expect(store.isLessonComplete).toBe(false);
+
+    localStorage.setItem('lesson_progress_theory-only', JSON.stringify({ hasWatchedVisualizer: true, quizScore: null, bestScore: 0, codelabCompleted: false, xpAwarded: 0 }));
+    await store.loadLesson('theory-only');
+    expect(store.isLessonComplete).toBe(true);
+  });
+
+  it('LM-047: isLessonComplete — bài quiz-only (không codelab) → quiz pass = complete', async () => {
+    localStorage.setItem('token', 'token-abc');
+    mockedFetchLessonDetail.mockResolvedValueOnce({
+      id: 'quiz-only-lesson',
+      courseId: 'c1',
+      courseTitle: 'Course',
+      title: 'Quiz only',
+      contentMd: '# Quiz',
+      sandboxType: '',
+      sandboxConfig: '',
+      quizId: 'qz-1',
+      xpReward: 20,
+      orderIndex: 1,
+      status: 'NotStarted',
+      lastActiveFrameIndex: 0,
+      lastScrollPercent: 0,
+    });
+    mockedGetQuizById.mockResolvedValueOnce({
+      id: 'qz-1',
+      title: 'Quiz',
+      topic: 'sorting',
+      difficulty: '1',
+      xpReward: 20,
+      questions: [
+        { id: 'a', text: 'C1?', options: ['Sai', 'Đúng'], correctIndex: 1, explanation: 'e' },
+        { id: 'b', text: 'C2?', options: ['Sai', 'Đúng'], correctIndex: 1, explanation: 'e' },
+        { id: 'c', text: 'C3?', options: ['Sai', 'Đúng'], correctIndex: 1, explanation: 'e' },
+        { id: 'd', text: 'C4?', options: ['Sai', 'Đúng'], correctIndex: 1, explanation: 'e' },
+      ],
+    });
+
+    const store = useLessonStore();
+    await store.loadLesson('quiz-only-lesson');
+    expect(store.currentLesson?.codelabTask).toBeUndefined();
+    expect(store.currentLesson?.quizQuestions).toHaveLength(4);
+
+    await store.submitQuiz({ a: 1, b: 1, c: 1, d: 1 });
+    expect(store.quizPassed).toBe(true);
+    expect(store.isLessonComplete).toBe(true);
+  });
+
+  it('LM-071: getQuizById reject → giữ quizQuestions local, không crash', async () => {
+    localStorage.setItem('token', 'token-abc');
+    mockedFetchLessonDetail.mockResolvedValueOnce({
+      id: 'quick-sort',
+      courseId: 'c1',
+      courseTitle: 'Course',
+      title: 'Quick Sort backend',
+      contentMd: '# Nội dung từ backend',
+      sandboxType: 'sorting',
+      sandboxConfig: '{"demo":"quick-sort"}',
+      quizId: 'qz-backend',
+      xpReward: 100,
+      orderIndex: 1,
+      status: 'NotStarted',
+      lastActiveFrameIndex: 0,
+      lastScrollPercent: 0,
+    });
+    mockedGetQuizById.mockRejectedValueOnce(new Error('quiz api down'));
+
+    const store = useLessonStore();
+    await store.loadLesson('quick-sort');
+
+    expect(store.currentLesson?.title).toBe('Quick Sort backend');
+    expect(store.currentLesson?.quizQuestions).toHaveLength(5); // local 5 câu được giữ
+    expect(store.isLoading).toBe(false);
   });
 
   it('TC-A3.7: submitQuiz lưu quizScore vào localStorage và KHÔNG double-award XP', async () => {
@@ -199,11 +387,30 @@ describe('useLessonStore.loadLesson — nguồn dữ liệu bài học', () => {
 describe('LessonStudyView.vue — render từ store', () => {
   let wrapper: VueWrapper | null = null;
 
+  const MOCK_COURSE: Course = {
+    id: 'course-1',
+    title: 'Nhập môn Cấu trúc dữ liệu & Giải thuật',
+    description: 'desc',
+    category: 'Sorting',
+    difficulty: 'Beginner',
+    xpReward: 100,
+    isPremium: false,
+    totalLessons: 2,
+    lessons: [
+      { id: 'quick-sort', title: 'Quick Sort', order: 1 },
+      { id: 'next-lesson', title: 'Next', order: 2 },
+    ],
+    isPublished: true,
+    coverImage: '',
+  };
+
   beforeEach(() => {
     setActivePinia(createPinia());
     localStorage.clear();
     vi.clearAllMocks();
     mockLessonId = 'quick-sort';
+    // LM-051: không gọi courseApi thật (fetch network localhost:5055).
+    vi.mocked(courseApi.getCourseById).mockResolvedValue(MOCK_COURSE);
   });
 
   afterEach(() => {

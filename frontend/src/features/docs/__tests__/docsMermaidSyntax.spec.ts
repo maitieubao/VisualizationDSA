@@ -42,7 +42,6 @@ const allBlocks = collectMermaidBlocks(DOCS_DIR);
 
 describe('Docs Mermaid Syntax — toàn bộ tài liệu', () => {
   let mermaid: any;
-  let parseError: any;
 
   beforeAll(async () => {
     mermaid = (await import('mermaid')).default;
@@ -59,7 +58,6 @@ describe('Docs Mermaid Syntax — toàn bộ tài liệu', () => {
       try {
         await mermaid.parse(block.code);
       } catch (err: any) {
-        parseError = err;
         const message = String(err?.message ?? err).replace(/\s+/g, ' ').slice(0, 300);
         failures.push(`${block.file} (khối #${block.blockIndex + 1}): ${message}`);
       }

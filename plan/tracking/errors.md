@@ -1689,3 +1689,1068 @@ px vue-tsc --noEmit exit code 0 (toan bo type check pass).
 | QZ-056 | Low | selectBackendAnswer dung reassignment thay splice |
 
 - **Kết quả:** frontend 2715/2715 PASS (2713 + 2 test QZ-006).
+
+## Review Phase 2 — 2026-08-10 (12 lỗi mới: Code-to-Visualization + Docs SOLID/Patterns)
+
+| ID | Mức | Nguyên nhân gốc | Fix | Trạng thái |
+| :--- | :--- | :--- | :--- | :--- |
+| CV-001 | High | `appendAutoInvoke` luôn chọn FunctionDeclaration đầu tiên → helper `swap(arr)` được tự gọi thay vì `bubbleSort(arr)` → 0 frame, Canvas trống | Chọn entry theo: (1) hàm không bị hàm khác gọi (call graph), (2) tên khớp `sort\|search\|main\|run\|execute`, (3) ≥1 tham số (ASTInstrumentationEngine.ts) | FIXED (xác minh npx tsx + 2 test) |
+| CV-002 | High | Loop guard dùng chung 1 biến `__loopCounter` → nested loop hợp lệ (100×100) vượt ngưỡng 5000 bị throw sai | Counter riêng từng loop (`__loopCounter{N}`) + reset khi loop re-enter (`wrapLoopWithReset`) + LOOP_LIMIT 5000→20000 | FIXED (100×100 OK, `while(true)` vẫn throw, +3 test) |
+| CV-003 | Medium | Frame hardcode `activeLine: 0` + `variables: {}` → highlight code chết, bảng biến trống | Instrument truyền `node.loc.start.line`; worker ghi `lineNumber` + `variables: {i,j}/{i,value}`; `convertToAnimationFrames` map sang activeLine | FIXED (+1 test line) |
+| CV-004 | Medium | `traceAssign` dán nhãn mọi phép ghi là SWAP → UI hiểu sai thao tác | Thêm type `ASSIGN` vào LiveFrameDTO; worker push ASSIGN; explanation riêng "Gán giá trị mới..." / "Hoán vị phần tử..." | FIXED |
+| CV-005 | Medium | `bubbleSort(arr, n)` bị gọi `bubbleSort(arr)` → n undefined → vòng lặp không chạy | Truyền `arr.length` cho tham số 2 khi entry có ≥2 tham số | FIXED (xác minh npx tsx) |
+| CV-006 | Medium | Đệ quy không base case hiện "Maximum call stack size exceeded" kỹ thuật, không gợi ý | Export `toFriendlyWorkerError` + worker catch map → "Đệ quy quá sâu — kiểm tra điều kiện dừng (base case)" | FIXED (+1 test 3 case) |
+| CV-007 | Low | Hack `createEditorType()` trả `null as unknown as EditorType` — dead code | Xóa hàm giả; `let editorInstance: EditorType | null = null;` | FIXED |
+| CV-008 | Low | Thiếu edge tests (entry selection, nested loop, lineNumber, 2 tham số) | +6 test AST (nested = 2 counter, infinite vẫn throw) + 1 test toFriendlyWorkerError | FIXED (suite code-to-viz 56/56) |
+| DP-001 | High | 3 controller + strategy + DTO backend CHẾT (0 consumer frontend sau ADR-05) vẫn mapped, tăng attack surface | Xóa 11 file: 3 controller + 3 strategy + 3 DTO + DIContainerExecutor + ConceptScenarioRequestDto | FIXED (dotnet build 0 lỗi, 372/372 PASS) |
+| DP-002 | Medium | Tracking ghi `✅ CODE DONE` cho feature đã thay bằng Docs — vi phạm Tracking-First | progress.md (4 dòng Sprint 6-9 + 2 section) + deep-decomposition README (13/14/20/22) → `❌ ĐÃ THAY THẾ — Docs Reference (ADR-05)` | FIXED |
+| DP-003 | Medium | 6 tour mồ côi `/oop /solid /di /patterns /state /system` (~516 dòng) không bao giờ kích hoạt | Xóa 6 block tour + spec test 10→4 cases (còn /sorting /code-ide /graph /quiz) | FIXED (grep sạch, 29/29 PASS) |
+| DP-004 | Low | concept-sandbox chỉ còn là meta-test house — trạng thái đã chốt ADR-05, không phải bug | Không sửa code (ghi nhận) | OPEN (ghi nhận) |
+
+- **Kết quả:** frontend **2722/2722 PASS** (150 file, +7 test), backend **372/372 PASS** (dotnet test, build 0 lỗi).
+
+## Review Round 4 — 2026-08-10 (Code-to-Visualization + Docs, 6 sub agent fix + 2 sub agent test)
+
+Nguồn: `DATN_ERRORS.md` §6 (CV-101→140) + §7 (DC-001→026, DC-C1→7, DC-T1→5) — 8 sub agent review log 2026-08-10.
+
+### Code-to-Visualization (CV-101→140)
+
+| ID | Mức | Nguyên nhân gốc | Fix | Trạng thái |
+| :--- | :--- | :--- | :--- | :--- |
+| CV-101 | High | `terminateActiveSession` không reject promise session cũ → dangling promise mãi mãi | `pendingReject` module-level trong WorkerLifecycleCoordinator; terminate reject session cũ | FIXED |
+| CV-102 | High | compileWorker ghi đè handler singleton → response rơi + terminate giết worker dùng chung (vcr-player + algo-playground) | Viết lại: map `pendingRequests: Map<number>` + 1 handler gán 1 lần; giữ API public | FIXED |
+| CV-103 | High | Sandbox không chặn `self.fetch`/XHR/importScripts (vi phạm BEHAVIOR_SPEC §1.2) | Che 3 API = undefined + guard instanceof trước `new Function` | FIXED |
+| CV-104 | High | Auto-invoke hàm ≥2 tham số truyền `arr.length` → binarySearch chạy sai âm thầm | Heuristic an toàn: 1 tham số → `[arr]`; 2 tham số chỉ khi tên khớp `^(n\|len\|length\|size)$`; còn lại skip | FIXED |
+| CV-105 | Medium | Glow xanh phát khi compile BẮT ĐẦU (lừa người dùng) | State `lastCompileSucceeded` set trong finally; glow chỉ sau thành công | FIXED |
+| CV-106 | Medium | Tour `/code-ide` 11/12 bước spotlight rỗng (mô tả IDE không tồn tại) | Viết lại 12 bước theo component thật + `data-tour-id` (guided 29/29) | FIXED |
+| CV-107 | Medium | MAX_FRAMES 2000 truncate thầm lặng không cờ | Flag `truncated: true` + log cảnh báo | FIXED |
+| CV-108 | Medium | LOOP_LIMIT 20000 lệch BEHAVIOR_SPEC (5000) & TECHNICAL_SPEC (10000) | Chốt 20000 + cập nhật 3 spec docs + timeout 1.5s + sentinel (xem ADR-41) | FIXED |
+| CV-109 | Medium | `for...of`/`for...in` không được guard | Thêm visitor ForOfStatement/ForInStatement | FIXED |
+| CV-110 | Medium | So sánh 1 vế non-member (`arr[j] > key`) không instrument | 1 vế member → vẫn instrument, truyền vế kia làm value | FIXED |
+| CV-111 | Medium | Chỉ số side-effect `arr[i++]` — đọc sai `arr[i+1]` | Bọc IIFE giữ thứ tự đọc-trước-tăng | FIXED |
+| CV-112 | Medium | `Number('')===0`, `0x10`=16, `1e2`=100 lọt parse | Regex `^\s*-?\d+(\.\d+)?\s*$` + reject segment rỗng | FIXED |
+| CV-113 | Medium | Hardcode ACCESS "mảng đã được sắp xếp" — sai cho search/min/selection | Explanation trung tính "Thuật toán kết thúc." + bỏ sorted highlight | FIXED |
+| CV-114 | Medium | `hasCompileError` sticky — editor đỏ tới khi RUN lại | Reset khi `setSourceCode` sau lỗi | FIXED |
+| CV-115 | Medium | Store singleton bị chiếm — animation chạy ở view khác sau khi rời route | Generation token chặn stale await/finally | FIXED |
+| CV-116 | Medium | Không có nút Cancel khi compile | Nút Cancel (ArrayInputBar + CodeWorkspace) | FIXED |
+| CV-117 | Medium | Auto-scroll scroll-lock kể cả user đang cuộn lên | Chỉ auto-scroll khi sát đáy (≤24px) | FIXED |
+| CV-118 | Medium | Compile error không hiển thị marker Monaco | `monaco.editor.setModelMarkers` owner 'liveCompiler' | FIXED |
+| CV-119 | Medium | Input mảng không validate realtime, RUN chặn im lặng | Validate realtime + role=alert + lý do rõ | FIXED |
+| CV-120 | Medium | Grid 1fr 1fr không responsive ≤768px | Responsive class xếp dọc | FIXED |
+| CV-121 | Medium | Code rỗng/comment-only bị đánh compile failure nhầm | Thông báo rõ "code trống" | FIXED |
+| CV-122 | Low | Monaco model không dispose | `editor.getModel()?.dispose()` khi unmount | FIXED |
+| CV-123 | Low | Arrow/function expression không auto-invoke → 0 trace | Mở rộng entry detection | FIXED |
+| CV-124 | Low | Variables hardcode `{i,j}` | Extract định danh thật từ AST | FIXED |
+| CV-125 | Low | `nodesToReplace` biến chết | Xóa | FIXED |
+| CV-126 | Low | `toFriendlyWorkerError` chỉ test dùng | Dùng thật trong production worker | FIXED |
+| CV-127 | Low | `"use strict"` bị demote bởi unshift | Chèn sau directive đầu Program | FIXED |
+| CV-128 | Low | `onmessageerror` không xử lý — timeout với message sai | Handler riêng reject với lỗi đúng | FIXED |
+| CV-129 | Low | Error không chứa sentinel `LOOP_LIMIT_EXCEEDED` | Thêm sentinel (khớp 01-core-logic.md:81) | FIXED |
+| CV-130 | Low | Timeout 1500ms vs PRD 1.0s; message luôn đổ lỗi "lặp vô hạn" | Chốt 1.5s + message phân biệt code nặng vs loop-limit | FIXED |
+| CV-131 | Low | RangeError đệ quy thô trong engine cũ | `toFriendlyCompileError` dùng thật | FIXED |
+| CV-132 | Low | `compilePseudocodeRegex` OOB → mockArray.reverse() tùy tiện | Bounds guard swap | FIXED |
+| CV-133 | Low | `var` trong `for(var i…)` không track loopVariables | Track cả var | FIXED |
+| CV-134 | Low | Duplicate `inputArrayText` hardcode drift | Dùng chung DEFAULT_INPUT_ARRAY | FIXED |
+| CV-135 | Low | Compile fail giữ frames cũ — canvas vẫn chạy animation cũ | `animStore.clear()` đầu compile | FIXED |
+| CV-136 | Low | Log dài không wrap | `overflow-wrap: break-word` | FIXED |
+| CV-137 | Low | `<label>` thiếu for/id | Bổ sung a11y | FIXED |
+| CV-138 | Low | 0 mount test cho 4 component; store spec mock pass-through | +23 test (suite 56→78) — codeToVizComponentTests.spec.ts (20) + store (13) + worker (9) + p0 (16) | FIXED (78/78) |
+| CV-139 | Low | progress.md "32" stale (thực 56) | Cập nhật "78" tại progress.md + deep-decomposition README | FIXED |
+| CV-140 | Low | errors.md khớp 56/56 | Giữ nguyên | FIXED |
+
+### Docs (DC-001→026, DC-C1→7, DC-T1→5)
+
+| ID | Mức | Nguyên nhân gốc | Fix | Trạng thái |
+| :--- | :--- | :--- | :--- | :--- |
+| DC-001 | High | Mobile sidebar không bao giờ mở được (không nơi nào set true) | Hamburger mở drawer + overlay + X (DocsLayout) | FIXED |
+| DC-002 | High | TOC `history.pushState` phá hash router → NotFound khi reload/Back | Bỏ pushState, chỉ `scrollIntoView` | FIXED |
+| DC-003 | High | Scrollspy nghe window nhưng scroll container thật là `.app-view` | Listener trên `.app-view` + `getBoundingClientRect().top <= 100` + watch headings | FIXED |
+| DC-004 | High | Click delegation chết từ bài thứ 2 (cờ module không reset) | `watch(markdownContainer)` theo lifecycle | FIXED |
+| DC-005 | Medium | Fallback `/docs/intro` — file không tồn tại → vòng lặp | `/docs/intro/intro` | FIXED |
+| DC-006 | Medium | 4 redirect `/oop /solid /di /patterns` toàn dead | Redirect bài đầu nhóm (encapsulation/srp/basics/singleton) | FIXED |
+| DC-007 | Medium | 14 slug `/docs/<topic>` chết — `getFirstSectionOfTopic` dead code | Nối dây vào fallback | FIXED |
+| DC-008 | Medium | Race điều hướng nhanh ghi đè content + createHighlighter 2 lần | `renderSeq` counter + singleton highlighter promise | FIXED |
+| DC-009 | Medium | Message lỗi Mermaid nhét RAW qua innerHTML (XSS defense-in-depth) | `escapeHtmlText` trước khi nhét | FIXED |
+| DC-010 | Medium | Trùng heading id (hash-table ×2) → TOC nhảy sai | Dedup suffix `-1`/`-2` | FIXED |
+| DC-011 | Medium | Tab "/docs" — sidebar không highlight, prev/next mất | Redirect `/docs` → `/docs/intro/intro` | FIXED |
+| DC-012 | Medium | `isCurrentRoute` viết ngược + trailing slash dead | Sửa đúng chiều so sánh + normalize trailing slash | FIXED |
+| DC-013 | Medium | Không scroll-to-top khi chuyển bài | `scrollBehavior` router | FIXED |
+| DC-014 | Medium | Shiki createHighlighter khởi tạo lại MỖI route (200-400ms) | Hoist module scope (cache toàn cục) | FIXED |
+| DC-015 | Medium | Race nhỏ loadMarkdown không hủy request cũ | Guard load cũ | FIXED |
+| DC-016 | Low | Fallback shiki không escape → `<`,`>` bị strip | `escapeHtmlText(code)` | FIXED |
+| DC-017 | Low | ```ini không trong langs đăng ký → mất highlight + copy | Thêm `ini`/`plaintext` + `normalizeLang` | FIXED |
+| DC-018 | Low | `ADD_ATTR: ['style']` nới lỏng DOMPurify | Thu hẹp allowlist + hook kiểm soát | FIXED |
+| DC-019 | Low | Link tương đối `.md` giữ nguyên href → trỏ sai | Prefix `/docs/` | FIXED |
+| DC-020 | Low | Blank flash giữa các bài | Giữ spinner (loading=true không reset raw) | FIXED |
+| DC-021 | Low | Không breadcrumb / tìm kiếm / scroll active / collapse state | PARTIAL: scrollIntoView active + collapse localStorage; breadcrumb + ô tìm kiếm DEFERRED | PARTIAL (DEFERRED phần) |
+| DC-022 | Low | Dead code nhánh `'default' in raw` + watch route.path | Dọn dead code | FIXED |
+| DC-023 | Low | Trùng title "Cây nâng cao" + bài advanced-trees lặp nội dung | Title "Cây nâng cao (Advanced Trees)" + xác nhận không trùng | FIXED |
+| DC-024 | Low | Mermaid subgraph id chứa dấu cách | Nháy kép id | FIXED |
+| DC-025 | Low | fontSize nhân đôi + palette hardcode | fontSize 1 nguồn + CSS variables | FIXED |
+| DC-026 | Low | Emoji trong code block bị thay SVG | Chặn thay thế trong code block | FIXED |
+| DC-C1 | High | quick-sort.md:95,100 mảng sai trạng thái Lomuto (2 chỗ) | `[10,30,40,50,80,90,70]` + cuối `[10,30,40,50,70,90,80]` + ghi chú | FIXED |
+| DC-C2 | High | linear-search sentinel off-by-one — target cuối mảng trả -1 | `return (i < n - 1 || last == target) ? i : -1;` | FIXED |
+| DC-C3 | High | trie mermaid vẽ nhánh `e` giả cho "app" | Bỏ nhánh e; app kết thúc tại P2 | FIXED |
+| DC-C4 | Medium | bucket-sort bỏ rơi phần tử 0.68 | Thêm Xô 6 + Gather đủ 10 phần tử | FIXED |
+| DC-C5 | Medium | counting-sort thiếu ràng buộc không âm | Thêm cảnh báo IndexOutOfRange | FIXED |
+| DC-C6 | Medium | sorting-summary Bucket Sort "❌ so sánh" mâu thuẫn chính nó | "⚠️ Một phần" | FIXED |
+| DC-C7 | Low | 7 chỗ chính tả/thuật ngữ | Sửa toàn bộ (heap-sort, stack, advanced-trees, leetcode-examples, segment-tree, replication-lag, quick-sort) | FIXED |
+| DC-T1 | Low | 0 component test docs | `docsComponentTests.spec.ts` 35 test | FIXED |
+| DC-T2 | Low | Mermaid render không test được jsdom | Test round-trip encodeURIComponent data-mermaid-code | FIXED |
+| DC-T3 | Low | Không test nav↔file + heading id unique | `docsNavigationConsistency.spec.ts` 5 test (68/68 nav, id unique, frontmatter) | FIXED |
+| DC-T4 | Low | features-tested.md không có mục Docs | Bổ sung mục Docs ở features-tested.md | FIXED |
+| DC-T5 | Low | `parseError` unused trong docsMermaidSyntax | Xóa | FIXED |
+
+- **Phụ lục:** Phục hồi DATN_ERRORS.md bị mojibake double-encoding (UTF-8 → cp1252 → UTF-8); git diff sau phục hồi chỉ còn +320 dòng REVIEW ROUND 4.
+- **Kết quả:** frontend **2784/2784 PASS** (153 file; code-to-viz 78/78, docs 42/42, guided-tour 29/29), backend **372/372 PASS** (không đụng).
+- **Còn lại:** DC-021 breadcrumb/search ⏳ DEFERRED · CC-011 ⏳ OPEN · CC-012 ⏳ OPEN · QZ-048 ⏳ DEFERRED.
+
+## Review Round 5 — 2026-08-10 (re-review 7 sub agent + fix 4 sub agent)
+
+Verify: CV-101→140 FIXED theo code hiện tại; docs 19/22 FIXED (PARTIAL DC-010/021/DC-C3 → DC-010, DC-C3 đã xử tiếp ở round này). Chi tiết: `DATN_ERRORS.md` §8-13.
+
+### Lỗi mới round 5 — đã fix toàn bộ
+
+| ID | Mức | Nguyên nhân gốc | Fix | Trạng thái |
+| :--- | :--- | :--- | :--- | :--- |
+| CV-141 | Medium | Timer glow không lưu/clear — success #2 tắt sớm; compile #2 dư âm xanh; fail + xanh cùng bật | `successGlowTimer` + `clearSuccessGlow()`; watcher `lastCompileSucceeded` clear mọi fire; watcher `hasCompileError` clear khi fail; onBeforeUnmount clear (MonacoEditorPanel.vue:48-56,163-164,172-199) | FIXED |
+| CV-142 | Low | Tour bước 5 spotlight Cancel — chỉ render khi isCompiling → rỗng | highlightSelector → `code-ide-run-btn` luôn tồn tại + mô tả giữ ý nghĩa; +1 test mount CodeWorkspace thật assert mọi selector tồn tại (useGuidedTourStore.ts:182-187) | FIXED |
+| CV-143 | Low | traceAssign hardcode `{i, value}` — gán `arr[k]=x` hiện "i" | AST truyền `vars` = cặp [tên, giá trị] từ MemberExpression property (ASTInstrumentationEngine.ts:152-160); worker dựng variables từ cặp (WorkerLifecycleCoordinator.ts:61-79); +2 test | FIXED |
+| CV-144 | Low | ASSIGN map `highlights.swap` — vẽ GÁN 1 phần tử như HOÁN VỊ | Thêm `assign?: number[]` vào HighlightIndices (animation.types.ts:5-6, additive — verify không renderer switch keys); ASSIGN → `highlights.assign` (liveCompilerDefaults.ts:22-35) | FIXED |
+| DC-027 | High | Regression fix DC-002: `a[href^="#"]` preventDefault nuốt link router `#/docs/...` → hàng trăm link chết | Selector `a[href^="#"]:not([href^="#/"])` — link router thoát qua :not, anchor scrollIntoView (DocsMarkdownRenderer.vue:164); +3 test click (docsComponentTests) | FIXED |
+| DC-028 | Medium | Deep-link `#section` không cuộn: scrollBehavior window no-op + heading chưa render | scrollBehavior bỏ docs; `scrollToHashSection()` sau extractHeadings + sau vòng mermaid (DocsMarkdownRenderer.vue:260-265,482,513) | FIXED |
+| DC-029 | Medium | Slug topic sai fallback ẩn hiện intro — URL sai, sidebar không highlight | `getFirstSectionOfTopic` trả '' nếu topic không tồn tại → `router.replace('/docs/intro/intro')` (DocsView.vue:95-106); +1 test | FIXED |
+| DC-030 | Low | Phụ thuộc remount App.vue `:key=fullPath` | `watch(() => route.path, loadMarkdown)` không immediate (DocsView.vue:141-143); +1 test | FIXED |
+| DC-031 | Low | Mermaid không re-check seq sau await → render vào element đã gỡ | Re-check renderSeq sau import + sau mỗi await render (DocsMarkdownRenderer.vue:491-515) | FIXED |
+| DC-C8 | High | two-pointers trace `[2,3]` (0-indexed) vs code `[3,4]` (1-indexed) | "Trả về [3, 4]" + giải thích left+1/right+1 (two-pointers.md:124) | FIXED |
+| DC-C9 | Medium | Mermaid Bước 4 vẽ trạng thái SAU left++ lệch text | Vẽ `L→0[11]`, `R→4[41]` đúng quy ước trước-di-chuyển (two-pointers.md:103-113) | FIXED |
+| DC-C10 | High | Heap extract trace: 30 swap với sibling 20 (sai — con đều ≥ size → SiftDown dừng) | "30 không còn con → Dừng" + mảng `[7,15,8,30,20,25]` khớp SiftDown :355-370 (heap-priority-queue.md:274-282) | FIXED |
+| DC-C11 | Medium | "struct Deep Copy khi gán" sai định nghĩa | Copy theo giá trị; field tham chiếu chỉ copy con trỏ; đối chiếu class (memory.md:93) | FIXED |
+| DC-C12 | Low | BGP gọi "distance vector" | "BGP (path-vector)" + giải thích AS path (packet-routing.md:114,117) | FIXED |
+| DC-C13 | Low | Ngữ pháp hỏng "tại sự tồn tại" | "Đây chính là lý do giải thích sự tồn tại..." (heap-priority-queue.md:526) | FIXED |
+| DC-C14 | Low | O(log N) N=10⁶ ghi ~19 bước | ~20 bước (log₂10⁶ ≈ 19.93) (big-o.md:131) | FIXED |
+| DC-010 (bổ sung) | Medium | Nguồn `csharp-hash-collections.md` còn 2 heading trùng | Heading 67 → "Cách sử dụng cơ bản của HashSet"; allowlist KNOWN_DUPLICATE_SLUGS → `{}` | FIXED |
+| DC-C3 (bổ sung) | Medium | End marker vẫn là con thứ 3 của P2 | Nhúng vào nhãn `P2["p (end: app)"]` — P2 còn đúng 2 con (trie-prefix-tree.md:44-48,69,77) | FIXED |
+
+- **Kết quả:** frontend **2790/2790 PASS** (153 files, +6 test: docs 42→45, code-to-viz 78→80, guided 29→30), backend **372/372 PASS** (không đụng).
+- **Còn lại:** DC-021 breadcrumb/search ⏳ DEFERRED · CC-011 ⏳ OPEN · CC-012 ⏳ OPEN · QZ-048 ⏳ DEFERRED.
+
+## Review Round 6 — 2026-08-11 (Fix toàn bộ TypeScript type errors: 148 → 0)
+
+Chiến dịch dọn type cho toàn frontend: `vue-tsc -b --force` còn **148 lỗi** → **0 lỗi**. Không đổi hành vi runtime; toàn bộ là fix type an toàn + defensive guard.
+
+| ID | Mức | Nguyên nhân gốc | Fix | Trạng thái |
+| :--- | :--- | :--- | :--- | :--- |
+| TS-001 | High | `ASTInstrumentationEngine.ts` 6 lỗi: walk.simple cast Program→acorn.Node; `describeCompareSide`/`buildVariableTuples` nhận `Expression \| PrivateIdentifier`; `isDirectiveStatement` nhận `Statement \| ModuleDeclaration`; `wrapLoopWithReset` truyền `node` không khớp param `acorn.Node` | Cập nhật chữ ký hàm: `walk.simple(program as unknown as acorn.Node)`, nhận PrivateIdentifier và lọc trong buildVariableTuples, mở rộng union param, tham số `node: unknown` | FIXED (6/6) |
+| TS-002 | High | Renderers dsa-modules đọc `frame.highlights.*`/`frame.dataState[i]` không guard — `FrameDTO.dataState?`/`highlights?` optional → TS18048 | Defensive: `const highlights: HighlightIndices = frame.highlights ?? {compare:[],swap:[],sorted:[],dimmed:[],active:[]}` + `dataState = frame.dataState ?? []`; `?? []` cho optional `dimmed`/`active`; optional-chaining `frame.highlights?.active?.includes` (BarChartRenderer, BoxArrayRenderer, boxArrayRenderHelpers, tubeRenderHelpers, TreeRenderer, TubeRenderer, GraphRenderer) | FIXED (33/33) |
+| TS-003 | Medium | `LessonStudyView.vue`: `courseLessons` annotation `xpReward?: number` không khớp `LessonItem.xpReward: number` | Map với default `xpReward: l.xpReward ?? 0`, `quizId: l.quizId ?? null` | FIXED |
+| TS-004 | Medium | `TeacherClassroomCurriculumTab.vue`: `curriculum.value?.name` — interface là `classroomName` | `curriculum.value?.classroomName` | FIXED |
+| TS-005 | High | `useVcrStore` `VcrBaseFrame` thiếu `canvasStateSnapshot` — PseudocodePanel đọc qua `isPlaybackFrame`; 31 literal test thừa prop → TS2353 | Thêm `canvasStateSnapshot?: CanvasStateSnapshot` vào `VcrBaseFrame` (phản ánh đúng PlaybackFrame do CompilerStepExecutor sinh) | FIXED (31/31) |
+| TS-006 | Medium | 2 spec code-editor: `mockCreate(...args)` spread `unknown[]` vào hàm 0 tham số → TS2556; `animStore.frames` thiếu `stepId/activeLine/explanation` → TS2739 | `mockCreate = vi.fn((..._args: unknown[]) => makeEditor())`; thêm 3 field bắt buộc vào frame literals (4 block) | FIXED (TS2556 2, TS2739 14) |
+| TS-007 | Medium | `dsaP0Tests`: `wrapper.find('button', {text})` — @vue/test-utils v2.4 bỏ overload 2 tham số → TS2554 | `wrapper.findAll('button').find(b => b.text() === 'Sinh ngẫu nhiên')!` | FIXED (3) |
+| TS-008 | Medium | `dummyGenerators.spec.ts` + `rendererComponents.spec.ts`: `highlights`/`dataState` possibly undefined; canvas mock không khớp overload `getContext` | Optional chaining + `as unknown as typeof HTMLCanvasElement.prototype.getContext` | FIXED (10) |
+| TS-009 | High | `canvasEventHandlersTests`: `StoreMock` dùng `ReturnType<typeof vi.fn>` = `Mock<Procedure\|Constructable>` không khớp `PlaygroundStoreSurface` method signatures (Vitest 4) | Khai báo `Mock<(id: string) => void>`… cho từng method; `canvasMock.ts` cast `as unknown as` | FIXED (16) |
+| TS-010 | Low | `playgroundP2Tests`: CFA thu hẹp `currentTheme` về `'terminal-dark'` sau `=` → so sánh `=== 'light'` TS2367 | Widen `const theme: string = themeStore.currentTheme` | FIXED (3) |
+| TS-011 | Medium | `adminP2Tests`: `selects[0].element.value` — `Element` không có `.value` | `(selects[0].element as HTMLSelectElement).value` | FIXED |
+| TS-012 | Low | `checkoutP2Tests`: `setSourceFile('js', …)` — `PlaygroundLanguage = 'html'\|'css'\|'javascript'` | `'js'` → `'javascript'` | FIXED (2) |
+
+- **Kết quả cuối:** `vue-tsc -b --force` **0 lỗi** (trước 148), frontend **2790/2790 PASS** (153 files, không đụng test behavior), `npm run build` (vue-tsc + vite) **thành công**, backend **372/372 PASS**.
+- **Đóng mục:** CC-011 (type drift dsa-modules renderers/tests) ⏳ OPEN → ✅ **FIXED** (batch TS-002/007/008/009).
+- **Còn lại:** DC-021 breadcrumb/search ⏳ DEFERRED · CC-012 ⏳ OPEN · QZ-048 ⏳ DEFERRED.
+
+## Review Round 7 — Auth (2026-08-11) — Sub-agent FIX BACKEND (AU-002→004, 009, 011→017, 022, 026, 027, 030→039)
+
+Chiến dịch fix backend Auth (2 hệ: standard AuthService + stateless /concepts/auth/*). **Không đụng frontend.** Kết quả: backend **416/416 test PASS** (+44 test auth mới).
+
+| ID | Mức | Nguyên nhân gốc | Cách khắc phục | Trạng thái |
+| :--- | :--- | :--- | :--- | :--- |
+| AU-004 | P1 | Refresh rotation race cả 2 hệ: 2 refresh song song cùng token đều pass; stateless `TryGetValue`+`TryRemove` không nguyên tử | Standard: rotation trong 1 transaction (generate trước, revoke sau, 1 commit) + reuse detection → family revocation khi dùng token đã revoke/expired. Stateless: remove-if-match — chỉ `TryRemove` thành công mới rotation | FIXED |
+| AU-009 | P1 | JWT key placeholder commit trong repo + fallback hardcode trong source; fail-fast chỉ chặn Production | Xóa key placeholder khỏi appsettings.json + xóa fallback hardcode trong JwtSigningConfig (Configure throw khi thiếu); Program.cs ép key ở MỌI môi trường — Development thiếu → sinh key ngẫu nhiên 48 bytes + log warning, còn lại → throw | FIXED |
+| AU-011 | P2 | Standard refresh không check `user.IsActive` — user bị ban refresh vô hạn | Thêm check IsActive trong `RefreshTokenAsync` → throw UnauthorizedAccessException | FIXED |
+| AU-012 | P2 | Register check-then-insert TOCTOU → DbUpdateException → 500 thay vì 400/409 | Catch DbUpdateException quanh CommitAsync → ArgumentException message generic (400) | FIXED |
+| AU-013 | P2 | User enumeration: email in-memory → trả thẳng `ex.Message` chi tiết | Catch ArgumentException → 1 message generic cho cả 2 nhánh (DB + in-memory) | FIXED |
+| AU-014 | P2 | Login timing side-channel: email không tồn tại → 0ms vs BCrypt ~200-300ms | Verify dummy hash (BCrypt workFactor 12, static) khi email không tồn tại — cả AuthService lẫn strategy | FIXED |
+| AU-015 | P2 | change-password không rate limit → brute-force CurrentPassword | Thêm `[EnableRateLimiting("auth")]` cho endpoint change-password | FIXED |
+| AU-016 | P2 | Singleton ConcurrentDictionary không evict (memory leak); EnsureUserInMemory không refresh dữ liệu cũ | TTL eviction (UserIdleLifetime 30 ngày, chạy ở mọi entry point, dọn cả refresh tokens); EnsureUserInMemory giờ CẬP NHẬT mọi field + remap email key khi đổi email | FIXED |
+| AU-017 | P2 | Bug TTL: token còn < 1s → ternary gia hạn FULL 30 ngày | Clamp TTL vào [1s, RefreshTokenLifetime] khi rotation | FIXED |
+| AU-022 | P2 | Đổi mật khẩu không revoke phiên khác | Sau change-password thành công → `RevokeAllRefreshTokens(id)` (mọi thiết bị khác phải đăng nhập lại) | FIXED |
+| AU-026 | P2 | AuthServiceTests mock FindAsync(Any) khớp mọi predicate; thiếu 5 case | Mock store thật (compile predicate đánh giá trên list) phân biệt email/username; thêm: ban login, email không tồn tại, refresh expired/revoked/deleted-user → 401, logout revoke rồi refresh fail | FIXED |
+| AU-027 | P2 | Logout chỉ assert state local, không test revoke server-side | Test LogoutAsync: token.IsRevoked = true + refresh sau logout → 401 (cả AuthServiceTests + StatelessAuthControllerTests + StatelessAuthStrategyTests) | FIXED |
+| AU-030 | P3 | Refresh token user đã xóa → 404 (leak thông tin) | 401: standard → UnauthorizedAccessException; stateless → strategy throw UnauthorizedAccessException + bỏ catch KeyNotFoundException ở Refresh | FIXED |
+| AU-031 | P3 | UserDto.Token [Obsolete] không [JsonIgnore] → serialize thêm field "token" | Thêm `[JsonIgnore]` | FIXED |
+| AU-032 | P3 | 4 field `UserId` dead code trong StatelessAuthDto (mời gọi IDOR) | Xóa khỏi StatelessRefreshRequest/StatelessUpdateProfileRequest/StatelessXpAwardRequest/StatelessChangePasswordRequest | FIXED |
+| AU-033 | P3 | Logic verify hash duplicate 3 chỗ | Rút về `StatelessAuthStrategy.VerifyPassword` (public static, BCrypt→fallback SHA256); AuthService gọi chung; xóa static ctor duplicate của StatelessAuthController | FIXED |
+| AU-034 | P3 | Tên `HashPasswordSHA256` sai (thực tế BCrypt) | Đổi tên → `HashPassword` | FIXED |
+| AU-035 | P3 | Token stateless thiếu iss/aud; JwtHelper không validate | GenerateMockJwt thêm iss/aud từ JwtSigningConfig; JwtHelper.RequireToken validate iss/aud fail-closed khi đã cấu hình; Configure nhận issuer/audience từ Program.cs | FIXED |
+| AU-036 | P3 | Rate limit unauthenticated partition IP → NAT trường học 429 hàng loạt | Unauthenticated partition theo IP + RemotePort (source port sau NAT); nới auth PermitLimit 10 → 20 | FIXED |
+| AU-037 | P3 | Email không normalize — "User@x.com" ≠ "user@x.com" | NormalizeEmail (Trim + ToLowerInvariant) ở AuthService (register/login) + StatelessAuthController (register/login DB query) + strategy (register/login/EnsureUserInMemory) | FIXED |
+| AU-038 | P3 | Revoke token cũ TRƯỚC generate → DB fail = mất session vĩnh viễn | Đảo thứ tự: generate mới TRƯỚC, revoke cũ SAU, cả 2 trong cùng 1 commit/transaction (rollback → phiên cũ sống) | FIXED |
+| AU-039 | P3 | Catch rộng "DB lỗi → bỏ qua ban check" → fail-open | Fail-closed: login/refresh khi không xác minh được DB → trả 503 DB_UNAVAILABLE rõ ràng, không lặng lẽ dùng in-memory auth | FIXED |
+| AU-002/003 | P0 | Zero test cho StatelessAuthController/Strategy (hệ frontend THỰC gọi) | Tạo `StatelessAuthControllerTests.cs` (14 test) + `StatelessAuthStrategyTests.cs` (16 test) dùng TestDbContextFactory InMemory: register thành công/trùng email/password policy, login đúng/sai/ban, refresh rotation, change-password + revoke, logout revoke, normalize email | FIXED |
+
+- **Kết quả:** backend **416/416 PASS** (trước 372, +44 test auth), `dotnet build` 0 lỗi, smoke-test khởi động WebApi OK (seeder thành công, key dev tự sinh).
+- **Ghi chú:** appsettings.json bỏ `Jwt:Key` placeholder → dev phải đặt env `Jwt:Key` nếu muốn phiên bền qua restart (thiếu thì tự sinh key ngẫu nhiên + log warning).
+
+### Review Round 7 — Fix Frontend Auth (Store-State + UI-UX + Tests) — 2026-08-11
+
+Chi?n d?ch fix frontend Auth (3 sub agent song song: Store-State / UI-UX / Tests). **Kh�ng d?ng backend.** K?t qu?: frontend **2826/2826 test PASS** (155 files, +36 so v?i 2790), `vue-tsc` 0 l?i.
+
+| ID | M?c | Nguy�n nh�n g?c | C�ch kh?c ph?c | Tr?ng th�i |
+| :--- | :--- | :--- | :--- | :--- |
+| AU-005 | P1 | statelessInit g?i 2 l?n (main.ts init + App.vue onMounted)  2 refresh song song  m?t session khi kh?i d?ng | B? call App.vue onMounted - main.ts init d� qua refreshPromise dedupe | FIXED |
+| AU-006 | P1 | Logout kh�ng reset store ph? thu?c: XP pendingSyncQueue (localStorage) kh�ng x�a  XP user A tr�i sang user B | useAuthStore `_resetDependentStores()` (logOut + statelessLogout)  useUserProgressStore `resetForLogout()` (reset XP/level/modules + x�a key `vdsa_xp_sync_queue`); queue g?n k�m `userId` l�c enqueue, flush ch? x? l� m?c kh?p userId hi?n t?i; legacy queue kh�ng userId b? h?y khi load | FIXED |
+| AU-007 | P1 | Session expiry �m th?m: refresh fail ch? console.error, kh�ng toast/redirect, data cu l? l?ng | refreshAccessToken fail auth (4xx tr? 429)  toast "Phi?n � h?t h?n..." + router.replace landing k�m `?redirect=<route ngu?n>` + reset store ph? thu?c (import ??ng tr�nh v�ng module) | FIXED |
+| AU-008 | P1 | init() catch-all clearSession c? l?i m?ng/5xx (m�u thu?n rule 4xx) | D�ng chung `isAuthFailureError()` (4xx tr? 429) - ch? clear session khi l?i auth th?t | FIXED |
+| AU-009 | P1 | JWT key placeholder commit + fallback hardcode | X�a placeholder kh?i appsettings.json + fallback trong JwtSigningConfig; Program.cs �p env Jwt:Key ? M?I m�i tr??ng (dev thi?u  t? sinh 48 bytes + log warning) | FIXED (backend) |
+| AU-018 | P2 | Register thi?u � "X�c nh?n m?t kh?u" | Th�m confirm field + validateConfirmPassword() ch?n submit khi l?ch + focus � confirm | FIXED |
+| AU-019 | P2 | LoginModal thi?u focus trap/autofocus/restore | Autofocus email khi m? + trap Tab (getFocusableElements) + l?u/restore document.activeElement | FIXED |
+| AU-021 | P2 | ProfileSecurityTab `catch (err: any)` + l?i raw 401 ti?ng Anh | catch (err: unknown) + getErrorMessage() chu?n h�a (string/Error/status); map 401  "Phi�n � h?t h?n" | FIXED |
+| AU-022 | P2 | D?i m?t kh?u kh�ng revoke phi�n kh�c + UI kh�ng nh?c | Backend RevokeAllRefreshTokens sau change-password; UI th�ng b�o thi?t b? kh�c b? d?ng xu?t | FIXED (backend + UI) |
+| AU-024 | P2 | L?i "m?t kh?u sai" ch? toast kh�ng inline | fieldErrors.currentPassword inline + nextTick focus � sai | FIXED |
+| AU-040 | P3 | statelessLogout kh�ng clear refreshTimer + ADMIN keys; stopImpersonating kh�ng _scheduleRefresh | D�ng chung `_clearStatelessSession()` (clear timer + 4 key ADMIN_*); impersonate l?u ADMIN_ACCESS_EXPIRES_KEY; stopImpersonating restore + _scheduleRefresh(remaining) | FIXED |
+| AU-041 | P3 | init Promise.race 5s kh�ng re-navigate route � ?nh | main.ts: sau init settle mu?n  isAuthenticated && route=landing  router.replace(initialHash ho?c /dashboard) | FIXED |
+| AU-042 | P3 | isRefreshRequest unused + console.error noise 401 public | X�a bi?n th?ra; ch? log khi l?i kh�ng ph?i auth-failure v� kh�ng ph?i "No refresh token" | FIXED |
+| AU-043 | P3 | LoginModal g�n authError tr?c ti?p (Pinia discipline) | Th�m action `clearError()` + LoginModal d�ng qua store | FIXED |
+| AU-044 | P3 | Authorization header g?n 2 l?p | Ch? g?n ? global fetch wrapper (main.ts); b? trong apiClient - verify m?i service d�ng URL /api/v1/* | FIXED |
+| AU-045 | P3 | Dead code: getStoredRefreshToken/setStoredTokens/clearStoredTokens, fallback localStorage.getItem('token'), getMe | X�a 3 h�m + fallback + getMe (grep x�c nh?n kh�ng n?i import ngo�i mock test); classic login/register/logOut trong authApi.ts GI? L?I (store c�n d�ng nh�nh classic) | PARTIAL |
+| AU-046 | P3 | Form login kh�ng reset khi �ng/th�nh c�ng | resetForm() sau submit success + khi modal �ng | FIXED |
+| AU-047 | P3 | authError kh�ng clear khi m? l?i modal | watch visible=false->true  clearError() (kh�ng immediate  gi? test pin) | FIXED |
+| AU-048 | P3 | Thi?u autocomplete password | login  current-password; register/confirm  new-password; ProfileSecurityTab b? sung | FIXED |
+| AU-049 | P3 | Demo credentials hardcode + hi?n c? register mode | Block demo ch? hi?n khi !isRegisterMode; cred kh?p backend seeder | FIXED |
+| AU-050 | P3 | isLoading global d�ng chung nhi?u action | T�ch loginLoading/registerLoading/profileLoading (7 action); LoginModal/ProfileSecurityTab d�ng c? ri�ng | FIXED |
+| AU-051 | P3 | Backdrop click �ng modal m?t d? li?u | Ch? �ng khi form r?ng; ng??c l?i focus email | FIXED |
+| AU-052 | P3 | Avatar charAt(0) k� t? ??c bi?t | avatarLetter = k� t? ??u kh?p regex [A-Za-z�-?]; kh�ng kh?p  BaseIcon user | FIXED |
+| AU-055 | P3 | Frontend g?i userId trong body refresh, backend kh�ng d?c | B? field userId kh?i statelessAuthApi.refresh + 2 call site | FIXED |
+| AU-001 | P0 | 100% mock API  0 test contract | T?o `statelessAuthApi.spec.ts` (15 test): stub fetch assert URL /api/v1/concepts/auth/*, body camelCase, Bearer header, parse l?i theo status, timeout | FIXED |
+| AU-003 | P0 | Register kh�ng test c? 2 ??u | Test register store: th�nh c�ng/tr�ng email 400/password policy | FIXED (frontend) |
+| AU-010 | P1 | Router guard 0 test | T?o `routerGuardTests.spec.ts`: requiresAuth/requiresRole redirect (Admin/Teacher/Student), r?i /admin  stopImpersonating, scrollTo global stub, reset route beforeEach tr�nh NAVIGATION_DUPLICATED | FIXED |
+| AU-025 | P1 | _scheduleRefresh kh�ng fake timers  r� timer 3.48s/test | vi.useFakeTimers trong login/impersonate + afterEach clear; test refresh fail  clear session | FIXED |
+| AU-027 | P1 | Logout kh�ng assert server revoke call | Assert authApi.logout(accessToken, refreshToken) toHaveBeenCalledWith | FIXED (frontend) |
+| AU-028 | P1 | startImpersonating (API /admin/users/{id}/impersonate) ch? test | Test fetch stub assert URL + header Authorization = admin token | FIXED |
+| AU-029 | P2 | Assertion v� ngh?a userLevel >= 1, userXP >= 0 | Assert gi� tr? c? th? kh?p mock | FIXED |
+| AU-053 | P3 | LocalStorageMock duplicate 2 file test | G?p v�o testUtils d�ng chung; getItem tr? null n?u kh�ng t?n t?i | FIXED |
+| AU-054 | P3 | Impersonate test tr�ng ? 2 file | Gi? 1 n?i (useAuthStore.spec.ts) | FIXED |
+
+- **K?t qu?: frontend 2826/2826 PASS** (155 files, +36 test: auth 49, contract API 15, guard m?i, progress queue +userId), `vue-tsc -b --force` 0 l?i.
+- **C�n l?i:** AU-045 PARTIAL (nh�nh classic authApi login/register/logOut gi? l?i v� store c�n d�ng - c?n refactor store n?u mu?n b? h?n); AU-049/UI demo cred � ch?p nh?n hardcode kh?p seeder.
+- **B? sung track:** 5 test progressP0/P2 c?p nh?t shape queue `{amount, reason, userId}` (P0: null, P2: user-001); 1 test uiP2/checkoutP2 s?a th? t? authError (AU-047).
+
+### Review Round 8 — Fix Payment/Checkout Premium (4 sub agent song song) — 2026-08-11
+
+Chi?n d?ch fix Payment (Backend / Store-State / UI-UX / Tests). K?t qu?: backend **472/472 test PASS** (+56), frontend **2846/2846 PASS** (157 files, +20), `vue-tsc` 0 l?i.
+
+| ID | M?c | Nguy�n nh�n g?c | C�ch kh?c ph?c | Tr?ng th�i |
+| :--- | :--- | :--- | :--- | :--- |
+| PM-001 | P0 | verify endpoint t? c?p premium DB kh�ng x�c minh thanh to�n | Verify ??i ng? ngh?a: ch? tr? tr?ng th�i order, KH�NG Completed/premium; m?i c?p premium qua webhook x�c th?c | FIXED |
+| PM-016 | P0 | Stateless dead-end k?t 'paying' - kh�ng polling, verifyPayment kh�ng ai g?i | startPolling ch?y c? 2 branch (stateless d�ng getOrderStatus chung qua fetchOrderStatus); verifyPayment d�ng fetchOrderStatus (kh�ng g?i endpoint verify r?i ro) | FIXED |
+| PM-002 | P1 | simulate-webhook thi?u ownership check, ch? ch?n env | SimulateWebhook(orderId, userId t? token) so s�nh order.UserId -> UnauthorizedAccessException | FIXED |
+| PM-003 | P1 | Order kh�ng v�ng ??i h?t h?n | ExpiresAt = CreatedAt+15ph (enum OrderLifetime) + migration 20260811172123; webhook/stateless t? ch?i order qu� h?n -> Expired/409 | FIXED |
+| PM-004 | P1 | TOCTOU webhook idempotency | Check TransactionReference TRONG transaction + unique index + affected-rows CAS (CommitAsync) + idempotent replay | FIXED |
+| PM-005 | P1 | Webhook fail-open khi thi?u config SePay:BankAccount | PaymentConfigurationException fail-closed 2 flow, b? fallback "99999999999"/199000 | FIXED |
+| PM-006 | P2 | 2 lu?ng ph�n k? gi�/bank hardcode vs config | StatelessPaymentStrategy nh?n IConfiguration - 1 ngu?n SePay:* duy nh?t | FIXED |
+| PM-007 | P2 | Premium split-brain memory vs DB, ghi kh�ng atomic | DB commit TRU?C r?i m?i ConfirmPremium() set cache in-memory; classic flow c�ng transaction | FIXED |
+| PM-008 | P2 | CreateOrder kh�ng ch?n user premium/pending | User premium -> 409; pending ch?a h?t h?n -> 409 (h?t h?n -> cho t?o m?i) c? 2 flow | FIXED |
+| PM-017 | P1 | Double-submit retry t?o nhi?u order | Guard reentrancy if(isLoading) return + expose isLoading cho UI disable | FIXED |
+| PM-018 | P1 | Polling leak khi logout - poll nh?m order user kh�c | if(!token) { stopPolling(); return; } + resetOnAuthChange khi ??i user | FIXED |
+| PM-019 | P1 | M�u thu?n 2 b? ??m (QR 15ph vs polling 5ph) | PAYMENT_QR_TIMEOUT_MS 15*60*1000 1 h?ng s? duy nh?t, POLLING_TIMEOUT tr? v�o | FIXED |
+| PM-020 | P1 | PremiumGate dead UI | Gi? component d�ng ???c: goToCheckout guard router + fallback location.assign + redirect route ngu?n; TODO mount qua checkFeatureAccess | FIXED |
+| PM-021 | P2 | Mutation tr?c ti?p authStore.currentUser.isPremium (4 ch?) | Auth action markPremium() (??ng b? currentUser + statelessUser); loadPremiumStatus() c? 2 nh�nh | FIXED |
+| PM-022 | P2 | Stale state khi ??i user | Watch authStore.currentUser?.id -> resetOnAuthChange() (reset order/premiumStatus/config) | FIXED |
+| PM-023 | P2 | Kh�ng timeout fetch + polling kh�ng guard in-flight | fetchWithTimeout AbortController 10s m?i fetch; statusRequestInFlight ch?n 2 request song song | FIXED |
+| PM-024 | P2 | usePaymentPolling dead code tr�ng logic | X�a source file (test ?i?u ch?nh theo store-level) | FIXED |
+| PM-025 | P2 | Polling nu?t l?i im l?ng | console.error + ??m fail li�n ti?p >=3 -> stopPolling + set error state | FIXED |
+| PM-026 | P2 | User premium v?n v�o mua ti?p | View: v-if authStore.isPremium -> "B?n � l� Premium" + n�t quay l?i | FIXED |
+| PM-027 | P2 | L?i raw ti?ng Anh hi?n th? UI | getErrorMessage() map network/401-403/5xx/4xx -> ti?ng Vi?t (utils/format.ts) | FIXED |
+| PM-028 | P2 | QR expired v?n cho copy/chuy?n kho?n | v-if !isExpired ?n s? t�i kho?n + Copy + box t? ki?m tra; ch? gi? overlay + n�t th? l?i (role=alert) | FIXED |
+| PM-029 | P2 | Success c?ng ??y /sorting | resolveReturnPath() ??c route.query.redirect (ch? path b?t ??u /) fallback /sorting | FIXED |
+| PM-030 | P2 | A11y gate: aria-hidden nh?ng trong tab order | Overlay role=dialog + aria-modal; content tabindex=-1; focus n�t n�ng c?p | FIXED |
+| PM-031 | P2 | Format ti?n kh�ng nh?t qu�n | formatVND() Intl vi-VN duy nh?t (utils/format.ts) cho MarketingCard + QrPaymentPanel | FIXED |
+| PM-032 | P2 | Gi� l?ch 2 panel + gi� g?ch ngang hardcode | Gi� duy nh?t t? premiumPrice config; b? strikethrough 499.000 (kh�ng c� field originalPrice) | FIXED |
+| PM-009 | P3 | Magic string status | OrderStatus enum (+Expired) thay chu?i | FIXED |
+| PM-010 | P3 | In-memory orders kh�ng evict | EvictStale() ??u m?i method public: Completed/Expired qu� 1 ng�y | FIXED |
+| PM-011 | P3 | Guid.Parse(claim!) NRE -> 500 | GetCurrentUserId() Guid? -> null => 401 | FIXED |
+| PM-012 | P3 | Webhook kh�ng rate-limit + l? c?u h�nh | [EnableRateLimiting("webhook")] 20/min/IP; 500/503 generic | FIXED |
+| PM-013 | P3 | Webhook kh�ng kh?p 200 - ti?n m? c�i | 200 + field warning + Serilog log chi ti?t giao d?ch l? | FIXED |
+| PM-014 | P3 | DTO dead (CreateOrderRequest r?ng, VerifyRequest.UserId th?a) | X�a c? 2 (frontend ch? g?i {orderId}/{paymentMethod}) | FIXED |
+| PM-015 | P3 | CheckFeatureAccess fail-open | Feature kh�ng t?n t?i -> false + controller 404 | FIXED |
+| PM-039 | P3 | Nh�nh status 'paid' ch?t | Ch? check 'Completed' | FIXED |
+| PM-040 | P3 | Timer ch?y ti?p sau success | Watch checkoutState -> stopTimer khi success/error | FIXED |
+| PM-041 | P3 | getAuthToken fallback localStorage 'token' ch?t | B? fallback - ch? authStore.getAccessToken() | FIXED |
+| PM-042 | P3 | startCheckout gi? currentOrder c? | resetCheckout() ??u startCheckout | FIXED |
+| PM-043 | P3 | checkFeatureAccess + freeFeatures hardcode dead | X�a kh?i store + TODO PremiumGate qua backend check-access | FIXED |
+| PM-044 | P3 | alt QR ti?ng Anh + kh�ng fallback | alt ti?ng Vi?t + v-if qrUrl + fallback icon | FIXED |
+| PM-045 | P3 | Copy fail �m th?m | Clipboard API -> execCommand fallback -> toast l?i | FIXED |
+| PM-046 | P3 | aria-live sai tr�n n�t Copy | T�ch span aria-live ri�ng + countdown aria-live | FIXED |
+| PM-047 | P3 | formatCurrency(0) khi order null | "---" thay "0 �" | FIXED |
+| PM-048 | P3 | Branch 'verifying' dead UI | B? branch + CSS spinner-lg | FIXED |
+| PM-049 | P3 | Retry c?n 2 click | N�t "Th? l?i" g?i th?ng initiatePayment + :disabled=isLoading | FIXED |
+| PM-050 | P3 | Kh�ng qu?n l� focus chuy?n state | ref panel tabindex=-1 + watch -> nextTick focus | FIXED |
+| PM-051 | P3 | animate-bounce v� h?n kh�ng reduced-motion | bounce-once keyframe + media query | FIXED |
+| PM-052 | P3 | Ch? 10px qu� nh? | text-[11px] cho h??ng d?n | FIXED |
+| PM-053 | P3 | Countdown b? tr? tab n?n (setInterval) | TODO store agent: chuy?n timestamp Date.now() | DEFERRED |
+| PM-049t | P0 | Test Escape kh�ng assertion | Mount visible:false -> setProps(true) -> dispatch -> expect(emitted close) | FIXED (test) |
+| PM-050t | P0 | Test polling r?ng kh�ng expect | Chuy?n store-level: 3 fail li�n ti?p -> stop + error | FIXED (test) |
+| PM-051t | P0 | Test PA-014 sai t?a ??/assert | Vi?t l?i non-stateless + fake timers + assert getOrderStatus g?i | FIXED (test) |
+| PM-052t | P1 | Test polling 'pending' pass gi? | Mock 'Completed' + assert onSuccess + isPremium | FIXED (test) |
+| PM-033t | P2 | Mock config l?ch contract (0 feature) | 6 feature ??ng backend + test mapping field-by-field | FIXED (test) |
+| PM-034t | P2 | Order partial object | Factory createPaymentOrderDto 11 field camelCase | FIXED (test) |
+| PM-035t | P2 | statelessPaymentApi 0 contract test | statelessPaymentApi.spec.ts M?I (10 test, 8 endpoint) | FIXED (test) |
+| PM-036t | P2 | PremiumGate test thi?u router/store | Mock vue-router + 4 test: 3 nh�nh hasAccess + click push /checkout | FIXED (test) |
+| PM-037t | P2 | Auth mock kh�ng reactive | reactive() + markPremium + test premium false->true | FIXED (test) |
+| PM-038t | P2 | Mock 'paid' contract sai | 'Completed' | FIXED (test) |
+| PM-012t | P2 | View ch? smoke test | checkoutPaymentFlow.spec.ts M?I: lu?ng th?t idle->paying->success | FIXED (test) |
+| PM-054t/055t/056t | P3 | Dead code/fake timers/error path thi?u | X�a dead store var; try/finally fake timers; +2 error path paymentApi | FIXED (test) |
+
+- **K?t qu?: backend 472/472 PASS** (+56: PaymentServiceTests 20, PaymentsControllerTests 9, StatelessPaymentControllerTests 10, StatelessPaymentStrategyTests +17), **frontend 2846/2846 PASS** (157 files, +20: statelessPaymentApi 10, flow 2, paymentP0 +...), vue-tsc 0 l?i.
+- **Ghi ch�: PM-053 countdown timestamp DEFERRED (TODO); PM-004 CAS t?ng SQL kh�ng l�m ???c (re-check + unique index + affected-rows thay th?); order Pending t?n ??ng kh�ng t? ??ng mark Expired (webhook lu�n t? ch?i qu� h?n - an to�n).**
+
+### Review Round 9 — Fix Admin Panel (4 sub agent, agent core chay lai lan 2) — 2026-08-11
+
+Chi?n d?ch fix Admin (Backend / Frontend Core / Frontend UI / Tests). K?t qu?: backend **507/507 test PASS** (+35), frontend **2866/2866 PASS** (158 files, +20), `vue-tsc` 0 l?i.
+
+| ID | M?c | Nguy�n nh�n g?c | C�ch kh?c ph?c | Tr?ng th�i |
+| :--- | :--- | :--- | :--- | :--- |
+| AD-001 | P0 | Impersonate token thi?u iss/aud - RequireToken fail-closed t? ch?i 401 | GenerateImpersonatedJwt th�m iss/aud t? JwtSigningConfig + test round-trip impersonate->API 200 | FIXED |
+| AD-002 | P1 | Impersonate kh�ng ch?n Admin/Teacher target + audit sai actor | Ch?n target Admin/Teacher 409 IMPERSONATE_TARGET_NOT_STUDENT; audit ActorId = admin th?t | FIXED |
+| AD-003 | P1 | Role t? claim kh�ng ??i chi?u DB - demote b? h?i ph?c | RequireJwtRole ??i chi?u role DB khi allowedRoles ch?a Admin; ch?n t? ??i role 400 SELF_ROLE_CHANGE_FORBIDDEN | FIXED |
+| AD-004 | P1 | BanUser kh�ng ghi audit | LogAdminAction("BanUser"/"UnbanUser") + test ban->login 401 + refresh 401 | FIXED |
+| AD-005 | P1 | DeleteUser ExecuteDeleteAsync kh�ng await + FK Restrict | await + check FK (TheoryArticle/Announcement/Course) tr??c -> 409 USER_HAS_CONTENT | FIXED |
+| AD-006 | P1 | Dashboard fallback d? li?u gi? Random che l?i DB | Fallback ch? khi CanConnectAsync fail + isFallback flag + deterministic | FIXED |
+| AD-007 | P2 | AuditEventActionFilter UserId null (HttpContext.User r?ng) | JwtHelper.ExtractSubFromToken(http.Request) | FIXED |
+| AD-008 | P2 | Audit d�ng chung DbContext -> commit nh?m ChangeTracker action | IDbContextFactory ri�ng cho audit - context con m?i l?n ghi | FIXED |
+| AD-009 | P2 | ResetPassword kh�ng rate limit | [EnableRateLimiting("heavy")] | FIXED |
+| AD-010 | P2 | [RequireJwtRole("Teacher,Admin")] dead config | X�a 3 attribute th?a (class-level Admin d� ch?n) | FIXED |
+| AD-011 | P2 | AuditLog mutable (interceptor ch? b?o v? SystemAuditEventStream) | ImmutableAuditInterceptor b?o v? c? AuditLog + test block update/delete | FIXED |
+| AD-012 | P2 | SyncXP t? c?ng XP kh�ng cap | Cap <= 50 + reason whitelist server (6 c? ??nh + ti?n t? Ho�n th�nh Quiz:/CodeLab:) | FIXED |
+| AD-013 | P2 | Impersonate response `level` vs store `currentLevel` | Backend d�ng chung StatelessUserDto (currentLevel/totalXP/streakDays/badges); store _applyStatelessAuth map ??ng | FIXED |
+| AD-014 | P2 | stopImpersonating restore token admin h?t h?n kh�ng refresh | remaining>0 -> _scheduleRefresh; <=0 -> await refreshAccessToken() v?i adminRefreshToken | FIXED |
+| AD-015 | P2 | isLastAdmin ??m theo trang hi?n t?i | GET /admin/users tr? totalAdmins; isLastAdmin = role Admin && totalAdmins<=1; disable select/ban/delete | FIXED |
+| AD-016 | P2 | loadUsers l?i im l?ng nh?m empty state | loadError t�ch ri�ng + toast ti?ng Vi?t | FIXED |
+| AD-017 | P2 | Search m?i ph�m g� 1 request + race | Debounce 300ms (leading+trailing) + AbortController h?y request c? | FIXED |
+| AD-018 | P2 | Thao t�c user kh�ng in-flight guard + premium kh�ng confirm | rowActionLoading per-row + disable n�t + premium confirm | FIXED |
+| AD-019 | P2 | Fetch admin kh�ng timeout/401 refresh | adminRequest helper: timeout 15s + 401->refreshAccessToken()->retry 1 | FIXED |
+| AD-020 | P2 | impersonate kh�ng reset dependent stores | impersonate + stopImpersonating g?i _resetDependentStores() | FIXED |
+| AD-021 | P2 | Dashboard/SystemTab data fake hi?n nh? th?t | Dashboard fetch GET audit-logs th?t; SystemTab ?? th?t /health + diagnostics/health + ghi ch� "s? li?u th?t" | FIXED |
+| AD-022 | P2 | N�t X�a gi?ng n�t Kh�a + icon close | btn-delete-danger ri�ng (?? ??m + vi?n) + icon trash | FIXED |
+| AD-023 | P2 | Admin cu?i kh�ng b?o v? Ban/X�a | Frontend disable + backend 409 LAST_ADMIN_PROTECTED (ban/delete/demote) | FIXED |
+| AD-024 | P2 | confirm()/alert() native | alert -> toastStore to�n panel; gi? native confirm cho row actions (test pin 1-click, ConfirmDialog c?n 2 click) | PARTIAL |
+| AD-025 | P2 | Quizzes empty state "?ang t?i..." v?nh vi?n | 3 tr?ng th�i r� r�ng: loading/r?ng/l?i + n�t Th? l?i | FIXED |
+| AD-026 | P2 | Audit kh�ng pagination (100 d�ng) | Pagination UI th?t: pageSize 20 + total/totalPages + Tr??c/Ti?p | FIXED |
+| AD-027 | P2 | Tabs kh�ng a11y | role=tablist/tab + aria-selected + ph�m Arrow + focus | FIXED |
+| AD-028 | P2 | 3 modal thi?u dialog/focus trap/Escape | role=dialog + aria-modal + focus trap + Escape + aria-label ��ng | FIXED |
+| AD-029 | P2 | Chart Math.min(5, count) ch?n c?ng | Scale theo maxRegistrations + ch� th�ch tr?c | FIXED |
+| AD-030 | P2 | Top5 kh�ng empty state | Empty row "Ch?a c� d? li?u" + stats ph�n bi?t loading/r?ng | FIXED |
+| AD-031 | P2 | Rate limiter impersonate kh�ng atomic | B?c lock + reset window + test 429 | FIXED |
+| AD-032 | P2 | TogglePremium kh�ng ??i chi?u Orders | Thu h?i khi c�n order Pending -> 409 PENDING_ORDER_EXISTS | FIXED |
+| AD-033 | P2 | CreateUser kh�ng validate role + 200 | Validate role Student/Teacher/Admin + 201 | FIXED |
+| AD-034 | P1 | Zero test backend admin | AdminControllerTests 28 case + UsersControllerTests 5: matrix ph�n quy?n, ban->login/refresh 401, LAST_ADMIN 409, IDOR 404, impersonate round-trip, 429 | FIXED |
+| AD-035 | P2 | Catch-all mock ok:true pass gi? | Default 404 cho URL kh�ng kh?p + test allowlist | FIXED (test) |
+| AD-036 | P2 | Impersonate test thi?u assert store/redirect/shape | Assert POST URL/Bearer + startImpersonating/impersonate + redirect + shape currentLevel | FIXED (test) |
+| AD-037 | P2 | Create user test if-guard | B? if-guard + assert body {username,email,password,role,isPremium} | FIXED (test) |
+| AD-038 | P2 | Admin fetch kh�ng test 401 refresh | Test 401 -> refreshAccessToken 1 l?n -> retry Bearer m?i | FIXED (test) |
+| AD-039 | P2 | Kh�ng contract spec useAdminApi | useAdminApi.spec.ts M?I (13 test): 8 endpoint URL/body camelCase/Bearer | FIXED (test) |
+| AD-040 | P3 | Sequence Ticks kh�ng t?ng ch?t | Interlocked.Increment | FIXED |
+| AD-041 | P3 | "paid" magic string | B? (ch? "Completed") | FIXED |
+| AD-042 | P3 | `;;` th?a | X�a | FIXED |
+| AD-043 | P3 | Refresh impersonate xoay m?t marker | RefreshToken/GenerateAuthResponse gi? marker IsImpersonated/OriginalAdminId | FIXED |
+| AD-044 | P3 | startImpersonating dead - logic nh�n ??i | Component gi? fetch + trao response cho authStore.impersonate(data) (test pin POST t? component) | PARTIAL |
+| AD-045 | P3 | refresh-dashboard emit dead | X�a emit/ref/h�m | FIXED |
+| AD-046 | P3 | X�a user trang cu?i kh�ng l�i trang | Trang tr?ng & page>1 -> loadUsers(page-1) | FIXED |
+| AD-047 | P3 | submitCreateUser double-submit | Guard if(submittingUser) return | FIXED |
+| AD-048 | P3 | setTimeout kh�ng clear + log spam | B? setTimeout (async tr?c ti?p) + alive flag ch?n ghi sau unmount | FIXED |
+| AD-049 | P3 | showUserAudit kh�ng hi?n audit | ??i t�n showUserDetail + "Xem chi ti?t" | FIXED |
+| AD-050 | P3 | B?ng users v? layout mobile | overflow-x-auto + min-width 760px | FIXED |
+| AD-051 | P3 | Tho�t ??ng vai alert + full reload | App.vue: alert -> toastStore.success (gi? router.push /admin) | FIXED |
+| AD-052 | P3 | Audit refresh l?i im l?ng | disabled khi loading + toast l?i + class .btn-refresh-audit ri�ng | FIXED |
+| AD-053 | P3 | Ch?n ?o�n kh�ng running state + checkbox dead | running state + spinner + disable; checkbox disabled + tooltip "S?p c�" | FIXED |
+| AD-054 | P3 | Tab kh�ng l?u state | L?u activeTab v�o route.query.tab + restore + watch query | FIXED |
+| AD-055 | P3 | B?ng kh�ng caption/aria-label | caption visually-hidden + aria-label | FIXED |
+| AD-056 | P3 | "JWT JWT" ch�nh t? | S?a l?i | FIXED |
+| AD-057 | P3 | any tr�n lan test admin | Typed ho�n to�n (grep 0) | FIXED (test) |
+| AD-058 | P3 | Router guard thi?u Teacher->/admin | Th�m case redirect dashboard | FIXED (test) |
+| AD-059 | P3 | Class .btn-create-user d�ng chung | .btn-refresh-audit ri�ng | FIXED |
+| AD-060 | P3 | Search test kh�ng assert gi� tr? | Assert URL ??y ?? + encoded + page reset 1 | FIXED (test) |
+
+- **K?t qu?: backend 507/507 PASS** (+35: AdminControllerTests 28 + UsersControllerTests 5 + audit/immutable b? sung), **frontend 2866/2866 PASS** (158 files, +20: useAdminApi.spec 13, routerGuard +1, adminP0/P2 +), vue-tsc 0 l?i.
+- **C�n l?i: AD-024/AD-044 PARTIAL** - gi? native confirm (test pin 1-click) + impersonate gi? fetch component r?i trao store (test pin POST t? component) - c?n agent test ??i n?u mu?n ??t chu?n ConfirmDialog/startImpersonating.
+- **Ghi ch�**: TestDbContextFactory.Create Migrate h?ng pre-existing (Npgsql 9 vs EF Core 10) - test d�ng TestSqliteDbContext thay th?; QuizSystemTests.CreateToken th�m iss/aud cho kh?p fail-closed.
+
+### Review Round 10 — Fix HTML Playground (3 sub agent) — 2026-08-11
+
+Chi?n d?ch fix HTML Playground (Engine+Core / View+Demos / Tests). K?t qu?: frontend **2911/2911 test PASS** (159 files, +45), `vue-tsc` 0 l?i, backend 507/507 (kh�ng ??ng).
+
+| ID | M?c | Nguy�n nh�n g?c | C�ch kh?c ph?c | Tr?ng th�i |
+| :--- | :--- | :--- | :--- | :--- |
+| HT-001 | P1 | Debouncer v� hi?u - srcdoc reactive reload m?i keystroke | T�ch `previewDoc = ref('')` ch? commit khi debouncer/Run k�ch ho?t; iframe bind snapshot; previewKey ch? bump ? Run manual | FIXED |
+| HT-002 | P1 | R� r? Referer ch?a payload code ra host ngo�i | iframe `referrerpolicy="no-referrer"` | FIXED |
+| HT-003 | P1 | JS runtime error im l?ng | Inject ERROR_BRIDGE_JS (window error + unhandledrejection -> postMessage) + Preview emit runtime-error + Workspace panel console l?i (cap 5, dismiss) | FIXED |
+| HT-004 | P1 | Share URL -> state kh�ng test | PlaygroundView.spec.ts M?I (4 test): query ?code= n?p store, roundtrip encodeURIComponent, watch query ??i, payload h?ng -> toast | FIXED (test) |
+| HT-005 | P2 | Thi?u base tag - URL t??ng ??i resolve v? app origin + cookie | `<base href="about:blank">` v�o head | FIXED |
+| HT-006 | P2 | Kh�ng guard dung l??ng payload URL | MAX_PAYLOAD_LENGTH 6000; encode null + toast "Code qu� d�i ?? chia s?"; decode ch?n payload qu� kh? | FIXED |
+| HT-007 | P2 | Thi?u CSP meta | CSP `default-src 'none'; img-src * data:; style-src 'unsafe-inline'; script-src 'unsafe-inline'; connect-src 'none'` | FIXED |
+| HT-008 | P2 | Kh�ng loading indicator | isRunning state + spinner overlay + Run disabled/"Dang ch?y" + reset an to�n qua load + timeout 1500ms | FIXED |
+| HT-009 | P2 | Auto-run kh�ng t?t ???c | autoRun toggle (B?T/T?T) - t?t -> debouncer.cancel + watch b? qua | FIXED |
+| HT-010 | P2 | Split kh�ng resize ???c | editorHeightPx + drag handle (pointer events, min 120px) | FIXED |
+| HT-011 | P2 | Switch mode ph� Monaco m?t undo/scroll | KeepAlive b?c 2 workspace - Monaco s?ng xuy�n su?t (caveat: AlgoPlaygroundWorkspace keydown listener s?ng khi ?n - handler t? ch?n khi focus input) | FIXED |
+| HT-012 | P2 | ?code= b? xo� khi switch mode | currentCodeQuery() ??c query tr??c khi ??i + merge c? 2 chi?u + guard tr�ng n�t | FIXED |
+| HT-013 | P2 | Reset m?t code kh�ng undo + nh?y tab | window.confirm (nh?t qu�n InteractivePlayground) + gi? activeTab + toast "undo b? xo�" | FIXED |
+| HT-014 | P2 | Remount iframe m?i auto-run reset state preview | Kh�ng remount khi auto-run (HT-001 gating) - ch? Run manual | FIXED |
+| HT-015 | P2 | Test pass gi? debounced update | Vi?t l?i component th?t + fake timers: 799ms ch?a commit -> 800ms commit 1 l?n, identity iframe b?t bi?n | FIXED (test) |
+| HT-016 | P2 | Mock Monaco no-op kh�ng test ???c editor<->store | Mock gi? callback + getValue tr? gi� tr? set; 4 test: type->store, Run->commit ngay, tab->editor, share->revision | FIXED (test) |
+| HT-017 | P2 | Store reset ??i mode ch?a test | PlaygroundView.spec: KeepAlive -> state GI? khi ??i mode | FIXED (test) |
+| HT-018 | P3 | Run + pending debounce reload 2 l?n | handleRun g?i debouncer.flush() tr??c | FIXED |
+| HT-019 | P3 | Phantom run sau reset/share | isProgrammaticWrite + queueMicrotask reset + equality guard trong onDidChangeModelContent | FIXED |
+| HT-020 | P3 | decode console.error spam | catch -> return null, b? log | FIXED |
+| HT-021 | P3 | loadFromSource kh�ng reset activeTab | Reset activeTab='html' | FIXED |
+| HT-022 | P3 | handleReset async th?a | B? async | FIXED |
+| HT-023 | P3 | allow-modals/popups cho ph�p alert v� h?n/window.open | sandbox = `allow-scripts allow-forms` (grep demos kh�ng d�ng alert/open) | FIXED |
+| HT-024 | P3 | Tabs thi?u WAI-ARIA | aria-controls/id + roving tabindex + ph�m Arrow | FIXED |
+| HT-025 | P3 | Payload h?ng ch? console.warn | Toast "Link chia s? kh�ng h?p l?" | FIXED |
+| HT-026 | P3 | Fallback Monaco text hi?u l?m | Textarea thay th? + text "Kh�ng th? ch?nh s?a code b?ng Monaco Editor" | FIXED |
+| HT-027 | P3 | Toolbar kh�ng responsive | flex-wrap + matchMedia <=767px x?p d?c + kh�a drag | FIXED |
+| HT-028 | P3 | Focus kh�ng qu?n l� khi ?n preview | editor.focus() khi ?n + commitPreview khi hi?n l?i | FIXED |
+| HT-029 | P3 | Stub canvas v� d?ng + as any | X�a stub + `as unknown as` (grep 0 any) | FIXED (test) |
+| HT-030 | P3 | Test runCode tautology | B? test + thay test gating th?t (setSourceFile kh�ng t?ng revision) | FIXED (test) |
+| HT-031 | P3 | Escape thi?u <!-- + unicode | 2 test: escape `<!--` + unicode/emoji qua builder | FIXED (test) |
+| HT-032 | P3 | Demo kh�ng th?c thi | new Function(js) jsdom ch?y c? 22 demo b?t syntax error + assert output c? th? | FIXED (test) |
+| HT-033 | P3 | activeCode ch?a test | 3 tab + ph?n �nh source m?i | FIXED (test) |
+
+- **K?t qu?: frontend 2911/2911 PASS** (159 files, +45: PlaygroundView.spec 4, playgroundDemos 48, builder +2, editorP2 +, htmlP0 +), `vue-tsc` 0 l?i (s?a 4 test null-guard cho encode tr? string|null), backend 507/507 kh�ng ??ng.
+- **Ghi ch�**: KeepAlive caveat - AlgoPlaygroundWorkspace.vue:526 keydown listener s?ng khi ?n mode (handler t? ch?n khi focus INPUT/TEXTAREA/BUTTON); n?u c?n x? l� tri?t ?? th� onDeactivated pause listener (TODO).
+
+### Review Round 11 — Fix Algo Playground + Custom Input (3 sub agent) — 2026-08-11
+
+Chi?n d?ch fix Algo Playground + Custom Input (Engine / Store+UI / Tests). K?t qu?: frontend **2942/2942 test PASS** (161 files, +31), `vue-tsc` 0 l?i, backend 507/507 (kh�ng ??ng).
+
+| ID | M?c | Nguy�n nh�n g?c | C�ch kh?c ph?c | Tr?ng th�i |
+| :--- | :--- | :--- | :--- | :--- |
+| AL-001 | P1 | KeepAlive deactivate - ph�m t?t window s?ng ng?m | C? componentVisible + onDeactivated g? keydown / onActivated ??ng k� l?i + guard visible | FIXED |
+| AL-002 | P1 | KeepAlive deactivate - engine rAF ch?y ng?m | onDeactivated -> engine.pause(); onActivated -> syncEngineSnapshots + play theo store.isPlaying | FIXED |
+| AL-003 | P1 | Race Play->compile->auto-play ch?t ng?m (watcher isPlaying tr??c frames) | Watcher frames: `store.isPlaying ? engine.play() : engine.pause()` tr??c syncSnapshots | FIXED |
+| AL-004 | P1 | Stale state ??i demo/code gi?a compile (kh�ng bump runSeq + pendingPlay leak) | loadDemo/invalidate/setInput -> runSeq++ + pendingPlayAfterCompile=false | FIXED |
+| AL-005 | P1 | setInput kh�ng invalidate -> Play ph�t frames c? | setInput() g?i invalidate() | FIXED |
+| AL-006 | P1 | Custom input race 2 request + X�a Tr?ng kh�ng disabled | requestId + AbortController + check seq sau await + clear abort request + :disabled=isLoading | FIXED |
+| AL-007 | P1 | 5 test pass gi? (assert bi?n local/no-op) | Vi?t l?i mount th?t: editorLoadError DOM, monacoTheme computed, empty state DOM, click menu th?t, CI-007 click clear | FIXED (test) |
+| AL-008 | P1 | Thi?u useAlgoAnimation.spec.ts | M?I 11 test: rAF stub tick - play/pause gi?a transition/resume, frame cu?i d?ng, ??i demoId/speed, race AL-003, unmount destroy | FIXED (test) |
+| AL-009 | P1 | Thi?u algoCanvasHelpers.spec.ts | M?I 10 test: drawPlaybackFrame tree/graph/array 4 tr?ng th�i, Transition lerp t=0/0.5/1, overlay | FIXED (test) |
+| AL-010 | P2 | Parser ch?p nh?n Infinity/1e999 | !Number.isFinite(num) -> throw l?i r� r�ng | FIXED |
+| AL-011 | P2 | Input r?ng + Counting Sort -> RangeError | parse array r?ng -> throw "M?ng r?ng..." | FIXED |
+| AL-012 | P2 | Error path kh�ng reset isPlaying | catch -> isPlaying=false | FIXED |
+| AL-013 | P2 | Translator thi?u 4 case | +Invalid array length, Maximum call stack, is not defined, Cannot read properties of null + hint Vi?t | FIXED |
+| AL-014 | P2 | ?demo= b? l? khi localStorage c� code | watch props.demoId {immediate:true} - URL ?u ti�n | FIXED |
+| AL-015 | P2 | Esc x�a s?ch textarea | Esc: dropdown m? -> ch? ?ng dropdown; �ng -> m?i clear + hint c?p nh?t | FIXED |
+| AL-016 | P2 | Ctrl+Shift+R b? tr�nh duy?t nu?t | ??i Ctrl+Alt+R + hint | FIXED |
+| AL-017 | P2 | Canvas thi?u role/aria-label | role=img + aria-label ??ng theo renderMode | FIXED |
+| AL-018 | P2 | CustomInputForm a11y | label for/id + aria-live + aria-expanded/haspopup + role menu | FIXED |
+| AL-019 | P2 | run() khi play kh�ng d?ng ngay | runAsync ??u h�m: isPlaying=false + currentIndex=0 | FIXED |
+| AL-020 | P2 | jumpToFrame(-5) pin no-op | Gi? no-op (code th?t hi?n t?i) + assert currentIndex>=0 | FIXED (test) |
+| AL-021 | P2 | rafCb(500_000) flaky | performance.now()+1000 ??ng | FIXED (test) |
+| AL-022 | P2 | Space test ch? assert icon | Assert store.isPlaying === true/false | FIXED (test) |
+| AL-023 | P2 | CI-008/011 kh�ng assert loadResult | Spy loadResult + assert payload API + fallback dummy th?t | FIXED (test) |
+| AL-024 | P2 | CI-013 wiring algorithmId ch?a test | Mount + click "Ch?y Tr?c Quan" + assert body algorithmId | FIXED (test) |
+| AL-025 | P2 | Responsive test mock matchMedia | Stub matchMedia + assert layout class th?t | FIXED (test) |
+| AL-026 | P2 | Gutter click ch?a simulate | Monaco onMouseDown th?t (GUTTER_LINE_NUMBERS) -> jumpToFrame | FIXED (test) |
+| AL-027 | P2 | US-AP-020 t? d?ng chu?i | Assert DOM description th?t | FIXED (test) |
+| AL-028 | P2 | Thi?u pendingPlayAfterCompile + replay test | 2 test: play tr??c compile auto-play khi frames v? + frame cu?i wrap 0 | FIXED (test) |
+| AL-029 | P2 | Thi?u engine edge tests | setSpeed 2x vs 1x, pause snapToCurrent, destroy khi play, swap OOB, m?ng r?ng/1/?m | FIXED (test) |
+| AL-030 | P2 | HeapSort isSiftSwap ch?a test | Test swap cha<->con [0,1] activeIdx=0 | FIXED (test) |
+| AL-031 | P2 | setAlgorithmLimit kh�ng n?i form | toRef(algorithmId) + watch immediate -> limit ??ng theo thu?t to�n | FIXED |
+| AL-032 | P2 | MergeSort smoke-only | Assert fillRect >=2, fillText >=15, phase label | FIXED (test) |
+| AL-033 | P3 | Math.max/min spread 5 ch? | minWithFallback/maxWithFallback export chung t? algoCanvasHelpers + test 100k ph?n t? | FIXED |
+| AL-034 | P3 | computeGeo c?p ph�t object m?i frame | Memoize geoCache theo (m?ng, cssW/H) | FIXED |
+| AL-035 | P3 | Dead code 2 bi?n | X�a | FIXED |
+| AL-036 | P3 | Duplicate COLORS/roundRect/lerpColor 4 file | Gom v�o algoCanvasHelpers (COLORS superset heap*) + roundRect/lerpColor/easeInOut import chung | FIXED |
+| AL-037 | P3 | captionFor heap extract nh?m ng? c?nh | Ph�n bi?t sw[1]===heapSize (swap ngo�i heap) + demo setHeapState tr??c swap | FIXED |
+| AL-038 | P3 | setBucketComparing(j,j) highlight c? bucket | So s�nh c?p j-1/j (j=0 b? hook) | FIXED |
+| AL-039 | P3 | MergeSort s? ?m v? sai baseline | zeroY baseline nh? SortingAnimationEngine | FIXED |
+| AL-040 | P3 | playbackSpeed mutation tr?c ti?p | Action setPlaybackSpeed + component d�ng action | FIXED |
+| AL-041 | P3 | v-model rawText tr?c ti?p | Action setRawText + :value + @input | FIXED |
+| AL-042 | P3 | Dead code isAtStart/isAtEnd/setLimit | X�a isAtStart/isAtEnd; gi? setLimit (test pin) | PARTIAL |
+| AL-043 | P3 | Popover ??nh v? c?ng | ??nh v? ??ng getBoundingClientRect + Esc close c? 2 | FIXED |
+| AL-044 | P3 | Input tr?ng parse [] v?n Ch?y | Parse r?ng -> valid:false + runAsync ch?n parsedCount==0 + Ch?y disable | FIXED |
+| AL-045 | P3 | Auto-run m?i mount | autoRunSignature + runIfChanged() - remount kh�ng re-compile | FIXED |
+| AL-046 | P3 | onShare setTimeout r� timer | Fake timers + advance + clearAllTimers | FIXED (test) |
+| AL-047 | P3 | 21 id demo c?ng 2 n?i | Object.keys(playgroundAlgoDemos) ngu?n duy nh?t | FIXED (test) |
+| AL-048 | P3 | compileInWorker promise treo | Deferred resolve sau assert | FIXED (test) |
+| AL-049 | P3 | Mount thi?u algorithmId warning | Truy?n prop m?i mount (10 ch?) | FIXED (test) |
+
+- **K?t qu?: frontend 2942/2942 PASS** (161 files, +31: useAlgoAnimation 11, algoCanvasHelpers 10, engine edge +, store +2...), vue-tsc 0 l?i (s?a 2 test type: Promise<PlaybackFrame[]>, calls push cast), backend 507/507 kh�ng ??ng.
+- **C�n l?i: AL-042 PARTIAL** - setLimit gi? l?i v� test pin (dead code production).
+
+### Review Round 12 — Fix Sorting Visualizer (3 sub agent) — 2026-08-11
+
+Chi?n d?ch fix Sorting Visualizer (Engine / UI+Renderer / Tests). K?t qu?: frontend **3058/3058 test PASS** (163 files, +116), `vue-tsc` 0 l?i, backend 507/507 (kh�ng ??ng).
+
+| ID | M?c | Nguy�n nh�n g?c | C�ch kh?c ph?c | Tr?ng th�i |
+| :--- | :--- | :--- | :--- | :--- |
+| SV-001 | P0 | Test pass gi? order-coupling (singleton kh�a pinia c?) | vi.mock ch?n useSharedSortingAnimation + afterEach reset _sharedInstance + US-AS-013 assert algoLabel tab Chi ti?t | FIXED (test) |
+| SV-002 | P1 | 7 engine thi?u contract CC-009 (lineNumber/activeLogicalLineId/highlights) | SortFrame th�m SortHighlights + 7 engine emit logicalId chu?n t?ng b??c (bubble theo bubble-sort.pseudocode.ts; quick/merge/heap/radix/counting/bucket id ri�ng) + 21 test contract | FIXED |
+| SV-003 | P1 | Merge FLIP animation ch?t (key theo v? tr�) | Key -> item.id + getItemsForSubarray slice arrayStateWithIds | FIXED |
+| SV-004 | P1 | mergeSort n=1 sortedIndices=[] | sortedSet.add(0) tr??c frame ho�n th�nh + test | FIXED |
+| SV-005 | P2 | Generator throw gi? frame c? VCR | catch -> playbackFrames=[] + reset() | FIXED |
+| SV-006 | P2 | Singleton onMounted 1 l?n | B? onMounted top-level; init l??i trong setup; re-selectAlgorithm khi remount (customCompileFn null) | FIXED |
+| SV-007 | P2 | Gutter click first-match | Kh?p line g?n currentFrameIndex nh?t (next-occurrence) + snap line g?n nh?t trong span + 9 test | FIXED |
+| SV-008 | P2 | Math.max spread 7 engine + renderer | minMax 1 pass + loop thay spread (c? engine l?n composable; BubbleSortVisualizer .vue do UI agent) | FIXED |
+| SV-009 | P2 | Enricher greedy O(n²)/frame | Map value->positions + binary search v? tr� g?n + splice | FIXED |
+| SV-010 | P2 | Merge tree scroll drift 104 vs 96 | TREE_ROW_HEIGHT=96 + TREE_TOP_PADDING=8 + treeScrollTransform b� padding | FIXED |
+| SV-011 | P2 | Coordinator ch?a test huy?t m?ch | 6 test: watch currentLineNumber->decorations, line 0 clear, line kh�ng frame, multi-line jump g?n nh?t, destroy, click ph?i | FIXED (test) |
+| SV-012 | P2 | Matrix edge kh�ng ?? 7 engine | Matrix 42 cell (7 engine x {[], [7], [0], dup, sorted, reversed}) | FIXED (test) |
+| SV-013 | P2 | Perf 100 ch? quickSort | 7 engine x reversed 100 ph?n t? + frames.length<20000 + final ??ng | FIXED (test) |
+| SV-014 | P2 | Race ??i input gi?a playback ch?a test | Fake timers: play->??i input->recompile -> isPlaying=false + index=0 + frames m?i | FIXED (test) |
+| SV-015 | P2 | 0 test Radix/Controls/4 composable | sortingComposables.spec 23 test + RadixSortVisualizer.spec (banner/inspector/chip) | FIXED (test) |
+| SV-016 | P2 | PseudocodeSyncer multi-line/highlight ch?a test | Vi?t l?i theo contract m?i: highlightMonacoLine decoration id, editor null, chain | FIXED (test) |
+| SV-017 | P2 | Greedy duplicate ch?a test | [5,3,5,3,2] swap-path id theo element + greedy id duy nh?t | FIXED (test) |
+| SV-018 | P3 | bubbleSort kh�ng early-exit | Pass kh�ng swap -> ch?t n?t v? tr� c�n l?i + break | FIXED |
+| SV-019 | P3 | heapSize:0 phase sai | Frame ho�n th�nh heapSize=n; phase DONE khi description ch?a "ho�n th�nh" | FIXED |
+| SV-020 | P3 | Violation precedence heap | getNodeClass check ci/si TR??C node-violation | FIXED |
+| SV-021 | P3 | mergeSort includes O(n²) | Set<number> | FIXED |
+| SV-022 | P3 | PseudocodeSyncer dead API | X�a getLineForStep/getFirstStepForLine/codeSnippet (grep x�c nh?n ch? test d�ng) | FIXED |
+| SV-023 | P3 | Gutter click ph?i c�ng jump | Guard button===0 (h? tr? monaco leftButton + DOM-style) | FIXED |
+| SV-024 | P3 | Input >15 slice l?ng l? | Toast warning truncate + t�i s? d?ng vcrStore.inputArray | FIXED |
+| SV-025 | P3 | quickSort self-swap | pIdx===high b? emit + kh�ng t?ng swaps + swappedIndices=null | FIXED |
+| SV-026 | P3 | DetailPanel "B??c: 1/0" | "�/0" khi totalFrames===0 | FIXED |
+| SV-027 | P3 | Bucket distribute t? so s�nh | Branch ri�ng "?ang ph�n ph?i A[i] -> Bucket k" | FIXED |
+| SV-028 | P3 | Badge 60FPS sai | "VCR PLAYBACK" | FIXED |
+| SV-029 | P3 | HelpButton dead import | X�a | FIXED |
+| SV-030 | P3 | Dead childIndices/miniStepDescription | X�a (gi? childIndices heap - HeapTree.vue d�ng) | FIXED |
+| SV-031 | P3 | TraceTable a11y | caption sr-only + scope=col + row tabindex/role + Enter/Space jump | FIXED |
+| SV-032 | P3 | Controls thi?u aria-pressed | type=button + :aria-pressed | FIXED |
+| SV-033 | P3 | --count-items ch?a set | :style set s? ph?n t? th?t | FIXED |
+| SV-034 | P3 | Mutation rawInputArray tr?c ti?p | Action setRawInputArray trong useVcrStore + component d�ng action | FIXED |
+| SV-035 | P3 | HUD line-clamp c?t description | line-clamp-2 + :title | FIXED |
+| SV-036 | P3 | RadixBanner k?t >100 | Chip ??ng theo log10(maxVal)+1 | FIXED |
+| SV-037 | P3 | RadixInspector 2 label "Ph?n t?" | "S? ph?n t?" | FIXED |
+| SV-038 | P3 | TraceTable smooth m?i frame | Smooth ch? khi pendingUserJump; playback auto | FIXED |
+| SV-039 | P3 | Dispatcher empty text sai | Kh?p lu?ng th?c (preset + slider N) | FIXED |
+| SV-040 | P3 | QuickSort hoveredIdx kh�ng reset | watch frame -> null | FIXED |
+| SV-041 | P3 | FIFO test kh�ng ph�t hi?n vi ph?m | [11,12,21] 1-pass + probe "Thu h?i 11" | FIXED (test) |
+| SV-042 | P3 | as any trong test | Typed h?t | FIXED (test) |
+| SV-043 | P3 | onMounted top-level warning | N?m trong SV-006 | FIXED |
+| SV-044 | P3 | Dispatcher render theo algorithm ch?a test | 7 frame m?u -> component con ??ng + OOB l?i "Kh�ng nh?n di?n" | FIXED (test) |
+
+- **K?t qu?: frontend 3058/3058 PASS** (163 files, +116: sorting 99->215, composables 23, radix visualizer +, coordinator 6...), vue-tsc 0 l?i, backend 507/507 kh�ng ??ng.
+- **Ghi ch�: CC-009 gi? nay ph? to�n b? 7 engine sorting** (tr??c ch? bubble backend) - pseudocode highlight + gutter click ho?t ??ng ??y ??; bubbleSort gi? nguy�n 1 pass cu?i (kh�ng early-exit tri?t ?? nh?t) ?? gi? swap semantics test c�.
+
+### Review Round 13 — Fix Courses & Lessons LMS (3 sub agent) — 2026-08-11
+
+Chi?n d?ch fix LMS (Backend+Codelab / Store+UI / Tests). K?t qu?: backend **507/507 PASS** (kh�ng t?ng s? test m?i backend - fix logic), frontend **3086/3086 PASS** (166 files, +28), `vue-tsc` 0 l?i.
+
+| ID | M?c | Nguy�n nh�n g?c | C�ch kh?c ph?c | Tr?ng th�i |
+| :--- | :--- | :--- | :--- | :--- |
+| LM-001 | P0 | Route tr�ng PUT/DELETE lessons/{id} 2 controller | X�a c?p tr�ng ? CourseController; gi? 1 b?n duy nh?t ? LessonController (x? l� QuizId + OrderIndex + cascade) | FIXED |
+| LM-002 | P0 | CR-009 pass gi? (find lu�n tr? wrapper) | exists()/text + mock isAuthenticated 3 nh�nh | FIXED (test) |
+| LM-003 | P0 | US-LN-027 assert wrapper.exists() | Assert fetch URL ?search= sau advance timers | FIXED (test) |
+| LM-004 | P1 | Codelab sandbox kh�ng ch?n m?ng + LOOP_LIMIT | Che fetch/XHR/importScripts/WebSocket trong worker + injectLoopLimit acorn+escodegen sentinel LOOP_LIMIT 20000 (while(true) b? ch?n) | FIXED |
+| LM-005 | P1 | /auth/progress kh�ng gate publish/premium | CheckLessonAccessAsync cho GET/POST progress | FIXED |
+| LM-006 | P1 | XP farm award-xp kh�ng gi?i h?n | Rate limit + cap 500 XP/ng�y/user + reason whitelist; SaveLessonProgress b? tin XpAwarded client -> MarkAsCompleted(lesson.XPReward) DB | FIXED |
+| LM-007 | P1 | IDOR unlocked-items thi?u enrollment | Check classroom + enrollment Active -> 403/404 | FIXED |
+| LM-008 | P1 | GetCourses l? draft | Server filter IsPublished (teacher ch? th?y draft c?a m�nh, admin t?t c?) | FIXED |
+| LM-009 | P1 | CompleteLesson kh�ng atomic | Upsert atomic: retry 1 sau DbUpdateException + ChangeTracker.Clear | FIXED |
+| LM-010 | P1 | Race ??i b�i ghi nh?m XP/localStorage | isSameLesson() + capture lessonId ??u action + check sau m?i await | FIXED |
+| LM-011 | P1 | AddModuleItem kh�ng validate ownership | Validate Lesson/Codelab thu?c course.TeacherId (admin bypass); Quiz check t?n t?i | FIXED |
+| LM-012 | P1 | Modal completion d�nh b�i ti?p theo | goToNextLesson ??ng modal + watch lessonId ??ng | FIXED |
+| LM-013 | P1 | Router-link l?ng CourseCard | CTA span visual-only + 1 link duy nh?t | FIXED |
+| LM-014 | P1 | Progress card lu�n 0% | getCourseProgress ?u ti�n lessonIds detail -> course.lessons -> local -> qu�t lesson_progress_* | FIXED |
+| LM-015 | P1 | Step 2 kh�ng gate "??c h?t b�i h?c" | Gate th?t: b??c 2 m? kh�a khi markTheoryRead | FIXED |
+| LM-016 | P1 | Worker terminate/postMessage ch?a test | Assert payload {requestId, code, testCases, entryFunction} + terminate + stale requestId | FIXED (test) |
+| LM-017 | P1 | LessonStepCodeLab 0 spec | lessonStepCodeLab.spec M?I 6 test: run/allPassed/submit/timedOut/reset/hint/Reset disabled | FIXED (test) |
+| LM-018 | P1 | lessonApi 0 spec + type sai shape | lessonApi.spec M?I 9 test: URL/Bearer/payload/403-404; type ?ng d?ng theo backend | FIXED (test) |
+| LM-019 | P1 | 403 premium ch?a test | Test 403 -> store.error message Premium + local fallback | FIXED (test) |
+| LM-020 | P1 | completeCodelab XP diff ch?a test | Test awardXp diff + reject -> XP local v?n t?ng | FIXED (test) |
+| LM-021 | P1 | quizScore scale l?ch count vs percent | Ch?t thang 0..100 percent 2 ??u: frontend quizScoreToPercent, backend validate 0..100 + RecordQuizAttempt ??ng | FIXED |
+| LM-022 | P1 | Fake timers leak | afterEach useRealTimers + unstubAllGlobals + try/finally | FIXED (test) |
+| LM-023 | P2 | postMessage ngo�i try | B?c try/catch -> resolve l?i + clearTimeout + terminate | FIXED |
+| LM-024 | P2 | normalizeOutput strip whitespace pass gi? | Trim theo ki?u (string trim 2 ??u, array/object deep - gi? space trong chu?i) | FIXED |
+| LM-025 | P2 | learningProgressApi contract ch?t | X�a file (grep kh�ng importer) | FIXED |
+| LM-026 | P2 | ClassroomProgress N+1 | Gom GetUnlockedItemIdsAsync 1 l?n -> HashSet | FIXED |
+| LM-027 | P2 | newlyUnlocked dead logic | Ch?p previouslyUnlocked TR??C update -> diff sau | FIXED |
+| LM-028 | P2 | Heuristic quiz link sai | Ch? g?n quiz khi lessonOrder < quizOrder < nextLessonOrder + l?c IsDeleted | FIXED |
+| LM-029 | P2 | Analytics NRE Lesson null | Filter Lesson != null && !IsDeleted | FIXED |
+| LM-030 | P2 | Retry sync b�i sai + loop v� h?n | pendingSyncs Map<lessonId,{payload,attempts}> + MAX 3 + timer 10s | FIXED |
+| LM-031 | P2 | loadCourseDetail kh�ng race-token | courseLoadRequestId ? m?i await | FIXED |
+| LM-032 | P2 | loadCourses kh�ng race-guard/??i user | coursesLoadRequestId + watch auth reload + CourseQueryParams plumbing | FIXED |
+| LM-033 | P2 | AddModule unique 500 | Catch DbUpdateException -> 409 | FIXED |
+| LM-034 | P2 | Quiz "L�m l?i" tho�i lui completed | C? completed m?t chi?u (OR v?i previousCompleted) | FIXED |
+| LM-035 | P2 | Nh�n "M? Kh�a Code Lab" khi kh�ng codelab | Prop hasCodelab + nh�n ??ng | FIXED |
+| LM-036 | P2 | N�t "Ho�n th�nh" dead b�i cu?i | B? :disabled + finishLesson() | FIXED |
+| LM-037 | P2 | Gating premium kh�ng nh?t qu�n | courseAccess.ts helper d�ng chung detail/sidebar/CTA/prev-next | FIXED |
+| LM-038 | P2 | Empty + error ??ng th?i | v-else-if errorMessage + error thay th? | FIXED |
+| LM-039 | P2 | CompletionModal thi?u a11y | role=dialog + aria-modal + focus trap + Esc + lock scroll + restore | FIXED |
+| LM-040 | P2 | StepTabs thi?u a11y + kh�a im l?ng | tablist + aria-selected + tab kh�a m? + icon lock + disabled | FIXED |
+| LM-041 | P2 | ProgressBar thi?u aria | role=progressbar + aria-valuenow/min/max | FIXED |
+| LM-042 | P2 | Monaco l?i im l?ng + kh�ng loading | Skeleton + error state + n�t Th? l?i | FIXED |
+| LM-043 | P2 | Badge hardcode | CodeLabTask th�m difficulty/timeLimitMs + badge t? task | FIXED |
+| LM-044 | P2 | FAB ?? bottom bar | bottom-20 + aria-label | FIXED |
+| LM-045 | P2 | DiscussionPanel dead | T�ch h?p: n�t "Th?o lu?n" m? side panel lazy | FIXED |
+| LM-046 | P2 | Race ??i lesson 0 test | lessonStoreRace.spec M?I 3 test (A ch?m -> B k?t qu?, 403 drop) | FIXED (test) |
+| LM-047 | P2 | Gating goToStep ch?a test | Full matrix goToStep(3)/(4) + isLessonComplete 3 nh�nh | FIXED (test) |
+| LM-048 | P2 | CR-007 sort ch?a assert th? t? | Assert th? t? th?c t? | FIXED (test) |
+| LM-049 | P2 | toContain('3') v� ngh?a | "/3 b�i gi?ng/" | FIXED (test) |
+| LM-050 | P2 | Fake timers 300ms t�y � | B? fake timers - await tr?c ti?p | FIXED (test) |
+| LM-051 | P2 | Fetch network th?t flaky | Mock courseApi.getCourseById | FIXED (test) |
+| LM-052 | P2 | courseApi name/assert l?ch | ??ng b? name "tr? null" | FIXED (test) |
+| LM-053 | P2 | Worker ok:false ch?a test | Test ok:false + error shape lan truy?n | FIXED (test) |
+| LM-054 | P2 | as never mock | Define ??ng Course[] | FIXED (test) |
+| LM-055 | P3 | Thi?u onmessageerror | worker.onmessageerror -> resolve l?i | FIXED |
+| LM-056 | P3 | bestScore field thi?u | Th�m BestScore v�o SaveLessonProgressRequest + RecordBestScore (ch? t?ng) | FIXED |
+| LM-057 | P3 | taskRegistry key l?ch n?i dung | ??i th�nh task Duy?t c�y th?t inorder(root) (c�y m?ng l?ng nhau) | FIXED |
+| LM-058 | P3 | Worker kh�ng pool + timeout to�n c?c | TODO ghi nh?n (c?n t�i ki?n tr�c - kill-switch 1500ms backstop) | DEFERRED |
+| LM-059 | P3 | Teacher th?y draft kh�c | Draft ch? owner/Admin (GetCourseById + lesson filter) | FIXED |
+| LM-060 | P3 | Progress kh�ng validate range | Validate LastActiveFrameIndex >= 0 + ScrollPercent 0..100 -> 400 | FIXED |
+| LM-061 | P3 | submitQuiz test ph? ch?ng | X�a test ch? assert quizScore | FIXED (test) |
+| LM-062 | P3 | Breadcrumb crumb cu?i focusable | span + aria-current=page | FIXED |
+| LM-063 | P3 | ??nh s? b�i reset ch?ng | mIdx * MODULE_SIZE + lIdx + 1 | FIXED |
+| LM-064 | P3 | window.confirm native | Dialog inline role=dialog | FIXED |
+| LM-065 | P3 | animate-fade-in kh�ng keyframes | B? class | FIXED |
+| LM-066 | P3 | N�t "B?t ??u" khi d? | "�n t?p" 100% / "Ti?p t?c" 0<100 / "B?t ??u" 0 | FIXED |
+| LM-067 | P3 | Theory HTML <p> m?t c�n b?ng | B?c p ??ng/??ng + heading c�n b?ng | FIXED |
+| LM-068 | P3 | Reset khi isRunning | Reset disabled | FIXED |
+| LM-069 | P3 | Detail thi?u retry | N�t "Th? l?i" -> loadCourseDetail | FIXED |
+| LM-070 | P3 | Kh�ng unmount test | afterEach unmount | FIXED (test) |
+| LM-071 | P3 | getQuizById fail gi? local ch?a test | Test quizQuestions local gi? nguy�n | FIXED (test) |
+
+- **K?t qu?: frontend 3086/3086 PASS** (166 files, +28: lessonStepCodeLab 6, lessonApi 9, lessonStoreRace 3, lessonP2 +...), vue-tsc 0 l?i (s?a 2 cast type trong test), backend 507/507.
+- **Ghi ch�: XP gi? nay l?y t? DB lesson.XPReward (kh�ng tin client); quizScore th?ng 0..100 2 ??u; codelab sandbox ch?n m?ng + LOOP_LIMIT 20000; CompleteLesson upsert atomic; LM-058 worker pool DEFERRED (TODO).**
+
+### Review Round 14 — Fix Lesson Study / Course Modules (3 sub agent) — 2026-08-11
+
+Chi?n d?ch fix Lesson Study (Backend / Frontend / Tests). K?t qu?: backend **552/552 test PASS** (+45), frontend **3129/3129 PASS** (170 files, +43), `vue-tsc` 0 l?i.
+
+| ID | M?c | Nguy�n nh�n g?c | C�ch kh?c ph?c | Tr?ng th�i |
+| :--- | :--- | :--- | :--- | :--- |
+| LS-001 | P0 | Store curriculum thi?u prefix /api/v1 -> 404 CRUD | BASE_URL th�m /api/v1 (kh?p apiClient) + apiFetch x? l� 204 No Content | FIXED |
+| LS-002 | P0 | updateItemApi/deleteItemApi -> endpoint kh�ng t?n t?i | Th�m UpdateClassroomModuleItem + DeleteClassroomModuleItem command/handler + 2 endpoint PUT/DELETE (cascade progress/override) | FIXED |
+| LS-003 | P0 | Reorder drag-drop kh�ng wire + 2 h? drag tr�ng | B? dnd-kit, gi? 1 h? HTML5 native: handle ri�ng module/item + @drop wire reorderModulesApi/reorderItemsApi + keyboard | FIXED |
+| LS-004 | P0 | Import-course sai URL + backend thi?u endpoint | Th�m route POST {classroomId:guid}/import-course + FE URL ??ng classroomId + Bearer | FIXED |
+| LS-005 | P0 | ItemFormModal linkedContentOptions=[] kh�ng t?o ???c b�i | N?p th?t: Lesson t? /concepts/courses + detail, Quiz /quizzes, Codelab /codelabs + optionsLoading + isValid th?t | FIXED |
+| LS-006 | P1 | Positional args l?ch IsHidden -> isHiddenForStudent | Ctor +param isHidden cu?i, handler truy?n ??ng slot | FIXED |
+| LS-007 | P1 | Student query kh�ng l?c module/item IsHidden + l? enrollment | L?c !m.IsHidden + !i.IsHidden + override; ch?n leak enrollment (Unauthorized) | FIXED |
+| LS-008 | P1 | ToDictionary PK composite -> 500 /my-progress | GroupBy + OrderByDescending(AttemptNumber).First() + test multi-attempt | FIXED |
+| LS-009 | P1 | Override ??t 3 t?ng (UI 404 + command thi?u field + query kh�ng merge) | Command nh?n ?? 8 field + validate thu?c classroom 403; 2 query MERGE overrides v�o DTO; FE modal emit isHidden | FIXED |
+| LS-010 | P1 | UnlockRuleEngine ?m item ?n v�o required + isModuleCompleted sai | requiredItems lo?i !IsHidden (3 ch?); module kh�ng required item = m? | FIXED |
+| LS-011 | P1 | Teacher tab ??c route.params.id kh�ng defineProps | defineProps classroomId + ?u ti�n prop > route | FIXED |
+| LS-012 | P1 | Sequential lock b? qua + b? qua isUnlocked | isItemLocked: isUnlocked backend tr??c -> fallback t? t�nh theo prerequisite | FIXED |
+| LS-013 | P1 | N�t Nh�n b?n no-op | Implement duplicateItem (clone + "(b?n sao)" -> createItemApi) | FIXED |
+| LS-014 | P1 | Kh�ng error state + kh�ng try/catch | Render curriculumStore.error banner + try/catch gi? modal m? | FIXED |
+| LS-015 | P1 | X�a l?p h?c confirm/alert + fetch th� | ConfirmModal + deleteClassroomApi + loading | FIXED |
+| LS-016 | P1 | OverrideSettingsModal emit isHiddenForStudent sai field | Form d�ng isHidden + n?p t? item.isHidden + emit ??ng interface | FIXED |
+| LS-017 | P1 | Store curriculum 0 spec | classroomCurriculum.spec M?I 14 test: URL/method/payload t?ng action, error, race 2 classroom, saving | FIXED (test) |
+| LS-018 | P1 | Student sidebar/view 0 test | studentCurriculumSidebar.spec 8 + studentClassroomView.spec 4 (unlockAt setSystemTime, prerequisite, hidden l?c, deep-link) | FIXED (test) |
+| LS-019 | P1 | ModuleItemRow + modal 0 spec | moduleItemRow.spec M?I 12 test (displayTitle CustomLesson, badge, emit, ItemFormModal n?p th?t, prerequisite exclude, override emit) | FIXED (test) |
+| LS-020 | P1 | teacherP2Tests pass gi? (doMock sau import + curriculum:null) | vi.hoisted route mutable + store c� data + assert fetchCurriculum call args | FIXED (test) |
+| LS-021 | P1 | Thi?u student query handler tests | GetStudentClassroomCurriculumQueryHandlerTests 9 test (enroll/hidden/sort/progress/IsUnlocked/merge) + teacher +3 | FIXED (test) |
+| LS-022 | P1 | Controller 500 thay v� 403/404 | HandleCurriculumError helper: Unauthorized->403, KeyNotFound->404, Argument->400 + ClassroomCurriculumControllerTests 10 | FIXED |
+| LS-023 | P2 | Reorder kh�ng atomic + thi?u bi�n | Validate duplicate/cross-module 400 + renumber to�n b? + 2 pha (n+1)*1000 tr�nh unique + test bi�n | FIXED |
+| LS-024 | P2 | Override command thi?u field + kh�ng validate thu?c l?p | PrerequisiteItemId int?->Guid? + IsRequired (migration) + handler ch?n item l?p kh�c + test clear/concurrency | FIXED |
+| LS-025 | P2 | LN-001 smoke v� ngh?a | Assert 4 tab + label + disabled theo store + markTheoryRead m? kh�a + lesson kh�ng codelab 3 tab | FIXED (test) |
+| LS-026 | P2 | Drag handle kh�ng keyboard + aria English | Ph�m l�n/xu?ng -> moveItemByKeyboard -> reorderItemsApi + aria Vi?t | FIXED |
+| LS-027 | P2 | Item row div @click kh�ng keyboard | role=button + tabindex + keydown.enter/space + cursor-not-allowed locked | FIXED |
+| LS-028 | P2 | Sidebar kh�ng scroll-active/auto-expand | watch currentItemId immediate -> expand + scrollIntoView data-item-id | FIXED |
+| LS-029 | P2 | Sidebar w-80 v? mobile | Drawer mobile + toggle + overlay + resize listener + deep-link ?itemId | FIXED |
+| LS-030 | P2 | CustomLesson kh�ng case | Badge custom-lesson/amber + nh�n "T? so?n" + displayTitle fallback customLessonTitle | FIXED |
+| LS-031 | P2 | CourseSidebar premium kh�ng lock icon | isLessonLocked -> icon lock + nh�n "Premium" | FIXED |
+| LS-032 | P2 | Prerequisite select ch?a item ??ng edit | L?c b? item hi?n t?i | FIXED |
+| LS-033 | P2 | Accordion draggable to�n b? + flicker | Ch? handle k�o + dragDepth counter | FIXED |
+| LS-034 | P2 | module-hidden/animate-slide-down thi?u CSS | B? sung CSS + keyframes | FIXED |
+| LS-035 | P3 | Discussion slide-left ng??c h??ng | slide-right translateX(100%) | FIXED |
+| LS-036 | P3 | Toggle z-50 ?? overlay | z-30 < overlay z-40 < sidebar | FIXED |
+| LS-037 | P3 | CourseSidebar thi?u aria + empty "?ang t?i" | aria-current/aria-label + t�ch loading/empty | FIXED |
+| LS-038 | P3 | StepTabs ARIA thi?u | aria-controls + roving tabindex + ph�m ?/?/Home/End + tabpanel + b? cursor m�u thu?n | FIXED |
+| LS-039 | P3 | Breadcrumb thi?u ?courseId | Th�m query | FIXED |
+| LS-040 | P3 | Dead code onDragOverModuleForItem/itemsContainer/watch | D?n s?ch | FIXED |
+| LS-041 | P3 | saving kh�ng bao gi? true | saving=true quanh 8 API call + :disabled th?t | FIXED |
+| LS-042 | P3 | Route reorder thi?u :guid | Th�m constraint | FIXED |
+
+- **K?t qu?: backend 552/552 PASS** (+45: Update/DeleteModuleItem handler tests 7, controller tests 10, student query 9, engine 5, override +3...), **frontend 3129/3129 PASS** (170 files, +43: classroomCurriculum 14, sidebar 8, view 4, moduleItemRow 12, progressP2 109, teacherP2 41...), vue-tsc 0 l?i (s?a 2 type test getModule mock).
+- **Ghi ch�: migration 20260812070400_FixClassroomOverridePrerequisiteGuid (PrerequisiteItemId int->Guid + IsRequired - d? li?u c� c?nh b�o loss v� hi?m khi c�); override gi? nay merge 2 chi?u; reorder ho?t ??ng 1 h? drag HTML5 + keyboard.**
+
+### Review Round 15 — Fix Teacher Panel (3 sub agent) — 2026-08-11
+
+Chi?n d?ch fix Teacher Panel (Backend / Frontend / Tests). K?t qu?: backend **591/591 test PASS** (+39), frontend **3184/3184 PASS** (175 files, +55), `vue-tsc` 0 l?i.
+
+| ID | M?c | Nguy�n nh�n g?c | C�ch kh?c ph?c | Tr?ng th�i |
+| :--- | :--- | :--- | :--- | :--- |
+| TC-001 | P0 | QuizBuilderTab CRUD endpoint kh�ng t?n t?i | Backend th�m CRUD manage/questions v�o /concepts/quiz/manage (gate ownership, fix bug EF Core QuizQuestion key client-generated Add t??ng minh); FE ??i sang /quiz/all + /quiz/manage + withAnswers | FIXED |
+| TC-002 | P0 | CodelabBuilder CRUD ch?a implement | QUY?T ??NH: backend CodelabController c� full CRUD -> IMPLEMENT TH?T (kh�ng ?n tab) | FIXED |
+| TC-003 | P0 | 3 modal stub "L?u (Stub)" | Thay b?ng CodelabItemModal th?t (Type=testcase/template/hint) + x�a 3 file stub | FIXED |
+| TC-004 | P0 | CodelabItemModal form thi?u id | G�n id="codelab-modal-form" | FIXED |
+| TC-005 | P0 | AnalyticsTab URL thi?u v1 | /api/v1/classrooms/mine + /statistics + /export-excel + 3 integration test exact URL | FIXED |
+| TC-006 | P1 | Token localStorage sai key | useAuthStore().getAccessToken() | FIXED |
+| TC-007 | P1 | Filter/search QuizBuilder dead | v-for -> filteredQuizzes + debounce 300ms + AbortController | FIXED |
+| TC-008 | P1 | saveQuestion r?ng | POST/PUT manage/{id}/questions + ??ng modal + toast | FIXED |
+| TC-009 | P1 | coverImageUrl vs Thumbnail + response shape | Payload thumbnail + ??c responseData.courseId ?? course?.id | FIXED |
+| TC-010 | P1 | Upload FormData Content-Type JSON -> 400 | teacherRequest t? b? Content-Type khi body FormData | FIXED |
+| TC-011 | P1 | CreateDraftLesson thi?u QuizId | Command + QuizId + t?o ModuleItem Quiz (order+500, trong kho?ng heuristic) + validate quiz c?a teacher kh�c 403 | FIXED |
+| TC-012 | P1 | Analytics totalQuizzes = attempts + field undefined | CountAsync(Quizzes) + totalQuestionsInBank/totalUsers/premiumUsers + b? ToListAsync | FIXED |
+| TC-013 | P1 | useTeacherApi kh�ng 401 refresh/timeout | teacherRequest: timeout 15s + 401->refresh->retry 1 + ?p d?ng to�n b? tab | FIXED |
+| TC-014 | P1 | Ph�n trang theory page=1 reset | loadArticles(resetPage=true) + changePage(false) | FIXED |
+| TC-015 | P1 | restoreVersion console.log | Confirm + PUT n?i dung phi�n b?n + toast | FIXED |
+| TC-016 | P1 | Quiz dropdown r?ng (ref null) | CourseTab t? fetch /quiz/all | FIXED |
+| TC-017 | P1 | completionRate 2 ki?u | *100 c? 2 n?i + test 0.65 -> "65.0%" | FIXED |
+| TC-018 | P1 | X�a quiz confirm/alert native | ConfirmModal variant=danger | FIXED |
+| TC-019 | P1 | createQuiz nu?t l?i ??ng modal | check res.ok + throw + gi? modal + double-submit guard | FIXED |
+| TC-020 | P1 | L?i API -> empty state gi? | Banner l?i + n�t Th? l?i t�ch empty (7 tab) | FIXED |
+| TC-021 | P2 | Quiz kh�ng OwnerId + xpReward + title tr�ng | CreatedByTeacherId (migration) + IsOwnerOrAdmin 403 + xpReward 0..1000 + title tr�ng 409 | FIXED |
+| TC-022 | P2 | DeleteQuiz cascade x�a attempt | Soft-delete IsDeleted (gi? attempt history + XP ledger) | FIXED |
+| TC-023 | P2 | OrderIndex l?ch thang | UpdateLesson *1000 nh? create (=0 gi? nguy�n) | FIXED |
+| TC-024 | P2 | Import Excel g? nh?ng docs/test v?n Done | RENAME test -> "Export Excel" + c?p nh?t ghi ch� import � b? g? (ch?t quy?t ??nh gi? export) | FIXED (tracking) |
+| TC-025 | P2 | Import course kh�ng transaction/ownership | BeginTransaction/Commit/Rollback + course.TeacherId check 403 | FIXED |
+| TC-026 | P2 | Search case-sensitive l?ch 2 ch? ?? | ToLower 2 v? DB (kh?p OrdinalIgnoreCase in-memory) | FIXED |
+| TC-027 | P2 | Tabs thi?u ARIA + v-if m?t state | role=tablist/tab + aria-selected + Arrow/Home/End + KeepAlive | FIXED |
+| TC-028 | P2 | Modal thi?u focus trap/Esc | useModalA11y composable chung (focus trap, Esc, aria-modal, scroll lock, restore) + 9 modal | FIXED |
+| TC-029 | P2 | Icon m?t no-op | Preview th?t (fetch detail / expand inline) | FIXED |
+| TC-030 | P2 | Accordion m?t ch?nh s?a im l?ng | Snapshot JSON + c?nh b�o unsaved | FIXED |
+| TC-031 | P2 | 2 thang ?? kh� | easy/medium/hard + normalizeDifficulty (bank int 1-5) + comment vai tr� 2 tab | FIXED |
+| TC-032 | P2 | Export kh�ng loading | exporting state + spinner + toast | FIXED |
+| TC-033 | P2 | category default 'sorting' sai | 'Sorting' | FIXED |
+| TC-034 | P2 | 0 test TeacherController | TeacherControllerTests M?I 9 test (role filter, page clamp, search, fallback) | FIXED (test) |
+| TC-035 | P2 | Assert y?u kh�ng payload | Assert URL + body deep-equal (create/edit quiz manage) | FIXED (test) |
+| TC-036 | P2 | TeacherCourseTab 0 test + formatTopic thi?u key | teacherCourseTab.spec M?I 8 test (formatTopic full map, thumbnail, FormData, toggle, lesson payload) | FIXED (test) |
+| TC-037 | P2 | Student modal ch?a click test | Test click -> 2 fetch + render + pagination + debounce 400ms fake timers | FIXED (test) |
+| TC-038 | P2 | Kh�ng test 401/403/double-submit | teacherRequest 401->refresh->retry / 403 kh�ng retry / double-submit 1 POST / stub confirm/alert | FIXED (test) |
+| TC-039 | P2 | moduleItemRow DOM leak + stub modals | unmount t?t c? wrapper + teacherModals.spec M?I (ModuleForm/ImportCourse/ConfirmModal) | FIXED (test) |
+| TC-040 | P2 | QuizBuilderTab ch?a mount test | quizBuilderTab.spec M?I (list/filter/accordion/delete/create/edit/saveQuestion) | FIXED (test) |
+| TC-041 | P3 | Teacher th?y m?i Student/course | Course badge "C?a t�i"; Student backend kh�ng c� scope teacher -> ghi nh?n TODO backend | PARTIAL |
+| TC-042 | P3 | GetHistory role t? claim | ??i chi?u role DB (pattern AD-003) | FIXED |
+| TC-043 | P3 | Dead code + any useQuizBuilder | Interface h�a + b? dead format* tr�ng | FIXED |
+| TC-044 | P3 | StudentTab empty sai ng? c?nh | Ph�n bi?t search vs r?ng th?t | FIXED |
+| TC-045 | P3 | Th? th?ng k� kh�ng retry | Banner l?i + n�t Retry | FIXED |
+| TC-046 | P3 | Quiz 4 ??p �n c? ??nh | Option ??ng 2-6 | FIXED |
+| TC-047 | P3 | CustomLessonCreator dead | X�a component (kh�ng mount ???c) + tracking | FIXED |
+
+- **K?t qu?: backend 591/591 PASS** (+39: manage quiz CRUD, analytics, teacher controller 9, import transaction...), **frontend 3184/3184 PASS** (175 files, +55: teacher 68->123, courseTab 8, quizBuilder 8, useQuizBuilder 8, useTeacherApi 12, teacherModals...), vue-tsc 0 l?i (s?a 1 cast Response trong test).
+- **Ghi ch�: QuizBuilderTab + CodelabBuilderTab gi? nay ho?t ??ng th?t (manage API + CodelabController); delete quiz soft-delete gi? l?ch s? attempt; TC-041 Student scope PARTIAL (TODO backend); import Excel � ch?t gi? export (import � b? g? t? ERR-257).**
+
+### Review Round 16 — Fix Classrooms (3 sub agent) — 2026-08-11
+
+Chi?n d?ch fix Classrooms (Backend / Frontend / Tests). K?t qu?: backend **665/665 test PASS** (+74), frontend **3221/3221 PASS** (177 files, +37), `vue-tsc` 0 l?i.
+
+| ID | M?c | Nguy�n nh�n g?c | C�ch kh?c ph?c | Tr?ng th�i |
+| :--- | :--- | :--- | :--- | :--- |
+| CR-001 | P0 | Validator regex m�u thu?n generator -> join lu�n 400 | Regex `^[A-Za-z0-9]{6}$` + MaximumLength 6 (ch?p nh?n ch? th??ng, controller ToUpperInvariant) + 9 test validator | FIXED |
+| CR-002 | P0 | MyClassroomsView URL thi?u v1 -> 404 | /api/v1/classrooms/mine + /join + whitelist 404 test | FIXED |
+| CR-003 | P1 | DTO curriculum thi?u content -> lesson tr?ng | Th�m ContentMd/ContentMarkdown/SandboxType/SandboxConfig (Include Lesson) | FIXED |
+| CR-004 | P1 | hasNext hardcode false + footer "Ho�n th�nh module!" lu�n hi?n | hasNext t? prop curriculum + footer ch? khi item cu?i + 3 test | FIXED |
+| CR-005 | P1 | N�t back dead | N?i @back/@next trong parent (back -> item tr??c / m�n ch�o) | FIXED |
+| CR-006 | P1 | CustomLesson dead-end | Render t?i thi?u (title + customContent, customLessonTitle ?u ti�n) + test | FIXED |
+| CR-007 | P1 | Complete kh�ng refresh sidebar/currentItem | loadCurriculum LU�N + currentItem = findItemById(curriculum m?i) | FIXED |
+| CR-008 | P1 | Kh�ng error state t?i classroom | 403 "B?n kh�ng trong l?p n�y" / 404 "L?p kh�ng t?n t?i" / network banner + Th? l?i | FIXED |
+| CR-009 | P1 | Stub player -> complete flow kh�ng test | Stub c� emit: chu?i complete -> loadCurriculum + loadProgressSummary + navigate + start | FIXED (test) |
+| CR-010 | P1 | ClassroomItemPlayer 0 spec | classroomItemPlayer.spec M?I 13 test (Lesson/Quiz/Codelab/CustomLesson, emit, hasNext, footer status) | FIXED (test) |
+| CR-011 | P1 | MyClassroomsView 0 spec | myClassroomsView.spec M?I 11 test (URL v1, join sai/��ng, 401 redirect, leave) | FIXED (test) |
+| CR-012 | P1 | 0 controller test Classroom/Progress/Grading | ClassroomControllerTests 17 + ProgressControllerTests 15 + GradingControllerTests 3 | FIXED (test) |
+| CR-013 | P1 | Grading + Analytics 0 test | ClassroomGradingServiceTests 9 (best-attempt, pass/completion, IDOR, Admin) | FIXED (test) |
+| CR-014 | P2 | Kick r?i rejoin ???c | Kicked = ban rejoin (InvalidOperationException); ch? Left reactivate | FIXED |
+| CR-015 | P2 | Curriculum kh�ng filter Status Active | Filter Active -> kick/banned 403 | FIXED |
+| CR-016 | P2 | unlock-status kh�ng check Active | Check enrollment Active tr??c -> 403 | FIXED |
+| CR-017 | P2 | /my-progress 500 thay 403 + 401 vs 403 | Catch UnauthorizedAccessException -> 403 (nh?t qu�n) | FIXED |
+| CR-018 | P2 | N+1 engine c�n nguy�n (400 query) | LoadClassroomStateAsync gom 1 query + set Completed (400 -> 2 query) | FIXED |
+| CR-019 | P2 | Grading analytics ??c course g?c + required 1 v? | ClassroomModuleItems thay ModuleItems + IsRequired c? 2 v? (<=100%) | FIXED |
+| CR-020 | P2 | Score client t? khai | ResolveScoreFromServerAsync: Lesson -> null, Quiz -> best attempt %, Codelab -> best submission | FIXED |
+| CR-021 | P2 | trackItemProgress kh�ng g?i | Scroll debounce 800ms + heartbeat 5s + flush chuy?n b�i/unmount + clamp 0..100 | FIXED |
+| CR-022 | P2 | progressSummary dead | Render % header: completed/total + progress bar | FIXED |
+| CR-023 | P2 | Footer "?ang h?c" khi Completed | Theo item.status: ?/?ang h?c/Ch?a b?t ??u | FIXED |
+| CR-024 | P2 | Join label 6 vs validate 4 | Validate /^[A-Za-z0-9]{6}$/ sau trim | FIXED |
+| CR-025 | P2 | List l?i -> empty gi? | loadError banner + Th? l?i t�ch empty | FIXED |
+| CR-026 | P2 | Kh�ng c� R?i l?p | Endpoint POST /classrooms/{id}/leave (ch? Left, kh�ng x�a d? li?u) + handler 4 test + FE n�t confirm | FIXED |
+| CR-027 | P2 | Mobile drawer sticky l?ng + double scroll | B? sticky top-24 khi <=1023px + 1 scroll container | FIXED |
+| CR-028 | P2 | Analytics grid c? ??nh + % kh�ng nh?t qu�n | grid-cols-1 md:2 xl:4 + completionRate x100 ??ng b? | FIXED |
+| CR-029 | P2 | B?ng analytics kh�ng empty row | colspan row khi studentScores r?ng | FIXED |
+| CR-030 | P2 | Fallback mock ok:true URL l? | Whitelist 404 + test path 403/404/500 | FIXED (test) |
+| CR-031 | P2 | Mock start 204 l?ch contract | {ok:true,status:200,json} + test contract | FIXED (test) |
+| CR-032 | P2 | {Message} hoa M vs message | Chu?n h�a {message} to�n controller + test assert | FIXED |
+| CR-033 | P3 | LockedItems g?p NotStarted | NotStartedItems t�ch ri�ng | FIXED |
+| CR-034 | P3 | InviteCodeExpiresAt kh�ng set | Expiry 30 ng�y khi t?o/regenerate | FIXED |
+| CR-035 | P3 | Grading Admin lu�n 403 | Admin ??ng role DB qua owner check | FIXED |
+| CR-036 | P3 | Start/Update/Complete 200 Success=false | Throw UnauthorizedAccessException -> 403 | FIXED |
+| CR-037 | P3 | Deep-link kh�ng trackItemStart | G?i trackItemStart sau resolve + test | FIXED |
+| CR-038 | P3 | Kh�ng watch auth | Watch currentUser.id -> reload; logout -> redirect / | FIXED |
+| CR-039 | P3 | Attempt c? b? ghi ?? | OrderByDescending(AttemptNumber).First | FIXED |
+| CR-040 | P3 | IsModuleLocked N+1 | GetModuleLockStatusesAsync 1 query | FIXED |
+| CR-041 | P3 | ProgressPercent kh�ng clamp | Math.Clamp 0..100 | FIXED |
+| CR-042 | P3 | Badge role field thi?u | Response th�m Role (Student/Teacher) + FE render c.role | FIXED |
+| CR-043 | P3 | Spinner indigo l?ch palette | border-t-accent | FIXED |
+| CR-044 | P3 | Modal join thi?u a11y | useModalA11y: autofocus + Esc + focus trap + role=dialog | FIXED |
+| CR-045 | P3 | Badge itemType ti?ng Anh | typeLabel Vi?t h�a | FIXED |
+| CR-046 | P3 | XP tr�ng 2 ch? | Gi? 1 ch? | FIXED |
+| CR-047 | P3 | $router.back() kh�ng history | router-link /teacher | FIXED |
+| CR-048 | P3 | completionRate NaN% | (?? 0) * 100 | FIXED |
+| CR-049 | P3 | Copy "h?c vi�n" vs badge "Gi?ng vi�n" | Copy trung t�nh | FIXED |
+| CR-050 | P3 | FAB khi r?ng + thi?u aria | ?n khi r?ng + aria-expanded/controls | FIXED |
+| CR-051 | P3 | Item kh�a kh�ng gi?i th�ch | Tooltip "M? kh�a v�o {ng�y}" / "C?n ho�n th�nh ... tr??c" | FIXED |
+
+- **K?t qu?: backend 665/665 PASS** (+74: validator 9, controller 35, grading 9, join/kick/leave/analytics...), **frontend 3221/3221 PASS** (177 files, +37: myClassrooms 11, player 13, studentView +, sidebar +3...), vue-tsc 0 l?i (s?a findLast -> filter+last trong test).
+- **Ghi ch�: PHASE 3 HO�N T?T (Courses + Lesson Study + Teacher + Classrooms); join/leave/player ho?t ??ng ??y ??; kick = ban rejoin; score server-side; N+1 engine h?t.**
+
+### Review Round 17 — Fix Gamification (3 sub agent) — 2026-08-11
+
+Chi?n d?ch fix Gamification (Backend / Frontend / Tests). K?t qu?: backend **708/708 test PASS** (+43), frontend **3269/3269 PASS** (181 files, +48), `vue-tsc` 0 l?i.
+
+| ID | M?c | Nguy�n nh�n g?c | C�ch kh?c ph?c | Tr?ng th�i |
+| :--- | :--- | :--- | :--- | :--- |
+| GM-001 | P0 | XP farm /users/me/xp kh�ng cap/rate/idempotent | XpAwardGuard cap 500/ng�y/user + [EnableRateLimiting("auth")] + Idempotency-Key header (replay kh�ng c?ng 2) + test 429/cap/key | FIXED |
+| GM-002 | P0 | gamificationApi/leaderboardApi URL sai 404 | /users/me/progress + /users/me/xp + /leaderboard/top?limit= + 10 contract test m?i | FIXED |
+| GM-003 | P0 | Map sai DTO sync | currentStreak + badges{id,name,...} map ??ng | FIXED |
+| GM-004 | P1 | Award + badge 2 transaction + kh�ng idempotent | Gom 1 transaction + ledger (user|ng�y|key) replay tr? k?t qu? c? + Replayed=true | FIXED |
+| GM-005 | P1 | Stateless award-xp kh�ng idempotent | Idempotency-Key qua XpAwardGuard + cap/ng�y 429 | FIXED |
+| GM-006 | P1 | Hub no auth + dead real-time | [Authorize] + Teacher/Admin ch? + LeaderboardBroadcastBroker service publish SAU commit + ref-count hub | FIXED |
+| GM-007 | P1 | Badge grant race + root cause EF Id=Guid.NewGuid() -> UPDATE 0 row | B? set Id (EF t? sinh) + catch DbUpdateException (unique index � c�) + test 2 connection song song | FIXED |
+| GM-008 | P1 | Streak l?ch timezone 2 h? | Server source of truth: tr? lastActiveDate TH?T UTC + strategy sync t? DB; FE d�ng gi� tr? server kh�ng t? t�nh + TZ matrix test | FIXED |
+| GM-009 | P1 | Badge 2 h? id l?ch -> cabinet lu�n kh�a | /badges/my + /check tr? danh s�ch ??y ?? {id chu?n first-steps..., isUnlocked, earnedAt}; FE BADGE_TEMPLATES ??i sang 8 id backend | FIXED |
+| GM-010 | P1 | Leaderboard tu?n mock 10 t�n gi? | X�a mock + x�a b?ng tr�ng + 1 b?ng WeeklyLeaderboard t? fetchLeaderboardFromServer th?t | FIXED |
+| GM-011 | P1 | Strategy singleton profile d�ng chung | ConcurrentDictionary state RI�NG theo userId + SyncProfileFromDb DB-first + profile endpoint [RequireJwtRole] + test c� l?p UserA/UserB | FIXED |
+| GM-012 | P1 | Test confetti if-guard pass gi? | B? if-guard + assert showConfetti===true tuy?t ??i | FIXED (test) |
+| GM-013 | P2 | Dead code 2 h? legacy | X�a earnXPWithSync/checkBadgesFromServer (grep kh�ng d�ng) | FIXED |
+| GM-014 | P2 | lastActiveDate �p h�m nay | resolveLastActiveDate: ?u ti�n profile th?t; streak=0 -> '' (kh�ng �p) | FIXED |
+| GM-015 | P2 | Store singleton stale ??i user + race | reset() + watch token auth + profileRequestSeq guard | FIXED |
+| GM-016 | P2 | Strategy kh�ng c?p nh?t StreakDays | AwardXp g?i UpdateStreak (lu?t User._updateStreak) + test streak x4 | FIXED |
+| GM-017 | P2 | Leaderboard "tu?n" sai ng? ngh?a | weeklyXP -> totalXP + nh�n "Top 10 T?ng XP" + b? WEEKLY_RESET_DAY/leaderboardRank | FIXED |
+| GM-018 | P2 | Freeze kh�ng nh?t qu�n | Freeze ch? c?u gap ??ng 1 ng�y (m?i streak k? c? 1) + 4 test | FIXED |
+| GM-019 | P2 | Level table duplicate 5 ch? | GamificationLevelTable 1 ngu?n (Domain) - 4 controller/service d�ng chung | FIXED |
+| GM-020 | P2 | Highlight username hardcode | Prop highlightUserId t? authStore.currentUser.id | FIXED |
+| GM-021 | P2 | Sau award stale leaderboard/badges | Reload loadBackendBadges + loadBackendLeaderboard + fetchLeaderboardFromServer | FIXED |
+| GM-022 | P2 | Confetti kh�ng reduced-motion | Engine v? 2 h?t t?nh (tickOnce, kh�ng rAF) khi prefers-reduced-motion + useConfetti skip | FIXED |
+| GM-023 | P2 | Freeze c?ng 3 + kh�ng ph?n h?i | streakFreezes t? profile (optional fallback MAX) + n�t Freeze toast + disabled loading | FIXED |
+| GM-024 | P2 | N�t +50 XP Demo cho m?i user 403 | Ch? render khi isTeacher/isAdmin + disabled loading | FIXED |
+| GM-025 | P2 | Badge thi?u tooltip | Tooltip Glassmorphic: description + unlockHint (XP/streak/algorithm) | FIXED |
+| GM-026 | P2 | grid-cols-2 kh�ng responsive | grid-cols-1 lg:grid-cols-2 | FIXED |
+| GM-027 | P2 | nextBadgeXPThreshold b? qua constraints | L?c badge ?? ??i?u ki?n (requiredAlgorithm + streak) + percent kh?p level backend khi c� profile | FIXED |
+| GM-028 | P2 | A11y live region + font 9px | role=status aria-live=polite XP/streak/badges + font >=11px | FIXED |
+| GM-029 | P2 | sync kh�ng set lastActiveDate | Set kh?p loadBackendProfile + test chu?i sync->earn gi? streak | FIXED |
+| GM-030 | P2 | CanvasConfettiOverlay 0 test | canvasConfettiOverlay.spec M?I 4 test (visible->burst, ?n->destroy, unmount->cancel, mount true->burst) | FIXED (test) |
+| GM-031 | P2 | 3 API client 0 contract spec | gamificationApi.spec 6 + leaderboardApi.spec 4 + statelessGamificationApi.spec 7 M?I | FIXED (test) |
+| GM-032 | P2 | Backend actions 0 test | loadBackendProfile/awardXpViaBackend: 403 Student -> backendError, race ??i user response c? b? b? | FIXED (test) |
+| GM-033 | P2 | Confetti rAF mock kh�ng invoke | Rewrite harness rAF invoke callback: loop end-to-end t? d?ng + auto-null id + destroy gi?a loop | FIXED (test) |
+| GM-034 | P2 | Freeze store-level ch?a test | Gap 2 ng�y gi? streak + gi?m freeze 1; h?t freeze reset 1 | FIXED (test) |
+| GM-035 | P3 | Confetti watch kh�ng immediate + resize | {immediate:true} + window.resize listener (g? khi ?n/unmount) | FIXED |
+| GM-036 | P3 | GetCurrentUserId 500 | Unauthorized() thay throw + 3 test 401 | FIXED |
+| GM-037 | P3 | Badges server empty state | "Ch?a c� huy hi?u n�o t? server" | FIXED |
+| GM-038 | P3 | isSyncing/syncError/leaderboardRank dead | X�a | FIXED |
+| GM-039 | P3 | fireQuizPass b?n l?i m?i result | lastFiredQuizId 1 l?n/n?p + clearPendingTimers onUnmounted | FIXED |
+| GM-040 | P3 | setStreakForTesting l? production | B? kh?i store + test inject qua earnXpAcrossDays (vi.setSystemTime) | FIXED |
+| GM-041 | P3 | Fake timers fake Date 1969 | Assert lastActiveDate kh?p ng�y fake + freeze kh�ng ??i | FIXED (test) |
+| GM-042 | P3 | localStorage kh�ng clear | afterEach clear + clearAllTimers | FIXED (test) |
+| GM-043 | P3 | unlock multiple assert >=2 | toEqual danh s�ch ch�nh x�c | FIXED (test) |
+| GM-044 | P3 | Constants ch?t | X�a RATE_LIMIT_SECONDS/WEEKLY_RESET_DAY | FIXED |
+| GM-045 | P3 | Badge Criteria test gi? nh?ng source b? qua | ShouldAwardBadge parse Criteria th?t (regex key: n, fail-closed) + 8 key mapping + test | FIXED |
+| GM-046 | P3 | Backend thi?u spec | LeaderboardServiceTests (clamp/cache/tie-break) + Badges + Stateless + Strategy + 43 test m?i | FIXED (test) |
+
+- **K?t qu?: backend 708/708 PASS** (+43), **frontend 3269/3269 PASS** (181 files, +48: api 3 spec 17, confetti overlay 4, store +5, streak TZ +3, freeze +4...), vue-tsc 0 l?i (s?a 8 test pin c� contract c�: badge id, setStreakForTesting, weeklyXP, freeze, xpProgressPercent goalpost).
+- **Ghi ch�: XP gi? nay c� Idempotency-Key + cap/ng�y c? 2 endpoint; badge 1 ngu?n id backend (8 badge); streak server source of truth + lastActiveDate th?t; leaderboard real-time qua Broker; confetti t�n tr?ng reduced-motion.**
+
+### Review Round 18 — Fix User Profile (3 sub agent) — 2026-08-11
+
+Chi?n d?ch fix User Profile (Backend / Frontend / Tests). K?t qu?: backend **720/720 test PASS** (+12), frontend **3298/3298 PASS** (184 files, +29), `vue-tsc` 0 l?i.
+
+| ID | M?c | Nguy�n nh�n g?c | C�ch kh?c ph?c | Tr?ng th�i |
+| :--- | :--- | :--- | :--- | :--- |
+| PR-001 | P1 | UpdateProfile ch? in-memory kh�ng persist DB | dbUser.UpdateProfile + SaveChangesAsync (gi?ng change-password) + User entity setter Username/Nickname/Bio/University/AvatarUrl + RecordActivity + 2 test | FIXED |
+| PR-002 | P1 | Quiz bank kh�ng ghi QuizAttempt -> history r?ng | Bank submit ghi QuizAttempt (QuizId nullable + QuizKey/QuizTitle) commit tr??c r?i c?p XP + history title fallback + migration | FIXED |
+| PR-003 | P1 | Modal thi?u a11y | useModalA11y + role=dialog + aria-modal + aria-label | FIXED |
+| PR-004 | P1 | Tabs thi?u ARIA | role=tablist/tab/tabpanel + aria-selected/controls + roving tabindex + Arrow/Home/End | FIXED |
+| PR-005 | P1 | Avatar upload thi?u (PB-103 Must) | Input file + validate type/5MB + preview + POST /upload/image FormData (kh�ng Content-Type) + avatarUrl hi?n th? | FIXED |
+| PR-006 | P1 | PF-007 pass gi? | Stub 2 attempts + assert d�ng/score/status/date + empty/401 ri�ng | FIXED (test) |
+| PR-007 | P1 | ProfileView 0 test | profileViewP1Tests.spec M?I 7 test (tabs, Escape, loadStatelessProfile, badge pill, unmount) | FIXED (test) |
+| PR-008 | P1 | SecurityTab logic ch?a test | profileSecurityTabTests.spec M?I 6 test (submit args, <8, mismatch, 401, focus) | FIXED (test) |
+| PR-009 | P1 | lastActiveDate drift 2 ??u | Backend: StatelessUserProgressDto.LastActiveDate + GetProgress t? DB; FE: 3 interface th�m field + syncProgressFromServer d�ng value server + positive test SQLite | FIXED |
+| PR-010 | P2 | loadStatelessProfile kh�ng ??ng b? badges | Copy badges/username/isPremium/avatarUrl t? statelessUser | FIXED |
+| PR-011 | P2 | fetchQuizHistory kh�ng caller + 3 b?n history | HistoryTab d�ng fetchQuizHistory + QuizHistoryEntry[] + X�A services/quizApi.ts dead | FIXED |
+| PR-012 | P2 | Preferences dead (vdsa_pref_* kh�ng ai ??c) | N?i th?t useSpeedPreferences (key dsa_preferences) + confetti/autoplay c�ng object | FIXED |
+| PR-013 | P2 | GeneralTab watch kh�ng trigger mutate in-place | G�n currentUser.value = {...} m?i -> watcher identity trigger | FIXED |
+| PR-014 | P2 | History kh�ng error state | QuizHistoryError kind (expired/generic) + error state ri�ng + Th? l?i | FIXED |
+| PR-015 | P2 | Tr�ng username ch? in-memory + kh�ng validate | Check DB AnyAsync (lo?i tr? self) + validate 3-100 + whitespace 400 + 4 test | FIXED |
+| PR-016 | P2 | xpToNext kh�ng clamp | Math.max(0,...) + clamp percent 0..100 | FIXED |
+| PR-017 | P2 | Username l?i kh�ng inline | fieldErrors.username + role=alert + aria-invalid/describedby | FIXED |
+| PR-018 | P2 | Toggle thi?u switch | role=switch + aria-checked + segment aria-pressed | FIXED |
+| PR-019 | P2 | Modal kh�ng autofocus/scroll-lock | useModalA11y ??y ?? (focus, scroll-lock, restore) | FIXED |
+| PR-020 | P2 | PF-003 assert t?i thi?u | 4 args + deferred isSaving + toast + reject error path | FIXED (test) |
+| PR-021 | P2 | PF-010 kh�ng click toggle | Click 2x -> dsa_preferences JSON + class active + toggle ??o | FIXED (test) |
+| PR-022 | P2 | Mock ch?t authApi | X�a 2 mock ch?t + ch� th�ch ph?m vi component-only | FIXED (test) |
+| PR-023 | P2 | Thi?u 403 GetUserProgress + badges shape | Student -> 403 + GetMyBadges shape + CompleteModule 204 | FIXED (test) |
+| PR-024 | P3 | GetHistory tr? Answers th� | B? a.Answers kh?i projection + test TryGetProperty false | FIXED |
+| PR-025 | P3 | ProgressTab kh�ng consume gamification contract | G?i fetchUserProgress -> currentStreak + lastActiveDate server | FIXED |
+| PR-026 | P3 | levelThresholds hardcode 3 n?i | ?u ti�n xpToNextLevel/levelProgressPercent server + levels[] t? /config + fallback | FIXED |
+| PR-027 | P3 | catch any + catch {} im l?ng | unknown + getErrorMessage + isAuthFailureError n�m ra + toast phi�n h?t h?n | FIXED |
+| PR-028 | P3 | fieldErrors.newPassword dead | D�ng th?t: l?i >=8 + mismatch inline + focus | FIXED |
+| PR-029 | P3 | Email thi?u for/id | id=email + for=email | FIXED |
+| PR-030 | P3 | Tr?n ng�n ng? | Header "C�i ??t" + tab Vi?t h�a + aria-label ??ng | FIXED |
+| PR-031 | P3 | badge.color + '1A' v? 3 k� t? | expandColor #f00 -> #ff0000 tr??c khi n?i alpha | FIXED |
+| PR-032 | P3 | History kh�ng ph�n trang + mobile k?t | overflow-x-auto + min-width 640 + ph�n trang client 10/trang | FIXED |
+| PR-033 | P3 | N�t L?u lu�n enabled | formDirty so s�nh vs b?n g?c -> disabled khi s?ch | FIXED |
+| PR-034 | P3 | v2.0.0 hardcode | import.meta.env.VITE_APP_VERSION + env.development | FIXED |
+| PR-035 | P3 | PF-001 kh�ng assert prefill | 4 input prefill + #university | FIXED (test) |
+| PR-036 | P3 | Progress empty-badge ch?a test | badges=[] -> empty-state-box + getBadgeIconName | FIXED (test) |
+| PR-037 | P3 | Kh�ng unmount + AboutTab 0 test | afterEach unmount + ProfileAboutTab t?nh test | FIXED (test) |
+
+- **K?t qu?: backend 720/720 PASS** (+12: UpdateProfile persist 2, bank attempt 2, username 4, GetProgress 1, controller 3), **frontend 3298/3298 PASS** (184 files, +29: profileViewP1 7, security 6, userProgressApi 8, P0/P2 m? r?ng...), vue-tsc 0 l?i (s?a 3 test pin UI c�: Settings->C�i ??t, modal async, fetch stub history, Promise type).
+- **Ghi ch�: migration 20260812155357_AddUserProfileAndBankQuizAttempt (AvatarUrl/Bio/Nickname/University + QuizAttempt QuizId nullable + QuizKey/QuizTitle); updateProfile gi? nay persist DB; bank quiz c� attempt trong history; preferences n?i th?t dsa_preferences; avatar upload ho?t ??ng end-to-end.**
+
+### Review Round 19 — Fix Embed Widget (3 sub agent) — 2026-08-11
+
+Chi?n d?ch fix Embed Widget (Engine+Store / Components+View / Tests). K?t qu?: frontend **3363/3363 test PASS** (186 files, +65), `vue-tsc` 0 l?i, backend 720/720 (kh�ng ??ng).
+
+| ID | M?c | Nguy�n nh�n g?c | C�ch kh?c ph?c | Tr?ng th�i |
+| :--- | :--- | :--- | :--- | :--- |
+| EW-001 | P0 | sendMessage targetOrigin m?c ??nh self origin -> cross-origin auto-height ch?t | sendMessage m?c ??nh theo action: HEIGHT_CHANGED/WIDGET_READY -> hostOrigin (param ctor) ho?c '*'; resizer truy?n targetOrigin | FIXED |
+| EW-002 | P0 | Engine bridge/resizer dead code kh�ng wire | Wire v�o EmbedWidgetView: bridge + AutoHeightResizer + WIDGET_READY sau mount + STEP_FORWARD/BACKWARD/RESET dispatch anim/vcr store + destroy unmount | FIXED |
+| EW-003 | P0 | Query params theme/vcr/watch/interactive/algo kh�ng ???c ti�u th? | EmbedWidgetView ??c route.query: theme data-theme, vcr=false ?n VcrDockBar, watch=false ?n trace, interactive=false overlay, algo -> set algorithmId (anim/graph) | FIXED |
+| EW-004 | P1 | LiveWidgetPreview mock t?nh kh�ng iframe | Thay b?ng iframe th?t :src iframeSrcUrl (override localhost dev) + sandbox allow-scripts allow-same-origin | FIXED |
+| EW-005 | P1 | query.algo kh�ng guard (array/r?ng -> crash/tr?ng) | readQueryParam x? l� array + trim + r?ng -> isInvalidAlgo overlay | FIXED |
+| EW-006 | P1 | Bridge([]) fail-open nh?n m?i origin | []/undefined -> fail-closed [getSelfOrigin()]; wildcard ch? khi truy?n r� ['*'] | FIXED |
+| EW-007 | P1 | Test default allowlist pass gi? | Dispatch origin l? -> assert callback kh�ng g?i + same-origin g?i | FIXED (test) |
+| EW-008 | P1 | Resizer stale guard sai + pipeline ch?a test | pendingHeight ri�ng + h?y timer khi tr? v? gi� tr? � g?i; RO mock G?I callback + fake timers 8 test (clamp, no-spam, stale 500->600->500 ch? g?i 500) | FIXED |
+| EW-009 | P1 | Copy kh�ng assert payload | writeText calledWith(generatedIframeCode) | FIXED (test) |
+| EW-010 | P1 | 0 component test | embedComponents.spec M?I 24 test (Workspace/Preview/Snippet/Sidebar/EmbedWidgetView + onErrorCaptured) | FIXED (test) |
+| EW-011 | P1 | Hint l?i 5 algo kh�ng t?n t?i + thi?u quicksort-recursion | Hint t? sinh t? Object.keys(VISUALIZER_MAP) + 3 test | FIXED |
+| EW-012 | P2 | Shape validate n�ng | isValidEmbedMessageShape fail-closed: action enum + payload field number + 6 test (GARBAGE/height string/{} ) | FIXED |
+| EW-013 | P2 | 2 ngu?n allowlist drift + checker kh�ng normalize | Bridge d�ng checker duy nh?t; checker normalize trim/lowercase/URL/port/slash + wildcard base (fix normalized vs dotBase protocol) | FIXED |
+| EW-014 | P2 | Kh�ng error-boundary + WIDGET_READY | onErrorCaptured -> widgetError overlay + n�t T?i l?i | FIXED |
+| EW-015 | P2 | Preview kh�ng loading/error + Interactive v� hi?u + VCR dead | Loading spinner + timeout 8s error + Th? l?i + Interactive pointer-events + 3 n�t VCR TH?T postMessage | FIXED |
+| EW-016 | P2 | dijkstra premium kh�ng c?nh b�o | Sidebar ? badge + disable non-premium; PREMIUM_ALGOS r�t g?n dijkstra + overlay isPremiumBlocked | FIXED |
+| EW-017 | P2 | Host script b?u nh?m iframe ??u ti�n | data-embed-widget attr + querySelector('[data-embed-widget]') + event.source check | FIXED |
+| EW-018 | P2 | Sidebar kh�ng responsive | Media query <=768px x?p d?c | FIXED |
+| EW-019 | P2 | Thi?u origin spoof edge test | :8443, http:// downgrade, evil-subdomain, suffix, normalize, wildcard base + 7 test | FIXED (test) |
+| EW-020 | P2 | Fake timers leak copy test | afterEach cleanup + try/finally | FIXED (test) |
+| EW-021 | P2 | URL contract thi?u watch/interactive + duplicate iframeSrcUrl | Assert 5 query params + generatedIframeCode src kh?p iframeSrcUrl (1 ngu?n) | FIXED (test) |
+| EW-022 | P3 | getSelfOrigin '' ngo�i window | L?c origin r?ng kh?i default | FIXED |
+| EW-023 | P3 | setDimensions NaN | Number.isFinite guard | FIXED |
+| EW-024 | P3 | EMBED_BASE_URL hardcode | VITE_APP_BASE_URL env + b? duplicate logic | FIXED |
+| EW-025 | P3 | copyResetTimer kh�ng clear reset | resetConfigurator clearTimeout | FIXED |
+| EW-026 | P3 | Copy kh�ng aria-live | role=status aria-live=polite | FIXED |
+| EW-027 | P3 | copyError kh�ng auto-hide | Auto-hide 4s + reset khi ??i config | FIXED |
+| EW-028 | P3 | Header scale kh�ng ch? b�o | Badge "(hi?n th? thu nh?)" khi scale<1 | FIXED |
+| EW-029 | P3 | Theme buttons thi?u radiogroup | fieldset role=radiogroup + radio aria-checked | FIXED |
+| EW-030 | P3 | quick-sort kh�ng trong options | Th�m v�o EMBED_ALGORITHM_OPTIONS + test | FIXED |
+| EW-031 | P3 | Checker copy test | Mutate array tr? v? -> domainCount kh�ng ??i | FIXED (test) |
+| EW-032 | P3 | Thi?u replay/multi-instance/fallback | 4 test | FIXED (test) |
+| EW-033 | P3 | embedP0Tests tr�ng l?p | Dedupe gi? 6 case unique | FIXED (test) |
+
+- **K?t qu?: frontend 3363/3363 PASS** (186 files, +65: embedComponents 24, embedWidgetView 11, bridge +, checker +, resizer 8...), vue-tsc 0 l?i (s?a afterEach import + 3 test pin c�: .sim-vcr -> .preview-vcr, AppHeader comment, GraphView route fallback), backend 720/720 kh�ng ??ng.
+- **Ghi ch�: engine embed gi? nay ho?t ??ng th?t (WIDGET_READY/STEP/RESET/HEIGHT_CHANGED); query params theme/vcr/watch/interactive/algo ???c widget ti�u th?; preview iframe th?t; wildcard subdomain kh?p c? base l?n subdomain; bridge fail-closed + shape validate.**
+
+### Review Round 20 — Fix Export & Share (3 sub agent) — 2026-08-11
+
+Chi?n d?ch fix Export & Share (Engine+Store / Components+View+Router / Tests). K?t qu?: frontend **3398/3398 test PASS** (192 files, +35), `vue-tsc` 0 l?i, backend 720/720 (kh�ng ??ng).
+
+| ID | M?c | Nguy�n nh�n g?c | C�ch kh?c ph?c | Tr?ng th�i |
+| :--- | :--- | :--- | :--- | :--- |
+| EX-001 | P1 | QR kh�ng bao gi? v? (watch flush pre) | V? ? 2 th?i ?i?m: onMounted (link c� s?n) + watch {flush:post} (link sinh sau mount) | FIXED |
+| EX-002 | P1 | Share link tr? /s/ route kh�ng t?n t?i | Route /s + ShareRestoreView: ??c ?state= -> deserializeState -> validate shape -> render l?i workspace; state h?ng -> error card; roundtrip export->restore th?t | FIXED |
+| EX-003 | P1 | MAX 20K v??t dung l??ng QR + toCanvas kh�ng try/catch | Limit 2500 (QR EC-L ~2953); QRCodeDisplay try/catch + .catch -> ?n canvas + .qr-error | FIXED |
+| EX-004 | P1 | Export/link fail im l?ng | exportError/linkError state + hi?n th? trong modal + clear khi th�nh c�ng | FIXED |
+| EX-005 | P1 | PNG pass gi? - img.onload kh�ng fire promise treo | B?c onload (drawImage/toDataURL) try/catch -> reject + d?n onload/onerror; test mock Image FIRE onload + progress [30,50,75,90] | FIXED |
+| EX-006 | P1 | Modal thi?u a11y | useModalA11y: role=dialog + aria-modal + focus trap + Esc + scroll-lock + restore | FIXED |
+| EX-007 | P1 | 0 component test + 0 roundtrip | shareExportModal.spec 8 + qrCodeDisplay.spec 4 + shareRestoreView.spec 10 + roundtrip URL decode deep-equal (unicode/+ /) | FIXED (test) |
+| EX-008 | P2 | cssRules app nh?t v�o SVG | collectScopeSelectors [data-v-...] ch? rule workspace + sanitizeCssText b? @import/url() t??ng ??i | FIXED |
+| EX-009 | P2 | Font kh�ng nh�ng | Fallback h? th?ng kh?p preview (JetBrains Mono, ui-monospace, Cascadia, Consolas, monospace) | FIXED |
+| EX-010 | P2 | Pipeline data demo t?nh | Nh?n workspaceState qua prop + snapshot t?i th?i ?i?m click (handleOpenExportModal copy v�o snapshotForExport) | FIXED |
+| EX-011 | P2 | Overflow kh�ng x�a link c� + test pass gi? | generatedShareLink='' tr??c khi set l?i (c? 2 nh�nh) + test generate OK -> overflow -> link r?ng | FIXED |
+| EX-012 | P2 | downloadSVG kh�ng isExporting + kh�ng try/catch | Async + isExporting + try/catch + exportError + finally (kh?p PNG) | FIXED |
+| EX-013 | P2 | URLSearchParams decode +->space ph� payload | encodeURIComponent(compressedPayload) khi build link | FIXED |
+| EX-014 | P2 | revokeObjectURL ??ng b? h?y download | triggerDownload helper: revoke trong setTimeout(0) sau click | FIXED |
+| EX-015 | P2 | QR canvas + progressbar thi?u ARIA | role=img + aria-label; role=progressbar + aria-valuenow/min/max + aria-live | FIXED |
+| EX-016 | P2 | Dialog 460px v? mobile | width:min(460px,100vw) + media <=480px padding/radius | FIXED |
+| EX-017 | P2 | Copy link fail im l?ng | Fallback execCommand('copy') textarea ?n + toast l?i | FIXED |
+| EX-018 | P2 | Thi?u roundtrip unicode/c?n ng??ng | Unicode ti?ng Vi?t + emoji; MAX-200 ch?p nh?n + v??t reject; corrupt assert consoleSpy | FIXED (test) |
+| EX-019 | P2 | Fake timers/clipboard cleanup | try/finally + afterEach restore descriptor g?c | FIXED (test) |
+| EX-020 | P2 | if-guard pass gi? + consoleSpy | B? if guard assert th?ng + assert consoleSpy | FIXED (test) |
+| EX-021 | P2 | SVG gradient/clipPath/foreignObject/image ch?a test | 5 test gi? nguy�n data URI + PNG kh�ng crash | FIXED (test) |
+| EX-022 | P3 | Duplicate style inject + unescape | buildStyledClone helper chung + TextEncoder/btoa thay unescape | FIXED |
+| EX-023 | P3 | Dead types | ShareLinkPayload/Response/ScaleFactor ch? barrel re-export (kh�ng d�ng ngo�i) - gi? nguy�n index.ts | PARTIAL |
+| EX-024 | P3 | M�u QR rgb()/color-mix() | resolveValidHexColor validate #rgb/#rrggbb fallback #000/#fff + qrDarkColor/qrLightColor | FIXED |
+| EX-025 | P3 | Progress gi? setInterval | B? interval gi?; progress th?t qua callback onProgress (30 CSS/50 SVG/75 raster/90 PNG) -> 100 | FIXED |
+| EX-026 | P3 | Format selector radiogroup | role=radiogroup + radio aria-checked | FIXED |
+| EX-027 | P3 | Image restore try/finally + tautology | Wrap try/finally + x�a 2 test tautology | FIXED (test) |
+| EX-028 | P3 | SVG xmlns | xmlns trong exportToSVGString + data URI (2 test) | FIXED (test) |
+| EX-029 | P3 | exportP2Tests ch?a SignalR/Payment suite | T�ch sang signalrP2Tests.spec (25) + paymentP2Tests.spec (26) - exportP2Tests s?ch scope | FIXED (test) |
+| EX-030 | P3 | Real timers ch?m | Promise ?i?u khi?n + fake timers deterministic | FIXED (test) |
+
+- **K?t qu?: frontend 3398/3398 PASS** (192 files, +35: shareExportModal 8, qrCodeDisplay 4, shareRestoreView 10, roundtrip, PNG success 5, SVG edge 5... + t�ch 51 test SignalR/Payment sang spec ??ng feature), vue-tsc 0 l?i (s?a 2 cast type test), backend 720/720 kh�ng ??ng.
+- **Ghi ch�: QR ho?t ??ng (flush post + try/catch); route /s + ShareRestoreView roundtrip th?t; limit 2500 kh?p QR; payload encodeURIComponent h?t +->space; revoke defer; progress th?t; exportError/linkError feedback.**
+
+### Review Round 21 — Fix Notifications (3 sub agent) — 2026-08-11
+
+Chi?n d?ch fix Notifications (Backend / Frontend / Tests). K?t qu?: backend **754/754 test PASS** (+34), frontend **3423/3423 PASS** (192 files, +25), `vue-tsc` 0 l?i.
+
+| ID | M?c | Nguy�n nh�n g?c | C�ch kh?c ph?c | Tr?ng th�i |
+| :--- | :--- | :--- | :--- | :--- |
+| NT-001 | P0 | URL contract mismatch concepts/notifications -> 404 | FE ??i sang /api/v1/notifications (3 endpoint) + spec kh?p route th?t + not.toContain(concepts) | FIXED |
+| NT-002 | P1 | Realtime dead 2 ??u | Backend: AddScoped INotificationService + NotificationBroadcastBroker (pattern GM-006) + hub push Clients.User; comment reply t?o notification qua service; FE: connectNotifications sau login + handlers BadgeAwarded/LevelUp/NewNotification -> prepend + toast + dedupe | FIXED |
+| NT-003 | P1 | Hub method public spoof | X�a method client-invokable; hub ch? lifecycle + subscribe broker; DispatchAsync static Clients.User (kh�ng bao gi? Clients.All) + test no-invokable | FIXED |
+| NT-004 | P1 | Store kh�ng reset ??i user | watch currentUser?.id -> reset + useAuthStore._resetDependentStores g?i notificationStore.reset() | FIXED |
+| NT-005 | P1 | Bell item div @click kh�ng keyboard | <button type=button> focusable + focus-visible | FIXED |
+| NT-006 | P1 | Bell test pass gi? timing | Mock 12 ph?n t? + flushPromises r?i assert | FIXED (test) |
+| NT-007 | P1 | Backend 0 test | NotificationsControllerTests 14 + ServiceTests 14 + HubTests 6 (IDOR ch�o, unauth, mark-all idempotent, Take(100) bi�n 101, rollback admin, no-invokable) | FIXED (test) |
+| NT-008 | P2 | 401 nu?t im l?ng | runWithAuthRetry: 401 -> refreshAccessToken -> retry 1 Bearer m?i; refresh fail -> reset state (auth toast+redirect) | FIXED |
+| NT-009 | P2 | Kh�ng real-time/polling | Polling 60s khi authenticated + clearInterval onUnmounted (b? tr? realtime) | FIXED |
+| NT-010 | P2 | MarkAllAsRead k�m hi?u qu? + race | ExecuteUpdateAsync(IsRead=true) 1 UPDATE atomic + test idempotent | FIXED |
+| NT-011 | P2 | Take(100) + unreadCount sai >100 | Endpoint GET /unread-count (CountAsync) + list tr? {totalUnread, notifications} + test 101 unread | FIXED |
+| NT-012 | P2 | isLoading kh�ng d�ng -> empty flash | Spinner role=status; empty ch? khi !isLoading | FIXED |
+| NT-013 | P2 | Thi?u Esc/aria/focus trap | Esc ??ng + useModalA11y + aria-expanded/haspopup + role=dialog | FIXED |
+| NT-014 | P2 | Badge kh�ng aria-live + label t?nh | aria-live=polite + "Th�ng b�o, X ch?a ??c" ??ng | FIXED |
+| NT-015 | P2 | Dropdown 340px v? mobile + touch 30px | width:min(340px, calc(100vw-24px)) + touch target >=44px | FIXED |
+| NT-016 | P2 | NotifyAdmins role string + batch | AdminRole const + AddRange + fallback t?ng c�i instance m?i (h?t UNIQUE re-insert) + test 1 admin fail c�n l?i v?n insert | FIXED |
+| NT-017 | P2 | Store coverage gap | Unauth no-op, mark l?i gi? isRead, isLoading, id l? kh�ng crash | FIXED (test) |
+| NT-018 | P2 | Race load 2 n?i | Sequence guard (deferred promise) + test response c� b? b? | FIXED (test) |
+| NT-019 | P2 | Bell coverage gap | Click ?? ??c kh�ng mark + navigate; linkUrl="" kh�ng push; t? ??ng ??ng; mark-all ch? hasUnread; unmount g? listener + polling d?ng | FIXED (test) |
+| NT-020 | P2 | IDOR ch?a regression test | Backend test ch�o user 404/401 (NT-007) | FIXED (test) |
+| NT-021 | P3 | Mutate object tr?c ti?p isRead | map() m?ng m?i {...n, isRead:true} + test object c� kh�ng b? mutate | FIXED |
+| NT-022 | P3 | fetch kh�ng timeout + parse tr??c content-type | AbortSignal.timeout(10s) + guard content-type tr??c parse + test | FIXED |
+| NT-023 | P3 | Mark-all double PUT | isMarkingAll guard + disabled + test | FIXED |
+| NT-024 | P3 | formatTime Invalid Date | Guard isNaN + clamp diff �m + 7 test bi�n (1ph/60ph/24h/7ng�y/t??ng lai) | FIXED |
+| NT-025 | P3 | List kh�ng sort + ghi ?? m?ng | Sort createdAt gi?m d?n + merge/diff theo id gi? tr?ng th�i ??c c?c b? + cap 100 | FIXED |
+| NT-026 | P3 | Controller DbContext tr?c ti?p + JWT 3 l?n | D�ng INotificationService + TryGetCurrentUserId 1 l?n | FIXED |
+| NT-027 | P3 | API_BASE hardcode test | Env VITE_API_BASE_URL + network reject test | FIXED (test) |
+| NT-028 | P3 | bell-ring v� h?n | Gi?i h?n 3 v�ng + prefers-reduced-motion | FIXED |
+| NT-029 | P3 | Service unit test | NotifyUser/NotifyAdmins/MarkAsRead + rollback (trong NT-007) | FIXED (test) |
+
+- **K?t qu?: backend 754/754 PASS** (+34: controller 14, service 14, hub 6), **frontend 3423/3423 PASS** (192 files, +25: api contract, store +, bell +, formatTime 7...), vue-tsc 0 l?i.
+- **Ghi ch�: realtime ho?t ??ng (broker + hub push Clients.User + FE connect sau login + polling 60s backup); hub h?t spoof (kh�ng client-invokable); unread-count endpoint; 401 auto-refresh retry; notification m?i t? c?p nh?t bell + toast. TODO: GamificationService/UsersController n�i NotifyBadgeAwarded/NotifyLevelUp sau commit (call sites ngo�i scope).**
+
+### Review Round 22 — Fix Core & UI Components (3 sub agent) — ROUND CU?I C�NG — 2026-08-11
+
+Chi?n d?ch fix cu?i c�ng (Shared / Components / Tests). K?t qu?: frontend **3474/3474 test PASS** (197 files, +51), `vue-tsc` 0 l?i, backend 754/754 (kh�ng ??ng). **HO�N T?T TO�N B? 16/16 T�NH N?NG.**
+
+| ID | M?c | Nguy�n nh�n g?c | C�ch kh?c ph?c | Tr?ng th�i |
+| :--- | :--- | :--- | :--- | :--- |
+| CU-001 | P0 | CustomMarkdownEditor XSS (javascript: href + v-html kh�ng escape) | Renderer escape-first (&<>"') + sanitizeUrl whitelist http/https/mailto + b? " trong href/src; shared markdown.ts th�m " ' + whitelist + rel noopener | FIXED |
+| CU-002 | P1 | ConfirmModal vi ph?m TC-028 | useModalA11y + role=dialog + aria-modal + aria-labelledby (titleId instance-unique) | FIXED |
+| CU-003 | P1 | useModalA11y watch kh�ng immediate + stack ch?ng | {immediate:true} + stack module-level + scrollLockCount ref-count (ch? modal top nh?n keydown) | FIXED |
+| CU-004 | P1 | AppHeader nav mobile m?t | Hamburger lg:hidden + drawer mobile (Teleport, overlay, Esc, scroll-lock, aria-controls) | FIXED |
+| CU-005 | P1 | Nav dropdown kh�ng keyboard | openGroup JS + aria-expanded/haspopup + role=menu + Esc/click ngo�i/focusout | FIXED |
+| CU-006 | P1 | Accordion kh�ng keyboard | Header -> button + aria-expanded/controls + CSS reset + focus-visible | FIXED |
+| CU-007 | P1 | filteredTabs copy-paste test | Mount TH?T AppHeader (mock router/auth) - 5 group + tab requiresAuth ?n/Student/Teacher/Admin | FIXED (test) |
+| CU-008 | P1 | useModalA11y 0 spec | useModalA11y.spec M?I 7 test (Esc, trap, restore, scroll-lock, m? s?n show=true, stack 2 modal, unmount) | FIXED (test) |
+| CU-009 | P1 | markdown 0 spec XSS | markdown.spec M?I 10 test (escape, javascript:/data: ch?n, http/mailto cho ph�p, heading/list/code/emoji) | FIXED (test) |
+| CU-010 | P1 | useThemeStore 0 spec | useThemeStore.spec M?I 11 test (initTheme, matchMedia, l? gi� tr?, applyTheme, SecurityError, matchMedia undefined) | FIXED (test) |
+| CU-011 | P2 | apiClient kh�ng timeout/content-type | AbortSignal.timeout(15s) + n?i signal caller + isJsonResponse guard + parseErrorBody fallback | FIXED |
+| CU-012 | P2 | shared apiClient duplicate | X�a shared/services/apiClient (0 importer) - 1 ngu?n services/apiClient | FIXED |
+| CU-013 | P2 | Toast timer leak + handleApiError | timers Map theo id + clear remove/clearAll + cap maxToasts + ApiError status/detail ?u ti�n | FIXED |
+| CU-014 | P2 | Theme FOUC + kh�ng try/catch | readInitialTheme sync trong setup (tr??c mount) + localStorage/matchMedia try/catch fallback | FIXED |
+| CU-015 | P2 | Regex link tr??c image + renderer tr�ng | Image TR??C Link (toolbar Image -> <img> ??ng) | FIXED |
+| CU-016 | P2 | Confetti timer ch�o component | Scope per-instance + cancel() clearTimeout+rAF + fire* tr? cancel handle | FIXED |
+| CU-017 | P2 | SortableContextWrapper dead | X�a file (0 import th?t - teacher d�ng HTML5 native) | FIXED |
+| CU-018 | P2 | ConfirmModal kh�ng await async handler | handleConfirm await promise: prop confirmHandler + ??c listener onConfirm tr?c ti?p + fallback emit | FIXED |
+| CU-019 | P2 | user-badge kh�ng keyboard | -> button + focus-visible | FIXED |
+| CU-020 | P2 | Skeleton kh�ng reduced-motion | matchMedia -> class skeleton--reduced-motion + CSS media query + aria-hidden | FIXED |
+| CU-021 | P2 | copyCode alert + clipboard l?i | toastStore + try/catch + execCommand fallback | FIXED |
+| CU-022 | P2 | CollapsiblePanel thi?u aria + focus | aria-expanded/controls + focus v�o drawer khi m? | FIXED |
+| CU-023 | P2 | Editor toolbar a11y | aria-label 14 n�t + textarea focus ring | FIXED |
+| CU-024 | P2 | AppHeader 0 component test | appHeaderComponentTests.spec M?I 10 test (logout/login emit, avatar AU-052, icon theme, responsive, aria, setAttribute data-theme) + b? readFileSync | FIXED (test) |
+| CU-025 | P2 | Toast icon/cap/clearAll/duration ch?a test | Toast spec vi?t l?i 12 test (icon th?t, maxToasts 5, clearAll, duration=0, handleApiError 3 nh�nh, progress) | FIXED (test) |
+| CU-026 | P2 | Skeleton assert l?ng | Exact 5 + variant circle/text/card + custom size + reduced-motion + aria-hidden (7 test) | FIXED (test) |
+| CU-027 | P2 | ConfirmModal test thi?u | variant danger/warning class + overlay .self + icon prop + loading (spinner + disabled) | FIXED (test) |
+| CU-028 | P2 | uiP2Tests kh�ng restore | vi.stubGlobal + unstubAllGlobals afterEach + b? LocalStorageMock global | FIXED (test) |
+| CU-029 | P3 | BaseIcon vs SvgIcon duplicate | BaseIcon = ngu?n path data; SvgIcon alias 62 t�n qua BaseIcon + fallback SVG_PATHS ri�ng | FIXED |
+| CU-030 | P3 | Editor onInput/syncScroll/fullscreen | B? onInput r?ng; syncScroll ref n?i b?; fullscreen Esc + onBeforeUnmount reset body.overflow | FIXED |
+| CU-031 | P3 | useModalA11y unmount kh�ng restore | onBeforeUnmount cleanup + lastFocused?.focus() khi stack r?ng | FIXED |
+| CU-032 | P3 | Toast aria-live m�u thu?n | error -> assertive+role=alert; c�n l?i -> polite+role=status; reduced-motion transition | FIXED |
+| CU-033 | P3 | z-index tr�ng + filled prop + bodyRef | AppHeader b? z-[999999]/!important; SvgIcon b? filled; BaseIcon b? sung path bluesky/discord/github + viewBox 24x24 | FIXED |
+| CU-034 | P3 | SummaryView aria-pressed + font | aria-pressed toggle + font 12px + focus-visible | FIXED |
+| CU-035 | P3 | Toast-004 sai n�t + test tr�ng | Click .toast-close + g?p b? block tr�ng uiP2Tests | FIXED (test) |
+| CU-036 | P3 | document override + localStorage | localStorage.clear() gi?a it() + b? override document (jsdom th?t) | FIXED (test) |
+| CU-037 | P3 | GT-012 style truthy | Stub getBoundingClientRect + assert position/width/top/left c? th? | FIXED (test) |
+| CU-038 | P3 | apiClient 0 spec | apiClient.spec M?I 9 test (timeout/signal, error shape, 204, content-type guard, AU-044 kh�ng Bearer l?p n�y, helpers) | FIXED (test) |
+
+- **K?t qu?: frontend 3474/3474 PASS** (197 files, +51: modalA11y 7, markdown 10, theme 11, appHeader 10, toast 12, skeleton 7, apiClient 9...), vue-tsc 0 l?i (s?a 4 cast type apiClient.spec), backend 754/754 kh�ng ??ng.
+- **Ghi ch�: XSS markdown h?t (escape-first + whitelist); ConfirmModal/AppHeader/accordion/dropdown a11y chu?n; theme h?t FOUC; toast/confetti h?t timer leak; 1 ngu?n apiClient + timeout; modal stack ??ng.**

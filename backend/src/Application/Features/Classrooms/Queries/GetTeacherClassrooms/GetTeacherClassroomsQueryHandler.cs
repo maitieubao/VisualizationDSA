@@ -40,7 +40,8 @@ namespace VisualizationDSA.Application.Features.Classrooms.Queries.GetTeacherCla
                     InviteCode = c.InviteCode,
                     CreatedAt = c.CreatedAt,
                     OwnerTeacherName = c.OwnerTeacher?.Username ?? c.OwnerTeacher?.Email ?? "Unknown",
-                    StudentCount = c.Enrollments.Count
+                    StudentCount = c.Enrollments.Count,
+                    Role = "Teacher"
                 });
             }
             return result;

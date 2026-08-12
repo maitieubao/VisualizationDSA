@@ -1,11 +1,17 @@
 <template>
   <div class="format-selector-group">
-    <label class="format-label">Định dạng xuất ảnh</label>
-    <div class="format-buttons">
+    <label class="format-label" id="format-selector-label">Định dạng xuất ảnh</label>
+    <div
+      class="format-buttons"
+      role="radiogroup"
+      aria-labelledby="format-selector-label"
+    >
       <button
         v-for="fmt in EXPORT_FORMAT_OPTIONS"
         :key="fmt.id"
         class="format-btn"
+        role="radio"
+        :aria-checked="store.selectedFormat === fmt.id"
         :class="{ active: store.selectedFormat === fmt.id }"
         @click="store.setFormat(fmt.id)"
       >

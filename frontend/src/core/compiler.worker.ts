@@ -1,4 +1,4 @@
-import { CompilerStepExecutor, type CompileOptions, type PlaybackFrame } from './CompilerStepExecutor';
+import { CompilerStepExecutor, toFriendlyCompileError, type CompileOptions, type PlaybackFrame } from './CompilerStepExecutor';
 
 interface CompileWorkerRequest {
   requestId: number;
@@ -25,7 +25,7 @@ workerScope.onmessage = (event: MessageEvent<CompileWorkerRequest>) => {
     const frames = CompilerStepExecutor.compileAlgorithm(sourceCode, initialArray, options);
     workerScope.postMessage({ requestId, ok: true, frames });
   } catch (err: unknown) {
-    const message = err instanceof Error ? err.message : String(err);
+    const message = toFriendlyCompileError(err instanceof Error ? err.message : String(err));
     workerScope.postMessage({ requestId, ok: false, error: message });
   }
 };

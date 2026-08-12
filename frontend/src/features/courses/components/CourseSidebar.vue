@@ -30,19 +30,22 @@
         class="lesson-entry"
       >
         <router-link
-          :to="`/lessons/${lesson.id}?courseId=${courseId}`"
+          :to="lessonRoute(lesson.id)"
           class="flex items-center gap-3 px-4 py-2.5 transition-all duration-150 border-l-2 group"
           :class="[
             lesson.id === currentLessonId
               ? 'bg-accent/10 border-l-accent text-text-primary'
               : 'border-l-transparent hover:bg-bg-hover text-text-secondary hover:text-text-primary'
           ]"
+          :aria-current="lesson.id === currentLessonId ? 'page' : undefined"
+          :aria-label="(isLessonLocked(lesson) ? 'Khóa: ' : 'Mở bài: ') + lesson.title"
           @click="$emit('selectLesson', lesson.id)"
         >
           <div class="flex-shrink-0 w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold"
-            :class="getLessonStatusClass(lesson.id)"
+            :class="isLessonLocked(lesson) ? 'bg-bg-surface text-text-muted' : getLessonStatusClass(lesson.id)"
           >
-            <BaseIcon v-if="getLessonStatus(lesson.id) === 'completed'" name="check" class="w-3 h-3" />
+            <BaseIcon v-if="isLessonLocked(lesson)" name="lock" class="w-3 h-3" />
+            <BaseIcon v-else-if="getLessonStatus(lesson.id) === 'completed'" name="check" class="w-3 h-3" />
             <span v-else-if="getLessonStatus(lesson.id) === 'in-progress'" class="w-2 h-2 rounded-full bg-accent-yellow" />
             <span v-else>{{ idx + 1 }}</span>
           </div>
@@ -54,7 +57,10 @@
               {{ lesson.title }}
             </p>
             <div class="flex items-center gap-2 mt-0.5">
-              <span v-if="lesson.sandboxType" class="text-[9px] font-bold uppercase tracking-wider text-accent">
+              <span v-if="isLessonLocked(lesson)" class="text-[9px] font-bold uppercase tracking-wider text-accent-yellow">
+                Premium
+              </span>
+              <span v-else-if="lesson.sandboxType" class="text-[9px] font-bold uppercase tracking-wider text-accent">
                 {{ lesson.sandboxType }}
               </span>
               <span v-if="lesson.quizId" class="text-[9px] font-bold uppercase tracking-wider text-accent-purple">
@@ -66,8 +72,12 @@
         </router-link>
       </div>
 
-      <div v-if="lessons.length === 0" class="px-4 py-8 text-center">
+      <!-- LS-037: tách riêng trạng thái đang tải và trạng thái rỗng. -->
+      <div v-if="loading" class="px-4 py-8 text-center">
         <p class="text-xs text-text-muted">Đang tải danh sách bài học...</p>
+      </div>
+      <div v-else-if="lessons.length === 0" class="px-4 py-8 text-center">
+        <p class="text-xs text-text-muted">Chưa có bài học nào trong khóa học này.</p>
       </div>
     </div>
   </aside>
@@ -76,6 +86,8 @@
 <script setup lang="ts">
 import { computed, watch, nextTick, ref } from 'vue';
 import { useCourseStore } from '../store/useCourseStore';
+import { useAuthStore } from '../../auth/store/useAuthStore';
+import { resolveLessonRoute } from '../utils/courseAccess';
 import CourseProgressBar from './CourseProgressBar.vue';
 
 interface LessonItem {
@@ -86,12 +98,19 @@ interface LessonItem {
   quizId?: string | null;
 }
 
-const props = defineProps<{
+const props = withDefaults(defineProps<{
   courseId: string;
   courseTitle: string;
   lessons: LessonItem[];
   currentLessonId?: string;
-}>();
+  /** Khóa học có yêu cầu Premium không (gating chung LM-037). */
+  isCoursePremium?: boolean;
+  /** Đang tải danh sách bài (tách riêng empty state — LS-037). */
+  loading?: boolean;
+}>(), {
+  isCoursePremium: false,
+  loading: false,
+});
 
 defineEmits<{
   (e: 'toggle'): void;
@@ -99,9 +118,24 @@ defineEmits<{
 }>();
 
 const courseStore = useCourseStore();
+const authStore = useAuthStore();
 const lessonsContainer = ref<HTMLElement | null>(null);
 
 const totalLessons = computed(() => props.lessons?.length ?? 0);
+
+const hasPremium = computed(() => authStore.currentUser?.isPremium === true);
+
+// LS-031: bài khóa Premium bị khóa icon + nhãn khi user chưa mua Premium
+// (link vẫn dẫn /checkout qua resolveLessonRoute — nhưng người dùng biết trước khi click).
+function isLessonLocked(lesson: LessonItem): boolean {
+  return props.isCoursePremium && !hasPremium.value;
+}
+
+/** Đi qua helper gating Premium chung — user không Premium → /checkout (LM-037). */
+function lessonRoute(lessonId: string): string {
+  const course = { id: props.courseId, isPremium: props.isCoursePremium };
+  return resolveLessonRoute(course, lessonId, hasPremium.value);
+}
 
 const completedCount = computed(() => {
   return (props.lessons ?? []).filter(l => getLessonStatus(l.id) === 'completed').length;

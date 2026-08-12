@@ -2,6 +2,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { setActivePinia, createPinia } from 'pinia';
 import { useLiveCompilerStore } from '../store/useLiveCompilerStore';
+import type { AlgorithmResult } from '../../animation-engine/types/animation.types';
 
 vi.mock('../engine/ASTInstrumentationEngine', () => ({
   compileAndInstrument: vi.fn(),
@@ -10,6 +11,18 @@ vi.mock('../engine/ASTInstrumentationEngine', () => ({
 vi.mock('../engine/WorkerLifecycleCoordinator', () => ({
   executeInSandbox: vi.fn(),
   terminateActiveSession: vi.fn(),
+}));
+
+const { animStoreMock } = vi.hoisted(() => ({
+  animStoreMock: {
+    loadResult: vi.fn<(result: AlgorithmResult) => void>(),
+    play: vi.fn<() => void>(),
+    clear: vi.fn<() => void>(),
+  },
+}));
+
+vi.mock('../../animation-engine/store/useAnimationStore', () => ({
+  useAnimationStore: () => animStoreMock,
 }));
 
 import { compileAndInstrument } from '../engine/ASTInstrumentationEngine';
@@ -106,6 +119,47 @@ describe('useLiveCompilerStore', () => {
     expect(store.isCompiling).toBe(false);
     expect(store.compilerConsoleLogs.some((l) => l.type === 'success')).toBe(true);
     expect(mockExecute).toHaveBeenCalledWith('instrumented_code', store.inputArray);
+  });
+
+  it('should load converted frames into animation store and start playback on success', async () => {
+    const store = useLiveCompilerStore();
+    mockCompile.mockReturnValue({
+      success: true,
+      instrumentedCode: 'instrumented_code',
+    });
+
+    const mockFrames = [
+      { frameIndex: 0, type: 'COMPARE' as const, indices: [0, 1], arrayState: [5, 3], variables: {} },
+      { frameIndex: 1, type: 'SWAP' as const, indices: [0], arrayState: [3, 5], variables: {} },
+      { frameIndex: 2, type: 'ACCESS' as const, indices: [], arrayState: [3, 5], variables: {} },
+    ];
+    mockExecute.mockResolvedValue(mockFrames);
+
+    await store.compileAndExecuteCode();
+
+    expect(animStoreMock.clear).toHaveBeenCalled();
+    expect(animStoreMock.loadResult).toHaveBeenCalledTimes(1);
+    const result = animStoreMock.loadResult.mock.calls[0]![0];
+    expect(result.algorithmId).toBe('custom-code');
+    expect(result.frames).toHaveLength(3);
+    expect(result.frames[0]!.highlights).toEqual({ compare: [0, 1], swap: [], sorted: [] });
+    expect(result.frames[1]!.highlights).toEqual({ compare: [], swap: [0], sorted: [] });
+    expect(result.frames[2]!.highlights).toEqual({ compare: [], swap: [], sorted: [] });
+    expect(animStoreMock.play).toHaveBeenCalledTimes(1);
+  });
+
+  it('should NOT load frames or play when compile fails', async () => {
+    const store = useLiveCompilerStore();
+    mockCompile.mockReturnValue({
+      success: false,
+      error: 'Unexpected token',
+      errorLine: 5,
+    });
+
+    await store.compileAndExecuteCode();
+
+    expect(animStoreMock.loadResult).not.toHaveBeenCalled();
+    expect(animStoreMock.play).not.toHaveBeenCalled();
   });
 
   it('should set hasCompileError when sandbox execution fails', async () => {

@@ -114,10 +114,10 @@ describe('Radix Sort — hỗ trợ số âm & edge case', () => {
 });
 
 describe('Quick Sort — stats chính xác & đệ quy an toàn', () => {
-  it('đếm đủ swaps bao gồm cả bước đặt pivot', () => {
+  it('SV-025: đếm swaps không tính self-swap pivot đứng đúng chỗ (pIdx===high)', () => {
     const frames = generateQuickSortFrames([5, 3, 8, 4, 2]);
     const final = frames[frames.length - 1];
-    expect(final.variables!.swaps).toBe(4);
+    expect(final.variables!.swaps).toBe(3);
   });
 
   it('số swaps khớp với số frame hoán vị (swappedIndices != null)', () => {
@@ -274,5 +274,111 @@ describe('Merge Sort — identity theo phần tử qua frame ghi đè', () => {
   it('mọi frame đều có arrayStateWithIds (không phụ thuộc greedy fallback)', () => {
     const frames = generateMergeSortFrames([3, 1, 2, 1]);
     expect(frames.every((f) => f.arrayStateWithIds && f.arrayStateWithIds.length === 4)).toBe(true);
+  });
+});
+
+// ── SV-012 (P2): Matrix edge 7 engine × 6 input ─────────────────────────────
+const EDGE_INPUTS: Array<[string, number[]]> = [
+  ['empty []', []],
+  ['single [7]', [7]],
+  ['single [0]', [0]],
+  ['duplicate [5,3,5,3,2,2]', [5, 3, 5, 3, 2, 2]],
+  ['sorted [1..5]', [1, 2, 3, 4, 5]],
+  ['reversed [5..1]', [5, 4, 3, 2, 1]],
+];
+
+const ALL_GENERATORS: Array<[string, (input: number[]) => SortFrame[]]> = [
+  ['bubble', generateBubbleSortFrames],
+  ['quick', generateQuickSortFrames],
+  ['merge', generateMergeSortFrames],
+  ['heap', generateHeapSortFrames],
+  ['radix', generateRadixSortFrames],
+  ['counting', generateCountingSortFrames],
+  ['bucket', generateBucketSortFrames],
+];
+
+describe('SV-012 (P2): Matrix edge — 7 engine × 6 input', () => {
+  for (const [engineName, gen] of ALL_GENERATORS) {
+    describe(engineName, () => {
+      for (const [inputName, input] of EDGE_INPUTS) {
+        it(`input ${inputName} → final đúng + sortedIndices phủ toàn bộ + không crash`, () => {
+          expect(() => gen([...input])).not.toThrow();
+          const frames = gen([...input]);
+          expect(frames.length).toBeGreaterThan(0);
+
+          const final = frames[frames.length - 1];
+          const expectedSorted = [...input].sort((a, b) => a - b);
+          expect(final.arrayState).toEqual(expectedSorted);
+
+          if (input.length > 0) {
+            const sortedCover = [...final.sortedIndices].sort((a, b) => a - b);
+            expect(sortedCover).toEqual(Array.from({ length: input.length }, (_, i) => i));
+          } else {
+            expect(final.sortedIndices).toEqual([]);
+          }
+        });
+      }
+    });
+  }
+});
+
+// ── SV-004t (P1): mergeSort n=1 ─────────────────────────────────────────────
+describe('SV-004t (P1): Merge Sort mảng 1 phần tử', () => {
+  it('mergeSort [7] → final sortedIndices=[0] (không mâu thuẫn heap [7]→[0])', () => {
+    const frames = generateMergeSortFrames([7]);
+    const final = frames[frames.length - 1];
+    expect(final.arrayState).toEqual([7]);
+    expect(final.sortedIndices).toEqual([0]);
+  });
+});
+
+// ── SV-013 (P2): Perf 100 phần tử × 7 engine ────────────────────────────────
+describe('SV-013 (P2): Perf 100 phần tử × 7 engine — frame bound chống infinite loop', () => {
+  const FRAME_BOUND = 20000;
+  const bigReversed = Array.from({ length: 100 }, (_, i) => 99 - i);
+
+  for (const [engineName, gen] of ALL_GENERATORS) {
+    it(`${engineName}: 100 phần tử reversed sinh hữu hạn frames (< ${FRAME_BOUND}) không ném`, () => {
+      expect(() => gen(bigReversed)).not.toThrow();
+      const frames = gen(bigReversed);
+      expect(frames.length).toBeLessThan(FRAME_BOUND);
+      const final = frames[frames.length - 1];
+      expect(final.arrayState).toEqual([...bigReversed].sort((a, b) => a - b));
+    });
+  }
+});
+
+// ── SV-017 (P2): Greedy matching với phần tử trùng giá trị ──────────────────
+describe('SV-017 (P2): sortingIdEnricher greedy với [5,3,5,3,2] — id theo element', () => {
+  it('swap path: hoán vị [0]↔[1] giữ id đúng element (không đổi chéo 5₀/5₂)', () => {
+    const frames: SortFrame[] = [
+      makeFrame([5, 3, 5, 3, 2], null),
+      makeFrame([3, 5, 5, 3, 2], [0, 1]),
+    ];
+    enrichFramesWithIds(frames);
+    expect(frames[1].arrayStateWithIds!.map((e) => e.id)).toEqual([1, 0, 2, 3, 4]);
+    expect(new Set(frames[1].arrayStateWithIds!.map((e) => e.id)).size).toBe(5);
+  });
+
+  it('greedy nearest-value (frame không swap kiểu merge) chọn id theo vị trí gần nhất', () => {
+    const frames: SortFrame[] = [
+      makeFrame([5, 3, 5, 3, 2], null),
+      makeFrame([3, 5, 3, 2, 5], null),
+    ];
+    enrichFramesWithIds(frames);
+    expect(frames[1].arrayStateWithIds!.map((e) => e.value)).toEqual([3, 5, 3, 2, 5]);
+    expect(frames[1].arrayStateWithIds!.map((e) => e.id)).toEqual([1, 2, 3, 4, 0]);
+    expect(new Set(frames[1].arrayStateWithIds!.map((e) => e.id)).size).toBe(5);
+  });
+
+  it('bubble thực [5,3,5,3,2]: mọi frame id duy nhất + khớp giá trị', () => {
+    const frames = generateBubbleSortFrames([5, 3, 5, 3, 2]);
+    enrichFramesWithIds(frames);
+    for (const f of frames) {
+      const items = f.arrayStateWithIds!;
+      expect(items.map((e) => e.value)).toEqual(f.arrayState);
+      const ids = items.map((e) => e.id);
+      expect(new Set(ids).size).toBe(ids.length);
+    }
   });
 });

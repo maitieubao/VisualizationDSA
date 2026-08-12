@@ -64,7 +64,7 @@ public void DictionaryExample()
 Khác với Dictionary lưu theo cặp, `HashSet` chỉ lưu trữ duy nhất các **Key**. 
 Mục đích chính của HashSet không phải là để lấy dữ liệu ra, mà là để **trả lời câu hỏi (O(1)): "Phần tử này đã từng xuất hiện hay chưa?"** và **"Loại bỏ các phần tử trùng lặp"**.
 
-### Cách sử dụng cơ bản
+### Cách sử dụng cơ bản của HashSet
 
 ```csharp
 using System.Collections.Generic;

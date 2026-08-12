@@ -55,4 +55,18 @@ public class RegenerateInviteCodeCommandHandlerTests
         var handler = new RegenerateInviteCodeCommandHandler(ctx);
         await Assert.ThrowsAsync<UnauthorizedAccessException>(() => handler.Handle(new RegenerateInviteCodeCommand { ClassroomId = classroomId, TeacherId = Guid.NewGuid() }, CancellationToken.None));
     }
+
+    // CR-034: regenerate phải gia hạn hạn dùng mã mời (30 ngày từ lúc cấp mới).
+    [Fact]
+    public async Task Handle_RefreshesInviteCodeExpiry()
+    {
+        var (classroomId, teacherId, ctx) = await Setup("RegenExpiry");
+        var handler = new RegenerateInviteCodeCommandHandler(ctx);
+
+        await handler.Handle(new RegenerateInviteCodeCommand { ClassroomId = classroomId, TeacherId = teacherId }, CancellationToken.None);
+
+        var classroom = ctx.Classrooms.Single(c => c.Id == classroomId);
+        classroom.InviteCodeExpiresAt.Should().NotBeNull();
+        classroom.InviteCodeExpiresAt!.Value.Should().BeCloseTo(DateTime.UtcNow.AddDays(30), TimeSpan.FromMinutes(2));
+    }
 }

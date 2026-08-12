@@ -96,6 +96,8 @@ namespace VisualizationDSA.Infrastructure.Data
                     .WithMany(c => c.ModuleItemOverrides)
                     .HasForeignKey(o => o.ClassroomId)
                     .OnDelete(DeleteBehavior.Cascade);
+                // LS-009: override gắn vào ClassroomModuleItem (item của lớp) — trước đây trỏ
+                // ModuleItem (course) nên teacher override item lớp khác không validate được.
                 entity.HasOne(o => o.ModuleItem)
                     .WithMany()
                     .HasForeignKey(o => o.ModuleItemId)
@@ -347,6 +349,9 @@ namespace VisualizationDSA.Infrastructure.Data
                 entity.HasKey(e => e.Id);
                 entity.HasOne(e => e.User).WithMany(u => u.QuizAttempts).HasForeignKey(e => e.UserId);
                 entity.HasOne(e => e.Quiz).WithMany(q => q.Attempts).HasForeignKey(e => e.QuizId);
+                // PR-002: reference của quiz bank (không có row trong Quizzes) — key + title.
+                entity.Property(e => e.QuizKey).HasMaxLength(100);
+                entity.Property(e => e.QuizTitle).HasMaxLength(200);
             });
 
             

@@ -17,8 +17,41 @@ import type {
   QuizRoomParticipant,
   SignalRConnectionState
 } from '../types/signalr.types'
+import { useNotificationStore } from '../../notifications/store/useNotificationStore'
+import { useToastStore } from '../../../composables/useToast'
+import type { NotificationDto } from '../../notifications/services/notificationApi'
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5055'
+
+// NT-002: seq cố định cho id realtime — tránh trùng id khi 2 event cùng ms.
+let realtimeNotificationSeq = 0
+
+/** Chuyển event realtime (badge/level-up) thành NotificationDto đẩy vào store thông báo chung (NT-002). */
+function toRealtimeNotificationDto(
+  kind: 'badge' | 'levelup',
+  payload: BadgeNotification | LevelUpNotification
+): NotificationDto {
+  realtimeNotificationSeq++
+  const now = Date.now()
+  if (kind === 'badge') {
+    const badge = payload as BadgeNotification
+    return {
+      id: `realtime-badge-${badge.userId}-${now}-${realtimeNotificationSeq}`,
+      content: `Bạn đã nhận được huy hiệu "${badge.badgeName}"`,
+      isRead: false,
+      linkUrl: '/profile',
+      createdAt: badge.awardedAt
+    }
+  }
+  const levelUp = payload as LevelUpNotification
+  return {
+    id: `realtime-levelup-${levelUp.userId}-${now}-${realtimeNotificationSeq}`,
+    content: `Chúc mừng! Bạn đã lên cấp ${levelUp.newLevel}`,
+    isRead: false,
+    linkUrl: '/profile',
+    createdAt: new Date(now).toISOString()
+  }
+}
 
 export const useSignalRStore = defineStore('signalr', () => {
   
@@ -92,6 +125,23 @@ export const useSignalRStore = defineStore('signalr', () => {
   }
 
   
+  /** Nguồn realtime duy nhất đẩy thông báo vào store chung (NT-002) — toast + list + badge. */
+  function pushRealtimeNotification(kind: 'badge' | 'levelup', payload: BadgeNotification | LevelUpNotification): void {
+    try {
+      const notificationStore = useNotificationStore()
+      notificationStore.prependNotification(toRealtimeNotificationDto(kind, payload))
+      if (kind === 'badge') {
+        const badge = payload as BadgeNotification
+        useToastStore().success(`Huy hiệu "${badge.badgeName}" đã được trao tặng!`, 'Nhận huy hiệu mới')
+      } else {
+        const levelUp = payload as LevelUpNotification
+        useToastStore().info(`Bạn đã lên cấp ${levelUp.newLevel}!`, 'Cấp độ mới')
+      }
+    } catch {
+      // Pinia chưa active (test edge) — realtime vẫn ghi nhận ở mảng legacy, bỏ qua đẩy store.
+    }
+  }
+
   async function connectNotifications(token: string): Promise<void> {
     if (notificationConnection.value?.state === HubConnectionState.Connected) return
 
@@ -108,6 +158,9 @@ export const useSignalRStore = defineStore('signalr', () => {
         badgeNotifications.value = badgeNotifications.value.slice(0, 50)
       }
       unreadNotificationCount.value++
+      // NT-002: đẩy thẳng vào store thông báo chung + toast — badge/list tự cập nhật
+      // mà không cần poll/refresh; unread dùng chung nguồn useNotificationStore.
+      pushRealtimeNotification('badge', notification)
     })
 
     connection.on('LevelUp', (notification: LevelUpNotification) => {
@@ -116,6 +169,8 @@ export const useSignalRStore = defineStore('signalr', () => {
         levelUpNotifications.value = levelUpNotifications.value.slice(0, 50)
       }
       unreadNotificationCount.value++
+      // NT-002: như BadgeAwarded — level-up cũng phải hiện trong list thông báo.
+      pushRealtimeNotification('levelup', notification)
     })
 
     connection.onreconnecting(() => { notificationState.value = 'reconnecting' })

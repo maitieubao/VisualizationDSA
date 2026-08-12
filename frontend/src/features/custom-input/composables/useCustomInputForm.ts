@@ -1,11 +1,14 @@
-import { ref, computed, onMounted, onBeforeUnmount } from 'vue';
+import { ref, computed, watch, onMounted, onBeforeUnmount, type Ref } from 'vue';
 import { useInputStore } from '../store/useInputStore';
 import type { GenerationType } from '../store/useInputStore';
 
-export function useCustomInputForm(algorithmId: string) {
+export function useCustomInputForm(algorithmId: Ref<string>) {
   const inputStore = useInputStore();
   const showDropdown = ref(false);
   const dropdownRef = ref<HTMLElement | null>(null);
+
+  // AL-031: nối limit theo algorithmId ngay khi mount + mỗi lần đổi thuật toán
+  watch(algorithmId, (id) => inputStore.setAlgorithmLimit(id), { immediate: true });
 
   const generationOptions: { type: GenerationType; label: string }[] = [
     { type: 'random',        label: 'Ngẫu nhiên hoàn toàn (Random 100%)' },
@@ -56,19 +59,33 @@ export function useCustomInputForm(algorithmId: string) {
       : 'bg-accent text-text-primary hover:bg-accent-light active:scale-95 cursor-pointer'
   );
 
+  // AL-041: cập nhật text qua action của store (thay v-model mutation trực tiếp)
+  function onRawInput(event: Event): void {
+    inputStore.setRawText((event.target as HTMLTextAreaElement).value);
+  }
+
   function onGenerate(type: GenerationType): void {
     inputStore.generateRandomInput(type, 10);
     showDropdown.value = false;
   }
 
   function onExecute(): void {
-    inputStore.submitCustomInput(algorithmId);
+    inputStore.submitCustomInput(algorithmId.value);
   }
 
   function onKeydown(e: KeyboardEvent): void {
     if (e.ctrlKey && e.key === 'Enter') { e.preventDefault(); if (inputStore.canExecute) onExecute(); }
-    if (e.ctrlKey && e.shiftKey && (e.key === 'R' || e.key === 'r')) { e.preventDefault(); inputStore.generateRandomInput('random', 10); }
-    if (e.key === 'Escape') { e.preventDefault(); inputStore.clear(); }
+    // AL-016: Ctrl+Shift+R là tổ hợp trình duyệt (không chặn được) → Ctrl+Alt+R
+    if (e.ctrlKey && e.altKey && (e.key === 'R' || e.key === 'r')) { e.preventDefault(); inputStore.generateRandomInput('random', 10); }
+    // AL-015: Esc khi dropdown mở → chỉ đóng dropdown, không clear textarea mất dữ liệu
+    if (e.key === 'Escape') {
+      e.preventDefault();
+      if (showDropdown.value) {
+        showDropdown.value = false;
+      } else {
+        inputStore.clear();
+      }
+    }
   }
 
   function onClickOutside(e: MouseEvent): void {
@@ -81,6 +98,6 @@ export function useCustomInputForm(algorithmId: string) {
   return {
     inputStore, showDropdown, dropdownRef, generationOptions,
     formState, textareaClasses, counterClasses, statusText, statusClasses, errorText, executeButtonClasses,
-    onGenerate, onExecute, onKeydown,
+    onRawInput, onGenerate, onExecute, onKeydown,
   };
 }

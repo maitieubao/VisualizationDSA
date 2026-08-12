@@ -49,6 +49,7 @@ namespace VisualizationDSA.WebApi.Filters
 
             
             var userIdStr = JwtHelper.ExtractSubFromToken(context.HttpContext.Request);
+            string? dbRole = null;
             if (userIdStr != null && Guid.TryParse(userIdStr, out var userId))
             {
                 var unitOfWork = (IUnitOfWork?)context.HttpContext.RequestServices.GetService(typeof(IUnitOfWork));
@@ -67,13 +68,22 @@ namespace VisualizationDSA.WebApi.Filters
                         };
                         return;
                     }
+                    if (user != null)
+                    {
+                        dbRole = user.Role;
+                    }
                 }
             }
 
             
             if (_allowedRoles.Length > 0)
             {
-                var userRole = JwtHelper.ExtractRoleFromToken(context.HttpContext.Request);
+                // AD-003: với yêu cầu quyền Admin (và Teacher), role phải đối chiếu DB — admin bị
+                // demote mất quyền NGAY (không chờ token hết hạn). User không có trong DB (vd demo
+                // account chỉ ở memory) fallback về claim để không phá luồng phát triển.
+                var userRole = _allowedRoles.Contains("Admin", StringComparer.OrdinalIgnoreCase) && dbRole != null
+                    ? dbRole
+                    : JwtHelper.ExtractRoleFromToken(context.HttpContext.Request);
                 if (userRole == null || !_allowedRoles.Contains(userRole, StringComparer.OrdinalIgnoreCase))
                 {
                     context.Result = new ObjectResult(new

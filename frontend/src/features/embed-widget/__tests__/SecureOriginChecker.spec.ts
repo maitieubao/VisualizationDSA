@@ -87,6 +87,74 @@ describe('SecureOriginChecker', () => {
       expect(domains).toContain('https://moodle.hust.edu.vn');
       expect(domains).toContain('https://canvas.usth.edu.vn');
     });
+
+    it('EW-031: mutating the returned array must not affect the checker', () => {
+      const domains = checker.getWhitelistedDomains();
+      domains.push('https://evil-injected.com');
+      domains.splice(0, 1);
+
+      expect(checker.domainCount).toBe(3);
+      expect(checker.isValidOrigin('https://evil-injected.com')).toBe(false);
+      expect(checker.isValidOrigin('https://visualization-dsa.edu.vn')).toBe(true);
+    });
+  });
+
+  describe('EW-019 (P2): origin spoof edge cases — fail-closed', () => {
+    it('should reject non-default port spoof (:8443)', () => {
+      expect(checker.isValidOrigin('https://moodle.hust.edu.vn:8443')).toBe(false);
+    });
+
+    it('should reject http:// downgrade of a https whitelisted domain', () => {
+      expect(checker.isValidOrigin('http://moodle.hust.edu.vn')).toBe(false);
+      expect(checker.isValidOrigin('http://visualization-dsa.edu.vn')).toBe(false);
+    });
+
+    it('should reject evil subdomain prefix (evil-moodle.hust.edu.vn)', () => {
+      expect(checker.isValidOrigin('https://evil-moodle.hust.edu.vn')).toBe(false);
+    });
+
+    it('should reject evil base suffix (moodle.hust.edu.vn.evil.com)', () => {
+      expect(checker.isValidOrigin('https://moodle.hust.edu.vn.evil.com')).toBe(false);
+    });
+
+    it('should reject completely unrelated domain', () => {
+      expect(checker.isValidOrigin('https://moodle.hust.edu.vn2')).toBe(false);
+    });
+
+    it('should normalize trailing slash away (same origin)', () => {
+      expect(checker.isValidOrigin('https://moodle.hust.edu.vn/')).toBe(true);
+      expect(checker.isValidOrigin('https://moodle.hust.edu.vn///')).toBe(true);
+    });
+
+    it('should normalize whitespace and case (trim + lowercase)', () => {
+      expect(checker.isValidOrigin('  HTTPS://MOODLE.HUST.EDU.VN  ')).toBe(true);
+    });
+
+    it('should normalize input when adding a trusted domain', () => {
+      checker.addTrustedDomain('  https://NEWSCHOOL.EDU.VN/  ');
+      expect(checker.isValidOrigin('https://newschool.edu.vn')).toBe(true);
+      expect(checker.domainCount).toBe(4);
+    });
+  });
+
+  describe('EW-013 (P2): wildcard subdomain pattern', () => {
+    it('should accept any subdomain of *.lms.usth.edu.vn', () => {
+      const wildcardChecker = new SecureOriginChecker(['https://moodle.hust.edu.vn', '*.lms.usth.edu.vn']);
+      expect(wildcardChecker.isValidOrigin('https://coursera.lms.usth.edu.vn')).toBe(true);
+      expect(wildcardChecker.isValidOrigin('https://a.b.lms.usth.edu.vn')).toBe(true);
+    });
+
+    it('should NOT match evil prefix / suffix with wildcard pattern', () => {
+      const wildcardChecker = new SecureOriginChecker(['*.lms.usth.edu.vn']);
+      expect(wildcardChecker.isValidOrigin('https://evil-lms.usth.edu.vn')).toBe(false);
+      expect(wildcardChecker.isValidOrigin('https://lms.usth.edu.vn.attacker.com')).toBe(false);
+      expect(wildcardChecker.isValidOrigin('https://lms.usth.edu.vn.evil.com')).toBe(false);
+    });
+
+    it('should accept the base domain itself for *.lms.usth.edu.vn', () => {
+      const wildcardChecker = new SecureOriginChecker(['*.lms.usth.edu.vn']);
+      expect(wildcardChecker.isValidOrigin('https://lms.usth.edu.vn')).toBe(true);
+    });
   });
 
   describe('custom initialization', () => {

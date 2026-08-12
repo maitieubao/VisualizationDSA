@@ -22,6 +22,31 @@ namespace VisualizationDSA.Application.Features.Classrooms.Commands.ImportCourse
 
         public async Task<Guid> Handle(ImportCourseToClassroomCommand request, CancellationToken cancellationToken)
         {
+            // TC-025: bọc toàn bộ import trong 1 transaction — lỗi giữa chừng (thiếu module,
+            // duplicate order, DB lỗi) rollback toàn bộ, không để lại classroom "dở dang".
+            // InMemory store (test) không hỗ trợ transaction → chạy thẳng HandleCoreAsync.
+            var providerName = (_context as DbContext)?.Database.ProviderName;
+            if (_context is DbContext relationalContext && !string.Equals(providerName, "Microsoft.EntityFrameworkCore.InMemory", StringComparison.Ordinal))
+            {
+                await using var transaction = await relationalContext.Database.BeginTransactionAsync(cancellationToken);
+                try
+                {
+                    var result = await HandleCoreAsync(request, cancellationToken);
+                    await transaction.CommitAsync(cancellationToken);
+                    return result;
+                }
+                catch
+                {
+                    await transaction.RollbackAsync(cancellationToken);
+                    throw;
+                }
+            }
+
+            return await HandleCoreAsync(request, cancellationToken);
+        }
+
+        private async Task<Guid> HandleCoreAsync(ImportCourseToClassroomCommand request, CancellationToken cancellationToken)
+        {
             var classroom = await _context.Classrooms
                 .Include(c => c.Modules)
                     .ThenInclude(m => m.Items)
@@ -47,6 +72,11 @@ namespace VisualizationDSA.Application.Features.Classrooms.Commands.ImportCourse
 
             if (course == null)
                 throw new InvalidOperationException("Course not found.");
+
+            // TC-025: teacher chỉ được import khóa học MÌNH sở hữu — không import trộm khóa học
+            // của teacher khác vào classroom (trước đây thiếu check ownership).
+            if (course.TeacherId != request.TeacherId)
+                throw new UnauthorizedAccessException("You do not own this course.");
 
             if (request.OverrideExisting)
             {

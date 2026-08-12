@@ -111,6 +111,9 @@ graph TD
 | Thêm/sửa quyết định kiến trúc         | `plan/tracking/decisions.md` — thêm ADR mới hoặc cập nhật ADR hiện có              |
 | Thêm thư viện / dependency mới        | `plan/tracking/dependencies.md` — ghi tên, version, lý do                          |
 | Viết test mới hoặc sửa test           | `plan/tracking/features-tested.md` — cập nhật danh sách tính năng đã có test       |
+| Review sâu xong một tính năng         | `plan/tracking/REVIEW.md` + `plan/tracking/UNREVIEW.md` — chuyển feature từ UNREVIEW → REVIEW kèm ghi chú batch lỗi |
+| Bắt đầu / kết thúc một phiên review   | `plan/tracking/review-progress.md` — cập nhật trạng thái, ngày BĐ/KT, số lỗi phát hiện |
+| Sửa code / thay đổi trạng thái liên quan đến một tính năng có trong `REVIEW.md`/`UNREVIEW.md` | Cập nhật trạng thái + ghi chú mới vào file tương ứng (REVIEW nếu đã review, UNREVIEW nếu chưa) |
 | Kết thúc một Sprint                   | Tất cả 3 file: `progress.md`, `decisions.md`, `features-tested.md`                 |
 
 ### Quy Tắc Viết Tracking Chuẩn
@@ -135,6 +138,7 @@ Trước khi bắt đầu task mới, Agent phải tự kiểm tra:
 [ ] Đã cập nhật plan/tracking/progress.md chưa?
 [ ] Đã cập nhật plan/features/deep-decomposition/README.md chưa (nếu thêm feature)?
 [ ] Đã cập nhật plan/tracking/errors.md chưa (nếu fix bug)?
+[ ] Đã cập nhật plan/tracking/REVIEW.md / UNREVIEW.md chưa (nếu review/sửa code một feature trong 2 file)?
 [ ] Đã cập nhật plan/tracking/decisions.md chưa (nếu có quyết định kiến trúc mới)?
 ```
 

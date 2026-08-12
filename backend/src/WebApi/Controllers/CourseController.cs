@@ -39,9 +39,25 @@ namespace VisualizationDSA.WebApi.Controllers
         [HttpGet("courses")]
         public async Task<IActionResult> GetCourses([FromQuery] string? category, [FromQuery] string? difficulty, [FromQuery] string? userId)
         {
+            var currentUserIdStr = JwtHelper.ExtractSubFromToken(Request);
+            var isTeacherOrAdmin = JwtHelper.IsTeacherOrAdmin(Request);
+            Guid? currentUserId = null;
+            if (currentUserIdStr != null && Guid.TryParse(currentUserIdStr, out var parsedCurrentId))
+                currentUserId = parsedCurrentId;
+
+            // LM-008 + LM-059: Server filter publish — học viên KHÔNG thấy khóa Draft
+            // (trước đây client tự lọc). Teacher chỉ thấy draft CỦA MÌNH; Admin thấy tất cả.
             var query = _dbContext.Courses
                 .Where(c => !c.IsDeleted)
                 .AsQueryable();
+
+            if (!JwtHelper.IsAdmin(Request))
+            {
+                if (isTeacherOrAdmin && currentUserId.HasValue)
+                    query = query.Where(c => c.IsPublished || c.TeacherId == currentUserId.Value);
+                else
+                    query = query.Where(c => c.IsPublished);
+            }
 
             if (!string.IsNullOrWhiteSpace(category) && Enum.TryParse<CourseCategory>(category, true, out var catEnum))
             {
@@ -58,7 +74,6 @@ namespace VisualizationDSA.WebApi.Controllers
                 .OrderBy(c => c.CreatedAt)
                 .ToListAsync();
 
-            var currentUserIdStr = JwtHelper.ExtractSubFromToken(Request);
             Guid? targetUserId = null;
 
             if (!string.IsNullOrWhiteSpace(userId))
@@ -145,13 +160,15 @@ namespace VisualizationDSA.WebApi.Controllers
 
             // GATE publish + premium cho GetCourseById — trước đây student đoán GUID nhận đủ
             // ContentMd/SandboxConfig của mọi lesson (kể cả bài Draft trong course Premium).
+            // LM-059: khóa chưa publish chỉ CHỦ SỞ HỮU hoặc Admin xem được — teacher khác
+            // không bypass toàn bộ (trước đây isTeacherOrAdmin mở cho mọi teacher).
             var isTeacherOrAdmin = JwtHelper.IsTeacherOrAdmin(Request);
             var userIdStrForGate = JwtHelper.ExtractSubFromToken(Request);
             var isOwner = userIdStrForGate != null
                           && Guid.TryParse(userIdStrForGate, out var ownerCheckId)
                           && course.TeacherId == ownerCheckId;
 
-            if (!course.IsPublished && !isTeacherOrAdmin && !isOwner)
+            if (!course.IsPublished && !isOwner && !JwtHelper.IsAdmin(Request))
             {
                 return NotFound(new { error = "COURSE_NOT_FOUND", message = "Không tìm thấy khóa học." });
             }
@@ -190,19 +207,26 @@ namespace VisualizationDSA.WebApi.Controllers
 
             var lessonsList = new List<object>();
             // Quiz liên kết nằm trên ModuleItem riêng (ItemType=Quiz) cùng module với lesson.
-            // Khớp theo OrderIndex: quiz item của lesson N có order nằm ngay sau lesson item N.
+            // LM-028: heuristic "quiz ngay sau lesson" — quiz chỉ gắn cho lesson N khi không có
+            // lesson item nào chen giữa (order quiz nằm giữa lesson N và lesson N+1).
             var quizItemsByModule = course.Modules
                 .SelectMany(m => m.Items)
-                .Where(i => i.ItemType == ModuleItemType.Quiz && i.QuizId.HasValue)
+                .Where(i => i.ItemType == ModuleItemType.Quiz && i.QuizId.HasValue && !i.IsDeleted)
                 .GroupBy(i => i.ModuleId)
                 .ToDictionary(
                     g => g.Key,
                     g => g.OrderBy(i => i.OrderIndex).Select(i => (Id: i.QuizId, Order: i.OrderIndex)).ToList());
+            // Ranh giới "lesson kế tiếp" theo module — chặn quiz của lesson sau dính vào lesson trước.
+            var lessonOrdersByModule = course.Modules
+                .SelectMany(m => m.Items)
+                .Where(i => i.ItemType == ModuleItemType.Lesson && !i.IsDeleted)
+                .Select(i => new { i.ModuleId, i.OrderIndex })
+                .ToList();
             // Sắp theo (module OrderIndex, item OrderIndex) — mỗi chặng đếm OrderIndex lại từ 1000
             // nên sort toàn cục theo OrderIndex sẽ trộn thứ tự giữa các chặng.
             var orderedLessonItems = course.Modules
                 .SelectMany(m => m.Items.Select(i => new { Item = i, ModuleOrder = m.OrderIndex }))
-                .Where(x => x.Item.ItemType == ModuleItemType.Lesson)
+                .Where(x => x.Item.ItemType == ModuleItemType.Lesson && !x.Item.IsDeleted)
                 .OrderBy(x => x.ModuleOrder)
                 .ThenBy(x => x.Item.OrderIndex)
                 .Select(x => x.Item)
@@ -229,8 +253,10 @@ namespace VisualizationDSA.WebApi.Controllers
             foreach (var item in orderedLessonItems)
             {
                 var l = item.Lesson;
-                // Lọc bài chưa Published cho user không phải Teacher/Admin/chủ sở hữu.
-                if (!isTeacherOrAdmin && !isOwner && l.PublishStatus != VisualizationDSA.Domain.Enums.LessonPublishStatus.Published)
+                // Lọc bài chưa Published cho user không phải Admin/chủ sở hữu
+                // (LM-059: teacher khác không xem draft của khóa người khác).
+                if (l.PublishStatus != VisualizationDSA.Domain.Enums.LessonPublishStatus.Published
+                    && !isOwner && !JwtHelper.IsAdmin(Request))
                 {
                     continue;
                 }
@@ -240,7 +266,15 @@ namespace VisualizationDSA.WebApi.Controllers
                 Guid? linkedQuizId = null;
                 if (quizItemsByModule.TryGetValue(item.ModuleId, out var quizCandidates))
                 {
-                    linkedQuizId = quizCandidates.FirstOrDefault(q => q.Order > item.OrderIndex).Id;
+                    var nextLessonOrder = lessonOrdersByModule
+                        .Where(x => x.ModuleId == item.ModuleId && x.OrderIndex > item.OrderIndex)
+                        .Select(x => (int?)x.OrderIndex)
+                        .DefaultIfEmpty(null)
+                        .Min();
+                    var upperBound = nextLessonOrder ?? int.MaxValue;
+                    linkedQuizId = quizCandidates
+                        .FirstOrDefault(q => q.Order > item.OrderIndex && q.Order < upperBound)
+                        .Id;
                 }
 
                 lessonsList.Add(new
@@ -313,7 +347,16 @@ namespace VisualizationDSA.WebApi.Controllers
             if (!IsOwnerOrAdmin(course, currentUserId)) return StatusCode(403, new { error = "FORBIDDEN", message = "Bạn không có quyền chỉnh sửa khóa học này." });
 
             var command = new AddModuleCommand(courseId, dto.Title, dto.Description, dto.OrderIndex);
-            var resultId = await _mediator.Send(command);
+            Guid resultId;
+            try
+            {
+                resultId = await _mediator.Send(command);
+            }
+            catch (DbUpdateException)
+            {
+                // LM-033: trùng (CourseId, OrderIndex) — index unique → 409 thay vì 500.
+                return Conflict(new { error = "ORDER_INDEX_CONFLICT", message = "OrderIndex đã tồn tại trong khóa học này." });
+            }
             return Ok(new { message = "Thêm module thành công!", moduleId = resultId });
         }
 
@@ -334,6 +377,33 @@ namespace VisualizationDSA.WebApi.Controllers
             if (!Enum.TryParse<ModuleItemType>(dto.ItemType, true, out var itemType))
                 return BadRequest(new { error = "INVALID_ITEM_TYPE", message = "Loại item không hợp lệ." });
 
+            // LM-011: validate nội dung tham chiếu thuộc chủ sở hữu khóa học — chống teacher
+            // gắn lesson/codelab của teacher khác (cross-course leak). Quiz không có trường
+            // chủ sở hữu nên chỉ validate tồn tại + chưa xóa.
+            var isAdmin = JwtHelper.IsAdmin(Request);
+            if (itemType == ModuleItemType.Lesson && dto.LessonId.HasValue)
+            {
+                var refLesson = await _dbContext.Lessons.FindAsync(dto.LessonId.Value);
+                if (refLesson == null || refLesson.IsDeleted)
+                    return NotFound(new { error = "LESSON_NOT_FOUND", message = "Không tìm thấy bài học cần gắn." });
+                if (!isAdmin && refLesson.CreatedByTeacherId != course.TeacherId)
+                    return StatusCode(403, new { error = "FORBIDDEN", message = "Bài học này không thuộc khóa học của bạn." });
+            }
+            else if (itemType == ModuleItemType.Codelab && dto.CodelabId.HasValue)
+            {
+                var refCodelab = await _dbContext.Codelabs.FindAsync(dto.CodelabId.Value);
+                if (refCodelab == null || refCodelab.IsDeleted)
+                    return NotFound(new { error = "CODELAB_NOT_FOUND", message = "Không tìm thấy codelab cần gắn." });
+                if (!isAdmin && refCodelab.OwnerId != course.TeacherId)
+                    return StatusCode(403, new { error = "FORBIDDEN", message = "Codelab này không thuộc khóa học của bạn." });
+            }
+            else if (itemType == ModuleItemType.Quiz && dto.QuizId.HasValue)
+            {
+                var refQuiz = await _dbContext.Quizzes.FindAsync(dto.QuizId.Value);
+                if (refQuiz == null || refQuiz.IsDeleted)
+                    return NotFound(new { error = "QUIZ_NOT_FOUND", message = "Không tìm thấy quiz cần gắn." });
+            }
+
             var command = new AddModuleItemCommand(
                 moduleId, 
                 itemType, 
@@ -343,7 +413,16 @@ namespace VisualizationDSA.WebApi.Controllers
                 dto.OverrideTitle, 
                 dto.OrderIndex, 
                 dto.IsRequired);
-            var resultId = await _mediator.Send(command);
+            Guid resultId;
+            try
+            {
+                resultId = await _mediator.Send(command);
+            }
+            catch (DbUpdateException)
+            {
+                // LM-033: trùng (ModuleId, OrderIndex) — index unique → 409 thay vì 500.
+                return Conflict(new { error = "ORDER_INDEX_CONFLICT", message = "OrderIndex đã tồn tại trong module này." });
+            }
             return Ok(new { message = "Thêm item thành công!", moduleItemId = resultId });
         }
 
@@ -468,52 +547,9 @@ namespace VisualizationDSA.WebApi.Controllers
             return Ok(new { message = "Thêm bài học thành công!", lessonId });
         }
 
-        [HttpPut("lessons/{id}")]
-        [RequireJwtRole("Teacher,Admin")]
-        public async Task<IActionResult> UpdateLesson(Guid id, [FromBody] CreateLessonDto dto)
-        {
-            var userIdStr = JwtHelper.ExtractSubFromToken(Request);
-            if (userIdStr == null || !Guid.TryParse(userIdStr, out var currentUserId)) return Unauthorized();
-
-            var moduleItem = await _dbContext.ModuleItems.Include(m => m.Module).ThenInclude(m => m.Course).FirstOrDefaultAsync(i => i.LessonId == id);
-            if (moduleItem?.Module?.Course == null) return NotFound(new { error = "LESSON_NOT_FOUND", message = "Không tìm thấy bài giảng." });
-            if (!IsOwnerOrAdmin(moduleItem.Module.Course, currentUserId)) return StatusCode(403, new { error = "FORBIDDEN", message = "Bạn không có quyền chỉnh sửa bài giảng này." });
-
-            var command = new VisualizationDSA.Application.Features.Lessons.Commands.UpdateLesson.UpdateLessonCommand
-            {
-                TeacherId = moduleItem.Module.Course.TeacherId,
-                LessonId = id,
-                Title = dto.Title,
-                ContentMd = dto.ContentMd,
-                SandboxType = dto.SandboxType,
-                SandboxConfig = dto.SandboxConfig,
-                XPReward = dto.XPReward
-            };
-
-            await _mediator.Send(command);
-            return Ok(new { message = "Cập nhật bài giảng thành công!" });
-        }
-
-        [HttpDelete("lessons/{id}")]
-        [RequireJwtRole("Teacher,Admin")]
-        public async Task<IActionResult> DeleteLesson(Guid id)
-        {
-            var userIdStr = JwtHelper.ExtractSubFromToken(Request);
-            if (userIdStr == null || !Guid.TryParse(userIdStr, out var currentUserId)) return Unauthorized();
-
-            var moduleItem = await _dbContext.ModuleItems.Include(m => m.Module).ThenInclude(m => m.Course).FirstOrDefaultAsync(i => i.LessonId == id);
-            if (moduleItem?.Module?.Course == null) return NotFound(new { error = "LESSON_NOT_FOUND", message = "Không tìm thấy bài giảng." });
-            if (!IsOwnerOrAdmin(moduleItem.Module.Course, currentUserId)) return StatusCode(403, new { error = "FORBIDDEN", message = "Bạn không có quyền xóa bài giảng này." });
-
-            var command = new VisualizationDSA.Application.Features.Lessons.Commands.DeleteLesson.DeleteLessonCommand
-            {
-                TeacherId = moduleItem.Module.Course.TeacherId,
-                LessonId = id
-            };
-
-            await _mediator.Send(command);
-            return Ok(new { message = "Xóa bài giảng thành công!" });
-        }
+        // LM-001 (P0): PUT/DELETE /lessons/{id} CHỈ tồn tại ở LessonController
+        // (/api/v1/concepts/lessons/{id}) — bản trùng tại CourseController bị XÓA để hết
+        // AmbiguousMatchException 500. Nội dung cập nhật/xóa lesson do LessonController đảm nhiệm.
 
         [HttpGet("teacher/courses/{courseId}/analytics")]
         [RequireJwtRole("Teacher,Admin")]
@@ -530,7 +566,9 @@ namespace VisualizationDSA.WebApi.Controllers
 
             if (!IsOwnerOrAdmin(course, currentUserId)) return StatusCode(403, new { error = "FORBIDDEN", message = "Bạn không có quyền xem báo cáo của khóa học này." });
 
-            var totalLessons = course.Modules.SelectMany(m => m.Items).Count(i => i.ItemType == ModuleItemType.Lesson);
+            // LM-029: chỉ đếm lesson còn tồn tại (Lesson != null && !IsDeleted) — trước đây NRE
+            // khi item trỏ lesson đã xóa.
+            var totalLessons = course.Modules.SelectMany(m => m.Items).Count(i => i.ItemType == ModuleItemType.Lesson && i.Lesson != null && !i.IsDeleted);
             if (totalLessons == 0)
             {
                 return Ok(new
@@ -542,7 +580,7 @@ namespace VisualizationDSA.WebApi.Controllers
                 });
             }
 
-            var lessonIds = course.Modules.SelectMany(m => m.Items).Where(i => i.ItemType == ModuleItemType.Lesson && i.LessonId.HasValue).Select(i => i.LessonId!.Value).ToList();
+            var lessonIds = course.Modules.SelectMany(m => m.Items).Where(i => i.ItemType == ModuleItemType.Lesson && i.LessonId.HasValue && i.Lesson != null && !i.IsDeleted).Select(i => i.LessonId!.Value).ToList();
             var activeUserIds = await _dbContext.UserLessonProgresses
                 .Where(p => lessonIds.Contains(p.LessonId))
                 .Select(p => p.UserId)
@@ -566,7 +604,7 @@ namespace VisualizationDSA.WebApi.Controllers
                 averageCompletionRate = Math.Round(sumPercent / totalStudents, 1);
 
                 var quizIds = course.Modules.SelectMany(m => m.Items)
-                    .Where(i => i.ItemType == ModuleItemType.Quiz && i.QuizId.HasValue)
+                    .Where(i => i.ItemType == ModuleItemType.Quiz && i.QuizId.HasValue && !i.IsDeleted)
                     .Select(i => i.QuizId!.Value)
                     .Distinct()
                     .ToList();
@@ -574,7 +612,8 @@ namespace VisualizationDSA.WebApi.Controllers
                 if (quizIds.Count > 0)
                 {
                     var quizAttempts = await _dbContext.QuizAttempts
-                        .Where(a => quizIds.Contains(a.QuizId) && activeUserIds.Contains(a.UserId))
+                        // PR-002: QuizId nullable — attempt bank quiz (không thuộc course) bị loại.
+                        .Where(a => a.QuizId.HasValue && quizIds.Contains(a.QuizId!.Value) && activeUserIds.Contains(a.UserId))
                         .Select(a => a.Score)
                         .ToListAsync();
 
@@ -587,7 +626,7 @@ namespace VisualizationDSA.WebApi.Controllers
                 // Gom thống kê trạng thái bài học trong 1 query (khử 2N CountAsync — trước đây 2 query/lesson).
                 var lessonIdsForStats = course.Modules
                     .SelectMany(m => m.Items)
-                    .Where(i => i.ItemType == ModuleItemType.Lesson && i.Lesson != null)
+                    .Where(i => i.ItemType == ModuleItemType.Lesson && i.Lesson != null && !i.IsDeleted)
                     .Select(i => i.Lesson!.Id)
                     .Distinct()
                     .ToList();
@@ -604,7 +643,11 @@ namespace VisualizationDSA.WebApi.Controllers
                     .GroupBy(x => (Guid)x.LessonId)
                     .ToDictionary(g => g.Key, g => g.ToDictionary(x => (string)x.Status, x => (int)x.Count));
 
-                foreach (var entry in course.Modules.SelectMany(m => m.Items).Where(i => i.ItemType == ModuleItemType.Lesson).Select(i => new { Item = i, ModuleOrder = i.Module != null ? i.Module.OrderIndex : 0 }).OrderBy(x => x.ModuleOrder).ThenBy(x => x.Item.OrderIndex))
+                // LM-029: chỉ xếp hạng lesson còn tồn tại (Lesson != null && !IsDeleted) — tránh NRE.
+                foreach (var entry in course.Modules.SelectMany(m => m.Items)
+                    .Where(i => i.ItemType == ModuleItemType.Lesson && i.Lesson != null && !i.IsDeleted)
+                    .Select(i => new { Item = i, ModuleOrder = i.Module != null ? i.Module.OrderIndex : 0 })
+                    .OrderBy(x => x.ModuleOrder).ThenBy(x => x.Item.OrderIndex))
                 {
                     var item = entry.Item;
                     var lesson = item.Lesson;

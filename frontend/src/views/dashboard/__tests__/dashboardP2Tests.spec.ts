@@ -409,14 +409,20 @@ describe('PF-007 (P2): History — HistoryTab', () => {
   });
 
   it('hiển thị loading hoặc empty state khi chưa có lịch sử', async () => {
-    const wrapper = mountWithAuth(ProfileHistoryTab);
-    await flushPromises();
-    await new Promise(r => setTimeout(r, 100));
-    await flushPromises();
-    const text = wrapper.text();
-    const hasLoading = text.includes('Đang tải');
-    const hasEmpty = text.includes('Chưa có lịch sử') || wrapper.find('.empty-state-box').exists();
-    expect(hasLoading || hasEmpty).toBe(true);
+    const fetchMock = vi.fn(async () => ({ ok: true, status: 200, json: async () => [] }));
+    vi.stubGlobal('fetch', fetchMock);
+    try {
+      const wrapper = mountWithAuth(ProfileHistoryTab);
+      await flushPromises();
+      await new Promise(r => setTimeout(r, 100));
+      await flushPromises();
+      const text = wrapper.text();
+      const hasLoading = text.includes('Đang tải');
+      const hasEmpty = text.includes('Chưa có lịch sử') || wrapper.find('.empty-state-box').exists();
+      expect(hasLoading || hasEmpty).toBe(true);
+    } finally {
+      vi.unstubAllGlobals();
+    }
   });
 });
 

@@ -8,6 +8,7 @@ export const ADMIN_ACCESS_TOKEN_KEY  = 'vdsa_admin_access_token';
 export const ADMIN_REFRESH_TOKEN_KEY = 'vdsa_admin_refresh_token';
 export const ADMIN_USER_ID_KEY       = 'vdsa_admin_user_id';
 export const ADMIN_USER_DATA_KEY     = 'vdsa_admin_user_data';
+export const ADMIN_ACCESS_EXPIRES_KEY = 'vdsa_admin_access_expires';
 
 
 

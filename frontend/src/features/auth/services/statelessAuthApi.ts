@@ -23,7 +23,13 @@ export interface StatelessUserDto {
   nickname?:    string;
   bio?:         string;
   university?:  string;
+  // PR-005: avatar upload (PB-103) — URL ảnh đã lưu, null nếu chưa có.
+  avatarUrl?:   string;
 }
+
+// PR-005: key lưu avatar cục bộ — dùng khi upload xong mà backend chưa persist avatarUrl
+// (UpdateProfile store chưa nhận avatarUrl) — loadStatelessProfile sẽ overlay giá trị này.
+export const AVATAR_URL_STORAGE_KEY = 'avatar_url';
 
 export interface StatelessBadgeInfo {
   id:          string;
@@ -52,6 +58,8 @@ export interface StatelessUserProgress {
   completedModuleIds:   string[];
   badges:               StatelessBadgeInfo[];
   isPremium:            boolean;
+  // PR-009 (GM-008): ngày hoạt động THẬT từ server (UTC) — mirror StatelessUserProgressDto.
+  lastActiveDate?:      string;
 }
 
 
@@ -80,7 +88,8 @@ function getAuthToken(): string | null {
   } catch {
     // Pinia chưa active (test edge)
   }
-  return localStorage.getItem('token');
+  // AU-045: bỏ fallback localStorage 'token' — token chỉ tồn tại trong store (getAccessToken).
+  return null;
 }
 
 function authHeaders(): HeadersInit {
@@ -109,11 +118,12 @@ export const statelessAuthApi = {
     return handleResponse<StatelessAuthResponse>(res);
   },
 
-  async refresh(refreshToken: string, userId?: string): Promise<StatelessAuthResponse> {
+  // AU-055: backend xác định user từ token — body CHỈ chứa {refreshToken}, KHÔNG gửi userId.
+  async refresh(refreshToken: string): Promise<StatelessAuthResponse> {
     const res = await fetch(`${BASE_URL}/api/v1/concepts/auth/refresh`, {
       method: 'POST',
       headers: JSON_HEADERS,
-      body: JSON.stringify({ refreshToken, userId }),
+      body: JSON.stringify({ refreshToken }),
     });
     return handleResponse<StatelessAuthResponse>(res);
   },

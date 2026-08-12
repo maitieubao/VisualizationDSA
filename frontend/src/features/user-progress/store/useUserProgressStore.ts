@@ -15,6 +15,7 @@
 import { defineStore } from 'pinia';
 import { ref, computed } from 'vue';
 import { useAuthStore } from '../../auth/store/useAuthStore';
+import { STATELESS_USER_ID_KEY } from '../../auth/store/authSessionHelpers';
 import {
   fetchUserProgress,
   syncXPToServer,
@@ -29,17 +30,34 @@ const SYNC_QUEUE_KEY = 'vdsa_xp_sync_queue';
 const MAX_RETRY_ATTEMPTS = 5;
 const BASE_RETRY_DELAY_MS = 1000; 
 
+// Mục queue gắn kèm userId (AU-006): flush chỉ xử lý mục thuộc user hiện tại,
+// chống XP của user A bị đẩy sang user B khi đăng nhập sau.
+interface QueuedSyncPayload extends XPSyncPayload {
+  userId: string | null;
+}
 
 
-function loadSyncQueue(): XPSyncPayload[] {
+
+function loadSyncQueue(): QueuedSyncPayload[] {
   try {
-    return JSON.parse(localStorage.getItem(SYNC_QUEUE_KEY) ?? '[]');
+    const raw: unknown = JSON.parse(localStorage.getItem(SYNC_QUEUE_KEY) ?? '[]');
+    if (!Array.isArray(raw)) return [];
+    return (raw as unknown[]).flatMap((entry): QueuedSyncPayload[] => {
+      if (typeof entry !== 'object' || entry === null) return [];
+      const item = entry as Partial<QueuedSyncPayload>;
+      // Queue phiên bản cũ (trước AU-006) không có userId — hủy để tránh flush sang tài khoản khác.
+      if (typeof item.userId !== 'string') {
+        console.warn('⚠️ XP sync queue chứa mục cũ không có userId — đã hủy để tránh flush nhầm tài khoản.');
+        return [];
+      }
+      return [{ amount: Number(item.amount ?? 0), reason: String(item.reason ?? ''), userId: item.userId }];
+    });
   } catch {
     return [];
   }
 }
 
-function saveSyncQueue(queue: XPSyncPayload[]): void {
+function saveSyncQueue(queue: QueuedSyncPayload[]): void {
   try {
     localStorage.setItem(SYNC_QUEUE_KEY, JSON.stringify(queue));
   } catch (err) {
@@ -74,12 +92,30 @@ export const useUserProgressStore = defineStore('userProgress', () => {
   const completedModuleIds   = ref<string[]>([]);
   const isSyncing            = ref<boolean>(false);
   const isSyncError          = ref<boolean>(false);
-  const pendingSyncQueue     = ref<XPSyncPayload[]>(loadSyncQueue());
+  const pendingSyncQueue     = ref<QueuedSyncPayload[]>(loadSyncQueue());
 
   
   const isModuleCompleted = computed(
     () => (moduleId: string) => completedModuleIds.value.includes(moduleId),
   );
+
+  // userId của user đang đăng nhập — dùng để gắn vào queue và lọc khi flush (AU-006).
+  function _currentUserId(): string | null {
+    return authStore.statelessUser?.id ?? localStorage.getItem(STATELESS_USER_ID_KEY);
+  }
+
+  // Reset toàn bộ state + xóa pendingSyncQueue khi logout/session hết hạn (AU-006).
+  function resetForLogout(): void {
+    totalXP.value = 0;
+    currentLevel.value = 1;
+    xpToNextLevel.value = 100;
+    levelProgressPercent.value = 0;
+    currentStreak.value = 0;
+    completedModuleIds.value = [];
+    isSyncError.value = false;
+    pendingSyncQueue.value = [];
+    localStorage.removeItem(SYNC_QUEUE_KEY);
+  }
 
   
 
@@ -151,7 +187,7 @@ export const useUserProgressStore = defineStore('userProgress', () => {
     totalXP.value += amount;
     _recalculateLevel();
 
-    const payload: XPSyncPayload = { amount, reason };
+    const payload: QueuedSyncPayload = { amount, reason, userId: _currentUserId() };
     const token = authStore.getAccessToken();
 
     if (!token) {
@@ -246,8 +282,10 @@ export const useUserProgressStore = defineStore('userProgress', () => {
   async function _flushPendingQueue(token: string): Promise<void> {
     if (pendingSyncQueue.value.length === 0) return;
 
-    const queue = [...pendingSyncQueue.value];
-    const failedPayloads: XPSyncPayload[] = [];
+    // Chỉ flush mục thuộc user hiện tại — mục của user cũ (nếu sót) bị bỏ (AU-006).
+    const currentUserId = _currentUserId();
+    const queue = pendingSyncQueue.value.filter((item) => item.userId === currentUserId);
+    const failedPayloads: QueuedSyncPayload[] = [];
 
     
     pendingSyncQueue.value = [];
@@ -316,5 +354,6 @@ export const useUserProgressStore = defineStore('userProgress', () => {
     initFromServer,
     syncXP,
     completeModule,
+    resetForLogout,
   };
 });

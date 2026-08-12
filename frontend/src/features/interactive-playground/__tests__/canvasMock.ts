@@ -62,7 +62,7 @@ export function installCanvasMock(): CanvasContextMock {
   const getContextMock = vi.fn(() => ctx);
   const proto = (globalThis.HTMLCanvasElement as typeof HTMLCanvasElement | undefined)?.prototype;
   if (proto) {
-    proto.getContext = getContextMock as typeof proto.getContext;
+    proto.getContext = getContextMock as unknown as typeof proto.getContext;
   } else {
     vi.stubGlobal('HTMLCanvasElement', class HTMLCanvasElement {});
     (globalThis.HTMLCanvasElement as unknown as { prototype: { getContext: unknown } }).prototype.getContext = getContextMock;

@@ -61,15 +61,23 @@ export function useCountingSortVisualizer(frame: () => SortFrame | null) {
   const activePair = computed(() => currentFrame.value?.comparingIndices ?? null);
   const activeInputIndex = computed(() => activePair.value?.[0] ?? -1);
   const activeSecondaryIndex = computed(() => activePair.value?.[1] ?? -1);
+  // SV-008 (EC-022): min/max 1 pass thay Math.min/max(...values) — mảng lớn không RangeError
   const countOffset = computed(() => {
     const values = inputValues.value;
     if (values.length === 0) return 0;
-    const min = Math.min(...values);
+    let min = values[0];
+    for (let i = 1; i < values.length; i++) {
+      if (values[i] < min) min = values[i];
+    }
     return min < 0 ? -min : 0;
   });
   const maxMagnitude = computed(() => {
-    const values = inputValues.value;
-    return Math.max(1, ...values.map(value => Math.abs(value)));
+    let max = 1;
+    for (const value of inputValues.value) {
+      const abs = Math.abs(value);
+      if (abs > max) max = abs;
+    }
+    return max;
   });
   const placeLabel = computed(() => {
     if (activePlace.value === 1) return 'đơn vị';

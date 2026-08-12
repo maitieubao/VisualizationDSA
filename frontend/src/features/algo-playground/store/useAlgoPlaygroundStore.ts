@@ -39,8 +39,6 @@ export const useAlgoPlaygroundStore = defineStore('algo-playground', () => {
   const currentDescription = computed<string>(() => currentFrame.value?.description ?? '');
   const currentLineNumber = computed<number>(() => currentFrame.value?.lineNumber ?? 0);
   const totalFrames = computed<number>(() => frames.value.length);
-  const isAtStart = computed<boolean>(() => currentIndex.value === 0);
-  const isAtEnd = computed<boolean>(() => currentIndex.value >= frames.value.length - 1);
 
   const renderMode = computed<AlgoRenderMode>(() => {
     const snapshot = frames.value[0]?.canvasStateSnapshot;
@@ -73,7 +71,11 @@ export const useAlgoPlaygroundStore = defineStore('algo-playground', () => {
     try {
       const options = AlgoInputParser.parse(inputRaw.value, inputKind.value);
       const count = options.array?.length ?? options.treeNodes?.length ?? options.graphNodes?.length ?? 0;
-      return { valid: true, message: count > 0 ? `${count} phần tử` : 'Input trống' };
+      // AL-044: input không rỗng nhưng parse ra 0 phần tử (vd ", ,") → invalid rõ ràng
+      if (count === 0) {
+        return { valid: false, message: 'Không có phần tử hợp lệ' };
+      }
+      return { valid: true, message: `${count} phần tử` };
     } catch (err: unknown) {
       return { valid: false, message: err instanceof Error ? err.message : String(err) };
     }
@@ -146,6 +148,9 @@ export const useAlgoPlaygroundStore = defineStore('algo-playground', () => {
   function loadDemo(id: string): void {
     const demo = getAlgoDemo(id);
     if (!demo) return;
+    // AL-004: đổi demo giữa lúc compile → hủy kết quả cũ + không auto-play bất ngờ
+    runSeq++;
+    pendingPlayAfterCompile = false;
     demoId.value = demo.id;
     code.value = demo.code;
     inputKind.value = demo.inputKind;
@@ -162,9 +167,14 @@ export const useAlgoPlaygroundStore = defineStore('algo-playground', () => {
 
   function setInput(raw: string): void {
     inputRaw.value = raw;
+    // AL-005: sửa input → invalidate (giống setCode) — bấm Play không phát frames cũ
+    invalidate();
   }
 
   function invalidate(): void {
+    // AL-004: code/input đã đổi → hủy mọi kết quả compile cũ đang chờ
+    runSeq++;
+    pendingPlayAfterCompile = false;
     frames.value = [];
     currentIndex.value = 0;
     isPlaying.value = false;
@@ -179,12 +189,32 @@ export const useAlgoPlaygroundStore = defineStore('algo-playground', () => {
   // Nếu worker không khả dụng (môi trường test/SSR), fallback về đồng bộ.
   let runSeq = 0;
   let pendingPlayAfterCompile = false;
+
+  /** Chữ ký trạng thái (demo + code + input) — tránh auto-run trùng lặp khi remount (AL-045). */
+  const autoRunSignature = ref<string>('');
+
+  function currentSignature(): string {
+    return `${demoId.value ?? ''}|${code.value}|${inputRaw.value}`;
+  }
+
   async function runAsync(): Promise<void> {
     const seq = ++runSeq;
+    // AL-019: dừng playback NGAY đầu compile — engine không advance frames cũ trong nền
+    isPlaying.value = false;
+    currentIndex.value = 0;
+    autoRunSignature.value = currentSignature();
     compileError.value = null;
     isCompiling.value = true;
     try {
       const options = AlgoInputParser.parse(inputRaw.value, inputKind.value);
+      // AL-044: input parse rỗng (input trống / ", ,") → chặn chạy, lỗi rõ ràng
+      const parsedCount = options.array?.length ?? options.treeNodes?.length ?? options.graphNodes?.length ?? 0;
+      if (parsedCount === 0) {
+        pendingPlayAfterCompile = false;
+        compileError.value = 'Input trống — hãy nhập dữ liệu (phân cách bằng dấu phẩy) để chạy mô phỏng.';
+        frames.value = [];
+        return;
+      }
       const result = await compileInWorker(code.value, [], { ...options, fallbackToRegex: false });
       if (seq !== runSeq) return; // có lần run() mới hơn — bỏ kết quả cũ
       frames.value = result;
@@ -197,6 +227,8 @@ export const useAlgoPlaygroundStore = defineStore('algo-playground', () => {
     } catch (err: unknown) {
       if (seq !== runSeq) return;
       pendingPlayAfterCompile = false;
+      // AL-012: error path không treo nút pause với timeline rỗng
+      isPlaying.value = false;
       const message = err instanceof Error ? err.message : String(err);
       compileError.value = translateCompileError(message);
       frames.value = [];
@@ -241,6 +273,11 @@ export const useAlgoPlaygroundStore = defineStore('algo-playground', () => {
     if (index >= 0 && index < frames.value.length) currentIndex.value = index;
   };
 
+  // AL-040: action thay cho mutation trực tiếp store.playbackSpeed từ component
+  function setPlaybackSpeed(speed: number): void {
+    playbackSpeed.value = speed;
+  }
+
   return {
     demoId,
     code,
@@ -256,12 +293,11 @@ export const useAlgoPlaygroundStore = defineStore('algo-playground', () => {
     currentDescription,
     currentLineNumber,
     totalFrames,
-    isAtStart,
-    isAtEnd,
     renderMode,
     traceLogs,
     inputValidation,
     notableSteps,
+    autoRunSignature,
     applyExternalDemo,
     loadDemo,
     setCode,
@@ -275,5 +311,6 @@ export const useAlgoPlaygroundStore = defineStore('algo-playground', () => {
     stepPrev,
     reset,
     jumpToFrame,
+    setPlaybackSpeed,
   };
 });

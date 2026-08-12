@@ -39,6 +39,19 @@ namespace VisualizationDSA.Domain.Entities
             StatusChangedByUserId = kickedByUserId;
             StatusChangeReason = reason;
         }
+
+        // CR-026: học viên tự rời lớp — chỉ chuyển trạng thái Left (không xóa dữ liệu tiến độ),
+        // Left vẫn được phép join lại sau này.
+        public void Leave()
+        {
+            if (Status != EnrollmentStatus.Active)
+                throw new InvalidOperationException("Chỉ học viên đang hoạt động mới có thể rời lớp.");
+
+            Status = EnrollmentStatus.Left;
+            StatusChangedAt = DateTime.UtcNow;
+            StatusChangedByUserId = null;
+            StatusChangeReason = "Học viên tự rời lớp";
+        }
         
         public void Reactivate()
         {

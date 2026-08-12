@@ -4,6 +4,15 @@
   padding: 0;
   margin: 0;
   border: none;
+  display: block;
+  background: var(--color-bg-primary);
+}
+
+/* EW-003: interactive=false → widget chỉ hiển thị, chặn toàn bộ tương tác chuột
+   của khách xem (vẫn cho phép host điều khiển qua postMessage STEP_FORWARD...). */
+.widget-noninteractive {
+  pointer-events: none;
+  cursor: default;
 }
 
 
@@ -61,6 +70,8 @@
   font-size: 0.95rem;
   text-decoration: none;
   border-radius: 0.75rem;
+  border: none;
+  cursor: pointer;
   transition: transform 0.2s, box-shadow 0.2s;
 }
 

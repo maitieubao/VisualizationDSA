@@ -25,7 +25,9 @@
           v-for="tag in allTags"
           :key="tag"
           class="term-tag-btn"
-          @click="$emit('tagClick', tag)"
+          :class="{ 'term-tag-btn--active': selectedTag === tag }"
+          :aria-pressed="selectedTag === tag"
+          @click="onTagClick(tag)"
         >
           #{{ tag }}
         </button>
@@ -35,7 +37,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue';
+import { computed, ref } from 'vue';
 import type { TheoryDocument } from '../types/theory.types';
 import { renderMarkdown } from '../utils/markdown';
 import SvgIcon from '../../components/icons/SvgIcon.vue';
@@ -44,10 +46,18 @@ const props = defineProps<{
   document: TheoryDocument;
 }>();
 
-defineEmits<{
+const emit = defineEmits<{
   (e: 'tagClick', tag: string): void;
   (e: 'readMore'): void;
 }>();
+
+// CU-034: tag là toggle button — aria-pressed phản ánh trạng thái chọn thật.
+const selectedTag = ref<string | null>(null);
+
+function onTagClick(tag: string): void {
+  selectedTag.value = selectedTag.value === tag ? null : tag;
+  emit('tagClick', tag);
+}
 
 const allTags = computed<string[]>(() => {
   if (!props.document) return [];

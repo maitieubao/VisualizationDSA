@@ -17,6 +17,16 @@
   gap: 8px;
 }
 
+/* EW-029: fieldset theme — không viền mặc định của trình duyệt. */
+.theme-fieldset {
+  border: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
 .embed-settings-label {
   font-family: 'JetBrains Mono', monospace;
   font-size: 11px;
@@ -24,6 +34,42 @@
   text-transform: uppercase;
   letter-spacing: 0.5px;
   font-weight: 700;
+  padding: 0;
+}
+
+.embed-premium-hint {
+  margin: 0;
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--color-accent-yellow);
+  background: color-mix(in srgb, var(--color-accent-yellow) 8%, transparent);
+  border: 1px solid color-mix(in srgb, var(--color-accent-yellow) 20%, transparent);
+  border-radius: 6px;
+  padding: 6px 8px;
+}
+
+/* ─── EW-018: mobile — xếp dọc, sidebar nằm trên, nội dung nằm dưới ─── */
+@media (max-width: 768px) {
+  .embed-configurator-sidebar {
+    width: 100%;
+    border-right: none;
+    border-bottom: 1px solid var(--glass-border);
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 14px;
+    padding: 16px;
+    max-height: 45vh;
+  }
+
+  .embed-settings-group {
+    flex: 1 1 45%;
+    min-width: 140px;
+  }
+
+  .reset-btn {
+    flex: 1 1 100%;
+    margin-top: 0;
+  }
 }
 
 .theme-buttons {

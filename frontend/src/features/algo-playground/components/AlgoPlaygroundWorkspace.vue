@@ -44,30 +44,30 @@
 
       <button
         class="algo-btn algo-btn-primary"
-        :disabled="store.isCompiling"
-        :class="{ 'algo-btn-disabled': store.isCompiling }"
+        :disabled="store.isCompiling || !store.inputValidation.valid"
+        :class="{ 'algo-btn-disabled': store.isCompiling || !store.inputValidation.valid }"
         @click="store.run()"
       >
         <BaseIcon v-if="store.isCompiling" name="spinner" class="w-3.5 h-3.5 inline mr-1 animate-spin" /><BaseIcon v-else name="play" class="w-3.5 h-3.5 inline mr-1" />{{ store.isCompiling ? 'Đang chạy…' : 'Chạy' }}
       </button>
 
       <!-- Menu ⋯: hành động phụ -->
-      <button class="algo-btn algo-btn-icon" title="Thêm" aria-label="Menu thêm" @click="showMoreMenu = !showMoreMenu">
+      <button ref="moreMenuBtn" class="algo-btn algo-btn-icon" title="Thêm" aria-label="Menu thêm" @click="toggleMoreMenu">
         <BaseIcon name="list" class="w-4 h-4" />
       </button>
       <div v-if="showMoreMenu" class="fixed inset-0 z-20" @click="showMoreMenu = false"></div>
-      <div v-if="showMoreMenu" class="absolute right-2 top-[calc(100%+4px)] z-30 w-44 rounded-lg bg-surface/95 border border-surface/70 shadow-xl py-1">
+      <div v-if="showMoreMenu" class="fixed z-30 w-44 rounded-lg bg-surface/95 border border-surface/70 shadow-xl py-1" :style="moreMenuStyle">
         <button class="algo-menu-item" @click="menuAction('hooks')"><BaseIcon name="info" class="w-3.5 h-3.5 inline mr-2 align-middle" />Hooks</button>
         <button class="algo-menu-item" @click="menuAction('restore')"><BaseIcon name="refresh-cw" class="w-3.5 h-3.5 inline mr-2 align-middle" />Code mẫu</button>
         <button class="algo-menu-item" @click="menuAction('share')">
           <BaseIcon :name="shareCopied ? 'check' : 'link'" class="w-3.5 h-3.5 inline mr-2 align-middle" />{{ shareCopied ? 'Đã chép' : 'Chia sẻ' }}
         </button>
       </div>
-    </div>
 
-    <!-- Hooks popover (không đẩy layout) -->
-    <div v-if="showHooks" class="absolute left-2 right-2 top-[76px] z-30 max-h-48 overflow-auto rounded-lg bg-surface/95 border border-surface/70 shadow-xl px-3 py-2">
-      <pre class="text-[10px] font-mono text-text-secondary whitespace-pre-wrap leading-relaxed">{{ HOOKS_HINT }}</pre>
+      <!-- Hooks popover (đặt trong toolbar → định vị theo toolbar, không lệch khi wrap — AL-043) -->
+      <div v-if="showHooks" class="absolute left-2 right-2 top-[calc(100%+4px)] z-30 max-h-48 overflow-auto rounded-lg bg-surface/95 border border-surface/70 shadow-xl px-3 py-2">
+        <pre class="text-[10px] font-mono text-text-secondary whitespace-pre-wrap leading-relaxed">{{ HOOKS_HINT }}</pre>
+      </div>
     </div>
 
     <!-- Thanh header gộp: Code | Visual -->
@@ -108,7 +108,7 @@
       <Pane :size="editorCollapsed ? 100 : 58" :min-size="25">
         <div class="flex flex-col w-full h-full min-w-0">
           <div ref="canvasWrap" class="custom-fullscreen relative flex-1 min-h-0">
-            <canvas ref="canvasEl" class="w-full h-full block"></canvas>
+            <canvas ref="canvasEl" class="w-full h-full block" role="img" :aria-label="`Trực quan hóa thuật toán — ${renderModeLabel}`"></canvas>
 
             <!-- Empty state -->
             <div
@@ -226,7 +226,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch, nextTick, onMounted, onBeforeUnmount } from 'vue';
+import { ref, computed, watch, nextTick, onMounted, onBeforeUnmount, onActivated, onDeactivated } from 'vue';
 import { useRoute } from 'vue-router';
 import { compressToEncodedURIComponent, decompressFromEncodedURIComponent } from 'lz-string';
 import * as monaco from 'monaco-editor';
@@ -278,6 +278,10 @@ const editorCollapsed = ref(false);
 const shareCopied = ref(false);
 const hoverFrame = ref<{ index: number; description: string } | null>(null);
 const hoverPct = ref(0);
+const moreMenuBtn = ref<HTMLButtonElement | null>(null);
+const moreMenuStyle = ref<{ top: string; left: string }>({ top: '0px', left: '0px' });
+// AL-001: cờ component visible — KeepAlive deactivate → phím tắt window không còn hiệu lực
+const componentVisible = ref(true);
 
 const isStacked = ref(false);
 
@@ -286,6 +290,17 @@ const inputHintVisible = computed(() => {
   if (store.inputRaw.trim().length === 0) return false;
   return store.inputValidation.message !== 'Input trống';
 });
+
+/** AL-043: menu ⋯ định vị động theo vị trí nút trigger — không lệch khi toolbar wrap. */
+function toggleMoreMenu(): void {
+  showMoreMenu.value = !showMoreMenu.value;
+  if (showMoreMenu.value && moreMenuBtn.value) {
+    const rect = moreMenuBtn.value.getBoundingClientRect();
+    const width = 176;
+    const left = Math.min(Math.max(8, rect.right - width), window.innerWidth - width - 8);
+    moreMenuStyle.value = { top: `${rect.bottom + 4}px`, left: `${Math.max(8, left)}px` };
+  }
+}
 
 /** Hành động trong menu ⋯. */
 function menuAction(action: 'hooks' | 'restore' | 'share'): void {
@@ -370,7 +385,8 @@ function onScrub(event: Event): void {
 }
 
 function onSpeedChange(event: Event): void {
-  store.playbackSpeed = Number((event.target as HTMLInputElement).value);
+  // AL-040: dùng action của store thay mutation trực tiếp
+  store.setPlaybackSpeed(Number((event.target as HTMLSelectElement).value));
 }
 
 function onJumpToEnd(): void {
@@ -465,6 +481,14 @@ function onFormat(): void {
 
 // ---------------- Keyboard shortcuts ----------------
 function onKeydown(event: KeyboardEvent): void {
+  // AL-001: KeepAlive deactivate → component không visible → phím tắt bị vô hiệu
+  if (!componentVisible.value) return;
+  // AL-043: Esc đóng menu ⋯ / popover Hooks bất kể focus ở đâu
+  if (event.code === 'Escape') {
+    showMoreMenu.value = false;
+    showHooks.value = false;
+    return;
+  }
   const el = document.activeElement;
   // Nút button tự xử lý Space/Enter/Arrow — tránh kích hoạt kép (click + phím tắt).
   if (el && (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA' || el.tagName === 'SELECT' || el.tagName === 'BUTTON')) return;
@@ -502,12 +526,40 @@ let mediaQuery: MediaQueryList | null = null;
 let onMediaChange: ((e: MediaQueryListEvent) => void) | null = null;
 let resizeObserver: ResizeObserver | null = null;
 
+/**
+ * AL-045: auto-run chỉ khi code/input/demoId THỰC SỰ đổi so với lần chạy trước
+ * (so với store.autoRunSignature) — remount cùng trạng thái không re-compile.
+ */
+function runIfChanged(): void {
+  const sig = `${store.demoId ?? ''}|${store.code}|${store.inputRaw}`;
+  if (sig !== store.autoRunSignature) {
+    store.run();
+  }
+}
+
+/**
+ * AL-002: đồng bộ snapshot engine theo frame hiện tại (dùng khi onActivated —
+ * composable không expose syncSnapshots nên tái lập tại đây).
+ */
+function syncEngineSnapshots(): void {
+  const idx = store.currentIndex;
+  const frames = store.frames;
+  if (frames.length === 0) return;
+  const currentFrame = frames[idx];
+  if (!currentFrame) return;
+  const prevFrame = frames[Math.max(0, idx - 1)];
+  anim.engine.setSnapshots(
+    prevFrame?.canvasStateSnapshot ?? null,
+    currentFrame.canvasStateSnapshot,
+  );
+}
+
 onMounted(() => {
   if (!store.code) {
     store.loadDemo(props.demoId && playgroundAlgoDemos[props.demoId] ? props.demoId : 'bubble-sort');
   }
   restoreSharedState(); // ưu tiên trạng thái chia sẻ từ URL (?src=)
-  store.run();
+  runIfChanged();
 
   // Responsive: xếp dọc editor/canvas trên màn hình hẹp
   if (typeof window.matchMedia === 'function') {
@@ -576,11 +628,13 @@ watch(
 watch(
   () => props.demoId,
   (id) => {
+    // AL-014: URL ?demo= ưu tiên hơn localStorage — immediate ngay khi mount
     if (id && id !== store.demoId) {
       store.loadDemo(id);
       store.run();
     }
   },
+  { immediate: true },
 );
 
 // Tự cuộn trace history xuống cuối khi có log mới
@@ -588,6 +642,25 @@ watch(() => store.traceLogs.length, () => {
   void nextTick(() => {
     if (traceScrollEl.value) traceScrollEl.value.scrollTop = traceScrollEl.value.scrollHeight;
   });
+});
+
+// AL-001 + AL-002: KeepAlive deactivate → gỡ phím tắt window + dừng engine rAF;
+// activate → đăng ký lại phím tắt + đồng bộ snapshot + phát lại theo store.isPlaying.
+onDeactivated(() => {
+  componentVisible.value = false;
+  window.removeEventListener('keydown', onKeydown);
+  anim.engine.pause();
+});
+
+onActivated(() => {
+  componentVisible.value = true;
+  window.addEventListener('keydown', onKeydown);
+  syncEngineSnapshots();
+  if (store.isPlaying) {
+    anim.engine.play();
+  } else {
+    anim.engine.pause();
+  }
 });
 
 onBeforeUnmount(() => {

@@ -21,7 +21,7 @@ const makeEditor = () => ({
   updateOptions: vi.fn(),
 });
 
-const mockCreate = vi.fn(() => makeEditor());
+const mockCreate = vi.fn((..._args: unknown[]) => makeEditor());
 
 vi.mock('monaco-editor', () => {
   return { editor: { create: (...args: unknown[]) => mockCreate(...args), setTheme: vi.fn() } };

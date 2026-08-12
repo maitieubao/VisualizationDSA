@@ -6,9 +6,13 @@
       <span class="panel-title__badge">Giảng viên</span>
     </h1>
 
-    
+    <!-- TC-045: 4 thẻ thống kê — có banner lỗi + nút Retry, không hiện "—" mãi mãi -->
     <section class="analytics-section">
       <h2 class="section-heading">Thống kê lớp học</h2>
+      <div v-if="analyticsError" class="error-banner mb-4 flex items-center justify-between gap-3 rounded-xl border border-accent-red/30 bg-accent-red/10 px-4 py-3">
+        <span class="text-sm text-accent-red"><BaseIcon name="alert-circle" class="w-4 h-4 inline mr-1 align-middle" />{{ analyticsError }}</span>
+        <button type="button" class="btn-secondary text-xs px-3 py-1.5" @click="loadAnalyticsCards">Thử lại</button>
+      </div>
       <div class="analytics-grid">
         <div v-for="metric in analyticsCards" :key="metric.label" class="metric-card">
           <span class="metric-card__value">{{ metric.value }}</span>
@@ -17,11 +21,21 @@
       </div>
     </section>
 
-    
-    <div class="panel-tabs flex border-b border-border-subtle gap-6 mb-8 mt-2 flex-wrap">
-      <button 
+    <!-- TC-027: ARIA tablist/tab + aria-selected + điều hướng phím mũi tên -->
+    <div
+      class="panel-tabs flex border-b border-border-subtle gap-6 mb-8 mt-2 flex-wrap"
+      role="tablist"
+      aria-label="Các mục quản lý giảng viên"
+      @keydown="onTablistKeydown"
+    >
+      <button
         v-for="tab in tabs" :key="tab.id"
-        type="button" 
+        type="button"
+        role="tab"
+        :id="`teacher-tab-${tab.id}`"
+        :aria-selected="activeTab === tab.id"
+        :aria-controls="`teacher-panel-${tab.id}`"
+        :tabindex="activeTab === tab.id ? 0 : -1"
         class="pb-3 text-lg font-bold transition-all relative cursor-pointer whitespace-nowrap"
         :class="activeTab === tab.id ? 'text-accent border-b-2 border-accent' : 'text-text-muted hover:text-text-primary'"
         @click="activeTab = tab.id"
@@ -30,20 +44,22 @@
       </button>
     </div>
 
-    
-    <TeacherQuizTab v-if="activeTab === 'quizzes'" ref="quizTabRef" />
-    <TeacherCourseTab v-else-if="activeTab === 'courses'" ref="courseTabRef" :quizzes-list="quizTabQuizzesList" />
-    <TeacherClassroomCurriculumTab v-else-if="activeTab === 'curriculum'" :classroom-id="selectedClassroomId" ref="curriculumTabRef" />
-    <TheoryArticleLibraryTab v-else-if="activeTab === 'theory'" ref="theoryTabRef" />
-    <QuizBuilderTab v-else-if="activeTab === 'quiz-builder'" ref="quizBuilderTabRef" />
-    <CodelabBuilderTab v-else-if="activeTab === 'codelab-builder'" ref="codelabBuilderTabRef" />
-    <TeacherStudentTab v-else-if="activeTab === 'students'" />
-    <TeacherAnalyticsTab v-else-if="activeTab === 'analytics'" />
+    <!-- TC-027: KeepAlive giữ state từng tab (không mất scroll/dữ liệu khi đổi tab) -->
+    <KeepAlive>
+      <TeacherQuizTab v-if="activeTab === 'quizzes'" :key="'quizzes'" id="teacher-panel-quizzes" />
+      <TeacherCourseTab v-else-if="activeTab === 'courses'" :key="'courses'" id="teacher-panel-courses" />
+      <TeacherClassroomCurriculumTab v-else-if="activeTab === 'curriculum'" :key="'curriculum'" :classroom-id="selectedClassroomId" id="teacher-panel-curriculum" />
+      <TheoryArticleLibraryTab v-else-if="activeTab === 'theory'" :key="'theory'" id="teacher-panel-theory" />
+      <QuizBuilderTab v-else-if="activeTab === 'quiz-builder'" :key="'quiz-builder'" id="teacher-panel-quiz-builder" />
+      <CodelabBuilderTab v-else-if="activeTab === 'codelab-builder'" :key="'codelab-builder'" id="teacher-panel-codelab-builder" />
+      <TeacherStudentTab v-else-if="activeTab === 'students'" :key="'students'" id="teacher-panel-students" />
+      <TeacherAnalyticsTab v-else-if="activeTab === 'analytics'" :key="'analytics'" id="teacher-panel-analytics" />
+    </KeepAlive>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, watch } from 'vue';
+import { ref, onMounted, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useTeacherApi } from './useTeacherApi';
 import TeacherQuizTab from './TeacherQuizTab.vue';
@@ -57,9 +73,11 @@ import CodelabBuilderTab from './CodelabBuilderTab.vue';
 
 const route = useRoute();
 const router = useRouter();
-const { BASE_URL, getAuthHeaders } = useTeacherApi();
+const { BASE_URL, teacherRequest } = useTeacherApi();
 
-const activeTab = ref<'quizzes' | 'courses' | 'curriculum' | 'theory' | 'quiz-builder' | 'codelab-builder' | 'students' | 'analytics'>('courses');
+type TabId = 'quizzes' | 'courses' | 'curriculum' | 'theory' | 'quiz-builder' | 'codelab-builder' | 'students' | 'analytics';
+
+const activeTab = ref<TabId>('courses');
 const selectedClassroomId = ref<string | null>(null);
 
 const tabs = [
@@ -81,35 +99,47 @@ const analyticsCards = ref<AnalyticsMetric[]>([
   { label: 'Tổng số người dùng', value: '—' },
   { label: 'Thành viên Premium', value: '—' },
 ]);
+// TC-045: lỗi thống kê hiển thị banner + nút Retry.
+const analyticsError = ref('');
 
-const quizTabRef = ref<InstanceType<typeof TeacherQuizTab> | null>(null);
-const courseTabRef = ref<InstanceType<typeof TeacherCourseTab> | null>(null);
-const curriculumTabRef = ref<InstanceType<typeof TeacherClassroomCurriculumTab> | null>(null);
-const theoryTabRef = ref<InstanceType<typeof TheoryArticleLibraryTab> | null>(null);
-const quizBuilderTabRef = ref<InstanceType<typeof QuizBuilderTab> | null>(null);
-const codelabBuilderTabRef = ref<InstanceType<typeof CodelabBuilderTab> | null>(null);
+// TC-027: điều hướng tab bằng phím mũi tên (ARIA tabs pattern).
+function onTablistKeydown(e: KeyboardEvent): void {
+  const idx = tabs.findIndex((t) => t.id === activeTab.value);
+  let next = idx;
+  if (e.key === 'ArrowRight') next = (idx + 1) % tabs.length;
+  else if (e.key === 'ArrowLeft') next = (idx - 1 + tabs.length) % tabs.length;
+  else if (e.key === 'Home') next = 0;
+  else if (e.key === 'End') next = tabs.length - 1;
+  else return;
+  e.preventDefault();
+  activeTab.value = tabs[next].id;
+}
 
-const quizTabQuizzesList = computed(() => quizTabRef.value?.quizzesList ?? []);
+async function loadAnalyticsCards(): Promise<void> {
+  analyticsError.value = '';
+  try {
+    const res = await teacherRequest(`${BASE_URL}/api/v1/analytics/quizzes`);
+    if (!res.ok) throw new Error('Không thể tải thống kê.');
+    const data = await res.json();
+    analyticsCards.value = [
+      { label: 'Tổng số bài trắc nghiệm', value: data.totalQuizzes ?? '—' },
+      { label: 'Tổng số câu hỏi', value: data.totalQuestionsInBank ?? '—' },
+      { label: 'Tổng số người dùng', value: data.totalUsers ?? '—' },
+      { label: 'Thành viên Premium', value: data.premiumUsers ?? '—' },
+    ];
+  } catch (err) {
+    analyticsError.value = err instanceof Error ? err.message : 'Lỗi khi tải thống kê.';
+  }
+}
 
 onMounted(async () => {
-  
+  // TC-016: TeacherCourseTab tự fetch quiz riêng — không cần ref qua TeacherQuizTab nữa.
   if (route.query.classroomId) {
     selectedClassroomId.value = route.query.classroomId as string;
     activeTab.value = 'curriculum';
   }
 
-  try {
-    const res = await fetch(`${BASE_URL}/api/v1/analytics/quizzes`, { headers: getAuthHeaders() });
-    if (res.ok) {
-      const data = await res.json();
-      analyticsCards.value = [
-        { label: 'Tổng số bài trắc nghiệm', value: data.totalQuizzes },
-        { label: 'Tổng số câu hỏi', value: data.totalQuestionsInBank },
-        { label: 'Tổng số người dùng', value: data.totalUsers },
-        { label: 'Thành viên Premium', value: data.premiumUsers },
-      ];
-    }
-  } catch {  }
+  loadAnalyticsCards();
 });
 
 watch(() => route.query.classroomId, (newId) => {

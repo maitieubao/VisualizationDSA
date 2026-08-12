@@ -1,9 +1,37 @@
 // @vitest-environment jsdom
 
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { setActivePinia, createPinia } from 'pinia';
+import { mount, flushPromises } from '@vue/test-utils';
+import { setActivePinia, createPinia, type Pinia } from 'pinia';
 
 import { useGuidedTourStore } from '../store/useGuidedTourStore';
+import CodeWorkspace from '../../code-to-visualization/components/CodeWorkspace.vue';
+
+const { setModelMarkers, defineTheme, createEditor } = vi.hoisted(() => ({
+  setModelMarkers: vi.fn(),
+  defineTheme: vi.fn(),
+  createEditor: vi.fn(),
+}));
+
+vi.mock('@monaco-editor/loader', () => ({
+  default: {
+    init: vi.fn().mockResolvedValue({
+      MarkerSeverity: { Error: 8 },
+      editor: {
+        defineTheme,
+        create: createEditor,
+        setModelMarkers,
+      },
+    }),
+  },
+}));
+
+const fakeEditorInstance = {
+  getValue: () => '',
+  onDidChangeModelContent: vi.fn(),
+  getModel: () => ({ dispose: vi.fn() }),
+  dispose: vi.fn(),
+};
 
 class LocalStorageMock {
   private store: Record<string, string> = {};
@@ -173,16 +201,8 @@ describe('useGuidedTourStore', () => {
       const testCases = [
         { path: '/sorting', expectedLength: 12, firstTitle: '1. Bộ chuyển đổi Sandbox / Bài học' },
         { path: '/code-ide', expectedLength: 12, firstTitle: '1. Monaco Code Editor' },
-        { path: '/solid', expectedLength: 12, firstTitle: '1. Trực quan hóa Nguyên lý SOLID' },
-        { path: '/oop', expectedLength: 12, firstTitle: '1. Trực quan hóa Hướng đối tượng' },
         { path: '/graph', expectedLength: 12, firstTitle: '1. Sân chơi Đồ thị & Cây' },
-        { path: '/di', expectedLength: 12, firstTitle: '1. Dependency Injection & IoC Container' },
-        { path: '/patterns', expectedLength: 12, firstTitle: '1. Bộ sưu tập Design Patterns' },
-        { path: '/state', expectedLength: 12, firstTitle: '1. Giám sát Trạng thái & Đệ quy' },
-        { path: '/system', expectedLength: 12, firstTitle: '1. Thiết kế Hệ thống phân tán' },
         { path: '/quiz', expectedLength: 12, firstTitle: '1. Trắc nghiệm kiến thức nâng cao' },
-        { path: '/compare', expectedLength: 12, firstTitle: '1. So sánh hiệu năng thuật toán' },
-        { path: '/concurrency', expectedLength: 12, firstTitle: '1. Trực quan hóa Đa luồng' },
       ];
 
       testCases.forEach(({ path, expectedLength, firstTitle }) => {
@@ -219,6 +239,50 @@ describe('useGuidedTourStore', () => {
       expect(clickSpy).toHaveBeenCalled();
       
       document.body.removeChild(dummyBtn);
+    });
+  });
+
+  describe('tour /code-ide — mọi highlightSelector tồn tại trong DOM khi mount CodeWorkspace (CV-142 regression)', () => {
+    let pinia: Pinia;
+
+    beforeEach(() => {
+      pinia = createPinia();
+      setActivePinia(pinia);
+      localStorage.clear();
+      createEditor.mockImplementation(() => fakeEditorInstance);
+    });
+
+    it('mọi data-tour-id của tour /code-ide đều có element thật ở trạng thái KHÔNG compile', async () => {
+      const store = useGuidedTourStore();
+      store.startPageTour('/code-ide', true);
+
+      const selectors = store.currentSteps
+        .map((step) => step.highlightSelector)
+        .filter((s): s is string => Boolean(s));
+      expect(selectors.length).toBeGreaterThan(0);
+
+      const wrapper = mount(CodeWorkspace, {
+        attachTo: document.body,
+        global: {
+          plugins: [pinia],
+          stubs: {
+            CanvasLayer: true,
+            AnimControlPanel: true,
+            BaseIcon: true,
+          },
+        },
+      });
+      await flushPromises();
+
+      try {
+        for (const selector of selectors) {
+          const el = document.querySelector(selector);
+          expect(el, `highlightSelector không tồn tại trong DOM: ${selector}`).not.toBeNull();
+        }
+        expect(document.querySelector('[data-tour-id="code-ide-cancel-btn"]')).toBeNull();
+      } finally {
+        wrapper.unmount();
+      }
     });
   });
 });

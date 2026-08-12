@@ -29,10 +29,10 @@ Tài liệu này theo dõi chi tiết tiến độ hoàn thành **code thực t�
 | **Sprint 3**  | Đồng bộ dòng lệnh mã giả Monaco Editor              | ✅ DONE         | Monaco Editor thật `@monaco-editor/loader`, `MonacoGutterClickInterceptor` click-to-snap, `PseudocodeSyncer` highlight dòng, `ArrayBarVisualizer` Double Buffering                    |
 | **Sprint 4**  | Bài giảng Slide & Câu hỏi Trắc nghiệm Canvas        | ✅ CODE DONE    | `InteractiveLectureSlides.vue` đã mount trong `App.vue` (right column), `syncSlideWithVisualizer` kết nối `vcrStore.jumpToFrame()`, Quiz data hardcoded trong component, 3 tests pass |
 | **Sprint 5**  | Sân chơi vẽ đồ thị tự do & Trợ lý Xây dựng Đồ thị (Graph Builder Assistant) | ✅ CODE DONE    | Thiết kế lại UI/UX: Mode Bar dạng top pill, gộp toolbar trái, local BFS/DFS/Dijkstra simulator. Nâng cấp panel phải thành Graph Builder Assistant: bỏ hoàn toàn Array Input, tách tab Build/Import, form thêm cạnh có cấu trúc, đồng bộ hover highlight 2 chiều phát sáng, sinh đồ thị ngẫu nhiên và xóa sạch. **Rebuild giao diện đồ thị**: GraphView.vue với sidebar sạch (loại đồ thị, template, công cụ, hành động), InteractivePlayground.vue với toolbar cải tiến (toggle undirected/directed, template buttons, auto-layout), PlaygroundCanvas.vue với zoom/pan (scroll wheel 0.2x-3x, middle-click drag), grid background, responsive resize. playgroundCanvasDraw.ts hỗ trợ directed/undirected edges với arrowhead. GraphGeometryEngine.ts thêm drawArrowhead(). usePlaygroundStore.ts thêm graphType state. 35 tests pass. |
-| **Sprint 6**  | OOP Sandbox, đóng gói & VTable đa hình              | ✅ CODE DONE    | `OOPReflectionEngine` + `OOPSandbox.vue` mounted, Encapsulation locks (red/yellow/green), VTable dispatch visualization, Heap allocator UI                                            |     |
-| **Sprint 7**  | Chỉ số kết dính SRP LCOM4 DFS & LSP vỡ kính         | ✅ CODE DONE    | `SOLIDLCOM4Calculator` + `LspGlassCracker` + `SOLIDSandbox.vue` mounted, cracked glass animation, cohesion analyzer                                                                   |
-| **Sprint 8**  | IoC Container Singleton/Transient & Vòng lặp        | ✅ CODE DONE    | `DIContainerEngine` với DFS cycle detection, `DISandbox.vue` mounted, Transient/Singleton visualization, dependency graph Bezier                                                      |
-| **Sprint 9**  | Mẫu thiết kế Observer Strategy Neon Bezier          | ✅ CODE DONE    | `PatternEngine` + `PatternSandbox.vue` mounted, Observer notification flow, Strategy switcher, Factory product creation                                                               |
+| **Sprint 6**  | OOP Sandbox, đóng gói & VTable đa hình              | ❌ ĐÃ THAY THẾ | Chuyển sang **Docs Reference Style** (ADR-05): `docs/content/oop/*` (5 bài). Code gốc từng ở `src/features/oop-visualization/` (60 tests) — spec còn: `plan/features/sprint-6/phase2-oop-concept.md` |
+| **Sprint 7**  | Chỉ số kết dính SRP LCOM4 DFS & LSP vỡ kính         | ❌ ĐÃ THAY THẾ | Chuyển sang **Docs Reference Style** (ADR-05): `docs/content/solid/*` (5 bài). Code gốc từng ở `src/features/solid-visualization/` (105 tests) — spec còn: `plan/features/sprint-7/phase2-solid-principles.md` |
+| **Sprint 8**  | IoC Container Singleton/Transient & Vòng lặp        | ❌ ĐÃ THAY THẾ | Chuyển sang **Docs Reference Style** (ADR-05): `docs/content/di/*` (4 bài). Code gốc từng ở `src/features/di-visualization/` — spec còn: `plan/features/sprint-8/phase2-di-ioc.md` |
+| **Sprint 9**  | Mẫu thiết kế Observer Strategy Neon Bezier          | ❌ ĐÃ THAY THẾ | Chuyển sang **Docs Reference Style** (ADR-05): `docs/content/patterns/*` (5 bài). Code gốc từng ở `src/features/design-patterns/` (50 tests) — spec còn: `plan/features/sprint-9/phase2-design-patterns.md` |
 | **Sprint 10** | Giám sát Call Stack 3D Stack-to-Heap Bezier         | ✅ CODE DONE    | `CallStackEngine` + `DSLEngine` + `StateInspector.vue` mounted, 3D stack-heap visualization, DSL compiler                                                                             |
 | **Sprint 11** | Cân bằng tải Server bốc khói & DB Replication lag   | ✅ CODE DONE    | `LoadBalancerEngine` + `SystemSandbox.vue` mounted, Round-robin LB, smoke particles, DB replication lag                                                                               |
 | **Sprint 12** | Tích lũy XP & Trình sinh mã nhúng Iframe nhúng      | ✅ CODE DONE    | `XPEngine` + `GamificationPanel.vue` mounted, Level progression, badges, embed widget generator                                                                                       |
@@ -377,69 +377,27 @@ Tài liệu này theo dõi chi tiết tiến độ hoàn thành **code thực t�
 | **Component** | CodeWorkspace.vue (IDE Layout Grid) | ✅ CODE DONE | `components/CodeWorkspace.vue` — 50/50 grid (Editor+Console left, Canvas+Controls right), input array validation, Run button (Cyan gradient + loading state), CanvasLayer + AnimControlPanel reuse |
 | **Integration** | App.vue Code IDE tab + module barrel export | ✅ CODE DONE | New "Code IDE" tab in `App.vue`, `index.ts` barrel export |
 | **Dependencies** | acorn, acorn-walk, escodegen + @types | ✅ CODE DONE | `acorn`, `acorn-walk`, `escodegen`, `@types/escodegen`, `@types/estree` |
-| **Tests** | 32 Unit Tests | ✅ CODE DONE | `ASTInstrumentationEngine.spec.ts` (14), `WorkerLifecycleCoordinator.spec.ts` (7), `useLiveCompilerStore.spec.ts` (11) — ALL PASS |
+| **Tests** | 80 Unit Tests | ✅ CODE DONE | `ASTInstrumentationEngine.spec.ts` (21), `WorkerLifecycleCoordinator.spec.ts` (10), `useLiveCompilerStore.spec.ts` (13), `codeToVizP0Tests.spec.ts` (16), `codeToVizComponentTests.spec.ts` (20) — ALL PASS |
 | **Bug Fix** | 3 Runtime Bugs Fixed | ✅ CODE DONE | Bug 1: Vue Proxy spread `[...inputArray.value]` (useLiveCompilerStore.ts); Bug 2: `__loopCounter` duplicate removed from Function params (WorkerLifecycleCoordinator.ts); Bug 3: `appendAutoInvoke()` appends `functionName(arr)` call (ASTInstrumentationEngine.ts:60-78) |
 | **UI Testing** | 5 UI End-to-End Tests | ✅ ALL PASSED | Empty state, Success flow (71 frames), Syntax error, Infinite loop (5000 guard), Invalid input — PR #11 comment with screenshots |
 
-### Phase 2 Compare Algorithms — Side-by-Side Algorithm Comparator
+### ❌ ĐÃ XÓA: Compare Algorithms / Concurrency Visualizer / Debug Mode (quyết định 2026-08-10)
 
-| Bước | Nội dung | Trạng thái CODE | Chi tiết |
-| :--- | :--- | :--- | :--- |
-| **Types** | CompareAlgorithmEntry, CompareStats, ComparePlaybackMode/State | ✅ CODE DONE | `compare-algorithms/types/compare.types.ts` |
-| **Engine** | UnifiedPlaybackCoordinator (syncProgressByPercent, calculateAlignedSpeeds) | ✅ CODE DONE | `engine/UnifiedPlaybackCoordinator.ts` — SubStoreState interface, percent-based sync, speed alignment (longer alg keeps base speed, shorter slowed), getGlobalProgress, clamp |
-| **Engine** | UnifiedRenderScheduler (Dual rAF loop) | ✅ CODE DONE | `engine/UnifiedRenderScheduler.ts` — registerCallbacks, startSchedulerLoop, stopSchedulerLoop, cleanup — gom 2 Canvas vào 1 vòng rAF tối ưu GPU |
-| **Store** | useCompareAlgorithmsStore Pinia Setup Store | ✅ CODE DONE | `store/useCompareAlgorithmsStore.ts` — dual algorithm selection, dual frames (shallowRef), unified VCR (play/pause/stop/step/scrub), independent/normalized playback modes, live stats extraction (comparisons/swaps from highlights), efficiencyRatio, generateRandomInput, cleanup |
-| **Component** | CompareAlgorithmSelector.vue (Pair Picker) | ✅ CODE DONE | `components/CompareAlgorithmSelector.vue` — dual dropdowns (Sorting algorithms only), VS badge, "Tạo dữ liệu" (random generate + load), "So sánh" (load with current), disabled option when selected on other side |
-| **Component** | CompareCanvasPanel.vue (Single-side Canvas) | ✅ CODE DONE | `components/CompareCanvasPanel.vue` — props-driven (currentFrame, totalFrames, accentColor), bar chart rendering (Lerp EaseOut, sorted/compare/swap highlights), header with algorithm name + complexity + "Hoàn thành" badge, progress bar, ResizeObserver |
-| **Component** | ComparativeDashboard.vue (Stats Board) | ✅ CODE DONE | `components/ComparativeDashboard.vue` — 4-column grid: Comparisons, Swaps, Total Steps, Progress — Cyan (left) vs Emerald (right) neon bars, efficiency ratio display |
-| **Component** | CompareWorkspace.vue (Orchestrator) | ✅ CODE DONE | `components/CompareWorkspace.vue` — selector + split-screen (grid-cols-2) + dashboard + unified VCR (Play/Pause/Stop/Step/Scrub/Speed/Mode), keyboard shortcuts (Space, Arrow, R), Glassmorphism |
-| **Integration** | App.vue "So sánh" tab | ✅ CODE DONE | New "So sánh" tab in `App.vue`, `index.ts` barrel export |
-| **Tests** | 33 Unit Tests | ✅ CODE DONE | `UnifiedPlaybackCoordinator.spec.ts` (10), `useCompareAlgorithmsStore.spec.ts` (19), `UnifiedRenderScheduler.spec.ts` (4) — ALL PASS |
+Ba tính năng Phase 2 này đã bị **gỡ hoàn toàn khỏi master** (move vào `src/features/archived/` ở commit `90559a2f`, sau đó xóa sạch ở commit `29927a47`). Không còn route, tab, component hay test nào trên master. Quyết định: **không restore**, xem `plan/tracking/decisions.md` ADR-40.
 
-### Phase 2 Concurrency Visualizer — Thread Rails & DFS Deadlock Detector
+| Feature | Trạng thái | Code gốc có thể phục hồi tại |
+| :--- | :--- | :--- |
+| 10. Compare Algorithms (33 tests) | ❌ ĐÃ XÓA | `origin/devin/1779553936-phase2-compare-algorithms` |
+| 11. Concurrency Visualizer (35 tests) | ❌ ĐÃ XÓA | `origin/devin/1779554966-phase2-concurrency-viz` |
+| 12. Debug Mode (49 tests) | ❌ ĐÃ XÓA | `origin/devin/1779556334-phase2-debug-mode` |
 
-| Bước | Nội dung | Trạng thái CODE | Chi tiết |
-| :--- | :--- | :--- | :--- |
-| **Types** | ThreadInstance, LockInstance, ConcurrencyScenario, DeadlockResult, PlaybackMode | ✅ CODE DONE | `concurrency-viz/types/concurrency.types.ts` — ThreadState (READY/RUNNING/BLOCKED/FINISHED), ScenarioStep, ConcurrencySnapshot |
-| **Engine** | ConcurrencySimulationEngine (Thread State Machine + Mutex Lock Queue) | ✅ CODE DONE | `engine/ConcurrencySimulationEngine.ts` — acquireLock (BLOCKED queue), releaseLock (wake signal), moveThread (progress 0-100), incrementCounter, getEngineState |
-| **Engine** | DeadlockDetector (DFS Wait-For Graph Cycle Detection) | ✅ CODE DONE | `engine/ConcurrencySimulationEngine.ts` — static detectDeadlock, WFG adjacency list, DFS recStack cycle detection, cycleThreadIds extraction |
-| **Store** | useConcurrencyStore Pinia Setup Store | ✅ CODE DONE | `store/useConcurrencyStore.ts` — scenario initialization, step-by-step execution, history snapshots (scrub backward), deadlock detection per step, togglePlayPause, scrubToStep, setMutexEnabled, setSpeed, cleanup |
-| **Scenarios** | 4 Concurrency Scenario Presets | ✅ CODE DONE | `scenarios/concurrencyScenarios.ts` — Race Condition (2 threads, 1 Mutex, 24 steps), Deadlock Demo (2 threads, 2 locks, 12 steps), Producer-Consumer (2 threads, 1 lock, 18 steps), Dining Philosophers (5 threads, 5 forks, 20 steps) |
-| **Component** | ThreadRailsCanvas.vue (Thread Rails + Critical Section + Mutex Lock) | ✅ CODE DONE | `components/ThreadRailsCanvas.vue` — Slate thread rails, Cyan/Amber/Emerald runner nodes (RUNNING/BLOCKED/FINISHED), Critical Section gate (rose overlay), Mutex padlock icon (open Cyan / locked Amber), Shared Counter display, Deadlock Neon Rose pulse animation, deadlock alert overlay |
-| **Component** | ConcurrencyWorkspace.vue (Orchestrator) | ✅ CODE DONE | `components/ConcurrencyWorkspace.vue` — Scenario dropdown selector, Mutex BẬT/TẮT toggle, ThreadRailsCanvas + Pseudocode panel (3-column grid), Unified VCR (Play/Pause/Stop/StepFwd/StepBack/Scrub/Speed), Replay button, Keyboard shortcuts (Space/Arrow/R), Mode badge |
-| **Integration** | App.vue "Đa luồng" tab | ✅ CODE DONE | New "Đa luồng" tab in `App.vue`, `index.ts` barrel export |
-| **Tests** | 35 Unit Tests | ✅ CODE DONE | `ConcurrencySimulationEngine.spec.ts` (16 — engine + deadlock detector), `useConcurrencyStore.spec.ts` (19 — store) — ALL PASS |
-
-### Phase 2 Debug Mode — Algorithmic Step Debugger Workspace (Generator Yield + Iterator Stepping)
-
-| Bước | Nội dung | Trạng thái CODE | Chi tiết |
-| :--- | :--- | :--- | :--- |
-| **Types** | DebugStepPayload, DebuggerStatus, DebuggerState, DebugCompilationResult | ✅ CODE DONE | `debug-mode/types/debug.types.ts` — DebuggerStatus union (IDLE/DEBUGGING/PAUSED/FINISHED/ERROR), DebugStepPayload (lineNumber, arrayState, variables, callStack) |
-| **Engine** | DebuggerYieldEngine (AST → Generator function* + yield injection) | ✅ CODE DONE | `engine/DebuggerYieldEngine.ts` — compileToDebugGenerator, convertFunctionsToGenerators, injectYieldStatements, createYieldStatement (lineNumber + arrayState + variables + callStack), injectLoopGuards (__loopCounter > 5000), appendAutoInvoke (__recursionDepth > 500, __callStack tracking, yield* delegation) |
-| **Engine** | LiveCompilerDebugger (Iterator .next() stepping controller) | ✅ CODE DONE | `engine/LiveCompilerDebugger.ts` — stepForward (generator.next()), stepBackward (history restore), continueToNextBreakpoint (loop until breakpoint hit, max 5000 steps), stepOut (loop until callStack.length < currentDepth), setBreakpoints, getHistory, reset |
-| **Store** | useLiveDebuggerStore Pinia Setup Store | ✅ CODE DONE | `store/useLiveDebuggerStore.ts` — sourceCode, inputArray, status, activeBreakpoints, currentLineNumber, callStackFrames, watchedVariables, mutatedVariableKeys, stepCount, errorMessage, arrayState; toggleBreakpoint, startDebuggingSession (AST compile + new Function wrapper), stepForward/stepBackward/continueToNextBreakpoint/stepOut, syncDebuggerPayload (mutation detection), stopDebuggingSession |
-| **Component** | CallStackVisualizer.vue (3D Glassmorphism stacked cards) | ✅ CODE DONE | `components/CallStackVisualizer.vue` — reverse display (most recent at top), TransitionGroup animation, Active top frame (Cyan border glow, scale 1.01), lower frames (opacity 0.6), depth #, function icon, function name, Active badge |
-| **Component** | DebugWatchPanel.vue (Variable watch + mutation highlights) | ✅ CODE DONE | `components/DebugWatchPanel.vue` — variable name=value pairs, mutated vars get Cyan left border + highlight + pulsing dot, TransitionGroup fade transitions, format function (undefined/string/number) |
-| **Component** | DebugCanvas.vue (Array bar visualization) | ✅ CODE DONE | `components/DebugCanvas.vue` — bars proportional to value/max, Cyan gradient with glow, shadow blur, roundRect, index labels, responsive resize (requestAnimationFrame + devicePixelRatio DPI scaling) |
-| **Component** | DebugWorkspace.vue (IDE Orchestrator) | ✅ CODE DONE | `components/DebugWorkspace.vue` — Monaco Editor (algolens-debug theme, JetBrains Mono, gutter click → toggleBreakpoint, breakpoint rose dots via deltaDecorations, active line Cyan highlight), Canvas (right), CallStack + WatchPanel (right column), VCR controls (Step Over/Back/Out/Continue/Stop/Restart), keyboard shortcuts (F5/F10/F11/Shift+F5/Shift+F11/R), input array editor, status badge, error display |
-| **Integration** | App.vue "Debug" tab | ✅ CODE DONE | New "Debug" tab in `App.vue`, `index.ts` barrel export |
-| **Tests** | 49 Unit Tests | ✅ CODE DONE | `DebuggerYieldEngine.spec.ts` (15), `LiveCompilerDebugger.spec.ts` (13), `useLiveDebuggerStore.spec.ts` (21) — ALL 49 PASS |
+Đã dọn kèm theo: guided-tour scripts `/compare` + `/concurrency` (useGuidedTourStore.ts) và test tương ứng.
 
 ---
 
-### Phase 2 Design Patterns & SOLID Visualizer — SVG UML Class Diagram + Strategy/Observer/DIP
+### ~~Phase 2 Design Patterns & SOLID Visualizer — SVG UML Class Diagram + Strategy/Observer/DIP~~ ❌ ĐÃ THAY THẾ — Docs Reference Style (ADR-05)
 
-| Bước | Nội dung | Trạng thái CODE | Chi tiết |
-| :--- | :--- | :--- | :--- |
-| **Types** | UMLNode, UMLLink, UMLScenarioPayload, PatternScenarioId | ✅ CODE DONE | `design-patterns/types/design-patterns.types.ts` — UMLNode (id, name, type class/interface/abstract, x/y/width/height, attributes[], methods[]), UMLLink (sourceId, targetId, type inheritance/realization/dependency/association) |
-| **Engine** | DesignPatternVisualizerEngine (Bezier path + drag + swap) | ✅ CODE DONE | `engine/DesignPatternVisualizerEngine.ts` — calculateBezierPath (Cubic Bezier M/C), updateNodePosition (clamped boundaries), swapStrategyTarget, calculateAllPaths, getLinksToTarget/FromSource, replaceState |
-| **Scenarios** | 3 scenario presets (Strategy, Observer, DIP) | ✅ CODE DONE | `scenarios/scenarioData.ts` — Strategy Pattern (4 nodes, 3 links), Observer Pattern (5 nodes, 4 links), DIP Sandbox (2 nodes, 1 link), getScenario(), getAllScenarioIds(), SCENARIO_LABELS |
-| **Store** | useDesignPatternsStore (Pinia setup store) | ✅ CODE DONE | `store/useDesignPatternsStore.ts` — initializeScenario, handleNodeDrag, switchStrategy, triggerObserverNotify (2s timeout), toggleDIP (add/remove IDatabase interface), couplingIndexMetric computed (85%→20%), pathCache reactive Map, cleanup |
-| **Component** | ClassNodeCard.vue (Glassmorphism UML node card) | ✅ CODE DONE | `components/ClassNodeCard.vue` — Glassmorphism backdrop-blur, stereotype headers (interface/abstract), JetBrains Mono, attributes + methods sections, drag-and-drop (global window mousemove/mouseup), active strategy Amber glow, observer pulse animation |
-| **Component** | DesignPatternsCanvas.vue (SVG connections + nodes) | ✅ CODE DONE | `components/DesignPatternsCanvas.vue` — SVG layer with Bezier paths, 4 arrow markers (inheritance hollow, realization hollow dashed, dependency solid, association), Neon link styles (Emerald/Cyan/Amber), Observer stroke-pulse-flow animation, DIP coupled thick red / decoupled thin cyan |
-| **Component** | DesignPatternsWorkspace.vue (Orchestrator) | ✅ CODE DONE | `components/DesignPatternsWorkspace.vue` — Scenario tab selector (3 tabs), Strategy runtime swap buttons (BubbleSort/QuickSort), Observer Notify button, DIP toggle + Coupling Index widget (85% Rose → 20% Cyan), link type legend, node/link count badges |
-| **Integration** | App.vue "Patterns" tab | ✅ CODE DONE | Replaced PatternSandbox with DesignPatternsWorkspace in `App.vue`, `index.ts` barrel export |
-| **Tests** | 50 Unit Tests | ✅ CODE DONE | `DesignPatternVisualizerEngine.spec.ts` (18), `useDesignPatternsStore.spec.ts` (22), `scenarioData.spec.ts` (10) — ALL 50 PASS |
+> **Toàn bộ code feature này đã bị gỡ khỏi master (2026-08-10) khi chuyển sang Docs Reference Style.** Thay thế: `frontend/src/features/docs/content/patterns/*` (strategy, observer, factory, singleton, decorator) + `docs/content/solid/*` (srp, ocp, lsp, isp, dip). Code gốc từng nằm ở `src/features/design-patterns/` (50 tests) — spec còn: `plan/features/sprint-9/phase2-design-patterns.md`. Backend API `/api/v1/concepts/design-patterns/*` đã bị xóa (DP-001). Chi tiết: ADR-05, ADR-40.
 
 ---
 
@@ -548,23 +506,9 @@ Tài liệu này theo dõi chi tiết tiến độ hoàn thành **code thực t�
 | **Integration** | App.vue "Smart Quiz" tab + barrel export | ✅ CODE DONE | New "Smart Quiz" tab in App.vue, index.ts barrel |
 | **Tests** | 90 Unit Tests | ✅ CODE DONE | `VCRPlaybackInterceptor.spec.ts` (16), `SVGTargetResolver.spec.ts` (12), `QuizEvaluationEngine.spec.ts` (21), `useSmartQuizStore.spec.ts` (41) — ALL 90 PASS |
 
-### Phase 2 SOLID Principles Visualizer — Thermal SRP, Laser Fracture LSP, Neon DIP
+### ~~Phase 2 SOLID Principles Visualizer — Thermal SRP, Laser Fracture LSP, Neon DIP~~ ❌ ĐÃ THAY THẾ — Docs Reference Style (ADR-05)
 
-| Bước | Nội dung | Trạng thái CODE | Chi tiết |
-| :--- | :--- | :--- | :--- |
-| **Types** | SOLIDClassNode, FireParticle, FractureSegment, DIPState, CoordinatePoint | ✅ CODE DONE | `solid-visualization/types/solid-visualization.types.ts` — SOLIDPrinciple, MemberType, LSPSubstitutionPhase, MAX_PARTICLES=80, LSP_LASER_DELAY_MS=800, SRP_VIOLATION_THRESHOLD=2 |
-| **Engine** | LCOMCalculator (DFS connected components LCOM4) | ✅ CODE DONE | `engine/LCOMCalculator.ts` — calculateLCOM4 via adjacency graph + DFS, returns disconnected method group count |
-| **Engine** | SOLIDEvaluatorEngine (SRP/LSP evaluation) | ✅ CODE DONE | `engine/SOLIDEvaluatorEngine.ts` — evaluateSRP (LCOM4 >= 2 violation), evaluateLSP (NotImplementedException check) |
-| **Engine** | ThermalSparkParticleEngine (Canvas 2D 60FPS) | ✅ CODE DONE | `engine/ThermalSparkParticleEngine.ts` — rAF loop, max 80 particles, HSL hue 0-30, gravity physics, GC-safe destroy |
-| **Engine** | LaserFractureCalculator (zigzag segments) | ✅ CODE DONE | `engine/LaserFractureCalculator.ts` — generateFractureSegments 10-15 zigzag, calculateAngle, calculateDistance |
-| **Store** | useSOLIDVisualizerStore Pinia Setup Store | ✅ CODE DONE | `store/useSOLIDVisualizerStore.ts` — 5 lessons SRP/OCP/LSP/ISP/DIP, SRP demo UserManager LCOM4=3, triggerSRPSplit 3 classes, LSP 800ms substitution, DIP interface insertion |
-| **Component** | ThermalClassCard.vue (Glassmorphic + Canvas sparks) | ✅ CODE DONE | `components/ThermalClassCard.vue` — LCOM4 badge, thermal-glow animation, embedded Canvas particle overlay, split button |
-| **Component** | LaserFractureOverlay.vue (SVG fracture) | ✅ CODE DONE | `components/LaserFractureOverlay.vue` — laser beam pulse, zigzag fracture lines, shatter error banner |
-| **Component** | NeonFlowingPath.vue (SVG DIP flow) | ✅ CODE DONE | `components/NeonFlowingPath.vue` — violating red/correct green, interface box, flowing dash animation |
-| **Component** | SRPLessonPanel, LSPLessonPanel, DIPLessonPanel | ✅ CODE DONE | Lesson-specific panels with interaction buttons, diagnostic results, phase badges |
-| **Component** | SOLIDVisualizerWorkspace.vue (Orchestrator) | ✅ CODE DONE | `components/SOLIDVisualizerWorkspace.vue` — 5-tab lesson selector, SRP/LSP/DIP panels, footer status, Reset All |
-| **Integration** | App.vue "SOLID Viz" tab + barrel export | ✅ CODE DONE | New "SOLID Viz" tab in App.vue, index.ts barrel export |
-| **Tests** | 105 Unit Tests | ✅ CODE DONE | `LCOMCalculator.spec.ts` (12), `SOLIDEvaluatorEngine.spec.ts` (11), `ThermalSparkParticleEngine.spec.ts` (15), `LaserFractureCalculator.spec.ts` (20), `useSOLIDVisualizerStore.spec.ts` (47) — ALL 105 PASS |
+> **Toàn bộ code feature này đã bị gỡ khỏi master (2026-08-10) khi chuyển sang Docs Reference Style.** Thay thế: `frontend/src/features/docs/content/solid/*` (5 bài srp/ocp/lsp/isp/dip). Code gốc từng nằm ở `src/features/solid-visualization/` (105 tests) — spec còn: `plan/features/sprint-7/phase2-solid-principles.md`. Backend API `/api/v1/concepts/solid/*` đã bị xóa (DP-001). Chi tiết: ADR-05, ADR-40.
 
 ### Phase 2 — State Inspector & Stack Frames (`src/features/state-inspector/`)
 
@@ -1016,19 +960,21 @@ Tất cả các mục tiêu Sprint 5 đã đạt:
 | **Code Debugger** | Gộp Workspace, Live Debugger, và State Inspector vào một view | ✅ CODE DONE | `CodeIDEView.vue` — Tab bar switcher với KeepAlive giữ trạng thái editor |
 | **DSA Integration** | Tích hợp các thuật toán DSA Modules vào Sorting & Graph | ✅ CODE DONE | `DSAPlayer.vue`, `AlgorithmDashboard.vue`, `SortingView.vue`, `GraphView.vue` — Lọc thuật toán phù hợp qua `allowedCategories`, ẩn mục đề xuất (featured/recommend) khi xem sub-tabs |
 
-## 16. Phase 4 — Software Architecture Modules Full-Stack Integration (SOLID, Design Patterns, DI/IoC)
+## 16. Phase 4 — Software Architecture Modules Full-Stack Integration (SOLID, Design Patterns, DI/IoC) — ❌ ĐÃ THAY THẾ — Docs Reference Style (ADR-05)
+
+> **Toàn bộ section này phản ánh code đã bị GỠ KHỎI master (2026-08-10, DP-001):** 11 file backend (3 controller + 3 strategy + 3 DTO + `DIContainerExecutor.cs` + `ConceptScenarioRequestDto.cs`) và toàn bộ frontend (store/views/api layers) đều đã xóa. Thay thế bằng `frontend/src/features/docs/content/{solid,patterns,di}/*`. Chi tiết: ADR-05, ADR-40, DATN_ERRORS.md DP-001.
 
 | Hạng mục / Task | Nội dung | Trạng thái CODE | Chi tiết |
 | :--- | :--- | :--- | :--- |
-| **Backend Strategies** | 3 IConceptStrategy implementations (SOLID, Design Patterns, DI/IoC) | ✅ CODE DONE | `SOLIDPrinciplesStrategy.cs` (SRP/OCP/LSP — 4 frames each), `DesignPatternsStrategy.cs` (Strategy/Observer/Singleton — 4 frames each), `DIContainerStrategy.cs` (Lifetime 5 frames, Cycle 4 frames) |
-| **Backend DTOs** | Frame DTOs for all 3 modules | ✅ CODE DONE | `SOLIDFrameDto.cs`, `DesignPatternFrameDto.cs`, `DIContainerFrameDto.cs` — Vietnamese explanation text in C# |
-| **Backend Controllers** | REST API endpoints for 3 modules | ✅ CODE DONE | `SOLIDController.cs` (`/api/v1/concepts/solid/`), `DesignPatternsController.cs` (`/api/v1/concepts/design-patterns/`), `DIContainerController.cs` (`/api/v1/concepts/di-container/`) |
-| **Frontend API Layers** | Service layers calling backend | ✅ CODE DONE | `solidApi.ts`, `designPatternsApi.ts`, `diContainerApi.ts` — async fetch with error handling |
-| **Frontend Store VCR** | Pinia stores with VCR integration | ✅ CODE DONE | `useSOLIDVisualizerStore.ts`, `useDesignPatternStore.ts`, `useDIContainerStore.ts` — loadVcrScenario(), vcrNext/Prev/Reset/exitVcrMode |
-| **VCR UI — SOLID** | Scenario Picker + VCR Panel + Explanation Banner | ✅ CODE DONE | `SOLIDVisualizerWorkspace.vue` — 3 scenario buttons (SRP/OCP/LSP), frame navigation, Vietnamese banner, v-if sandbox toggle |
-| **VCR UI — Design Patterns** | Scenario Picker + VCR Panel + Explanation Banner | ✅ CODE DONE | `DesignPatternsWorkspace.vue` — 3 scenario buttons (Strategy/Observer/Singleton), frame navigation, Vietnamese banner, v-if sandbox toggle |
-| **VCR UI — DI/IoC** | Scenario Picker + VCR Panel + Explanation Banner | ✅ CODE DONE | `DISandbox.vue` — 2 scenario buttons (Lifetime Demo/Cycle Detection), frame navigation, Vietnamese banner, v-if sandbox toggle |
-| **E2E Testing** | Browser verification all 3 modules | ✅ CODE DONE | 9/9 API tests passed (curl), 3/3 VCR UI tests passed (browser recording) — Vietnamese text confirms API connectivity |
+| **Backend Strategies** | 3 IConceptStrategy implementations (SOLID, Design Patterns, DI/IoC) | ❌ ĐÃ THAY THẾ | Đã xóa (DP-001): `SOLIDPrinciplesStrategy.cs` (SRP/OCP/LSP), `DesignPatternsStrategy.cs` (Strategy/Observer/Singleton), `DIContainerStrategy.cs` (Lifetime/Cycle) |
+| **Backend DTOs** | Frame DTOs for all 3 modules | ❌ ĐÃ THAY THẾ | Đã xóa (DP-001): `SOLIDFrameDto.cs`, `DesignPatternFrameDto.cs`, `DIContainerFrameDto.cs` |
+| **Backend Controllers** | REST API endpoints for 3 modules | ❌ ĐÃ THAY THẾ | Đã xóa (DP-001): `SOLIDController.cs`, `DesignPatternsController.cs`, `DIContainerController.cs` — không còn endpoint `/api/v1/concepts/solid|design-patterns|di-container` |
+| **Frontend API Layers** | Service layers calling backend | ❌ ĐÃ THAY THẾ | Đã xóa cùng backend (DP-001): `solidApi.ts`, `designPatternsApi.ts`, `diContainerApi.ts` |
+| **Frontend Store VCR** | Pinia stores with VCR integration | ❌ ĐÃ THAY THẾ | Đã xóa: `useSOLIDVisualizerStore.ts`, `useDesignPatternStore.ts`, `useDIContainerStore.ts` |
+| **VCR UI — SOLID** | Scenario Picker + VCR Panel + Explanation Banner | ❌ ĐÃ THAY THẾ | Đã xóa: `SOLIDVisualizerWorkspace.vue` — thay bằng docs content |
+| **VCR UI — Design Patterns** | Scenario Picker + VCR Panel + Explanation Banner | ❌ ĐÃ THAY THẾ | Đã xóa: `DesignPatternsWorkspace.vue` — thay bằng docs content |
+| **VCR UI — DI/IoC** | Scenario Picker + VCR Panel + Explanation Banner | ❌ ĐÃ THAY THẾ | Đã xóa: `DISandbox.vue` — thay bằng docs content |
+| **E2E Testing** | Browser verification all 3 modules | ❌ ĐÃ THAY THẾ | Không còn áp dụng — API/UI đều đã gỡ (DP-001) |
 
 ## 17. Phase 5 — Quiz System & Gamification Engine Full-Stack Integration
 
@@ -2305,16 +2251,16 @@ pm run build SUCCESS |
 | **T10** | ImportCourseToClassroom — 5 tests (valid / 3 errors / override) | ✅ DONE | `ImportCourseToClassroomCommandHandlerTests.cs` |
 | **TEST** | dotnet test — 258/258 PASS | ✅ DONE | |
 | **TEST** | vitest teacher — 55/55 PASS | ✅ DONE | |
-### BugFix Campaign 2026-08-10 � 4 feature (DATN_ERRORS.md) � HO�N T?T
+### BugFix Campaign 2026-08-10 � 4 feature (DATN_ERRORS.md) � HO�N T?T
 
 | M?c | K?t qu? |
 | :--- | :--- |
-| Execution Control (EC-001?047) | ? To�n b? FIXED � frontend 2712/2712 test PASS |
-| Interactive Playground (IP-001?041) | ? To�n b? FIXED � 182/182 playground tests |
-| Pseudocode Sync (PS-001?041) | ? To�n b? FIXED � FrameDTO/backend emit logicalId + variables; UI mount v�o SortingView tab DSA (PS-002); highlighter vi?t l?i tokenizer (PS-003) |
-| Quiz System (QZ-001?052) | ? FIXED (tr? QZ-048 DEFERRED � bank quiz chua ghi QuizAttempt) � backend 372/372, migration AddQuizXpGrantUniqueIndex |
-| Cross-cutting | ? CC-001?010; CC-011 (pre-existing TS drift dsa-modules renderers � build ue-tsc c�n ~143 l?i, n?m ngo�i scope 4 feature) |
+| Execution Control (EC-001?047) | ? To�n b? FIXED � frontend 2712/2712 test PASS |
+| Interactive Playground (IP-001?041) | ? To�n b? FIXED � 182/182 playground tests |
+| Pseudocode Sync (PS-001?041) | ? To�n b? FIXED � FrameDTO/backend emit logicalId + variables; UI mount v�o SortingView tab DSA (PS-002); highlighter vi?t l?i tokenizer (PS-003) |
+| Quiz System (QZ-001?052) | ? FIXED (tr? QZ-048 DEFERRED � bank quiz chua ghi QuizAttempt) � backend 372/372, migration AddQuizXpGrantUniqueIndex |
+| Cross-cutting | ? CC-001?010; CC-011 (pre-existing TS drift dsa-modules renderers � build ue-tsc c�n ~143 l?i, n?m ngo�i scope 4 feature) |
 
-| **BugFix** | DATN_ERRORS Review Round 2 � IP-042/043/044, EC-048/049, QZ-053 | ? CODE DONE | 2026-08-10. GraphParser.ts: 	oAdjacencyList them param graphType � directed chi them 1 chieu (IP-042, fix bug that ??) + test moi 2 mode. PlaygroundCanvas.vue: watch zoomLevel -> store.setZoomLevel (IP-043), xoa TODO stale (IP-044). VcrDockBar.vue: SVG chevron -> BaseIcon arrow-down (EC-048). useVcrStore.ts/crDefaults.ts: code primary + sourceCode alias, gom DEFAULT_INPUT_RAW/DEFAULT_INPUT_ARRAY (EC-049). Tests quiz: mountQuiz() stub BaseIcon (QZ-053) � het Vue warn. Frontend **2713/2713 PASS** |
+| **BugFix** | DATN_ERRORS Review Round 2 � IP-042/043/044, EC-048/049, QZ-053 | ? CODE DONE | 2026-08-10. GraphParser.ts: 	oAdjacencyList them param graphType � directed chi them 1 chieu (IP-042, fix bug that ??) + test moi 2 mode. PlaygroundCanvas.vue: watch zoomLevel -> store.setZoomLevel (IP-043), xoa TODO stale (IP-044). VcrDockBar.vue: SVG chevron -> BaseIcon arrow-down (EC-048). useVcrStore.ts/crDefaults.ts: code primary + sourceCode alias, gom DEFAULT_INPUT_RAW/DEFAULT_INPUT_ARRAY (EC-049). Tests quiz: mountQuiz() stub BaseIcon (QZ-053) � het Vue warn. Frontend **2713/2713 PASS** |
 
-| **BugFix** | DATN_ERRORS Deep Review Round 3 � QZ-006/IP-045?049/EC-050/QZ-054?056 | ? CODE DONE | 2026-08-10. VisualizationPlayer.vue: loadCheckpoints(checkpoints, algorithmId) 2 cho � bat sync XP checkpoint (QZ-006, ?? dead code). InteractivePlayground.vue: return sau toast loi import (IP-045). playgroundCanvasDraw.ts: cache getComputedStyle module-level (IP-046). PlaygroundCanvas.vue: goi store.resetZoom() truc tiep (IP-047). usePlaygroundStore.ts: toast vao store (IP-048) + action setBackendQuizError (QZ-055). GraphView.vue: import JSON hien thi loi 1 phan (IP-049). useVcrStore.ts: comment hop dong customCompileFn (EC-050). useQuizStore.ts: clamp answers restore theo so option tung cau (QZ-054) + reassignment thay splice (QZ-056). Tests: +2 QZ-006 (co/khong quizId). Frontend **2715/2715 PASS** |
+| **BugFix** | DATN_ERRORS Deep Review Round 3 � QZ-006/IP-045?049/EC-050/QZ-054?056 | ? CODE DONE | 2026-08-10. VisualizationPlayer.vue: loadCheckpoints(checkpoints, algorithmId) 2 cho � bat sync XP checkpoint (QZ-006, ?? dead code). InteractivePlayground.vue: return sau toast loi import (IP-045). playgroundCanvasDraw.ts: cache getComputedStyle module-level (IP-046). PlaygroundCanvas.vue: goi store.resetZoom() truc tiep (IP-047). usePlaygroundStore.ts: toast vao store (IP-048) + action setBackendQuizError (QZ-055). GraphView.vue: import JSON hien thi loi 1 phan (IP-049). useVcrStore.ts: comment hop dong customCompileFn (EC-050). useQuizStore.ts: clamp answers restore theo so option tung cau (QZ-054) + reassignment thay splice (QZ-056). Tests: +2 QZ-006 (co/khong quizId). Frontend **2715/2715 PASS** |

@@ -1,7 +1,7 @@
 <template>
   <section class="count-section">
     <div class="count-section__heading"><span>03 / MẢNG OUTPUT</span><small>Duyệt phải <BaseIcon name="arrow-right" class="inline-arr" /> trái để giữ stable</small></div>
-    <div class="count-output" :style="{ gridTemplateColumns: `repeat(${Math.max(outputItems.length, 1)}, minmax(0, 1fr))` }">
+    <div class="count-output" :style="{ gridTemplateColumns: `repeat(${Math.max(outputItems.length, 1)}, minmax(0, 1fr))`, '--count-items': Math.max(outputItems.length, 1) }">
       <div v-for="(_, index) in outputItems" :key="index" class="output-item">
         <div v-if="outputItems[index]" class="output-value" :class="{ 'output-value--active': isOutputActive(index) }" :style="outputStyle(outputItems[index]!, index)">
           <span>{{ outputItems[index]!.value }}</span>

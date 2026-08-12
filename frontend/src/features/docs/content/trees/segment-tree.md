@@ -461,7 +461,7 @@ Dùng Segment Tree để tính chiều cao tối đa tại mỗi vị trí X.
 
 | Thao tác | Brute Force | Fenwick Tree (BIT) | Segment Tree |
 | :--- | :--- | :--- | :--- |
-| **Build** | O(N) | O(N log N) | **O(N)** |
+| **Build** | O(N) | **O(N)** (tối ưu, hoặc O(N log N) với cách cài đặt đơn giản) | **O(N)** |
 | **Query [L, R]** | O(N) | O(log N) | **O(log N)** |
 | **Point Update** | O(1) | O(log N) | O(log N) |
 | **Range Update** | O(N) | Không hỗ trợ | **O(log N) với Lazy** |

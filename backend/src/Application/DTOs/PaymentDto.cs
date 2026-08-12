@@ -3,10 +3,7 @@ using System.Text.Json.Serialization;
 
 namespace VisualizationDSA.Application.DTOs
 {
-    public class CreateOrderRequest
-    {
-        
-    }
+    // PM-014: xóa CreateOrderRequest rỗng — endpoint POST /order không nhận body.
 
     public class OrderDto
     {
@@ -16,9 +13,11 @@ namespace VisualizationDSA.Application.DTOs
         public decimal Amount { get; set; }
         public string Status { get; set; } = "Pending";
         public DateTime CreatedAt { get; set; }
+        // PM-003: thời điểm order hết hạn — frontend đồng bộ timer QR.
+        public DateTime ExpiresAt { get; set; }
         public DateTime? CompletedAt { get; set; }
 
-        
+        // Thông tin thanh toán dùng để dựng QR — do backend cấu hình và trả về.
         public string BankId { get; set; } = string.Empty;
         public string BankAccount { get; set; } = string.Empty;
         public string AccountName { get; set; } = string.Empty;
@@ -43,13 +42,13 @@ namespace VisualizationDSA.Application.DTOs
         public string? SubAccount { get; set; }
 
         [JsonPropertyName("code")]
-        public string? Code { get; set; } 
+        public string? Code { get; set; } // Mã thanh toán VDSAxxxxxx gửi kèm nội dung chuyển tiền.
 
         [JsonPropertyName("content")]
-        public string Content { get; set; } = string.Empty; 
+        public string Content { get; set; } = string.Empty; // Nội dung chuyển tiền (fallback khi Code rỗng).
 
         [JsonPropertyName("transferType")]
-        public string TransferType { get; set; } = "in"; 
+        public string TransferType { get; set; } = "in"; // "in" = tiền vào; "out" = tiền ra (từ chối).
 
         [JsonPropertyName("transferAmount")]
         public decimal TransferAmount { get; set; }

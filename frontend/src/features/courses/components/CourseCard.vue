@@ -62,13 +62,14 @@
             </span>
           </div>
 
-          <router-link
-            :to="`/courses/${course.id}`"
-            class="px-4 py-1.5 rounded-lg text-[10px] font-bold transition-all shadow-lg cursor-pointer"
-            :class="progressPercent === 100 ? 'bg-accent-green hover:bg-accent-green text-white shadow-accent-green/30' : 'bg-accent hover:bg-accent text-white shadow-accent/30'"
+          <!-- Visual-only CTA: toàn bộ thẻ là 1 router-link duy nhất (LM-013),
+               nút trong chỉ là nhãn — tránh anchor lồng anchor. -->
+          <span
+            class="px-4 py-1.5 rounded-lg text-[10px] font-bold shadow-lg"
+            :class="progressPercent === 100 ? 'bg-accent-green text-white shadow-accent-green/30' : 'bg-accent text-white shadow-accent/30'"
           >
-            {{ progressPercent === 100 ? 'Ôn tập' : 'Bắt đầu' }}
-          </router-link>
+            {{ ctaLabel }}
+          </span>
         </div>
       </div>
     </div>
@@ -92,6 +93,13 @@ const courseStore = useCourseStore();
 const progressPercent = computed(() => {
   const progress = courseStore.getCourseProgress(props.course.id);
   return progress.progressPercent;
+});
+
+// LM-066: "Tiếp tục" khi đang dở dang (0 < progress < 100), "Ôn tập" khi xong.
+const ctaLabel = computed(() => {
+  if (progressPercent.value === 100) return 'Ôn tập';
+  if (progressPercent.value > 0) return 'Tiếp tục';
+  return 'Bắt đầu';
 });
 
 const difficultyBadgeClass = computed(() => {

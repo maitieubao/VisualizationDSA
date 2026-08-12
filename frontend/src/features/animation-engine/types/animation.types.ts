@@ -2,6 +2,8 @@ export interface HighlightIndices {
   compare: number[];
   swap: number[];
   sorted: number[];
+  /** CV-144: GÁN mới cho 1 phần tử (khác hoán vị 2 phần tử) — renderer có thể tô màu riêng */
+  assign?: number[];
   pivot?: number | null;
   found?: number | null;
   low?: number | null;

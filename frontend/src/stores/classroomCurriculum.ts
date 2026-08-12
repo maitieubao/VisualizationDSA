@@ -1,7 +1,8 @@
 import { defineStore } from 'pinia';
 import { ref, computed } from 'vue';
 
-const BASE_URL = import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:5055';
+// LS-001: backend phục vụ toàn bộ API dưới prefix /api/v1 (khớp shared/services/apiClient.ts).
+const BASE_URL = `${import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:5055'}/api/v1`;
 
 async function apiFetch<T>(url: string, options: RequestInit = {}): Promise<T> {
   const token = localStorage.getItem('accessToken');
@@ -16,6 +17,8 @@ async function apiFetch<T>(url: string, options: RequestInit = {}): Promise<T> {
     const err = await res.json().catch(() => ({ message: 'Request failed' }));
     throw new Error(err.message || `HTTP ${res.status}`);
   }
+  // PUT/DELETE trả 204 No Content — không có body để parse (khớp shared/apiClient).
+  if (res.status === 204) return undefined as T;
   return res.json();
 }
 
@@ -250,73 +253,135 @@ export const useClassroomCurriculumStore = defineStore('classroomCurriculum', ()
     clearDragState();
   }
 
+  // LS-017/LS-041: fetchCurriculum phải hạ loading sau khi xong + bỏ response cũ
+  // (race 2 classroom) — chỉ response mới nhất được ghi state.
+  let fetchSeq = 0;
   async function fetchCurriculum(classroomId: string, teacherId: string) {
+    const seq = ++fetchSeq;
     setLoading(true);
     try {
       const data = await apiFetch<ClassroomCurriculum>(`/classrooms/${classroomId}/curriculum/teacher`);
+      if (seq !== fetchSeq) return; // response cũ → bỏ
       setCurriculum(data);
     } catch (err: any) {
+      if (seq !== fetchSeq) return; // lỗi của request cũ → bỏ
       setError(err.message);
       throw err;
+    } finally {
+      if (seq === fetchSeq) setLoading(false);
     }
   }
 
-  async function createModuleApi(classroomId: string, teacherId: string, module: Omit<ClassroomModule, 'id' | 'classroomId'>) {
-    const response = await apiFetch<{ moduleId: string }>(`/classrooms/${classroomId}/modules`, {
-      method: 'POST',
-      body: JSON.stringify({ teacherId, ...module })
-    });
-    addModule({ ...module, id: response.moduleId, classroomId });
+  async function createModuleApi(classroomId: string, teacherId: string, module: Omit<ClassroomModule, 'id' | 'classroomId' | 'items'>) {
+    saving.value = true;
+    try {
+      const response = await apiFetch<{ moduleId: string }>(`/classrooms/${classroomId}/modules`, {
+        method: 'POST',
+        body: JSON.stringify({ teacherId, ...module })
+      });
+      addModule({ ...module, id: response.moduleId, classroomId, items: [] });
+    } finally {
+      saving.value = false;
+    }
   }
 
   async function updateModuleApi(moduleId: string, updates: Partial<ClassroomModule>) {
-    await apiFetch(`/modules/${moduleId}`, {
-      method: 'PUT',
-      body: JSON.stringify(updates)
-    });
-    updateModule(moduleId, updates);
+    saving.value = true;
+    try {
+      await apiFetch(`/modules/${moduleId}`, {
+        method: 'PUT',
+        body: JSON.stringify(updates)
+      });
+      updateModule(moduleId, updates);
+    } finally {
+      saving.value = false;
+    }
   }
 
   async function deleteModuleApi(moduleId: string) {
-    await apiFetch(`/modules/${moduleId}`, { method: 'DELETE' });
-    removeModule(moduleId);
+    saving.value = true;
+    try {
+      await apiFetch(`/modules/${moduleId}`, { method: 'DELETE' });
+      removeModule(moduleId);
+    } finally {
+      saving.value = false;
+    }
   }
 
   async function createItemApi(moduleId: string, item: Omit<ClassroomModuleItem, 'id'>) {
-    const response = await apiFetch<{ itemId: string }>(`/modules/${moduleId}/items`, {
-      method: 'POST',
-      body: JSON.stringify(item)
-    });
-    addItem(moduleId, { ...item, id: response.itemId });
+    saving.value = true;
+    try {
+      const response = await apiFetch<{ itemId: string }>(`/modules/${moduleId}/items`, {
+        method: 'POST',
+        body: JSON.stringify(item)
+      });
+      addItem(moduleId, { ...item, id: response.itemId });
+    } finally {
+      saving.value = false;
+    }
   }
 
+  // LS-002: endpoint PUT/DELETE /modules/{moduleId}/items/{itemId} do backend agent
+  // bổ sung (Update/DeleteClassroomModuleItem). Payload giữ nguyên Partial — controller
+  // đọc teacherId từ token, khớp các route còn lại của controller.
   async function updateItemApi(moduleId: string, itemId: string, updates: Partial<ClassroomModuleItem>) {
-    await apiFetch(`/modules/${moduleId}/items/${itemId}`, {
-      method: 'PUT',
-      body: JSON.stringify(updates)
-    });
-    updateItem(moduleId, itemId, updates);
+    saving.value = true;
+    try {
+      await apiFetch(`/modules/${moduleId}/items/${itemId}`, {
+        method: 'PUT',
+        body: JSON.stringify(updates)
+      });
+      updateItem(moduleId, itemId, updates);
+    } finally {
+      saving.value = false;
+    }
   }
 
   async function deleteItemApi(moduleId: string, itemId: string) {
-    await apiFetch(`/modules/${moduleId}/items/${itemId}`, { method: 'DELETE' });
-    removeItem(moduleId, itemId);
+    saving.value = true;
+    try {
+      await apiFetch(`/modules/${moduleId}/items/${itemId}`, { method: 'DELETE' });
+      removeItem(moduleId, itemId);
+    } finally {
+      saving.value = false;
+    }
   }
 
   async function reorderModulesApi(classroomId: string, teacherId: string, moduleOrders: { moduleId: string; orderIndex: number }[]) {
-    await apiFetch(`/classrooms/${classroomId}/modules/reorder`, {
-      method: 'PUT',
-      body: JSON.stringify({ teacherId, moduleOrders })
-    });
-    reorderModules(moduleOrders);
+    saving.value = true;
+    try {
+      await apiFetch(`/classrooms/${classroomId}/modules/reorder`, {
+        method: 'PUT',
+        body: JSON.stringify({ teacherId, moduleOrders })
+      });
+      reorderModules(moduleOrders);
+    } finally {
+      saving.value = false;
+    }
   }
 
   async function reorderItemsApi(moduleId: string, teacherId: string, itemOrders: { itemId: string; orderIndex: number }[]) {
-    await apiFetch(`/modules/${moduleId}/items/reorder`, {
-      method: 'PUT',
-      body: JSON.stringify({ teacherId, itemOrders })
-    });
-    reorderItems(moduleId, itemOrders);
+    saving.value = true;
+    try {
+      await apiFetch(`/modules/${moduleId}/items/reorder`, {
+        method: 'PUT',
+        body: JSON.stringify({ teacherId, itemOrders })
+      });
+      reorderItems(moduleId, itemOrders);
+    } finally {
+      saving.value = false;
+    }
+  }
+
+  // LS-015: xóa lớp học qua store (thay fetch thô trong view).
+  async function deleteClassroomApi(classroomId: string) {
+    saving.value = true;
+    try {
+      await apiFetch(`/classrooms/${classroomId}`, { method: 'DELETE' });
+      reset();
+    } finally {
+      saving.value = false;
+    }
   }
 
   function reset() {
@@ -374,6 +439,7 @@ export const useClassroomCurriculumStore = defineStore('classroomCurriculum', ()
     updateItemApi,
     deleteItemApi,
     reorderModulesApi,
-    reorderItemsApi
+    reorderItemsApi,
+    deleteClassroomApi
   };
 });

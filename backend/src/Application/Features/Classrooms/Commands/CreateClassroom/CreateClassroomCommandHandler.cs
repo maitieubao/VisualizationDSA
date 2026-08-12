@@ -33,7 +33,9 @@ namespace VisualizationDSA.Application.Features.Classrooms.Commands.CreateClassr
                 inviteCode = GenerateInviteCode();
             } while (await _context.Classrooms.AnyAsync(c => c.InviteCode == inviteCode, cancellationToken));
 
-            var classroom = new Classroom(request.TeacherId, request.Name, request.Description, inviteCode);
+            // CR-034: mặc định mã mời hết hạn sau 30 ngày (trước đây không set → expired dead code).
+            var classroom = new Classroom(request.TeacherId, request.Name, request.Description, inviteCode,
+                inviteCodeExpiresAt: DateTime.UtcNow.AddDays(30));
             _context.Classrooms.Add(classroom);
             await _context.SaveChangesAsync(cancellationToken);
 

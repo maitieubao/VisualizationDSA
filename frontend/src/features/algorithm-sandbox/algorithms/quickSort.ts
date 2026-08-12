@@ -1,4 +1,20 @@
-import type { SortFrame, Partition } from '../types/sorting.types';
+import type { SortFrame, Partition, SortHighlights } from '../types/sorting.types';
+
+// CC-009: ánh xạ bước thuật toán → dòng vật lý + logicalId (giả định khối mã Lomuto
+// được nạp vào Monaco: line 1 = hàm, line 3 = chọn pivot, line 5 = so sánh,
+// line 6 = hoán vị, line 8 = đặt pivot về vị trí)
+const LINE_FUNC_DECL = 1;
+const LINE_PARTITION_STEP = 3;
+const LINE_COMPARE_STEP = 5;
+const LINE_SWAP_STEP = 6;
+const LINE_ASSIGN_STEP = 8;
+
+function mkHighlights(
+  sorted: number[],
+  extras: Partial<SortHighlights>
+): SortHighlights {
+  return { compare: [], swap: [], sorted: [...sorted], ...extras };
+}
 
 export function generateQuickSortFrames(inputArray: number[]): SortFrame[] {
   const frames: SortFrame[] = [];
@@ -17,7 +33,10 @@ export function generateQuickSortFrames(inputArray: number[]): SortFrame[] {
     comp: [number, number] | null,
     pivot: number | null,
     swap: [number, number] | null,
-    vars: Record<string, string | number>
+    vars: Record<string, string | number>,
+    lineNumber: number,
+    activeLogicalLineId: string,
+    highlightExtras: Partial<SortHighlights> = {}
   ) {
     frames.push({
       stepIndex: step++,
@@ -30,6 +49,9 @@ export function generateQuickSortFrames(inputArray: number[]): SortFrame[] {
       algorithm: 'quick',
       partitions: partitionsList.map(p => ({ ...p })),
       variables: vars,
+      lineNumber,
+      activeLogicalLineId,
+      highlights: mkHighlights(sortedIndices, highlightExtras),
     });
   }
 
@@ -50,28 +72,34 @@ export function generateQuickSortFrames(inputArray: number[]): SortFrame[] {
     partitionsList.forEach(p => {
       p.isActive = (p.low === low && p.high === high);
     });
-    emit(`Chọn Pivot = ${pivot} tại [${high}]`, null, high, null, { low, high, i: '-', j: '-', pivot, comparisons, swaps });
+    emit(`Chọn Pivot = ${pivot} tại [${high}]`, null, high, null, { low, high, i: '-', j: '-', pivot, comparisons, swaps }, LINE_PARTITION_STEP, 'PARTITION_STEP', { pivot: high });
 
     let i = low - 1;
     for (let j = low; j < high; j++) {
       comparisons++;
-      emit(`So sánh arr[${j}]=${arr[j]} với Pivot=${pivot}`, [j, high], high, null, { low, high, i, j, pivot, comparisons, swaps });
+      emit(`So sánh arr[${j}]=${arr[j]} với Pivot=${pivot}`, [j, high], high, null, { low, high, i, j, pivot, comparisons, swaps }, LINE_COMPARE_STEP, 'COMPARE_STEP', { compare: [j, high], pivot: high });
       if (arr[j] <= pivot) {
         i++;
         if (i !== j) {
           [arr[i], arr[j]] = [arr[j], arr[i]];
           swaps++;
-          emit(`arr[${j}] <= Pivot → Hoán vị [${i}]↔[${j}]`, null, high, [i, j], { low, high, i, j, pivot, comparisons, swaps });
+          emit(`arr[${j}] <= Pivot → Hoán vị [${i}]↔[${j}]`, null, high, [i, j], { low, high, i, j, pivot, comparisons, swaps }, LINE_SWAP_STEP, 'SWAP_STEP', { swap: [i, j], pivot: high });
         }
       }
     }
 
-    [arr[i + 1], arr[high]] = [arr[high], arr[i + 1]];
-    swaps++;
     const pIdx = i + 1;
     sortedIndices.push(pIdx);
     splitPartition(low, high, pIdx);
-    emit(`Đặt Pivot về đúng vị trí [${pIdx}]`, null, pIdx, [pIdx, high], { low, high, i, j: '-', pivot, comparisons, swaps });
+
+    if (pIdx === high) {
+      // SV-025: pivot đã đứng đúng vị trí — bỏ self-swap [high,high] vô nghĩa (không emit, không tăng swaps)
+      emit(`Đặt Pivot về đúng vị trí [${pIdx}]`, null, pIdx, null, { low, high, i, j: '-', pivot, comparisons, swaps }, LINE_ASSIGN_STEP, 'ASSIGN_STEP', { pivot: pIdx });
+    } else {
+      [arr[i + 1], arr[high]] = [arr[high], arr[i + 1]];
+      swaps++;
+      emit(`Đặt Pivot về đúng vị trí [${pIdx}]`, null, pIdx, [pIdx, high], { low, high, i, j: '-', pivot, comparisons, swaps }, LINE_ASSIGN_STEP, 'ASSIGN_STEP', { swap: [pIdx, high], pivot: pIdx });
+    }
     return pIdx;
   }
 
@@ -101,9 +129,9 @@ export function generateQuickSortFrames(inputArray: number[]): SortFrame[] {
     }
   }
 
-  emit('Khởi tạo Quick Sort — phân hoạch chia để trị', null, null, null, { low: 0, high: arr.length - 1, i: '-', j: '-', pivot: '-', comparisons, swaps });
+  emit('Khởi tạo Quick Sort — phân hoạch chia để trị', null, null, null, { low: 0, high: arr.length - 1, i: '-', j: '-', pivot: '-', comparisons, swaps }, LINE_FUNC_DECL, 'FUNC_DECL');
   quickSortIterative(0, arr.length - 1);
-  emit('✅ Quick Sort hoàn thành!', null, null, null, { low: '-', high: '-', i: '-', j: '-', pivot: '-', comparisons, swaps });
+  emit('✅ Quick Sort hoàn thành!', null, null, null, { low: '-', high: '-', i: '-', j: '-', pivot: '-', comparisons, swaps }, LINE_FUNC_DECL, 'FUNC_DECL');
 
   return frames;
 }

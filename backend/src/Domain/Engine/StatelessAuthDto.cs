@@ -31,6 +31,9 @@ namespace VisualizationDSA.Domain.Engine
         public string? Nickname { get; set; }
         public string? Bio { get; set; }
         public string? University { get; set; }
+
+        // PR-001: avatar upload (PB-103) — URL ảnh đã lưu, null nếu chưa có.
+        public string? AvatarUrl { get; set; }
     }
 
     public class StatelessBadgeInfoDto
@@ -59,7 +62,6 @@ namespace VisualizationDSA.Domain.Engine
     public class StatelessRefreshRequest
     {
         public string RefreshToken { get; set; } = string.Empty;
-        public string? UserId { get; set; }
     }
 
     public class StatelessUserProgressDto
@@ -74,27 +76,29 @@ namespace VisualizationDSA.Domain.Engine
         public List<string> CompletedModuleIds { get; set; } = new();
         public List<StatelessBadgeInfoDto> Badges { get; set; } = new();
         public bool IsPremium { get; set; }
+
+        // PR-009: streak là trách nhiệm server (GM-008) — ngày hoạt động THẬT từ DB (UTC),
+        // controller đổ từ User.LastActivityDate, frontend không tự đoán theo giờ local.
+        public DateTime? LastActiveDate { get; set; }
     }
 
     public class StatelessUpdateProfileRequest
     {
-        public string? UserId { get; set; }
         public string? Username { get; set; }
         public string? Nickname { get; set; }
         public string? Bio { get; set; }
         public string? University { get; set; }
+        public string? AvatarUrl { get; set; }
     }
 
     public class StatelessXpAwardRequest
     {
-        public string? UserId { get; set; }
         public int Amount { get; set; }
         public string Reason { get; set; } = string.Empty;
     }
 
     public class StatelessChangePasswordRequest
     {
-        public string? UserId { get; set; }
         public string CurrentPassword { get; set; } = string.Empty;
         public string NewPassword { get; set; } = string.Empty;
     }

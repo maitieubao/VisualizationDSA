@@ -22,18 +22,18 @@
       <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
         <div>
           <label class="form-label">Tìm kiếm</label>
-          <input v-model="filters.search" type="text" class="form-input" placeholder="Tiêu đề, nội dung, tags..." @keyup.enter="loadArticles" />
+          <input v-model="filters.search" type="text" class="form-input" placeholder="Tiêu đề, nội dung, tags..." @keyup.enter="loadArticles()" />
         </div>
         <div>
           <label class="form-label">Danh mục</label>
-          <select v-model="filters.category" class="form-select" @change="loadArticles">
+          <select v-model="filters.category" class="form-select" @change="loadArticles()">
             <option value="">Tất cả</option>
             <option v-for="cat in categories" :key="cat" :value="cat">{{ cat }}</option>
           </select>
         </div>
         <div>
           <label class="form-label">Độ khó</label>
-          <select v-model="filters.difficulty" class="form-select" @change="loadArticles">
+          <select v-model="filters.difficulty" class="form-select" @change="loadArticles()">
             <option value="">Tất cả</option>
             <option value="Beginner">Beginner</option>
             <option value="Intermediate">Intermediate</option>
@@ -42,7 +42,7 @@
         </div>
         <div>
           <label class="form-label flex items-center gap-2 cursor-pointer">
-            <input type="checkbox" v-model="filters.onlyPublished" class="form-checkbox" @change="loadArticles" />
+            <input type="checkbox" v-model="filters.onlyPublished" class="form-checkbox" @change="loadArticles()" />
             <span>Chỉ bài đã xuất bản</span>
           </label>
         </div>
@@ -52,7 +52,7 @@
           <BaseIcon name="rotate-ccw" class="w-4 h-4 inline mr-1" />
           Đặt lại
         </button>
-        <button type="button" class="btn-primary" @click="loadArticles">
+        <button type="button" class="btn-primary" @click="loadArticles()">
           <BaseIcon name="search" class="w-4 h-4 inline mr-1" />
           Lọc
         </button>
@@ -60,6 +60,12 @@
     </div>
 
     
+    <!-- TC-020: banner lỗi tách khỏi empty state -->
+    <div v-if="loadError" class="error-banner mb-6 flex items-center justify-between gap-3 rounded-xl border border-accent-red/30 bg-accent-red/10 px-4 py-3">
+      <span class="text-sm text-accent-red"><BaseIcon name="alert-circle" class="w-4 h-4 inline mr-1 align-middle" />{{ loadError }}</span>
+      <button type="button" class="btn-secondary text-xs px-3 py-1.5" @click="loadArticles(true)">Thử lại</button>
+    </div>
+
     <div v-if="loading" class="loading-state">
       <div class="spinner"></div>
       <span>Đang tải bài viết...</span>
@@ -146,11 +152,13 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, watch } from 'vue';
+import { ref, computed, onMounted } from 'vue';
 import BaseIcon from '@/shared/components/BaseIcon.vue';
 import TheoryArticleEditorModal from './TheoryArticleEditorModal.vue';
 import ConfirmModal from '@/components/ui/ConfirmModal.vue';
 import VersionsModal from './VersionsModal.vue';
+import { useTeacherApi } from './useTeacherApi';
+import { useToastStore } from '../../composables/useToast';
 
 interface TheoryArticle {
   id: string;
@@ -171,8 +179,12 @@ interface TheoryArticle {
   versions?: any[];
 }
 
+const { BASE_URL, teacherRequest } = useTeacherApi();
+const toastStore = useToastStore();
+
 const articles = ref<TheoryArticle[]>([]);
 const loading = ref(false);
+const loadError = ref('');
 const showEditor = ref(false);
 const editingArticle = ref<TheoryArticle | null>(null);
 const showConfirmDelete = ref(false);
@@ -196,22 +208,13 @@ const filters = ref({
 
 const categories = ref<string[]>([]);
 
-const BASE_URL = import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:5055';
-
-function getAuthHeaders() {
-  const token = localStorage.getItem('accessToken');
-  return {
-    'Content-Type': 'application/json',
-    ...(token ? { 'Authorization': `Bearer ${token}` } : {})
-  };
-}
-
+// TC-014: tách tham số resetPage — changePage không được reset về trang 1.
 async function loadCategories() {
   try {
-    const res = await fetch(`${BASE_URL}/api/v1/theory-articles`, { headers: getAuthHeaders() });
+    const res = await teacherRequest(`${BASE_URL}/api/v1/theory-articles`);
     if (res.ok) {
       const data = await res.json();
-      const cats = [...new Set(data.map((a: any) => a.category).filter(Boolean))] as string[];
+      const cats = [...new Set((data.articles || data).map((a: any) => a.category).filter(Boolean))] as string[];
       categories.value = cats.sort();
     }
   } catch (err) {
@@ -219,9 +222,10 @@ async function loadCategories() {
   }
 }
 
-async function loadArticles() {
-  page.value = 1;
+async function loadArticles(resetPage = true) {
+  if (resetPage) page.value = 1;
   loading.value = true;
+  loadError.value = '';
   try {
     const params = new URLSearchParams({
       page: page.value.toString(),
@@ -232,16 +236,13 @@ async function loadArticles() {
     if (filters.value.category) params.append('category', filters.value.category);
     if (filters.value.difficulty) params.append('difficulty', filters.value.difficulty);
 
-    const res = await fetch(`${BASE_URL}/api/v1/theory-articles?${params}`, { headers: getAuthHeaders() });
-    if (res.ok) {
-      const data = await res.json();
-      articles.value = data.articles || data;
-      totalCount.value = data.totalCount || data.length;
-    } else {
-      console.error('Failed to load articles:', await res.text());
-    }
+    const res = await teacherRequest(`${BASE_URL}/api/v1/theory-articles?${params}`);
+    if (!res.ok) throw new Error('Không thể tải danh sách bài viết.');
+    const data = await res.json();
+    articles.value = data.articles || data;
+    totalCount.value = data.totalCount || data.length;
   } catch (err) {
-    console.error('Failed to load articles:', err);
+    loadError.value = err instanceof Error ? err.message : 'Lỗi khi tải bài viết.';
   } finally {
     loading.value = false;
   }
@@ -250,7 +251,7 @@ async function loadArticles() {
 function changePage(newPage: number) {
   if (newPage < 1 || newPage > totalPages.value) return;
   page.value = newPage;
-  loadArticles();
+  loadArticles(false);
 }
 
 function resetFilters() {
@@ -279,21 +280,21 @@ function editArticle(article: TheoryArticle) {
 
 async function togglePublish(article: TheoryArticle) {
   try {
-    const res = await fetch(`${BASE_URL}/api/v1/theory-articles/${article.id}/publish`, {
+    const res = await teacherRequest(`${BASE_URL}/api/v1/theory-articles/${article.id}/publish`, {
       method: 'POST',
-      headers: getAuthHeaders(),
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ publish: !article.isPublished })
     });
     if (res.ok) {
       article.isPublished = !article.isPublished;
       article.publishedAt = article.isPublished ? new Date().toISOString() : null;
+      toastStore.success(article.isPublished ? 'Đã xuất bản bài viết.' : 'Đã gỡ xuất bản bài viết.');
     } else {
       const err = await res.json();
-      alert(err.message || 'Lỗi khi thay đổi trạng thái xuất bản');
+      toastStore.handleApiError(err, 'Lỗi khi thay đổi trạng thái xuất bản');
     }
   } catch (err) {
-    console.error('Toggle publish failed:', err);
-    alert('Không thể kết nối máy chủ');
+    toastStore.handleApiError(err, 'Không thể kết nối máy chủ');
   }
 }
 
@@ -305,22 +306,21 @@ function confirmDeleteArticle(article: TheoryArticle) {
 async function deleteArticle() {
   if (!articleToDelete.value) return;
   try {
-    const res = await fetch(`${BASE_URL}/api/v1/theory-articles/${articleToDelete.value.id}`, {
-      method: 'DELETE',
-      headers: getAuthHeaders()
+    const res = await teacherRequest(`${BASE_URL}/api/v1/theory-articles/${articleToDelete.value.id}`, {
+      method: 'DELETE'
     });
     if (res.ok) {
       articles.value = articles.value.filter(a => a.id !== articleToDelete.value!.id);
       totalCount.value--;
       showConfirmDelete.value = false;
       articleToDelete.value = null;
+      toastStore.success('Đã xóa bài viết.');
     } else {
       const err = await res.json();
-      alert(err.message || 'Xóa thất bại');
+      toastStore.handleApiError(err, 'Xóa thất bại');
     }
   } catch (err) {
-    console.error('Delete failed:', err);
-    alert('Không thể kết nối máy chủ');
+    toastStore.handleApiError(err, 'Không thể kết nối máy chủ');
   }
 }
 
@@ -329,38 +329,66 @@ function viewVersions(article: TheoryArticle) {
   showVersions.value = true;
 }
 
-function restoreVersion(version: any) {
-  
-  console.log('Restore version:', version);
+// TC-015: restore phiên bản — backend không có endpoint restore riêng, dùng PUT
+// (endpoint update thật) để khôi phục nội dung phiên bản + toast kết quả.
+async function restoreVersion(version: any) {
+  if (!versionArticle.value) return;
+  const article = versionArticle.value;
+  if (!version?.contentMd && !version?.title) {
+    toastStore.warning('Phiên bản này không có dữ liệu nội dung để khôi phục.');
+    return;
+  }
+  if (!confirm(`Khôi phục bài viết "${article.title}" về phiên bản ${version.createdAt ? formatDate(version.createdAt) : 'cũ'}?`)) return;
+  try {
+    const res = await teacherRequest(`${BASE_URL}/api/v1/theory-articles/${article.id}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        title: version.title ?? article.title,
+        slug: article.slug,
+        contentMd: version.contentMd ?? article.contentMd,
+        category: article.category,
+        difficulty: article.difficulty,
+        tags: article.tags,
+        readTimeMinutes: article.readTimeMinutes
+      })
+    });
+    if (!res.ok) throw new Error('Khôi phục phiên bản thất bại.');
+    toastStore.success('Đã khôi phục phiên bản thành công.');
+    showVersions.value = false;
+    loadArticles(false);
+  } catch (err) {
+    toastStore.handleApiError(err, 'Lỗi khi khôi phục phiên bản.');
+  }
 }
 
 async function saveArticle(data: any) {
   try {
     let res: Response;
     if (editingArticle.value) {
-      res = await fetch(`${BASE_URL}/api/v1/theory-articles/${editingArticle.value.id}`, {
+      res = await teacherRequest(`${BASE_URL}/api/v1/theory-articles/${editingArticle.value.id}`, {
         method: 'PUT',
-        headers: getAuthHeaders(),
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data)
       });
     } else {
-      res = await fetch(`${BASE_URL}/api/v1/theory-articles`, {
+      res = await teacherRequest(`${BASE_URL}/api/v1/theory-articles`, {
         method: 'POST',
-        headers: getAuthHeaders(),
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data)
       });
     }
     if (res.ok) {
       showEditor.value = false;
       editingArticle.value = null;
-      loadArticles();
+      toastStore.success('Đã lưu bài viết.');
+      loadArticles(true);
     } else {
       const err = await res.json();
-      alert(err.message || 'Lưu thất bại');
+      toastStore.handleApiError(err, 'Lưu thất bại');
     }
   } catch (err) {
-    console.error('Save article failed:', err);
-    alert('Không thể kết nối máy chủ');
+    toastStore.handleApiError(err, 'Không thể kết nối máy chủ');
   }
 }
 

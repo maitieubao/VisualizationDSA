@@ -1,7 +1,7 @@
 <template>
   <section class="count-section">
     <div class="count-section__heading"><span>01 / MẢNG ĐẦU VÀO</span><small>Chữ số đang xét được nhấn sáng</small></div>
-    <div class="count-array" :style="{ gridTemplateColumns: `repeat(${Math.max(inputItems.length, 1)}, minmax(0, 1fr))` }">
+    <div class="count-array" :style="{ gridTemplateColumns: `repeat(${Math.max(inputItems.length, 1)}, minmax(0, 1fr))`, '--count-items': Math.max(inputItems.length, 1) }">
       <div v-for="(item, index) in inputItems" :key="item.id" class="count-item" :class="{ 'count-item--active': isInputActive(index) }">
         <div class="count-value" :style="barStyle(item, index)">
           <span class="count-number">{{ item.value }}</span>

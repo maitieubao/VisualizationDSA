@@ -90,4 +90,30 @@ describe('MergeSortAnimationEngine', () => {
     });
     expect(() => engine.draw(ctx, 400, 300, snap)).not.toThrow();
   });
+
+  it('AL-032: draw vẽ đủ 3 tầng — fillRect (vùng segment) + fillText (nhãn/giá trị/chip)', () => {
+    const engine = MergeSortAnimationEngine.instance();
+    const ctx = makeCtx() as unknown as CanvasRenderingContext2D;
+    const snap = makeMergeSnap(); // 7 phần tử, merge phase
+
+    engine.draw(ctx, 400, 300, snap);
+
+    const fillRectMock = ctx.fillRect as unknown as ReturnType<typeof vi.fn>;
+    const fillTextMock = ctx.fillText as unknown as ReturnType<typeof vi.fn>;
+    const clearRectMock = ctx.clearRect as unknown as ReturnType<typeof vi.fn>;
+
+    // Tier 1: vùng segment [low..high] + nửa phải sau mid → ít nhất 2 fillRect
+    expect(fillRectMock.mock.calls.length).toBeGreaterThanOrEqual(2);
+
+    // Tier 1 bars + Tier 2 L/R labels + chips + Tier 3 OUT + phase label
+    expect(fillTextMock.mock.calls.length).toBeGreaterThanOrEqual(15);
+
+    // Pha merge có nhãn "01 CHIA" không xuất hiện, "02 TRỘN" xuất hiện
+    const texts = fillTextMock.mock.calls.map(c => String(c[0]));
+    expect(texts.some(t => t.includes('TRỘN'))).toBe(true);
+    expect(texts.some(t => t.includes('CHIA'))).toBe(false);
+
+    // clearRect được gọi đúng 1 lần đầu draw (không nhân bản nền)
+    expect(clearRectMock.mock.calls.length).toBe(1);
+  });
 });

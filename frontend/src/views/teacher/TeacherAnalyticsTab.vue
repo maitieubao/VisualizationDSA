@@ -16,6 +16,12 @@
       <span class="text-text-muted text-xs">Đang tải số liệu thống kê...</span>
     </div>
 
+    <!-- TC-020: banner lỗi tách khỏi empty state -->
+    <div v-else-if="loadError" class="error-banner mb-6 flex items-center justify-between gap-3 rounded-xl border border-accent-red/30 bg-accent-red/10 px-4 py-3">
+      <span class="text-sm text-accent-red"><BaseIcon name="alert-circle" class="w-4 h-4 inline mr-1 align-middle" />{{ loadError }}</span>
+      <button type="button" class="btn-secondary text-xs px-3 py-1.5" @click="reloadAll">Thử lại</button>
+    </div>
+
     <div v-else-if="!selectedClassroomId" class="empty-state py-12 text-center text-text-muted text-xs bg-bg-secondary/20 border border-border-subtle border-dashed rounded-3xl">
       Vui lòng chọn một lớp học ở trên để xem phân tích chi tiết.
     </div>
@@ -28,7 +34,8 @@
           <span class="metric-card__label text-xs font-bold text-text-muted mt-2 uppercase tracking-wider">Học viên tham gia</span>
         </div>
         <div class="metric-card bg-accent-green/20 border border-accent-green/10 rounded-3xl p-6 flex flex-col items-center justify-center">
-          <span class="metric-card__value text-4xl font-black text-accent-green drop-shadow-md">{{ analyticsData.completionRate.toFixed(1) }}%</span>
+          <!-- TC-017: backend trả completionRate 0-1 → UI nhân ×100 -->
+          <span class="metric-card__value text-4xl font-black text-accent-green drop-shadow-md">{{ (analyticsData.completionRate * 100).toFixed(1) }}%</span>
           <span class="metric-card__label text-xs font-bold text-text-muted mt-2 uppercase tracking-wider">Tỷ lệ hoàn thành</span>
         </div>
         <div class="metric-card bg-accent-yellow/20 border border-accent-yellow/10 rounded-3xl p-6 flex flex-col items-center justify-center">
@@ -45,8 +52,10 @@
       <div class="quizzes-list-container p-6 bg-bg-secondary/40 border border-border-subtle rounded-3xl backdrop-blur-xl">
         <h3 class="text-sm font-bold text-text-primary mb-6 uppercase tracking-wider flex items-center justify-between">
           <span>Bảng điểm học viên (Quiz & Codelab)</span>
-          <button @click="exportToExcel" class="bg-accent hover:bg-accent text-white px-3 py-1.5 rounded-lg text-xs normal-case font-bold cursor-pointer transition-colors shadow-lg shadow-accent/20">
-            Xuất Excel
+          <button @click="exportToExcel" :disabled="exporting" class="bg-accent hover:bg-accent text-white px-3 py-1.5 rounded-lg text-xs normal-case font-bold cursor-pointer transition-colors shadow-lg shadow-accent/20 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2">
+            <span v-if="exporting" class="spinner-sm inline-block"></span>
+            <BaseIcon name="file-text" class="w-3.5 h-3.5" />
+            {{ exporting ? 'Đang xuất...' : 'Xuất Excel' }}
           </button>
         </h3>
         <div class="table-responsive overflow-x-auto">
@@ -115,6 +124,7 @@
 
 import { ref, onMounted } from 'vue';
 import { useTeacherApi } from './useTeacherApi';
+import { useToastStore } from '../../composables/useToast';
 
 interface ClassroomBasicInfo {
   id: string;
@@ -139,11 +149,16 @@ interface AnalyticsData {
   studentScores: StudentScoreRow[];
 }
 
-const { BASE_URL, getAuthHeaders } = useTeacherApi();
+const { BASE_URL, teacherRequest } = useTeacherApi();
+const toastStore = useToastStore();
 
 const classroomsList = ref<ClassroomBasicInfo[]>([]);
 const selectedClassroomId = ref<string>('');
 const loadingAnalyticsData = ref(false);
+// TC-020: lỗi fetch hiển thị banner — không rơi vào empty state giả.
+const loadError = ref('');
+// TC-032: trạng thái export Excel — disable + spinner + toast.
+const exporting = ref(false);
 const analyticsData = ref<AnalyticsData>({
   totalStudents: 0,
   avgScore: 0.0,
@@ -154,28 +169,38 @@ const analyticsData = ref<AnalyticsData>({
   studentScores: []
 });
 
+// TC-005: URL thiếu segment v1 → 404; sửa sang /api/v1/classrooms/...
 async function loadClassrooms() {
+  loadError.value = '';
   try {
-    const res = await fetch(`${BASE_URL}/api/Classroom/mine`, { headers: getAuthHeaders() });
-    if (res.ok) classroomsList.value = await res.json();
-  } catch (err) { console.error('Failed to load classrooms:', err); }
+    const res = await teacherRequest(`${BASE_URL}/api/v1/classrooms/mine`);
+    if (!res.ok) throw new Error('Không thể tải danh sách lớp học.');
+    classroomsList.value = await res.json();
+  } catch (err) {
+    loadError.value = err instanceof Error ? err.message : 'Lỗi khi tải danh sách lớp học.';
+  }
 }
 
 async function loadClassroomAnalytics() {
   if (!selectedClassroomId.value) return;
   loadingAnalyticsData.value = true;
+  loadError.value = '';
   try {
-    const res = await fetch(`${BASE_URL}/api/Classroom/${selectedClassroomId.value}/statistics`, { headers: getAuthHeaders() });
-    if (res.ok) analyticsData.value = await res.json();
-    else alert('Không thể tải dữ liệu thống kê của lớp học.');
-  } catch (err) { console.error('Failed to load course analytics:', err); }
+    const res = await teacherRequest(`${BASE_URL}/api/v1/classrooms/${selectedClassroomId.value}/statistics`);
+    if (!res.ok) throw new Error('Không thể tải dữ liệu thống kê của lớp học.');
+    analyticsData.value = await res.json();
+  } catch (err) {
+    loadError.value = err instanceof Error ? err.message : 'Lỗi khi tải thống kê lớp học.';
+  }
   finally { loadingAnalyticsData.value = false; }
 }
 
+// TC-032: export có trạng thái loading + disable nút + toast lỗi.
 async function exportToExcel() {
-  if (!selectedClassroomId.value) return;
+  if (!selectedClassroomId.value || exporting.value) return;
+  exporting.value = true;
   try {
-    const res = await fetch(`${BASE_URL}/api/Classroom/${selectedClassroomId.value}/export-excel`, { headers: getAuthHeaders() });
+    const res = await teacherRequest(`${BASE_URL}/api/v1/classrooms/${selectedClassroomId.value}/export-excel`);
     if (res.ok) {
       const blob = await res.blob();
       const url = window.URL.createObjectURL(blob);
@@ -185,12 +210,20 @@ async function exportToExcel() {
       document.body.appendChild(a);
       a.click();
       window.URL.revokeObjectURL(url);
+      toastStore.success('Đã xuất báo cáo Excel.');
     } else {
-      alert('Không thể xuất báo cáo Excel.');
+      throw new Error('Không thể xuất báo cáo Excel.');
     }
   } catch (err) {
-    console.error('Lỗi khi xuất báo cáo:', err);
+    toastStore.handleApiError(err, 'Lỗi khi xuất báo cáo.');
+  } finally {
+    exporting.value = false;
   }
+}
+
+function reloadAll(): void {
+  loadClassrooms();
+  if (selectedClassroomId.value) loadClassroomAnalytics();
 }
 
 onMounted(() => {

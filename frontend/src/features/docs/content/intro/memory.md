@@ -90,7 +90,7 @@ p2.Name = "Bob";
 Console.WriteLine(p1.Name); // In ra "Bob"! Vì p1 và p2 cùng trỏ chung một đối tượng trên Heap.
 ```
 
-Nếu bạn không muốn điều này xảy ra, bạn cần hiểu và sử dụng `struct` thay vì `class` cho những cấu trúc dữ liệu nhỏ và bất biến, vì `struct` là Value Type và sẽ được copy thực sự (Deep Copy) khi gán.
+Nếu bạn không muốn điều này xảy ra, bạn cần hiểu và sử dụng `struct` thay vì `class` cho những cấu trúc dữ liệu nhỏ và bất biến, vì gán `struct` là **sao chép theo giá trị (copy by value)**: toàn bộ field được copy nguyên vẹn sang biến mới (nếu struct chứa field tham chiếu như `string`, thì bản sao của con trỏ được tạo ra chứ **không** phải Deep Copy). Điều này trái ngược với `class`: gán biến `class` chỉ copy **tham chiếu** — cả hai biến cùng trỏ về một đối tượng duy nhất trên Heap.
 
 ## Next Steps {#next-steps}
 

@@ -147,7 +147,7 @@ public int[] DailyTemperatures(int[] temperatures)
 :::tip Tóm tắt nhanh (Key Takeaways)
 - Stack là LIFO (Vào sau Ra trước). Chỉ 3 thao tác `Push`, `Pop`, `Peek` với tốc độ tuyệt đối $O(1)$.
 - Đệ quy chính là ngụy trang của Stack. Mỗi lần đệ quy tốn bộ nhớ Call Stack. Hết bộ nhớ là `StackOverflow`.
-- Monotonic Stack là mẫu thiết kế (Pattern) siêu hạng để xử lý dữ liệu theo cặp (Matching) ví dụ như: Kiểm tra ngoặc hợp lệ `() {}`, Tìm phần tử lớn hơn tiếp theo, hoặc Tính diện tích lớn nhất của Histogram.
+- Stack thường là "vũ khí" cho các bài toán ghép cặp đối xứng (Matching) như **Kiểm tra ngoặc hợp lệ `() {}`** (đẩy ngoặc mở, bóc ngoặc đóng). Còn **Monotonic Stack** là mẫu thiết kế (Pattern) siêu hạng cho dữ liệu theo cặp có thứ tự, ví dụ như: Tìm phần tử lớn hơn tiếp theo, hoặc Tính diện tích lớn nhất của Histogram.
 :::
 
 ## Next Steps {#next-steps}

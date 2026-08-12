@@ -53,7 +53,8 @@ namespace VisualizationDSA.Domain.Entities
             int? maxAttempts = null,
             bool isHiddenForStudent = false,
             Guid? prerequisiteItemId = null,
-            bool isSequential = true)
+            bool isSequential = true,
+            bool isHidden = false)
         {
             
             var fkCount = (lessonId.HasValue ? 1 : 0) + (quizId.HasValue ? 1 : 0) + (codelabId.HasValue ? 1 : 0);
@@ -78,7 +79,7 @@ namespace VisualizationDSA.Domain.Entities
             OverrideDescription = overrideDescription ?? string.Empty;
             OrderIndex = orderIndex;
             IsRequired = isRequired;
-            IsHidden = false;
+            IsHidden = isHidden;
             IsDeleted = false;
             CreatedAt = DateTime.UtcNow;
             UnlockAt = unlockAt;
@@ -96,6 +97,31 @@ namespace VisualizationDSA.Domain.Entities
             OrderIndex = orderIndex;
             IsRequired = isRequired;
             IsHidden = isHidden;
+            UnlockAt = unlockAt;
+            DueAt = dueAt;
+            MaxAttempts = maxAttempts;
+        }
+
+        // LS-002: cập nhật nội dung item từ giáo viên (title/description + điều kiện học tập).
+        // PrerequisiteItemId/IsSequential không nằm trong Update cũ — tách riêng để không
+        // làm đổi hành vi của các call-site reorder.
+        public void UpdateItemContent(
+            string overrideTitle,
+            string overrideDescription,
+            bool isRequired,
+            bool isHidden,
+            Guid? prerequisiteItemId,
+            bool isSequential,
+            DateTime? unlockAt,
+            DateTime? dueAt,
+            int? maxAttempts)
+        {
+            OverrideTitle = overrideTitle ?? string.Empty;
+            OverrideDescription = overrideDescription ?? string.Empty;
+            IsRequired = isRequired;
+            IsHidden = isHidden;
+            PrerequisiteItemId = prerequisiteItemId;
+            IsSequential = isSequential;
             UnlockAt = unlockAt;
             DueAt = dueAt;
             MaxAttempts = maxAttempts;

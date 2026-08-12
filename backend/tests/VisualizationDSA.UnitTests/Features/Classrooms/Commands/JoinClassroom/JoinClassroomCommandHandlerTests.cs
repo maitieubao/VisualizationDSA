@@ -86,13 +86,15 @@ public class JoinClassroomCommandHandlerTests
         await Assert.ThrowsAsync<ArgumentException>(() => handler.Handle(cmd, CancellationToken.None));
     }
 
+    // CR-014: Kick = ban rejoin. Chỉ học viên TỰ RỜI (Left) được join lại — học viên bị
+    // kick (Kicked) phải nhận lỗi, không reactivate.
     [Fact]
-    public async Task Handle_ReactivatesKickedStudent_InsteadOfCreatingNewEnrollment()
+    public async Task Handle_ReactivatesLeftStudent_InsteadOfCreatingNewEnrollment()
     {
         var (classroom, studentId, ctx) = await Setup();
-        // First enroll then kick
+        // Đăng ký rồi tự rời lớp (Left).
         var enroll = new ClassroomEnrollment(classroom.Id, studentId);
-        enroll.Kick(Guid.NewGuid(), "bad");
+        enroll.Leave();
         ctx.ClassroomEnrollments.Add(enroll);
         await ctx.SaveChangesAsync();
 
@@ -102,6 +104,25 @@ public class JoinClassroomCommandHandlerTests
 
         var active = await ctx.ClassroomEnrollments.CountAsync(e => e.Status == EnrollmentStatus.Active);
         active.Should().Be(1); // reactivated, not duplicated
+    }
+
+    [Fact]
+    public async Task Handle_ThrowsInvalidOperation_WhenStudentWasKicked()
+    {
+        var (classroom, studentId, ctx) = await Setup();
+        var enroll = new ClassroomEnrollment(classroom.Id, studentId);
+        enroll.Kick(Guid.NewGuid(), "bad");
+        ctx.ClassroomEnrollments.Add(enroll);
+        await ctx.SaveChangesAsync();
+
+        var handler = new JoinClassroomCommandHandler(ctx);
+        var cmd = new JoinClassroomCommand { StudentId = studentId, InviteCode = classroom.InviteCode };
+
+        // CR-014: kick = cấm quay lại — không được reactivate.
+        await Assert.ThrowsAsync<InvalidOperationException>(() => handler.Handle(cmd, CancellationToken.None));
+
+        var status = (await ctx.ClassroomEnrollments.SingleAsync()).Status;
+        status.Should().Be(EnrollmentStatus.Kicked);
     }
 
     [Fact]

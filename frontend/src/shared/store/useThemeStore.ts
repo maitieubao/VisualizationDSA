@@ -3,29 +3,51 @@ import { ref } from 'vue';
 
 export type Theme = 'terminal-dark' | 'light';
 
-export const useThemeStore = defineStore('theme', () => {
-  const currentTheme = ref<Theme>('terminal-dark');
+const THEME_STORAGE_KEY = 'app-theme';
 
-  function initTheme() {
-    const savedTheme = localStorage.getItem('app-theme') as Theme | null;
-    if (savedTheme && (savedTheme === 'terminal-dark' || savedTheme === 'light')) {
-      currentTheme.value = savedTheme;
-    } else {
-      
-      const prefersLight = window.matchMedia('(prefers-color-scheme: light)').matches;
-      currentTheme.value = prefersLight ? 'light' : 'terminal-dark';
+// CU-014: localStorage/matchMedia đều bọc try/catch — môi trường hạn chế
+// (Safari private, jsdom không matchMedia) không crash, luôn có fallback mặc định.
+function readInitialTheme(): Theme {
+  try {
+    const savedTheme = localStorage.getItem(THEME_STORAGE_KEY);
+    if (savedTheme === 'terminal-dark' || savedTheme === 'light') return savedTheme;
+  } catch {
+    // localStorage không khả dụng — rơi xuống matchMedia.
+  }
+  try {
+    if (typeof window !== 'undefined' && typeof window.matchMedia === 'function') {
+      return window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'terminal-dark';
+    }
+  } catch {
+    // matchMedia không khả dụng — fallback mặc định.
+  }
+  return 'terminal-dark';
+}
+
+export const useThemeStore = defineStore('theme', () => {
+  // CU-014: khởi tạo ĐỒNG BỘ ngay trong store setup (trước mount) —
+  // áp data-theme trước lần render đầu tiên, hết FOUC flash theme.
+  const currentTheme = ref<Theme>(readInitialTheme());
+
+  function applyTheme(theme: Theme): void {
+    document.documentElement.setAttribute('data-theme', theme);
+  }
+
+  // Áp ngay theme đã đọc được — không chờ onMounted (App.vue vẫn gọi initTheme, idempotent).
+  applyTheme(currentTheme.value);
+
+  function initTheme(): void {
+    applyTheme(currentTheme.value);
+  }
+
+  function toggleTheme(): void {
+    currentTheme.value = currentTheme.value === 'terminal-dark' ? 'light' : 'terminal-dark';
+    try {
+      localStorage.setItem(THEME_STORAGE_KEY, currentTheme.value);
+    } catch {
+      // localStorage không khả dụng — theme vẫn áp dụng trong phiên hiện tại.
     }
     applyTheme(currentTheme.value);
-  }
-
-  function toggleTheme() {
-    currentTheme.value = currentTheme.value === 'terminal-dark' ? 'light' : 'terminal-dark';
-    localStorage.setItem('app-theme', currentTheme.value);
-    applyTheme(currentTheme.value);
-  }
-
-  function applyTheme(theme: Theme) {
-    document.documentElement.setAttribute('data-theme', theme);
   }
 
   return {

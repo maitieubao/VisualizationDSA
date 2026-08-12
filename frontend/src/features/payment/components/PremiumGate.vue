@@ -1,18 +1,20 @@
 <template>
   <div v-if="!hasAccess" class="premium-gate">
-    <div class="premium-gate__overlay">
+    <!-- PM-030: overlay là dialog modal + aria-modal; focus chuyển vào nút nâng cấp khi mở -->
+    <div class="premium-gate__overlay" role="dialog" aria-modal="true" aria-labelledby="premium-gate-title">
       <div class="premium-gate__card">
         <span class="premium-gate__icon"><BaseIcon name="crown" class="w-8 h-8" /></span>
-        <h3 class="premium-gate__title">Nội dung Premium</h3>
+        <h3 id="premium-gate-title" class="premium-gate__title">Nội dung Premium</h3>
         <p class="premium-gate__desc">
           {{ message || 'Tính năng này yêu cầu tài khoản Premium. Nâng cấp để mở khóa toàn bộ sức mạnh DSA!' }}
         </p>
-        <button type="button" class="premium-gate__btn" @click="goToCheckout">
-          Nâng cấp Premium — {{ formatPrice(paymentStore.premiumPrice) }}
+        <button ref="upgradeBtnRef" type="button" class="premium-gate__btn" @click="goToCheckout">
+          Nâng cấp Premium — {{ formatVND(paymentStore.premiumPrice) }}
         </button>
       </div>
     </div>
-    <div class="premium-gate__content" aria-hidden="true">
+    <!-- PM-030: nội dung bị khóa không được vào tab order -->
+    <div class="premium-gate__content" aria-hidden="true" tabindex="-1">
       <slot />
     </div>
   </div>
@@ -20,32 +22,64 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue';
-import { useRouter } from 'vue-router';
+import { computed, nextTick, onMounted, ref, watch } from 'vue';
+import { useRouter, useRoute } from 'vue-router';
 import { usePaymentStore } from '../store/usePaymentStore';
+import { formatVND } from '../../../utils/format';
 
+// TODO (PM-020): PremiumGate hiện chưa được mount đại trà trong sản phẩm.
+// Agent store phối hợp mount qua `checkFeatureAccess` khi gating tính năng thật
+// (lesson/sandbox premium) — giữ component hoạt động đúng + đầy đủ a11y.
 const props = defineProps<{
   featureId?: string;
   message?: string;
 }>();
 
+// useRouter/useRoute có thể trả undefined trong môi trường test thiếu router injection.
 const router = useRouter();
+const route = useRoute();
 const paymentStore = usePaymentStore();
+
+const upgradeBtnRef = ref<HTMLButtonElement | null>(null);
 
 const hasAccess = computed(() => {
   if (paymentStore.isPremium) return true;
   if (!props.featureId) return false;
-  
+
   const freeFeatures = ['basic-viz', 'quiz-basic'];
   return freeFeatures.includes(props.featureId);
 });
 
-function goToCheckout(): void {
-  router.push('/checkout');
+// PM-030: khi gate mở khóa (chưa có quyền), chuyển focus vào nút nâng cấp.
+function focusUpgradeButton(): void {
+  nextTick(() => {
+    upgradeBtnRef.value?.focus();
+  });
 }
 
-function formatPrice(price: number): string {
-  return new Intl.NumberFormat('vi-VN').format(price) + 'đ';
+onMounted(() => {
+  if (!hasAccess.value) focusUpgradeButton();
+});
+
+watch(hasAccess, (val) => {
+  if (!val) focusUpgradeButton();
+});
+
+function goToCheckout(): void {
+  // Mang theo đường dẫn hiện tại để sau khi thanh toán quay lại đúng nơi user bị chặn (PM-029).
+  const redirect = route?.fullPath && route.fullPath !== '/' ? route.fullPath : undefined;
+  if (router) {
+    if (redirect) {
+      router.push({ path: '/checkout', query: { redirect } });
+    } else {
+      router.push('/checkout');
+    }
+    return;
+  }
+  // Fallback khi không có router (edge case test) — điều hướng thủ công.
+  if (typeof window !== 'undefined') {
+    window.location.assign('/#/checkout');
+  }
 }
 </script>
 

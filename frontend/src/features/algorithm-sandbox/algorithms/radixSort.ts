@@ -1,8 +1,34 @@
-import type { SortFrame } from '../types/sorting.types';
+import type { SortFrame, SortHighlights } from '../types/sorting.types';
 
 interface TrackedElement {
   id: number;
   value: number;
+}
+
+// CC-009: ánh xạ bước thuật toán → dòng vật lý + logicalId (giả định khối mã RadixSort
+// được nạp vào Monaco: line 1 = hàm, line 3 = phân phối vào bucket, line 5 = thu hồi)
+const LINE_FUNC_DECL = 1;
+const LINE_DISTRIBUTE_STEP = 3;
+const LINE_COLLECT_STEP = 5;
+
+function mkHighlights(
+  sorted: number[],
+  extras: Partial<SortHighlights> = {}
+): SortHighlights {
+  return { compare: [], swap: [], sorted: [...sorted], ...extras };
+}
+
+// SV-008 (EC-022): min/max 1 pass thay Math.min/max(...arr) — mảng lớn không RangeError
+function minMax(values: number[]): { min: number; max: number } {
+  if (values.length === 0) return { min: 0, max: 0 };
+  let min = values[0];
+  let max = values[0];
+  for (let i = 1; i < values.length; i++) {
+    const v = values[i];
+    if (v < min) min = v;
+    if (v > max) max = v;
+  }
+  return { min, max };
 }
 
 export function generateRadixSortFrames(inputArray: number[]): SortFrame[] {
@@ -12,9 +38,8 @@ export function generateRadixSortFrames(inputArray: number[]): SortFrame[] {
   const arr: TrackedElement[] = inputArray.map((val, idx) => ({ id: idx, value: val }));
 
   // Dịch chuyển toàn bộ giá trị về >= 0 để chữ số luôn hợp lệ [0..9]
-  const minVal = inputArray.length ? Math.min(...inputArray) : 0;
+  const { min: minVal, max: maxVal } = minMax(inputArray);
   const offset = minVal < 0 ? -minVal : 0;
-  const maxVal = inputArray.length ? Math.max(...inputArray) : 0;
   const shiftedMax = maxVal + offset;
 
   let trackedBuckets: TrackedElement[][] = Array.from({ length: 10 }, () => []);
@@ -26,6 +51,9 @@ export function generateRadixSortFrames(inputArray: number[]): SortFrame[] {
     exp: number,
     radixStep: 'distribute' | 'collect',
     vars: Record<string, string | number>,
+    lineNumber: number,
+    activeLogicalLineId: string,
+    highlightExtras: Partial<SortHighlights> = {},
     sortedIndices: number[] = []
   ) {
     frames.push({
@@ -43,10 +71,13 @@ export function generateRadixSortFrames(inputArray: number[]): SortFrame[] {
       activeDigitPlace: exp,
       radixStep,
       variables: vars,
+      lineNumber,
+      activeLogicalLineId,
+      highlights: mkHighlights(sortedIndices, highlightExtras),
     });
   }
 
-  emit('Khởi tạo Radix Sort — sắp xếp theo chữ số (LSD)', [...arr], null, 1, 'distribute', { exp: 1, i: '-', digit: '-', d: '-', maxVal });
+  emit('Khởi tạo Radix Sort — sắp xếp theo chữ số (LSD)', [...arr], null, 1, 'distribute', { exp: 1, i: '-', digit: '-', d: '-', maxVal }, LINE_FUNC_DECL, 'FUNC_DECL');
 
   for (let exp = 1; Math.floor(shiftedMax / exp) > 0; exp *= 10) {
     trackedBuckets = Array.from({ length: 10 }, () => []);
@@ -63,7 +94,9 @@ export function generateRadixSortFrames(inputArray: number[]): SortFrame[] {
         `Đưa ${elem.value} vào Hộp [${digit}] (chữ số hàng ${exp})`,
         arrBeforeDistribute,
         i, exp, 'distribute',
-        { exp, i, digit, d: '-', maxVal }
+        { exp, i, digit, d: '-', maxVal },
+        LINE_DISTRIBUTE_STEP, 'DISTRIBUTE_STEP',
+        { active: [i] }
       );
     }
 
@@ -83,7 +116,9 @@ export function generateRadixSortFrames(inputArray: number[]): SortFrame[] {
           `Thu hồi ${elem.value} từ Hộp [${d}] → mảng[${collected.length - 1}]`,
           snapArr,
           collected.length - 1, exp, 'collect',
-          { exp, i: collected.length - 1, digit: '-', d, maxVal }
+          { exp, i: collected.length - 1, digit: '-', d, maxVal },
+          LINE_COLLECT_STEP, 'COLLECT_STEP',
+          { active: [collected.length - 1] }
         );
       }
     }
@@ -94,6 +129,6 @@ export function generateRadixSortFrames(inputArray: number[]): SortFrame[] {
   }
 
   const finalSortedIndices = Array.from({ length: arr.length }, (_, i) => i);
-  emit('✅ Radix Sort hoàn thành!', [...arr], null, 1, 'collect', { exp: '-', i: '-', digit: '-', d: '-', maxVal }, finalSortedIndices);
+  emit('✅ Radix Sort hoàn thành!', [...arr], null, 1, 'collect', { exp: '-', i: '-', digit: '-', d: '-', maxVal }, LINE_FUNC_DECL, 'FUNC_DECL', {}, finalSortedIndices);
   return frames;
 }

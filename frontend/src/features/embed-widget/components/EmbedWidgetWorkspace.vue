@@ -94,6 +94,14 @@ const store = useEmbedConfiguratorStore();
   overflow: hidden;
 }
 
+/* ─── EW-018: mobile — sidebar trên, preview dưới (xếp dọc) ─── */
+@media (max-width: 768px) {
+  .workspace-body {
+    flex-direction: column;
+    overflow-y: auto;
+  }
+}
+
 .workspace-content {
   flex: 1;
   display: flex;

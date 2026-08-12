@@ -88,7 +88,7 @@ function renderCanvas(): void {
   ctx.fillRect(0, 0, w, h);
   const frame = props.frame;
   if (!frame || !frame.treeNodes || frame.treeNodes.length === 0) {
-    if (!frame || frame.dataState.length === 0) {
+    if (!frame || (frame.dataState?.length ?? 0) === 0) {
       ctx.fillStyle = colorMuted; ctx.font = '14px sans-serif'; ctx.textAlign = 'center';
       ctx.fillText('Cây BST rỗng', w / 2, h / 2);
     }
@@ -108,12 +108,12 @@ function renderCanvas(): void {
     }
   }
   for (const pos of positions) {
-    const isActive = frame.highlights.active.includes(pos.id);
+    const isActive = frame.highlights?.active?.includes(pos.id) ?? false;
     
     let status: 'default' | 'active' | 'visited' = 'default';
     if (isActive) {
       status = 'active';
-    } else if ((isBFSOrDFS.value || isDijkstra.value) && frame.dataState.includes(pos.value)) {
+    } else if ((isBFSOrDFS.value || isDijkstra.value) && (frame.dataState ?? []).includes(pos.value)) {
       status = 'visited';
     }
 

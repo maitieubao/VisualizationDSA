@@ -19,6 +19,9 @@ export interface UserProgressDto {
   modulesCompleted: number;
   currentStreak: number;
   completedModuleIds: string[];
+  // PR-009 (GM-008): streak là trách nhiệm server — ngày hoạt động THẬT từ DB (UTC),
+  // mirror StatelessUserProgressDto.LastActiveDate của backend.
+  lastActiveDate?: string;
   badges: {
     id: string;
     name: string;

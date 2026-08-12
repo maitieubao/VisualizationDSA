@@ -9,6 +9,10 @@ Thuật toán Sắp xếp Đếm (Counting Sort) là một kỹ thuật sắp x�
 
 Điểm làm nên sức mạnh tuyệt đối của thuật toán này là tốc độ tiệm cận **O(N)** khi phạm vi giá trị K nhỏ. Tuy nhiên, cái giá phải trả là bạn cần một lượng bộ nhớ bổ sung phụ thuộc vào **phạm vi giá trị (Range)** của dữ liệu trong mảng.
 
+:::warning Ràng buộc tiên quyết (Prerequisite)
+Counting Sort **chỉ hoạt động với số nguyên KHÔNG ÂM** ($\ge 0$). Vì mảng `count` đánh index theo chính giá trị phần tử (`count[array[i]]++`), nếu mảng chứa số âm (ví dụ `-3`), bạn sẽ truy cập index âm và ném ngay `IndexOutOfRangeException`. Đây là lý do thuật toán chỉ áp dụng được cho dữ liệu như điểm số, tuổi, tần suất — không phải dữ liệu có thể âm.
+:::
+
 ## Nguyên lý hoạt động {#how-it-works}
 
 Giả sử chúng ta cần sắp xếp một mảng các điểm số thi: `[4, 2, 2, 8, 3, 3, 1]`.
@@ -92,6 +96,7 @@ public void CountingSort(int[] array)
         count[i] = 0;
 
     // Bước 2: Đếm tần suất
+    // LƯU Ý: Yêu cầu mọi phần tử >= 0. Nếu có số âm -> IndexOutOfRangeException.
     for (int i = 0; i < n; i++)
         count[array[i]]++;
 
@@ -116,6 +121,8 @@ public void CountingSort(int[] array)
 Hãy tưởng tượng bạn cần sắp xếp 3 con số: `[1, 5, 1_000_000_000]`. 
 Mặc dù $N = 3$, nhưng $K = 1,000,000,000$. Mảng `count` của bạn sẽ phải khai báo với kích thước 1 tỷ phần tử, tiêu tốn ngay lập tức **4GB RAM** chỉ để đếm 3 con số!
 Đây là một sự lãng phí thảm họa. Counting Sort **chỉ thực sự hữu dụng khi khoảng giá trị phân bố của dữ liệu (K) xấp xỉ bằng hoặc nhỏ hơn N**, ví dụ: tuổi của học sinh (0 - 100), hay điểm thi (0.0 - 10.0).
+
+Bên cạnh đó, **dữ liệu phải là số nguyên không âm** (xem ràng buộc tiên quyết phía trên). Nếu mảng chứa phần tử âm (ví dụ `[-3, 2, 5]`), lệnh `count[array[i]]++` truy cập index âm và ném `IndexOutOfRangeException` ngay lập tức. Muốn dùng Counting Sort cho dữ liệu có giá trị âm, bạn phải dịch chuyển (offset) toàn bộ giá trị lên mốc 0 trước khi đếm, rồi dịch ngược lại khi trải dữ liệu ra.
 :::
 
 ## Next Steps {#next-steps}

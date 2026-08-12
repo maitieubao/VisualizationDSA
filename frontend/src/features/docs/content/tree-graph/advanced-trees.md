@@ -26,18 +26,18 @@ Trie (đọc là "Try") là một loại cây tìm kiếm đặc biệt, trong �
 
 Thay vì mỗi Node lưu trữ một chuỗi hoàn chỉnh, một chuỗi sẽ được biểu diễn bằng **đường đi từ Gốc (Root) xuống Lá (Leaf)**. Các chuỗi có chung tiền tố (Prefix) sẽ dùng chung các nhánh ở phía trên!
 
-Ví dụ: Nếu ta chèn 3 từ `CAT`, `CAR`, và `COW` vào Trie:
-- `CAT` và `CAR` có chung tiền tố `CA`, nên chúng sẽ dùng chung 2 node đầu tiên là `C` và `A`. Từ `A` sẽ rẽ ra 2 nhánh `T` và `R`.
-- `COW` có chung tiền tố `C`, nên nó chung node `C` nhưng rẽ sang nhánh `O` và `W`.
+Ví dụ: Nếu ta chèn 3 từ `cat`, `car`, và `cow` vào Trie:
+- `cat` và `car` có chung tiền tố `ca`, nên chúng sẽ dùng chung 2 node đầu tiên là `c` và `a`. Từ `a` sẽ rẽ ra 2 nhánh `t` và `r`.
+- `cow` có chung tiền tố `c`, nên nó chung node `c` nhưng rẽ sang nhánh `o` và `w`.
 
 ```mermaid
 graph TD
-    Root((Root)) --> C((C))
-    C --> A((A))
-    C --> O((O))
-    A --> T((T*))
-    A --> R((R*))
-    O --> W((W*))
+    Root((Root)) --> C((c))
+    C --> A((a))
+    C --> O((o))
+    A --> T((t*))
+    A --> R((r*))
+    O --> W((w*))
     
     classDef endNode fill:#f9f,stroke:#333,stroke-width:2px,color:#000;
     class T,R,W endNode;

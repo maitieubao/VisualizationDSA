@@ -3,9 +3,7 @@ import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { nextTick } from 'vue';
 import { setActivePinia, createPinia } from 'pinia';
 import { useAlgoPlaygroundStore } from '../store/useAlgoPlaygroundStore';
-import { compileInWorker } from '../../../core/compileWorker';
 import { getAlgoDemo, playgroundAlgoDemos, HOOKS_HINT, algoDemoIds } from '../engine/playgroundAlgoDemos';
-import { useThemeStore } from '../../../shared/store/useThemeStore';
 
 // Mock Web Worker: chạy compile đồng bộ trong test thay vì worker thật
 vi.mock('../../../core/compileWorker', async () => {
@@ -61,40 +59,9 @@ describe('playgroundP2Tests — US-AP-002 (P2): Chip complexity', () => {
   });
 });
 
-describe('playgroundP2Tests — US-AP-009 (P2): Monaco theme', () => {
-  beforeEach(() => {
-    setActivePinia(createPinia());
-    localStorage.clear();
-  });
-
-  it('US-AP-009: theme light → monaco theme = vs', () => {
-    const themeStore = useThemeStore();
-    themeStore.currentTheme = 'light';
-
-    const monacoTheme = themeStore.currentTheme === 'light' ? 'vs' : 'vs-dark';
-    expect(monacoTheme).toBe('vs');
-  });
-
-  it('US-AP-009: theme terminal-dark → monaco theme = vs-dark', () => {
-    const themeStore = useThemeStore();
-    themeStore.currentTheme = 'terminal-dark';
-
-    const monacoTheme = themeStore.currentTheme === 'light' ? 'vs' : 'vs-dark';
-    expect(monacoTheme).toBe('vs-dark');
-  });
-
-  it('US-AP-009: toggle theme đổi monaco theme', () => {
-    const themeStore = useThemeStore();
-    themeStore.currentTheme = 'terminal-dark';
-
-    const before = themeStore.currentTheme === 'light' ? 'vs' : 'vs-dark';
-    expect(before).toBe('vs-dark');
-
-    themeStore.toggleTheme();
-    const after = themeStore.currentTheme === 'light' ? 'vs' : 'vs-dark';
-    expect(after).toBe('vs');
-  });
-});
+// US-AP-009 (P1): monacoTheme là computed của AlgoPlaygroundWorkspace — test mount thật
+// nằm trong AlgoPlaygroundWorkspace.spec.ts (AL-007): create nhận theme 'vs-dark',
+// đổi theme light → monaco.editor.setTheme('vs').
 
 describe('playgroundP2Tests — US-AP-012 (P2): Hooks popover', () => {
   it('US-AP-012: HOOKS_HINT chứa compare hook', () => {
@@ -138,34 +105,13 @@ describe('playgroundP2Tests — US-AP-013 (P2): Empty state', () => {
     expect(store.isCompiling).toBe(false);
     expect(store.compileError).toBeNull();
   });
-
-  it('US-AP-013: empty state text chứa "Chọn demo và bấm"', () => {
-    const EMPTY_STATE_TEXT = 'Chọn demo và bấm Chạy để xem từng bước.';
-    expect(EMPTY_STATE_TEXT).toContain('Chọn demo và bấm');
-  });
+  // US-AP-013 (P1): empty state DOM thật — mount AlgoPlaygroundWorkspace trong
+  // AlgoPlaygroundWorkspace.spec.ts (AL-007): compile rỗng → "Chọn demo và bấm" hiển thị.
 });
 
-describe('playgroundP2Tests — US-AP-014 (P2): Monaco error', () => {
-  beforeEach(() => {
-    setActivePinia(createPinia());
-    localStorage.clear();
-  });
-
-  it('US-AP-014: editorLoadError = true khi Monaco fail', () => {
-    const editorLoadError = true;
-    expect(editorLoadError).toBe(true);
-  });
-
-  it('US-AP-014: reload button visible khi editorLoadError = true', () => {
-    // Template: <button v-if="editorLoadError" @click="reloadPage">Tải lại trang (F5)</button>
-    const editorLoadError = true;
-    const buttonText = 'Tải lại trang (F5)';
-
-    // Khi editorLoadError = true → button hiển thị
-    expect(editorLoadError).toBe(true);
-    expect(buttonText).toBe('Tải lại trang (F5)');
-  });
-});
+// US-AP-014 (P1): editorLoadError là state của AlgoPlaygroundWorkspace — test mount thật
+// nằm trong AlgoPlaygroundWorkspace.spec.ts (AL-007): Monaco create fail →
+// DOM "Không thể tải Monaco Editor" + nút "Tải lại trang (F5)".
 
 describe('playgroundP2Tests — US-AP-020 (P2): Frame description', () => {
   beforeEach(() => {
@@ -289,46 +235,9 @@ describe('playgroundP2Tests — US-AP-022 (P2): History toggle', () => {
   });
 });
 
-describe('playgroundP2Tests — US-AP-023 (P2): Menu actions', () => {
-  beforeEach(() => {
-    setActivePinia(createPinia());
-    localStorage.clear();
-  });
-
-  it('US-AP-023: menu action "hooks" toggle showHooks', () => {
-    let showHooks = false;
-    const toggleHooks = () => { showHooks = !showHooks; };
-
-    toggleHooks();
-    expect(showHooks).toBe(true);
-    toggleHooks();
-    expect(showHooks).toBe(false);
-  });
-
-  it('US-AP-023: menu action "restore" gọi onRestoreCode', () => {
-    const store = useAlgoPlaygroundStore();
-    store.loadDemo('bubble-sort');
-    store.setCode('modified code');
-
-    // Giả lập onRestoreCode
-    const demo = getAlgoDemo(store.demoId!);
-    store.setCode(demo!.code);
-
-    expect(store.code).toBe(demo!.code);
-  });
-
-  it('US-AP-023: menu action "share" tạo URL với demo + code + input', () => {
-    const store = useAlgoPlaygroundStore();
-    store.loadDemo('bubble-sort');
-
-    const payload = JSON.stringify({ demo: store.demoId, code: store.code, input: store.inputRaw });
-    const parsed = JSON.parse(payload);
-
-    expect(parsed.demo).toBe('bubble-sort');
-    expect(typeof parsed.code).toBe('string');
-    expect(typeof parsed.input).toBe('string');
-  });
-});
+// US-AP-023 (P1): menu actions là tương tác component — test click thật trong
+// AlgoPlaygroundWorkspace.spec.ts (AL-007): mở menu ⋯ → click "Code mẫu" →
+// store.code khôi phục về code demo gốc.
 
 describe('playgroundP2Tests — US-AP-024 (P2): Hooks list', () => {
   it('US-AP-024: HOOKS_HINT liệt kê đủ hàm hook', () => {
@@ -581,13 +490,18 @@ describe('playgroundP2Tests — US-AP-033 (P2): Persist', () => {
   });
 });
 
-describe('playgroundP2Tests — US-AP-037 (P2): All 21 demos', () => {
-  it('US-AP-037: có đúng 21 demos', () => {
-    expect(algoDemoIds.length).toBe(21);
+describe('playgroundP2Tests — US-AP-037 (P2): Tất cả demos (nguồn thật)', () => {
+  // AL-047: dùng Object.keys(playgroundAlgoDemos) làm nguồn — thêm demo mới
+  // không làm vỡ test (trước đây hardcode 21 id ở 2 nơi).
+  const expectedIds = Object.keys(playgroundAlgoDemos);
+
+  it('US-AP-037: algoDemoIds khớp đúng nguồn đăng ký (không hardcode)', () => {
+    expect(algoDemoIds).toEqual(expectedIds);
+    expect(new Set(algoDemoIds).size).toBe(expectedIds.length); // id duy nhất
   });
 
   it('US-AP-037: mỗi demo có title', () => {
-    for (const id of algoDemoIds) {
+    for (const id of expectedIds) {
       const demo = getAlgoDemo(id);
       expect(demo).toBeDefined();
       expect(demo!.title).toBeTruthy();
@@ -597,7 +511,7 @@ describe('playgroundP2Tests — US-AP-037 (P2): All 21 demos', () => {
   });
 
   it('US-AP-037: mỗi demo có description', () => {
-    for (const id of algoDemoIds) {
+    for (const id of expectedIds) {
       const demo = getAlgoDemo(id);
       expect(demo).toBeDefined();
       expect(demo!.description).toBeTruthy();
@@ -607,7 +521,7 @@ describe('playgroundP2Tests — US-AP-037 (P2): All 21 demos', () => {
   });
 
   it('US-AP-037: mỗi demo có code', () => {
-    for (const id of algoDemoIds) {
+    for (const id of expectedIds) {
       const demo = getAlgoDemo(id);
       expect(demo).toBeDefined();
       expect(demo!.code).toBeTruthy();
@@ -617,24 +531,11 @@ describe('playgroundP2Tests — US-AP-037 (P2): All 21 demos', () => {
   });
 
   it('US-AP-037: mỗi demo có defaultInput', () => {
-    for (const id of algoDemoIds) {
+    for (const id of expectedIds) {
       const demo = getAlgoDemo(id);
       expect(demo).toBeDefined();
       expect(demo!.defaultInput).toBeTruthy();
       expect(typeof demo!.defaultInput).toBe('string');
     }
-  });
-
-  it('US-AP-037: danh sách 21 demo IDs', () => {
-    const expectedIds = [
-      'bubble-sort', 'selection-sort', 'insertion-sort',
-      'quick-sort', 'merge-sort', 'heap-sort',
-      'counting-sort', 'radix-sort', 'bucket-sort',
-      'linear-search', 'binary-search', 'two-pointers', 'sliding-window',
-      'stack', 'queue', 'monotonic-stack',
-      'bst', 'tree-traversal', 'bfs', 'dfs', 'dijkstra',
-    ];
-
-    expect(algoDemoIds).toEqual(expectedIds);
   });
 });

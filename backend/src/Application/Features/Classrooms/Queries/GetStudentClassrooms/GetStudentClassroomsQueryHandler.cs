@@ -42,7 +42,8 @@ namespace VisualizationDSA.Application.Features.Classrooms.Queries.GetStudentCla
                     InviteCode = null,
                     CreatedAt = e.Classroom.CreatedAt,
                     OwnerTeacherName = e.Classroom.OwnerTeacher?.Username ?? e.Classroom.OwnerTeacher?.Email ?? "Unknown",
-                    StudentCount = e.Classroom.Enrollments.Count(x => x.Status == VisualizationDSA.Domain.Enums.EnrollmentStatus.Active)
+                    StudentCount = e.Classroom.Enrollments.Count(x => x.Status == VisualizationDSA.Domain.Enums.EnrollmentStatus.Active),
+                    Role = "Student"
                 });
             }
             return result;

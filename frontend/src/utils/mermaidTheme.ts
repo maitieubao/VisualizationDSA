@@ -35,13 +35,39 @@ export const MERMAID_PALETTE: MermaidPalette = {
   accentLight: '#5ab88a',
 };
 
+// Đọc CSS variable từ documentElement; trả fallback khi chưa có (SSR/jsdom/test) (DC-025).
+function readCssVar(name: string, fallback: string): string {
+  if (typeof window === 'undefined' || typeof document === 'undefined') return fallback;
+  try {
+    const value = getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+    return value || fallback;
+  } catch {
+    return fallback;
+  }
+}
+
 export function buildMermaidInitConfig(): Record<string, unknown> {
-  const p = MERMAID_PALETTE;
+  // Lấy màu từ CSS variables của app (đồng bộ theme sáng/tối); fallback hex nếu biến không tồn tại (DC-025).
+  const p = {
+    ...MERMAID_PALETTE,
+    background: readCssVar('--color-bg-base', MERMAID_PALETTE.background),
+    nodeFill: readCssVar('--color-bg-surface', MERMAID_PALETTE.nodeFill),
+    nodeBorder: readCssVar('--color-border-default', MERMAID_PALETTE.nodeBorder),
+    nodeText: readCssVar('--color-text-heading', MERMAID_PALETTE.nodeText),
+    secondaryFill: readCssVar('--color-bg-secondary', MERMAID_PALETTE.secondaryFill),
+    tertiaryFill: readCssVar('--color-bg-secondary', MERMAID_PALETTE.tertiaryFill),
+    line: readCssVar('--color-border-default', MERMAID_PALETTE.line),
+    text: readCssVar('--color-text-secondary', MERMAID_PALETTE.text),
+    labelBg: readCssVar('--color-bg-surface', MERMAID_PALETTE.labelBg),
+    accent: readCssVar('--color-accent-primary', MERMAID_PALETTE.accent),
+    accentLight: readCssVar('--color-accent-primary-light', MERMAID_PALETTE.accentLight),
+  };
   return {
     startOnLoad: false,
     securityLevel: 'strict',
     theme: 'base',
     fontFamily: '"Inter", "Segoe UI", system-ui, sans-serif',
+    // Một nguồn duy nhất cho fontSize (trước đây 13 vs '13px' nhân đôi) (DC-025).
     fontSize: 13,
     flowchart: {
       htmlLabels: true,
@@ -62,7 +88,6 @@ export function buildMermaidInitConfig(): Record<string, unknown> {
       textColor: p.text,
       edgeLabelBackground: p.labelBg,
       fontFamily: '"Inter", "Segoe UI", system-ui, sans-serif',
-      fontSize: '13px',
       // Class diagram: 2 tông xen kẽ, tránh nhiều màu lòe loẹt
       fillType0: p.nodeFill,
       fillType1: p.secondaryFill,

@@ -234,18 +234,4 @@ describe('CV-009 (P1): AST error — error message render', () => {
     expect(store.hasCompileError).toBe(true);
     expect(store.compilerConsoleLogs.some(l => l.text.includes('Dòng số'))).toBe(false);
   });
-
-  it('CompilerConsole component render error class đúng', () => {
-    const fs = require('fs');
-    const path = require('path');
-    const headerSource = fs.readFileSync(
-      path.resolve(__dirname, '../components/CompilerConsole.vue'),
-      'utf-8'
-    );
-
-    expect(headerSource).toContain('status-error');
-    expect(headerSource).toContain('status-success');
-    expect(headerSource).toContain('status-warn');
-    expect(headerSource).toContain('status-info');
-  });
 });

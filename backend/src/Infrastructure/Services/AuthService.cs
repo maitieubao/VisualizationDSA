@@ -11,6 +11,7 @@ using VisualizationDSA.Application.DTOs;
 using VisualizationDSA.Application.Services;
 using VisualizationDSA.Domain.Entities;
 using VisualizationDSA.Domain.Interfaces;
+using VisualizationDSA.Domain.Strategies;
 
 namespace VisualizationDSA.Infrastructure.Services
 {
@@ -22,6 +23,10 @@ namespace VisualizationDSA.Infrastructure.Services
         
         private static readonly TimeSpan AccessTokenLifetime = TimeSpan.FromMinutes(15);
 
+        // AU-014: dummy hash (cùng cost factor BCrypt) để verify khi email không tồn tại
+        // — cân bằng thời gian phản hồi, chống timing side-channel.
+        private static readonly string DummyPasswordHash = BCrypt.Net.BCrypt.HashPassword("dummy-timing-password", workFactor: 12);
+
         public AuthService(IUnitOfWork unitOfWork, IConfiguration configuration)
         {
             _unitOfWork = unitOfWork;
@@ -31,8 +36,11 @@ namespace VisualizationDSA.Infrastructure.Services
         public async Task<AuthResponse> RegisterAsync(RegisterRequest request)
         {
             // Message chung chung — không lộ email/username nào đã tồn tại (chống user enumeration).
-            
-            var existingUsers = await _unitOfWork.Users.FindAsync(u => u.Email == request.Email);
+
+            // AU-037: normalize email trước mọi check/insert.
+            var normalizedEmail = NormalizeEmail(request.Email);
+
+            var existingUsers = await _unitOfWork.Users.FindAsync(u => u.Email == normalizedEmail);
             if (existingUsers.Any())
             {
                 throw new ArgumentException("Đăng ký không thành công. Vui lòng kiểm tra lại thông tin.");
@@ -48,9 +56,19 @@ namespace VisualizationDSA.Infrastructure.Services
             
             var passwordHash = HashPassword(request.Password);
 
-            var user = new User(request.Email, request.Username, passwordHash);
+            var user = new User(normalizedEmail, request.Username, passwordHash);
             await _unitOfWork.Users.AddAsync(user);
-            await _unitOfWork.CommitAsync();
+
+            try
+            {
+                await _unitOfWork.CommitAsync();
+            }
+            catch (Microsoft.EntityFrameworkCore.DbUpdateException)
+            {
+                // AU-012: TOCTOU — race trùng email/username (unique constraint) → 400 message
+                // generic thay vì 500 (server vẫn đang dùng check-then-insert để thân thiện hơn).
+                throw new ArgumentException("Đăng ký không thành công. Vui lòng kiểm tra lại thông tin.");
+            }
 
             var (accessToken, refreshToken) = await GenerateTokenPairAndSaveAsync(user);
 
@@ -65,11 +83,22 @@ namespace VisualizationDSA.Infrastructure.Services
 
         public async Task<AuthResponse> LoginAsync(LoginRequest request)
         {
-            var users = await _unitOfWork.Users.FindAsync(u => u.Email == request.Email);
+            // AU-037: normalize email trước khi tra cứu.
+            var normalizedEmail = NormalizeEmail(request.Email);
+
+            var users = await _unitOfWork.Users.FindAsync(u => u.Email == normalizedEmail);
             var user  = users.FirstOrDefault();
 
             
-            if (user == null || !VerifyPassword(request.Password, user.PasswordHash))
+            if (user == null)
+            {
+                // AU-014: verify dummy hash khi email không tồn tại — thời gian phản hồi
+                // tương đương user tồn tại, chống phân biệt email bằng timing.
+                _ = VerifyPassword(request.Password, DummyPasswordHash);
+                throw new UnauthorizedAccessException("Email hoặc mật khẩu không đúng.");
+            }
+
+            if (!VerifyPassword(request.Password, user.PasswordHash))
             {
                 throw new UnauthorizedAccessException("Email hoặc mật khẩu không đúng.");
             }
@@ -109,30 +138,67 @@ namespace VisualizationDSA.Infrastructure.Services
 
         public async Task<AuthResponse> RefreshTokenAsync(string refreshTokenValue)
         {
-            var tokens = await _unitOfWork.RefreshTokens.FindAsync(
-                rt => rt.Token == refreshTokenValue && !rt.IsRevoked && rt.ExpiresAt > DateTime.UtcNow);
-
-            var existingToken = tokens.FirstOrDefault();
-            if (existingToken == null)
-                throw new UnauthorizedAccessException("Refresh token không hợp lệ hoặc đã hết hạn.");
-
-            
-            existingToken.Revoke();
-            await _unitOfWork.CommitAsync();
-
-            var user = await _unitOfWork.Users.GetByIdAsync(existingToken.UserId);
-            if (user == null)
-                throw new KeyNotFoundException("Người dùng không tồn tại.");
-
-            var (accessToken, newRefreshToken) = await GenerateTokenPairAndSaveAsync(user);
-
-            return new AuthResponse
+            // AU-004/AU-038: rotation trong CÙNG transaction — generate token mới TRƯỚC,
+            // revoke token cũ SAU, commit 1 lần. DB fail giữa chừng → rollback → phiên cũ vẫn sống.
+            await _unitOfWork.BeginTransactionAsync();
+            try
             {
-                AccessToken  = accessToken,
-                RefreshToken = newRefreshToken,
-                ExpiresIn    = (int)AccessTokenLifetime.TotalSeconds,
-                User         = MapToUserDto(user)
-            };
+                // Tra cứu KHÔNG lọc revoked/expired để phát hiện reuse (AU-004: family revocation).
+                var tokens = await _unitOfWork.RefreshTokens.FindAsync(rt => rt.Token == refreshTokenValue);
+                var existingToken = tokens.FirstOrDefault();
+                if (existingToken == null)
+                {
+                    throw new UnauthorizedAccessException("Refresh token không hợp lệ hoặc đã hết hạn.");
+                }
+
+                if (existingToken.IsRevoked || existingToken.ExpiresAt <= DateTime.UtcNow)
+                {
+                    // AU-004: reuse detection — token đã bị dùng/revoke → thu hồi TOÀN BỘ phiên
+                    // của user (family revocation) để chặn kẻ đánh cắp token cũ tiếp tục dùng.
+                    var familyTokens = await _unitOfWork.RefreshTokens.FindAsync(
+                        rt => rt.UserId == existingToken.UserId && !rt.IsRevoked);
+                    foreach (var t in familyTokens) t.Revoke();
+                    await _unitOfWork.CommitAsync();
+                    await _unitOfWork.CommitTransactionAsync();
+                    throw new UnauthorizedAccessException("Refresh token không hợp lệ hoặc đã hết hạn.");
+                }
+
+                var user = await _unitOfWork.Users.GetByIdAsync(existingToken.UserId);
+                if (user == null)
+                {
+                    // AU-030: user đã bị xóa → 401 thay vì 404 (không lộ thông tin).
+                    throw new UnauthorizedAccessException("Phiên đăng nhập không còn hiệu lực.");
+                }
+
+                // AU-011: user bị ban không được refresh vô hạn (trước đây bỏ qua IsActive).
+                if (!user.IsActive)
+                {
+                    throw new UnauthorizedAccessException("Phiên đăng nhập không còn hiệu lực.");
+                }
+
+                // AU-038: generate TRƯỚC (trong bộ nhớ), revoke SAU — cả 2 lưu trong 1 commit
+                // (cùng transaction) → không thể rơi vào trạng thái mất session khi DB lỗi.
+                var accessToken = GenerateAccessToken(user);
+                var newRefreshToken = CreateRefreshToken(user.Id);
+                await _unitOfWork.RefreshTokens.AddAsync(newRefreshToken);
+                existingToken.Revoke();
+
+                await _unitOfWork.CommitAsync();
+                await _unitOfWork.CommitTransactionAsync();
+
+                return new AuthResponse
+                {
+                    AccessToken  = accessToken,
+                    RefreshToken = newRefreshToken.Token,
+                    ExpiresIn    = (int)AccessTokenLifetime.TotalSeconds,
+                    User         = MapToUserDto(user)
+                };
+            }
+            catch
+            {
+                await _unitOfWork.RollbackTransactionAsync();
+                throw;
+            }
         }
 
         public async Task LogoutAsync(string refreshTokenValue)
@@ -205,23 +271,14 @@ namespace VisualizationDSA.Infrastructure.Services
         private static string HashPassword(string password)
             => BCrypt.Net.BCrypt.HashPassword(password, workFactor: 12);
 
+        // AU-033: dùng CHUNG helper verify của StatelessAuthStrategy (BCrypt → fallback SHA256)
+        // — trước đây logic này duplicate 3 chỗ dễ lệch.
         private static bool VerifyPassword(string password, string passwordHash)
-        {
-            if (passwordHash.StartsWith("$2a$") || passwordHash.StartsWith("$2b$") || passwordHash.StartsWith("$2y$"))
-            {
-                try
-                {
-                    return BCrypt.Net.BCrypt.Verify(password, passwordHash);
-                }
-                catch
-                {
-                    return false;
-                }
-            }
-            var bytes = System.Security.Cryptography.SHA256.HashData(System.Text.Encoding.UTF8.GetBytes(password + "visualizationdsa-salt"));
-            var sha256Hash = Convert.ToHexString(bytes).ToLowerInvariant();
-            return sha256Hash == passwordHash;
-        }
+            => StatelessAuthStrategy.VerifyPassword(password, passwordHash);
+
+        // AU-037: chuẩn hóa email (Trim + ToLowerInvariant) trước mọi check/insert.
+        private static string NormalizeEmail(string email)
+            => (email ?? string.Empty).Trim().ToLowerInvariant();
 
         private static UserDto MapToUserDto(User user) => new()
         {

@@ -50,6 +50,32 @@ public class CreateClassroomModuleItemCommandHandlerTests
         item.OverrideTitle.Should().Be("Item Title");
     }
 
+    // LS-006: request.IsHidden phải ghi vào IsHidden (không rơi vào isHiddenForStudent).
+    [Fact]
+    public async Task Handle_StoresIsHidden_IntoIsHiddenField_NotIsHiddenForStudent()
+    {
+        var ctx = TestDbContextFactory.CreateSimple("CreateItemHidden");
+        var teacherId = Guid.NewGuid();
+        var (moduleId, lessonId) = await SetupModuleWithLesson(ctx, teacherId);
+
+        var handler = new CreateClassroomModuleItemCommandHandler(ctx);
+        var cmd = new CreateClassroomModuleItemCommand
+        {
+            ModuleId = moduleId,
+            TeacherId = teacherId,
+            ItemType = ModuleItemType.Lesson,
+            LessonId = lessonId,
+            OverrideTitle = "Hidden Item",
+            IsHidden = true
+        };
+
+        var itemId = await handler.Handle(cmd, CancellationToken.None);
+        var item = await ctx.ClassroomModuleItems.FindAsync(itemId);
+        item.Should().NotBeNull();
+        item!.IsHidden.Should().BeTrue();
+        item.IsHiddenForStudent.Should().BeFalse();
+    }
+
     [Fact]
     public async Task Handle_CreatesCustomLesson_WhenCustomLessonIdProvided()
     {

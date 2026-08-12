@@ -42,6 +42,16 @@ namespace VisualizationDSA.Infrastructure.Interceptors
                         "SystemAuditEventStream là append-only (immutable); không được phép UPDATE hoặc DELETE.");
                 }
             }
+
+            // AD-011: AuditLog (admin audit) cũng append-only — chống xóa/sửa vết tích admin.
+            foreach (var entry in context.ChangeTracker.Entries<AuditLog>())
+            {
+                if (entry.State is EntityState.Modified or EntityState.Deleted)
+                {
+                    throw new InvalidOperationException(
+                        "AuditLog là append-only (immutable); không được phép UPDATE hoặc DELETE.");
+                }
+            }
         }
     }
 }

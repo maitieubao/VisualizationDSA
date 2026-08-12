@@ -1,4 +1,4 @@
-import type { FrameDTO } from '../../types/algorithm.types';
+import type { FrameDTO, HighlightIndices } from '../../types/algorithm.types';
 
 export interface TubeColors {
   cell: string;
@@ -23,6 +23,8 @@ export function renderStack(
 ): void {
   const n = frame.dataState?.length ?? 0;
   if (n === 0) return;
+  const highlights: HighlightIndices = frame.highlights ?? { compare: [], swap: [], sorted: [], active: [] };
+  const dataState = frame.dataState ?? [];
   const totalH = n * (CELL_H + GAP) - GAP;
   const startY = Math.max(MARGIN, (h - totalH) / 2);
   const cx = w / 2;
@@ -39,8 +41,8 @@ export function renderStack(
   for (let i = n - 1; i >= 0; i--) {
     const visualIdx = n - 1 - i;
     const y = startY + visualIdx * (CELL_H + GAP);
-    const isActive = frame.highlights.active.includes(i);
-    const isRemove = frame.highlights.swap.includes(i);
+    const isActive = (highlights.active ?? []).includes(i);
+    const isRemove = highlights.swap.includes(i);
 
     ctx.fillStyle = isRemove ? colors.remove : isActive ? colors.active : colors.cell;
     ctx.strokeStyle = isRemove ? colors.remove : isActive ? colors.active : colors.border;
@@ -54,7 +56,7 @@ export function renderStack(
     ctx.font = 'bold 14px monospace';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
-    ctx.fillText(String(frame.dataState[i]), cx, y + CELL_H / 2);
+    ctx.fillText(String(dataState[i]), cx, y + CELL_H / 2);
   }
 }
 
@@ -67,6 +69,8 @@ export function renderQueue(
 ): void {
   const n = frame.dataState?.length ?? 0;
   if (n === 0) return;
+  const highlights: HighlightIndices = frame.highlights ?? { compare: [], swap: [], sorted: [], active: [] };
+  const dataState = frame.dataState ?? [];
   const totalW = n * (CELL_W + GAP) - GAP;
   const startX = Math.max(MARGIN, (w - totalW) / 2);
   const cy = h / 2;
@@ -83,8 +87,8 @@ export function renderQueue(
 
   for (let i = 0; i < n; i++) {
     const x = startX + i * (CELL_W + GAP);
-    const isActive = frame.highlights.active.includes(i);
-    const isRemove = frame.highlights.swap.includes(i);
+    const isActive = (highlights.active ?? []).includes(i);
+    const isRemove = highlights.swap.includes(i);
 
     ctx.fillStyle = isRemove ? colors.remove : isActive ? colors.active : colors.cell;
     ctx.strokeStyle = isRemove ? colors.remove : isActive ? colors.active : colors.border;
@@ -98,6 +102,6 @@ export function renderQueue(
     ctx.font = 'bold 14px monospace';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
-    ctx.fillText(String(frame.dataState[i]), x + CELL_W / 2, cy);
+    ctx.fillText(String(dataState[i]), x + CELL_W / 2, cy);
   }
 }

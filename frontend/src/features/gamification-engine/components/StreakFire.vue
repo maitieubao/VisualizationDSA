@@ -18,7 +18,7 @@
         class="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-accent border-2 border-border-subtle animate-pulse"
       />
     </div>
-    <div>
+    <div role="status" aria-live="polite">
       <div class="text-2xl font-bold text-accent">
         {{ streakCount }}
         <span class="text-sm font-normal text-text-secondary">ngày</span>

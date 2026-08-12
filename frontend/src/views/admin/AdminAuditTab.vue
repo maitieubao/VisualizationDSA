@@ -6,8 +6,8 @@
           <BaseIcon name="shield" style="width:18px;height:18px;color:var(--color-accent-red)" />
           Nhật ký Hoạt động Quản trị (Admin Audit Logs)
         </h3>
-        <button class="btn-create-user flex items-center gap-1 bg-bg-hover border border-border-subtle px-3 py-1.5 rounded-xl text-xs text-text-primary hover:bg-bg-hover transition-all font-bold cursor-pointer" @click="loadAuditLogs">
-          <BaseIcon name="refresh-cw" style="width:13px;height:13px" /> Làm mới
+        <button class="btn-refresh-audit flex items-center gap-2 bg-bg-hover border border-border-subtle px-3 py-1.5 rounded-xl text-xs text-text-primary transition-all font-bold cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed" :disabled="loadingAuditLogs" @click="loadAuditLogs(1)">
+          <BaseIcon name="refresh-cw" style="width:13px;height:13px" /> {{ loadingAuditLogs ? 'Đang tải...' : 'Làm mới' }}
         </button>
       </div>
 
@@ -41,6 +41,15 @@
             </tbody>
           </table>
         </div>
+        <div v-if="!loadingAuditLogs && auditLogsList.length > 0" class="pagination-row">
+          <button class="pagination-btn" :disabled="currentPage <= 1" @click="loadAuditLogs(currentPage - 1)">
+            <BaseIcon name="chevron-left" style="width:14px;height:14px" /> Trước
+          </button>
+          <span class="pagination-info">Trang {{ currentPage }} / {{ totalPages }} · {{ totalRecords }} bản ghi</span>
+          <button class="pagination-btn" :disabled="currentPage >= totalPages" @click="loadAuditLogs(currentPage + 1)">
+            Tiếp <BaseIcon name="chevron-right" style="width:14px;height:14px" />
+          </button>
+        </div>
       </div>
     </div>
   </section>
@@ -49,21 +58,40 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
 import { useAdminApi } from './useAdminApi';
+import { useToastStore } from '../../composables/useToast';
 
 const { BASE_URL, getAuthHeaders } = useAdminApi();
+const toastStore = useToastStore();
 
 interface AuditLogItem { id: string; action: string; actorId: string; actorName: string; targetId: string | null; details: string; createdAt: string; }
 
+const PAGE_SIZE = 20;
+
 const auditLogsList = ref<AuditLogItem[]>([]);
 const loadingAuditLogs = ref(false);
+const currentPage = ref(1);
+const totalPages = ref(1);
+const totalRecords = ref(0);
 
-async function loadAuditLogs() {
+async function loadAuditLogs(targetPage = currentPage.value): Promise<void> {
+  if (loadingAuditLogs.value) return;
   loadingAuditLogs.value = true;
   try {
-    const res = await fetch(`${BASE_URL}/api/v1/concepts/admin/audit-logs?page=1&pageSize=100`, { headers: getAuthHeaders() });
-    if (res.ok) { const data = await res.json(); auditLogsList.value = data.logs ?? []; }
-  } catch (err) { console.error('Failed to load audit logs:', err); }
-  finally { loadingAuditLogs.value = false; }
+    const res = await fetch(`${BASE_URL}/api/v1/concepts/admin/audit-logs?page=${targetPage}&pageSize=${PAGE_SIZE}`, { headers: getAuthHeaders() });
+    if (!res.ok) {
+      toastStore.error('Không tải được nhật ký hoạt động quản trị từ máy chủ.', 'Nhật ký Quản trị');
+      return;
+    }
+    const data = await res.json() as { logs?: AuditLogItem[]; total?: number };
+    auditLogsList.value = data.logs ?? [];
+    totalRecords.value = data.total ?? auditLogsList.value.length;
+    totalPages.value = Math.max(1, Math.ceil(totalRecords.value / PAGE_SIZE));
+    currentPage.value = targetPage;
+  } catch {
+    toastStore.error('Lỗi kết nối khi tải nhật ký hoạt động quản trị.', 'Nhật ký Quản trị');
+  } finally {
+    loadingAuditLogs.value = false;
+  }
 }
 
 function formatAuditDate(dateStr: string) {
@@ -83,5 +111,5 @@ function getAuditActionClass(action: string) {
   }
 }
 
-onMounted(() => loadAuditLogs());
+onMounted(() => loadAuditLogs(1));
 </script>

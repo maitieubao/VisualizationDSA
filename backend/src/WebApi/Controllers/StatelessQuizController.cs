@@ -275,19 +275,33 @@ namespace VisualizationDSA.WebApi.Controllers
                 else
                 {
                     result = _quizBank.EvaluateAttempt(request);
+                    // EvaluateAttempt đã ném KeyNotFoundException nếu quiz không tồn tại → an toàn.
+                    var bankQuiz = _quizBank.GetQuizById(request.QuizId)!;
 
-                    // Quiz bank (in-memory, không có Guid) — trước đây không bao giờ cấp XP thật dù UI báo.
-                    // QZ-002: cấp XP lần đầu đạt + ghi QuizXpGrant để chống farm khi submit lặp lại.
-                    // BỎ check-then-act (AnyAsync → Add): dựa vào unique (UserId, QuizKey) làm hàng rào
-                    // atomic — 2 request song song cùng thêm đều chạy, kẻ thua DbUpdateException → 0 XP.
-                    if (result.Passed && result.XpAwarded > 0)
+                    // PR-002: quiz bank (in-memory, không có row trong Quizzes) giờ VẪN ghi
+                    // QuizAttempt — QuizId=null + QuizKey/QuizTitle làm reference → GetHistory
+                    // hiển thị đủ attempt bank quiz (trước đây history gần như rỗng với người dùng thường).
+                    var bankUserIdStr = JwtHelper.ExtractSubFromToken(Request);
+                    User? bankUser = null;
+                    if (Guid.TryParse(bankUserIdStr, out var bankUid))
+                        bankUser = await _dbContext.Users.FirstOrDefaultAsync(u => u.Id == bankUid);
+
+                    if (bankUser != null)
                     {
-                        var bankUserIdStr = JwtHelper.ExtractSubFromToken(Request);
-                        User? bankUser = null;
-                        if (Guid.TryParse(bankUserIdStr, out var bankUid))
-                            bankUser = await _dbContext.Users.FirstOrDefaultAsync(u => u.Id == bankUid);
+                        _dbContext.QuizAttempts.Add(new QuizAttempt(
+                            bankUser.Id,
+                            bankQuiz.Id,
+                            bankQuiz.Title,
+                            request.Answers.ToArray(),
+                            result.Score,
+                            result.MaxScore
+                        ));
 
-                        if (bankUser != null)
+                        // Commit attempt TRƯỚC (giống nhánh DB quiz) — attempt luôn được lưu dù
+                        // XP sau đó bị chặn bởi unique (UserId, QuizKey).
+                        await _dbContext.SaveChangesAsync();
+
+                        if (result.Passed && result.XpAwarded > 0)
                         {
                             try
                             {
@@ -299,15 +313,15 @@ namespace VisualizationDSA.WebApi.Controllers
                             catch (DbUpdateException ex) when (IsXpGrantConflict(ex))
                             {
                                 // Unique (UserId, QuizKey) bị vi phạm → request song song đã cấp XP.
-                                // SaveChanges thất bại nên chưa persist gì; khôi phục memory + báo 0 XP.
+                                // Attempt đã commit ở bước trên (giữ lại); chỉ huỷ XP.
                                 await _dbContext.Entry(bankUser).ReloadAsync();
                                 result.XpAwarded = 0;
                             }
                         }
-                        else
-                        {
-                            result.XpAwarded = 0;
-                        }
+                    }
+                    else
+                    {
+                        result.XpAwarded = 0;
                     }
                 }
 
@@ -444,31 +458,19 @@ namespace VisualizationDSA.WebApi.Controllers
             if (quiz == null)
                 return BadRequest(new { error = "INVALID_QUIZ", message = "Dữ liệu quiz trống." });
 
-            if (string.IsNullOrWhiteSpace(quiz.Title))
-                return BadRequest(new { error = "INVALID_QUIZ", message = "Quiz phải có tiêu đề." });
+            var validationError = ValidateQuizPayload(quiz);
+            if (validationError != null)
+                return BadRequest(validationError);
 
-            if (quiz.Title.Length > 200)
-                return BadRequest(new { error = "INVALID_QUIZ", message = "Tiêu đề quiz không được vượt quá 200 ký tự." });
+            // TC-021: XP thưởng phải nằm trong khung 0..1000 (khớp giới hạn XP của lesson).
+            if (quiz.XpReward < 0 || quiz.XpReward > 1000)
+                return BadRequest(new { error = "INVALID_XP_REWARD", message = "XP thưởng phải nằm trong khoảng 0 đến 1000." });
 
-            if (quiz.Questions == null || quiz.Questions.Count == 0)
-                return BadRequest(new { error = "INVALID_QUIZ", message = "Quiz phải có ít nhất 1 câu hỏi." });
-
-            if (quiz.Questions.Count > 100)
-                return BadRequest(new { error = "INVALID_QUIZ", message = "Số lượng câu hỏi trong một bài quiz tối đa là 100." });
-
-            
-            for (int i = 0; i < quiz.Questions.Count; i++)
-            {
-                var q = quiz.Questions[i];
-                if (string.IsNullOrWhiteSpace(q.Text))
-                    return BadRequest(new { error = "INVALID_QUIZ", message = $"Câu hỏi thứ {i + 1} không được để trống nội dung." });
-                if (q.Text.Length > 1000)
-                    return BadRequest(new { error = "INVALID_QUIZ", message = $"Nội dung câu hỏi thứ {i + 1} không được dài quá 1000 ký tự." });
-                if (q.Options == null || q.Options.Count < 2 || q.Options.Count > 10)
-                    return BadRequest(new { error = "INVALID_QUIZ", message = $"Câu hỏi thứ {i + 1} phải có từ 2 đến 10 đáp án lựa chọn." });
-                if (q.CorrectIndex < 0 || q.CorrectIndex >= q.Options.Count)
-                    return BadRequest(new { error = "INVALID_QUIZ", message = $"Đáp án đúng của câu hỏi thứ {i + 1} không hợp lệ." });
-            }
+            // TC-021: chặn tạo quiz trùng tiêu đề (so sánh chuẩn hóa, không phân biệt hoa thường).
+            var normalizedTitle = NormalizeText(quiz.Title);
+            var titleExists = await _dbContext.Quizzes.AnyAsync(q => q.Title.ToLower() == normalizedTitle.ToLower());
+            if (titleExists)
+                return Conflict(new { error = "QUIZ_TITLE_DUPLICATE", message = $"Đã tồn tại bài trắc nghiệm có tiêu đề '{quiz.Title}'. Hãy chọn tiêu đề khác." });
 
             
             quiz.Title = NormalizeText(quiz.Title);
@@ -482,6 +484,11 @@ namespace VisualizationDSA.WebApi.Controllers
                 q.Explanation = NormalizeText(q.Explanation);
             }
 
+            // TC-021: ghi lại chủ sở hữu quiz — teacher khác quản lý quiz này sẽ bị chặn 403.
+            Guid? ownerId = null;
+            if (Guid.TryParse(JwtHelper.ExtractSubFromToken(Request), out var currentTeacherId))
+                ownerId = currentTeacherId;
+
             
             // DB là NGUỒN DUY NHẤT cho quiz giảng viên tạo — không ghi thêm vào bank in-memory
             // (trước đây 2 nguồn → delete chỉ xóa 1 nơi, quiz đã xóa vẫn hiện qua fallback bank).
@@ -489,10 +496,11 @@ namespace VisualizationDSA.WebApi.Controllers
             {
                 "easy" => 1, "medium" => 3, "hard" => 5, _ => 3
             };
-            var dbQuiz = new Quiz(quiz.Title, quiz.Topic, quiz.Topic, difficultyInt, quiz.XpReward);
+            var dbQuiz = new Quiz(quiz.Title, quiz.Topic, quiz.Topic, difficultyInt, quiz.XpReward, ownerId);
             foreach (var q in quiz.Questions)
             {
-                dbQuiz.AddQuestion(q.Text, q.Options.ToArray(), q.CorrectIndex, q.Explanation ?? "");
+                // Add() tường minh cho từng câu hỏi (key client-generated — xem UpdateQuiz).
+                _dbContext.QuizQuestions.Add(dbQuiz.AddQuestion(q.Text, q.Options.ToArray(), q.CorrectIndex, q.Explanation ?? ""));
             }
             _dbContext.Quizzes.Add(dbQuiz);
             await _dbContext.SaveChangesAsync();
@@ -524,31 +532,13 @@ namespace VisualizationDSA.WebApi.Controllers
             if (quiz == null)
                 return BadRequest(new { error = "INVALID_QUIZ", message = "Dữ liệu quiz trống." });
 
-            if (string.IsNullOrWhiteSpace(quiz.Title))
-                return BadRequest(new { error = "INVALID_QUIZ", message = "Quiz phải có tiêu đề." });
+            var validationError = ValidateQuizPayload(quiz);
+            if (validationError != null)
+                return BadRequest(validationError);
 
-            if (quiz.Title.Length > 200)
-                return BadRequest(new { error = "INVALID_QUIZ", message = "Tiêu đề quiz không được vượt quá 200 ký tự." });
-
-            if (quiz.Questions == null || quiz.Questions.Count == 0)
-                return BadRequest(new { error = "INVALID_QUIZ", message = "Quiz phải có ít nhất 1 câu hỏi." });
-
-            if (quiz.Questions.Count > 100)
-                return BadRequest(new { error = "INVALID_QUIZ", message = "Số lượng câu hỏi trong một bài quiz tối đa là 100." });
-
-            
-            for (int i = 0; i < quiz.Questions.Count; i++)
-            {
-                var q = quiz.Questions[i];
-                if (string.IsNullOrWhiteSpace(q.Text))
-                    return BadRequest(new { error = "INVALID_QUIZ", message = $"Câu hỏi thứ {i + 1} không được để trống nội dung." });
-                if (q.Text.Length > 1000)
-                    return BadRequest(new { error = "INVALID_QUIZ", message = $"Nội dung câu hỏi thứ {i + 1} không được dài quá 1000 ký tự." });
-                if (q.Options == null || q.Options.Count < 2 || q.Options.Count > 10)
-                    return BadRequest(new { error = "INVALID_QUIZ", message = $"Câu hỏi thứ {i + 1} phải có từ 2 đến 10 đáp án lựa chọn." });
-                if (q.CorrectIndex < 0 || q.CorrectIndex >= q.Options.Count)
-                    return BadRequest(new { error = "INVALID_QUIZ", message = $"Đáp án đúng của câu hỏi thứ {i + 1} không hợp lệ." });
-            }
+            // TC-021: XP thưởng phải nằm trong khung 0..1000 (khớp giới hạn XP của lesson).
+            if (quiz.XpReward < 0 || quiz.XpReward > 1000)
+                return BadRequest(new { error = "INVALID_XP_REWARD", message = "XP thưởng phải nằm trong khoảng 0 đến 1000." });
 
             
             quiz.Title = NormalizeText(quiz.Title);
@@ -571,6 +561,17 @@ namespace VisualizationDSA.WebApi.Controllers
             if (dbQuiz == null)
                 return NotFound(new { error = "QUIZ_NOT_FOUND", message = $"Không tìm thấy quiz với ID {quizId} để cập nhật." });
 
+            // TC-021: teacher chỉ được sửa quiz mình tạo (seed quiz là nội dung chung, không thuộc ai).
+            if (!IsOwnerOrAdmin(dbQuiz))
+                return StatusCode(403, new { error = "FORBIDDEN", message = "Bạn không có quyền chỉnh sửa bài trắc nghiệm của giáo viên khác." });
+
+            // TC-021: chặn đổi sang tiêu đề trùng quiz khác (loại trừ chính nó).
+            var normalizedTitle = NormalizeText(quiz.Title);
+            var duplicate = await _dbContext.Quizzes
+                .AnyAsync(q => q.Id != dbQuiz.Id && q.Title.ToLower() == normalizedTitle.ToLower());
+            if (duplicate)
+                return Conflict(new { error = "QUIZ_TITLE_DUPLICATE", message = $"Đã tồn tại bài trắc nghiệm có tiêu đề '{quiz.Title}'. Hãy chọn tiêu đề khác." });
+
             {
                 var difficultyInt = quiz.Difficulty switch
                 {
@@ -582,7 +583,10 @@ namespace VisualizationDSA.WebApi.Controllers
                 dbQuiz.ClearQuestions();
                 foreach (var q in quiz.Questions)
                 {
-                    dbQuiz.AddQuestion(q.Text, q.Options.ToArray(), q.CorrectIndex, q.Explanation ?? "");
+                    // Add() tường minh — QuizQuestion.Id là key client-generated, DetectChanges
+                    // mặc định coi là entity đã tồn tại → UPDATE 0 row → DbUpdateConcurrencyException.
+                    var questionEntity = dbQuiz.AddQuestion(q.Text, q.Options.ToArray(), q.CorrectIndex, q.Explanation ?? "");
+                    _dbContext.QuizQuestions.Add(questionEntity);
                 }
                 
                 await _dbContext.SaveChangesAsync();
@@ -608,9 +612,16 @@ namespace VisualizationDSA.WebApi.Controllers
             var (dbQuiz, ambiguityError) = await FindQuizByReferenceAsync(quizId, includeQuestions: false);
             if (ambiguityError != null)
                 return Conflict(new { error = "QUIZ_AMBIGUOUS_TITLE", message = ambiguityError });
+
+            // TC-021: teacher chỉ được xóa quiz mình tạo (seed quiz là nội dung chung).
+            if (dbQuiz != null && !IsOwnerOrAdmin(dbQuiz))
+                return StatusCode(403, new { error = "FORBIDDEN", message = "Bạn không có quyền xóa bài trắc nghiệm của giáo viên khác." });
+
             if (dbQuiz != null)
             {
-                _dbContext.Quizzes.Remove(dbQuiz);
+                // TC-022: xóa MỀM thay vì hard-delete — giữ nguyên QuizAttempt (lịch sử làm bài,
+                // bằng chứng XP) và QuizXpGrant ledger. Query filter toàn cục ẩn quiz khỏi mọi GET.
+                dbQuiz.Delete();
                 await _dbContext.SaveChangesAsync();
             }
 
@@ -618,6 +629,246 @@ namespace VisualizationDSA.WebApi.Controllers
                 return NotFound(new { error = "QUIZ_NOT_FOUND", message = $"Không tìm thấy quiz với ID {quizId} để xóa." });
 
             return Ok(new { message = "Quiz đã được xóa thành công." });
+        }
+
+        // TC-001: GET manage — danh sách quiz mà teacher/admin có thể quản lý (QuizBuilderTab).
+        // Teacher chỉ thấy quiz mình tạo + seed quiz chung; admin thấy tất cả.
+        [HttpGet("manage")]
+        [RequireJwtRole("Teacher,Admin")]
+        public async Task<IActionResult> GetManageQuizzes()
+        {
+            var isAdmin = JwtHelper.IsAdmin(Request);
+            Guid? currentTeacherId = null;
+            if (!isAdmin && Guid.TryParse(JwtHelper.ExtractSubFromToken(Request), out var parsedTeacherId))
+                currentTeacherId = parsedTeacherId;
+
+            var query = _dbContext.Quizzes.AsNoTracking();
+            if (!isAdmin && currentTeacherId.HasValue)
+            {
+                query = query.Where(q => q.CreatedByTeacherId == null || q.CreatedByTeacherId == currentTeacherId.Value);
+            }
+
+            var quizzes = await query
+                .OrderBy(q => q.Title)
+                .Select(q => new
+                {
+                    id = q.Id.ToString(),
+                    q.Title,
+                    q.Topic,
+                    difficulty = DifficultyToLabel(q.Difficulty),
+                    xpReward = q.XPReward,
+                    questionCount = q.Questions.Count,
+                    canEdit = true
+                })
+                .ToListAsync();
+
+            return Ok(new { quizzes });
+        }
+
+        // TC-001: GET manage/{quizId} — chi tiết quiz kèm đáp án (teacher/admin sửa câu hỏi).
+        [HttpGet("manage/{quizId}")]
+        [RequireJwtRole("Teacher,Admin")]
+        public async Task<IActionResult> GetManageQuizById(string quizId)
+        {
+            var (dbQuiz, ambiguityError) = await FindQuizByReferenceAsync(quizId);
+            if (ambiguityError != null)
+                return Conflict(new { error = "QUIZ_AMBIGUOUS_TITLE", message = ambiguityError });
+            if (dbQuiz == null)
+                return NotFound(new { error = "QUIZ_NOT_FOUND", message = $"Không tìm thấy quiz với ID {quizId}." });
+
+            if (!IsOwnerOrAdmin(dbQuiz))
+                return StatusCode(403, new { error = "FORBIDDEN", message = "Bạn không có quyền quản lý bài trắc nghiệm của giáo viên khác." });
+
+            return Ok(new StatelessQuizPublicDto
+            {
+                Id = dbQuiz.Id.ToString(),
+                Title = dbQuiz.Title,
+                Topic = dbQuiz.Topic,
+                Difficulty = DifficultyToLabel(dbQuiz.Difficulty),
+                XpReward = dbQuiz.XPReward,
+                Questions = dbQuiz.Questions
+                    .Select(q => new StatelessQuestionPublicDto
+                    {
+                        Id = q.Id.ToString(),
+                        Text = q.Question,
+                        Options = q.Options.ToList(),
+                        CorrectIndex = q.CorrectIndex,
+                        Explanation = q.Explanation
+                    })
+                    .ToList()
+            });
+        }
+
+        // TC-001: GET manage/{quizId}/questions — danh sách câu hỏi con (kèm đáp án cho teacher).
+        [HttpGet("manage/{quizId}/questions")]
+        [RequireJwtRole("Teacher,Admin")]
+        public async Task<IActionResult> GetManageQuizQuestions(string quizId)
+        {
+            var (dbQuiz, ambiguityError) = await FindQuizByReferenceAsync(quizId);
+            if (ambiguityError != null)
+                return Conflict(new { error = "QUIZ_AMBIGUOUS_TITLE", message = ambiguityError });
+            if (dbQuiz == null)
+                return NotFound(new { error = "QUIZ_NOT_FOUND", message = $"Không tìm thấy quiz với ID {quizId}." });
+
+            if (!IsOwnerOrAdmin(dbQuiz))
+                return StatusCode(403, new { error = "FORBIDDEN", message = "Bạn không có quyền quản lý bài trắc nghiệm của giáo viên khác." });
+
+            var questions = dbQuiz.Questions
+                .Select(q => new StatelessQuestionPublicDto
+                {
+                    Id = q.Id.ToString(),
+                    Text = q.Question,
+                    Options = q.Options.ToList(),
+                    CorrectIndex = q.CorrectIndex,
+                    Explanation = q.Explanation
+                })
+                .ToList();
+            return Ok(new { questions });
+        }
+
+        // TC-001: POST manage/{quizId}/questions — thêm 1 câu hỏi con.
+        [HttpPost("manage/{quizId}/questions")]
+        [RequireJwtRole("Teacher,Admin")]
+        public async Task<IActionResult> AddManageQuizQuestion(string quizId, [FromBody] StatelessQuestionDto question)
+        {
+            if (question == null)
+                return BadRequest(new { error = "INVALID_QUESTION", message = "Dữ liệu câu hỏi trống." });
+
+            var (dbQuiz, ambiguityError) = await FindQuizByReferenceAsync(quizId);
+            if (ambiguityError != null)
+                return Conflict(new { error = "QUIZ_AMBIGUOUS_TITLE", message = ambiguityError });
+            if (dbQuiz == null)
+                return NotFound(new { error = "QUIZ_NOT_FOUND", message = $"Không tìm thấy quiz với ID {quizId}." });
+
+            if (!IsOwnerOrAdmin(dbQuiz))
+                return StatusCode(403, new { error = "FORBIDDEN", message = "Bạn không có quyền quản lý bài trắc nghiệm của giáo viên khác." });
+
+            if (dbQuiz.Questions.Count >= 100)
+                return BadRequest(new { error = "INVALID_QUIZ", message = "Số lượng câu hỏi trong một bài quiz tối đa là 100." });
+
+            var questionError = ValidateQuestionPayload(question, dbQuiz.Questions.Count + 1);
+            if (questionError != null)
+                return BadRequest(questionError);
+
+            // Add() tường minh — key client-generated không được để DetectChanges tự gán state.
+            var questionEntity = dbQuiz.AddQuestion(
+                NormalizeText(question.Text),
+                question.Options.Select(NormalizeText).ToArray(),
+                question.CorrectIndex,
+                NormalizeText(question.Explanation));
+            _dbContext.QuizQuestions.Add(questionEntity);
+            await _dbContext.SaveChangesAsync();
+
+            return Ok(new { message = "Đã thêm câu hỏi vào bài trắc nghiệm." });
+        }
+
+        // TC-001: PUT manage/{quizId}/questions/{questionId} — sửa 1 câu hỏi con.
+        [HttpPut("manage/{quizId}/questions/{questionId}")]
+        [RequireJwtRole("Teacher,Admin")]
+        public async Task<IActionResult> UpdateManageQuizQuestion(string quizId, string questionId, [FromBody] StatelessQuestionDto question)
+        {
+            if (question == null)
+                return BadRequest(new { error = "INVALID_QUESTION", message = "Dữ liệu câu hỏi trống." });
+
+            if (!Guid.TryParse(questionId, out var questionGuid))
+                return BadRequest(new { error = "INVALID_QUESTION_ID", message = "ID câu hỏi không hợp lệ." });
+
+            var (dbQuiz, ambiguityError) = await FindQuizByReferenceAsync(quizId);
+            if (ambiguityError != null)
+                return Conflict(new { error = "QUIZ_AMBIGUOUS_TITLE", message = ambiguityError });
+            if (dbQuiz == null)
+                return NotFound(new { error = "QUIZ_NOT_FOUND", message = $"Không tìm thấy quiz với ID {quizId}." });
+
+            if (!IsOwnerOrAdmin(dbQuiz))
+                return StatusCode(403, new { error = "FORBIDDEN", message = "Bạn không có quyền quản lý bài trắc nghiệm của giáo viên khác." });
+
+            var existing = dbQuiz.Questions.FirstOrDefault(q => q.Id == questionGuid);
+            if (existing == null)
+                return NotFound(new { error = "QUESTION_NOT_FOUND", message = "Không tìm thấy câu hỏi trong bài trắc nghiệm này." });
+
+            var questionError = ValidateQuestionPayload(question, 0);
+            if (questionError != null)
+                return BadRequest(questionError);
+
+            existing.Update(
+                NormalizeText(question.Text),
+                question.Options.Select(NormalizeText).ToArray(),
+                question.CorrectIndex,
+                NormalizeText(question.Explanation));
+            await _dbContext.SaveChangesAsync();
+
+            return Ok(new { message = "Đã cập nhật câu hỏi." });
+        }
+
+        // TC-001: DELETE manage/{quizId}/questions/{questionId} — xóa 1 câu hỏi con.
+        [HttpDelete("manage/{quizId}/questions/{questionId}")]
+        [RequireJwtRole("Teacher,Admin")]
+        public async Task<IActionResult> DeleteManageQuizQuestion(string quizId, string questionId)
+        {
+            if (!Guid.TryParse(questionId, out var questionGuid))
+                return BadRequest(new { error = "INVALID_QUESTION_ID", message = "ID câu hỏi không hợp lệ." });
+
+            var (dbQuiz, ambiguityError) = await FindQuizByReferenceAsync(quizId);
+            if (ambiguityError != null)
+                return Conflict(new { error = "QUIZ_AMBIGUOUS_TITLE", message = ambiguityError });
+            if (dbQuiz == null)
+                return NotFound(new { error = "QUIZ_NOT_FOUND", message = $"Không tìm thấy quiz với ID {quizId}." });
+
+            if (!IsOwnerOrAdmin(dbQuiz))
+                return StatusCode(403, new { error = "FORBIDDEN", message = "Bạn không có quyền quản lý bài trắc nghiệm của giáo viên khác." });
+
+            if (!dbQuiz.RemoveQuestion(questionGuid))
+                return NotFound(new { error = "QUESTION_NOT_FOUND", message = "Không tìm thấy câu hỏi trong bài trắc nghiệm này." });
+
+            await _dbContext.SaveChangesAsync();
+            return Ok(new { message = "Đã xóa câu hỏi." });
+        }
+
+        // TC-021: seed quiz (CreatedByTeacherId = null) là nội dung chung — mọi teacher quản lý được;
+        // quiz do teacher tạo chỉ teacher đó (hoặc admin) quản lý.
+        private bool IsOwnerOrAdmin(Quiz quiz)
+        {
+            if (JwtHelper.IsAdmin(Request)) return true;
+            if (quiz.CreatedByTeacherId == null) return true; // seed — không thuộc teacher riêng
+            var currentTeacherIdStr = JwtHelper.ExtractSubFromToken(Request);
+            return Guid.TryParse(currentTeacherIdStr, out var currentTeacherId) && quiz.CreatedByTeacherId == currentTeacherId;
+        }
+
+        // TC-001/TC-021: validate chung payload quiz (rút gọn trùng lặp giữa create/update).
+        private static IActionResult? ValidateQuizPayload(StatelessQuizDto quiz)
+        {
+            if (string.IsNullOrWhiteSpace(quiz.Title))
+                return new BadRequestObjectResult(new { error = "INVALID_QUIZ", message = "Quiz phải có tiêu đề." });
+
+            if (quiz.Title.Length > 200)
+                return new BadRequestObjectResult(new { error = "INVALID_QUIZ", message = "Tiêu đề quiz không được vượt quá 200 ký tự." });
+
+            if (quiz.Questions == null || quiz.Questions.Count == 0)
+                return new BadRequestObjectResult(new { error = "INVALID_QUIZ", message = "Quiz phải có ít nhất 1 câu hỏi." });
+
+            if (quiz.Questions.Count > 100)
+                return new BadRequestObjectResult(new { error = "INVALID_QUIZ", message = "Số lượng câu hỏi trong một bài quiz tối đa là 100." });
+
+            for (int i = 0; i < quiz.Questions.Count; i++)
+            {
+                var questionError = ValidateQuestionPayload(quiz.Questions[i], i + 1);
+                if (questionError != null) return questionError;
+            }
+
+            return null;
+        }
+
+        private static IActionResult? ValidateQuestionPayload(StatelessQuestionDto q, int index)
+        {
+            if (string.IsNullOrWhiteSpace(q.Text))
+                return new BadRequestObjectResult(new { error = "INVALID_QUIZ", message = $"Câu hỏi thứ {index} không được để trống nội dung." });
+            if (q.Text.Length > 1000)
+                return new BadRequestObjectResult(new { error = "INVALID_QUIZ", message = $"Nội dung câu hỏi thứ {index} không được dài quá 1000 ký tự." });
+            if (q.Options == null || q.Options.Count < 2 || q.Options.Count > 10)
+                return new BadRequestObjectResult(new { error = "INVALID_QUIZ", message = $"Câu hỏi thứ {index} phải có từ 2 đến 10 đáp án lựa chọn." });
+            if (q.CorrectIndex < 0 || q.CorrectIndex >= q.Options.Count)
+                return new BadRequestObjectResult(new { error = "INVALID_QUIZ", message = $"Đáp án đúng của câu hỏi thứ {index} không hợp lệ." });
+            return null;
         }
 
         
@@ -709,9 +960,29 @@ namespace VisualizationDSA.WebApi.Controllers
         {
             var currentUserId = JwtHelper.ExtractSubFromToken(Request);
             var targetUserId = userId ?? currentUserId;
-            if (targetUserId != currentUserId && !JwtHelper.IsTeacherOrAdmin(Request))
+            if (targetUserId != currentUserId)
             {
-                return StatusCode(403, new { error = "FORBIDDEN", message = "Bạn không có quyền xem lịch sử của người khác." });
+                // TC-042 (pattern AD-003): quyền Teacher/Admin đối chiếu role từ DB, KHÔNG tin claim
+                // trong token — teacher bị demote mất quyền xem lịch sử người khác NGAY.
+                var isTeacherOrAdmin = false;
+                if (Guid.TryParse(currentUserId, out var currentUserGuid))
+                {
+                    var currentUser = await _dbContext.Users.AsNoTracking().FirstOrDefaultAsync(u => u.Id == currentUserGuid);
+                    if (currentUser != null)
+                    {
+                        isTeacherOrAdmin = currentUser.Role == "Teacher" || currentUser.Role == "Admin";
+                    }
+                    else
+                    {
+                        // User chỉ tồn tại ở memory (demo) — fallback về claim để không phá luồng demo.
+                        isTeacherOrAdmin = JwtHelper.IsTeacherOrAdmin(Request);
+                    }
+                }
+
+                if (!isTeacherOrAdmin)
+                {
+                    return StatusCode(403, new { error = "FORBIDDEN", message = "Bạn không có quyền xem lịch sử của người khác." });
+                }
             }
 
             if (!Guid.TryParse(targetUserId, out var guidUserId))
@@ -727,13 +998,13 @@ namespace VisualizationDSA.WebApi.Controllers
                 {
                     a.Id,
                     a.QuizId,
-                    quizTitle = a.Quiz.Title,
-                    quizTopic = a.Quiz.Topic,
+                    // PR-002: attempt bank quiz (QuizId null) fallback về QuizKey/QuizTitle.
+                    quizTitle = a.Quiz != null ? a.Quiz.Title : a.QuizTitle,
+                    quizTopic = a.Quiz != null ? a.Quiz.Topic : a.QuizKey,
                     a.Score,
                     a.MaxScore,
                     a.Passed,
-                    a.AttemptedAt,
-                    a.Answers
+                    a.AttemptedAt
                 })
                 .ToListAsync();
 

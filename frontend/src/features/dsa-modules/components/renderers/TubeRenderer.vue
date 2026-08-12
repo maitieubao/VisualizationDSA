@@ -72,7 +72,7 @@ function renderCanvas(): void {
   const frame = props.frame;
   if (!frame) return;
 
-  if (frame.dataState.length === 0) {
+  if ((frame.dataState?.length ?? 0) === 0) {
     ctx.fillStyle = colors.muted;
     ctx.font = '14px sans-serif';
     ctx.textAlign = 'center';

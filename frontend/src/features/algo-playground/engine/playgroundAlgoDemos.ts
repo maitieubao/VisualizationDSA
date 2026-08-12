@@ -283,6 +283,7 @@ for (let i = Math.floor(array.length / 2) - 1; i >= 0; i--) {
 }
 phase = "extract";
 for (let i = array.length - 1; i > 0; i--) {
+  setHeapState({ phase: phase, heapSize: i, activeIdx: 0, siftPath: [] });
   swap(0, i);
   highlight(i);
   heapify(i, 0);
@@ -298,8 +299,12 @@ highlight(0);`,
     inputKind: 'array',
     defaultInput: '4, 2, 2, 8, 3, 3, 1',
     code: `// Counting Sort: đếm tần suất xuất hiện rồi rải theo thứ tự
-const min = Math.min(...array);
-const max = Math.max(...array);
+let min = array[0];
+let max = array[0];
+for (let i = 1; i < array.length; i++) {
+  if (array[i] < min) { min = array[i]; }
+  if (array[i] > max) { max = array[i]; }
+}
 const size = max - min + 1;
 const count = new Array(size).fill(0);
 setCountingPhase("count");
@@ -332,8 +337,14 @@ for (let v = 0; v < count.length; v++) {
     inputKind: 'array',
     defaultInput: '170, 45, 75, 90, 802, 24, 2, 66',
     code: `// Radix Sort: sắp theo từng chữ số (dùng Counting Sort làm nền tảng)
-const offset = -Math.min(...array, 0);
-const max = Math.max(...array) + offset;
+let minVal = 0;
+let maxVal = 0;
+for (let i = 0; i < array.length; i++) {
+  if (array[i] < minVal) { minVal = array[i]; }
+  if (array[i] > maxVal) { maxVal = array[i]; }
+}
+const offset = -minVal;
+const max = maxVal + offset;
 let exp = 1;
 const buckets = [];
 for (let b = 0; b < 10; b++) {
@@ -410,7 +421,9 @@ for (let i = 0; i < n; i++) {
   setActiveBucket(i);
   buckets[i].sort(function (a, b) { return a - b; });
   for (let j = 0; j < buckets[i].length; j++) {
-    setBucketComparing(j, j);
+    if (j > 0) {
+      setBucketComparing(j - 1, j);
+    }
     array[pos] = buckets[i][j];
     highlight(pos);
     pos++;

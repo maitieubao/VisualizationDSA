@@ -1,5 +1,6 @@
 // @vitest-environment jsdom
 import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest';
+import { nextTick } from 'vue';
 import { mount, flushPromises } from '@vue/test-utils';
 import { setActivePinia, createPinia } from 'pinia';
 
@@ -8,21 +9,57 @@ if (typeof navigator.clipboard === 'undefined') {
   navigator.clipboard = { readText: vi.fn(), writeText: vi.fn() };
 }
 
-const makeEditor = () => ({
-  onDidChangeModelContent: vi.fn(),
-  getValue: vi.fn(() => ''),
-  setValue: vi.fn(),
-  dispose: vi.fn(),
-  deltaDecorations: vi.fn(() => []),
-  revealLineInCenter: vi.fn(),
-  hasTextFocus: vi.fn(() => false),
-  getAction: vi.fn(() => ({ run: vi.fn() })),
-  onMouseDown: vi.fn(),
-  updateOptions: vi.fn(),
-  getModel: vi.fn(() => ({ uri: 'test' })),
-});
+// HT-016: registry editor giữ callback onDidChangeModelContent + getValue trả giá trị set
+interface CapturedMonacoEditor {
+  onDidChangeModelContent: ReturnType<typeof vi.fn>;
+  getValue: ReturnType<typeof vi.fn>;
+  setValue: ReturnType<typeof vi.fn>;
+  dispose: ReturnType<typeof vi.fn>;
+  deltaDecorations: ReturnType<typeof vi.fn>;
+  revealLineInCenter: ReturnType<typeof vi.fn>;
+  hasTextFocus: ReturnType<typeof vi.fn>;
+  getAction: ReturnType<typeof vi.fn>;
+  onMouseDown: ReturnType<typeof vi.fn>;
+  updateOptions: ReturnType<typeof vi.fn>;
+  getModel: ReturnType<typeof vi.fn>;
+  simulateTyping(value: string): void;
+  setValueCalls: string[];
+}
 
-const mockCreate = vi.fn(() => makeEditor());
+const monacoEditors: CapturedMonacoEditor[] = [];
+
+const makeEditor = (): CapturedMonacoEditor => {
+  let currentValue = '';
+  let changeHandler: (() => void) | null = null;
+  const setValueCalls: string[] = [];
+  const editor: CapturedMonacoEditor = {
+    onDidChangeModelContent: vi.fn((cb: () => void) => {
+      changeHandler = cb;
+    }),
+    getValue: vi.fn(() => currentValue),
+    setValue: vi.fn((v: string) => {
+      currentValue = v;
+      setValueCalls.push(v);
+    }),
+    dispose: vi.fn(),
+    deltaDecorations: vi.fn(() => []),
+    revealLineInCenter: vi.fn(),
+    hasTextFocus: vi.fn(() => false),
+    getAction: vi.fn(() => ({ run: vi.fn() })),
+    onMouseDown: vi.fn(),
+    updateOptions: vi.fn(),
+    getModel: vi.fn(() => ({ uri: 'test' })),
+    simulateTyping(value: string) {
+      currentValue = value;
+      changeHandler?.();
+    },
+    setValueCalls,
+  };
+  monacoEditors.push(editor);
+  return editor;
+};
+
+const mockCreate = vi.fn((..._args: unknown[]) => makeEditor());
 
 vi.mock('monaco-editor', () => {
   return {
@@ -63,6 +100,7 @@ import PlaygroundWorkspace from '../../html-playground/components/PlaygroundWork
 import { useHtmlPlaygroundStore } from '../../html-playground/store/useHtmlPlaygroundStore';
 import { PlaygroundDebouncer } from '../../html-playground/engine/PlaygroundDebouncer';
 import { PlaygroundDocumentBuilder } from '../../html-playground/engine/PlaygroundDocumentBuilder';
+import { PlaygroundUrlCodec } from '../../html-playground/engine/PlaygroundUrlCodec';
 import { DEFAULT_PLAYGROUND_SOURCE } from '../../html-playground/types/playground.types';
 
 // ─── CE-003 (P2): Compile frames ─────────────────────────────────────────────
@@ -569,11 +607,11 @@ describe('PS-006 (P2): Badge count', () => {
     ]);
 
     animStore.frames = [
-      { activeLogicalLineId: 'OUTER_LOOP', variables: {} },
-      { activeLogicalLineId: 'INNER_LOOP', variables: {} },
-      { activeLogicalLineId: 'SWAP_STEP', variables: {} },
-      { activeLogicalLineId: 'SWAP_STEP', variables: {} },
-      { activeLogicalLineId: 'SWAP_STEP', variables: {} },
+      { stepId: 1, activeLine: 1, explanation: '', activeLogicalLineId: 'OUTER_LOOP', variables: {} },
+      { stepId: 2, activeLine: 2, explanation: '', activeLogicalLineId: 'INNER_LOOP', variables: {} },
+      { stepId: 3, activeLine: 2, explanation: '', activeLogicalLineId: 'SWAP_STEP', variables: {} },
+      { stepId: 4, activeLine: 3, explanation: '', activeLogicalLineId: 'SWAP_STEP', variables: {} },
+      { stepId: 5, activeLine: 3, explanation: '', activeLogicalLineId: 'SWAP_STEP', variables: {} },
     ];
     // PS-020: badge chỉ hiện trên dòng ACTIVE có nhiều occurrence — đặt vào frame SWAP_STEP
     animStore.currentIndex = 2;
@@ -604,10 +642,10 @@ describe('PS-006 (P2): Badge count', () => {
     ]);
 
     animStore.frames = [
-      { activeLogicalLineId: 'COMPARE_STEP', variables: {} },
-      { activeLogicalLineId: 'SWAP_STEP', variables: {} },
-      { activeLogicalLineId: 'COMPARE_STEP', variables: {} },
-      { activeLogicalLineId: 'COMPARE_STEP', variables: {} },
+      { stepId: 1, activeLine: 1, explanation: '', activeLogicalLineId: 'COMPARE_STEP', variables: {} },
+      { stepId: 2, activeLine: 2, explanation: '', activeLogicalLineId: 'SWAP_STEP', variables: {} },
+      { stepId: 3, activeLine: 1, explanation: '', activeLogicalLineId: 'COMPARE_STEP', variables: {} },
+      { stepId: 4, activeLine: 1, explanation: '', activeLogicalLineId: 'COMPARE_STEP', variables: {} },
     ];
     animStore.currentIndex = 2;
 
@@ -637,8 +675,8 @@ describe('PS-006 (P2): Badge count', () => {
     ]);
 
     animStore.frames = [
-      { activeLogicalLineId: 'OUTER_LOOP', variables: {} },
-      { activeLogicalLineId: 'SWAP_STEP', variables: {} },
+      { stepId: 1, activeLine: 1, explanation: '', activeLogicalLineId: 'OUTER_LOOP', variables: {} },
+      { stepId: 2, activeLine: 2, explanation: '', activeLogicalLineId: 'SWAP_STEP', variables: {} },
     ];
     animStore.currentIndex = 0;
 
@@ -723,6 +761,9 @@ describe('PS-008 (P2): Auto scroll active', () => {
     ]);
 
     animStore.frames = Array.from({ length: 50 }, (_, i) => ({
+      stepId: i + 1,
+      activeLine: i + 1,
+      explanation: '',
       activeLogicalLineId: `LINE_${i}`,
       variables: {},
     }));
@@ -941,19 +982,126 @@ describe('HP-002 (P2): Preview realtime', () => {
     expect(callback).not.toHaveBeenCalled();
   });
 
-  it('store toggle triggers debounced preview update', async () => {
+  it('HT-015: gõ liên tục → previewDoc chỉ commit 1 lần sau 800ms idle, iframe không remount giữa chừng', async () => {
     setActivePinia(createPinia());
     const store = useHtmlPlaygroundStore();
 
-    const debouncer = new PlaygroundDebouncer(800);
-    const updateFn = vi.fn();
+    const wrapper = mount(PlaygroundWorkspace, {
+      global: {
+        stubs: { BaseIcon: { template: '<span />' } },
+      },
+    });
 
-    store.html = '<h1>Test</h1>';
-    debouncer.schedule(updateFn);
+    const initialIframe = wrapper.find('iframe').element;
 
-    expect(updateFn).not.toHaveBeenCalled();
-    vi.advanceTimersByTime(800);
-    expect(updateFn).toHaveBeenCalledTimes(1);
+    store.setSourceFile('html', '<p>v1</p>');
+    await flushPromises();
+    vi.advanceTimersByTime(799);
+    expect(wrapper.find('iframe').element).toBe(initialIframe);
+    expect(wrapper.find('iframe').attributes('srcdoc')).not.toContain('<p>v1</p>');
+
+    vi.advanceTimersByTime(1);
+    await flushPromises();
+    expect(wrapper.find('iframe').element).toBe(initialIframe);
+    expect(wrapper.find('iframe').attributes('srcdoc')).toContain('<p>v1</p>');
+
+    store.setSourceFile('html', '<p>v2</p>');
+    store.setSourceFile('html', '<p>v3</p>');
+    await flushPromises();
+    vi.advanceTimersByTime(799);
+    expect(wrapper.find('iframe').element).toBe(initialIframe);
+    expect(wrapper.find('iframe').attributes('srcdoc')).toContain('<p>v1</p>');
+
+    vi.advanceTimersByTime(1);
+    await flushPromises();
+    expect(wrapper.find('iframe').element).toBe(initialIframe);
+    expect(wrapper.find('iframe').attributes('srcdoc')).toContain('<p>v3</p>');
+
+    wrapper.unmount();
+  });
+});
+
+// ─── HT-016 (P2): Contract editor ↔ store (Monaco thật qua mock giữ callback) ─
+describe('HT-016 (P2): Contract editor ↔ store', () => {
+  beforeEach(() => {
+    setActivePinia(createPinia());
+    monacoEditors.length = 0;
+  });
+
+  function mountWorkspace(): ReturnType<typeof mount> {
+    return mount(PlaygroundWorkspace, {
+      global: {
+        stubs: { BaseIcon: { template: '<span />' } },
+      },
+    });
+  }
+
+  it('type trong editor (onDidChangeModelContent) → store.setSourceFile cập nhật tab đang chọn', () => {
+    const store = useHtmlPlaygroundStore();
+    const wrapper = mountWorkspace();
+    const editor = monacoEditors[monacoEditors.length - 1];
+    expect(editor).toBeDefined();
+
+    editor.simulateTyping('<p>typed html</p>');
+    expect(store.html).toBe('<p>typed html</p>');
+    expect(store.css).toBe(DEFAULT_PLAYGROUND_SOURCE.css);
+
+    store.setActiveTab('css');
+    editor.simulateTyping('body { color: red; }');
+    expect(store.css).toBe('body { color: red; }');
+
+    wrapper.unmount();
+  });
+
+  it('Run → preview commit ngay (không chờ debounce 800ms)', async () => {
+    const store = useHtmlPlaygroundStore();
+    const wrapper = mountWorkspace();
+    const editor = monacoEditors[monacoEditors.length - 1];
+    editor.simulateTyping('<p>run-code</p>');
+
+    const before = wrapper.find('iframe').element;
+    await wrapper.find('button[title="Chạy lại preview ngay lập tức"]').trigger('click');
+
+    const after = wrapper.find('iframe').element;
+    expect(after).not.toBe(before);
+    expect(wrapper.find('iframe').attributes('srcdoc')).toContain('<p>run-code</p>');
+
+    wrapper.unmount();
+  });
+
+  it('đổi tab → editor.setValue nhận đúng activeCode của tab mới', async () => {
+    const store = useHtmlPlaygroundStore();
+    const wrapper = mountWorkspace();
+    const editor = monacoEditors[monacoEditors.length - 1];
+
+    store.setActiveTab('css');
+    await flushPromises();
+    expect(editor.setValueCalls.at(-1)).toBe(store.css);
+
+    store.setActiveTab('javascript');
+    await flushPromises();
+    expect(editor.setValueCalls.at(-1)).toBe(store.js);
+
+    store.setActiveTab('html');
+    await flushPromises();
+    expect(editor.setValueCalls.at(-1)).toBe(store.html);
+
+    wrapper.unmount();
+  });
+
+  it('loadFromSharePayload → revision bump → editor.setValue nhận source mới', async () => {
+    const store = useHtmlPlaygroundStore();
+    const wrapper = mountWorkspace();
+    const editor = monacoEditors[monacoEditors.length - 1];
+
+    const loaded = { html: '<h1>Loaded</h1>', css: '', js: '' };
+    const payload = PlaygroundUrlCodec.encode(loaded);
+    expect(payload).not.toBeNull();
+    expect(store.loadFromSharePayload(payload as string)).toBe(true);
+    await flushPromises();
+    expect(editor.setValueCalls.at(-1)).toBe('<h1>Loaded</h1>');
+
+    wrapper.unmount();
   });
 });
 
@@ -1071,6 +1219,7 @@ describe('HP-006 (P2): Reset code', () => {
   it('PlaygroundWorkspace reset button triggers resetToDefault', async () => {
     setActivePinia(createPinia());
     const store = useHtmlPlaygroundStore();
+    const confirmSpy = vi.spyOn(window, 'confirm').mockReturnValue(true);
 
     store.html = '<h1>Modified</h1>';
 
@@ -1088,6 +1237,32 @@ describe('HP-006 (P2): Reset code', () => {
     await flushPromises();
 
     expect(store.html).toBe(DEFAULT_PLAYGROUND_SOURCE.html);
+    wrapper.unmount();
+    confirmSpy.mockRestore();
+  });
+
+  it('HT-013: reset bị từ chối (confirm=false) → code không bị xoá', async () => {
+    setActivePinia(createPinia());
+    const store = useHtmlPlaygroundStore();
+    const confirmSpy = vi.spyOn(window, 'confirm').mockReturnValue(false);
+
+    store.html = '<h1>Keep me</h1>';
+
+    const wrapper = mount(PlaygroundWorkspace, {
+      global: {
+        stubs: { BaseIcon: { template: '<span />' } },
+      },
+    });
+
+    const resetButton = wrapper.findAll('button').find((b) => b.text().includes('Reset'));
+    expect(resetButton).toBeDefined();
+
+    await resetButton!.trigger('click');
+    await flushPromises();
+
+    expect(store.html).toBe('<h1>Keep me</h1>');
+    wrapper.unmount();
+    confirmSpy.mockRestore();
   });
 });
 
@@ -1122,7 +1297,8 @@ describe('HP-011 (P2): Monaco error', () => {
 
     await flushPromises();
 
-    expect(wrapper.text()).toContain('Không thể tải Monaco Editor');
+    expect(wrapper.text()).toContain('Không thể chỉnh sửa code bằng Monaco Editor');
+    wrapper.unmount();
   });
 
   it('PlaygroundWorkspace reload button triggers window.location.reload', async () => {
@@ -1166,7 +1342,8 @@ describe('HP-011 (P2): Monaco error', () => {
 
     await flushPromises();
 
-    expect(wrapper.text()).toContain('Playground vẫn chạy được, chỉ không hiển thị editor.');
+    expect(wrapper.text()).toContain('Đã chuyển sang ô nhập liệu đơn giản. Code vẫn chạy bình thường.');
+    wrapper.unmount();
   });
 });
 
@@ -1212,7 +1389,7 @@ describe('HP-013 (P2): Sandbox security', () => {
     expect(sandbox).not.toContain('allow-same-origin');
   });
 
-  it('sandbox attribute includes allow-modals and allow-forms', () => {
+  it('sandbox attribute includes allow-forms', () => {
     const wrapper = mount(PlaygroundPreview, {
       props: {
         documentHtml: '<html><body>test</body></html>',
@@ -1221,20 +1398,82 @@ describe('HP-013 (P2): Sandbox security', () => {
 
     const iframe = wrapper.find('iframe');
     const sandbox = iframe.attributes('sandbox');
-    expect(sandbox).toContain('allow-modals');
     expect(sandbox).toContain('allow-forms');
   });
 
-  it('sandbox attribute includes allow-popups', () => {
+  it('HT-023: sandbox KHÔNG include allow-modals (chặn alert() vô hạn)', () => {
     const wrapper = mount(PlaygroundPreview, {
       props: {
         documentHtml: '<html><body>test</body></html>',
       },
     });
 
-    const iframe = wrapper.find('iframe');
-    const sandbox = iframe.attributes('sandbox');
-    expect(sandbox).toContain('allow-popups');
+    const sandbox = wrapper.find('iframe').attributes('sandbox');
+    expect(sandbox).not.toContain('allow-modals');
+  });
+
+  it('HT-023: sandbox KHÔNG include allow-popups (chặn window.open thoát tab ngoài)', () => {
+    const wrapper = mount(PlaygroundPreview, {
+      props: {
+        documentHtml: '<html><body>test</body></html>',
+      },
+    });
+
+    const sandbox = wrapper.find('iframe').attributes('sandbox');
+    expect(sandbox).not.toContain('allow-popups');
+  });
+
+  it('HT-002: iframe có referrerpolicy=no-referrer (chặn rò rỉ URL payload qua Referer)', () => {
+    const wrapper = mount(PlaygroundPreview, {
+      props: {
+        documentHtml: '<html><body>test</body></html>',
+      },
+    });
+
+    expect(wrapper.find('iframe').attributes('referrerpolicy')).toBe('no-referrer');
+  });
+
+  it('HT-003: playground-error postMessage từ iframe → emit runtime-error', async () => {
+    const wrapper = mount(PlaygroundPreview, {
+      props: {
+        documentHtml: '<html><body>test</body></html>',
+      },
+    });
+
+    // jsdom không dựng browsing context cho iframe → contentWindow = null.
+    // Guard trong PlaygroundPreview so sánh event.source !== iframe.contentWindow
+    // (cả hai đều null trong jsdom) nên source: null hợp lệ để test luồng emit.
+    window.dispatchEvent(
+      new MessageEvent('message', {
+        data: { type: 'playground-error', message: 'boom at line 3', line: 3, col: 5 },
+        source: null,
+      }),
+    );
+    await nextTick();
+
+    const emitted = wrapper.emitted('runtime-error');
+    expect(emitted).toBeDefined();
+    expect(emitted![0][0]).toMatchObject({ message: 'boom at line 3', line: 3, col: 5 });
+    wrapper.unmount();
+  });
+
+  it('HT-003: message không phải playground-error → không emit runtime-error', async () => {
+    const wrapper = mount(PlaygroundPreview, {
+      props: {
+        documentHtml: '<html><body>test</body></html>',
+      },
+    });
+
+    window.dispatchEvent(
+      new MessageEvent('message', {
+        data: { type: 'other-event', message: 'ignore' },
+        source: null,
+      }),
+    );
+    await nextTick();
+
+    expect(wrapper.emitted('runtime-error')).toBeUndefined();
+    wrapper.unmount();
   });
 
   it('iframe uses srcDoc for content isolation', () => {

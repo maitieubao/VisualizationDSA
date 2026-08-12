@@ -54,8 +54,18 @@ export class StreakCalculator {
       return { nextStreak: currentStreak + 1, shouldUpdate: true };
     }
 
-    // Nghỉ lỡ 1 ngày: dùng Streak Freeze (nếu còn) — giữ nguyên streak thay vì reset về 1.
-    if (streakFreezesCount > 0 && currentStreak > 1) {
+    // GM-018: Streak Freeze CHỈ cứu gap đúng 1 ngày nghỉ (lastActiveDate = hôm kia, tức
+    // đã bỏ lỡ đúng 1 ngày). Gap ≥ 2 ngày nghỉ hoặc hết freeze → reset về 1. Bỏ điều
+    // kiện `currentStreak > 1` cũ vì nó làm freeze không nhất quán (streak=1 reset kể cả
+    // khi còn freeze).
+    const dayBeforeYesterday = new Date(todayDateStr);
+    dayBeforeYesterday.setDate(dayBeforeYesterday.getDate() - 2);
+    const dbyyyy = dayBeforeYesterday.getFullYear();
+    const dbmm = String(dayBeforeYesterday.getMonth() + 1).padStart(2, '0');
+    const dbdd = String(dayBeforeYesterday.getDate()).padStart(2, '0');
+    const dayBeforeYesterdayStr = `${dbyyyy}-${dbmm}-${dbdd}`;
+
+    if (lastActiveDate === dayBeforeYesterdayStr && streakFreezesCount > 0) {
       return { nextStreak: currentStreak, shouldUpdate: true, freezeUsed: true };
     }
 

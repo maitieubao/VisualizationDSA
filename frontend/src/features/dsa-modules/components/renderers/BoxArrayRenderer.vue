@@ -6,7 +6,7 @@
 
 <script setup lang="ts">
 import { ref, shallowRef, watch, onMounted, onBeforeUnmount } from 'vue';
-import type { FrameDTO } from '../../types/algorithm.types';
+import type { FrameDTO, HighlightIndices } from '../../types/algorithm.types';
 import { drawBoxArray, type AnimatedState } from './boxArrayRenderHelpers';
 
 const props = defineProps<{
@@ -86,7 +86,9 @@ function renderCanvas(): void {
   ctx.fillRect(0, 0, w, h);
 
   const frame = props.frame;
-  if (!frame || frame.dataState.length === 0) return;
+  if (!frame) return;
+  const dataState = frame.dataState ?? [];
+  if (dataState.length === 0) return;
 
   
   drawBoxArray(ctx, w, h, frame, colors, animatedState.value ?? undefined);
@@ -132,26 +134,29 @@ watch(() => props.frame, (newFrame) => {
     animationFrameId = null;
   }
 
-  if (!newFrame || newFrame.dataState.length === 0) {
+  const dataState = newFrame?.dataState ?? [];
+  const highlights: HighlightIndices = newFrame?.highlights ?? { compare: [], swap: [], sorted: [], dimmed: [], active: [] };
+
+  if (!newFrame || dataState.length === 0) {
     animatedState.value = null;
     renderCanvas();
     return;
   }
 
-  const n = newFrame.dataState.length;
+  const n = dataState.length;
   
   
-  const tLow = newFrame.highlights.low ?? (animatedState.value?.low ?? 0);
-  const tLowOp = newFrame.highlights.low != null ? 1.0 : 0.0;
+  const tLow = highlights.low ?? (animatedState.value?.low ?? 0);
+  const tLowOp = highlights.low != null ? 1.0 : 0.0;
   
-  const tHigh = newFrame.highlights.high ?? (animatedState.value?.high ?? n - 1);
-  const tHighOp = newFrame.highlights.high != null ? 1.0 : 0.0;
+  const tHigh = highlights.high ?? (animatedState.value?.high ?? n - 1);
+  const tHighOp = highlights.high != null ? 1.0 : 0.0;
   
-  const tMid = newFrame.highlights.mid ?? (animatedState.value?.mid ?? 0);
-  const tMidOp = newFrame.highlights.mid != null ? 1.0 : 0.0;
+  const tMid = highlights.mid ?? (animatedState.value?.mid ?? 0);
+  const tMidOp = highlights.mid != null ? 1.0 : 0.0;
 
-  const tOpacities = Array.from({ length: n }, (_, i) => newFrame.highlights.dimmed.includes(i) ? 0.25 : 1.0);
-  const tCrosses = Array.from({ length: n }, (_, i) => newFrame.highlights.dimmed.includes(i) ? 1.0 : 0.0);
+  const tOpacities = Array.from({ length: n }, (_, i) => (highlights.dimmed ?? []).includes(i) ? 0.25 : 1.0);
+  const tCrosses = Array.from({ length: n }, (_, i) => (highlights.dimmed ?? []).includes(i) ? 1.0 : 0.0);
 
   const nextTargetState: AnimatedState = {
     low: tLow,

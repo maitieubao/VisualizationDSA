@@ -4,8 +4,21 @@ import {
   runCodelabTask,
   normalizeOutput,
   type CodelabRunResult,
+  type CodelabWorkerRequest,
 } from '../utils/codelabExecutor';
 import type { TestCase } from '../types/lesson.types';
+
+interface FakeWorker {
+  postMessage: ReturnType<typeof vi.fn>;
+  terminate: ReturnType<typeof vi.fn>;
+  onmessage: ((e: MessageEvent) => void) | null;
+  onerror: ((e: ErrorEvent) => void) | null;
+}
+
+function fakeWorkerFrom(factory: () => FakeWorker): { worker: FakeWorker; asWorker: Worker } {
+  const worker = factory();
+  return { worker, asWorker: worker as unknown as Worker };
+}
 
 const BUBBLE_TASK: TestCase[] = [
   { input: '[[5, 2, 9, 1, 5, 6]]', expectedOutput: '[1, 2, 5, 5, 6, 9]' },
@@ -106,18 +119,15 @@ describe('runCodelabTask — worker + timeout', () => {
     vi.useRealTimers();
   });
 
-  it('TC-A4.5: code treo → worker bị terminate và trả timedOut', async () => {
-    const hungFactory = () => {
-      const worker = {
-        postMessage: vi.fn(),
-        terminate: vi.fn(),
-        onmessage: null,
-        onerror: null,
-      } as unknown as Worker;
-      return worker;
-    };
+  it('TC-A4.5: code treo → worker bị terminate, payload {requestId, code, testCases, entryFunction} đúng, trả timedOut', async () => {
+    const { worker, asWorker } = fakeWorkerFrom(() => ({
+      postMessage: vi.fn(),
+      terminate: vi.fn(),
+      onmessage: null,
+      onerror: null,
+    }));
 
-    const promise = runCodelabTask('function f() { while(true) {} }', BUBBLE_TASK, 'f', 1000, hungFactory);
+    const promise = runCodelabTask('function f() { while(true) {} }', BUBBLE_TASK, 'f', 1000, () => asWorker);
     const assertion = promise.then((result) => {
       expect(result.timedOut).toBe(true);
       expect(result.ok).toBe(false);
@@ -125,33 +135,116 @@ describe('runCodelabTask — worker + timeout', () => {
     });
     await vi.advanceTimersByTimeAsync(1100);
     await assertion;
+
+    // LM-016: payload postMessage phải đúng contract worker.
+    const payload = worker.postMessage.mock.calls[0][0] as CodelabWorkerRequest;
+    expect(payload).toMatchObject({
+      code: 'function f() { while(true) {} }',
+      testCases: BUBBLE_TASK,
+      entryFunction: 'f',
+      requestId: expect.any(Number),
+    });
+    expect(worker.terminate).toHaveBeenCalled();
   });
 
-  it('TC-A4.6/7: worker trả kết quả → resolve kết quả đúng', async () => {
-    const factory = () => {
+  it('TC-A4.6/7: worker trả kết quả → resolve đúng + terminate + payload contract', async () => {
+    const { worker, asWorker } = fakeWorkerFrom(() => {
       let requestId = 0;
-      const worker = {
-        postMessage: vi.fn((payload: { requestId: number }) => {
+      const w: FakeWorker = {
+        postMessage: vi.fn((payload: CodelabWorkerRequest) => {
           requestId = payload.requestId;
           setTimeout(() => {
-            (worker as unknown as { onmessage: ((e: MessageEvent) => void) | null }).onmessage?.({
+            w.onmessage?.({
               data: { requestId, ok: true, results: [{ input: '[[]]', expectedOutput: '[]', passed: true, isHidden: true }] },
             } as MessageEvent);
           }, 0);
         }),
         terminate: vi.fn(),
-        onmessage: null as ((e: MessageEvent) => void) | null,
-        onerror: null as ((e: ErrorEvent) => void) | null,
-      } as unknown as Worker;
-      return worker;
-    };
+        onmessage: null,
+        onerror: null,
+      };
+      return w;
+    });
 
-    const promise = runCodelabTask(BUBBLE_SOLUTION, BUBBLE_TASK, 'bubbleSort', 1000, factory);
+    const promise = runCodelabTask(BUBBLE_SOLUTION, BUBBLE_TASK, 'bubbleSort', 1000, () => asWorker);
     await vi.advanceTimersByTimeAsync(10); // chạy setTimeout(0) của worker fake
     const result = await promise;
     expect(result.ok).toBe(true);
     expect(result.results).toHaveLength(1);
     expect(result.results[0].passed).toBe(true);
+
+    // LM-016: payload worker nhận đủ {requestId, code, testCases, entryFunction}.
+    expect(worker.postMessage).toHaveBeenCalledWith(
+      expect.objectContaining({
+        code: BUBBLE_SOLUTION,
+        testCases: BUBBLE_TASK,
+        entryFunction: 'bubbleSort',
+        requestId: expect.any(Number),
+      }),
+    );
+    expect(worker.terminate).toHaveBeenCalled();
+  });
+
+  it('LM-016: response stale (requestId khác) bị drop — chỉ response đúng resolve', async () => {
+    const { worker, asWorker } = fakeWorkerFrom(() => {
+      let requestId = 0;
+      const w: FakeWorker = {
+        postMessage: vi.fn((payload: CodelabWorkerRequest) => {
+          requestId = payload.requestId;
+          setTimeout(() => {
+            // Response giả mạo/từ lần chạy cũ → phải bị bỏ qua.
+            w.onmessage?.({
+              data: { requestId: requestId + 999, ok: true, results: [{ input: '[[]]', expectedOutput: '[]', passed: false, isHidden: true }] },
+            } as MessageEvent);
+            // Response đúng requestId hiện tại.
+            w.onmessage?.({
+              data: { requestId, ok: true, results: [{ input: '[[]]', expectedOutput: '[]', passed: true, isHidden: true }] },
+            } as MessageEvent);
+          }, 0);
+        }),
+        terminate: vi.fn(),
+        onmessage: null,
+        onerror: null,
+      };
+      return w;
+    });
+
+    const promise = runCodelabTask(BUBBLE_SOLUTION, BUBBLE_TASK, 'bubbleSort', 1000, () => asWorker);
+    await vi.advanceTimersByTimeAsync(10);
+    const result = await promise;
+
+    expect(result.ok).toBe(true);
+    expect(result.results[0].passed).toBe(true); // stale bị bỏ, không ghi đè kết quả
+    expect(worker.terminate).toHaveBeenCalledTimes(1);
+  });
+
+  it('LM-053: worker trả ok:false + error → runCodelabTask lan truyền đúng shape (không hardcode)', async () => {
+    const { worker, asWorker } = fakeWorkerFrom(() => {
+      let requestId = 0;
+      const w: FakeWorker = {
+        postMessage: vi.fn((payload: CodelabWorkerRequest) => {
+          requestId = payload.requestId;
+          setTimeout(() => {
+            w.onmessage?.({
+              data: { requestId, ok: false, error: 'Lỗi biên dịch code: unexpected token' },
+            } as MessageEvent);
+          }, 0);
+        }),
+        terminate: vi.fn(),
+        onmessage: null,
+        onerror: null,
+      };
+      return w;
+    });
+
+    const promise = runCodelabTask('function broken( {', BUBBLE_TASK, 'broken', 1000, () => asWorker);
+    await vi.advanceTimersByTimeAsync(10);
+    const result = await promise;
+
+    expect(result.ok).toBe(false);
+    expect(result.error).toBe('Lỗi biên dịch code: unexpected token');
+    expect(result.results).toEqual([]);
+    expect(worker.terminate).toHaveBeenCalled();
   });
 
   it('Fallback: không tạo được worker → KHÔNG chạy đồng bộ (chống treo UI), trả lỗi an toàn', async () => {

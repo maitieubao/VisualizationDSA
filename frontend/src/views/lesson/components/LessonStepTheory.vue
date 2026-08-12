@@ -102,13 +102,18 @@ const formattedContent = computed(() => {
     }
     flushTable();
 
-    return html
-      .replace(/^### (.*$)/gim, '<h3 class="text-base font-bold text-accent mt-4 mb-2">$1</h3>')
-      .replace(/^## (.*$)/gim, '<h2 class="text-lg font-bold text-text-primary mt-6 mb-3">$1</h2>')
-      .replace(/^# (.*$)/gim, '<h1 class="text-xl font-extrabold text-text-primary mt-6 mb-3">$1</h1>')
-      .replace(/\*\*(.*)\*\*/gim, '<strong class="font-bold text-text-primary">$1</strong>')
-      .replace(/`([^`]+)`/g, '<code class="bg-bg-surface text-accent px-1.5 py-0.5 rounded text-xs font-mono">$1</code>')
-      .replace(/\n\n/g, '</p><p class="my-3 text-text-primary">');
+    // Mở và đóng thẻ <p> để HTML cân bằng (LM-067): `\n\n` chỉ chèn cặp thẻ giữa,
+    // nếu không bọc đầu/cuối thì DOM mất cân bằng. Trình duyệt tự đóng <p> khi
+    // gặp heading nên việc bọc cả đoạn vẫn an toàn.
+    return '<p class="my-3 text-text-primary">'
+      + html
+        .replace(/^### (.*$)/gim, '</p><h3 class="text-base font-bold text-accent mt-4 mb-2">$1</h3><p class="my-3 text-text-primary">')
+        .replace(/^## (.*$)/gim, '</p><h2 class="text-lg font-bold text-text-primary mt-6 mb-3">$1</h2><p class="my-3 text-text-primary">')
+        .replace(/^# (.*$)/gim, '</p><h1 class="text-xl font-extrabold text-text-primary mt-6 mb-3">$1</h1><p class="my-3 text-text-primary">')
+        .replace(/\*\*(.*)\*\*/gim, '<strong class="font-bold text-text-primary">$1</strong>')
+        .replace(/`([^`]+)`/g, '<code class="bg-bg-surface text-accent px-1.5 py-0.5 rounded text-xs font-mono">$1</code>')
+        .replace(/\n\n/g, '</p><p class="my-3 text-text-primary">')
+      + '</p>';
   };
 
   let html = '';

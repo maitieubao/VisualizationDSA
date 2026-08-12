@@ -84,6 +84,14 @@
 }
 .form-input:focus { border-color: var(--color-accent-primary); }
 .form-input::placeholder { color: var(--color-text-disabled); }
+.form-input--error { border-color: var(--color-accent-red); }
+.form-input--error:focus { border-color: var(--color-accent-red); }
+
+.form-field-error {
+  font-size: 11px;
+  color: var(--color-accent-red);
+  margin: 2px 0 0;
+}
 
 .form-submit {
   background: var(--color-accent-primary);

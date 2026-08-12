@@ -1,8 +1,36 @@
-import type { SortFrame } from "../types/sorting.types";
+import type { SortFrame, SortHighlights } from "../types/sorting.types";
 
 interface TrackedElement {
   id: number;
   value: number;
+}
+
+// CC-009: ánh xạ bước thuật toán → dòng vật lý + logicalId (giả định khối mã BucketSort
+// được nạp vào Monaco: line 1 = hàm, line 3 = phân loại vào bucket, line 4 = sắp xếp trong
+// bucket, line 6 = thu hồi vào mảng kết quả)
+const LINE_FUNC_DECL = 1;
+const LINE_DISTRIBUTE_STEP = 3;
+const LINE_SORT_STEP = 4;
+const LINE_COLLECT_STEP = 6;
+
+function mkHighlights(
+  sorted: number[],
+  extras: Partial<SortHighlights> = {}
+): SortHighlights {
+  return { compare: [], swap: [], sorted: [...sorted], ...extras };
+}
+
+// SV-008 (EC-022): min/max 1 pass thay Math.min/max(...arr) — mảng lớn không RangeError
+function minMax(values: number[]): { min: number; max: number } {
+  if (values.length === 0) return { min: 0, max: 0 };
+  let min = values[0];
+  let max = values[0];
+  for (let i = 1; i < values.length; i++) {
+    const v = values[i];
+    if (v < min) min = v;
+    if (v > max) max = v;
+  }
+  return { min, max };
 }
 
 export function generateBucketSortFrames(arr: number[]): SortFrame[] {
@@ -22,8 +50,7 @@ export function generateBucketSortFrames(arr: number[]): SortFrame[] {
   const bucketCount = 4;
   const buckets: TrackedElement[][] = Array.from({ length: bucketCount }, () => []);
 
-  const minVal = n > 0 ? Math.min(...arr) : 0;
-  const maxVal = n > 0 ? Math.max(...arr) : 0;
+  const { min: minVal, max: maxVal } = minMax(arr);
   const spread = maxVal - minVal;
 
   const getBucketIndex = (val: number): number => {
@@ -94,6 +121,9 @@ export function generateBucketSortFrames(arr: number[]): SortFrame[] {
     bucketSortComparingBucketIndices: null,
     bucketSortOutputWithIds: cloneOutput(outputArrayWithIds),
     variables: baseVars({}),
+    lineNumber: LINE_FUNC_DECL,
+    activeLogicalLineId: "FUNC_DECL",
+    highlights: mkHighlights([]),
   });
 
   for (let i = 0; i < initialElements.length; i++) {
@@ -117,6 +147,9 @@ export function generateBucketSortFrames(arr: number[]): SortFrame[] {
       bucketSortComparingBucketIndices: null,
       bucketSortOutputWithIds: cloneOutput(outputArrayWithIds),
       variables: baseVars({ i, bucketIdx }),
+      lineNumber: LINE_DISTRIBUTE_STEP,
+      activeLogicalLineId: "DISTRIBUTE_STEP",
+      highlights: mkHighlights([], { active: [i] }),
     });
 
     buckets[bucketIdx].push({ ...elem });
@@ -138,6 +171,9 @@ export function generateBucketSortFrames(arr: number[]): SortFrame[] {
       bucketSortComparingBucketIndices: null,
       bucketSortOutputWithIds: cloneOutput(outputArrayWithIds),
       variables: baseVars({ i, bucketIdx }),
+      lineNumber: LINE_DISTRIBUTE_STEP,
+      activeLogicalLineId: "DISTRIBUTE_STEP",
+      highlights: mkHighlights([], { active: [i] }),
     });
   }
 
@@ -162,6 +198,9 @@ export function generateBucketSortFrames(arr: number[]): SortFrame[] {
       bucketSortComparingBucketIndices: null,
       bucketSortOutputWithIds: cloneOutput(outputArrayWithIds),
       variables: baseVars({ b }),
+      lineNumber: LINE_SORT_STEP,
+      activeLogicalLineId: "SORT_STEP",
+      highlights: mkHighlights([], { active: [] }),
     });
 
     if (bucket.length > 1) {
@@ -186,6 +225,9 @@ export function generateBucketSortFrames(arr: number[]): SortFrame[] {
             bucketSortComparingBucketIndices: [j - 1, j] as [number, number],
             bucketSortOutputWithIds: cloneOutput(outputArrayWithIds),
             variables: baseVars({ b, j }),
+            lineNumber: LINE_SORT_STEP,
+            activeLogicalLineId: "SORT_STEP",
+            highlights: mkHighlights([], { compare: [j - 1, j] }),
           });
 
           if (bucket[j - 1].value > bucket[j].value) {
@@ -211,6 +253,9 @@ export function generateBucketSortFrames(arr: number[]): SortFrame[] {
               bucketSortComparingBucketIndices: [j - 1, j] as [number, number],
               bucketSortOutputWithIds: cloneOutput(outputArrayWithIds),
               variables: baseVars({ b, j }),
+              lineNumber: LINE_SORT_STEP,
+              activeLogicalLineId: "SORT_STEP",
+              highlights: mkHighlights([], { swap: [j - 1, j] }),
             });
             j--;
           } else {
@@ -237,6 +282,9 @@ export function generateBucketSortFrames(arr: number[]): SortFrame[] {
       bucketSortComparingBucketIndices: null,
       bucketSortOutputWithIds: cloneOutput(outputArrayWithIds),
       variables: baseVars({ b }),
+      lineNumber: LINE_SORT_STEP,
+      activeLogicalLineId: "SORT_STEP",
+      highlights: mkHighlights([]),
     });
   }
 
@@ -257,6 +305,9 @@ export function generateBucketSortFrames(arr: number[]): SortFrame[] {
     bucketSortComparingBucketIndices: null,
     bucketSortOutputWithIds: cloneOutput(outputArrayWithIds),
     variables: baseVars({}),
+    lineNumber: LINE_COLLECT_STEP,
+    activeLogicalLineId: "COLLECT_STEP",
+    highlights: mkHighlights([]),
   });
 
   let outputCount = 0;
@@ -281,6 +332,9 @@ export function generateBucketSortFrames(arr: number[]): SortFrame[] {
         bucketSortComparingBucketIndices: null,
         bucketSortOutputWithIds: cloneOutput(outputArrayWithIds),
         variables: baseVars({ b, outputCount }),
+        lineNumber: LINE_COLLECT_STEP,
+        activeLogicalLineId: "COLLECT_STEP",
+        highlights: mkHighlights([], { active: [b] }),
       });
     }
 
@@ -306,6 +360,9 @@ export function generateBucketSortFrames(arr: number[]): SortFrame[] {
         bucketSortComparingBucketIndices: null,
         bucketSortOutputWithIds: cloneOutput(outputArrayWithIds),
         variables: baseVars({ b, outputCount }),
+        lineNumber: LINE_COLLECT_STEP,
+        activeLogicalLineId: "COLLECT_STEP",
+        highlights: mkHighlights(Array.from({ length: outputCount + 1 }, (_, k) => k), { compare: [outputCount] }),
       });
 
       outputCount++;
@@ -328,7 +385,10 @@ export function generateBucketSortFrames(arr: number[]): SortFrame[] {
     bucketSortActiveIdx: null,
     bucketSortComparingBucketIndices: null,
     bucketSortOutputWithIds: cloneOutput(outputArrayWithIds),
-    variables: baseVars({ outputCount }),
+    variables: baseVars({}),
+    lineNumber: LINE_FUNC_DECL,
+    activeLogicalLineId: "FUNC_DECL",
+    highlights: mkHighlights(Array.from({ length: n }, (_, i) => i)),
   });
 
   // Keep source identity and dynamic ranges available to every visualizer frame.

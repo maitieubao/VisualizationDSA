@@ -4,7 +4,7 @@
     :class="isOpen ? 'translate-x-0' : '-translate-x-full'"
     aria-label="Menu tài liệu"
   >
-    <div class="h-full overflow-y-auto p-4 pb-20 scrollbar-hide">
+    <div ref="sidebarScrollContainer" class="h-full overflow-y-auto p-4 pb-20 scrollbar-hide">
       
       <button 
         @click="$emit('close')" 
@@ -36,7 +36,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue';
+import { ref, watch, onMounted, nextTick } from 'vue';
 import { useRoute } from 'vue-router';
 import { docsNavigation } from '../data/docsNavigation';
 import DocsSidebarItem from './DocsSidebarItem.vue';
@@ -52,6 +52,26 @@ defineEmits<{
 
 const route = useRoute();
 const navigation = docsNavigation;
+const sidebarScrollContainer = ref<HTMLElement | null>(null);
+
+// Tự cuộn sidebar tới mục đang active khi đổi bài (giống CourseSidebar.vue) (DC-021).
+const scrollToActiveItem = async (): Promise<void> => {
+  await nextTick();
+  const container = sidebarScrollContainer.value;
+  if (!container) return;
+  const activeEl = container.querySelector('.sidebar-item-active') as HTMLElement | null;
+  if (activeEl) {
+    activeEl.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+  }
+};
+
+watch(() => route.path, () => {
+  scrollToActiveItem();
+});
+
+onMounted(() => {
+  scrollToActiveItem();
+});
 </script>
 
 <style scoped>

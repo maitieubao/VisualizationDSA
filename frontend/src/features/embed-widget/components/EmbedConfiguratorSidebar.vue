@@ -2,21 +2,25 @@
   <div class="embed-configurator-sidebar">
     
     <div class="embed-settings-group">
-      <label class="embed-settings-label">Theme hiển thị</label>
-      <div class="theme-buttons">
-        <button
-          v-for="theme in themeOptions"
-          :key="theme.id"
-          type="button"
-          class="theme-btn"
-          :class="{ active: store.selectedTheme === theme.id }"
-          :aria-pressed="store.selectedTheme === theme.id"
-          :aria-label="'Theme ' + theme.label"
-          @click="store.setTheme(theme.id)"
-        >
-          {{ theme.label }}
-        </button>
-      </div>
+      
+      <fieldset class="theme-fieldset" role="radiogroup" aria-label="Theme hiển thị">
+        <legend class="embed-settings-label">Theme hiển thị</legend>
+        <div class="theme-buttons">
+          <button
+            v-for="theme in themeOptions"
+            :key="theme.id"
+            type="button"
+            role="radio"
+            class="theme-btn"
+            :class="{ active: store.selectedTheme === theme.id }"
+            :aria-checked="store.selectedTheme === theme.id"
+            :aria-label="'Theme ' + theme.label"
+            @click="store.setTheme(theme.id)"
+          >
+            {{ theme.label }}
+          </button>
+        </div>
+      </fieldset>
     </div>
 
     
@@ -32,10 +36,16 @@
           v-for="algo in algorithmOptions"
           :key="algo.id"
           :value="algo.id"
+          :disabled="algo.isPremium && !isPremiumUser"
         >
-          {{ algo.label }}
+          {{ algo.label }}{{ algo.isPremium ? ' 🔒' : '' }}
         </option>
       </select>
+      
+      <p v-if="!isPremiumUser" class="embed-premium-hint">
+        <BaseIcon name="lock" class="w-3 h-3 inline mr-1 align-middle" />
+        Dijkstra yêu cầu tài khoản Premium để nhúng.
+      </p>
     </div>
 
     
@@ -128,12 +138,36 @@
 </template>
 
 <script setup lang="ts">
+import { computed } from 'vue';
 import { useEmbedConfiguratorStore } from '../store/useEmbedConfiguratorStore';
+import { useAuthStore } from '../../auth/store/useAuthStore';
 import { EMBED_ALGORITHM_OPTIONS } from '../types/embed-widget.types';
 import type { EmbedTheme } from '../types/embed-widget.types';
 
 const store = useEmbedConfiguratorStore();
-const algorithmOptions = EMBED_ALGORITHM_OPTIONS;
+const authStore = useAuthStore();
+
+const isPremiumUser = computed(() => authStore.isAuthenticated && authStore.isPremium);
+
+// ─── EW-016: đánh dấu thuật toán premium (dijkstra) — disable cho user thường ───
+const PREMIUM_ALGO_IDS = new Set(['dijkstra']);
+
+// ─── EW-030: đồng bộ danh sách với VISUALIZER_MAP của EmbedWidgetView —
+// thêm quick-sort (đã có trong map nhưng thiếu trong options) ───
+const algorithmOptions = computed(() => {
+  const options = EMBED_ALGORITHM_OPTIONS.map((algo) => ({
+    ...algo,
+    isPremium: PREMIUM_ALGO_IDS.has(algo.id),
+  }));
+  const hasQuickSort = options.some((algo) => algo.id === 'quick-sort');
+  if (!hasQuickSort) {
+    const quickIndex = options.findIndex((algo) => algo.id === 'quicksort-recursion');
+    const quickSort = { id: 'quick-sort', label: 'Quick Sort', isPremium: false };
+    if (quickIndex >= 0) options.splice(quickIndex + 1, 0, quickSort);
+    else options.push(quickSort);
+  }
+  return options;
+});
 
 const themeOptions: { id: EmbedTheme; label: string }[] = [
   { id: 'dark', label: 'Dark' },
@@ -143,6 +177,8 @@ const themeOptions: { id: EmbedTheme; label: string }[] = [
 
 function onAlgorithmChange(event: Event): void {
   const target = event.target as HTMLSelectElement;
+  const algo = algorithmOptions.value.find((a) => a.id === target.value);
+  if (algo?.isPremium && !isPremiumUser.value) return;
   store.setAlgorithm(target.value);
 }
 

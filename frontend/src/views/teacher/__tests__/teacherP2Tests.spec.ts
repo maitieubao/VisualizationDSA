@@ -5,8 +5,14 @@ import { mount, flushPromises, type VueWrapper } from '@vue/test-utils';
 import { setActivePinia, createPinia } from 'pinia';
 import BaseIcon from '../../../shared/components/BaseIcon.vue';
 
+// LS-020: route có thể đổi giữa các test → dùng vi.hoisted object
+// (vi.doMock sau import không bao giờ có hiệu lực).
+const routeState = vi.hoisted(() => ({
+  route: { query: {}, params: {} },
+}));
+
 vi.mock('vue-router', () => ({
-  useRoute: () => ({ query: {}, params: {} }),
+  useRoute: () => routeState.route,
   useRouter: () => ({ push: vi.fn(), replace: vi.fn(), back: vi.fn() }),
 }));
 
@@ -22,7 +28,13 @@ vi.mock('./useTeacherApi', () => ({
   useTeacherApi: () => ({
     BASE_URL: 'http://localhost:5055',
     getAuthHeaders: () => ({ 'Content-Type': 'application/json', 'Authorization': 'Bearer fake-token' }),
-    formatTopic: (t: string) => ({ 'sorting': 'Sắp xếp', 'graph': 'Đồ thị', 'oop': 'Hướng đối tượng', 'solid': 'Nguyên lý SOLID', 'di': 'DI/IoC', 'array': 'Mảng', 'linked-list': 'Danh sách liên kết', 'design-patterns': 'Mẫu thiết kế' }[t] || t),
+    // TC-013: mock teacherRequest — đi qua global.fetch để mockFetch chặn được URL/method/body.
+    teacherRequest: async (url: string, init: RequestInit = {}) => {
+      const base = { 'Content-Type': 'application/json', 'Authorization': 'Bearer fake-token' };
+      const extra = (init.headers ?? {}) as Record<string, string>;
+      return globalThis.fetch(url, { ...init, headers: { ...base, ...extra } });
+    },
+    formatTopic: (t: string) => ({ 'sorting': 'Sắp xếp', 'graph': 'Đồ thị', 'oop': 'Hướng đối tượng', 'solid': 'Nguyên lý SOLID', 'di': 'DI/IoC', 'array': 'Mảng', 'linked-list': 'Danh sách liên kết', 'design-patterns': 'Mẫu thiết kế', 'DataStructure': 'Cấu trúc dữ liệu', 'Algorithm': 'Thuật toán', 'Sorting': 'Sắp xếp', 'Patterns': 'Mẫu thiết kế', 'SystemDesign': 'Thiết kế hệ thống' }[t] || t),
     formatDifficulty: (d: string) => ({ 'easy': 'Dễ', 'medium': 'Trung bình', 'hard': 'Khó' }[d] || d),
     formatDate: (d: string) => d,
     formatAttemptDate: (d: string) => d,
@@ -35,21 +47,38 @@ vi.mock('../../../features/admin/services/adminApi', () => ({
   fetchAnalytics: vi.fn(async () => ({ quizTitles: {}, codelabTitles: {} })),
 }));
 
+// LS-020: store curriculum dùng state hoisted — test có thể nạp data thật
+// (không mock curriculum:null cố định) và assert call args của fetchCurriculum.
+const curriculumStoreState = vi.hoisted(() => ({
+  curriculum: null as unknown,
+  loading: false,
+  saving: false,
+  expanded: true,
+  fetchCurriculum: vi.fn(),
+  createModuleApi: vi.fn(),
+  updateModuleApi: vi.fn(),
+  deleteModuleApi: vi.fn(),
+  createItemApi: vi.fn(),
+  updateItemApi: vi.fn(),
+  deleteItemApi: vi.fn(),
+  getModule: vi.fn(() => null),
+}));
+
 vi.mock('@/stores/classroomCurriculum', () => ({
   useClassroomCurriculumStore: () => ({
-    loading: false,
-    saving: false,
-    curriculum: null,
-    isModuleExpanded: () => false,
+    loading: curriculumStoreState.loading,
+    saving: curriculumStoreState.saving,
+    curriculum: curriculumStoreState.curriculum,
+    isModuleExpanded: () => curriculumStoreState.expanded,
     toggleModuleExpanded: vi.fn(),
-    fetchCurriculum: vi.fn(),
-    createModuleApi: vi.fn(),
-    updateModuleApi: vi.fn(),
-    deleteModuleApi: vi.fn(),
-    createItemApi: vi.fn(),
-    updateItemApi: vi.fn(),
-    deleteItemApi: vi.fn(),
-    getModule: () => null,
+    fetchCurriculum: curriculumStoreState.fetchCurriculum,
+    createModuleApi: curriculumStoreState.createModuleApi,
+    updateModuleApi: curriculumStoreState.updateModuleApi,
+    deleteModuleApi: curriculumStoreState.deleteModuleApi,
+    createItemApi: curriculumStoreState.createItemApi,
+    updateItemApi: curriculumStoreState.updateItemApi,
+    deleteItemApi: curriculumStoreState.deleteItemApi,
+    getModule: curriculumStoreState.getModule,
   }),
 }));
 
@@ -148,6 +177,13 @@ describe('Teacher Panel — P2 Tests', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     localStorage.clear();
+    routeState.route = { query: {}, params: {} };
+    curriculumStoreState.curriculum = null;
+    curriculumStoreState.loading = false;
+    curriculumStoreState.saving = false;
+    // TC-038: stub confirm/alert global để test xóa không văng native dialog.
+    vi.spyOn(window, 'confirm').mockReturnValue(true);
+    vi.spyOn(window, 'alert').mockImplementation(() => {});
     mockFetch.mockReset();
     mockFetch.mockImplementation(async (url: string) => {
       if (url.includes('/analytics/quizzes')) {
@@ -187,6 +223,7 @@ describe('Teacher Panel — P2 Tests', () => {
   afterEach(() => {
     wrapper?.unmount();
     wrapper = null;
+    vi.restoreAllMocks();
   });
 
   // ─── US-TEACH-003 (P2): Create quiz ─────────────────────────────────
@@ -216,7 +253,9 @@ describe('Teacher Panel — P2 Tests', () => {
       expect(topicSelect.exists()).toBe(true);
     });
 
-    it('submits quiz form with POST method', async () => {
+    // TC-035: assert URL + method + body deep-equal (không chỉ đếm POST calls).
+    // contract: POST /api/v1/concepts/quiz/manage + payload {title, topic, questions[{text, options, correctIndex}]}.
+    it('submits quiz form with exact URL, method and payload (TC-035)', async () => {
       const w = await mountQuizTab();
       await w.find('.btn-toggle-form').trigger('click');
       await nextTick();
@@ -241,10 +280,61 @@ describe('Teacher Panel — P2 Tests', () => {
       await flushPromises();
       await nextTick();
 
-      const postCalls = mockFetch.mock.calls.filter(
-        (call) => call[1] && (call[1] as RequestInit).method === 'POST'
+      const manageCalls = mockFetch.mock.calls.filter(
+        (call) => typeof call[0] === 'string' && call[0].endsWith('/api/v1/concepts/quiz/manage') && call[1]?.method === 'POST'
       );
-      expect(postCalls.length).toBeGreaterThan(0);
+      expect(manageCalls).toHaveLength(1);
+      const [url, init] = manageCalls[0] as [string, RequestInit];
+      expect(url).toBe('http://localhost:5055/api/v1/concepts/quiz/manage');
+      expect(init.method).toBe('POST');
+      const body = JSON.parse(String(init.body)) as Record<string, unknown>;
+      expect(body).toEqual({
+        id: '',
+        title: 'Test Quiz',
+        topic: 'sorting',
+        difficulty: 'medium',
+        xpReward: 50,
+        questions: [
+          { id: 'custom-q1', text: 'What is sorting?', options: ['A', 'B', 'C', 'D'], correctIndex: 0, explanation: '' },
+        ],
+      });
+    });
+
+    it('double-submit: 2 lần bấm submit khi đang gửi chỉ tạo 1 POST (TC-038)', async () => {
+      let resolveSlow: ((r: Response) => void) | undefined;
+      mockFetch.mockImplementation(async (url: string, init?: RequestInit) => {
+        if (init?.method === 'POST') {
+          await new Promise<Response>((resolve) => { resolveSlow = resolve; });
+          return { ok: true, json: async () => ({}) };
+        }
+        if (url.includes('/quiz/all')) return { ok: true, json: async () => [] };
+        return { ok: true, json: async () => ({}) };
+      });
+
+      const w = await mountQuizTab();
+      await w.find('.btn-toggle-form').trigger('click');
+      await nextTick();
+
+      await w.find('input[placeholder*="Cơ bản về danh sách liên kết"]').setValue('Slow Quiz');
+      await w.find('.form-select').setValue('sorting');
+      await w.findAll('input[placeholder*="Nội dung câu hỏi"]')[0].setValue('Q?');
+      const optionInputs = w.findAll('.options-grid input[placeholder*="Đáp án"]');
+      await optionInputs[0].setValue('A');
+      await optionInputs[1].setValue('B');
+      await optionInputs[2].setValue('C');
+      await optionInputs[3].setValue('D');
+
+      const firstClick = w.find('.btn-submit').trigger('click');
+      const secondClick = w.find('.btn-submit').trigger('click');
+      await nextTick();
+
+      resolveSlow?.({ ok: true, json: async () => ({}) } as unknown as Response);
+      await Promise.all([firstClick, secondClick]);
+      await flushPromises();
+      await nextTick();
+
+      const postCalls = mockFetch.mock.calls.filter((call) => call[1]?.method === 'POST');
+      expect(postCalls).toHaveLength(1);
     });
   });
 
@@ -295,14 +385,15 @@ describe('Teacher Panel — P2 Tests', () => {
     });
   });
 
-  // ─── US-TEACH-005 (P2): Import Excel ────────────────────────────────
-  describe('US-TEACH-005 (P2): Import Excel', () => {
+  // ─── US-TEACH-005 (P2): Export Excel (TC-006t — import đã gỡ, đổi tên) ──
+  // TC-005t: mọi URL analytics phải là /api/v1/classrooms/* (có segment v1)
+  describe('US-TEACH-005 (P2): Export Excel', () => {
     it('renders "Xuất Excel" button when classroom is selected and data loaded', async () => {
       mockFetch.mockImplementation(async (url: string) => {
-        if (url.includes('/Classroom/mine')) {
+        if (url.includes('/api/v1/classrooms/mine')) {
           return { ok: true, json: async () => [{ id: 'c1', name: 'Class A' }] };
         }
-        if (url.includes('/statistics')) {
+        if (url.includes('/api/v1/classrooms/') && url.includes('/statistics')) {
           return { ok: true, json: async () => ({
             totalStudents: 10,
             avgScore: 70.0,
@@ -315,10 +406,10 @@ describe('Teacher Panel — P2 Tests', () => {
             ],
           }) };
         }
-        if (url.includes('/export-excel')) {
+        if (url.includes('/api/v1/classrooms/') && url.includes('/export-excel')) {
           return { ok: true, blob: async () => new Blob(['test']) };
         }
-        return { ok: true, json: async () => ({}) };
+        return { ok: false, status: 404, json: async () => ({}) };
       });
 
       const w = await mountAnalyticsTab();
@@ -336,12 +427,12 @@ describe('Teacher Panel — P2 Tests', () => {
       expect(buttonTexts.some((t) => t.includes('Excel'))).toBe(true);
     });
 
-    it('clicking "Xuất Excel" triggers fetch to export endpoint', async () => {
+    it('clicking "Xuất Excel" fetches exact /api/v1/classrooms/{id}/export-excel (TC-005t)', async () => {
       mockFetch.mockImplementation(async (url: string) => {
-        if (url.includes('/Classroom/mine')) {
+        if (url.includes('/api/v1/classrooms/mine')) {
           return { ok: true, json: async () => [{ id: 'c1', name: 'Class A' }] };
         }
-        if (url.includes('/statistics')) {
+        if (url.includes('/api/v1/classrooms/') && url.includes('/statistics')) {
           return { ok: true, json: async () => ({
             totalStudents: 10,
             avgScore: 70.0,
@@ -352,34 +443,46 @@ describe('Teacher Panel — P2 Tests', () => {
             studentScores: [],
           }) };
         }
-        if (url.includes('/export-excel')) {
+        if (url.includes('/api/v1/classrooms/') && url.includes('/export-excel')) {
           return { ok: true, blob: async () => new Blob(['test']) };
         }
-        return { ok: true, json: async () => ({}) };
+        return { ok: false, status: 404, json: async () => ({}) };
       });
 
-      const w = await mountAnalyticsTab();
-      await flushPromises();
-      await nextTick();
+      const originalCreate = window.URL.createObjectURL;
+      const originalRevoke = window.URL.revokeObjectURL;
+      window.URL.createObjectURL = vi.fn(() => 'blob:mock') as unknown as typeof URL.createObjectURL;
+      window.URL.revokeObjectURL = vi.fn() as unknown as typeof URL.revokeObjectURL;
+      try {
+        const w = await mountAnalyticsTab();
+        await flushPromises();
+        await nextTick();
 
-      const classroomSelect = w.find('.form-select');
-      await classroomSelect.setValue('c1');
-      await classroomSelect.trigger('change');
-      await flushPromises();
-      await nextTick();
-      await flushPromises();
+        const classroomSelect = w.find('.form-select');
+        await classroomSelect.setValue('c1');
+        await classroomSelect.trigger('change');
+        await flushPromises();
+        await nextTick();
+        await flushPromises();
 
-      const excelButtons = w.findAll('button').filter((b) => b.text().includes('Excel'));
-      expect(excelButtons.length).toBeGreaterThan(0);
+        const excelButtons = w.findAll('button').filter((b) => b.text().includes('Excel'));
+        expect(excelButtons.length).toBeGreaterThan(0);
 
-      await excelButtons[0].trigger('click');
-      await flushPromises();
-      await nextTick();
+        await excelButtons[0].trigger('click');
+        await flushPromises();
+        await nextTick();
 
-      const exportCalls = mockFetch.mock.calls.filter(
-        (call) => typeof call[0] === 'string' && call[0].includes('export-excel')
-      );
-      expect(exportCalls.length).toBeGreaterThan(0);
+        const exportCalls = mockFetch.mock.calls.filter(
+          (call) => typeof call[0] === 'string' && call[0].includes('export-excel')
+        );
+        expect(exportCalls.length).toBeGreaterThan(0);
+        const [url] = exportCalls[0] as [string];
+        expect(url).toBe('http://localhost:5055/api/v1/classrooms/c1/export-excel');
+        expect(url).not.toContain('/api/Classroom');
+      } finally {
+        window.URL.createObjectURL = originalCreate;
+        window.URL.revokeObjectURL = originalRevoke;
+      }
     });
   });
 
@@ -598,7 +701,8 @@ describe('Teacher Panel — P2 Tests', () => {
       expect(submitBtn.text()).toContain('Cập nhật');
     });
 
-    it('submits with PUT method when editing existing quiz', async () => {
+    // TC-035: assert URL + method + body deep-equal cho PUT edit quiz.
+    it('submits with PUT /api/v1/concepts/quiz/manage/{id} and full payload when editing (TC-035)', async () => {
       const w = await mountQuizTab();
       await flushPromises();
       await nextTick();
@@ -613,9 +717,60 @@ describe('Teacher Panel — P2 Tests', () => {
       await nextTick();
 
       const putCalls = mockFetch.mock.calls.filter(
-        (call) => call[1] && (call[1] as RequestInit).method === 'PUT'
+        (call) => typeof call[0] === 'string' && call[0].endsWith('/api/v1/concepts/quiz/manage/q1') && call[1]?.method === 'PUT'
       );
-      expect(putCalls.length).toBeGreaterThan(0);
+      expect(putCalls).toHaveLength(1);
+      const [url, init] = putCalls[0] as [string, RequestInit];
+      expect(url).toBe('http://localhost:5055/api/v1/concepts/quiz/manage/q1');
+      expect(init.method).toBe('PUT');
+      const body = JSON.parse(String(init.body)) as Record<string, unknown>;
+      expect(body).toEqual({
+        id: 'q1',
+        title: 'Sorting Basics',
+        topic: 'sorting',
+        difficulty: 'easy',
+        xpReward: 50,
+        questions: [
+          { id: 'q1', text: 'What is bubble sort?', options: ['A', 'B', 'C', 'D'], correctIndex: 0, explanation: 'Explanation 1' },
+          { id: 'q2', text: 'What is merge sort?', options: ['A', 'B', 'C', 'D'], correctIndex: 1, explanation: 'Explanation 2' },
+        ],
+      });
+    });
+
+    // TC-038/TC-018: xóa quiz qua ConfirmModal → confirm → DELETE manage/{id};
+    // hủy → không fetch.
+    it('delete quiz: ConfirmModal confirm → DELETE /api/v1/concepts/quiz/manage/{id}; cancel → không gọi (TC-018/TC-038)', async () => {
+      const w = await mountQuizTab();
+      await flushPromises();
+      await nextTick();
+
+      await w.find('.btn-action--delete').trigger('click');
+      await nextTick();
+
+      const modal = w.find('.modal-overlay');
+      expect(modal.exists()).toBe(true);
+      expect(modal.text()).toContain('Xóa bài trắc nghiệm');
+
+      const confirmBtn = modal.findAll('button').find((b) => b.text().trim() === 'Xóa');
+      expect(confirmBtn).toBeTruthy();
+      await confirmBtn!.trigger('click');
+      await flushPromises();
+      await nextTick();
+
+      const deleteCalls = mockFetch.mock.calls.filter((call) => call[1]?.method === 'DELETE');
+      expect(deleteCalls).toHaveLength(1);
+      const [url] = deleteCalls[0] as [string];
+      expect(url).toBe('http://localhost:5055/api/v1/concepts/quiz/manage/q1');
+
+      // Hủy: click Xóa lần nữa → bấm nút "Hủy" trong modal → không gọi DELETE.
+      mockFetch.mockClear();
+      await w.find('.btn-action--delete').trigger('click');
+      await nextTick();
+      const cancelBtn = w.find('.modal-overlay').findAll('button').find((b) => b.text().trim() === 'Hủy');
+      await cancelBtn!.trigger('click');
+      await nextTick();
+      await flushPromises();
+      expect(mockFetch.mock.calls.some((call) => call[1]?.method === 'DELETE')).toBe(false);
     });
 
     it('cancel button closes the form and resets edit mode', async () => {
@@ -650,20 +805,18 @@ describe('Teacher Panel — P2 Tests', () => {
       expect(w.text()).toContain('Quản lý Chương trình học (Curriculum)');
     });
 
-    it('reads classroomId from route query param', async () => {
-      const mockUseRoute = vi.fn(() => ({ query: { classroomId: 'room-123' }, params: {} }));
-      vi.doMock('vue-router', () => ({
-        useRoute: mockUseRoute,
-        useRouter: () => ({ push: vi.fn(), replace: vi.fn(), back: vi.fn() }),
-      }));
+    it('reads classroomId từ route query param và gọi fetchCurriculum(classroomId, teacherId) (LS-020)', async () => {
+      routeState.route = { query: { classroomId: 'room-123' }, params: {} };
 
       const w = await mountTeacherPanel();
-      const curriculumTab = w.findAll('.pb-3').find((el) => el.text() === 'Chương trình học (Curriculum)');
-      await curriculumTab!.trigger('click');
-      await nextTick();
       await flushPromises();
+      await nextTick();
 
       expect(w.text()).toContain('Quản lý Chương trình học (Curriculum)');
+      expect(curriculumStoreState.fetchCurriculum).toHaveBeenCalled();
+      const [classroomId, teacherId] = curriculumStoreState.fetchCurriculum.mock.calls[0] as [string, string];
+      expect(classroomId).toBe('room-123');
+      expect(teacherId).toBe('teacher-001');
     });
 
     it('shows "Thêm Module" button in curriculum tab', async () => {
@@ -682,6 +835,30 @@ describe('Teacher Panel — P2 Tests', () => {
     it('renders empty state when no modules exist', async () => {
       const w = await mountCurriculumTab();
       expect(w.text()).toContain('Chưa có Module nào');
+    });
+
+    it('renders non-empty branch khi store có modules (LS-020 — không mock null cố định)', async () => {
+      curriculumStoreState.curriculum = {
+        classroomId: 'room-123',
+        classroomName: 'Lớp 12A1',
+        modules: [
+          {
+            id: 'mod-1',
+            classroomId: 'room-123',
+            title: 'Module Khởi Tạo',
+            description: 'Mô tả module',
+            orderIndex: 1,
+            isHidden: false,
+            unlockAt: null,
+            items: [],
+          },
+        ],
+      };
+      const w = await mountCurriculumTab();
+
+      expect(w.text()).toContain('Module Khởi Tạo');
+      expect(w.text()).not.toContain('Chưa có Module nào');
+      expect(w.text()).toContain('0 bài');
     });
 
     it('renders "Import từ Khóa học" button', async () => {
@@ -714,12 +891,37 @@ describe('Teacher Panel — P2 Tests', () => {
       expect(w.text()).toContain('Vui lòng chọn một lớp học');
     });
 
-    it('renders metric cards when classroom is selected', async () => {
+    // TC-005t: analytics phải dùng /api/v1/classrooms (URL cũ /api/Classroom 404).
+    it('loads classrooms via GET /api/v1/classrooms/mine (TC-005t)', async () => {
       mockFetch.mockImplementation(async (url: string) => {
-        if (url.includes('/Classroom/mine')) {
+        if (url.includes('/api/v1/classrooms/mine')) {
           return { ok: true, json: async () => [{ id: 'c1', name: 'Class A' }] };
         }
-        if (url.includes('/Classroom/') && url.includes('/statistics')) {
+        if (url.includes('/api/v1/classrooms/') && url.includes('/statistics')) {
+          return { ok: true, json: async () => ({
+            totalStudents: 25, avgScore: 75.5, passRate: 80.0, completionRate: 0.65,
+            quizTitles: { q1: 'Sorting Quiz' }, codelabTitles: {}, studentScores: [],
+          }) };
+        }
+        return { ok: false, status: 404, json: async () => ({}) };
+      });
+
+      const w = await mountAnalyticsTab();
+      await flushPromises();
+      await nextTick();
+
+      const mineCall = mockFetch.mock.calls.find((call) => String(call[0]).includes('classrooms/mine'));
+      expect(mineCall).toBeTruthy();
+      expect(String(mineCall![0])).toBe('http://localhost:5055/api/v1/classrooms/mine');
+      expect(String(mineCall![0])).not.toContain('/api/Classroom');
+    });
+
+    it('renders metric cards when classroom is selected + completionRate ×100 (TC-007t)', async () => {
+      mockFetch.mockImplementation(async (url: string) => {
+        if (url.includes('/api/v1/classrooms/mine')) {
+          return { ok: true, json: async () => [{ id: 'c1', name: 'Class A' }] };
+        }
+        if (url.includes('/api/v1/classrooms/') && url.includes('/statistics')) {
           return { ok: true, json: async () => ({
             totalStudents: 25,
             avgScore: 75.5,
@@ -732,7 +934,7 @@ describe('Teacher Panel — P2 Tests', () => {
             ],
           }) };
         }
-        return { ok: true, json: async () => ({}) };
+        return { ok: false, status: 404, json: async () => ({}) };
       });
 
       const w = await mountAnalyticsTab();
@@ -750,14 +952,20 @@ describe('Teacher Panel — P2 Tests', () => {
       expect(w.text()).toContain('Tỷ lệ hoàn thành');
       expect(w.text()).toContain('Điểm trung bình');
       expect(w.text()).toContain('Tỷ lệ đạt');
+
+      // TC-007t: completionRate mock 0.65 (thang 0-1) → UI phải ×100 → "65.0%".
+      expect(w.text()).toContain('65.0%');
+
+      const statsCall = mockFetch.mock.calls.find((call) => String(call[0]).includes('/statistics'));
+      expect(String(statsCall![0])).toBe('http://localhost:5055/api/v1/classrooms/c1/statistics');
     });
 
     it('renders student scores table when data is available', async () => {
       mockFetch.mockImplementation(async (url: string) => {
-        if (url.includes('/Classroom/mine')) {
+        if (url.includes('/api/v1/classrooms/mine')) {
           return { ok: true, json: async () => [{ id: 'c1', name: 'Class A' }] };
         }
-        if (url.includes('/Classroom/') && url.includes('/statistics')) {
+        if (url.includes('/api/v1/classrooms/') && url.includes('/statistics')) {
           return { ok: true, json: async () => ({
             totalStudents: 2,
             avgScore: 80.0,
@@ -771,7 +979,7 @@ describe('Teacher Panel — P2 Tests', () => {
             ],
           }) };
         }
-        return { ok: true, json: async () => ({}) };
+        return { ok: false, status: 404, json: async () => ({}) };
       });
 
       const w = await mountAnalyticsTab();
@@ -883,7 +1091,126 @@ describe('Teacher Panel — P2 Tests', () => {
       await flushPromises();
       await nextTick();
 
-      expect(w.text()).toContain('Không tìm thấy học viên nào');
+      expect(w.text()).toContain('Chưa có học viên nào trong hệ thống');
+    });
+
+    // TC-038: Student role bị backend từ chối (403) → tab hiện empty state, không crash.
+    it('handles 403 from users endpoint gracefully (empty state, no crash) (TC-038)', async () => {
+      mockFetch.mockImplementation(async () => ({
+        ok: false,
+        status: 403,
+        statusText: 'Forbidden',
+        json: async () => ({ message: 'Forbidden' }),
+      }));
+
+      const w = await mountStudentTab();
+      await flushPromises();
+      await nextTick();
+
+      expect(w.text()).toContain('Chưa có học viên nào trong hệ thống');
+    });
+
+    // TC-037: click "Xem chi tiết" → 2 fetch đúng contract
+    // (/concepts/courses?userId= + /concepts/quiz/history?userId=) + render attempts/passed.
+    it('opens student detail modal with 2 contract fetches and renders attempts (TC-037)', async () => {
+      mockFetch.mockImplementation(async (url: string) => {
+        if (url.includes('/admin/users') || url.includes('/concepts/admin/users')) {
+          return { ok: true, json: async () => ({ users: mockStudents, total: 2 }) };
+        }
+        if (url.includes('/api/v1/concepts/courses?userId=s1')) {
+          return { ok: true, json: async () => [
+            { id: 'c1', title: 'Sorting Course', progressPercent: 40, difficulty: 'Trung bình', completedLessons: 2, totalLessons: 5 },
+          ] };
+        }
+        if (url.includes('/api/v1/concepts/quiz/history?userId=s1')) {
+          return { ok: true, json: async () => [
+            { id: 'a1', quizTitle: 'Sorting Basics', attemptedAt: '2024-07-01T10:00:00Z', score: 8, maxScore: 10, passed: true },
+            { id: 'a2', quizTitle: 'Graph Theory', attemptedAt: '2024-07-02T10:00:00Z', score: 3, maxScore: 10, passed: false },
+          ] };
+        }
+        return { ok: true, json: async () => ({}) };
+      });
+
+      const w = await mountStudentTab();
+      await flushPromises();
+      await nextTick();
+
+      const detailBtn = w.findAll('button').find((b) => b.text().includes('Xem chi tiết'));
+      expect(detailBtn).toBeTruthy();
+      await detailBtn!.trigger('click');
+      await flushPromises();
+      await nextTick();
+
+      const courseCall = mockFetch.mock.calls.find((call) => String(call[0]).includes('/api/v1/concepts/courses?userId=s1'));
+      const historyCall = mockFetch.mock.calls.find((call) => String(call[0]).includes('/api/v1/concepts/quiz/history?userId=s1'));
+      expect(courseCall).toBeTruthy();
+      expect(historyCall).toBeTruthy();
+      expect(String(courseCall![0])).toBe('http://localhost:5055/api/v1/concepts/courses?userId=s1');
+      expect(String(historyCall![0])).toBe('http://localhost:5055/api/v1/concepts/quiz/history?userId=s1');
+
+      expect(w.text()).toContain('Chi tiết tiến trình: alice');
+      expect(w.text()).toContain('Sorting Course');
+      expect(w.text()).toContain('Sorting Basics');
+      expect(w.text()).toContain('Graph Theory');
+      expect(w.text()).toContain('8 / 10');
+      expect(w.text()).toContain('ĐẠT');
+      expect(w.text()).toContain('HỎNG');
+    });
+
+    // TC-037: debounce tìm kiếm 400ms (fake timers) trước khi gọi loadStudents.
+    it('debounces search input 400ms before refetching students (TC-037)', async () => {
+      vi.useFakeTimers();
+      try {
+        const w = await mountStudentTab();
+        await flushPromises();
+        await nextTick();
+
+        mockFetch.mockClear();
+        const searchInput = w.find('input[placeholder*="Tìm theo email"]');
+        await searchInput.setValue('ali');
+        await nextTick();
+
+        const hasSearchCall = () => mockFetch.mock.calls.some((call) => String(call[0]).includes('search='));
+        expect(hasSearchCall()).toBe(false);
+
+        await vi.advanceTimersByTimeAsync(399);
+        expect(hasSearchCall()).toBe(false);
+
+        await vi.advanceTimersByTimeAsync(1);
+        const searchCall = mockFetch.mock.calls.find((call) => String(call[0]).includes('search='));
+        expect(searchCall).toBeTruthy();
+        expect(String(searchCall![0])).toBe('http://localhost:5055/api/v1/concepts/admin/users?page=1&pageSize=10&search=ali');
+      } finally {
+        vi.useRealTimers();
+      }
+    });
+
+    // TC-037: pagination — "Sau" gọi loadStudents với page=2.
+    it('paginates: clicking "Sau" refetches with page=2 (TC-037)', async () => {
+      mockFetch.mockImplementation(async (url: string) => {
+        if (url.includes('/admin/users') || url.includes('/concepts/admin/users')) {
+          const page = new URL(String(url)).searchParams.get('page') ?? '1';
+          if (page === '2') {
+            return { ok: true, json: async () => ({ users: [mockStudents[0]], total: 15 }) };
+          }
+          return { ok: true, json: async () => ({ users: mockStudents, total: 15 }) };
+        }
+        return { ok: true, json: async () => ({}) };
+      });
+
+      const w = await mountStudentTab();
+      await flushPromises();
+      await nextTick();
+
+      const nextBtn = w.findAll('button').find((b) => b.text().trim() === 'Sau');
+      expect(nextBtn).toBeTruthy();
+      await nextBtn!.trigger('click');
+      await flushPromises();
+      await nextTick();
+
+      const page2Call = mockFetch.mock.calls.find((call) => String(call[0]).includes('page=2'));
+      expect(page2Call).toBeTruthy();
+      expect(String(page2Call![0])).toContain('/api/v1/concepts/admin/users?page=2&pageSize=10');
     });
   });
 });

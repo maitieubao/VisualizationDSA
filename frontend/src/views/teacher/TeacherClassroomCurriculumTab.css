@@ -2,12 +2,81 @@
   position: relative;
 }
 
+/* LS-014: banner lỗi chung */
+.error-banner {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  margin-bottom: 16px;
+  border-radius: 12px;
+  border: 1px solid color-mix(in srgb, var(--color-accent-red) 40%, transparent);
+  background: color-mix(in srgb, var(--color-accent-red) 12%, transparent);
+  color: var(--color-accent-red);
+  font-size: 13px;
+}
+
+.error-banner__close {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 6px;
+  border: none;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+}
+
+.error-banner__close:hover {
+  background: color-mix(in srgb, var(--color-accent-red) 20%, transparent);
+}
+
 .module-accordion {
   transition: box-shadow 0.2s ease;
 }
 
 .module-accordion:hover {
   box-shadow: 0 8px 30px rgba(15, 23, 42, 0.5);
+}
+
+/* LS-034: class module-hidden dùng trong template nhưng chưa có CSS */
+.module-hidden {
+  opacity: 0.6;
+}
+
+.module-accordion.drag-over-module {
+  border-color: var(--color-accent-primary);
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--color-accent-primary) 50%, transparent);
+}
+
+.module-drag-handle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  border: none;
+  background: transparent;
+  color: var(--color-text-muted);
+  cursor: grab;
+  flex-shrink: 0;
+}
+
+.module-drag-handle:hover {
+  color: var(--color-accent-primary-light);
+  background: color-mix(in srgb, var(--color-accent-primary) 20%, transparent);
+}
+
+.module-drag-handle:active {
+  cursor: grabbing;
+}
+
+.module-drag-handle:focus-visible {
+  outline: 2px solid var(--color-accent-primary);
+  outline-offset: 2px;
 }
 
 .item-wrapper {
@@ -20,4 +89,20 @@
 
 .drop-zone {
   transition: border-color 0.2s ease, background 0.2s ease;
+}
+
+/* LS-034: animate-slide-down dùng trong template nhưng chưa có CSS */
+.animate-slide-down {
+  animation: moduleSlideDown 0.2s ease-out;
+}
+
+@keyframes moduleSlideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }

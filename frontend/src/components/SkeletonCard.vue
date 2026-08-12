@@ -1,5 +1,6 @@
 <template>
-  <div class="skeleton-card">
+  <div class="skeleton-card" aria-hidden="true">
+    <!-- CU-020: aria-hidden — skeleton placeholder không cần đọc bởi screen reader -->
     <SkeletonLoader variant="rect" height="16px" width="60%" />
     <SkeletonLoader variant="text" width="90%" />
     <SkeletonLoader variant="text" width="75%" />

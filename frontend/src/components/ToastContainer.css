@@ -129,3 +129,15 @@
 .toast-slide-move {
   transition: transform 0.3s ease;
 }
+
+/* CU-032: tắt chuyển động toast khi user yêu cầu giảm chuyển động */
+@media (prefers-reduced-motion: reduce) {
+  .toast-progress {
+    animation: none;
+  }
+  .toast-slide-enter-active,
+  .toast-slide-leave-active,
+  .toast-slide-move {
+    transition: none;
+  }
+}

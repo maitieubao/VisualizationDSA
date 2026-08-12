@@ -421,10 +421,14 @@ describe('Auth Detail P2 Tests', () => {
   });
 
   it('AU-005 (P2): Close modal — Escape key closes', async () => {
-    mount(LoginModal, {
-      props: { visible: true },
+    const wrapper = mount(LoginModal, {
+      props: { visible: false },
       global: { stubs: { BaseIcon: { template: '<span />' } } },
     });
+    await flushPromises();
+
+    // Watch visible (false → true) mới đăng ký keydown listener.
+    await wrapper.setProps({ visible: true });
     await flushPromises();
 
     const bodyText = document.body.textContent || '';
@@ -433,6 +437,10 @@ describe('Auth Detail P2 Tests', () => {
     const event = new KeyboardEvent('keydown', { key: 'Escape' });
     window.dispatchEvent(event);
     await flushPromises();
+
+    // PM-049: phải assertion — Escape bắn sự kiện close
+    expect(wrapper.emitted('close')).toBeTruthy();
+    expect(wrapper.emitted('close')).toHaveLength(1);
   });
 
   it('AU-006 (P2): Demo account — demo credentials displayed', async () => {
@@ -655,7 +663,7 @@ describe('HTML Playground P2 Tests', () => {
 
     store.setSourceFile('html', '<button id="btn">Click</button>');
     store.setSourceFile('css', 'button { background: blue; }');
-    store.setSourceFile('js', 'document.getElementById("btn").textContent = "Clicked";');
+    store.setSourceFile('javascript', 'document.getElementById("btn").textContent = "Clicked";');
 
     expect(store.documentHtml).toContain('<button id="btn">Click</button>');
     expect(store.documentHtml).toContain('button { background: blue; }');
@@ -679,7 +687,7 @@ describe('HTML Playground P2 Tests', () => {
 
     store.setSourceFile('html', '<h1>Custom</h1>');
     store.setSourceFile('css', 'h1 { font-size: 50px; }');
-    store.setSourceFile('js', 'alert("test");');
+    store.setSourceFile('javascript', 'alert("test");');
 
     store.resetToDefault();
 
@@ -697,7 +705,7 @@ describe('HTML Playground P2 Tests', () => {
     expect(encoded).toBeTruthy();
     expect(typeof encoded).toBe('string');
 
-    const decoded = PlaygroundUrlCodec.decode(encoded);
+    const decoded = PlaygroundUrlCodec.decode(encoded as string);
     expect(decoded).not.toBeNull();
     expect(decoded?.html).toBe('<h1>Shared</h1>');
     expect(decoded?.css).toBe('h1 { color: green; }');

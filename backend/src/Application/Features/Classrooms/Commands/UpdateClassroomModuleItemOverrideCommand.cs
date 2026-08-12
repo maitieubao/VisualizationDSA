@@ -13,11 +13,14 @@ namespace VisualizationDSA.Application.Features.Classrooms.Commands
     {
         public Guid ClassroomId { get; set; }
         public Guid ModuleItemId { get; set; }
-        public Guid UserId { get; set; } 
+        public Guid UserId { get; set; }
         public DateTime? OpenAt { get; set; }
         public DateTime? DueAt { get; set; }
         public int? MaxAttempts { get; set; }
         public bool IsHiddenForStudent { get; set; }
+        public Guid? PrerequisiteItemId { get; set; }
+        public bool IsSequential { get; set; } = true;
+        public bool IsRequired { get; set; } = true;
     }
 
     public class UpdateClassroomModuleItemOverrideValidator : AbstractValidator<UpdateClassroomModuleItemOverrideCommand>
@@ -45,42 +48,54 @@ namespace VisualizationDSA.Application.Features.Classrooms.Commands
 
         public async Task<bool> Handle(UpdateClassroomModuleItemOverrideCommand request, CancellationToken cancellationToken)
         {
-            
             var classroom = await _context.Classrooms
                 .FirstOrDefaultAsync(c => c.Id == request.ClassroomId, cancellationToken);
 
             if (classroom == null)
-            {
                 throw new ArgumentException("Classroom not found");
-            }
 
             if (classroom.OwnerTeacherId != request.UserId)
-            {
                 throw new UnauthorizedAccessException("Only the owner teacher can update classroom overrides");
-            }
 
-            
-            var moduleItem = await _context.ModuleItems
-                .FirstOrDefaultAsync(m => m.Id == request.ModuleItemId, cancellationToken);
+            // LS-009/LS-024: validate item thuộc classroom TRƯỚC khi ghi override —
+            // trước đây chấp nhận ModuleItem của lớp khác (teacher gán override item lớp khác).
+            var item = await _context.ClassroomModuleItems
+                .Include(i => i.Module)
+                .FirstOrDefaultAsync(i => i.Id == request.ModuleItemId && !i.IsDeleted, cancellationToken);
 
-            if (moduleItem == null)
-            {
+            if (item == null)
                 throw new ArgumentException("ModuleItem not found");
-            }
+
+            if (item.Module.ClassroomId != request.ClassroomId)
+                throw new UnauthorizedAccessException("ModuleItem does not belong to this classroom");
 
             var itemOverride = await _context.ClassroomModuleItemOverrides
                 .FirstOrDefaultAsync(o => o.ClassroomId == request.ClassroomId && o.ModuleItemId == request.ModuleItemId, cancellationToken);
 
             if (itemOverride == null)
             {
-                
-                itemOverride = new ClassroomModuleItemOverride(request.ClassroomId, request.ModuleItemId, request.OpenAt, request.DueAt, request.MaxAttempts, request.IsHiddenForStudent);
+                itemOverride = new ClassroomModuleItemOverride(
+                    request.ClassroomId,
+                    request.ModuleItemId,
+                    request.OpenAt,
+                    request.DueAt,
+                    request.MaxAttempts,
+                    request.IsHiddenForStudent,
+                    request.PrerequisiteItemId,
+                    request.IsSequential,
+                    request.IsRequired);
                 _context.ClassroomModuleItemOverrides.Add(itemOverride);
             }
             else
             {
-                
-                itemOverride.Update(request.OpenAt, request.DueAt, request.MaxAttempts, request.IsHiddenForStudent);
+                itemOverride.Update(
+                    request.OpenAt,
+                    request.DueAt,
+                    request.MaxAttempts,
+                    request.IsHiddenForStudent,
+                    request.PrerequisiteItemId,
+                    request.IsSequential,
+                    request.IsRequired);
             }
 
             await _context.SaveChangesAsync(cancellationToken);

@@ -7,7 +7,11 @@ import EmbedConfiguratorSidebar from '../../embed-widget/components/EmbedConfigu
 import LiveWidgetPreview from '../../embed-widget/components/LiveWidgetPreview.vue';
 import EmbedCodeSnippet from '../../embed-widget/components/EmbedCodeSnippet.vue';
 import { useInputStore } from '../store/useInputStore';
+import { useAnimationStore } from '../../animation-engine/store/useAnimationStore';
 import { useEmbedConfiguratorStore } from '../../embed-widget/store/useEmbedConfiguratorStore';
+
+// AL-049: prop algorithmId là bắt buộc — mọi mount phải truyền.
+const DEFAULT_PROPS = { algorithmId: 'bubble-sort' };
 
 describe('CI-005 (P2): Element count', () => {
   beforeEach(() => {
@@ -15,8 +19,9 @@ describe('CI-005 (P2): Element count', () => {
     vi.restoreAllMocks();
   });
 
-  it('displays "5 / 15" when 5 elements are entered', async () => {
+  it('displays "5 / 50" when 5 elements are entered (AL-031: limit theo bubble-sort)', async () => {
     const wrapper = mount(CustomInputForm, {
+      props: DEFAULT_PROPS,
       global: {
         stubs: { BaseIcon: { template: '<span />' } },
       },
@@ -27,14 +32,15 @@ describe('CI-005 (P2): Element count', () => {
 
     const store = useInputStore();
     expect(store.elementCount).toBe(5);
-    expect(store.maxLimit).toBe(15);
+    expect(store.maxLimit).toBe(50); // AL-031: setAlgorithmLimit('bubble-sort')
 
     const counterText = wrapper.text();
-    expect(counterText).toContain('5 / 15');
+    expect(counterText).toContain('5 / 50');
   });
 
   it('updates element count dynamically as user types', async () => {
     const wrapper = mount(CustomInputForm, {
+      props: DEFAULT_PROPS,
       global: {
         stubs: { BaseIcon: { template: '<span />' } },
       },
@@ -43,20 +49,21 @@ describe('CI-005 (P2): Element count', () => {
     const textarea = wrapper.find('textarea');
 
     await textarea.setValue('10, 20');
-    expect(wrapper.text()).toContain('2 / 15');
+    expect(wrapper.text()).toContain('2 / 50');
 
     await textarea.setValue('1, 2, 3, 4, 5, 6, 7, 8');
-    expect(wrapper.text()).toContain('8 / 15');
+    expect(wrapper.text()).toContain('8 / 50');
   });
 
-  it('shows 0 / 15 when input is empty', () => {
+  it('shows 0 / 50 when input is empty', () => {
     const wrapper = mount(CustomInputForm, {
+      props: DEFAULT_PROPS,
       global: {
         stubs: { BaseIcon: { template: '<span />' } },
       },
     });
 
-    expect(wrapper.text()).toContain('0 / 15');
+    expect(wrapper.text()).toContain('0 / 50');
   });
 });
 
@@ -66,8 +73,9 @@ describe('CI-007 (P2): Clear input', () => {
     vi.restoreAllMocks();
   });
 
-  it('clear button resets rawText to empty', async () => {
+  it('AL-007: click nút "Xóa Trắng" thật → store.rawText rỗng + form reset', async () => {
     const wrapper = mount(CustomInputForm, {
+      props: DEFAULT_PROPS,
       global: {
         stubs: { BaseIcon: { template: '<span />' } },
       },
@@ -75,11 +83,17 @@ describe('CI-007 (P2): Clear input', () => {
 
     const textarea = wrapper.find('textarea');
     await textarea.setValue('5, 3, 8, 1');
+    expect(wrapper.text()).toContain('4 / 50');
+
+    const clearButton = wrapper.findAll('button').find((b) => b.text() === 'Xóa Trắng')!;
+    expect(clearButton).toBeTruthy();
+    await clearButton.trigger('click');
+    await wrapper.vm.$nextTick();
 
     const store = useInputStore();
-    expect(store.rawText).toBe('5, 3, 8, 1');
-
-    const clearButton = wrapper.find('button', { text: 'Xóa Trắng' });
+    expect(store.rawText).toBe('');
+    expect(store.elementCount).toBe(0);
+    expect(wrapper.text()).toContain('0 / 50');
   });
 
   it('store.clear() resets all state', () => {
@@ -97,6 +111,7 @@ describe('CI-007 (P2): Clear input', () => {
 
   it('clear button exists in the form', () => {
     const wrapper = mount(CustomInputForm, {
+      props: DEFAULT_PROPS,
       global: {
         stubs: { BaseIcon: { template: '<span />' } },
       },
@@ -114,14 +129,16 @@ describe('CI-008 (P2): Run visualization', () => {
     vi.restoreAllMocks();
   });
 
-  it('submitCustomInput sets isLoading and calls animationStore.loadResult', async () => {
-    vi.spyOn(globalThis, 'fetch').mockResolvedValue(
-      new Response(JSON.stringify({
-        algorithmId: 'bubble-sort',
-        pseudoCode: ['line1'],
-        frames: [{ stepId: 1, activeLine: 0, explanation: 'test', dataState: [1, 2], highlights: { compare: [], swap: [], sorted: [] } }],
-      }), { status: 200 }),
-    );
+  it('AL-023: submitCustomInput gọi animationStore.loadResult với payload API thật', async () => {
+    const payload = {
+      algorithmId: 'bubble-sort',
+      pseudoCode: ['line1'],
+      frames: [{ stepId: 1, activeLine: 0, explanation: 'test', dataState: [1, 2], highlights: { compare: [], swap: [], sorted: [] } }],
+    };
+    vi.spyOn(globalThis, 'fetch').mockResolvedValue(new Response(JSON.stringify(payload), { status: 200 }));
+
+    const animStore = useAnimationStore();
+    const loadResultSpy = vi.spyOn(animStore, 'loadResult').mockImplementation(() => {});
 
     const store = useInputStore();
     store.rawText = '5, 3, 8';
@@ -129,10 +146,18 @@ describe('CI-008 (P2): Run visualization', () => {
     await store.submitCustomInput('bubble-sort');
 
     expect(store.isLoading).toBe(false);
+    expect(loadResultSpy).toHaveBeenCalledTimes(1);
+    const result = loadResultSpy.mock.calls[0][0];
+    expect(result.algorithmId).toBe('bubble-sort');
+    expect(result.pseudoCode).toEqual(['line1']);
+    expect(result.frames).toHaveLength(1);
+    expect(result.frames[0].dataState).toEqual([1, 2]);
+    loadResultSpy.mockRestore();
   });
 
   it('execute button is disabled when canExecute is false', () => {
     const wrapper = mount(CustomInputForm, {
+      props: DEFAULT_PROPS,
       global: {
         stubs: { BaseIcon: { template: '<span />' } },
       },
@@ -149,6 +174,7 @@ describe('CI-008 (P2): Run visualization', () => {
 
   it('execute button is enabled when input is valid', async () => {
     const wrapper = mount(CustomInputForm, {
+      props: DEFAULT_PROPS,
       global: {
         stubs: { BaseIcon: { template: '<span />' } },
       },
@@ -192,6 +218,7 @@ describe('CI-009 (P2): Loading state', () => {
 
   it('textarea is readonly when isLoading is true', async () => {
     const wrapper = mount(CustomInputForm, {
+      props: DEFAULT_PROPS,
       global: {
         stubs: { BaseIcon: { template: '<span />' } },
       },
@@ -208,6 +235,7 @@ describe('CI-009 (P2): Loading state', () => {
 
   it('spinner icon appears when loading', async () => {
     const wrapper = mount(CustomInputForm, {
+      props: DEFAULT_PROPS,
       global: {
         stubs: { BaseIcon: { template: '<span />' } },
       },
@@ -264,6 +292,7 @@ describe('CI-010 (P2): API error', () => {
     await store.submitCustomInput('bubble-sort');
 
     const wrapper = mount(CustomInputForm, {
+      props: DEFAULT_PROPS,
       global: {
         stubs: { BaseIcon: { template: '<span />' } },
       },
@@ -279,8 +308,11 @@ describe('CI-011 (P2): Fallback', () => {
     vi.restoreAllMocks();
   });
 
-  it('uses dummy fallback when API fails', async () => {
+  it('AL-023: uses dummy fallback thật khi API fails — loadResult nhận fallback dummy', async () => {
     vi.spyOn(globalThis, 'fetch').mockRejectedValue(new Error('Network error'));
+
+    const animStore = useAnimationStore();
+    const loadResultSpy = vi.spyOn(animStore, 'loadResult').mockImplementation(() => {});
 
     const store = useInputStore();
     store.rawText = '5, 3, 8';
@@ -289,12 +321,21 @@ describe('CI-011 (P2): Fallback', () => {
 
     expect(store.apiErrorMessage).not.toBe('');
     expect(store.isLoading).toBe(false);
+    expect(loadResultSpy).toHaveBeenCalledTimes(1);
+    const fallback = loadResultSpy.mock.calls[0][0];
+    expect(fallback.algorithmId).toBe('bubble-sort');
+    expect(fallback.frames.length).toBeGreaterThan(0);
+    expect(Array.isArray(fallback.pseudoCode)).toBe(true);
+    loadResultSpy.mockRestore();
   });
 
-  it('uses dummy fallback when API returns non-ok status', async () => {
+  it('AL-023: uses dummy fallback thật khi API trả HTTP error', async () => {
     vi.spyOn(globalThis, 'fetch').mockResolvedValue(
       new Response(JSON.stringify({ message: 'Bad Request' }), { status: 400 }),
     );
+
+    const animStore = useAnimationStore();
+    const loadResultSpy = vi.spyOn(animStore, 'loadResult').mockImplementation(() => {});
 
     const store = useInputStore();
     store.rawText = '5, 3, 8';
@@ -303,6 +344,9 @@ describe('CI-011 (P2): Fallback', () => {
 
     expect(store.apiErrorMessage).toContain('Máy chủ báo lỗi');
     expect(store.isLoading).toBe(false);
+    expect(loadResultSpy).toHaveBeenCalledTimes(1);
+    expect(loadResultSpy.mock.calls[0][0].algorithmId).toBe('bubble-sort');
+    loadResultSpy.mockRestore();
   });
 
   it('clears previous error before new submission', async () => {
@@ -321,6 +365,65 @@ describe('CI-011 (P2): Fallback', () => {
     await store.submitCustomInput('bubble-sort');
 
     expect(store.apiErrorMessage).toBe('');
+  });
+});
+
+describe('CI-013 (P0/P2): algorithmId wiring qua component (AL-024)', () => {
+  beforeEach(() => {
+    setActivePinia(createPinia());
+    vi.restoreAllMocks();
+  });
+
+  it('AL-024: mount CustomInputForm + click "Chạy Trực Quan" → body request chứa algorithmId từ prop', async () => {
+    const fetchSpy = vi.spyOn(globalThis, 'fetch').mockResolvedValue(
+      new Response(JSON.stringify({
+        algorithmId: 'quick-sort',
+        pseudoCode: ['l'],
+        frames: [{ stepId: 1, activeLine: 0, explanation: 't', dataState: [1], highlights: { compare: [], swap: [], sorted: [] } }],
+      }), { status: 200 }),
+    );
+
+    const wrapper = mount(CustomInputForm, {
+      props: { algorithmId: 'quick-sort' },
+      global: {
+        stubs: { BaseIcon: { template: '<span />' } },
+      },
+    });
+
+    await wrapper.find('textarea').setValue('5, 3, 8, 1');
+    const executeBtn = wrapper.findAll('button').find(b => b.text().includes('Chạy Trực Quan'))!;
+    await executeBtn.trigger('click');
+    await flushPromises();
+
+    expect(fetchSpy).toHaveBeenCalledTimes(1);
+    const [, init] = fetchSpy.mock.calls[0];
+    const body = JSON.parse((init as RequestInit).body as string);
+    expect(body.algorithmId).toBe('quick-sort');
+    expect(body.rawInput).toBe('5, 3, 8, 1');
+    fetchSpy.mockRestore();
+  });
+
+  it('AL-024: submitCustomInput giữ nguyên algorithmId khác nhau giữa 2 lần chạy', async () => {
+    vi.spyOn(globalThis, 'fetch').mockResolvedValue(
+      new Response(JSON.stringify({
+        algorithmId: 'merge-sort',
+        pseudoCode: ['l'],
+        frames: [{ stepId: 1, activeLine: 0, explanation: 't', dataState: [1], highlights: { compare: [], swap: [], sorted: [] } }],
+      }), { status: 200 }),
+    );
+
+    const wrapper = mount(CustomInputForm, {
+      props: { algorithmId: 'merge-sort' },
+      global: {
+        stubs: { BaseIcon: { template: '<span />' } },
+      },
+    });
+    await wrapper.find('textarea').setValue('5, 3, 8');
+    await wrapper.findAll('button').find(b => b.text().includes('Chạy Trực Quan'))!.trigger('click');
+    await flushPromises();
+
+    const [, init] = vi.mocked(globalThis.fetch).mock.calls[0];
+    expect(JSON.parse((init as RequestInit).body as string).algorithmId).toBe('merge-sort');
   });
 });
 
@@ -494,7 +597,7 @@ describe('EW-008 (P2): Live preview', () => {
 
     const store = useEmbedConfiguratorStore();
     expect(store.showVcrControls).toBe(true);
-    expect(wrapper.find('.sim-vcr').exists()).toBe(true);
+    expect(wrapper.find('.preview-vcr').exists()).toBe(true);
   });
 
   it('preview hides VCR controls when disabled', async () => {
@@ -508,7 +611,7 @@ describe('EW-008 (P2): Live preview', () => {
     store.toggleVcrControls();
 
     await wrapper.vm.$nextTick();
-    expect(wrapper.find('.sim-vcr').exists()).toBe(false);
+    expect(wrapper.find('.preview-vcr').exists()).toBe(false);
   });
 });
 

@@ -28,6 +28,9 @@ namespace VisualizationDSA.Application.DTOs
         public bool IsArchived { get; set; }
         public DateTime CreatedAt { get; set; }
         public int StudentCount { get; set; }
+        // CR-042: vai trò của người gọi đối với lớp học ("Teacher"/"Student") — FE dùng
+        // hiển thị badge trong MyClassroomsView.
+        public string Role { get; set; } = string.Empty;
     }
 
     public class UpdateClassroomDto

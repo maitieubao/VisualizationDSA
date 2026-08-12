@@ -8,6 +8,7 @@
           class="toolbar-btn" 
           @click="wrapSelection('## ', '')"
           title="Heading 2 (Ctrl+2)"
+          aria-label="Chèn tiêu đề cấp 2"
         >
           <BaseIcon name="type" class="w-4 h-4" />
         </button>
@@ -16,6 +17,7 @@
           class="toolbar-btn" 
           @click="wrapSelection('### ', '')"
           title="Heading 3 (Ctrl+3)"
+          aria-label="Chèn tiêu đề cấp 3"
         >
           <BaseIcon name="type" class="w-4 h-4" />
           <span class="text-xs">H3</span>
@@ -30,6 +32,7 @@
           class="toolbar-btn" 
           @click="wrapSelection('**', '**')"
           title="Bold (Ctrl+B)"
+          aria-label="In đậm"
         >
           <BaseIcon name="bold" class="w-4 h-4" />
         </button>
@@ -38,6 +41,7 @@
           class="toolbar-btn" 
           @click="wrapSelection('*', '*')"
           title="Italic (Ctrl+I)"
+          aria-label="In nghiêng"
         >
           <BaseIcon name="italic" class="w-4 h-4" />
         </button>
@@ -46,6 +50,7 @@
           class="toolbar-btn" 
           @click="wrapSelection('~~', '~~')"
           title="Strikethrough"
+          aria-label="Gạch ngang"
         >
           <BaseIcon name="strikethrough" class="w-4 h-4" />
         </button>
@@ -54,6 +59,7 @@
           class="toolbar-btn" 
           @click="wrapSelection('`', '`')"
           title="Inline Code"
+          aria-label="Mã nội tuyến"
         >
           <BaseIcon name="code" class="w-4 h-4" />
         </button>
@@ -67,6 +73,7 @@
           class="toolbar-btn" 
           @click="wrapSelection('- ', '')"
           title="Bullet List"
+          aria-label="Danh sách gạch đầu dòng"
         >
           <BaseIcon name="list" class="w-4 h-4" />
         </button>
@@ -75,6 +82,7 @@
           class="toolbar-btn" 
           @click="wrapSelection('1. ', '')"
           title="Numbered List"
+          aria-label="Danh sách đánh số"
         >
           <BaseIcon name="list-ordered" class="w-4 h-4" />
         </button>
@@ -83,6 +91,7 @@
           class="toolbar-btn" 
           @click="wrapSelection('> ', '')"
           title="Quote"
+          aria-label="Chèn trích dẫn"
         >
           <BaseIcon name="quote" class="w-4 h-4" />
         </button>
@@ -96,6 +105,7 @@
           class="toolbar-btn" 
           @click="wrapSelection('\n```\n', '\n```\n')"
           title="Code Block"
+          aria-label="Chèn khối mã"
         >
           <BaseIcon name="terminal" class="w-4 h-4" />
         </button>
@@ -104,6 +114,7 @@
           class="toolbar-btn" 
           @click="wrapSelection('[', '](url)')"
           title="Link"
+          aria-label="Chèn liên kết"
         >
           <BaseIcon name="link" class="w-4 h-4" />
         </button>
@@ -112,6 +123,7 @@
           class="toolbar-btn" 
           @click="wrapSelection('![', '](image-url)')"
           title="Image"
+          aria-label="Chèn hình ảnh"
         >
           <BaseIcon name="image" class="w-4 h-4" />
         </button>
@@ -120,6 +132,7 @@
           class="toolbar-btn" 
           @click="wrapSelection('\n---\n', '')"
           title="Horizontal Rule"
+          aria-label="Chèn đường phân cách"
         >
           <BaseIcon name="minus" class="w-4 h-4" />
         </button>
@@ -133,6 +146,7 @@
           class="toolbar-btn" 
           @click="toggleFullscreen"
           :title="isFullscreen ? 'Exit Fullscreen' : 'Fullscreen'"
+          :aria-label="isFullscreen ? 'Thoát toàn màn hình' : 'Toàn màn hình'"
         >
           <BaseIcon :name="isFullscreen ? 'minimize-2' : 'maximize-2'" class="w-4 h-4" />
         </button>
@@ -141,6 +155,8 @@
           class="toolbar-btn" 
           @click="togglePreview"
           :title="showPreview ? 'Edit' : 'Preview'"
+          :aria-label="showPreview ? 'Chuyển sang chỉnh sửa' : 'Xem trước bản xem'"
+          :aria-pressed="showPreview"
           :class="{ active: showPreview }"
         >
           <BaseIcon :name="showPreview ? 'edit-2' : 'eye'" class="w-4 h-4" />
@@ -157,15 +173,15 @@
           v-model="content"
           class="editor-textarea"
           :placeholder="placeholder"
+          aria-label="Trình soạn thảo Markdown"
           @keydown="handleKeydown"
-          @input="onInput"
           @scroll="syncScroll"
           spellcheck="false"
         ></textarea>
       </div>
       
       
-      <div v-show="showPreview" class="preview-pane" @scroll="syncScroll">
+      <div v-show="showPreview" ref="previewPane" class="preview-pane" @scroll="syncScroll">
         <div class="preview-content" v-html="renderedHtml"></div>
       </div>
     </div>
@@ -202,7 +218,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch, nextTick, onMounted } from 'vue';
+import { ref, computed, watch, nextTick, onMounted, onBeforeUnmount } from 'vue';
 import BaseIcon from '@/shared/components/BaseIcon.vue';
 import { parseEmojiToSvg } from '@/utils/emojiParser';
 
@@ -217,6 +233,7 @@ const emit = defineEmits<{
 }>();
 
 const textarea = ref<HTMLTextAreaElement | null>(null);
+const previewPane = ref<HTMLElement | null>(null);
 const showPreview = ref(false);
 const isFullscreen = ref(false);
 const renderedHtml = ref('');
@@ -233,17 +250,26 @@ const wordCount = computed(() => content.value.trim() ? content.value.trim().spl
 const placeholder = props.placeholder || 'Viết nội dung bằng Markdown...';
 
 
+// CU-001: renderer escape-first — toàn bộ nội dung được escape HTML TRƯỚC khi
+// xử lý Markdown, kèm whitelist scheme http/https/mailto cho href/src để chặn XSS
+// (javascript:, data:...) trong v-html preview.
 function renderMarkdown(md: string): string {
   if (!md) return '<p class="text-text-muted italic">Nội dung trống...</p>';
   
   const result = md
-    
+    // Escape toàn bộ ký tự HTML trước — nội dung user nhập không bao giờ thành thẻ thật.
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;')
+    // Code blocks
     .replace(/```(\w+)?\n([\s\S]*?)```/g, (match, lang, code) => {
       const language = lang || 'text';
-      return `<pre class="language-${language}"><code>${escapeHtml(code)}</code></pre>`;
+      return `<pre class="language-${language}"><code>${code}</code></pre>`;
     })
-    
-    .replace(/`([^`]+)`/g, (_, code) => `<code class="inline-code">${escapeHtml(code)}</code>`)
+    // Inline code
+    .replace(/`([^`]+)`/g, '<code class="inline-code">$1</code>')
     // Headers
     .replace(/^### (.*$)/gm, '<h3>$1</h3>')
     .replace(/^## (.*$)/gm, '<h2>$1</h2>')
@@ -253,14 +279,22 @@ function renderMarkdown(md: string): string {
     .replace(/\*(.+?)\*/g, '<em>$1</em>')
     // Strikethrough
     .replace(/~~(.+?)~~/g, '<del>$1</del>')
+    // Images — xử lý TRƯỚC link để toolbar Image tạo đúng <img> (CU-015)
+    .replace(/!\[([^\]]*)\]\(([^)]+)\)/g, (match, alt, src) => {
+      const safeSrc = sanitizeUrl(src);
+      if (!safeSrc) return alt || '';
+      return `<img src="${safeSrc}" alt="${alt}" class="md-image" loading="lazy" />`;
+    })
     // Links
-    .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener">$1</a>')
-    // Images
-    .replace(/!\[([^\]]*)\]\(([^)]+)\)/g, '<img src="$2" alt="$1" class="md-image" />')
+    .replace(/\[([^\]]+)\]\(([^)]+)\)/g, (match, label, href) => {
+      const safeHref = sanitizeUrl(href);
+      if (!safeHref) return label;
+      return `<a href="${safeHref}" target="_blank" rel="noopener noreferrer">${label}</a>`;
+    })
     // Horizontal rule
     .replace(/^---$/gm, '<hr />')
-    // Blockquotes
-    .replace(/^> (.*$)/gm, '<blockquote>$1</blockquote>')
+    // Blockquotes (> đã escape thành &gt;)
+    .replace(/^&gt; (.*$)/gm, '<blockquote>$1</blockquote>')
     // Lists - ordered
     .replace(/^(\d+)\. (.*$)/gm, '<li>$2</li>')
     // Lists - unordered
@@ -280,11 +314,19 @@ function renderMarkdown(md: string): string {
   return parseEmojiToSvg(result);
 }
 
-function escapeHtml(text: string): string {
-  return text
-    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#039;');
+// CU-001: chỉ cho phép http/https/mailto (và đường dẫn tương đối cùng origin).
+// Bỏ dấu " (đã escape thành &quot;) trong href/src để không phá vỡ attribute.
+function sanitizeUrl(raw: string): string {
+  const url = raw.replace(/&quot;/g, '').replace(/"/g, '').trim();
+  try {
+    const parsed = new URL(url, window.location.origin);
+    if (parsed.protocol === 'http:' || parsed.protocol === 'https:' || parsed.protocol === 'mailto:') {
+      return url;
+    }
+  } catch {
+    // URL không hợp lệ → chặn.
+  }
+  return '';
 }
 
 watch(content, (newVal) => {
@@ -361,31 +403,49 @@ function handleKeydown(e: KeyboardEvent) {
   }
 }
 
-function onInput() {
-  // Trigger watcher
-}
-
+// CU-030: bỏ onInput rỗng (watcher content đã lo việc re-render).
 function syncScroll(e: Event) {
   const target = e.target as HTMLElement;
-  const other = showPreview.value ? textarea.value : document.querySelector('.preview-pane');
+  // CU-030: dùng ref nội bộ previewPane — không querySelector global (2 editor cùng tồn tại vẫn đúng pane).
+  const other = showPreview.value ? textarea.value : previewPane.value;
   if (other && target.scrollHeight > target.clientHeight) {
     const ratio = target.scrollTop / (target.scrollHeight - target.clientHeight);
-    (other as HTMLElement).scrollTop = ratio * ((other as HTMLElement).scrollHeight - (other as HTMLElement).clientHeight);
+    other.scrollTop = ratio * (other.scrollHeight - other.clientHeight);
+  }
+}
+
+// CU-030: fullscreen hỗ trợ phím Esc để thoát + reset body.overflow khi unmount.
+function onFullscreenKeydown(e: KeyboardEvent): void {
+  if (e.key === 'Escape' && isFullscreen.value) {
+    e.preventDefault();
+    setFullscreen(false);
+  }
+}
+
+function setFullscreen(open: boolean): void {
+  isFullscreen.value = open;
+  if (open) {
+    document.body.style.overflow = 'hidden';
+    document.addEventListener('keydown', onFullscreenKeydown);
+  } else {
+    document.body.style.overflow = '';
+    document.removeEventListener('keydown', onFullscreenKeydown);
   }
 }
 
 function toggleFullscreen() {
-  isFullscreen.value = !isFullscreen.value;
-  if (isFullscreen.value) {
-    document.body.style.overflow = 'hidden';
-  } else {
-    document.body.style.overflow = '';
-  }
+  setFullscreen(!isFullscreen.value);
 }
 
 function togglePreview() {
   showPreview.value = !showPreview.value;
 }
+
+onBeforeUnmount(() => {
+  // CU-030: dọn listener fullscreen + trả lại scroll body nếu đang khóa.
+  document.removeEventListener('keydown', onFullscreenKeydown);
+  document.body.style.overflow = '';
+});
 
 onMounted(() => {
   // Auto-resize textarea
@@ -515,6 +575,9 @@ watch(content, () => {
 
 .editor-textarea:focus {
   outline: none;
+  /* CU-023: focus-visible ring rõ ràng cho bàn phím */
+  box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--color-accent-purple) 55%, transparent);
+  border-radius: 4px;
 }
 
 .preview-content {

@@ -14,6 +14,9 @@
     <PackageReference Include="FluentValidation.DependencyInjectionExtensions" Version="12.1.1" />
     <PackageReference Include="MediatR" Version="14.2.0" />
     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="9.0.1" />
+    <!-- TC-025: ImportCourseToClassroom cần transaction API (Database.BeginTransactionAsync)
+         thuộc gói Relational — core package không chứa extension này. -->
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="9.0.1" />
   </ItemGroup>
 
 </Project>

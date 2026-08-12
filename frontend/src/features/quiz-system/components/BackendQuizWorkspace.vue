@@ -211,14 +211,14 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, watch } from 'vue';
+import { ref, computed, onMounted, onUnmounted, watch } from 'vue';
 import { useQuizStore } from '../store/useQuizStore';
 import SkeletonCard from '../../../components/SkeletonCard.vue';
 import { useConfetti } from '../../../composables/useConfetti';
 import type { StatelessQuizSummary } from '../service/statelessQuizApi';
 
 const store = useQuizStore();
-const { fireQuizPass } = useConfetti();
+const { fireQuizPass, clearPendingTimers } = useConfetti();
 
 const selectedTopic = ref('Tất cả');
 const searchQuery = ref('');
@@ -283,10 +283,21 @@ function handleQuizClick(quiz: StatelessQuizSummary): void {
   store.startBackendQuiz(quiz.id);
 }
 
+// GM-039: fireQuizPass chỉ bắn 1 lần cho mỗi lần NỘP (so quizId) — trước đây watch
+// backendResult bắn lại mỗi lần store gán result. Khi result bị xóa (start quiz mới)
+// thì reset mốc để lần nộp kế tiếp bắn lại.
+let lastFiredQuizId: string | null = null;
+
 watch(() => store.backendResult, (result) => {
-  if (result?.passed) {
-    fireQuizPass();
+  if (!result) {
+    lastFiredQuizId = null;
+    return;
   }
+  if (!result.passed) return;
+  const quizId = store.activeBackendQuiz?.id ?? '';
+  if (quizId && quizId === lastFiredQuizId) return;
+  lastFiredQuizId = quizId;
+  fireQuizPass();
 });
 
 function difficultyClass(difficulty: string): string {
@@ -300,6 +311,12 @@ function difficultyClass(difficulty: string): string {
 
 onMounted(() => {
   store.loadQuizCatalog();
+});
+
+// GM-039: dọn setTimeout confetti treo khi component rời khỏi DOM — không bắn
+// confetti "ma" sau khi user đã chuyển trang.
+onUnmounted(() => {
+  clearPendingTimers();
 });
 </script>
 

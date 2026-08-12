@@ -59,4 +59,18 @@ public class CreateClassroomCommandHandlerTests
         var handler = new CreateClassroomCommandHandler(ctx);
         await Assert.ThrowsAsync<UnauthorizedAccessException>(() => handler.Handle(new CreateClassroomCommand { TeacherId = student.Id, Name = "Class", Description = "" }, CancellationToken.None));
     }
+
+    // CR-034: mã mời mặc định hết hạn sau 30 ngày (không còn dead code expired).
+    [Fact]
+    public async Task Handle_SetsInviteCodeExpiry_30Days()
+    {
+        var (teacherId, ctx) = await Setup("Expiry30");
+        var handler = new CreateClassroomCommandHandler(ctx);
+
+        await handler.Handle(new CreateClassroomCommand { TeacherId = teacherId, Name = "C", Description = "" }, CancellationToken.None);
+
+        var classroom = ctx.Classrooms.Single();
+        classroom.InviteCodeExpiresAt.Should().NotBeNull();
+        classroom.InviteCodeExpiresAt!.Value.Should().BeCloseTo(DateTime.UtcNow.AddDays(30), TimeSpan.FromMinutes(2));
+    }
 }

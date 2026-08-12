@@ -63,6 +63,18 @@ namespace VisualizationDSA.Domain.Entities
             }
         }
 
+        /// <summary>
+        /// LM-056: cập nhật BestScore từ client (best-effort) — giữ giá trị cao nhất,
+        /// không đụng tới QuizScore lần làm hiện tại.
+        /// </summary>
+        public void RecordBestScore(int bestScore)
+        {
+            if (bestScore > BestScore)
+            {
+                BestScore = bestScore;
+            }
+        }
+
         public void RecordCodelabCompleted()
         {
             CodelabCompleted = true;

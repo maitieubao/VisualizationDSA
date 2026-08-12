@@ -56,7 +56,7 @@ describe('BreadcrumbsBar', () => {
     expect(chevronRight.length).toBe(1);
   });
 
-  it('last item is not clickable (pointer-events-none)', () => {
+  it('last item is current-position (span + aria-current), không phải link click được', () => {
     const wrapper = mount(BreadcrumbsBar, {
       props: {
         items: [
@@ -66,9 +66,13 @@ describe('BreadcrumbsBar', () => {
       },
       global: { components: { BaseIcon: BaseIconStub }, stubs: { RouterLink: RouterLinkStub } },
     });
+    // LM-062: crumb cuối đổi thành <span aria-current="page"> — không còn router-link.
     const links = wrapper.findAll('a.rl-stub');
-    const lastLink = links[links.length - 1];
-    expect(lastLink.classes()).toContain('pointer-events-none');
+    expect(links.length).toBe(1);
+    const lastSpan = wrapper.findAll('span').find(s => s.text() === 'B');
+    expect(lastSpan?.exists()).toBe(true);
+    expect(lastSpan?.attributes('aria-current')).toBe('page');
+    expect(lastSpan?.find('a').exists()).toBe(false);
   });
 
   it('first item shows home icon', () => {
@@ -307,7 +311,7 @@ describe('CourseSidebar', () => {
     expect(wrapper.emitted('selectLesson')![0]).toEqual(['l2']);
   });
 
-  it('shows empty state when no lessons', () => {
+  it('shows empty state when no lessons (LS-037: không còn "Đang tải" vĩnh viễn)', () => {
     const wrapper = mount(CourseSidebar, {
       props: {
         courseId: 'course-1',
@@ -320,6 +324,7 @@ describe('CourseSidebar', () => {
         stubs: { RouterLink: RouterLinkStub },
       },
     });
-    expect(wrapper.text()).toContain('Đang tải');
+    expect(wrapper.text()).not.toContain('Đang tải');
+    expect(wrapper.text()).toContain('Chưa có bài học nào');
   });
 });

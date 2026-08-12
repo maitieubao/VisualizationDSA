@@ -1,15 +1,48 @@
-
-
-
-
-
 import confetti from 'canvas-confetti';
 
 const GOLD_COLORS = ['#ffd700', '#ff8c00', '#ffb347', '#ffeaa7', '#fdcb6e'];
 const RAINBOW_COLORS = ['#ef4444', '#f59e0b', '#10b981', '#3b82f6', '#8b5cf6', '#ec4899'];
 
+/** GM-022: tôn trọng prefers-reduced-motion — bỏ qua hoạt ảnh nếu user yêu cầu giảm chuyển động. */
+function isReducedMotion(): boolean {
+  return typeof window.matchMedia === 'function'
+    && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+}
+
 export function useConfetti() {
-  function fireSuccess(): void {
+  // CU-016: timer + rAF scope theo TỪNG instance composable — component B unmount
+  // không được giết timer/rAF của component A (trước đây pendingTimers là module-level).
+  const pendingTimers: ReturnType<typeof setTimeout>[] = [];
+  const pendingRafs: number[] = [];
+
+  function schedule(callback: () => void, delay: number): void {
+    const timer = setTimeout(() => {
+      const idx = pendingTimers.indexOf(timer);
+      if (idx >= 0) pendingTimers.splice(idx, 1);
+      callback();
+    }, delay);
+    pendingTimers.push(timer);
+  }
+
+  function trackRaf(rafId: number): void {
+    pendingRafs.push(rafId);
+  }
+
+  /** CU-016: hủy toàn bộ timer + rAF của instance — dừng confetti ngay khi unmount. */
+  function cancel(): void {
+    while (pendingTimers.length > 0) {
+      const timer = pendingTimers.pop();
+      if (timer) clearTimeout(timer);
+    }
+    while (pendingRafs.length > 0) {
+      const rafId = pendingRafs.pop();
+      if (rafId !== undefined) cancelAnimationFrame(rafId);
+    }
+  }
+
+  /** CU-016: trả về cancel handle để caller dừng chuỗi rAF khi unmount. */
+  function fireSuccess(): () => void {
+    if (isReducedMotion()) return cancel;
     const duration = 2500;
     const end = Date.now() + duration;
 
@@ -30,13 +63,16 @@ export function useConfetti() {
       });
 
       if (Date.now() < end) {
-        requestAnimationFrame(frame);
+        trackRaf(requestAnimationFrame(frame));
       }
     }
-    frame();
+    trackRaf(requestAnimationFrame(frame));
+    return cancel;
   }
 
-  function fireQuizPass(): void {
+  /** CU-016: trả về cancel handle để caller dừng timer chờ bắn đợt 2. */
+  function fireQuizPass(): () => void {
+    if (isReducedMotion()) return cancel;
     confetti({
       particleCount: 100,
       spread: 70,
@@ -44,7 +80,7 @@ export function useConfetti() {
       colors: RAINBOW_COLORS,
     });
 
-    setTimeout(() => {
+    schedule(() => {
       confetti({
         particleCount: 50,
         angle: 60,
@@ -60,9 +96,12 @@ export function useConfetti() {
         colors: RAINBOW_COLORS,
       });
     }, 300);
+    return cancel;
   }
 
-  function firePremium(): void {
+  /** CU-016: trả về cancel handle để caller dừng rAF + timer khi unmount. */
+  function firePremium(): () => void {
+    if (isReducedMotion()) return cancel;
     const duration = 3000;
     const end = Date.now() + duration;
 
@@ -89,13 +128,12 @@ export function useConfetti() {
       });
 
       if (Date.now() < end) {
-        requestAnimationFrame(frame);
+        trackRaf(requestAnimationFrame(frame));
       }
     }
-    frame();
+    trackRaf(requestAnimationFrame(frame));
 
-    
-    setTimeout(() => {
+    schedule(() => {
       confetti({
         particleCount: 150,
         spread: 100,
@@ -104,7 +142,13 @@ export function useConfetti() {
         scalar: 1.5,
       });
     }, 1500);
+    return cancel;
   }
 
-  return { fireSuccess, fireQuizPass, firePremium };
+  /** Dọn timer/rAF còn treo của instance (gọi trong onUnmounted của component sử dụng). */
+  function clearPendingTimers(): void {
+    cancel();
+  }
+
+  return { fireSuccess, fireQuizPass, firePremium, clearPendingTimers };
 }

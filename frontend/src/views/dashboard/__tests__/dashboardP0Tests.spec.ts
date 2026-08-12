@@ -158,7 +158,7 @@ describe('LandingView', () => {
 });
 
 describe('ProfileView + Tabs', () => {
-  it('renders settings modal with title', () => {
+  it('renders settings modal with title', async () => {
     const pinia = createPinia();
     setActivePinia(pinia);
     const authStore = useAuthStore();
@@ -167,10 +167,11 @@ describe('ProfileView + Tabs', () => {
     const wrapper = mount(ProfileView, {
       global: { plugins: [pinia], stubs: { BaseIcon: { name: 'BaseIcon', template: '<svg class="base-icon-stub"><slot /></svg>' } } },
     });
-    expect(wrapper.text()).toContain('Settings');
+    await flushPromises();
+    expect(wrapper.text()).toContain('Cài đặt');
   });
 
-  it('renders all 6 tab nav items', () => {
+  it('renders all 6 tab nav items', async () => {
     const pinia = createPinia();
     setActivePinia(pinia);
     const authStore = useAuthStore();
@@ -179,11 +180,12 @@ describe('ProfileView + Tabs', () => {
     const wrapper = mount(ProfileView, {
       global: { plugins: [pinia], stubs: { BaseIcon: { name: 'BaseIcon', template: '<svg class="base-icon-stub"><slot /></svg>' } } },
     });
-    const navItems = wrapper.findAll('.nav-item');
+    await flushPromises();
+    const navItems = wrapper.findAll('[role="tab"]');
     expect(navItems.length).toBeGreaterThanOrEqual(5);
   });
 
-  it('shows user PRO badge when premium', () => {
+  it('shows user PRO badge when premium', async () => {
     const pinia = createPinia();
     setActivePinia(pinia);
     const authStore = useAuthStore();
@@ -193,6 +195,7 @@ describe('ProfileView + Tabs', () => {
     const wrapper = mount(ProfileView, {
       global: { plugins: [pinia], stubs: { BaseIcon: { name: 'BaseIcon', template: '<svg class="base-icon-stub"><slot /></svg>' } } },
     });
+    await flushPromises();
     expect(wrapper.text()).toContain('PRO');
   });
 

@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, afterEach } from 'vitest';
 import { StreakCalculator } from '../engine/StreakCalculator';
 
 describe('StreakCalculator', () => {
@@ -114,6 +114,66 @@ describe('StreakCalculator', () => {
     it('should return shouldUpdate true when resetting', () => {
       const result = StreakCalculator.calculateUpdatedStreak('2026-05-10', 20, '2026-05-18');
       expect(result.shouldUpdate).toBe(true);
+    });
+  });
+
+  describe('GM-018: streak freeze gap', () => {
+    it('freeze đúng 1 ngày nghỉ (gap 2 ngày) + có freeze + streak>1 → giữ streak', () => {
+      const result = StreakCalculator.calculateUpdatedStreak('2026-05-16', 5, '2026-05-18', 3);
+      expect(result).toEqual({ nextStreak: 5, shouldUpdate: true, freezeUsed: true });
+    });
+
+    it('gap > 2 ngày (nghỉ ≥ 2 ngày) → reset dù còn freeze', () => {
+      const result = StreakCalculator.calculateUpdatedStreak('2026-05-15', 5, '2026-05-18', 3);
+      expect(result).toEqual({ nextStreak: 1, shouldUpdate: true });
+      expect(result.freezeUsed).toBeUndefined();
+    });
+
+    it('gap 2 ngày nhưng hết freeze → reset về 1', () => {
+      const result = StreakCalculator.calculateUpdatedStreak('2026-05-16', 5, '2026-05-18', 0);
+      expect(result).toEqual({ nextStreak: 1, shouldUpdate: true });
+    });
+
+    it('gap 2 ngày + streak==1 → giữ streak 1 (không cần reset)', () => {
+      const result = StreakCalculator.calculateUpdatedStreak('2026-05-16', 1, '2026-05-18', 3);
+      expect(result.nextStreak).toBe(1);
+      expect(result.shouldUpdate).toBe(true);
+    });
+  });
+
+  describe('GM-008t: timezone matrix', () => {
+    const savedTz = process.env.TZ;
+
+    afterEach(() => {
+      if (savedTz === undefined) {
+        delete process.env.TZ;
+      } else {
+        process.env.TZ = savedTz;
+      }
+    });
+
+    it.each(['UTC', 'UTC+5', 'UTC-7'])(
+      'TZ=%s: wall-clock 23:30 → adjusted = ngày local (không lệch sang UTC date)',
+      (tz) => {
+        process.env.TZ = tz;
+        expect(StreakCalculator.getAdjustedDate(new Date('2026-05-18T23:30:00'))).toBe('2026-05-18');
+        expect(StreakCalculator.getAdjustedDate(new Date('2026-05-18T01:00:00'))).toBe('2026-05-17');
+        expect(StreakCalculator.getAdjustedDate(new Date('2026-05-18T12:00:00'))).toBe('2026-05-18');
+      },
+    );
+
+    it('adjusted date tính theo local getters (getFullYear/getMonth/getDate), không theo UTC', () => {
+      const date = new Date('2026-05-18T23:30:00');
+      const adjusted = new Date(date.getTime() - 2 * 3_600_000);
+      const expected = `${adjusted.getFullYear()}-${String(adjusted.getMonth() + 1).padStart(2, '0')}-${String(adjusted.getDate()).padStart(2, '0')}`;
+      expect(StreakCalculator.getAdjustedDate(date)).toBe(expected);
+    });
+
+    it('calculateUpdatedStreak nhất quán với todayDateStr sinh từ getAdjustedDate (không lệch 2 hệ)', () => {
+      const today = StreakCalculator.getAdjustedDate(new Date('2026-05-18T12:00:00'));
+      const yesterday = StreakCalculator.getAdjustedDate(new Date('2026-05-17T12:00:00'));
+      const result = StreakCalculator.calculateUpdatedStreak(yesterday, 4, today);
+      expect(result.nextStreak).toBe(5);
     });
   });
 });

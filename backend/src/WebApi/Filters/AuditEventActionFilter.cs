@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Security.Claims;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc.Filters;
@@ -36,8 +35,9 @@ namespace VisualizationDSA.WebApi.Filters
             try
             {
                 var http = executed.HttpContext;
-                var userIdRaw = http.User?.FindFirstValue(ClaimTypes.NameIdentifier)
-                                ?? http.User?.FindFirstValue("sub");
+                // AD-007: hệ dùng RequireJwtRole (không phải JwtBearer middleware) nên
+                // HttpContext.User luôn rỗng — phải đọc sub TRỰC TIẾP từ token.
+                var userIdRaw = JwtHelper.ExtractSubFromToken(http.Request);
                 Guid? userId = Guid.TryParse(userIdRaw, out var parsed) ? parsed : null;
 
                 var input = new AuditEventInput

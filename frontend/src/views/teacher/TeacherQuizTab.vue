@@ -15,8 +15,14 @@
       </div>
     </div>
 
+    <!-- TC-020: banner lỗi tách khỏi empty state -->
+    <div v-if="loadError" class="error-banner mb-6 flex items-center justify-between gap-3 rounded-xl border border-accent-red/30 bg-accent-red/10 px-4 py-3">
+      <span class="text-sm text-accent-red"><BaseIcon name="alert-circle" class="w-4 h-4 inline mr-1 align-middle" />{{ loadError }}</span>
+      <button type="button" class="btn-secondary text-xs px-3 py-1.5" @click="reloadAll">Thử lại</button>
+    </div>
+
     
-    <form v-if="activeFormType === 'manual'" class="quiz-form mb-8 animate-fade-in" @submit.prevent="submitQuiz">
+    <form v-if="activeFormType === 'manual'" class="quiz-form mb-8 animate-fade-in" novalidate @submit.prevent="submitQuiz">
       <h3 class="form-title-context">
         <span v-if="isEditMode"><BaseIcon name="edit" class="w-4 h-4 text-accent inline mr-1 align-middle" /> Chỉnh sửa bài trắc nghiệm</span>
         <span v-else><BaseIcon name="plus" class="w-4 h-4 text-accent inline mr-1 align-middle" /> Thêm câu hỏi trắc nghiệm mới</span>
@@ -69,9 +75,13 @@
           <div class="options-grid">
             <div v-for="(_, oi) in q.options" :key="oi" class="option-row">
               <input type="radio" :name="'correct-' + qi" :value="oi" v-model="q.correctIndex" />
-              <input v-model="q.options[oi]" class="form-input form-input--sm" :placeholder="'Đáp án ' + String.fromCharCode(65 + oi)" required />
+              <!-- Đáp án không bắt buộc client-side — backend validate danh sách rỗng (TC-038) -->
+              <input v-model="q.options[oi]" class="form-input form-input--sm" :placeholder="'Đáp án ' + String.fromCharCode(65 + oi)" />
+              <button type="button" class="btn-option-remove" :disabled="q.options.length <= 2" @click="removeOption(q, Number(oi))" title="Xóa đáp án">&times;</button>
             </div>
           </div>
+          <!-- TC-046: số đáp án động 2-6 (khớp QuestionFormModal) -->
+          <button type="button" class="btn-add-q" :disabled="q.options.length >= 6" @click="addOption(q)">+ Thêm đáp án</button>
           <input v-model="q.explanation" class="form-input form-input--sm" placeholder="Giải thích đáp án đúng..." />
         </div>
       </div>
@@ -129,7 +139,7 @@
                     <button type="button" class="btn-action btn-action--edit" @click="editQuiz(q.id)" title="Chỉnh sửa">
                       <BaseIcon name="edit" class="w-3.5 h-3.5 inline mr-1 align-text-bottom" /> Sửa
                     </button>
-                    <button type="button" class="btn-action btn-action--delete" @click="deleteQuiz(q.id)" title="Xóa">
+                    <button type="button" class="btn-action btn-action--delete" @click="openDeleteQuizConfirm(q.id)" title="Xóa">
                       <BaseIcon name="trash" class="w-3.5 h-3.5 inline mr-1 align-text-bottom" /> Xóa
                     </button>
                   </div>
@@ -167,8 +177,10 @@
                         <div v-for="(_, oi) in subQ.options" :key="oi" class="option-row">
                           <input type="radio" :name="'correct-inline-' + String(q.id) + '-' + qi" :value="oi" v-model="subQ.correctIndex" />
                           <input v-model="subQ.options[oi]" class="form-input form-input--sm" :placeholder="'Đáp án ' + String.fromCharCode(65 + Number(oi))" />
+                          <button type="button" class="btn-option-remove" :disabled="subQ.options.length <= 2" @click="removeInlineOption(String(q.id), Number(qi), Number(oi))" title="Xóa đáp án">&times;</button>
                         </div>
                       </div>
+                      <button type="button" class="btn-add-q" :disabled="subQ.options.length >= 6" @click="addInlineOption(String(q.id), Number(qi))">+ Thêm đáp án</button>
                       <div class="form-row">
                         <label class="form-label">Giải thích đáp án đúng</label>
                         <input v-model="subQ.explanation" class="form-input form-input--sm" placeholder="Giải thích vì sao đáp án này đúng..." />
@@ -179,7 +191,7 @@
                         <span v-if="savingDetail[String(q.id)]">Đang lưu...</span>
                         <span v-else><BaseIcon name="save" class="w-3.5 h-3.5 inline mr-1 align-text-bottom" /> Lưu tất cả thay đổi</span>
                       </button>
-                      <button type="button" class="btn-close-inline" @click="expandedQuizId = null">Đóng</button>
+                      <button type="button" class="btn-close-inline" @click="requestCloseAccordion(String(q.id))">Đóng</button>
                     </div>
                     <p v-if="inlineError[String(q.id)]" class="text-accent-red text-sm mt-2 text-right">
                       {{ inlineError[String(q.id)] }}
@@ -235,14 +247,37 @@
         </div>
       </div>
     </div>
+
+    <!-- TC-018: xóa quiz qua ConfirmModal variant danger (pattern chung) -->
+    <ConfirmModal
+      v-model:show="showDeleteConfirm"
+      title="Xóa bài trắc nghiệm"
+      :message="deleteConfirmMessage"
+      confirm-text="Xóa"
+      variant="danger"
+      @confirm="executeDeleteQuiz"
+    />
+
+    <!-- TC-030: cảnh báo mất thay đổi khi đóng accordion chưa lưu -->
+    <ConfirmModal
+      v-model:show="showUnsavedConfirm"
+      title="Có thay đổi chưa được lưu"
+      message="Bạn đang chỉnh sửa câu hỏi nhưng chưa lưu. Nếu đóng ngay, toàn bộ thay đổi sẽ bị mất. Bạn có chắc muốn đóng?"
+      confirm-text="Đóng và bỏ thay đổi"
+      variant="warning"
+      @confirm="forceCloseAccordion"
+    />
   </section>
 </template>
 
 <script setup lang="ts">
-import { ref, reactive } from 'vue';
+import { ref, reactive, watch } from 'vue';
 import { useTeacherApi } from './useTeacherApi';
+import { useToastStore } from '../../composables/useToast';
+import ConfirmModal from '@/components/ui/ConfirmModal.vue';
 
-const { BASE_URL, getAuthHeaders, formatTopic, formatDifficulty } = useTeacherApi();
+const { BASE_URL, teacherRequest, formatTopic, formatDifficulty } = useTeacherApi();
+const toastStore = useToastStore();
 
 interface QuestionForm {
   text: string;
@@ -266,6 +301,17 @@ const quizzesList = ref<any[]>([]);
 const loadingQuizzes = ref(false);
 const loadingAnalytics = ref(false);
 const quizPerformanceStats = ref<any[]>([]);
+// TC-020: lỗi fetch hiển thị banner, không gộp vào empty state
+const loadError = ref('');
+
+// TC-018: xóa quiz qua ConfirmModal danger
+const showDeleteConfirm = ref(false);
+const deleteConfirmMessage = ref('');
+const deletingQuizId = ref<string | null>(null);
+
+// TC-030: cảnh báo unsaved khi đóng accordion đang sửa
+const showUnsavedConfirm = ref(false);
+const pendingCloseQuizId = ref<string | null>(null);
 
 const newQuiz = reactive({
   title: '',
@@ -304,47 +350,80 @@ function cancelEdit(): void {
 async function loadAnalytics(): Promise<void> {
   loadingAnalytics.value = true;
   try {
-    const res = await fetch(`${BASE_URL}/api/v1/concepts/quiz/analytics`, { headers: getAuthHeaders() });
-    if (!res.ok) return;
+    const res = await teacherRequest(`${BASE_URL}/api/v1/concepts/quiz/analytics`);
+    if (!res.ok) throw new Error('Không thể tải báo cáo hiệu suất.');
     const data = await res.json();
     quizPerformanceStats.value = data.perQuizStats || [];
-  } catch {  }
+  } catch (err) {
+    loadError.value = err instanceof Error ? err.message : 'Lỗi khi tải dữ liệu.';
+  }
   finally { loadingAnalytics.value = false; }
 }
 
 async function loadQuizzes(): Promise<void> {
   loadingQuizzes.value = true;
+  loadError.value = '';
   try {
-    const res = await fetch(`${BASE_URL}/api/v1/concepts/quiz/all`, { headers: getAuthHeaders() });
-    if (res.ok) quizzesList.value = await res.json();
-  } catch (err) { console.error('Lỗi khi tải danh sách quiz:', err); }
+    const res = await teacherRequest(`${BASE_URL}/api/v1/concepts/quiz/all`);
+    if (!res.ok) throw new Error('Không thể tải danh sách trắc nghiệm.');
+    quizzesList.value = await res.json();
+  } catch (err) {
+    loadError.value = err instanceof Error ? err.message : 'Lỗi khi tải danh sách quiz.';
+  }
   finally { loadingQuizzes.value = false; }
+}
+
+function reloadAll(): void {
+  loadQuizzes();
+  loadAnalytics();
 }
 
 async function editQuiz(quizId: string): Promise<void> {
   submitMessage.value = ''; submitError.value = false;
   try {
-    const res = await fetch(`${BASE_URL}/api/v1/concepts/quiz/${quizId}?withAnswers=true`, { headers: getAuthHeaders() });
+    const res = await teacherRequest(`${BASE_URL}/api/v1/concepts/quiz/${quizId}?withAnswers=true`);
     if (!res.ok) throw new Error('Không thể tải chi tiết trắc nghiệm');
     const data = await res.json();
     isEditMode.value = true; editingQuizId.value = quizId; activeFormType.value = 'manual';
     Object.assign(newQuiz, { title: data.title, topic: data.topic, difficulty: data.difficulty, xpReward: data.xpReward });
     newQuiz.questions = data.questions.map((q: any) => ({ text: q.text, options: [...q.options], correctIndex: q.correctIndex, explanation: q.explanation ?? '' }));
     window.scrollTo({ top: 0, behavior: 'smooth' });
-  } catch (err: any) { alert(err.message || 'Lỗi khi tải thông tin bài trắc nghiệm'); }
+  } catch (err: any) { toastStore.handleApiError(err, 'Lỗi khi tải thông tin bài trắc nghiệm'); }
 }
 
-async function deleteQuiz(quizId: string): Promise<void> {
-  if (!confirm('Bạn có chắc chắn muốn xóa bài trắc nghiệm này?')) return;
+// TC-018: xóa quiz — mở ConfirmModal variant danger thay vì confirm()/alert() native.
+function openDeleteQuizConfirm(quizId: string): void {
+  deletingQuizId.value = quizId;
+  deleteConfirmMessage.value = 'Bạn có chắc chắn muốn xóa bài trắc nghiệm này? Hành động này không thể hoàn tác.';
+  showDeleteConfirm.value = true;
+}
+
+async function executeDeleteQuiz(): Promise<void> {
+  if (!deletingQuizId.value) return;
   try {
-    const res = await fetch(`${BASE_URL}/api/v1/concepts/quiz/manage/${quizId}`, { method: 'DELETE', headers: getAuthHeaders() });
-    if (!res.ok) throw new Error('Xóa bài trắc nghiệm thất bại');
-    alert('Đã xóa bài trắc nghiệm thành công!');
+    const res = await teacherRequest(`${BASE_URL}/api/v1/concepts/quiz/manage/${deletingQuizId.value}`, { method: 'DELETE' });
+    if (!res.ok) {
+      const err = await res.json().catch(() => null);
+      throw new Error(err?.message || 'Xóa bài trắc nghiệm thất bại');
+    }
+    toastStore.success('Đã xóa bài trắc nghiệm thành công.');
+    showDeleteConfirm.value = false;
+    deletingQuizId.value = null;
     await loadQuizzes(); await loadAnalytics();
-  } catch (err: any) { alert(err.message || 'Lỗi không xác định khi xóa'); }
+  } catch (err: any) {
+    toastStore.handleApiError(err, 'Lỗi không xác định khi xóa');
+  }
 }
 
 async function submitQuiz(): Promise<void> {
+  // TC-038: chống double-submit — bấm 2 lần liên tiếp khi đang gửi chỉ tạo 1 request.
+  if (submitting.value) return;
+  // Validate thủ công (form dùng novalidate để không bị HTML5 validation chặn giữa chừng).
+  if (!newQuiz.title.trim()) {
+    submitError.value = true;
+    submitMessage.value = 'Tiêu đề trắc nghiệm không được để trống.';
+    return;
+  }
   submitting.value = true; submitMessage.value = ''; submitError.value = false;
   const payload = {
     id: isEditMode.value ? editingQuizId.value : '',
@@ -353,16 +432,20 @@ async function submitQuiz(): Promise<void> {
   };
   try {
     const url = isEditMode.value ? `${BASE_URL}/api/v1/concepts/quiz/manage/${editingQuizId.value}` : `${BASE_URL}/api/v1/concepts/quiz/manage`;
-    const res = await fetch(url, { method: isEditMode.value ? 'PUT' : 'POST', headers: getAuthHeaders(), body: JSON.stringify(payload) });
+    const res = await teacherRequest(url, { method: isEditMode.value ? 'PUT' : 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
     if (!res.ok) { const err = await res.json(); throw new Error(err.message ?? (isEditMode.value ? 'Cập nhật thất bại' : 'Thêm thất bại')); }
     submitMessage.value = isEditMode.value ? 'Cập nhật thành công!' : 'Thêm thành công!';
+    toastStore.success(submitMessage.value);
     cancelEdit(); await loadQuizzes(); await loadAnalytics();
   } catch (err: unknown) { submitError.value = true; submitMessage.value = err instanceof Error ? err.message : 'Lỗi không xác định'; }
   finally { submitting.value = false; }
 }
 
 async function toggleQuizAccordion(quizId: string): Promise<void> {
-  if (expandedQuizId.value === quizId) { expandedQuizId.value = null; return; }
+  if (expandedQuizId.value === quizId) {
+    requestCloseAccordion(quizId);
+    return;
+  }
   expandedQuizId.value = quizId;
   if (!quizDetails.value[quizId]) await fetchQuizDetail(quizId);
 }
@@ -371,9 +454,12 @@ async function fetchQuizDetail(quizId: string): Promise<void> {
   loadingDetail.value[quizId] = true; inlineError.value[quizId] = '';
   try {
     // QZ-003: cần withAnswers=true để teacher xem/sửa đáp án
-    const res = await fetch(`${BASE_URL}/api/v1/concepts/quiz/${quizId}?withAnswers=true`, { headers: getAuthHeaders() });
+    const res = await teacherRequest(`${BASE_URL}/api/v1/concepts/quiz/${quizId}?withAnswers=true`);
     if (!res.ok) throw new Error('Không thể tải chi tiết trắc nghiệm');
-    quizDetails.value[quizId] = await res.json();
+    const data = await res.json();
+    quizDetails.value[quizId] = data;
+    // TC-030: snapshot để so sánh thay đổi khi đóng accordion
+    detailsSnapshot.value[quizId] = JSON.stringify(data);
   } catch (err: any) { inlineError.value[quizId] = err.message || 'Lỗi khi tải chi tiết'; }
   finally { loadingDetail.value[quizId] = false; }
 }
@@ -388,13 +474,60 @@ function removeInlineQuestion(quizId: string, index: number): void {
   quizDetails.value[quizId].questions.splice(index, 1);
 }
 
+// TC-046: thêm/xóa đáp án động 2-6 — form tạo/sửa
+function addOption(q: QuestionForm): void {
+  if (q.options.length < 6) q.options.push('');
+}
+function removeOption(q: QuestionForm, index: number): void {
+  if (q.options.length <= 2) return;
+  q.options.splice(index, 1);
+  if (q.correctIndex >= index && q.correctIndex > 0) q.correctIndex--;
+}
+
+// TC-046: thêm/xóa đáp án động 2-6 — accordion chi tiết quiz
+function addInlineOption(quizId: string, questionIndex: number): void {
+  const questions = quizDetails.value[quizId]?.questions;
+  if (!questions || questions.length <= questionIndex) return;
+  const q = questions[questionIndex];
+  if (q.options.length < 6) q.options.push('');
+}
+function removeInlineOption(quizId: string, questionIndex: number, optionIndex: number): void {
+  const questions = quizDetails.value[quizId]?.questions;
+  if (!questions || questions.length <= questionIndex) return;
+  const q = questions[questionIndex];
+  if (q.options.length <= 2) return;
+  q.options.splice(optionIndex, 1);
+  if (q.correctIndex >= optionIndex && q.correctIndex > 0) q.correctIndex--;
+}
+
+// TC-030: đóng accordion — cảnh báo nếu có thay đổi chưa lưu
+// (so sánh nội dung hiện tại với snapshot lúc mở accordion)
+const detailsSnapshot = ref<Record<string, string>>({});
+
+function requestCloseAccordion(quizId: string): void {
+  const current = quizDetails.value[quizId];
+  if (current && detailsSnapshot.value[quizId] !== undefined
+      && JSON.stringify(current) !== detailsSnapshot.value[quizId]) {
+    pendingCloseQuizId.value = quizId;
+    showUnsavedConfirm.value = true;
+    return;
+  }
+  expandedQuizId.value = null;
+}
+function forceCloseAccordion(): void {
+  expandedQuizId.value = null;
+  pendingCloseQuizId.value = null;
+  showUnsavedConfirm.value = false;
+}
+
 async function saveInlineQuiz(quizId: string): Promise<void> {
   savingDetail.value[quizId] = true; inlineError.value[quizId] = '';
   try {
     const payload = quizDetails.value[quizId];
-    const res = await fetch(`${BASE_URL}/api/v1/concepts/quiz/manage/${quizId}`, { method: 'PUT', headers: getAuthHeaders(), body: JSON.stringify(payload) });
+    const res = await teacherRequest(`${BASE_URL}/api/v1/concepts/quiz/manage/${quizId}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
     if (!res.ok) { const err = await res.json(); throw new Error(err.message || 'Cập nhật thất bại'); }
-    alert('Đã cập nhật các câu hỏi con thành công!');
+    toastStore.success('Đã cập nhật các câu hỏi con thành công!');
+    detailsSnapshot.value[quizId] = JSON.stringify(quizDetails.value[quizId]);
     expandedQuizId.value = null; await loadQuizzes(); await loadAnalytics();
   } catch (err: any) { inlineError.value[quizId] = err.message || 'Lỗi khi lưu thay đổi'; }
   finally { savingDetail.value[quizId] = false; }

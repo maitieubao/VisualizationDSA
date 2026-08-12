@@ -1,177 +1,193 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+// @vitest-environment jsdom
+// CU-007 (P1): AppHeader test mount THẬT (mock router/auth store) — hết filteredTabs copy-paste.
+// CU-036 (P3): localStorage.clear() giữa các it() + không override document (restore sạch).
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { setActivePinia, createPinia } from 'pinia';
-import { useAuthStore } from '../../features/auth/store/useAuthStore';
+import { mount, type VueWrapper } from '@vue/test-utils';
+import AppHeader from '../AppHeader.vue';
 import { useThemeStore } from '../../shared/store/useThemeStore';
+import BaseIcon from '../../shared/components/BaseIcon.vue';
 import { APP_TABS } from '../../appTabs';
-import type { TabGroup, TabItem } from '../../appTabs';
+import type { TabGroup } from '../../appTabs';
 
-function isTabVisible(tab: TabItem, isAuthenticated: boolean, userRole: string): boolean {
-  if (tab.requiresAuth && !isAuthenticated) return false;
-  if (tab.requiresRole) {
-    if (userRole === 'Admin') return true;
-    if (userRole !== tab.requiresRole) return false;
-  }
-  return true;
+const mocks = vi.hoisted(() => ({
+  authMock: vi.fn(),
+  routerPush: vi.fn(),
+}));
+
+vi.mock('../../features/notifications/components/NotificationBell.vue', () => ({
+  default: { template: '<div class="notification-bell-stub" />' },
+}));
+
+vi.mock('../../features/auth/store/useAuthStore', () => ({
+  useAuthStore: () => mocks.authMock(),
+}));
+
+interface MockAuthState {
+  isAuthenticated: boolean;
+  userName: string;
+  userLevel: number;
+  userXP: number;
+  isPremium: boolean;
+  userRole: string;
 }
 
-function filteredTabs(isAuthenticated: boolean, userRole: string): (TabGroup | TabItem)[] {
-  return APP_TABS.filter((tabOrGroup) => {
-    if ('groupName' in tabOrGroup) {
-      const group = tabOrGroup as TabGroup;
-      const visibleItems = group.items.filter((item: TabItem) => isTabVisible(item, isAuthenticated, userRole));
-      return visibleItems.length > 0;
-    }
-    return isTabVisible(tabOrGroup as TabItem, isAuthenticated, userRole);
-  }).map((tabOrGroup) => {
-    if ('groupName' in tabOrGroup) {
-      const group = tabOrGroup as TabGroup;
-      return {
-        ...group,
-        items: group.items.filter((item: TabItem) => isTabVisible(item, isAuthenticated, userRole)),
-      };
-    }
-    return tabOrGroup;
-  });
+const DEFAULT_AUTH: MockAuthState = {
+  isAuthenticated: false,
+  userName: 'Khách',
+  userLevel: 1,
+  userXP: 0,
+  isPremium: false,
+  userRole: 'Student',
+};
+
+function setAuth(partial: Partial<MockAuthState>): void {
+  mocks.authMock.mockReturnValue({ ...DEFAULT_AUTH, ...partial });
 }
 
-describe('NA-001 (P0): Nav tabs render — header-nav hiển thị groups', () => {
-  it('APP_TABS chứa các group Học tập, Giải thuật, Khái niệm, Tương tác, Tài khoản', () => {
-    const groups = APP_TABS.filter(t => 'groupName' in t) as TabGroup[];
-    const groupNames = groups.map(g => g.groupName);
+let wrapper: VueWrapper | null = null;
 
-    expect(groupNames).toContain('Học tập');
-    expect(groupNames).toContain('Giải thuật');
-    expect(groupNames).toContain('Khái niệm');
-    expect(groupNames).toContain('Tương tác');
-    expect(groupNames).toContain('Tài khoản');
+function mountHeader(): VueWrapper {
+  wrapper = mount(AppHeader, {
+    attachTo: document.body,
+    global: {
+      mocks: { $router: { push: mocks.routerPush } },
+      components: { BaseIcon },
+      stubs: {
+        RouterLink: { template: '<a class="router-link-stub"><slot /></a>' },
+      },
+    },
   });
+  return wrapper;
+}
 
-  it('filteredTabs trả về đầy đủ groups khi chưa login', () => {
-    const tabs = filteredTabs(false, 'Student');
+describe('NA-001 (P0): APP_TABS — dữ liệu tab gốc', () => {
+  it('chứa 5 group: Học tập, Giải thuật, Khái niệm, Tương tác, Tài khoản', () => {
+    const groups = APP_TABS.filter((tab) => 'groupName' in tab) as TabGroup[];
+    const groupNames = groups.map((group) => group.groupName);
 
-    expect(tabs.length).toBeGreaterThan(0);
-    expect(tabs.some(t => 'groupName' in t && t.groupName === 'Học tập')).toBe(true);
-    expect(tabs.some(t => 'groupName' in t && t.groupName === 'Giải thuật')).toBe(true);
-  });
-
-  it('mỗi group có items đúng path', () => {
-    const tabs = filteredTabs(false, 'Student');
-    const algoGroup = tabs.find(t => 'groupName' in t && t.groupName === 'Giải thuật') as TabGroup;
-
-    expect(algoGroup).toBeDefined();
-    expect(algoGroup.items.length).toBeGreaterThanOrEqual(3);
-    expect(algoGroup.items.some(i => i.path === '/sorting')).toBe(true);
-    expect(algoGroup.items.some(i => i.path === '/graph')).toBe(true);
+    expect(groupNames).toEqual(
+      expect.arrayContaining(['Học tập', 'Giải thuật', 'Khái niệm', 'Tương tác', 'Tài khoản']),
+    );
   });
 });
 
-describe('NA-003 (P0): Theme toggle — themeStore.toggleTheme()', () => {
-  let mockDocumentElement: { setAttribute: ReturnType<typeof vi.fn> };
-
+describe('CU-007 (P1): Nav tabs qua mount thật — hết filteredTabs copy-paste', () => {
   beforeEach(() => {
     setActivePinia(createPinia());
-    mockDocumentElement = { setAttribute: vi.fn() };
-    Object.defineProperty(global, 'document', {
-      value: { documentElement: mockDocumentElement },
-      writable: true,
-      configurable: true,
-    });
+    localStorage.clear();
+    vi.clearAllMocks();
+    setAuth({});
   });
 
-  it('toggleTheme chuyển từ terminal-dark sang light', () => {
-    const store = useThemeStore();
-    expect(store.currentTheme).toBe('terminal-dark');
-
-    store.toggleTheme();
-    expect(store.currentTheme).toBe('light');
+  afterEach(() => {
+    wrapper?.unmount();
+    wrapper = null;
+    document.body.innerHTML = '';
   });
 
-  it('toggleTheme chuyển ngược từ light sang terminal-dark', () => {
-    const store = useThemeStore();
-    store.toggleTheme();
-    expect(store.currentTheme).toBe('light');
+  it('chưa login → 5 group hiển thị, tab requiresAuth ẩn', () => {
+    const w = mountHeader();
+    const text = w.text();
 
-    store.toggleTheme();
-    expect(store.currentTheme).toBe('terminal-dark');
+    expect(text).toContain('Học tập');
+    expect(text).toContain('Giải thuật');
+    expect(text).toContain('Khái niệm');
+    expect(text).toContain('Tương tác');
+    expect(text).toContain('Tài khoản');
+    expect(text).not.toContain('Lớp học của tôi');
+    expect(text).not.toContain('Bảng điều khiển');
+    expect(text).not.toContain('Hồ sơ cá nhân');
   });
 
-  it('toggleTheme lưu vào localStorage', () => {
-    const store = useThemeStore();
-    store.toggleTheme();
+  it('đã login Student → tab requiresAuth hiển thị, tab teacher/admin ẩn', () => {
+    setAuth({ isAuthenticated: true, userName: 'student', userRole: 'Student' });
+    const w = mountHeader();
+    const text = w.text();
 
+    expect(text).toContain('Lớp học của tôi');
+    expect(text).toContain('Bảng điều khiển');
+    expect(text).toContain('Hồ sơ cá nhân');
+    expect(text).not.toContain('Quản lý Giảng viên');
+    expect(text).not.toContain('Quản trị Admin');
+  });
+
+  it('Teacher → hiển thị Quản lý Giảng viên, ẩn Quản trị Admin', () => {
+    setAuth({ isAuthenticated: true, userName: 'teacher', userRole: 'Teacher' });
+    const w = mountHeader();
+
+    expect(w.text()).toContain('Quản lý Giảng viên');
+    expect(w.text()).not.toContain('Quản trị Admin');
+  });
+
+  it('Admin → hiển thị cả Quản trị Admin lẫn Quản lý Giảng viên', () => {
+    setAuth({ isAuthenticated: true, userName: 'admin', userRole: 'Admin' });
+    const w = mountHeader();
+
+    expect(w.text()).toContain('Quản trị Admin');
+    expect(w.text()).toContain('Quản lý Giảng viên');
+  });
+});
+
+describe('NA-006 (P0): GitHub link — mount thật thay vì readFileSync', () => {
+  beforeEach(() => {
+    setActivePinia(createPinia());
+    localStorage.clear();
+    vi.clearAllMocks();
+    setAuth({});
+  });
+
+  afterEach(() => {
+    wrapper?.unmount();
+    wrapper = null;
+    document.body.innerHTML = '';
+  });
+
+  it('render <a href=github> với target=_blank + rel=noopener noreferrer + aria-label', () => {
+    const w = mountHeader();
+    const link = w.find('a[href="https://github.com/maitieubao/VisualizationDSA"]');
+
+    expect(link.exists()).toBe(true);
+    expect(link.attributes('target')).toBe('_blank');
+    expect(link.attributes('rel')).toBe('noopener noreferrer');
+    expect(link.attributes('aria-label')).toBe('GitHub Repository');
+  });
+});
+
+describe('NA-003 (P0): Theme toggle — mount thật + assert setAttribute data-theme', () => {
+  beforeEach(() => {
+    setActivePinia(createPinia());
+    localStorage.clear();
+    vi.clearAllMocks();
+    setAuth({});
+    document.documentElement.removeAttribute('data-theme');
+  });
+
+  afterEach(() => {
+    wrapper?.unmount();
+    wrapper = null;
+    document.body.innerHTML = '';
+  });
+
+  it('click nút đổi giao diện → currentTheme đổi + setAttribute(data-theme) + lưu localStorage', async () => {
+    const setAttrSpy = vi.spyOn(document.documentElement, 'setAttribute');
+    const themeStore = useThemeStore();
+    const w = mountHeader();
+
+    expect(themeStore.currentTheme).toBe('terminal-dark');
+
+    await w.find('button[aria-label="Đổi giao diện"]').trigger('click');
+
+    expect(themeStore.currentTheme).toBe('light');
     expect(localStorage.getItem('app-theme')).toBe('light');
-  });
-});
+    expect(setAttrSpy).toHaveBeenCalledWith('data-theme', 'light');
+    expect(document.documentElement.getAttribute('data-theme')).toBe('light');
 
-describe('NA-004 (P0): Hide auth tabs — tab requiresAuth ẩn khi chưa login', () => {
-  it('classrooms (requiresAuth) bị ẩn khi chưa login', () => {
-    const tabs = filteredTabs(false, 'Student');
-    const learningGroup = tabs.find(t => 'groupName' in t && t.groupName === 'Học tập') as TabGroup;
+    await w.find('button[aria-label="Đổi giao diện"]').trigger('click');
 
-    expect(learningGroup).toBeDefined();
-    expect(learningGroup.items.some(i => i.id === 'classrooms')).toBe(false);
-  });
+    expect(themeStore.currentTheme).toBe('terminal-dark');
+    expect(document.documentElement.getAttribute('data-theme')).toBe('terminal-dark');
 
-  it('dashboard, profile (requiresAuth) bị ẩn khi chưa login', () => {
-    const tabs = filteredTabs(false, 'Student');
-    const accountGroup = tabs.find(t => 'groupName' in t && t.groupName === 'Tài khoản') as TabGroup;
-
-    expect(accountGroup).toBeDefined();
-    expect(accountGroup.items.some(i => i.id === 'dashboard')).toBe(false);
-    expect(accountGroup.items.some(i => i.id === 'profile')).toBe(false);
-  });
-
-  it('checkout (không requiresAuth) vẫn hiển thị khi chưa login', () => {
-    const tabs = filteredTabs(false, 'Student');
-    const accountGroup = tabs.find(t => 'groupName' in t && t.groupName === 'Tài khoản') as TabGroup;
-
-    expect(accountGroup).toBeDefined();
-    expect(accountGroup.items.some(i => i.id === 'checkout')).toBe(true);
-  });
-
-  it('khi đã login — tabs requiresAuth hiển thị', () => {
-    const tabs = filteredTabs(true, 'Student');
-    const learningGroup = tabs.find(t => 'groupName' in t && t.groupName === 'Học tập') as TabGroup;
-    const accountGroup = tabs.find(t => 'groupName' in t && t.groupName === 'Tài khoản') as TabGroup;
-
-    expect(learningGroup.items.some(i => i.id === 'classrooms')).toBe(true);
-    expect(accountGroup.items.some(i => i.id === 'dashboard')).toBe(true);
-    expect(accountGroup.items.some(i => i.id === 'profile')).toBe(true);
-  });
-
-  it('teacher role — hiển thị tab Quản lý Giảng viên', () => {
-    const tabs = filteredTabs(true, 'Teacher');
-    const accountGroup = tabs.find(t => 'groupName' in t && t.groupName === 'Tài khoản') as TabGroup;
-
-    expect(accountGroup.items.some(i => i.id === 'teacher')).toBe(true);
-  });
-});
-
-describe('NA-006 (P0): GitHub link — link GitHub render', () => {
-  it('APP_TABS không chứa GitHub link (nằm ngoài nav)', () => {
-    const allItems: TabItem[] = [];
-    for (const tabOrGroup of APP_TABS) {
-      if ('groupName' in tabOrGroup) {
-        allItems.push(...tabOrGroup.items);
-      } else {
-        allItems.push(tabOrGroup);
-      }
-    }
-
-    const githubItem = allItems.find(i => i.path?.includes('github'));
-    expect(githubItem).toBeUndefined();
-  });
-
-  it('GitHub link có trong AppHeader template với đúng href', () => {
-    const fs = require('fs');
-    const path = require('path');
-    const headerSource = fs.readFileSync(
-      path.resolve(__dirname, '../AppHeader.vue'),
-      'utf-8'
-    );
-
-    expect(headerSource).toContain('https://github.com/maitieubao/VisualizationDSA');
-    expect(headerSource).toContain('target="_blank"');
-    expect(headerSource).toContain('rel="noopener noreferrer"');
+    setAttrSpy.mockRestore();
   });
 });

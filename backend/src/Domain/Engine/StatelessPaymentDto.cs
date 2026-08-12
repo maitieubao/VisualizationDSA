@@ -15,6 +15,8 @@ namespace VisualizationDSA.Domain.Engine
         public decimal Amount { get; set; }
         public string Status { get; set; } = "Pending";
         public DateTime CreatedAt { get; set; }
+        // PM-003: thời điểm order hết hạn (CreatedAt + 15 phút) — frontend đồng bộ timer QR.
+        public DateTime ExpiresAt { get; set; }
         public DateTime? CompletedAt { get; set; }
         public string BankId { get; set; } = string.Empty;
         public string BankAccount { get; set; } = string.Empty;
@@ -24,14 +26,14 @@ namespace VisualizationDSA.Domain.Engine
 
     public class StatelessCheckoutRequest
     {
-        public string? UserId { get; set; }
+        // PM-014: userId không nhận từ client — backend lấy từ token (chống IDOR).
         public string PaymentMethod { get; set; } = "vietqr";
     }
 
     public class StatelessVerifyRequest
     {
         public string OrderId { get; set; } = string.Empty;
-        public string? UserId { get; set; }
+        // PM-014: userId bị xóa — "intentionally ignored, lấy từ token" (JwtHelper.ExtractSubFromToken).
     }
 
     public class StatelessPaymentConfigDto

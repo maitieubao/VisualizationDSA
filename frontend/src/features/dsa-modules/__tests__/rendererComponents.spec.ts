@@ -65,7 +65,7 @@ function createFrame(data: number[], overrides?: Partial<FrameDTO>): FrameDTO {
 
 function mockCanvasGetContext(mockCtx: ReturnType<typeof createMockCanvasContext>) {
   const origGetContext = HTMLCanvasElement.prototype.getContext;
-  HTMLCanvasElement.prototype.getContext = vi.fn(() => mockCtx as unknown as CanvasRenderingContext2D);
+  HTMLCanvasElement.prototype.getContext = vi.fn(() => mockCtx as unknown as CanvasRenderingContext2D) as unknown as typeof HTMLCanvasElement.prototype.getContext;
   return () => { HTMLCanvasElement.prototype.getContext = origGetContext; };
 }
 

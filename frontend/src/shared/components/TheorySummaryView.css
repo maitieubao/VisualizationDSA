@@ -57,7 +57,8 @@
   background: color-mix(in srgb, var(--color-bg-surface) 40%, transparent);
   border: 1px solid var(--color-border-subtle);
   color: var(--color-text-muted);
-  font-size: 10px;
+  /* CU-034: font ≥ 12px cho dễ đọc */
+  font-size: 12px;
   font-weight: 600;
   font-family: var(--font-mono);
   padding: 4px 10px;
@@ -70,6 +71,17 @@
   background: var(--color-accent-cyan-dim);
   border-color: var(--color-accent-cyan);
   color: var(--color-accent-cyan-text);
+}
+
+.term-tag-btn--active {
+  background: var(--color-accent-cyan-dim);
+  border-color: var(--color-accent-cyan);
+  color: var(--color-accent-cyan-text);
+}
+
+.term-tag-btn:focus-visible {
+  outline: 2px solid var(--color-accent-cyan);
+  outline-offset: 2px;
 }
 
 .animate-fade-in {

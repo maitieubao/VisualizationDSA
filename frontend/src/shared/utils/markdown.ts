@@ -1,15 +1,32 @@
 import { parseEmojiToSvg } from '../../utils/emojiParser';
 
+// CU-001: whitelist scheme cho link — CHỈ http/https/mailto được render thành <a>.
+// Các scheme khác (javascript:, data:...) không khớp regex → giữ nguyên dạng text đã
+// escape → không bao giờ trở thành href/chạy được trong v-html preview.
+const SAFE_LINK_PATTERN = /\[([^\]]+)\]\((https?:\/\/[^\s)]+|mailto:[^\s)]+)\)/g;
+
 export function renderMarkdown(md: string): string {
   if (!md) return '';
-  
+
+  // CU-001: escape-first TOÀN BỘ (& < > " ') TRƯỚC khi bất kỳ regex markup nào chạy —
+  // nội dung/URL user nhập không bao giờ chui thẳng vào HTML. Chuỗi đã escape sau đó
+  // được nội suy vào <strong>/<em>/<code>/<a href> nên không thể phá markup.
   let html = md
     .replace(/&/g, '&amp;')
     .replace(/</g, '&lt;')
     .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;')
     .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
     .replace(/\*(.*?)\*/g, '<em>$1</em>')
     .replace(/`(.*?)`/g, '<code class="syn-inline-code">$1</code>');
+
+  // CU-001: link chạy SAU cùng — URL đã qua escape (không còn " ' < > &) và chỉ khớp
+  // scheme whitelist → thuộc tính href an toàn, không thể injection thuộc tính.
+  html = html.replace(
+    SAFE_LINK_PATTERN,
+    '<a href="$2" target="_blank" rel="noopener noreferrer">$1</a>'
+  );
 
   const blocks = html.split(/\n\n+/);
   

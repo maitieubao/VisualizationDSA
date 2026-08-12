@@ -63,4 +63,37 @@ describe('Payment API Service Unit Tests', () => {
     );
     expect(result).toEqual(mockOrder);
   });
+
+  // PM-056: error path — non-ok response must throw body.message (hoặc fallback HTTP)
+  it('createOrder should throw body.message on non-ok response', async () => {
+    const fetchSpy = vi.spyOn(global, 'fetch').mockImplementation(() =>
+      Promise.resolve({
+        ok: false,
+        status: 400,
+        statusText: 'Bad Request',
+        json: () => Promise.resolve({ message: 'Tài khoản đã là Premium' }),
+      } as Response)
+    );
+
+    await expect(paymentApi.createOrder('mock-token')).rejects.toThrow('Tài khoản đã là Premium');
+
+    expect(fetchSpy).toHaveBeenCalledWith(
+      expect.stringContaining('/api/v1/payments/order'),
+      expect.objectContaining({ method: 'POST' })
+    );
+  });
+
+  it('getOrderStatus should throw HTTP fallback when response body has no message', async () => {
+    vi.spyOn(global, 'fetch').mockImplementation(() =>
+      Promise.resolve({
+        ok: false,
+        status: 401,
+        statusText: 'Unauthorized',
+        json: () => Promise.reject(new Error('invalid json')),
+      } as Response)
+    );
+
+    await expect(paymentApi.getOrderStatus('order-123', 'mock-token'))
+      .rejects.toThrow('HTTP 401: Unauthorized');
+  });
 });

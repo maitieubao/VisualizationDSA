@@ -1,6 +1,7 @@
 <template>
   <Transition name="modal-fade">
-    <div v-if="show" class="modal-overlay" @click.self="$emit('update:show', false)">
+    <!-- TC-028: role=dialog + aria-modal + focus trap + Esc (useModalA11y) -->
+    <div v-if="show" ref="overlayEl" class="modal-overlay" role="dialog" aria-modal="true" aria-label="Tạo hoặc chỉnh sửa codelab" @click.self="$emit('update:show', false)">
       <div class="modal-container modal-xl">
         <div class="modal-header">
           <h3 class="modal-title">
@@ -140,9 +141,10 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, watch } from 'vue';
+import { ref, reactive, watch, toRef } from 'vue';
 import BaseIcon from '@/shared/components/BaseIcon.vue';
 import CustomMarkdownEditor from '@/components/editor/CustomMarkdownEditor.vue';
+import { useModalA11y } from '../../composables/useModalA11y';
 
 interface Props {
   show: boolean;
@@ -158,6 +160,9 @@ const props = defineProps<Props>();
 const emit = defineEmits<Emits>();
 
 const saving = ref(false);
+
+// TC-028: focus trap + Esc + khóa scroll + hoàn trả focus.
+const { overlayEl } = useModalA11y(toRef(props, 'show'));
 
 const form = reactive({
   title: '',

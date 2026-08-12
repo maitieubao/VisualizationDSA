@@ -100,8 +100,11 @@ describe('useAlgoPlaygroundStore', () => {
     store.jumpToFrame(9999);
     expect(store.currentIndex).toBe(total - 1);
 
+    // AL-020: biên âm — hiện tại jumpToFrame(-5) là no-op (chỉ nhận index trong [0, n)).
+    // Nếu source agent clamp về 0 → đổi expectation thành 0.
     store.jumpToFrame(-5);
     expect(store.currentIndex).toBe(total - 1);
+    expect(store.currentIndex).toBeGreaterThanOrEqual(0);
   });
 
   it('stepNext at the end stops playback', async () => {
@@ -174,6 +177,41 @@ describe('useAlgoPlaygroundStore', () => {
     await nextTick();
     expect(store.isCompiling).toBe(false);
     expect(store.totalFrames).toBe(0);
+  });
+
+  it('AL-028: play trước compile → auto-play khi frames về (pendingPlayAfterCompile)', async () => {
+    const store = useAlgoPlaygroundStore();
+    store.loadDemo('bubble-sort');
+    const realImpl = vi.mocked(compileInWorker).getMockImplementation()!;
+    let resolveCompile!: (frames: PlaybackFrame[]) => void;
+    vi.mocked(compileInWorker).mockImplementationOnce(
+      () => new Promise<PlaybackFrame[]>((res) => { resolveCompile = res; }),
+    );
+
+    store.play(); // chưa có frames → pendingPlayAfterCompile = true + run()
+    await nextTick();
+    expect(store.isPlaying).toBe(false);
+    expect(store.isCompiling).toBe(true);
+
+    const frames = await realImpl(store.code, [], { array: [5, 3, 8, 4, 2], fallbackToRegex: false });
+    resolveCompile(frames);
+    await nextTick();
+    await nextTick();
+    expect(store.totalFrames).toBeGreaterThan(0);
+    expect(store.isPlaying).toBe(true); // auto-play sau compile
+  });
+
+  it('AL-028: play ở frame cuối → wrap về frame 0 và phát ngay', async () => {
+    const store = useAlgoPlaygroundStore();
+    store.loadDemo('bubble-sort');
+    await store.run();
+    expect(store.totalFrames).toBeGreaterThan(1);
+
+    store.jumpToFrame(store.totalFrames - 1);
+    expect(store.currentIndex).toBe(store.totalFrames - 1);
+    store.play();
+    expect(store.currentIndex).toBe(0); // wrap về đầu
+    expect(store.isPlaying).toBe(true);
   });
 
   it('ignores stale results from an older run() call', async () => {

@@ -36,8 +36,9 @@
             <div>
               <h2 class="text-lg font-extrabold text-text-primary">{{ problemTitle }}</h2>
             </div>
+            <!-- LM-043: độ khó lấy từ codelabTask (không hardcode "Cơ bản"). -->
             <span class="px-2.5 py-1 rounded-full text-[10px] font-bold bg-accent-green/80 text-accent-green border border-accent-green/30">
-              Cơ bản
+              {{ codelabTask.difficulty ?? 'Cơ bản' }}
             </span>
           </div>
 
@@ -55,7 +56,8 @@
             <ul class="text-xs text-text-muted list-disc list-inside mt-1 space-y-0.5 font-mono">
               <li>Input là JSON array các tham số: [[1,3,5],7]</li>
               <li>Hàm entry: {{ codelabTask.entryFunction || 'solution' }}</li>
-              <li>Giới hạn thời gian chạy: 1500ms / testcase set</li>
+              <!-- LM-043: timeLimit lấy từ codelabTask thay hardcode 1500ms. -->
+              <li>Giới hạn thời gian chạy: {{ codelabTask.timeLimitMs ?? 1500 }}ms / testcase set</li>
             </ul>
           </div>
         </div>
@@ -108,17 +110,35 @@
 
       <!-- Phải: Monaco editor + Run/Submit -->
       <div class="w-full lg:w-1/2 h-full flex flex-col bg-bg-secondary">
-        <div class="px-4 py-2.5 border-b border-border-subtle bg-bg-secondary flex items-center justify-between shrink-0">
-          <div class="flex items-center gap-2">
-            <span class="text-xs font-bold text-text-secondary font-mono">Solution.js</span>
-            <span class="text-[10px] px-2 py-0.5 rounded bg-bg-surface text-text-muted font-mono">JavaScript</span>
+          <div class="px-4 py-2.5 border-b border-border-subtle bg-bg-secondary flex items-center justify-between shrink-0">
+            <div class="flex items-center gap-2">
+              <span class="text-xs font-bold text-text-secondary font-mono">Solution.js</span>
+              <span class="text-[10px] px-2 py-0.5 rounded bg-bg-surface text-text-muted font-mono">JavaScript</span>
+            </div>
+            <button @click="resetCode" :disabled="isRunning" class="text-[11px] text-text-muted hover:text-text-primary cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed">
+              Reset to Starter Code
+            </button>
           </div>
-          <button @click="resetCode" class="text-[11px] text-text-muted hover:text-text-primary cursor-pointer">
-            Reset to Starter Code
-          </button>
-        </div>
 
-        <div class="flex-1 min-h-0" ref="editorContainer"></div>
+          <div class="flex-1 min-h-0 relative" ref="editorContainer">
+            <!-- Skeleton loading Monaco (LM-042). -->
+            <div v-if="editorLoading" class="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-bg-secondary" role="status" aria-label="Đang tải trình soạn thảo">
+              <div class="inline-block w-6 h-6 border-4 border-accent/20 border-t-accent rounded-full animate-spin" />
+              <p class="text-xs text-text-muted">Đang tải trình soạn thảo...</p>
+            </div>
+            <!-- Lỗi Monaco → nút thử lại (LM-042). -->
+            <div v-else-if="editorError" class="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-bg-secondary px-6 text-center">
+              <BaseIcon name="warning" class="w-8 h-8 text-accent-red" />
+              <p class="text-xs text-accent-red font-mono">{{ editorError }}</p>
+              <button
+                @click="initEditor"
+                class="px-4 py-2 bg-accent hover:bg-accent-dark text-white rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-2"
+              >
+                <BaseIcon name="refresh" class="w-3 h-3" />
+                Thử lại
+              </button>
+            </div>
+          </div>
 
         <div class="p-4 border-t border-border-subtle bg-bg-secondary flex items-center justify-between shrink-0 gap-3 flex-wrap">
           <div class="flex items-center gap-2 flex-wrap">
@@ -167,6 +187,9 @@ const runError = ref<string | null>(null);
 const caseResults = ref<CodelabCaseResult[]>([]);
 const editorContainer = ref<HTMLElement | null>(null);
 const editorInstance = shallowRef<monaco.editor.IStandaloneCodeEditor | null>(null);
+// Trạng thái Monaco: skeleton loading + lỗi + thử lại (LM-042).
+const editorLoading = ref(false);
+const editorError = ref<string | null>(null);
 
 const problemTabs: Array<{ id: string; name: string; badge?: string }> = [
   { id: 'problem', name: 'Problem' },
@@ -186,7 +209,7 @@ function currentCode(): string {
 }
 
 function resetCode(): void {
-  if (!props.codelabTask) return;
+  if (!props.codelabTask || isRunning.value) return;
   editorInstance.value?.setValue(props.codelabTask.initialCode);
   caseResults.value = [];
   runError.value = null;
@@ -257,34 +280,44 @@ watch(() => props.codelabTask, () => {
   runError.value = null;
 });
 
-onMounted(async () => {
-  if (!props.codelabTask) return;
+onMounted(() => {
+  void initEditor();
+});
+
+/** Khởi tạo Monaco — có thể gọi lại từ nút "Thử lại" khi lỗi (LM-042). */
+async function initEditor(): Promise<void> {
+  if (!props.codelabTask || !editorContainer.value) return;
+  editorLoading.value = true;
+  editorError.value = null;
   try {
     const monacoInstance = await loader.init();
-    if (editorContainer.value) {
-      editorInstance.value = monacoInstance.editor.create(editorContainer.value, {
-        value: props.codelabTask.initialCode,
-        language: 'javascript',
-        theme: 'vs-dark',
-        automaticLayout: true,
-        minimap: { enabled: false },
-        fontSize: 13,
-        fontFamily: "'Fira Code', 'JetBrains Mono', monospace",
-        padding: { top: 16 },
-        scrollBeyondLastLine: false,
-        renderLineHighlight: 'all',
-        lineNumbers: 'on',
-        bracketPairColorization: { enabled: true },
-        formatOnPaste: true,
-        cursorBlinking: 'smooth',
-        cursorSmoothCaretAnimation: 'on',
-        smoothScrolling: true,
-      });
-    }
+    if (!editorContainer.value) return;
+    editorInstance.value?.dispose();
+    editorInstance.value = monacoInstance.editor.create(editorContainer.value, {
+      value: props.codelabTask.initialCode,
+      language: 'javascript',
+      theme: 'vs-dark',
+      automaticLayout: true,
+      minimap: { enabled: false },
+      fontSize: 13,
+      fontFamily: "'Fira Code', 'JetBrains Mono', monospace",
+      padding: { top: 16 },
+      scrollBeyondLastLine: false,
+      renderLineHighlight: 'all',
+      lineNumbers: 'on',
+      bracketPairColorization: { enabled: true },
+      formatOnPaste: true,
+      cursorBlinking: 'smooth',
+      cursorSmoothCaretAnimation: 'on',
+      smoothScrolling: true,
+    });
   } catch (error) {
     console.error('Failed to initialize Monaco editor', error);
+    editorError.value = 'Không thể tải trình soạn thảo code. Vui lòng thử lại.';
+  } finally {
+    editorLoading.value = false;
   }
-});
+}
 
 onUnmounted(() => {
   editorInstance.value?.dispose();

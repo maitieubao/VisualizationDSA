@@ -1,13 +1,15 @@
 <template>
   <Teleport to="body">
-    <div class="toast-container" aria-live="polite" aria-atomic="true">
+    <!-- CU-032: aria-live theo type — error assertive, còn lại polite (role tương ứng alert/status) -->
+    <div class="toast-container">
       <TransitionGroup name="toast-slide">
         <div
           v-for="toast in toastStore.activeToasts"
           :key="toast.id"
           class="toast-item"
           :class="`toast-item--${toast.type}`"
-          role="alert"
+          :role="toast.type === 'error' ? 'alert' : 'status'"
+          :aria-live="toast.type === 'error' ? 'assertive' : 'polite'"
           @click="toastStore.removeToast(toast.id)"
         >
           <div class="toast-icon">

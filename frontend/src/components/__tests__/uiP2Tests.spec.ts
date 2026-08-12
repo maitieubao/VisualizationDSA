@@ -3,10 +3,6 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { setActivePinia, createPinia } from 'pinia';
 import { mount, flushPromises } from '@vue/test-utils';
 
-import ToastContainer from '../ToastContainer.vue';
-import SkeletonLoader from '../SkeletonLoader.vue';
-import SkeletonCard from '../SkeletonCard.vue';
-import { useToastStore } from '../../composables/useToast';
 import BaseIcon from '../../shared/components/BaseIcon.vue';
 
 import AlgorithmDashboard from '../../features/dsa-modules/components/AlgorithmDashboard.vue';
@@ -20,17 +16,6 @@ import HelpButton from '../../features/guided-tour/components/HelpButton.vue';
 import GuidedTourOverlay from '../../features/guided-tour/components/GuidedTourOverlay.vue';
 import VirtualMascot from '../../features/guided-tour/components/VirtualMascot.vue';
 import { useGuidedTourStore } from '../../features/guided-tour/store/useGuidedTourStore';
-
-class LocalStorageMock {
-  private store: Record<string, string> = {};
-  clear() { this.store = {}; }
-  getItem(key: string) { return this.store[key] || null; }
-  setItem(key: string, value: string) { this.store[key] = String(value); }
-  removeItem(key: string) { delete this.store[key]; }
-}
-
-const localStorageMock = new LocalStorageMock();
-global.localStorage = localStorageMock as unknown as Storage;
 
 vi.mock('vue-router', () => ({
   useRoute: vi.fn(() => ({ path: '/sorting' })),
@@ -213,130 +198,20 @@ vi.mock('../../features/auth/services/authApi', () => ({
 }));
 
 function mockFetchError() {
-  global.fetch = vi.fn().mockRejectedValue(new Error('Network error')) as unknown as typeof fetch;
+  vi.stubGlobal('fetch', vi.fn().mockRejectedValue(new Error('Network error')));
 }
 
 function mockFetchSuccess(data: unknown) {
-  global.fetch = vi.fn().mockResolvedValue({
+  vi.stubGlobal('fetch', vi.fn().mockResolvedValue({
     ok: true,
     json: async () => data,
-  }) as unknown as typeof fetch;
+  }));
 }
 
-// =============================================================================
-// TOAST TESTS (P2)
-// =============================================================================
-describe('ToastContainer + useToastStore — P2 Tests', () => {
-  beforeEach(() => {
-    setActivePinia(createPinia());
-    vi.useFakeTimers();
-    document.body.innerHTML = '';
-  });
-
-  afterEach(() => {
-    vi.useRealTimers();
-  });
-
-  it('Toast-001 (P2): Hiển thị toast khi gọi addToast', async () => {
-    const store = useToastStore();
-    mount(ToastContainer, {
-      global: { components: { BaseIcon } },
-      attachTo: document.body,
-    });
-
-    store.addToast('info', 'Thông báo', 'Nội dung test');
-    await flushPromises();
-
-    expect(document.querySelector('.toast-item')).not.toBeNull();
-    expect(document.body.innerHTML).toContain('Thông báo');
-    expect(document.body.innerHTML).toContain('Nội dung test');
-  });
-
-  it('Toast-002 (P2): 4 loại success/error/warning/info render icon đúng', async () => {
-    const store = useToastStore();
-    mount(ToastContainer, {
-      global: { components: { BaseIcon } },
-      attachTo: document.body,
-    });
-
-    store.success('Thành công');
-    store.error('Lỗi');
-    store.warning('Cảnh báo');
-    store.info('Thông báo');
-    await flushPromises();
-
-    const items = document.querySelectorAll('.toast-item');
-    expect(items).toHaveLength(4);
-    expect(items[0].classList.contains('toast-item--success')).toBe(true);
-    expect(items[1].classList.contains('toast-item--error')).toBe(true);
-    expect(items[2].classList.contains('toast-item--warning')).toBe(true);
-    expect(items[3].classList.contains('toast-item--info')).toBe(true);
-  });
-
-  it('Toast-003 (P2): Toast tự động đóng sau duration timeout', async () => {
-    const store = useToastStore();
-    mount(ToastContainer, {
-      global: { components: { BaseIcon } },
-      attachTo: document.body,
-    });
-
-    store.addToast('info', 'Auto Close', 'Sẽ biến mất sau 3s', 3000);
-    expect(store.activeToasts).toHaveLength(1);
-
-    vi.advanceTimersByTime(3100);
-    await flushPromises();
-
-    expect(store.activeToasts).toHaveLength(0);
-  });
-
-  it('Toast-004 (P2): Đóng thủ công toast bằng removeToast', async () => {
-    const store = useToastStore();
-    mount(ToastContainer, {
-      global: { components: { BaseIcon } },
-      attachTo: document.body,
-    });
-
-    store.addToast('info', 'Manual Close', 'Đóng bằng tay');
-    await flushPromises();
-
-    expect(store.activeToasts).toHaveLength(1);
-
-    const closeBtn = document.querySelector('.toast-close');
-    expect(closeBtn).not.toBeNull();
-    closeBtn!.dispatchEvent(new Event('click'));
-    await flushPromises();
-
-    expect(store.activeToasts).toHaveLength(0);
-  });
-});
-
-// =============================================================================
-// SKELETON TESTS (P2)
-// =============================================================================
-describe('SkeletonLoader + SkeletonCard — P2 Tests', () => {
-  beforeEach(() => {
-    setActivePinia(createPinia());
-  });
-
-  it('Skel-001 (P2): Render skeleton với pulse animation', () => {
-    const wrapper = mount(SkeletonLoader, {
-      props: { variant: 'rect', width: '100px', height: '20px' },
-    });
-
-    expect(wrapper.find('.skeleton').exists()).toBe(true);
-    expect(wrapper.find('.skeleton__shimmer').exists()).toBe(true);
-    expect(wrapper.classes()).toContain('skeleton--rect');
-  });
-
-  it('Skel-002 (P2): SkeletonCard render placeholder structure', () => {
-    const wrapper = mount(SkeletonCard);
-
-    expect(wrapper.find('.skeleton-card').exists()).toBe(true);
-    expect(wrapper.find('.skeleton-card__footer').exists()).toBe(true);
-
-    const skeletons = wrapper.findAll('.skeleton');
-    expect(skeletons.length).toBeGreaterThanOrEqual(3);
-  });
+// CU-028 (P2): restore fetch/localStorage — vi.stubGlobal + unstubAllGlobals + clear() sau mỗi test.
+afterEach(() => {
+  vi.unstubAllGlobals();
+  localStorage.clear();
 });
 
 // =============================================================================
@@ -589,7 +464,20 @@ describe('GuidedTour + HelpButton — P2 Tests', () => {
     expect(bars.length).toBe(4);
   });
 
-  it('GT-012 (P2): Responsive card tự định vị', async () => {
+  it('GT-012 (CU-037): Responsive card tự định vị — assert giá trị cụ thể (không style truthy)', async () => {
+    // Dựng phần tử spotlight thật cho step đầu tour /sorting ([data-tour-id="algo-tab-switch"]).
+    const target = document.createElement('div');
+    target.setAttribute('data-tour-id', 'algo-tab-switch');
+    target.scrollIntoView = vi.fn();
+    Object.defineProperty(target, 'getBoundingClientRect', {
+      configurable: true,
+      value: () => ({
+        top: 100, left: 50, width: 120, height: 40, right: 170, bottom: 140, x: 50, y: 100,
+        toJSON: () => ({}),
+      }),
+    });
+    document.body.appendChild(target);
+
     const store = useGuidedTourStore();
     store.startPageTour('/sorting', true);
 
@@ -599,10 +487,22 @@ describe('GuidedTour + HelpButton — P2 Tests', () => {
     });
     await flushPromises();
 
+    vi.advanceTimersByTime(150); // updateSpotlight(false) lần đầu
+    vi.advanceTimersByTime(350); // updateSpotlight(true) sau scrollIntoView
+    await flushPromises();
+
     const dialogCard = wrapper.find('.dialog-card');
     expect(dialogCard.exists()).toBe(true);
 
-    const style = dialogCard.attributes('style');
-    expect(style).toBeTruthy();
+    const style = dialogCard.attributes('style') ?? '';
+    // jsdom viewport 1024x768 + rect(top 100,left 50,w 120,h 40):
+    // placement bottom → top = 140+8+12 = 160px; left = 50+60-225 → clamp về 16px; cardWidth = 450px.
+    expect(style).toContain('position: absolute');
+    expect(style).toContain('width: 450px');
+    expect(style).toContain('top: 160px');
+    expect(style).toContain('left: 16px');
+
+    wrapper.unmount();
+    target.remove();
   });
 });

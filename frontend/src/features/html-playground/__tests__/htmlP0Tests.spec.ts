@@ -1,23 +1,9 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach } from 'vitest';
 import { setActivePinia, createPinia } from 'pinia';
 import { useHtmlPlaygroundStore } from '../store/useHtmlPlaygroundStore';
 import { PlaygroundDocumentBuilder } from '../engine/PlaygroundDocumentBuilder';
 import { PlaygroundUrlCodec } from '../engine/PlaygroundUrlCodec';
 import { DEFAULT_PLAYGROUND_SOURCE } from '../types/playground.types';
-
-vi.stubGlobal('HTMLCanvasElement', class HTMLCanvasElement {});
-(globalThis as any).HTMLCanvasElement.prototype.getContext = vi.fn(() => ({
-  fillRect: vi.fn(),
-  clearRect: vi.fn(),
-  fillText: vi.fn(),
-  measureText: vi.fn(() => ({ width: 10 })),
-  beginPath: vi.fn(),
-  arc: vi.fn(),
-  fill: vi.fn(),
-  stroke: vi.fn(),
-  moveTo: vi.fn(),
-  lineTo: vi.fn(),
-})) as any;
 
 describe('HTML Playground — Store, DocumentBuilder & UrlCodec (P0/P1)', () => {
 
@@ -75,13 +61,11 @@ describe('HTML Playground — Store, DocumentBuilder & UrlCodec (P0/P1)', () => 
   });
 
   describe('HP-005 (P0): Bấm Run', () => {
-    it('runCode (revision increment) updates preview state', () => {
+    it('setSourceFile (gõ code) KHÔNG tăng revision — debounce/gating preview do component đảm nhận', () => {
       const store = useHtmlPlaygroundStore();
       const initialRevision = store.revision;
-      store.setSourceFile('html', '<p>After Run</p>');
-      store.loadFromSource(store.source);
-      expect(store.revision).toBe(initialRevision + 1);
-      expect(store.documentHtml).toContain('<p>After Run</p>');
+      store.setSourceFile('html', '<p>After typing</p>');
+      expect(store.revision).toBe(initialRevision);
     });
 
     it('loadFromSource triggers revision increment (preview refresh)', () => {
@@ -124,7 +108,7 @@ describe('HTML Playground — Store, DocumentBuilder & UrlCodec (P0/P1)', () => 
       const store = useHtmlPlaygroundStore();
       store.setSourceFile('html', '<h1>Share me</h1>');
       const payload = store.buildSharePayload();
-      expect(typeof payload).toBe('string');
+      if (payload === null) throw new Error('payload should not be null for small source');
       expect(payload.length).toBeGreaterThan(0);
       const decoded = PlaygroundUrlCodec.decode(payload);
       expect(decoded).not.toBeNull();
@@ -138,6 +122,7 @@ describe('HTML Playground — Store, DocumentBuilder & UrlCodec (P0/P1)', () => 
         js: 'const x = 42;',
       };
       const encoded = PlaygroundUrlCodec.encode(source);
+      if (encoded === null) throw new Error('encode should not be null');
       const decoded = PlaygroundUrlCodec.decode(encoded);
       expect(decoded).toEqual(source);
     });
@@ -150,6 +135,7 @@ describe('HTML Playground — Store, DocumentBuilder & UrlCodec (P0/P1)', () => 
         js: 'console.log("restored");',
       };
       const payload = PlaygroundUrlCodec.encode(originalSource);
+      if (payload === null) throw new Error('encode should not be null');
       const success = store.loadFromSharePayload(payload);
       expect(success).toBe(true);
       expect(store.html).toBe(originalSource.html);

@@ -1,6 +1,7 @@
 <template>
   <Transition name="modal-fade">
-    <div v-if="show" class="modal-overlay" @click.self="$emit('update:show', false)">
+    <!-- TC-028: role=dialog + aria-modal + focus trap + Esc (useModalA11y) -->
+    <div v-if="show" ref="overlayEl" class="modal-overlay" role="dialog" aria-modal="true" aria-label="Chọn bài viết lý thuyết" @click.self="$emit('update:show', false)">
       <div class="modal-container modal-xl">
         <div class="modal-header">
           <h3 class="modal-title">
@@ -115,6 +116,20 @@
               <button class="btn-secondary px-3 text-xs" @click="changePage(page + 1)" :disabled="page >= totalPages">Sau</button>
             </div>
             
+            <!-- TC-029: icon mắt "Xem trước" — hiển thị preview nội dung thật -->
+            <div v-if="previewArticleData" class="article-preview-panel mt-4 p-4 rounded-xl border border-accent/30 bg-accent/10 animate-fade-in">
+              <div class="flex items-center justify-between mb-3">
+                <h4 class="text-sm font-bold text-text-primary">{{ previewArticleData.title }}</h4>
+                <button type="button" class="btn-action-icon text-text-muted hover:text-accent" @click="previewArticleData = null" title="Đóng preview">
+                  <BaseIcon name="close" class="w-4 h-4" />
+                </button>
+              </div>
+              <p class="text-xs text-text-muted mb-3">Danh mục: {{ previewArticleData.category }} · Độ khó: {{ previewArticleData.difficulty }}</p>
+              <div class="preview-content text-xs text-text-secondary leading-relaxed max-h-60 overflow-y-auto pr-1 bg-bg-secondary p-3 rounded-lg border border-border-subtle whitespace-pre-wrap">
+                {{ stripMarkdown(previewArticleData.contentMd).substring(0, 1500) }}
+              </div>
+            </div>
+
             
             <div v-if="selectedArticles.length > 0" class="mt-4 p-4 bg-accent/10 border border-accent/20 rounded-xl">
               <div class="flex items-center justify-between mb-2">
@@ -157,8 +172,10 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch } from 'vue';
+import { ref, computed, watch, toRef } from 'vue';
 import BaseIcon from '@/shared/components/BaseIcon.vue';
+import { useTeacherApi } from './useTeacherApi';
+import { useModalA11y } from '../../composables/useModalA11y';
 
 interface Props {
   show: boolean;
@@ -189,15 +206,21 @@ const totalCount = ref(0);
 const totalPages = computed(() => Math.ceil(totalCount.value / pageSize) || 1);
 const categories = ref<string[]>([]);
 const selectedArticles = ref<any[]>([]);
+// TC-029: preview nội dung bài viết (đọc detail thật).
+const previewArticleData = ref<any | null>(null);
 
-const BASE_URL = import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:5055';
+const { BASE_URL, teacherRequest } = useTeacherApi();
 
-function getAuthHeaders() {
-  const token = localStorage.getItem('accessToken');
-  return {
-    'Content-Type': 'application/json',
-    ...(token ? { 'Authorization': `Bearer ${token}` } : {})
-  };
+// TC-028: focus trap + Esc + khóa scroll + hoàn trả focus.
+const { overlayEl } = useModalA11y(toRef(props, 'show'));
+
+function stripMarkdown(md: string): string {
+  if (!md) return '';
+  return md
+    .replace(/```[\s\S]*?```/g, ' [code] ')
+    .replace(/[#*_`>~|]/g, '')
+    .replace(/\[([^\]]*)\]\([^)]*\)/g, '$1')
+    .replace(/!\[([^\]]*)\]\([^)]*\)/g, '$1');
 }
 
 function isSelected(article: any): boolean {
@@ -225,9 +248,16 @@ function handleSelect() {
   emit('update:show', false);
 }
 
-function previewArticle(article: any) {
-  
-  console.log('Preview:', article);
+// TC-029: xem trước nội dung bài viết — đọc detail thật (không console.log).
+async function previewArticle(article: any) {
+  try {
+    const res = await teacherRequest(`${BASE_URL}/api/v1/theory-articles/${article.id}`);
+    if (res.ok) {
+      previewArticleData.value = await res.json();
+    }
+  } catch (err) {
+    console.error('Failed to preview article:', err);
+  }
 }
 
 let searchTimeout: ReturnType<typeof setTimeout> | null = null;
@@ -251,7 +281,7 @@ async function loadArticles() {
     if (filterCategory.value) params.append('category', filterCategory.value);
     if (filterDifficulty.value) params.append('difficulty', filterDifficulty.value);
 
-    const res = await fetch(`${BASE_URL}/api/v1/theory-articles?${params}`, { headers: getAuthHeaders() });
+    const res = await teacherRequest(`${BASE_URL}/api/v1/theory-articles?${params}`);
     if (res.ok) {
       const data = await res.json();
       articles.value = data.articles || data;
@@ -266,7 +296,7 @@ async function loadArticles() {
 
 async function loadCategories() {
   try {
-    const res = await fetch(`${BASE_URL}/api/v1/theory-articles?pageSize=1000`, { headers: getAuthHeaders() });
+    const res = await teacherRequest(`${BASE_URL}/api/v1/theory-articles?pageSize=1000`);
     if (res.ok) {
       const data = await res.json();
       const cats = [...new Set((data.articles || data).map((a: any) => a.category).filter(Boolean))] as string[];

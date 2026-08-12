@@ -3,7 +3,7 @@
     <div class="w-12 h-12 rounded-2xl flex items-center justify-center text-xl font-black text-accent bg-bg-surface border border-border-default shadow-lg animate-pulse"><BaseIcon name="zap" class="w-6 h-6" /></div>
     <p class="text-sm font-bold text-text-primary">Chưa có dữ liệu hoạt ảnh</p>
     <p class="text-xs text-text-secondary max-w-sm leading-relaxed">
-      Hãy tạo mảng mới hoặc chọn một thuật toán để sinh khung hình. Nếu bạn nhập dữ liệu không hợp lệ, hãy kiểm tra lại định dạng.
+      Chọn một preset mảng (Ngẫu nhiên, Đã sắp xếp, Đảo ngược, Gần sort) hoặc chỉnh thanh trượt N rồi nhấn Play để sinh khung hình hoạt ảnh.
     </p>
   </div>
   <BubbleSortVisualizer v-else-if="frame.algorithm === 'bubble'" :frame="frame" />

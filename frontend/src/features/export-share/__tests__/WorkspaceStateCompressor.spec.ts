@@ -1,7 +1,8 @@
 
 import { describe, it, expect, vi } from 'vitest';
+import { compressToEncodedURIComponent } from 'lz-string';
 import { WorkspaceStateCompressor } from '../engine/WorkspaceStateCompressor';
-import type { WorkspaceState } from '../types/export-share.types';
+import type { WorkspaceState, LayoutNode } from '../types/export-share.types';
 import { MAX_COMPRESSED_STATE_LENGTH } from '../types/export-share.types';
 
 describe('WorkspaceStateCompressor', () => {
@@ -136,11 +137,33 @@ describe('WorkspaceStateCompressor', () => {
       expect(restored!.currentStepIndex).toBe(42);
     });
 
-    it('should log error for corrupted data and return null', () => {
+    it('should roundtrip unicode content (tiếng Việt + emoji) losslessly (EX-018)', () => {
+      const unicodeState: WorkspaceState = {
+        algorithmId: 'thuật-toán-sắp-xếp-đổi-chỗ',
+        layoutNodes: [
+          { id: 'nút-đầu-tiên 📦', x: 12.5, y: 34 },
+          { id: '♥️ nút thứ hai', x: -10, y: 99.75 },
+          { id: 'đặc-biệt+/=&', x: 0, y: 0 },
+        ],
+        currentStepIndex: 7,
+      };
+      const compressed = WorkspaceStateCompressor.serializeState(unicodeState);
+      const restored = WorkspaceStateCompressor.deserializeState(compressed);
+
+      expect(restored).not.toBeNull();
+      expect(restored).toEqual(unicodeState);
+    });
+
+    it('should log error and return null for payload that decompresses to invalid JSON (EX-018/EX-020)', () => {
       const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
-      const result = WorkspaceStateCompressor.deserializeState('{{corrupted}}');
-      expect(result).toBeNull();
-      consoleSpy.mockRestore();
+      try {
+        const payload = compressToEncodedURIComponent('this is not valid json');
+        const result = WorkspaceStateCompressor.deserializeState(payload);
+        expect(result).toBeNull();
+        expect(consoleSpy).toHaveBeenCalled();
+      } finally {
+        consoleSpy.mockRestore();
+      }
     });
   });
 
@@ -183,10 +206,13 @@ describe('WorkspaceStateCompressor', () => {
         })),
         currentStepIndex: 999,
       };
-      const result = WorkspaceStateCompressor.serializeStateWithValidation(hugeState);
-      expect(result).toBeNull();
-      expect(warnSpy).toHaveBeenCalled();
-      warnSpy.mockRestore();
+      try {
+        const result = WorkspaceStateCompressor.serializeStateWithValidation(hugeState);
+        expect(result).toBeNull();
+        expect(warnSpy).toHaveBeenCalled();
+      } finally {
+        warnSpy.mockRestore();
+      }
     });
 
     it('should validate round-trip integrity of returned string', () => {
@@ -195,6 +221,72 @@ describe('WorkspaceStateCompressor', () => {
       const restored = WorkspaceStateCompressor.deserializeState(result!);
       expect(restored).not.toBeNull();
       expect(restored!.algorithmId).toBe(sampleState.algorithmId);
+    });
+
+    it('should accept and roundtrip a state whose compressed payload sits just under the limit (EX-018)', () => {
+      const nodes: LayoutNode[] = [];
+      let compressed = '';
+      do {
+        nodes.push({
+          id: `near-limit-node-${nodes.length}`,
+          x: nodes.length,
+          y: nodes.length * 2,
+        });
+        compressed = WorkspaceStateCompressor.serializeState({
+          algorithmId: 'near-limit',
+          layoutNodes: nodes,
+          currentStepIndex: 1,
+        });
+      } while (compressed.length < MAX_COMPRESSED_STATE_LENGTH - 200);
+
+      const nearLimitState: WorkspaceState = {
+        algorithmId: 'near-limit',
+        layoutNodes: nodes,
+        currentStepIndex: 1,
+      };
+
+      expect(compressed.length).toBeLessThanOrEqual(MAX_COMPRESSED_STATE_LENGTH);
+      expect(compressed.length).toBeGreaterThan(MAX_COMPRESSED_STATE_LENGTH - 200);
+
+      const result = WorkspaceStateCompressor.serializeStateWithValidation(nearLimitState);
+      expect(result).not.toBeNull();
+
+      const restored = WorkspaceStateCompressor.deserializeState(result as string);
+      expect(restored).not.toBeNull();
+      expect(restored).toEqual(nearLimitState);
+    });
+
+    it('should reject a state whose compressed payload crosses the limit (EX-018)', () => {
+      const consoleWarn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+      const nodes: LayoutNode[] = [];
+      let compressed = '';
+      try {
+        while (compressed.length <= MAX_COMPRESSED_STATE_LENGTH) {
+          nodes.push({
+            id: `over-limit-${nodes.length}`,
+            x: nodes.length,
+            y: nodes.length,
+          });
+          compressed = WorkspaceStateCompressor.serializeState({
+            algorithmId: 'over-limit',
+            layoutNodes: nodes,
+            currentStepIndex: 2,
+          });
+        }
+
+        const overLimitState: WorkspaceState = {
+          algorithmId: 'over-limit',
+          layoutNodes: nodes,
+          currentStepIndex: 2,
+        };
+
+        expect(compressed.length).toBeGreaterThan(MAX_COMPRESSED_STATE_LENGTH);
+        const result = WorkspaceStateCompressor.serializeStateWithValidation(overLimitState);
+        expect(result).toBeNull();
+        expect(consoleWarn).toHaveBeenCalled();
+      } finally {
+        consoleWarn.mockRestore();
+      }
     });
   });
 });

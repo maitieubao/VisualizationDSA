@@ -110,26 +110,33 @@ export const CODELAB_TASK_REGISTRY: Record<string, CodeLabTask> = {
 
   'tree-traversal': {
     description:
-      'Hoàn thiện hàm đệ quy `factorial(n)` tính n! (n ≥ 0). Đây là ví dụ kinh điển minh họa Call Stack đệ quy: mỗi lần gọi đẩy một frame lên stack cho tới base case.',
-    initialCode: `function factorial(n) {
-  // TODO: Viết code đệ quy tại đây
-
-  return 0;
+      'Hoàn thiện hàm đệ quy `inorder(root)` duyệt cây nhị phân theo thứ tự In-order (trái → gốc → phải) và trả về mảng giá trị. Cây biểu diễn dạng mảng lồng nhau `[value, left, right]`; node rỗng là `null`. Ví dụ `[1,[2,null,null],[3,null,null]]` là cây gốc 1, trái 2, phải 3 → kết quả `[2,1,3]`.',
+    initialCode: `function inorder(root) {
+  // TODO: Duyệt cây In-order (trái → gốc → phải) tại đây
+  const result = [];
+  return result;
 }`,
-    solution: `function factorial(n) {
-  if (n <= 1) return 1; // base case
-  return n * factorial(n - 1); // recursive case
+    solution: `function inorder(root) {
+  const result = [];
+  function dfs(node) {
+    if (node === null) return; // base case
+    dfs(node[1]); // trái
+    result.push(node[0]); // gốc
+    dfs(node[2]); // phải
+  }
+  dfs(root);
+  return result;
 }`,
-    entryFunction: 'factorial',
+    entryFunction: 'inorder',
     testCases: [
-      { input: '[5]', expectedOutput: '120' },
-      { input: '[0]', expectedOutput: '1' },
-      { input: '[10]', expectedOutput: '3628800', isHidden: true },
+      { input: '[[1,[2,[4,null,null],null],[3,null,null]]]', expectedOutput: '[4,2,1,3]' },
+      { input: '[[1,null,[2,null,null]]]', expectedOutput: '[1,2]' },
+      { input: '[null]', expectedOutput: '[]', isHidden: true },
     ],
     hints: [
-      'Base case: n ≤ 1 thì trả về 1 (điều kiện dừng).',
-      'Recursive case: trả về n * factorial(n - 1).',
-      'Nếu thiếu base case, hàm sẽ tràn Call Stack (StackOverflow).',
+      'Biểu diễn node: node[0] = giá trị, node[1] = cây con trái, node[2] = cây con phải; node === null là cây rỗng.',
+      'Viết hàm con dfs(node): nếu node null thì dừng; đệ quy sang trái, push giá trị node[0], rồi đệ quy sang phải.',
+      'Thiếu base case (node === null) sẽ tràn Call Stack (StackOverflow) — giống lỗi kinh điển khi viết đệ quy.',
     ],
   },
 

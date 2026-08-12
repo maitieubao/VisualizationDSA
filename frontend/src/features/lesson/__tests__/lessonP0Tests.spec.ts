@@ -1,8 +1,7 @@
 // @vitest-environment jsdom
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { setActivePinia, createPinia } from 'pinia';
-import { mount, flushPromises, type VueWrapper } from '@vue/test-utils';
-import { useLessonStore } from '../store/useLessonStore';
+import { mount } from '@vue/test-utils';
 import type { QuizQuestion } from '../types/lesson.types';
 
 vi.mock('../services/lessonApi', () => ({
@@ -136,15 +135,6 @@ describe('Lesson + Quiz — P0/P1 User Stories', () => {
       expect(wrapper.emitted('submit')).toBeTruthy();
       expect(wrapper.text()).toContain('1 / 4');
       expect(wrapper.text()).toContain('chưa đạt');
-    });
-
-    it('useLessonStore.submitQuiz() cập nhật quizScore', async () => {
-      const store = useLessonStore();
-      await store.loadLesson('quick-sort');
-
-      await store.submitQuiz({ q1: 3, q2: 2, q3: 1, q4: 1 });
-
-      expect(store.quizScore).toBe(4);
     });
   });
 

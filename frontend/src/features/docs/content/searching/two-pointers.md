@@ -102,14 +102,16 @@ Vì 52 < 66 $\rightarrow$ Cần tăng tổng $\rightarrow$ Tăng `left`.
 
 ```mermaid
 flowchart LR
-    0[11] ~~~ 1[23]
-    1 --- 2[29] --- 3[37] --- 4[41]
-    L((L)) --> 1
+    L((L)) --> 0[11]
+    0 --- 1[23] --- 2[29] --- 3[37] --- 4[41]
     R((R)) --> 4
+    4 ~~~ 5[58] ~~~ 6[62] ~~~ 7[70]
     
     style L fill:#b85c5c,color:#fff
     style R fill:#c9a227,color:#fff
-    style 0 opacity:0.3
+    style 5 opacity:0.3
+    style 6 opacity:0.3
+    style 7 opacity:0.3
 ```
 
 **Bước 5: Dịch Left lần nữa**
@@ -121,7 +123,7 @@ Vì 64 < 66 $\rightarrow$ Cần tăng $\rightarrow$ Tăng `left`.
 Vì 70 > 66 $\rightarrow$ Cần giảm $\rightarrow$ Giảm `right`.
 
 **Bước 7: Tìm thấy kết quả!**
-`left = 2` (29), `right = 3` (37). Tổng = 29 + 37 = 66. Bingo! Trả về `[2, 3]`.
+`left = 2` (29), `right = 3` (37). Tổng = 29 + 37 = 66. Bingo! Với quy ước **1-indexed** của LeetCode, vị trí trả về được tính là `left + 1 = 3` và `right + 1 = 4` → **Trả về `[3, 4]`**.
 
 ### Phân tích Mã nguồn (Line-by-line Analysis)
 

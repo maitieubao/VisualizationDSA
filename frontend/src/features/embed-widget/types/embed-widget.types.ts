@@ -15,6 +15,17 @@ export type EmbedMessageAction =
   | 'QUIZ_COMPLETED'
   | 'HEIGHT_CHANGED';
 
+// Danh sách action hợp lệ duy nhất — bridge dùng để validate shape fail-closed
+// (EW-012), tránh drift giữa type union và runtime.
+export const EMBED_MESSAGE_ACTIONS: readonly EmbedMessageAction[] = [
+  'WIDGET_READY',
+  'STEP_FORWARD',
+  'STEP_BACKWARD',
+  'RESET',
+  'QUIZ_COMPLETED',
+  'HEIGHT_CHANGED',
+];
+
 export interface EmbedMessagePayload {
   stepIndex?: number;
   height?: number;
@@ -41,7 +52,11 @@ export interface EmbedConfig {
 export const EMBED_MIN_HEIGHT = 300;
 export const EMBED_MAX_HEIGHT = 1200;
 export const EMBED_RESIZE_DEBOUNCE_MS = 100;
-export const EMBED_BASE_URL = 'https://visualization-dsa.edu.vn/embed';
+// EW-024: dùng env để dev/preview nhúng đúng instance đang chạy,
+// fallback production khi chưa cấu hình VITE_APP_BASE_URL.
+export const EMBED_BASE_URL =
+  (import.meta.env.VITE_APP_BASE_URL as string | undefined) ??
+  'https://visualization-dsa.edu.vn/embed';
 
 // Chỉ liệt kê các thuật toán mà EmbedWidgetView (VISUALIZER_MAP) thực sự hỗ trợ —
 // trước đây có quicksort-recursion/binary-search/bst-insert/... nhưng view embed

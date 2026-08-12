@@ -9,9 +9,13 @@
     }"
   >
     
-    <div
+    <!-- CU-006: WAI-ARIA accordion — header là button focusable, Enter/Space native, aria-expanded + aria-controls -->
+    <button
+      type="button"
       class="accordion-header"
       :class="{ 'accordion-header-active': expandedSectionId === sec.id || activeSectionId === sec.id }"
+      :aria-expanded="expandedSectionId === sec.id"
+      :aria-controls="`sec-content-${sec.id}`"
       @click="$emit('toggle')"
     >
       <div class="flex items-center gap-2">
@@ -33,10 +37,10 @@
           <polyline points="9 18 15 12 9 6"/>
         </svg>
       </span>
-    </div>
+    </button>
 
     
-    <div class="accordion-content-wrapper" v-show="expandedSectionId === sec.id">
+    <div class="accordion-content-wrapper" :id="`sec-content-${sec.id}`" v-show="expandedSectionId === sec.id">
       <div class="accordion-content">
         
         <div class="section-markdown-body" v-html="renderMarkdown(sec.content)"></div>
@@ -84,6 +88,9 @@ import { ref, computed } from 'vue';
 import type { TheorySection } from '../types/theory.types';
 import { renderMarkdown } from '../utils/markdown';
 import SvgIcon from '../../components/icons/SvgIcon.vue';
+import { useToastStore } from '../../composables/useToast';
+
+const toastStore = useToastStore();
 
 const props = defineProps<{
   sec: TheorySection;
@@ -116,9 +123,24 @@ const codeLinesToShow = computed(() => {
   return lines.slice(0, 5).join('\n') + '\n// ...';
 });
 
-function copyCode(code: string) {
-  navigator.clipboard.writeText(code);
-  alert('Đã sao chép mã nguồn ví dụ C# vào Clipboard!');
+// CU-021: thay alert() native bằng toastStore + clipboard có try/catch (fallback execCommand cho non-HTTPS).
+async function copyCode(code: string) {
+  try {
+    await navigator.clipboard.writeText(code);
+  } catch {
+    const ta = document.createElement('textarea');
+    ta.value = code;
+    ta.style.position = 'fixed';
+    ta.style.opacity = '0';
+    document.body.appendChild(ta);
+    ta.select();
+    try {
+      document.execCommand('copy');
+    } finally {
+      document.body.removeChild(ta);
+    }
+  }
+  toastStore.success('Đã sao chép mã nguồn ví dụ C# vào Clipboard!');
 }
 </script>
 

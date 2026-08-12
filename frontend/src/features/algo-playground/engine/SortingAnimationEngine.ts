@@ -1,22 +1,18 @@
 import type { CanvasStateSnapshot } from '../../../core/CompilerStepExecutor';
-import { drawPlaybackFrame, drawPlaybackFrameTransition } from '../renderer/algoCanvasHelpers';
+import {
+  COLORS,
+  drawPlaybackFrame,
+  drawPlaybackFrameTransition,
+  easeInOut,
+  easeOut,
+  lerp,
+  lerpColor,
+  maxWithFallback,
+  minWithFallback,
+  roundRect,
+} from '../renderer/algoCanvasHelpers';
 import { MergeSortAnimationEngine } from './MergeSortAnimationEngine';
 import { HeapSortAnimationEngine } from './HeapSortAnimationEngine';
-import { easeOut, easeInOut, lerp } from '@/utils/math';
-
-function lerpColor(from: string, to: string, t: number): string {
-  if (from === to) return from;
-  const f = parseColor(from);
-  const tgt = parseColor(to);
-  return `rgb(${Math.round(lerp(f.r, tgt.r, t))},${Math.round(lerp(f.g, tgt.g, t))},${Math.round(lerp(f.b, tgt.b, t))})`;
-}
-function parseColor(hex: string): { r: number; g: number; b: number } {
-  if (hex.startsWith('rgb')) { const m = hex.match(/\d+/g); return { r: +(m?.[0] ?? 0), g: +(m?.[1] ?? 0), b: +(m?.[2] ?? 0) }; }
-  const h = hex.replace('#', '');
-  return { r: parseInt(h.substring(0, 2), 16), g: parseInt(h.substring(2, 4), 16), b: parseInt(h.substring(4, 6), 16) };
-}
-
-const COLORS = { barDefault: '#6366f1', barCompare: '#f59e0b', barSwap: '#ef4444', barSorted: '#10b981' };
 
 type TransitionType = 'compare' | 'swap' | 'highlight' | 'move';
 
@@ -193,32 +189,21 @@ private loop = (ts: number = performance.now()): void => {
 
   // ─── Compute bar geometry ───
 
-  // EC-022: `Math.min(...arr)` / `Math.max(...arr)` spread vỡ stack khi mảng
-  // hàng chục nghìn phần tử (RangeError: Maximum call stack size exceeded).
-  // Các helper này duyệt vòng lặp O(n) với fallback đúng ngữ nghĩa spread cũ.
-  private minWithFallback(arr: number[], fallback: number): number {
-    let min = fallback;
-    for (let i = 0; i < arr.length; i++) {
-      const v = arr[i];
-      if (v < min) min = v;
-    }
-    return min;
-  }
-
-  private maxWithFallback(arr: number[], fallback: number): number {
-    let max = fallback;
-    for (let i = 0; i < arr.length; i++) {
-      const v = arr[i];
-      if (v > max) max = v;
-    }
-    return max;
-  }
+  // EC-022/AL-033: `Math.min(...arr)` / `Math.max(...arr)` spread vỡ stack khi mảng
+  // hàng chục nghìn phần tử (RangeError: Maximum call stack size exceeded). Helper
+  // minWithFallback/maxWithFallback dùng chung từ algoCanvasHelpers (duyệt vòng lặp O(n)).
+  // AL-034: cache geometry theo (tham chiếu mảng, cssW/H) — tránh cấp phát object
+  // mới mỗi lần gọi trong cùng frame (trước đây 2-3 lần/tick × 60fps × N bars).
+  private geoCache: { ref: number[]; cssW: number; cssH: number; bars: BarGeo[] } | null = null;
 
   private computeGeo(arr: number[]): BarGeo[] {
     const margin = 32; const gap = 3;
     const n = arr.length; if (n === 0) return [];
-    const minV = this.minWithFallback(arr, 0);
-    const maxV = this.maxWithFallback(arr, 1);
+    if (this.geoCache && this.geoCache.ref === arr && this.geoCache.cssW === this.cssW && this.geoCache.cssH === this.cssH) {
+      return this.geoCache.bars;
+    }
+    const minV = minWithFallback(arr, 0);
+    const maxV = maxWithFallback(arr, 1);
     const span = Math.max(maxV - minV, 1);
     const usableW = this.cssW - margin * 2;
     const barW = Math.max(2, (usableW - gap * (n - 1)) / n);
@@ -226,18 +211,22 @@ private loop = (ts: number = performance.now()): void => {
     const baseY = this.cssH - margin;
     // Baseline 0: số dương dựng lên, số âm đâm xuống
     const zeroY = baseY - ((0 - minV) / span) * usableH;
-    return arr.map((v, i) => {
+    const bars: BarGeo[] = new Array<BarGeo>(n);
+    for (let i = 0; i < n; i++) {
+      const v = arr[i];
       const top = zeroY - ((v - minV) / span) * usableH;
       const y = v >= 0 ? top : zeroY;
       const h = Math.max(3, v >= 0 ? zeroY - top : top - zeroY);
-      return {
+      bars[i] = {
         index: i,
         x: margin + i * (barW + gap),
         y,
         w: barW,
         h,
       };
-    });
+    }
+    this.geoCache = { ref: arr, cssW: this.cssW, cssH: this.cssH, bars };
+    return bars;
   }
 
   // ─── Master draw ───
@@ -265,10 +254,8 @@ private loop = (ts: number = performance.now()): void => {
       return;
     }
 
-    const snapshot = this.curr;
-
     if (!this.prev || this.progress >= 1) {
-      drawPlaybackFrame(ctx, this.cssW, this.cssH, snapshot);
+      drawPlaybackFrame(ctx, this.cssW, this.cssH, this.curr);
     } else {
       // Tree/Graph: nội suy màu trạng thái giữa 2 frame (không nhảy cóc)
       const prevSnap = this.prev;
@@ -277,7 +264,7 @@ private loop = (ts: number = performance.now()): void => {
         this.cssW,
         this.cssH,
         prevSnap,
-        snapshot,
+        this.curr,
         easeInOut(this.progress),
       );
       if (!handled) {
@@ -300,7 +287,6 @@ private loop = (ts: number = performance.now()): void => {
   private drawAlgorithmOverlay() {
     const snap = this.curr;
     if (!snap) return;
-    const idx = this.curr?.comparingIndices;
 
     switch (this.algorithmId) {
       case 'bubble-sort':    this.drawBubbleOverlay(snap); break;
@@ -342,7 +328,7 @@ private loop = (ts: number = performance.now()): void => {
     ctx.fillStyle = 'rgba(6,182,212,0.2)';
     ctx.strokeStyle = '#06b6d4';
     ctx.lineWidth = 1;
-    this.roundRect(bx - 16, by - 8, 32, 16, 4);
+    roundRect(ctx, bx - 16, by - 8, 32, 16, 4);
     ctx.fill();
     ctx.stroke();
     ctx.fillStyle = '#06b6d4';
@@ -366,10 +352,10 @@ private loop = (ts: number = performance.now()): void => {
 
     ctx.globalAlpha = alpha;
     ctx.fillStyle = '#06b6d4';
-    this.roundRect(g.x, floatY, g.w, g.h * 0.7, 4);
+    roundRect(ctx, g.x, floatY, g.w, g.h * 0.7, 4);
     ctx.fill();
     ctx.strokeStyle = '#06b6d4'; ctx.lineWidth = 1.5;
-    this.roundRect(g.x, floatY, g.w, g.h * 0.7, 4);
+    roundRect(ctx, g.x, floatY, g.w, g.h * 0.7, 4);
     ctx.stroke();
     ctx.fillStyle = '#fff';
     ctx.font = 'bold 11px "JetBrains Mono", Consolas, monospace';
@@ -425,7 +411,7 @@ private loop = (ts: number = performance.now()): void => {
           // Pivot highlight ring
           ctx.strokeStyle = '#f59e0b';
           ctx.lineWidth = 3;
-          this.roundRect(pGeo.x - 3, pGeo.y - 3, pGeo.w + 6, pGeo.h + 6, 5);
+          roundRect(ctx, pGeo.x - 3, pGeo.y - 3, pGeo.w + 6, pGeo.h + 6, 5);
           ctx.stroke();
           ctx.fillStyle = '#f59e0b';
           ctx.font = 'bold 10px "JetBrains Mono", Consolas, monospace';
@@ -441,7 +427,7 @@ private loop = (ts: number = performance.now()): void => {
       const label = `Depth: ${depth}`;
       const tw = ctx.measureText(label).width;
       ctx.fillStyle = 'rgba(30,41,59,0.85)';
-      this.roundRect(this.cssW - tw - 24, 10, tw + 16, 20, 4);
+      roundRect(ctx, this.cssW - tw - 24, 10, tw + 16, 20, 4);
       ctx.fill();
       ctx.fillStyle = '#a78bfa';
       ctx.font = 'bold 10px "JetBrains Mono", Consolas, monospace';
@@ -485,7 +471,7 @@ private loop = (ts: number = performance.now()): void => {
       const g = prevGeo[i];
       const h = lerp(prevGeo[i].h, currGeo[i].h, t);
       ctx.fillStyle = COLORS.barDefault;
-      this.roundRect(g.x, g.y - (h - g.h), g.w, h, 3);
+      roundRect(ctx, g.x, g.y - (h - g.h), g.w, h, 3);
       ctx.fill();
     }
 
@@ -516,7 +502,7 @@ private loop = (ts: number = performance.now()): void => {
         // Glow pulse
         ctx.save(); ctx.globalAlpha = alpha;
         ctx.shadowColor = '#f59e0b'; ctx.shadowBlur = 20;
-        this.roundRect(g.x - 2, g.y - 2, g.w + 4, g.h + 4, 4);
+        roundRect(ctx, g.x - 2, g.y - 2, g.w + 4, g.h + 4, 4);
         ctx.fill(); ctx.restore();
 
         // Scaled bar
@@ -584,7 +570,7 @@ private loop = (ts: number = performance.now()): void => {
 
   private fillBar(x: number, y: number, w: number, h: number, color: string, label: string) {
     const ctx = this.ctx!;
-    this.roundRect(x, y, w, Math.max(3, h), 3);
+    roundRect(ctx, x, y, w, Math.max(3, h), 3);
     ctx.fillStyle = color;
     ctx.fill();
     if (label && h > 18 && w >= 8) {
@@ -594,17 +580,6 @@ private loop = (ts: number = performance.now()): void => {
       ctx.textAlign = 'center'; ctx.textBaseline = 'bottom';
       ctx.fillText(label, x + w / 2, y - 2);
     }
-  }
-
-  private roundRect(x: number, y: number, w: number, h: number, r: number) {
-    const ctx = this.ctx!;
-    ctx.beginPath();
-    ctx.moveTo(x + r, y);
-    ctx.arcTo(x + w, y, x + w, y + h, r);
-    ctx.arcTo(x + w, y + h, x, y + h, r);
-    ctx.arcTo(x, y + h, x, y, r);
-    ctx.arcTo(x, y, x + w, y, r);
-    ctx.closePath();
   }
 
   private getColor(snap: CanvasStateSnapshot, idx: number): string {
@@ -664,10 +639,10 @@ private loop = (ts: number = performance.now()): void => {
 
     const M = 8;
     const tierH = (this.cssH - M * 4) / 3;
-    const minV = this.minWithFallback(arr, 0);
-    const maxV = this.maxWithFallback(arr, 1);
+    const minV = minWithFallback(arr, 0);
+    const maxV = maxWithFallback(arr, 1);
     const span = Math.max(maxV - minV, 1);
-    const min = this.minWithFallback(arr, 0);
+    const min = minWithFallback(arr, 0);
     const cells = Math.max(10, Math.min(countArr.length, 24));
     const cellW = Math.max(16, (this.cssW - M * 2) / cells);
 
@@ -679,7 +654,7 @@ private loop = (ts: number = performance.now()): void => {
       const x = M + i * (barW + barGap);
       const y = t1y + t1h - barH;
       const active = comparing[0] === i;
-      this.roundRect(x, y, barW, barH, 3);
+      roundRect(ctx, x, y, barW, barH, 3);
       ctx.fillStyle = active ? COLORS.barCompare : COLORS.barDefault;
       ctx.fill();
       ctx.fillStyle = '#e2e8f0';
@@ -701,7 +676,7 @@ private loop = (ts: number = performance.now()): void => {
         (step === 'accumulate' && comparing[0] <= d && d <= comparing[1]) ||
         (step === 'output' && comparing[1] === d);
 
-      this.roundRect(cx + 1, t2y + 22, cellW - 2, tierH - 24, 4);
+      roundRect(ctx, cx + 1, t2y + 22, cellW - 2, tierH - 24, 4);
       if (cellActive) {
         ctx.fillStyle = step === 'count' ? 'rgba(61,153,112,0.12)'
           : step === 'accumulate' ? 'rgba(201,162,39,0.12)'
@@ -730,7 +705,7 @@ private loop = (ts: number = performance.now()): void => {
       const oy = t3y;
       const val = output[i];
       const slotActive = comparing[0] === i;
-      this.roundRect(ox, oy + 22, barW, tierH - 44, 3);
+      roundRect(ctx, ox, oy + 22, barW, tierH - 44, 3);
       if (val !== null && val !== undefined) {
         ctx.fillStyle = '#10b981';
         ctx.fill();
@@ -774,7 +749,7 @@ private loop = (ts: number = performance.now()): void => {
 
     const M = 6;
     const inputH = 50;
-    const offset = arr.length > 0 ? -this.minWithFallback(arr, 0) : 0;
+    const offset = arr.length > 0 ? -minWithFallback(arr, 0) : 0;
     const placeLabel = place === 1 ? 'đơn vị' : place === 10 ? 'chục' : place === 100 ? 'trăm' : '10^' + Math.log10(place);
 
     // ── Input row ──
@@ -784,7 +759,7 @@ private loop = (ts: number = performance.now()): void => {
       const digit = Math.floor((arr[i] + offset) / place) % 10;
       const x = M + i * (barW + barGap);
       const active = comparing[0] === i;
-      this.roundRect(x, M, barW, inputH, 3);
+      roundRect(ctx, x, M, barW, inputH, 3);
       ctx.fillStyle = active ? '#f59e0b' : '#6366f1';
       ctx.fill();
       ctx.fillStyle = '#fff';
@@ -827,7 +802,7 @@ private loop = (ts: number = performance.now()): void => {
       const items = buckets[b] ?? [];
       const isActive = isDist && activeDigit === b;
 
-      this.roundRect(bx + 1, bucketY + 18, cellW - 2, bucketH - 20, 3);
+      roundRect(ctx, bx + 1, bucketY + 18, cellW - 2, bucketH - 20, 3);
       ctx.fillStyle = isActive ? 'rgba(201,162,39,0.1)' : 'rgba(51,65,85,0.3)';
       ctx.fill();
       ctx.strokeStyle = isActive ? '#c9a227' : 'rgba(100,116,139,0.3)';
@@ -869,7 +844,7 @@ private loop = (ts: number = performance.now()): void => {
     const inputH = 40;
     const barGap = 2;
     const barW = Math.max(6, (this.cssW - M * 2 - barGap * (arr.length - 1)) / arr.length);
-    const maxV = this.maxWithFallback(arr, 1);
+    const maxV = maxWithFallback(arr, 1);
     const bucketCount = Math.max(1, buckets.length);
 
     // ── Input bars ──
@@ -878,7 +853,7 @@ private loop = (ts: number = performance.now()): void => {
       const x = M + i * (barW + barGap);
       const y = M + inputH - barH;
       const active = step === 'distribute' && comparing[0] === i;
-      this.roundRect(x, y, barW, barH, 3);
+      roundRect(ctx, x, y, barW, barH, 3);
       ctx.fillStyle = active ? '#f59e0b' : '#6366f1';
       ctx.fill();
       ctx.fillStyle = '#e2e8f0';
@@ -904,7 +879,7 @@ private loop = (ts: number = performance.now()): void => {
       const items = buckets[b] ?? [];
       const isActive = activeB === b;
 
-      this.roundRect(bx, bucketY + 16, colW, bucketH - 18, 4);
+      roundRect(ctx, bx, bucketY + 16, colW, bucketH - 18, 4);
       ctx.fillStyle = isActive ? 'rgba(201,162,39,0.08)' : 'rgba(51,65,85,0.3)';
       ctx.fill();
       ctx.strokeStyle = isActive ? '#c9a227' : 'rgba(100,116,139,0.3)';

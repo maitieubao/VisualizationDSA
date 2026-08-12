@@ -42,7 +42,9 @@ namespace VisualizationDSA.Domain.Entities
 
         public UserBadge(Guid userId, Guid badgeId)
         {
-            Id = Guid.NewGuid();
+            // GM-007: KHÔNG set Id client-side — để EF sinh Guid tại SaveChanges (Guid key
+            // ValueGeneratedOnAdd). Trước đây set sẵn Guid → EF tưởng entity đã tồn tại trong DB
+            // (state Modified thay vì Added) → INSERT biến thành UPDATE 0 dòng → DbUpdateException.
             UserId = userId;
             BadgeId = badgeId;
             EarnedAt = DateTime.UtcNow;

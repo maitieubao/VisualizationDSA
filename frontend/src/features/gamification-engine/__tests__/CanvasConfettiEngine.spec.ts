@@ -3,6 +3,11 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { CanvasConfettiEngine } from '../engine/CanvasConfettiEngine';
 
+type RafCallback = FrameRequestCallback;
+
+let rafCallbacks: RafCallback[];
+let cancelSpy: ReturnType<typeof vi.spyOn>;
+
 function createMockCanvas(): HTMLCanvasElement {
   const ctx = {
     clearRect: vi.fn(),
@@ -21,16 +26,32 @@ function createMockCanvas(): HTMLCanvasElement {
   return canvas;
 }
 
+function runNextFrame(): void {
+  const callback = rafCallbacks.shift();
+  if (callback) callback(0);
+}
+
+function runUntilAnimationStops(maxFrames = 10000): number {
+  let frames = 0;
+  while (rafCallbacks.length > 0 && frames < maxFrames) {
+    runNextFrame();
+    frames++;
+  }
+  return frames;
+}
+
 describe('CanvasConfettiEngine', () => {
   let mockCanvas: HTMLCanvasElement;
   let engine: CanvasConfettiEngine;
 
   beforeEach(() => {
     mockCanvas = createMockCanvas();
-    vi.spyOn(window, 'requestAnimationFrame').mockImplementation((_cb) => {
-      return 1;
+    rafCallbacks = [];
+    vi.spyOn(window, 'requestAnimationFrame').mockImplementation((callback: RafCallback) => {
+      rafCallbacks.push(callback);
+      return rafCallbacks.length;
     });
-    vi.spyOn(window, 'cancelAnimationFrame').mockImplementation(() => {});
+    cancelSpy = vi.spyOn(window, 'cancelAnimationFrame').mockImplementation(() => {});
     engine = new CanvasConfettiEngine(mockCanvas);
   });
 
@@ -64,7 +85,7 @@ describe('CanvasConfettiEngine', () => {
 
   it('should start animation frame after burst', () => {
     engine.burst();
-    expect(window.requestAnimationFrame).toHaveBeenCalled();
+    expect(rafCallbacks.length).toBe(1);
   });
 
   it('should accumulate particles on multiple bursts', () => {
@@ -82,7 +103,7 @@ describe('CanvasConfettiEngine', () => {
   it('should cancel animation frame on destroy', () => {
     engine.burst();
     engine.destroy();
-    expect(window.cancelAnimationFrame).toHaveBeenCalled();
+    expect(cancelSpy).toHaveBeenCalled();
   });
 
   it('should not crash when destroying without active animation', () => {
@@ -135,7 +156,7 @@ describe('CanvasConfettiEngine', () => {
 
   it('should remove particles that fall below canvas height', () => {
     engine.burst(1);
-    
+
     for (let i = 0; i < 500; i++) {
       engine.tick();
     }
@@ -150,8 +171,42 @@ describe('CanvasConfettiEngine', () => {
 
   it('should not start duplicate animation when already running', () => {
     engine.burst(10);
-    const callCount = (window.requestAnimationFrame as ReturnType<typeof vi.fn>).mock.calls.length;
+    const pendingFrames = rafCallbacks.length;
     engine.burst(10);
-    expect((window.requestAnimationFrame as ReturnType<typeof vi.fn>).mock.calls.length).toBe(callCount);
+    expect(rafCallbacks.length).toBe(pendingFrames);
+  });
+
+  it('GM-033: loop end-to-end — rAF callback chạy tick tới khi hết particle rồi tự dừng', () => {
+    mockCanvas.width = 100;
+    mockCanvas.height = 100;
+    engine.burst(1);
+    expect(rafCallbacks.length).toBe(1);
+
+    const frames = runUntilAnimationStops();
+
+    expect(frames).toBeLessThan(10000);
+    expect(engine.getParticleCount()).toBe(0);
+    expect(engine.isActive()).toBe(false);
+    expect(rafCallbacks.length).toBe(0);
+  });
+
+  it('GM-033: animationFrameId auto-null khi hết particle → burst mới schedule rAF mới', () => {
+    mockCanvas.width = 100;
+    mockCanvas.height = 100;
+    engine.burst(1);
+    runUntilAnimationStops();
+    expect(rafCallbacks.length).toBe(0);
+
+    engine.burst(1);
+    expect(rafCallbacks.length).toBe(1);
+  });
+
+  it('GM-033: destroy hủy rAF đang chờ giữa loop', () => {
+    engine.burst(50);
+    runNextFrame();
+    expect(rafCallbacks.length).toBe(1);
+    engine.destroy();
+    expect(cancelSpy).toHaveBeenCalled();
+    expect(engine.getParticleCount()).toBe(0);
   });
 });
