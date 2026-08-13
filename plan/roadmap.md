@@ -51,14 +51,14 @@
 
 ---
 
-## 🔌 PHASE C — Nối các tích hợp thật (⏳ CHỜ)
+## 🔌 PHASE C — Nối các tích hợp thật (🟢 ĐANG LÀM — C1/C2/C4 ✅ 2026-08-13, C3 ⏳ chờ verify thật)
 
 > Đưa 3 tính năng Demo-grade/Hạ tầng chờ lên mức thực dụng.
 
-- C1: **Payment** 4→8/10 — nối SePay sandbox thật (sandbox account + webhook test thật) hoặc gắn nhãn "Mô phỏng" rõ ràng; cleanup order hết hạn
-- C2: **Notifications** 5→8/10 — nối level-up + badge award (đã có hạ tầng), thêm nguồn thật: deadline lớp, bài mới, trả lời comment
-- C3: **Embed** 3→7/10 — test nhúng vào 1 LMS thật (hoặc trang host demo) + verify auto-height cross-origin + tài liệu host
-- C4: **Export/Share** 6→7/10 — quyết định chiến lược: share ảnh chất lượng cao cho báo cáo vs workspace tương tác
+- [x] C1: **Payment** — 2026-08-13: lazy-cleanup order hết hạn (GetOrderStatusAsync đánh dấu Expired khi order quá hạn, không còn hiện Pending cho QR chết); nhãn "Môi trường mô phỏng thanh toán" rõ ràng trên checkout. SePay webhook vốn đã fail-closed (Apikey + rate limit + account/amount guard).
+- [x] C2: **Notifications** — 2026-08-13: nối level-up + badge award THẬT — `GamificationService.AwardXpAndCheckBadgesAsync` gọi `NotifyLevelUpAsync` (khi level tăng) + `NotifyBadgeAwardedAsync` (từng badge mới) SAU commit; `LessonController.CompleteLesson` gọi NotifyLevelUpAsync (nguồn XP thật từ bài học); lỗi notification không làm hỏng request cấp XP.
+- [ ] C3: **Embed** — phần code đã xong từ trước (EW-001..026, auto-height cross-origin pipeline có test); đã thêm `docs/host/sample-host.html` (trang demo host + protocol WIDGET_READY/HEIGHT_CHANGED/QUIZ_COMPLETED). Còn: verify trên browser thật + tài liệu host hoàn chỉnh.
+- [x] C4: **Export/Share** — 2026-08-13: quyết định chiến lược = ảnh chất lượng cao cho báo cáo (algo-playground thêm "Xuất ảnh PNG" — canvas.toDataURL + download tên theo demo+bước); system design đã có PNG/SVG pipeline sẵn.
 
 ---
 
@@ -76,8 +76,8 @@
 | Phase | Trạng thái | Ghi chú |
 | :-- | :-- | :-- |
 | A — Content Pipeline | ✅ A1 A2 A3 XONG | A1 2026-08-11, A2/A3 2026-08-13 |
-| B — Code Debugger | 🟢 B1-B4 ✅ 2026-08-13 | Toàn bộ Phase B xong |
-| C — Tích hợp thật | ⏳ | Kế tiếp |
+| B — Code Debugger | ✅ B1-B4 XONG | 2026-08-13 |
+| C — Tích hợp thật | 🟢 C1✅ C2✅ C4✅ — C3 chờ verify thật | C3 cần browser/LMS thật |
 | C — Tích hợp thật | ⏳ | Sau B |
 | D — Hoàn thiện | ⏳ | Sau C |
 
@@ -88,3 +88,4 @@
 | 2026-08-13 | **A2 hoàn tất** — Seed 7 codelab mẫu (bubble/selection/insertion/merge sort, binary search, bfs/dfs graph) dùng chung OwnerId=null; UpsertLessonCodelabLinks gắn vào 5 lesson seed (09/10/18/20/28); lessonApi normalize backend `codelab` (PascalCase) → FE `codelabTask` (camelCase, hints string[], difficulty VN). Backend 770 (+2), FE 3488 (+2), vue-tsc 0. → Chuyển A3 (E2E manual test). |
 | 2026-08-13 | **A3 hoàn tất — Đóng vòng E2E** — LessonE2EFlowTests (5 test) mô phỏng học viên đi xuyên bài khóa mẫu trên seed thật: GET lesson published (codelab payload đủ testcase/hint/template, test ẩn không lộ đáp án) → chạy judge solution pass → CompleteLesson cộng XP + progress, lần 2 không cộng (idempotent). Backend 775 (+5). Review: courses-lessons 7→9, lesson-study 8→9, gamification 7→8. **Phase A Content Pipeline hoàn tất.** |
 | 2026-08-13 | **Phase B Code Debugger hoàn tất (B1-B4)** — Breakpoint (click gutter toggle + chấm đỏ + auto-pause khi play); Watch panel (executor snapshot `variables` primitive mỗi frame, watchList persist, highlight biến đổi); instrument closure/vòng lồng nhau track đủ (test B3); nhãn "Trình chạy từng bước" + menu "Xuất code". Frontend 3504/3504 (+16), vue-tsc 0. |
+| 2026-08-13 | **Phase C (C1/C2/C4)** — C2 nối notification level-up + badge award thật (GamificationService + CompleteLesson, sau commit, lỗi không phá request); C1 lazy-cleanup order hết hạn + nhãn "Môi trường mô phỏng" checkout; C4 "Xuất ảnh PNG" algo-playground + sample host page (`docs/host/sample-host.html`). Backend 781 (+6), frontend 3504. C3 (verify embed thật) chờ browser/LMS. |

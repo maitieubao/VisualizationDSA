@@ -86,6 +86,14 @@ namespace VisualizationDSA.Infrastructure.Services
             if (order == null || order.UserId != userId)
                 throw new KeyNotFoundException("Hóa đơn không tồn tại hoặc bạn không có quyền truy cập.");
 
+            // C1: lazy-cleanup — order Pending quá hạn (ExpiresAt) được đánh dấu Expired ngay
+            // khi người dùng tra cứu trạng thái (không cần job riêng — order chết không còn hiện Pending).
+            if (order.IsExpired())
+            {
+                order.MarkAsExpired();
+                await _unitOfWork.CommitAsync();
+            }
+
             var (bankId, bankAccount, accountName, _) = ReadPaymentConfig();
 
             return MapToOrderDto(order, bankId, bankAccount, accountName);

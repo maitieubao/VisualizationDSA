@@ -15,10 +15,13 @@ namespace VisualizationDSA.Infrastructure.Services
     public class GamificationService : IGamificationService
     {
         private readonly IUnitOfWork _unitOfWork;
+        // C2: notification level-up + badge award — gửi SAU commit, lỗi notification không làm hỏng request.
+        private readonly INotificationService? _notificationService;
 
-        public GamificationService(IUnitOfWork unitOfWork)
+	public GamificationService(IUnitOfWork unitOfWork, INotificationService? notificationService = null)
         {
             _unitOfWork = unitOfWork;
+            _notificationService = notificationService;
         }
 
         // GM-004: ledger idempotency — (userId|ngày|Idempotency-Key) → kết quả đã cấp.
@@ -109,6 +112,8 @@ namespace VisualizationDSA.Infrastructure.Services
             await _unitOfWork.BeginTransactionAsync();
             try
             {
+                // C2: ghi nhận level TRƯỚC khi cộng XP để phát hiện level-up sau commit.
+                var oldLevel = user.CurrentLevel;
                 user.AwardXP(amount);
                 user.RecordActivity();
                 var newBadges = await AwardEligibleBadgesAsync(user);
@@ -147,6 +152,9 @@ namespace VisualizationDSA.Infrastructure.Services
                     // Broadcast thất bại không được làm hỏng request cấp XP đã commit.
                     Serilog.Log.Warning(broadcastEx, "Không broadcast được cập nhật bảng xếp hạng (XP đã lưu).");
                 }
+
+                // C2: thông báo level-up + badge award (chỉ khi thực sự xảy ra, SAU commit).
+                await NotifyLevelUpAndBadgesAsync(user, oldLevel, newBadges);
 
                 return result;
             }
@@ -287,6 +295,44 @@ namespace VisualizationDSA.Infrastructure.Services
             {
                 if (!kvp.Key.Contains(today, StringComparison.Ordinal))
                     XpGrantLedger.TryRemove(kvp.Key, out _);
+            }
+        }
+
+        /// <summary>
+        /// C2: gửi notification level-up + badge award SAU khi XP/badge đã commit.
+        /// Lỗi notification KHÔNG được làm hỏng request cấp XP đã thành công.
+        /// </summary>
+        private async Task NotifyLevelUpAndBadgesAsync(User user, int oldLevel, List<Badge> newBadges)
+        {
+            if (_notificationService == null)
+                return;
+
+            // Level-up: chỉ gửi khi level thực sự tăng (có thể nhảy nhiều bậc).
+            if (user.CurrentLevel > oldLevel)
+            {
+                try
+                {
+                    await _notificationService.NotifyLevelUpAsync(
+                        user.Id, user.Username, oldLevel, user.CurrentLevel, user.TotalXP);
+                }
+                catch (Exception ex)
+                {
+                    Serilog.Log.Warning(ex, "Không gửi được notification level-up cho user {UserId}.", user.Id);
+                }
+            }
+
+            // Badge mới: gửi từng badge một (toast gamification riêng).
+            foreach (var badge in newBadges)
+            {
+                try
+                {
+                    await _notificationService.NotifyBadgeAwardedAsync(
+                        user.Id, user.Username, badge.Name, badge.Description);
+                }
+                catch (Exception ex)
+                {
+                    Serilog.Log.Warning(ex, "Không gửi được notification badge '{Badge}' cho user {UserId}.", badge.Name, user.Id);
+                }
             }
         }
     }

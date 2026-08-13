@@ -1,10 +1,12 @@
 using Asp.Versioning;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Serilog;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
 using VisualizationDSA.Application.DTOs;
+using VisualizationDSA.Application.Services;
 using VisualizationDSA.Domain.Entities;
 using VisualizationDSA.Domain.Enums;
 using VisualizationDSA.Infrastructure.Data;
@@ -236,8 +238,24 @@ namespace VisualizationDSA.WebApi.Controllers
 
                 if (firstTime)
                 {
+                    // C2: ghi nhận level TRƯỚC khi cộng XP — phát hiện level-up sau commit.
+                    var oldLevel = user.CurrentLevel;
                     user.AwardXP(lesson.XPReward);
                     user.RecordActivity();
+
+                    // C2: thông báo level-up SAU khi XP đã commit (toast gamification realtime).
+                    if (_notificationService != null && user.CurrentLevel > oldLevel)
+                    {
+                        try
+                        {
+                            await _notificationService.NotifyLevelUpAsync(
+                                userId, user.Username, oldLevel, user.CurrentLevel, user.TotalXP);
+                        }
+                        catch (Exception ex)
+                        {
+                            Serilog.Log.Warning(ex, "Không gửi được notification level-up khi hoàn thành bài {LessonId}.", lessonId);
+                        }
+                    }
                 }
 
                 var moduleItems = await _dbContext.ModuleItems

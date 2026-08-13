@@ -690,3 +690,10 @@
 - Store `useAlgoPlaygroundStore.spec.ts`: +9 test (toggle/clear breakpoint, auto-pause play, stepNext tay qua breakpoint, currentVariables, toggleWatchVariable, watchedValues loc bien khong ton tai, watchList persist, changedVariables).
 - Workspace `AlgoPlaygroundWorkspace.spec.ts`: AL-026 (gutter click jump) thay bang 3 test B1 (gutter toggle breakpoint + decoration, play auto-stop tai breakpoint, stepNext tay qua).
 - Full: frontend 3504/3504 (+16), vue-tsc 0. Backend khong doi.
+
+## Phase C - Tests (2026-08-13)
+
+- Backend `PaymentServiceTests`: +2 (GetOrderStatus order qua han -> Expired + commit; order con han -> Pending + khong commit).
+- Backend `GamificationServiceTests`: +4 (level-up -> NotifyLevelUpAsync; khong doi level -> khong notify; badge moi -> NotifyBadgeAwardedAsync; notification loi -> request van thanh cong).
+- Frontend: checkout 32/32 (nhan mo phong khong pha selector), algo-playground workspace 24/24 (menu Xuat PNG).
+- Full: backend 781/781 (+6), frontend 3504/3504.

@@ -2298,3 +2298,14 @@ pm run build SUCCESS |
 | **B4 Nhan + session code** | ✅ CODE DONE | header doi thanh "Trinh chay tung buoc (JavaScript)" + chip pseudocode; menu "Xuat code" copy clipboard; session code/input persist localStorage (san co) + share URL (san co). |
 
 Files: frontend/src/core/CompilerStepExecutor.ts (+variables), useAlgoPlaygroundStore.ts (breakpoints/watchList/currentVariables/changedVariables/watchedValues), AlgoPlaygroundWorkspace.vue (gutter toggle + decoration + Watch panel + nhan + Xuat code + Xoa breakpoint). Tests: instrumentation +5 (B2.1-2.3, B3.1-3.2), store +9 (B1.1-1.4, B2.1-2.5), workspace +3 B1 (thay AL-026). Frontend 3504/3504 (+16), vue-tsc 0.
+
+## Phase C - Noi cac tich hop that (C1/C2/C4) (2026-08-13)
+
+| Feature | Trang thai | Chi tiet |
+| :-- | :-- | :-- |
+| **C1 Payment cleanup + nhan** | ✅ CODE DONE | GetOrderStatusAsync lazy-cleanup: order Pending qua han (ExpiresAt) duoc MarkAsExpired ngay khi tra cuu - khong con hien Pending cho QR chet. FE checkout: nhan "Moi truong mo phong thanh toan" (khong giao dich tien that) khi state paying. Tests: PaymentServiceTests +2 (order qua han -> Expired + commit; order con han -> Pending khong commit thua). |
+| **C2 Notifications level-up + badge** | ✅ CODE DONE | GamificationService.AwardXpAndCheckBadgesAsync: capture oldLevel truoc AwardXP, sau commit goi NotifyLevelUpAsync (khi level tang) + NotifyBadgeAwardedAsync (tung badge moi) - loi notification khong lam hong request (try/catch + Serilog warning). LessonController.CompleteLesson: goi NotifyLevelUpAsync sau commit khi level tang (nguon XP that tu bai hoc). DI: GamificationService + optional INotificationService (backward compatible tests). Tests: GamificationServiceTests +4 (level-up notify, khong level khong notify, badge notify, notification loi khong pha request). |
+| **C4 Export/Share** | ✅ CODE DONE | Quyet dinh chien luoc: anh chat luong cao cho bao cao. AlgoPlayground menu "Xuat anh PNG" - canvas.toDataURL + download ten theo demo+step (visualization-{demo}-step-{n}.png). System design da co PNG/SVG pipeline. |
+| **C3 Embed (phan code)** | 🟠 PARTIAL | Docs/host/sample-host.html: trang demo host + protocol WIDGET_READY/HEIGHT_CHANGED/QUIZ_COMPLETED + nhan dieu khien STEP_FORWARD/PLAY_PAUSE/RESET + verify origin. Code EW-001..026 da xong truoc. CON: verify browser that tren LMS + tai lieu host hoan chinh (can moi truong that). |
+
+Files: PaymentService.cs (lazy-cleanup), GamificationService.cs (+INotificationService optional + NotifyLevelUpAndBadgesAsync), LessonController.cs (NotifyLevelUpAsync sau CompleteLesson), PremiumCheckoutView.vue (nhan mo phong), AlgoPlaygroundWorkspace.vue (Xuat PNG), docs/host/sample-host.html. Backend 781/781 (+6), frontend 3504/3504, vue-tsc 0.

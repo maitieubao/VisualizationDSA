@@ -62,6 +62,9 @@
         <button class="algo-menu-item" @click="menuAction('export')">
           <BaseIcon :name="exportCopied ? 'check' : 'download'" class="w-3.5 h-3.5 inline mr-2 align-middle" />{{ exportCopied ? 'Đã chép' : 'Xuất code' }}
         </button>
+        <button class="algo-menu-item" @click="menuAction('exportPng')" title="Lưu canvas visualization thành ảnh PNG (báo cáo)">
+          <BaseIcon name="image" class="w-3.5 h-3.5 inline mr-2 align-middle" />Xuất ảnh PNG
+        </button>
         <button class="algo-menu-item" @click="menuAction('share')">
           <BaseIcon :name="shareCopied ? 'check' : 'link'" class="w-3.5 h-3.5 inline mr-2 align-middle" />{{ shareCopied ? 'Đã chép' : 'Chia sẻ' }}
         </button>
@@ -347,16 +350,33 @@ function toggleMoreMenu(): void {
 }
 
 /** Hành động trong menu ⋯. */
-function menuAction(action: 'hooks' | 'restore' | 'share' | 'export' | 'breakpoints'): void {
+function menuAction(action: 'hooks' | 'restore' | 'share' | 'export' | 'exportPng' | 'breakpoints'): void {
   showMoreMenu.value = false;
   if (action === 'hooks') showHooks.value = !showHooks.value;
   else if (action === 'restore') onRestoreCode();
   else if (action === 'export') onExportCode();
+  else if (action === 'exportPng') onExportPng();
   else if (action === 'breakpoints') {
     store.clearBreakpoints();
     syncBreakpointDecorations();
   }
   else onShare();
+}
+
+/**
+ * B4/C4: xuất canvas visualization thành ảnh PNG (để dùng trong báo cáo/tài liệu).
+ * Chỉ xuất khi đã chạy xong (có frame) — canvas không có nội dung thì không xuất.
+ */
+function onExportPng(): void {
+  const canvas = canvasEl.value;
+  if (!canvas || store.totalFrames === 0) return;
+  const url = canvas.toDataURL('image/png');
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `visualization-${store.demoId ?? 'algo'}-step-${store.currentIndex + 1}.png`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
 }
 
 /** B4: xuất code hiện tại ra clipboard (nối luồng Export/Share). */

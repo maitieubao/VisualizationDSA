@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sample Host — Nhúng Widget VisualizationDSA</title>
+  <style>
+    body { font-family: system-ui, -apple-system, 'Segoe UI', sans-serif; max-width: 960px; margin: 0 auto; padding: 24px; color: #1f2937; background: #f8fafc; }
+    h1 { font-size: 20px; }
+    h2 { font-size: 15px; margin-top: 28px; border-top: 1px solid #e2e8f0; padding-top: 16px; }
+    .note { background: #fffbeb; border: 1px solid #fcd34d; border-radius: 8px; padding: 10px 14px; font-size: 13px; color: #92400e; }
+    .controls { display: flex; gap: 8px; flex-wrap: wrap; margin: 12px 0; }
+    button { padding: 8px 14px; border-radius: 8px; border: 1px solid #cbd5e1; background: #fff; cursor: pointer; font-size: 13px; }
+    button:hover { background: #f1f5f9; }
+    .log { background: #0f172a; color: #a5f3fc; border-radius: 8px; padding: 10px 14px; font-family: monospace; font-size: 12px; min-height: 40px; white-space: pre-wrap; }
+    pre { background: #f1f5f9; border-radius: 8px; padding: 12px; font-size: 12px; overflow-x: auto; }
+    iframe { border: 1px solid #e2e8f0; border-radius: 12px; margin: 12px 0; }
+  </style>
+</head>
+<body>
+  <h1>🎓 Sample Host — Nhúng Widget VisualizationDSA</h1>
+  <p class="note">
+    Trang này mô phỏng 1 website/LMS host bên ngoài domain của VisualizationDSA để kiểm chứng luồng
+    cross-origin: auto-height (HEIGHT_CHANGED) + điều khiển host (STEP_FORWARD/PLAY_PAUSE) + quiz hoàn thành (QUIZ_COMPLETED).
+  </p>
+
+  <h2>1. Bước chạy (browser thật)</h2>
+  <ol>
+    <li>Chạy app VisualizationDSA ở domain A (vd <code>localhost:5173</code>).</li>
+    <li>Mở <code>/#/embed-widget</code> trong app, cấu hình thuật toán, sao chép mã iframe.</li>
+    <li>Dán iframe vào <code>&lt;div id="widget-slot"&gt;</code> bên dưới (giữ <code>data-embed-widget</code>).</li>
+    <li>Mở trang này ở domain B (vd file:// hoặc <code>localhost:5500</code>) → xem log cross-origin bên dưới.</li>
+  </ol>
+
+  <h2>2. Widget slot</h2>
+  <div id="widget-slot">
+    <!-- Dán mã iframe ở đây. Ví dụ:
+    <iframe data-embed-widget src="http://localhost:5173/embed?algo=quicksort-recursion&theme=glass" width="800" height="500" style="border:0"></iframe>
+    -->
+  </div>
+
+  <h2>3. Nút điều khiển host (gửi message vào iframe — chỉ cùng origin mới nhận)</h2>
+  <div class="controls">
+    <button onclick="sendToWidget('STEP_FORWARD', { stepIndex: 5 })">STEP_FORWARD → step 5</button>
+    <button onclick="sendToWidget('PLAY_PAUSE', {})">PLAY_PAUSE</button>
+    <button onclick="sendToWidget('RESET', {})">RESET</button>
+  </div>
+  <div class="log" id="log">// Chờ WIDGET_READY từ iframe…</div>
+
+  <h2>4. Host integration script (dán vào trang)</h2>
+  <pre id="host-script"><!-- host script sẽ được nhét vào đây bằng JS bên dưới --></pre>
+
+  <script>
+    // ── Nhận message từ widget (cross-origin — bắt buộc verify source + origin) ──
+    const iframe = document.querySelector('[data-embed-widget]');
+    const logEl = document.getElementById('log');
+    const log = (msg) => { logEl.textContent += '\n' + msg; };
+
+    window.addEventListener('message', (event) => {
+      if (!iframe || event.source !== iframe.contentWindow) return;
+      // BẮT BUỘC verify origin — ví dụ dùng đúng origin của app VisualizationDSA.
+      const ALLOWED_ORIGIN = 'http://localhost:5173';
+      if (event.origin !== ALLOWED_ORIGIN) { log('⚠️ Từ chối origin lạ: ' + event.origin); return; }
+      const msg = event.data;
+      if (msg?.source !== 'VISUALIZATION_DSA_WIDGET') return;
+      if (msg.action === 'WIDGET_READY') {
+        log('✅ WIDGET_READY — widget sẵn sàng (cross-origin OK)');
+      } else if (msg.action === 'HEIGHT_CHANGED' && Number.isFinite(Number(msg.payload?.height))) {
+        const h = Math.min(2000, Math.max(100, Number(msg.payload.height)));
+        iframe.style.height = h + 'px';
+        log('📏 HEIGHT_CHANGED → ' + h + 'px (auto-height cross-origin)');
+      } else if (msg.action === 'QUIZ_COMPLETED') {
+        log('🎯 QUIZ_COMPLETED — score: ' + (msg.payload?.quizScore ?? '?'));
+      } else if (msg.action) {
+        log('📨 ' + msg.action + ': ' + JSON.stringify(msg.payload ?? {}));
+      }
+    });
+
+    // ── Gửi điều khiển vào widget ──
+    function sendToWidget(action, payload) {
+      if (!iframe || !iframe.contentWindow) return;
+      iframe.contentWindow.postMessage({ source: 'VISUALIZATION_DSA_WIDGET', action, payload }, '*');
+      log('➡️ Đã gửi ' + action);
+    }
+
+    // ── Hiển thị host script mẫu (chính là đoạn dán vào trang thật) ──
+    const hostScript = `&lt;script&gt;
+  const iframe = document.querySelector('[data-embed-widget]');
+  if (!iframe) return;
+  window.addEventListener('message', (event) => {
+    if (event.source !== iframe.contentWindow) return;
+    if (event.origin !== 'http://localhost:5173') return;
+    const msg = event.data;
+    if (msg?.source === 'VISUALIZATION_DSA_WIDGET') {
+      if (msg.action === 'HEIGHT_CHANGED' && Number.isFinite(Number(msg.payload?.height))) {
+        iframe.style.height = Math.min(2000, Math.max(100, Number(msg.payload.height))) + 'px';
+      }
+      if (msg.action === 'QUIZ_COMPLETED') {
+        console.log('Quiz score:', msg.payload?.quizScore);
+      }
+    }
+  });
+&lt;\/script&gt;`;
+    document.getElementById('host-script').textContent = hostScript;
+  </script>
+</body>
+</html>

@@ -1,4 +1,4 @@
-# 🔔 Notifications — Hồ Sơ Thực Trạng & Định Hướng
+﻿# 🔔 Notifications — Hồ Sơ Thực Trạng & Định Hướng
 
 ## 🎯 Mục đích
 
@@ -28,7 +28,7 @@
 
 ## 🚧 Điều cần làm để có giá trị thực tế (checklist ưu tiên)
 
-- [ ] **Nối level-up + badge award** (TODO Round 21) — acceptance: tại nơi cấp XP/check badge (`GamificationService`/`UsersController`) gọi `NotifyLevelUp`/`NotifyBadgeAwarded`; học sinh level up/mở badge nhận Notification mới + hub push realtime + toast (TC-NT-002); handler FE không còn dead.
+- [x] **Nối level-up + badge award** (TODO Round 21 — C2 ✅ 2026-08-13) — acceptance: tại nơi cấp XP/check badge (`GamificationService`/`UsersController`) gọi `NotifyLevelUp`/`NotifyBadgeAwarded`; học sinh level up/mở badge nhận Notification mới + hub push realtime + toast (TC-NT-002); handler FE không còn dead.
 - [ ] **Thêm nguồn thật gắn lớp học/bài học** — acceptance: ít nhất 2 nguồn: (1) deadline/giáo viên gửi thông báo lớp học (`ClassroomGradingService`/`ClassroomProgressController`), (2) bài học mới trong lớp được publish; mỗi sự kiện tạo Notification đúng user, không spam.
 - [ ] **Verify luồng admin → học sinh** — acceptance: NotifyAdmins (đã có batch) hiển thị đúng ở bell học sinh; admin theo dõi được trạng thái gửi.
 - [ ] **Thống kê nguồn kích hoạt thực tế** — acceptance: sau khi nối, đo 1 tuần sử dụng thật có ≥3 nguồn tự động tạo thông báo cho học sinh trung bình/tuần (không tính demo).

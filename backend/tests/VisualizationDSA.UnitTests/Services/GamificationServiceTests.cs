@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using VisualizationDSA.Application.Services;
 using VisualizationDSA.Domain.Entities;
 using VisualizationDSA.Domain.Interfaces;
 using VisualizationDSA.Infrastructure.Data;
@@ -308,6 +309,123 @@ namespace VisualizationDSA.UnitTests.Services
             // Không exception (cả 2 response hợp lệ) — chỉ 1 request trả badge.
             responses.Sum(r => r.Count()).Should().Be(1, "2 request song song chỉ 1 request thắng");
             ctxA.UserBadges.Count(ub => ub.UserId == user.Id && ub.BadgeId == badge.Id).Should().Be(1);
+        }
+
+        // ── C2: notification level-up + badge award (gửi SAU commit) ──
+
+        [Fact]
+        public async Task AwardXpAndCheckBadgesAsync_LevelUp_NotifiesLevelUp()
+        {
+            var (db, connection) = TestSqliteDbContext.Create();
+            try
+            {
+                var notificationMock = new Mock<INotificationService>();
+                var uow = new UnitOfWork(db);
+                var service = new GamificationService(uow, notificationMock.Object);
+
+                // 500 XP đủ lên level cao hơn level 1.
+                var user = new User("levelup@test.dev", "levelup", "hashed");
+                db.Users.Add(user);
+                await db.SaveChangesAsync();
+
+                await service.AwardXpAndCheckBadgesAsync(user.Id, 500, "quiz-complete", "k-lvl");
+
+                notificationMock.Verify(n => n.NotifyLevelUpAsync(
+                    user.Id, "levelup", 1, It.IsAny<int>(), 500), Times.Once);
+            }
+            finally
+            {
+                db.Dispose();
+                connection.Dispose();
+            }
+        }
+
+        [Fact]
+        public async Task AwardXpAndCheckBadgesAsync_NoLevelChange_DoesNotNotifyLevelUp()
+        {
+            var (db, connection) = TestSqliteDbContext.Create();
+            try
+            {
+                var notificationMock = new Mock<INotificationService>();
+                var uow = new UnitOfWork(db);
+                var service = new GamificationService(uow, notificationMock.Object);
+
+                // 10 XP quá ít để đổi level → không gửi level-up.
+                var user = new User("nolevel@test.dev", "nolevel", "hashed");
+                db.Users.Add(user);
+                await db.SaveChangesAsync();
+
+                await service.AwardXpAndCheckBadgesAsync(user.Id, 10, "quiz-complete", "k-nolevel");
+
+                notificationMock.Verify(n => n.NotifyLevelUpAsync(
+                    It.IsAny<Guid>(), It.IsAny<string>(), It.IsAny<int>(), It.IsAny<int>(), It.IsAny<int>()),
+                    Times.Never);
+            }
+            finally
+            {
+                db.Dispose();
+                connection.Dispose();
+            }
+        }
+
+        [Fact]
+        public async Task AwardXpAndCheckBadgesAsync_BadgeAwarded_NotifiesBadge()
+        {
+            var (db, connection) = TestSqliteDbContext.Create();
+            try
+            {
+                var notificationMock = new Mock<INotificationService>();
+                var uow = new UnitOfWork(db);
+                var service = new GamificationService(uow, notificationMock.Object);
+
+                var user = new User("badge-notify@test.dev", "badgeNotify", "hashed");
+                user.CompleteModule("sorting-bubble");
+                db.Users.Add(user);
+
+                var badge = new Badge("Sorting Wizard", "Hoàn thành 4 thuật toán sắp xếp", "⚡", "#3b82f6", "{ 'sortingCompleted': 1 }");
+                db.Badges.Add(badge);
+                await db.SaveChangesAsync();
+
+                var result = await service.AwardXpAndCheckBadgesAsync(user.Id, 50, "quiz-complete", "k-badge2");
+
+                result.NewBadges.Should().ContainSingle();
+                notificationMock.Verify(n => n.NotifyBadgeAwardedAsync(
+                    user.Id, "badgeNotify", "Sorting Wizard", It.IsAny<string>()), Times.Once);
+            }
+            finally
+            {
+                db.Dispose();
+                connection.Dispose();
+            }
+        }
+
+        [Fact]
+        public async Task AwardXpAndCheckBadgesAsync_NotificationFails_DoesNotBreakRequest()
+        {
+            var (db, connection) = TestSqliteDbContext.Create();
+            try
+            {
+                var notificationMock = new Mock<INotificationService>();
+                notificationMock.Setup(n => n.NotifyLevelUpAsync(It.IsAny<Guid>(), It.IsAny<string>(), It.IsAny<int>(), It.IsAny<int>(), It.IsAny<int>()))
+                    .ThrowsAsync(new Exception("hub down"));
+                var uow = new UnitOfWork(db);
+                var service = new GamificationService(uow, notificationMock.Object);
+
+                var user = new User("notif-fail@test.dev", "notifFail", "hashed");
+                db.Users.Add(user);
+                await db.SaveChangesAsync();
+
+                // Notification lỗi không được làm hỏng request cấp XP đã commit.
+                var result = await service.AwardXpAndCheckBadgesAsync(user.Id, 500, "quiz-complete", "k-notif");
+
+                result.TotalXp.Should().Be(500);
+                db.Users.Single(u => u.Id == user.Id).TotalXP.Should().Be(500);
+            }
+            finally
+            {
+                db.Dispose();
+                connection.Dispose();
+            }
         }
 
         private static void ExecPragma(Microsoft.Data.Sqlite.SqliteConnection connection)

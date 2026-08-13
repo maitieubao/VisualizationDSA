@@ -65,6 +65,14 @@
             @retry="initiatePayment"
           />
 
+          <!-- C1: nhãn rõ ràng luồng thanh toán đang ở môi trường MÔ PHỎNG (sandbox test) -->
+          <div v-if="paymentStore.checkoutState === 'paying'" class="mt-3 flex items-center justify-center gap-2 px-3 py-2 rounded-lg bg-accent-yellow/10 border border-accent-yellow/25">
+            <BaseIcon name="flask" class="w-3.5 h-3.5 text-accent-yellow shrink-0" />
+            <p class="text-[11px] text-accent-yellow text-center">
+              Môi trường mô phỏng thanh toán — không giao dịch tiền thật. Mã QR dùng để demo luồng kiểm tra.
+            </p>
+          </div>
+
           <!-- PM-048: nhánh 'verifying' bỏ — agent store đã nối verify qua polling, tránh dead UI -->
 
           <CheckoutSuccessScreen v-else-if="paymentStore.checkoutState === 'success'" @finish="finishCheckout" />

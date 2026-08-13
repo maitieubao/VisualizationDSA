@@ -339,6 +339,37 @@ namespace VisualizationDSA.UnitTests.Services
             await act.Should().ThrowAsync<PaymentConfigurationException>();
         }
 
+        // ============================ C1: lazy-cleanup order hết hạn ============================
+
+        [Fact]
+        public async Task GetOrderStatus_WhenOrderExpired_MarksAsExpiredAndReturnsExpiredStatus()
+        {
+            // C1: order Pending quá hạn (ExpiresAt) được đánh dấu Expired ngay khi tra cứu —
+            // không còn hiện "Pending" mập mờ cho QR đã chết.
+            var user = AddUser();
+            var order = AddPendingOrder(userId: user.Id);
+            SetExpiresAt(order, DateTime.UtcNow.AddMinutes(-1));
+
+            var dto = await _service.GetOrderStatusAsync(order.Id, user.Id);
+
+            dto.Status.Should().Be(OrderStatus.Expired.ToString());
+            order.Status.Should().Be(OrderStatus.Expired.ToString(), "order trong DB phải được đánh dấu Expired");
+            _mockUow.Verify(u => u.CommitAsync(), Times.AtLeastOnce);
+        }
+
+        [Fact]
+        public async Task GetOrderStatus_WhenOrderStillValid_KeepsPendingAndNoCommit()
+        {
+            // Order còn hạn → giữ nguyên Pending, không commit thừa (không thay đổi dữ liệu).
+            var user = AddUser();
+            var order = AddPendingOrder(userId: user.Id);
+
+            var dto = await _service.GetOrderStatusAsync(order.Id, user.Id);
+
+            dto.Status.Should().Be(OrderStatus.Pending.ToString());
+            _mockUow.Verify(u => u.CommitAsync(), Times.Never);
+        }
+
         // ============================ Helpers ============================
 
         /// <summary>Ép order hết hạn (ExpiresAt private set) để test nhánh quá hạn.</summary>
