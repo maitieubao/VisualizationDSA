@@ -27,12 +27,14 @@
           <BaseIcon name="snowflake" class="w-3.5 h-3.5 inline mr-1" /> Freeze ({{ store.streakFreezesCount }})
         </button>
         <!-- GM-024: nút cộng XP demo chỉ cho Teacher/Admin (endpoint award-xp yêu cầu) -->
+        <!-- D1: nhãn "Demo" rõ ràng — không nhầm là tính năng cộng XP thật của sản phẩm. -->
         <button
           v-if="canAwardDemoXp"
           @click="handleAwardXp" :disabled="store.isBackendLoading"
           class="px-3 py-1.5 rounded-lg text-xs font-medium bg-accent-green/20 text-accent-green border border-accent-green/30 hover:bg-accent-green/30 disabled:opacity-50 transition-colors"
+          :title="'Chỉ dùng để trình diễn — XP thật đến từ việc học bài (CompleteLesson).'"
         >
-          <BaseIcon name="zap" class="w-3.5 h-3.5 inline mr-1" />{{ store.isBackendLoading ? 'Đang xử lý...' : '+50 XP Demo' }}
+          <BaseIcon name="zap" class="w-3.5 h-3.5 inline mr-1" />{{ store.isBackendLoading ? 'Đang xử lý...' : '+50 XP (Demo)' }}
         </button>
       </div>
     </div>

@@ -697,3 +697,9 @@
 - Backend `GamificationServiceTests`: +4 (level-up -> NotifyLevelUpAsync; khong doi level -> khong notify; badge moi -> NotifyBadgeAwardedAsync; notification loi -> request van thanh cong).
 - Frontend: checkout 32/32 (nhan mo phong khong pha selector), algo-playground workspace 24/24 (menu Xuat PNG).
 - Full: backend 781/781 (+6), frontend 3504/3504.
+
+## Phase D - Tests (2026-08-13)
+
+- Backend `AdminControllerTests`: +2 (GetLearningAnalytics stats dung: 2 learners, 50% viz, 50% pass quiz, 100% pass khi co viz vs 0% khong viz; khong progress -> 0 khong loi).
+- Frontend: admin panel tests giu nguyen (tab moi khong pha); gamification text "+50 XP (Demo)" khong test assert cu nao pha.
+- Full: backend 783/783 (+2), frontend 3504/3504, vue-tsc 0.

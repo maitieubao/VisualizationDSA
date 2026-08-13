@@ -596,6 +596,73 @@ namespace VisualizationDSA.WebApi.Controllers
             });
         }
 
+        // D4: analytics học tập — chứng minh hiệu quả (xem visualizer → làm quiz).
+        [HttpGet("analytics/learning")]
+        public async Task<IActionResult> GetLearningAnalytics()
+        {
+            // Per-lesson: số user học, % xem viz, % làm quiz, % pass quiz, % pass codelab, avg best score.
+            var lessons = await _dbContext.Lessons
+                .Where(l => !l.IsDeleted)
+                .OrderBy(l => l.Title)
+                .Select(l => new
+                {
+                    l.Id,
+                    l.Title,
+                    progresses = l.Progresses.Select(p => new
+                    {
+                        p.HasWatchedVisualizer,
+                        p.BestScore,
+                        p.CodelabCompleted,
+                        p.Status
+                    })
+                })
+                .ToListAsync();
+
+            var lessonStats = lessons
+                .Select(l =>
+                {
+                    var list = l.progresses.ToList();
+                    var learners = list.Count;
+                    var watchers = list.Count(p => p.HasWatchedVisualizer);
+                    var quizTaken = list.Count(p => p.BestScore > 0);
+                    var quizPassed = list.Count(p => p.BestScore >= 60); // 60/100 = đạt
+                    var codelabDone = list.Count(p => p.CodelabCompleted);
+                    var completed = list.Count(p => p.Status == "Completed");
+                    return new
+                    {
+                        lessonId = l.Id.ToString(),
+                        lessonTitle = l.Title,
+                        learners,
+                        visualizerWatchRate = learners == 0 ? 0.0 : Math.Round((double)watchers / learners * 100, 1),
+                        quizTakenRate = learners == 0 ? 0.0 : Math.Round((double)quizTaken / learners * 100, 1),
+                        quizPassRate = learners == 0 ? 0.0 : Math.Round((double)quizPassed / learners * 100, 1),
+                        codelabCompletionRate = learners == 0 ? 0.0 : Math.Round((double)codelabDone / learners * 100, 1),
+                        completionRate = learners == 0 ? 0.0 : Math.Round((double)completed / learners * 100, 1),
+                        avgBestScore = quizTaken == 0 ? 0.0 : Math.Round(list.Where(p => p.BestScore > 0).Average(p => p.BestScore), 1),
+                        // D4: tương quan "xem viz → pass quiz" — trên bài có ≥ 1 user xem viz.
+                        passRateWithVisualizer = watchers == 0 ? 0.0 : Math.Round((double)list.Count(p => p.HasWatchedVisualizer && p.BestScore >= 60) / watchers * 100, 1),
+                        passRateWithoutVisualizer = (learners - watchers) == 0 ? 0.0 : Math.Round((double)list.Count(p => !p.HasWatchedVisualizer && p.BestScore >= 60) / (learners - watchers) * 100, 1)
+                    };
+                })
+                .ToList();
+
+            var totalProgress = await _dbContext.UserLessonProgresses.CountAsync();
+            var overall = new
+            {
+                totalLearners = await _dbContext.UserLessonProgresses.Select(p => p.UserId).Distinct().CountAsync(),
+                totalProgressRecords = totalProgress,
+                avgVisualizerWatchRate = lessons.Count == 0 ? 0.0 : Math.Round(lessonStats.Average(l => l.visualizerWatchRate), 1),
+                avgQuizPassRate = lessons.Count == 0 ? 0.0 : Math.Round(lessonStats.Average(l => l.quizPassRate), 1),
+                // Tỷ lệ pass quiz TRUNG BÌNH có xem viz vs không xem (chỉ trên bài có dữ liệu cả 2 nhóm).
+                avgPassRateWithVisualizer = lessonStats.Count(l => l.passRateWithVisualizer > 0) == 0 ? 0.0
+                    : Math.Round(lessonStats.Where(l => l.passRateWithVisualizer > 0).Average(l => l.passRateWithVisualizer), 1),
+                avgPassRateWithoutVisualizer = lessonStats.Count(l => l.passRateWithoutVisualizer > 0) == 0 ? 0.0
+                    : Math.Round(lessonStats.Where(l => l.passRateWithoutVisualizer > 0).Average(l => l.passRateWithoutVisualizer), 1)
+            };
+
+            return Ok(new { overall, lessons = lessonStats });
+        }
+
         
         
         

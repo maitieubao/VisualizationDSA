@@ -2309,3 +2309,14 @@ Files: frontend/src/core/CompilerStepExecutor.ts (+variables), useAlgoPlayground
 | **C3 Embed (phan code)** | 🟠 PARTIAL | Docs/host/sample-host.html: trang demo host + protocol WIDGET_READY/HEIGHT_CHANGED/QUIZ_COMPLETED + nhan dieu khien STEP_FORWARD/PLAY_PAUSE/RESET + verify origin. Code EW-001..026 da xong truoc. CON: verify browser that tren LMS + tai lieu host hoan chinh (can moi truong that). |
 
 Files: PaymentService.cs (lazy-cleanup), GamificationService.cs (+INotificationService optional + NotifyLevelUpAndBadgesAsync), LessonController.cs (NotifyLevelUpAsync sau CompleteLesson), PremiumCheckoutView.vue (nhan mo phong), AlgoPlaygroundWorkspace.vue (Xuat PNG), docs/host/sample-host.html. Backend 781/781 (+6), frontend 3504/3504, vue-tsc 0.
+
+## Phase D - Hoan thien san pham (D1/D3/D4) (2026-08-13)
+
+| Feature | Trang thai | Chi tiet |
+| :-- | :-- | :-- |
+| **D4 Analytics hoc tap** | ✅ CODE DONE | Backend: GET /api/v1/concepts/admin/analytics/learning - per-lesson stats (learners, % xem viz, % lam quiz, % pass quiz >=60, % pass codelab, % hoan thanh, avg best score) + overall (totalLearners, totalProgressRecords, avg rates) + TUONG QUAN "xem viz -> pass quiz" (passRateWithVisualizer vs passRateWithoutVisualizer). FE: tab "Hoc tap" trong Admin Panel - 5 card tong quan + bieu do so sanh 2 cot + bang chi tiet tung bai. Tests: AdminControllerTests +2 (stats dung 50/50/100/0, rong khong loi). |
+| **D1 Nhan Demo** | ✅ CODE DONE | Checkout: nhan "Moi truong mo phong thanh toan" (C1 da lam). Gamification: nut "+50 XP (Demo)" + title giai thich XP that tu CompleteLesson (chi Teacher/Admin - GM-024 giu). |
+| **D3 Component docs** | ✅ CODE DONE | docs/components.md: BaseIcon + TheoryAccordionItem/CollapsiblePanel/SummaryView + bien CSS theme + conventions - thay Storybook (khong them dependency). |
+| **D2 i18n** | ❌ DEFERRED | Scope qua lon (hang nghin chuoi), rui ro pha 3500+ test, gia tri thap giai doan nay. |
+
+Files: AdminController.cs (analytics/learning), AdminControllerTests.cs (+2), AdminPanelView.vue (tab Hoc tap), AdminLearningTab.vue (moi), GamificationWorkspace.vue (nhan Demo), docs/components.md. Backend 783/783 (+2), frontend 3504/3504, vue-tsc 0.

@@ -42,8 +42,9 @@
       <!-- AD-045: bỏ emit refresh-dashboard dead (tab v-if unmount → ref null) -->
       <AdminDashboardTab v-if="activeTab === 'dashboard'" />
       <AdminUsersTab v-else-if="activeTab === 'users'" />
-      <AdminQuizzesTab v-else-if="activeTab === 'quizzes'" />
-      <AdminSystemTab v-else-if="activeTab === 'system'" />
+<AdminQuizzesTab v-else-if="activeTab === 'quizzes'" />
+<AdminLearningTab v-else-if="activeTab === 'learning'" />
+<AdminSystemTab v-else-if="activeTab === 'system'" />
       <AdminAuditTab v-else-if="activeTab === 'audit'" />
     </div>
   </div>
@@ -55,6 +56,7 @@ import { useRoute, useRouter } from 'vue-router';
 import AdminDashboardTab from './AdminDashboardTab.vue';
 import AdminUsersTab from './AdminUsersTab.vue';
 import AdminQuizzesTab from './AdminQuizzesTab.vue';
+import AdminLearningTab from './AdminLearningTab.vue';
 import AdminSystemTab from './AdminSystemTab.vue';
 import AdminAuditTab from './AdminAuditTab.vue';
 
@@ -68,6 +70,7 @@ const tabs: Tab[] = [
   { id: 'dashboard', name: 'Tổng quan', icon: 'chart-bar' },
   { id: 'users', name: 'Người dùng', icon: 'users' },
   { id: 'quizzes', name: 'Quản lý Quiz', icon: 'clipboard-list' },
+  { id: 'learning', name: 'Học tập', icon: 'trending-up' },
   { id: 'system', name: 'Hệ thống', icon: 'cog' },
   { id: 'audit', name: 'Nhật ký Quản trị', icon: 'shield' },
 ];

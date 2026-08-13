@@ -62,12 +62,12 @@
 
 ---
 
-## ✨ PHASE D — Hoàn thiện sản phẩm (⏳ CHỜ)
+## ✨ PHASE D — Hoàn thiện sản phẩm (🟢 D1/D3/D4 ✅ 2026-08-13 — D2 deferred)
 
-- D1: Gắn nhãn "Mô phỏng/Demo" cho các luồng chưa nối thật (thanh toán)
-- D2: i18n sẵn sàng (tách chuỗi tiếng Việt)
-- D3: Component library docs (Storybook/Histoire) cho Core UI
-- D4: Analytics học tập (thời gian xem viz, tỷ lệ hoàn thành quiz sau khi xem) — chứng minh hiệu quả
+- [x] D1: Gắn nhãn "Mô phỏng/Demo" cho các luồng chưa nối thật — 2026-08-13: checkout nhãn "Môi trường mô phỏng thanh toán" (C1); nút "+50 XP (Demo)" chỉ Teacher/Admin + title giải thích XP thật đến từ CompleteLesson.
+- [ ] D2: i18n sẵn sàng (tách chuỗi tiếng Việt) — **DEFERRED**: scope lớn (hàng nghìn chuỗi), rủi ro phá 3500+ test; giá trị thấp cho giai đoạn hiện tại. Nếu cần, làm theo module khi sản phẩm có nhu cầu đa ngôn ngữ.
+- [x] D3: Component library docs — 2026-08-13: `docs/components.md` (BaseIcon, TheoryAccordionItem/CollapsiblePanel/SummaryView + biến CSS theme + conventions) thay Storybook (không thêm dependency/build).
+- [x] D4: Analytics học tập — 2026-08-13: endpoint `GET /admin/analytics/learning` — per-lesson (learners, % xem viz, % làm quiz, % pass quiz, % pass codelab, % hoàn thành, avg best score) + overall + **tương quan "xem viz → pass quiz"** (passRateWith/WithoutVisualizer — bằng chứng hiệu quả). FE: tab "Học tập" trong Admin Panel (5 card tổng quan + biểu đồ so sánh + bảng chi tiết bài).
 
 ---
 
@@ -75,9 +75,10 @@
 
 | Phase | Trạng thái | Ghi chú |
 | :-- | :-- | :-- |
-| A — Content Pipeline | ✅ A1 A2 A3 XONG | A1 2026-08-11, A2/A3 2026-08-13 |
+| A — Content Pipeline | ✅ A1 A2 A3 XONG | 2026-08-11/13 |
 | B — Code Debugger | ✅ B1-B4 XONG | 2026-08-13 |
 | C — Tích hợp thật | 🟢 C1✅ C2✅ C4✅ — C3 chờ verify thật | C3 cần browser/LMS thật |
+| D — Hoàn thiện | 🟢 D1✅ D3✅ D4✅ — D2 deferred | D4 analytics chứng minh hiệu quả |
 | C — Tích hợp thật | ⏳ | Sau B |
 | D — Hoàn thiện | ⏳ | Sau C |
 
@@ -89,3 +90,4 @@
 | 2026-08-13 | **A3 hoàn tất — Đóng vòng E2E** — LessonE2EFlowTests (5 test) mô phỏng học viên đi xuyên bài khóa mẫu trên seed thật: GET lesson published (codelab payload đủ testcase/hint/template, test ẩn không lộ đáp án) → chạy judge solution pass → CompleteLesson cộng XP + progress, lần 2 không cộng (idempotent). Backend 775 (+5). Review: courses-lessons 7→9, lesson-study 8→9, gamification 7→8. **Phase A Content Pipeline hoàn tất.** |
 | 2026-08-13 | **Phase B Code Debugger hoàn tất (B1-B4)** — Breakpoint (click gutter toggle + chấm đỏ + auto-pause khi play); Watch panel (executor snapshot `variables` primitive mỗi frame, watchList persist, highlight biến đổi); instrument closure/vòng lồng nhau track đủ (test B3); nhãn "Trình chạy từng bước" + menu "Xuất code". Frontend 3504/3504 (+16), vue-tsc 0. |
 | 2026-08-13 | **Phase C (C1/C2/C4)** — C2 nối notification level-up + badge award thật (GamificationService + CompleteLesson, sau commit, lỗi không phá request); C1 lazy-cleanup order hết hạn + nhãn "Môi trường mô phỏng" checkout; C4 "Xuất ảnh PNG" algo-playground + sample host page (`docs/host/sample-host.html`). Backend 781 (+6), frontend 3504. C3 (verify embed thật) chờ browser/LMS. |
+| 2026-08-13 | **Phase D (D1/D3/D4)** — D4 analytics học tập: `GET /admin/analytics/learning` (per-lesson + overall + tương quan "xem viz → pass quiz") + tab "Học tập" Admin Panel (card + biểu đồ + bảng) — bằng chứng hiệu quả cho luận văn; D1 nhãn Demo (XP +50, checkout); D3 `docs/components.md`. Backend 783 (+2), frontend 3504. D2 i18n deferred (scope lớn, giá trị thấp). **Toàn bộ roadmap A→D hoàn tất (trừ C3 verify thật + D2).** |

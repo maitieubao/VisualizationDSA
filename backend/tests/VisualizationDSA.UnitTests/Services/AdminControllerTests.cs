@@ -15,6 +15,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Moq;
 using VisualizationDSA.Domain.Engine;
 using VisualizationDSA.Domain.Entities;
+using VisualizationDSA.Domain.Enums;
 using VisualizationDSA.Domain.Interfaces;
 using VisualizationDSA.Domain.Strategies;
 using VisualizationDSA.Infrastructure.Data;
@@ -538,6 +539,65 @@ namespace VisualizationDSA.UnitTests.Services
             doc.RootElement.GetProperty("isFallback").GetBoolean().Should().BeTrue();
             doc.RootElement.GetProperty("orders").GetProperty("total").GetInt32().Should().Be(0);
             doc.RootElement.GetProperty("registrationsLast7Days").GetArrayLength().Should().Be(7);
+        }
+
+        // ---------- D4: learning analytics (hiệu quả học tập) ----------
+
+        [Fact]
+        public async Task GetLearningAnalytics_ReturnsOverallAndPerLessonStats()
+        {
+            var (adminCtl, db, _) = Create();
+            var admin = AddUser(db, "Admin", "la-admin@test.com");
+            SetAuthHeader(adminCtl, TestJwtBuilder.BuildToken(admin.Id.ToString(), "Admin"));
+
+            // 2 user học cùng 1 lesson — 1 user xem viz + pass quiz, 1 user không xem + fail.
+            var teacher = AddUser(db, "Teacher", "la-teacher@test.com");
+            var lesson = new Lesson("Sắp xếp cơ bản (D4)", "Nội dung lý thuyết " + new string('x', 900), "sorting", "{}", 30, teacher.Id, null, LessonPublishStatus.Published);
+            db.Lessons.Add(lesson);
+
+            var u1 = AddUser(db, "Student", "la-u1@test.com");
+            var p1 = new UserLessonProgress(u1.Id, lesson.Id, "Completed");
+            p1.RecordVisualizerWatched();
+            p1.RecordQuizAttempt(85);
+            p1.RecordCodelabCompleted();
+            db.UserLessonProgresses.Add(p1);
+
+            var u2 = AddUser(db, "Student", "la-u2@test.com");
+            var p2 = new UserLessonProgress(u2.Id, lesson.Id, "Completed");
+            p2.RecordQuizAttempt(40);
+            db.UserLessonProgresses.Add(p2);
+
+            await db.SaveChangesAsync();
+
+            var result = await adminCtl.GetLearningAnalytics();
+            var ok = result.Should().BeOfType<OkObjectResult>().Subject;
+            using var doc = ParseResult(ok.Value);
+
+            doc.RootElement.GetProperty("overall").GetProperty("totalLearners").GetInt32().Should().Be(2);
+            var lessonNode = doc.RootElement.GetProperty("lessons").EnumerateArray().Single();
+            lessonNode.GetProperty("learners").GetInt32().Should().Be(2);
+            lessonNode.GetProperty("visualizerWatchRate").GetDouble().Should().Be(50.0);
+            lessonNode.GetProperty("quizPassRate").GetDouble().Should().Be(50.0);
+            lessonNode.GetProperty("codelabCompletionRate").GetDouble().Should().Be(50.0);
+            // Nhóm có xem viz: 1/1 pass (100%) — nhóm không xem: 0/1 fail (0%).
+            lessonNode.GetProperty("passRateWithVisualizer").GetDouble().Should().Be(100.0);
+            lessonNode.GetProperty("passRateWithoutVisualizer").GetDouble().Should().Be(0.0);
+        }
+
+        [Fact]
+        public async Task GetLearningAnalytics_NoProgress_ReturnsZeroStatsWithoutError()
+        {
+            var (adminCtl, db, _) = Create();
+            var admin = AddUser(db, "Admin", "la-empty@test.com");
+            SetAuthHeader(adminCtl, TestJwtBuilder.BuildToken(admin.Id.ToString(), "Admin"));
+
+            var result = await adminCtl.GetLearningAnalytics();
+            var ok = result.Should().BeOfType<OkObjectResult>().Subject;
+            using var doc = ParseResult(ok.Value);
+
+            doc.RootElement.GetProperty("overall").GetProperty("totalLearners").GetInt32().Should().Be(0);
+            doc.RootElement.GetProperty("overall").GetProperty("avgVisualizerWatchRate").GetDouble().Should().Be(0.0);
+            doc.RootElement.GetProperty("lessons").GetArrayLength().Should().Be(0);
         }
     }
 }
