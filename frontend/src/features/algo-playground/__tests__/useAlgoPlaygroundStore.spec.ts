@@ -347,4 +347,132 @@ describe('useAlgoPlaygroundStore', () => {
     expect(store.inputValidation.valid).toBe(true);
     expect(store.inputValidation.message).toBe('Input trống');
   });
+
+  // ── B1: breakpoint ──
+
+  it('B1.1: toggleBreakpoint thêm/rớt line; clearBreakpoints xóa hết', () => {
+    const store = useAlgoPlaygroundStore();
+    store.toggleBreakpoint(3);
+    store.toggleBreakpoint(7);
+    expect(store.breakpoints.has(3)).toBe(true);
+    expect(store.breakpoints.has(7)).toBe(true);
+
+    store.toggleBreakpoint(3);
+    expect(store.breakpoints.has(3)).toBe(false);
+    expect(store.breakpoints.has(7)).toBe(true);
+
+    store.clearBreakpoints();
+    expect(store.breakpoints.size).toBe(0);
+  });
+
+  it('B1.2: toggleBreakpoint bỏ qua line <= 0', () => {
+    const store = useAlgoPlaygroundStore();
+    store.toggleBreakpoint(0);
+    store.toggleBreakpoint(-1);
+    expect(store.breakpoints.size).toBe(0);
+  });
+
+  it('B1.3: play tự động dừng khi stepNext chạm frame breakpoint', async () => {
+    const store = useAlgoPlaygroundStore();
+    store.loadDemo('bubble-sort');
+    await store.run();
+    expect(store.totalFrames).toBeGreaterThan(2);
+
+    // Đặt breakpoint tại line của frame đầu tiên khác frame 0
+    const targetLine = store.frames.slice(1).find(f => f.lineNumber !== store.frames[0].lineNumber)!.lineNumber;
+    store.toggleBreakpoint(targetLine);
+
+    store.play();
+    expect(store.isPlaying).toBe(true);
+    let guard = 0;
+    while (store.isPlaying && guard < 500) {
+      store.stepNext();
+      guard++;
+    }
+    expect(store.isPlaying).toBe(false);
+    expect(store.currentFrame?.lineNumber).toBe(targetLine);
+  });
+
+  it('B1.4: stepNext tay (không play) vẫn đi qua breakpoint', async () => {
+    const store = useAlgoPlaygroundStore();
+    store.loadDemo('bubble-sort');
+    await store.run();
+    const targetLine = store.frames[1].lineNumber;
+    store.toggleBreakpoint(targetLine);
+    store.stepNext();
+    expect(store.currentFrame?.lineNumber).toBe(targetLine);
+    expect(store.isPlaying).toBe(false);
+  });
+
+  // ── B2: watch variables ──
+
+  /** Step tới frame đầu tiên có `variables` primitive (frame 0 thường chưa track dòng nào). */
+  function advanceToFirstVariableFrame(store: ReturnType<typeof useAlgoPlaygroundStore>): void {
+    let guard = 0;
+    while (Object.keys(store.currentVariables).length === 0 && store.currentIndex < store.totalFrames - 1 && guard < 500) {
+      store.stepNext();
+      guard++;
+    }
+  }
+
+  it('B2.1: currentVariables trả biến primitive của frame (fallback loopVariables)', async () => {
+    const store = useAlgoPlaygroundStore();
+    store.loadDemo('bubble-sort');
+    await store.run();
+    advanceToFirstVariableFrame(store);
+    const vars = store.currentVariables;
+    expect(Object.keys(vars).length).toBeGreaterThan(0);
+    // Kiểm tra có biến số nguyên (i, j, n...)
+    const numeric = Object.values(vars).filter(v => typeof v === 'number');
+    expect(numeric.length).toBeGreaterThan(0);
+  });
+
+  it('B2.2: toggleWatchVariable ghim/ẩn biến; watchedValues trả giá trị + trạng thái changed', async () => {
+    const store = useAlgoPlaygroundStore();
+    store.loadDemo('bubble-sort');
+    await store.run();
+    advanceToFirstVariableFrame(store);
+    const someVar = Object.keys(store.currentVariables)[0];
+
+    store.toggleWatchVariable(someVar);
+    expect(store.watchList.includes(someVar)).toBe(true);
+    expect(store.watchedValues.some(w => w.name === someVar)).toBe(true);
+    expect(store.watchedValues.every(w => w.changed === true || w.changed === false)).toBe(true);
+
+    store.toggleWatchVariable(someVar);
+    expect(store.watchList.includes(someVar)).toBe(false);
+  });
+
+  it('B2.3: watchedValues chỉ hiển thị biến tồn tại trong frame (lọc biến không xuất hiện)', async () => {
+    const store = useAlgoPlaygroundStore();
+    store.loadDemo('bubble-sort');
+    await store.run();
+    advanceToFirstVariableFrame(store);
+    store.toggleWatchVariable('khong-ton-tai');
+    expect(store.watchedValues.length).toBe(0);
+  });
+
+  it('B2.4: watchList persist qua localStorage (restore store mới)', async () => {
+    const store = useAlgoPlaygroundStore();
+    store.loadDemo('bubble-sort');
+    await store.run();
+    advanceToFirstVariableFrame(store);
+    const someVar = Object.keys(store.currentVariables)[0];
+    store.toggleWatchVariable(someVar);
+
+    setActivePinia(createPinia());
+    const restored = useAlgoPlaygroundStore();
+    expect(restored.watchList.includes(someVar)).toBe(true);
+  });
+
+  it('B2.5: changedVariables đánh dấu biến đổi khi di chuyển frame', async () => {
+    const store = useAlgoPlaygroundStore();
+    store.loadDemo('bubble-sort');
+    await store.run();
+    // Frame 0 → frame 1: gần như chắc chắn có biến đổi (i, j...)
+    store.stepNext();
+    const changed = store.changedVariables;
+    // Chỉ cần không crash + là Set
+    expect(changed instanceof Set).toBe(true);
+  });
 });

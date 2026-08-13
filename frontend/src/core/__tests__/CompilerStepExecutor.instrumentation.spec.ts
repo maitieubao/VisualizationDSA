@@ -80,4 +80,66 @@ describe('CompilerStepExecutor instrumentation (Babel AST)', () => {
     const lastVars = frames[frames.length - 1].canvasStateSnapshot.loopVariables;
     expect(lastVars?.caught).toBe(1);
   });
+
+  // ── B2: snapshot biến primitive (Watch Panel) ──
+
+  it('B2.1: variables chứa number/string/boolean (Watch Panel data)', () => {
+    const code = `let count = 3;\nconst greeting = "hello";\nlet flag = true;\nlog(greeting + count + flag);`;
+    const frames = compile(code, [1, 2, 3]);
+    const vars = frames[frames.length - 1].canvasStateSnapshot.variables;
+    expect(vars?.count).toBe(3);
+    expect(vars?.greeting).toBe("hello");
+    expect(vars?.flag).toBe(true);
+  });
+
+  it('B2.2: variables không chứa object/array (chỉ primitive)', () => {
+    const code = `const data = { a: 1 };\nconst list = [1, 2];\nlet n = 5;\nlog(n);`;
+    const frames = compile(code, [1, 2]);
+    const vars = frames[frames.length - 1].canvasStateSnapshot.variables ?? {};
+    for (const v of Object.values(vars)) {
+      expect(['number', 'string', 'boolean']).toContain(typeof v);
+    }
+  });
+
+  it('B2.3: variables cập nhật theo từng dòng thực thi (biến đổi giữa các frame)', () => {
+    const code = `let x = 0;\nx = x + 1;\nx = x + 5;\nlog("x=" + x);`;
+    const frames = compile(code, [1, 2]);
+    const xValues = new Set<number>();
+    for (const f of frames) {
+      const x = f.canvasStateSnapshot.variables?.x;
+      if (typeof x === 'number') xValues.add(x);
+    }
+    expect(xValues.has(1)).toBe(true);
+    expect(xValues.has(6)).toBe(true);
+  });
+
+  // ── B3: instrument closure/template — biến trong hàm con + vòng lặp lồng nhau ──
+
+  it('B3.1: biến trong closure (hàm con) được track primitive', () => {
+    const code = `function makeCounter() {\n  let total = 0;\n  return function step() {\n    total = total + 1;\n    return total;\n  };\n}\nconst c = makeCounter();\nlet r1 = c();\nlet r2 = c();\nlog("r=" + r1 + "," + r2);`;
+    const frames = compile(code, [1, 2, 3]);
+    const totals = new Set<number>();
+    for (const f of frames) {
+      const total = f.canvasStateSnapshot.variables?.total;
+      if (typeof total === 'number') totals.add(total);
+    }
+    expect(totals.has(1)).toBe(true);
+    expect(totals.has(2)).toBe(true);
+  });
+
+  it('B3.2: vòng lặp lồng nhau track biến của cả 2 vòng (dứt điểm từng biến)', () => {
+    const code = `for (let i = 0; i < 2; i++) {\n  for (let j = 0; j < 2; j++) {\n    log("i" + i + "j" + j);\n  }\n}`;
+    const frames = compile(code, [1, 2, 3]);
+    const iValues = new Set<number>();
+    const jValues = new Set<number>();
+    for (const f of frames) {
+      const vars = f.canvasStateSnapshot.variables ?? {};
+      if (typeof vars.i === 'number') iValues.add(vars.i);
+      if (typeof vars.j === 'number') jValues.add(vars.j);
+    }
+    expect(iValues.has(0)).toBe(true);
+    expect(iValues.has(1)).toBe(true);
+    expect(jValues.has(0)).toBe(true);
+    expect(jValues.has(1)).toBe(true);
+  });
 });

@@ -40,14 +40,14 @@
 
 ---
 
-## 🐞 PHASE B — Code Debugger nâng cấp (⏳ CHỜ — sau A)
+## 🐞 PHASE B — Code Debugger nâng cấp (🟢 ĐANG LÀM — B1-B4 ✅ 2026-08-13)
 
-> CV hiện 8.5/10 — stepper tốt nhưng thiếu UX debugger chuẩn.
+> CV hiện 8.5/10 — stepper tốt nhưng thiếu UX debugger chuẩn. **Đã bổ sung: breakpoint, watch panel, snapshot biến primitive.**
 
-- B1: Breakpoint (click gutter) + stop at line
-- B2: Watch panel (theo dõi biến tuỳ chọn)
-- B3: Instrument closure + template đơn giản; var loop tracking dứt điểm
-- B4: Gắn nhãn đúng bản chất "Trình chạy từng bước pseudocode" + lưu/lấy session code (nối Profile/Export)
+- [x] B1: Breakpoint (click gutter) + stop at line — **2026-08-13**: click gutter line number toggle breakpoint (chấm đỏ glyph), play tự động dừng tại frame có lineNumber ∈ breakpoints, stepNext tay vẫn nhảy qua; menu "Xóa breakpoint".
+- [x] B2: Watch panel (theo dõi biến tuỳ chọn) — **2026-08-13**: executor snapshot `variables` primitive (number/string/boolean, không object/array) mỗi frame; store watchList persist + watchedValues + changedVariables (highlight biến đổi); UI panel chips chọn biến + bảng giá trị highlight cyan khi đổi.
+- [x] B3: Instrument closure + template đơn giản; var loop tracking dứt điểm — **2026-08-13**: safeVars capture closure (biến hàm con tracked), vòng lặp lồng nhau track đủ i+j; test B3.1/B3.2.
+- [x] B4: Gắn nhãn đúng bản chất "Trình chạy từng bước pseudocode" + lưu/lấy session code (nối Profile/Export) — **2026-08-13**: header "Trình chạy từng bước (JavaScript)" + chip pseudocode; menu "Xuất code" (copy clipboard); session code/input đã persist localStorage + share URL.
 
 ---
 
@@ -76,7 +76,8 @@
 | Phase | Trạng thái | Ghi chú |
 | :-- | :-- | :-- |
 | A — Content Pipeline | ✅ A1 A2 A3 XONG | A1 2026-08-11, A2/A3 2026-08-13 |
-| B — Code Debugger | ⏳ | Kế tiếp |
+| B — Code Debugger | 🟢 B1-B4 ✅ 2026-08-13 | Toàn bộ Phase B xong |
+| C — Tích hợp thật | ⏳ | Kế tiếp |
 | C — Tích hợp thật | ⏳ | Sau B |
 | D — Hoàn thiện | ⏳ | Sau C |
 
@@ -86,3 +87,4 @@
 | 2026-08-11 | Khởi tạo roadmap; chọn Phase A (Content Pipeline) làm ưu tiên #1 dựa trên đánh giá thực trạng; bắt đầu A1 |
 | 2026-08-13 | **A2 hoàn tất** — Seed 7 codelab mẫu (bubble/selection/insertion/merge sort, binary search, bfs/dfs graph) dùng chung OwnerId=null; UpsertLessonCodelabLinks gắn vào 5 lesson seed (09/10/18/20/28); lessonApi normalize backend `codelab` (PascalCase) → FE `codelabTask` (camelCase, hints string[], difficulty VN). Backend 770 (+2), FE 3488 (+2), vue-tsc 0. → Chuyển A3 (E2E manual test). |
 | 2026-08-13 | **A3 hoàn tất — Đóng vòng E2E** — LessonE2EFlowTests (5 test) mô phỏng học viên đi xuyên bài khóa mẫu trên seed thật: GET lesson published (codelab payload đủ testcase/hint/template, test ẩn không lộ đáp án) → chạy judge solution pass → CompleteLesson cộng XP + progress, lần 2 không cộng (idempotent). Backend 775 (+5). Review: courses-lessons 7→9, lesson-study 8→9, gamification 7→8. **Phase A Content Pipeline hoàn tất.** |
+| 2026-08-13 | **Phase B Code Debugger hoàn tất (B1-B4)** — Breakpoint (click gutter toggle + chấm đỏ + auto-pause khi play); Watch panel (executor snapshot `variables` primitive mỗi frame, watchList persist, highlight biến đổi); instrument closure/vòng lồng nhau track đủ (test B3); nhãn "Trình chạy từng bước" + menu "Xuất code". Frontend 3504/3504 (+16), vue-tsc 0. |

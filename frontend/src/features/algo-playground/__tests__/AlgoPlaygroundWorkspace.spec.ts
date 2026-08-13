@@ -54,6 +54,18 @@ vi.mock('monaco-editor', () => ({
     setTheme: editorSetThemeMock,
     MouseTargetType: monacoMouseTargetType,
   },
+  Range: class RangeStub {
+    startLineNumber: number;
+    startColumn: number;
+    endLineNumber: number;
+    endColumn: number;
+    constructor(startLineNumber: number, startColumn: number, endLineNumber: number, endColumn: number) {
+      this.startLineNumber = startLineNumber;
+      this.startColumn = startColumn;
+      this.endLineNumber = endLineNumber;
+      this.endColumn = endColumn;
+    }
+  },
 }));
 vi.mock('monaco-editor/esm/vs/language/typescript/monaco.contribution', () => ({}));
 vi.mock('monaco-editor/min/vs/editor/editor.main.css', () => ({}));
@@ -382,33 +394,61 @@ describe('AlgoPlaygroundWorkspace.vue', () => {
     expect(w.find('.splitpanes-stub').attributes('data-horizontal')).toBe('false');
   });
 
-  // ── AL-026 (P2): gutter click — simulate Monaco onMouseDown handler thật ──
+  // ── B1 (P1): gutter click — toggle breakpoint (thay hành vi jump cũ của AL-026) ──
 
-  it('AL-026: click gutter line → jumpToFrame đúng frame khớp lineNumber', async () => {
+  it('B1.1: click gutter line → toggle breakpoint (thêm/rớt khỏi store.breakpoints)', async () => {
     const w = await mountWorkspace();
     const store = useAlgoPlaygroundStore();
     const editor = monacoEditorInstances[monacoEditorInstances.length - 1];
     expect(editor.onMouseDown).toHaveBeenCalled();
     const handler = editor.onMouseDown.mock.calls[0][0] as (e: { target: { type: number; position?: { lineNumber: number } } }) => void;
 
-    // Chọn frame có lineNumber duy nhất so với các frame trước → findIndex khớp chính xác
-    let targetIdx = 0;
-    for (let i = 0; i < store.totalFrames; i++) {
-      const line = store.frames[i].lineNumber;
-      const seenBefore = store.frames.slice(0, i).some(f => f.lineNumber === line);
-      if (!seenBefore) { targetIdx = i; break; }
-    }
-    const targetLine = store.frames[targetIdx].lineNumber;
-
+    const targetLine = 3;
     handler({ target: { type: monacoMouseTargetType.GUTTER_LINE_NUMBERS, position: { lineNumber: targetLine } } });
     await nextTick();
-    expect(store.currentIndex).toBe(targetIdx);
+    expect(store.breakpoints.has(targetLine)).toBe(true);
 
-    // Click sai vùng (CONTENT_TEXT) → không nhảy frame
-    const before = store.currentIndex;
-    handler({ target: { type: monacoMouseTargetType.CONTENT_TEXT, position: { lineNumber: 1 } } });
+    // Click lại cùng dòng → gỡ breakpoint
+    handler({ target: { type: monacoMouseTargetType.GUTTER_LINE_NUMBERS, position: { lineNumber: targetLine } } });
     await nextTick();
-    expect(store.currentIndex).toBe(before);
+    expect(store.breakpoints.has(targetLine)).toBe(false);
+
+    // Click vùng CONTENT_TEXT → không toggle
+    handler({ target: { type: monacoMouseTargetType.CONTENT_TEXT, position: { lineNumber: 5 } } });
+    await nextTick();
+    expect(store.breakpoints.size).toBe(0);
+  });
+
+  it('B1.2: play tự động dừng khi chạm frame có lineNumber ∈ breakpoints', async () => {
+    const w = await mountWorkspace();
+    const store = useAlgoPlaygroundStore();
+    expect(store.totalFrames).toBeGreaterThan(1);
+
+    // Đặt breakpoint tại line của frame đầu tiên khác frame 0 → play sẽ dừng ngay frame đó
+    const firstDistinctLine = store.frames.slice(1).find(f => f.lineNumber !== store.frames[0].lineNumber)!.lineNumber;
+    store.toggleBreakpoint(firstDistinctLine);
+
+    store.play();
+    await flushPromises();
+    // Advance qua các frame (mô phỏng engine) cho tới khi đạt breakpoint
+    let guard = 0;
+    while (store.isPlaying && guard < 200) {
+      store.stepNext();
+      guard++;
+    }
+    expect(store.isPlaying).toBe(false);
+    expect(store.currentFrame?.lineNumber).toBe(firstDistinctLine);
+    expect(store.currentIndex).toBeLessThan(store.totalFrames - 1);
+  });
+
+  it('B1.3: stepNext tay vẫn nhảy qua breakpoint (chỉ play tự động mới dừng)', async () => {
+    const w = await mountWorkspace();
+    const store = useAlgoPlaygroundStore();
+    const breakLine = store.frames[1].lineNumber;
+    store.toggleBreakpoint(breakLine);
+    store.stepNext();
+    expect(store.currentFrame?.lineNumber).toBe(breakLine);
+    expect(store.isPlaying).toBe(false);
   });
 
   // ── AL-027 (P2): US-AP-020 — description node DOM thật (không tự dựng chuỗi) ──

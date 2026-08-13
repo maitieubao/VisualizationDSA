@@ -17,7 +17,6 @@ interface PersistedPlaygroundState {
   code?: string;
   inputRaw?: string;
 }
-
 export interface InputValidationInfo {
   valid: boolean;
   message: string;
@@ -35,10 +34,94 @@ export const useAlgoPlaygroundStore = defineStore('algo-playground', () => {
   const playbackSpeed = ref<number>(1);
   const compileError = ref<string | null>(null);
 
+  // ── B1: breakpoint (dòng dừng tự động khi play) ──
+  const breakpoints = ref<Set<number>>(new Set());
+
+  function toggleBreakpoint(line: number): void {
+    if (line <= 0) return;
+    const next = new Set(breakpoints.value);
+    if (next.has(line)) next.delete(line);
+    else next.add(line);
+    breakpoints.value = next;
+  }
+
+  function clearBreakpoints(): void {
+    if (breakpoints.value.size > 0) breakpoints.value = new Set();
+  }
+
+  // ── B2: watch list (tên biến theo dõi, persist) ──
+  const WATCH_KEY = 'algo-playground:watch';
+  const watchList = ref<string[]>(loadWatchList());
+
+  function loadWatchList(): string[] {
+    try {
+      const raw = localStorage.getItem(WATCH_KEY);
+      if (!raw) return [];
+      const parsed = JSON.parse(raw) as unknown;
+      if (Array.isArray(parsed)) return parsed.filter((v): v is string => typeof v === 'string');
+    } catch {
+      // localStorage hỏng — bỏ qua
+    }
+    return [];
+  }
+
+  function toggleWatchVariable(name: string): void {
+    const next = watchList.value.includes(name)
+      ? watchList.value.filter((n) => n !== name)
+      : [...watchList.value, name];
+    watchList.value = next;
+    try {
+      localStorage.setItem(WATCH_KEY, JSON.stringify(next));
+    } catch {
+      // localStorage không khả dụng — bỏ qua
+    }
+  }
+
+  function clearWatchList(): void {
+    watchList.value = [];
+    try {
+      localStorage.removeItem(WATCH_KEY);
+    } catch {
+      // localStorage không khả dụng — bỏ qua
+    }
+  }
+
   const currentFrame = computed<PlaybackFrame | null>(() => frames.value[currentIndex.value] ?? null);
   const currentDescription = computed<string>(() => currentFrame.value?.description ?? '');
   const currentLineNumber = computed<number>(() => currentFrame.value?.lineNumber ?? 0);
   const totalFrames = computed<number>(() => frames.value.length);
+
+  /** B2: biến primitive của frame hiện tại (từ executor `variables` — fallback loopVariables). */
+  const currentVariables = computed<Record<string, number | string | boolean>>(() => {
+    const frame = currentFrame.value;
+    if (frame?.canvasStateSnapshot.variables) return frame.canvasStateSnapshot.variables;
+    if (frame?.canvasStateSnapshot.loopVariables) return { ...frame.canvasStateSnapshot.loopVariables };
+    return {};
+  });
+
+  /** B2: biến có giá trị THAY ĐỔI so với frame trước (đánh dấu trên Watch Panel). */
+  const changedVariables = computed<Set<string>>(() => {
+    const idx = currentIndex.value;
+    const current = frames.value[idx]?.canvasStateSnapshot.variables;
+    const prev = frames.value[idx - 1]?.canvasStateSnapshot.variables;
+    if (!current) return new Set();
+    if (!prev) return new Set(Object.keys(current));
+    const changed = new Set<string>();
+    const allKeys = new Set([...Object.keys(current), ...Object.keys(prev)]);
+    for (const key of allKeys) {
+      if (current[key] !== prev[key]) changed.add(key);
+    }
+    return changed;
+  });
+
+  /** B2: giá trị các biến đang watch (chỉ các biến tồn tại trong frame). */
+  const watchedValues = computed<Array<{ name: string; value: number | string | boolean; changed: boolean }>>(() => {
+    const vars = currentVariables.value;
+    const changed = changedVariables.value;
+    return watchList.value
+      .filter((name) => name in vars)
+      .map((name) => ({ name, value: vars[name], changed: changed.has(name) }));
+  });
 
   const renderMode = computed<AlgoRenderMode>(() => {
     const snapshot = frames.value[0]?.canvasStateSnapshot;
@@ -257,10 +340,23 @@ export const useAlgoPlaygroundStore = defineStore('algo-playground', () => {
     isPlaying.value ? pause() : play();
   };
 
+  /** B1: kiểm tra dòng của frame tới có nằm trong breakpoints không — nếu có thì dừng play. */
+  function shouldStopAtBreakpoint(nextIndex: number): boolean {
+    if (breakpoints.value.size === 0) return false;
+    const frame = frames.value[nextIndex];
+    if (!frame) return false;
+    return breakpoints.value.has(frame.lineNumber);
+  }
+
   const stepNext = (): void => {
     if (frames.value.length === 0) return;
-    if (currentIndex.value < frames.value.length - 1) currentIndex.value++;
-    else isPlaying.value = false;
+    if (currentIndex.value < frames.value.length - 1) {
+      currentIndex.value++;
+      // B1: dừng play khi gặp breakpoint (chỉ khi đang play tự động — bấm tay vẫn nhảy qua được).
+      if (isPlaying.value && shouldStopAtBreakpoint(currentIndex.value)) {
+        isPlaying.value = false;
+      }
+    } else isPlaying.value = false;
   };
   const stepPrev = (): void => {
     if (currentIndex.value > 0) currentIndex.value--;
@@ -270,7 +366,13 @@ export const useAlgoPlaygroundStore = defineStore('algo-playground', () => {
     isPlaying.value = false;
   };
   const jumpToFrame = (index: number): void => {
-    if (index >= 0 && index < frames.value.length) currentIndex.value = index;
+    if (index >= 0 && index < frames.value.length) {
+      currentIndex.value = index;
+      // B1: nhảy tới frame breakpoint khi đang play (scrub) → dừng để người dùng quan sát.
+      if (isPlaying.value && shouldStopAtBreakpoint(index)) {
+        isPlaying.value = false;
+      }
+    }
   };
 
   // AL-040: action thay cho mutation trực tiếp store.playbackSpeed từ component
@@ -293,6 +395,15 @@ export const useAlgoPlaygroundStore = defineStore('algo-playground', () => {
     currentDescription,
     currentLineNumber,
     totalFrames,
+    currentVariables,
+    changedVariables,
+    watchedValues,
+    breakpoints,
+    watchList,
+    toggleBreakpoint,
+    clearBreakpoints,
+    toggleWatchVariable,
+    clearWatchList,
     renderMode,
     traceLogs,
     inputValidation,

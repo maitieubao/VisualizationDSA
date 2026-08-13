@@ -683,3 +683,10 @@
 
 - Backend `LessonE2EFlowTests.cs` moi: +5 test dong vong xuyen khoa mau tren seed that (GET lesson published + codelab payload, judge pass/fail, complete XP + idempotent).
 - Review scores: courses-lessons 7->9, lesson-study 8->9, gamification 7->8 (A2/A3 noi dung that + nguon XP that).
+
+## Phase B - Code Debugger (2026-08-13) - DONE
+
+- Core `CompilerStepExecutor.instrumentation.spec.ts`: +5 test (variables primitive number/string/boolean, khong object/array, cap nhat theo dong, closure makeCounter, vong long nhau i+j).
+- Store `useAlgoPlaygroundStore.spec.ts`: +9 test (toggle/clear breakpoint, auto-pause play, stepNext tay qua breakpoint, currentVariables, toggleWatchVariable, watchedValues loc bien khong ton tai, watchList persist, changedVariables).
+- Workspace `AlgoPlaygroundWorkspace.spec.ts`: AL-026 (gutter click jump) thay bang 3 test B1 (gutter toggle breakpoint + decoration, play auto-stop tai breakpoint, stepNext tay qua).
+- Full: frontend 3504/3504 (+16), vue-tsc 0. Backend khong doi.

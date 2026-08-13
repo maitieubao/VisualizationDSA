@@ -27,6 +27,11 @@ export interface CanvasStateSnapshot {
   comparingIndices?: [number, number];
   swappingIndices?: [number, number];
   loopVariables?: Record<string, number>;
+  /**
+   * B2: snapshot biến PRIMITIVE (number/string/boolean) của mọi scope visible tại frame này —
+   * nguồn dữ liệu cho Watch Panel. Không chứa object/array (tránh snapshot khổng lồ).
+   */
+  variables?: Record<string, number | string | boolean>;
   highlightedIndices?: number[];
   graphNodes?: GraphSnapshotNode[];
   graphEdges?: GraphSnapshotEdge[];
@@ -210,6 +215,8 @@ export class CompilerStepExecutor {
     const state = {
       array: mockArray,
       vars: {} as Record<string, number>,
+      // B2: snapshot biến primitive đầy đủ (number/string/boolean) cho Watch Panel.
+      allVars: {} as Record<string, number | string | boolean>,
       visited: [] as string[],
       active: [] as string[],
       queue: [] as string[],
@@ -247,6 +254,8 @@ export class CompilerStepExecutor {
       graphEdges,
       treeNodes,
       loopVariables: { ...state.vars },
+      // B2: toàn bộ biến primitive visible (đã lọc number/string/boolean) cho Watch Panel.
+      variables: { ...state.allVars },
       highlightedIndices: [...highlighted],
       visitedIds: [...state.visited],
       activeIds: [...state.active],
@@ -325,12 +334,18 @@ export class CompilerStepExecutor {
       currentLine = lineNum;
 
       const loopVars: Record<string, number> = {};
+      const allVars: Record<string, number | string | boolean> = {};
       for (const [name, val] of Object.entries(variables)) {
         if (typeof val === 'number') {
           loopVars[name] = val;
+          allVars[name] = val;
+        } else if (typeof val === 'string' || typeof val === 'boolean') {
+          // B2: biến string/boolean hiển thị ở Watch Panel (không vào loopVariables — canvas cũ).
+          allVars[name] = val;
         }
       }
       state.vars = loopVars;
+      state.allVars = allVars;
 
       const trackDesc = `Đang chạy dòng ${lineNum}`;
       const lastFrame = frames[frames.length - 1];
@@ -338,6 +353,7 @@ export class CompilerStepExecutor {
         lastFrame.canvasStateSnapshot = {
           ...lastFrame.canvasStateSnapshot,
           loopVariables: { ...loopVars },
+          variables: { ...allVars },
         };
         return;
       }

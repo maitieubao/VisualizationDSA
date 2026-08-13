@@ -59,9 +59,13 @@
       <div v-if="showMoreMenu" class="fixed z-30 w-44 rounded-lg bg-surface/95 border border-surface/70 shadow-xl py-1" :style="moreMenuStyle">
         <button class="algo-menu-item" @click="menuAction('hooks')"><BaseIcon name="info" class="w-3.5 h-3.5 inline mr-2 align-middle" />Hooks</button>
         <button class="algo-menu-item" @click="menuAction('restore')"><BaseIcon name="refresh-cw" class="w-3.5 h-3.5 inline mr-2 align-middle" />Code mẫu</button>
+        <button class="algo-menu-item" @click="menuAction('export')">
+          <BaseIcon :name="exportCopied ? 'check' : 'download'" class="w-3.5 h-3.5 inline mr-2 align-middle" />{{ exportCopied ? 'Đã chép' : 'Xuất code' }}
+        </button>
         <button class="algo-menu-item" @click="menuAction('share')">
           <BaseIcon :name="shareCopied ? 'check' : 'link'" class="w-3.5 h-3.5 inline mr-2 align-middle" />{{ shareCopied ? 'Đã chép' : 'Chia sẻ' }}
         </button>
+        <button class="algo-menu-item" @click="menuAction('breakpoints')"><BaseIcon name="x-circle" class="w-3.5 h-3.5 inline mr-2 align-middle" />Xóa breakpoint</button>
       </div>
 
       <!-- Hooks popover (đặt trong toolbar → định vị theo toolbar, không lệch khi wrap — AL-043) -->
@@ -73,7 +77,8 @@
     <!-- Thanh header gộp: Code | Visual -->
     <div class="shrink-0 px-3 py-1 border-b border-surface/70 bg-surface/30 flex items-center justify-between text-[10px] font-semibold text-text-secondary uppercase tracking-wide">
       <span class="flex items-center gap-2 min-w-0">
-        <span>Code (JavaScript)</span>
+        <span>Trình chạy từng bước (JavaScript)</span>
+        <span class="demo-chip" title="Pseudocode + biến theo từng dòng">pseudocode</span>
         <button class="algo-mini-btn" :title="editorCollapsed ? 'Hiện editor' : 'Ẩn editor để mở rộng canvas'" @click="editorCollapsed = !editorCollapsed">
           <BaseIcon :name="editorCollapsed ? 'eye' : 'x'" class="w-3 h-3" />
         </button>
@@ -202,9 +207,46 @@
             {{ name }} = {{ value }}
           </span>
         </div>
+        <button class="algo-mini-btn shrink-0" :class="{ 'algo-btn-active': showWatch }" title="Theo dõi biến (Watch)" @click="showWatch = !showWatch">
+          <BaseIcon name="eye" class="w-3 h-3 inline mr-1 align-middle" />Watch
+        </button>
         <button class="algo-mini-btn shrink-0" :class="{ 'algo-btn-active': showTrace }" @click="showTrace = !showTrace">
           <BaseIcon name="clipboard-list" class="w-3 h-3 inline mr-1 align-middle" />Lịch sử ({{ store.traceLogs.length }})
         </button>
+      </div>
+
+      <!-- B2: Watch panel — biến primitive theo dõi, highlight biến thay đổi -->
+      <div v-if="showWatch" class="mt-2 max-h-40 overflow-auto rounded-lg bg-surface/60 border border-surface/70 px-3 py-2">
+        <div class="flex items-center justify-between gap-2 mb-1.5">
+          <p class="text-[10px] font-semibold text-text-secondary uppercase tracking-wide">Watch — biến primitive (click biến để ghim/ẩn)</p>
+          <button class="algo-mini-btn" @click="store.clearWatchList()" title="Xóa danh sách theo dõi">Xóa</button>
+        </div>
+        <div class="flex flex-wrap gap-1.5 mb-2">
+          <button
+            v-for="name in availableVariableNames"
+            :key="name"
+            class="algo-watch-chip"
+            :class="{ 'algo-watch-chip--active': store.watchList.includes(name) }"
+            @click="store.toggleWatchVariable(name)"
+          >
+            {{ name }}
+          </button>
+        </div>
+        <p v-if="store.watchedValues.length === 0" class="text-[10px] text-text-secondary italic">
+          Chưa có biến được ghim — chọn biến phía trên để theo dõi.
+        </p>
+        <table v-else class="w-full text-[11px] font-mono">
+          <tbody>
+            <tr v-for="item in store.watchedValues" :key="item.name">
+              <td class="py-0.5 pr-3 text-text-secondary">{{ item.name }}</td>
+              <td class="py-0.5">
+                <span class="px-2 py-0.5 rounded-md font-semibold" :class="item.changed ? 'bg-cyan-400/15 border border-cyan-400/40 text-cyan-300' : 'bg-bg-secondary border border-border-subtle text-text-primary'">
+                  {{ formatValue(item.value) }}
+                </span>
+              </td>
+            </tr>
+          </tbody>
+        </table>
       </div>
 
       <!-- Trace history -->
@@ -273,9 +315,11 @@ const traceScrollEl = ref<HTMLDivElement | null>(null);
 const editorLoadError = ref(false);
 const showHooks = ref(false);
 const showTrace = ref(false);
+const showWatch = ref(false);
 const showMoreMenu = ref(false);
 const editorCollapsed = ref(false);
 const shareCopied = ref(false);
+const exportCopied = ref(false);
 const hoverFrame = ref<{ index: number; description: string } | null>(null);
 const hoverPct = ref(0);
 const moreMenuBtn = ref<HTMLButtonElement | null>(null);
@@ -303,11 +347,33 @@ function toggleMoreMenu(): void {
 }
 
 /** Hành động trong menu ⋯. */
-function menuAction(action: 'hooks' | 'restore' | 'share'): void {
+function menuAction(action: 'hooks' | 'restore' | 'share' | 'export' | 'breakpoints'): void {
   showMoreMenu.value = false;
   if (action === 'hooks') showHooks.value = !showHooks.value;
   else if (action === 'restore') onRestoreCode();
+  else if (action === 'export') onExportCode();
+  else if (action === 'breakpoints') {
+    store.clearBreakpoints();
+    syncBreakpointDecorations();
+  }
   else onShare();
+}
+
+/** B4: xuất code hiện tại ra clipboard (nối luồng Export/Share). */
+function onExportCode(): void {
+  const copy = () => {
+    exportCopied.value = true;
+    window.setTimeout(() => { exportCopied.value = false; }, 2000);
+  };
+  if (navigator.clipboard?.writeText) {
+    void navigator.clipboard.writeText(store.code).then(copy).catch(() => {
+      window.prompt('Sao chép code:', store.code);
+      copy();
+    });
+  } else {
+    window.prompt('Sao chép code:', store.code);
+    copy();
+  }
 }
 
 const anim = useAlgoAnimation(canvasEl, store);
@@ -355,6 +421,16 @@ const hasLoopVariables = computed(() => {
   const loopVars = store.currentFrame?.canvasStateSnapshot.loopVariables;
   return !!loopVars && Object.keys(loopVars).length > 0;
 });
+
+/** B2: danh sách biến primitive xuất hiện ở frame hiện tại (chip chọn watch). */
+const availableVariableNames = computed<string[]>(() => Object.keys(store.currentVariables).sort());
+
+/** B2: format giá trị biến hiển thị trên Watch Panel. */
+function formatValue(value: number | string | boolean): string {
+  if (typeof value === 'string') return `"${value}"`;
+  if (typeof value === 'boolean') return String(value);
+  return String(value);
+}
 
 function onSelectDemo(event: Event): void {
   const value = (event.target as HTMLSelectElement).value;
@@ -465,6 +541,7 @@ function onFullscreenChange(): void {
 // ---------------- Monaco Editor ----------------
 let editorInstance: monaco.editor.IStandaloneCodeEditor | null = null;
 let previousDecorations: string[] = [];
+let breakpointDecorations: string[] = [];
 
 function syncLineToEditor(lineNumber: number): void {
   if (!editorInstance) return;
@@ -473,6 +550,20 @@ function syncLineToEditor(lineNumber: number): void {
   } else if (previousDecorations.length > 0) {
     previousDecorations = editorInstance.deltaDecorations(previousDecorations, []);
   }
+}
+
+/** B1: vẽ/vô hiệu chấm đỏ breakpoint trên gutter. */
+function syncBreakpointDecorations(): void {
+  if (!editorInstance) return;
+  const decorations = [...store.breakpoints].map((line) => ({
+    range: new monaco.Range(line, 1, line, 1),
+    options: {
+      isWholeLine: true,
+      glyphMarginClassName: 'algo-breakpoint-glyph',
+      glyphMarginHoverMessage: { value: 'Breakpoint — play sẽ dừng tại dòng này' },
+    },
+  }));
+  breakpointDecorations = editorInstance.deltaDecorations(breakpointDecorations, decorations);
 }
 
 function onFormat(): void {
@@ -599,10 +690,13 @@ onMounted(() => {
         store.invalidate();
       });
       editorInstance.onMouseDown((e) => {
+        // B1: click gutter line number → toggle breakpoint (chuẩn debugger).
         if (e.target && e.target.type === monaco.editor.MouseTargetType.GUTTER_LINE_NUMBERS) {
           const line = e.target.position?.lineNumber ?? 0;
-          const targetIndex = store.frames.findIndex(f => f.lineNumber === line);
-          if (targetIndex !== -1) anim.onJumpToFrame(targetIndex);
+          if (line > 0) {
+            store.toggleBreakpoint(line);
+            syncBreakpointDecorations();
+          }
         }
       });
     } catch (err) {
@@ -616,6 +710,7 @@ watch(() => monacoTheme.value, (theme) => {
   if (editorInstance) monaco.editor.setTheme(theme);
 });
 watch(() => store.currentLineNumber, syncLineToEditor, { immediate: true });
+watch(() => store.breakpoints, syncBreakpointDecorations, { immediate: true });
 watch(
   () => store.code,
   (newCode) => {
@@ -674,6 +769,10 @@ onBeforeUnmount(() => {
   if (editorInstance && previousDecorations.length > 0) {
     editorInstance.deltaDecorations(previousDecorations, []);
     previousDecorations = [];
+  }
+  if (editorInstance && breakpointDecorations.length > 0) {
+    editorInstance.deltaDecorations(breakpointDecorations, []);
+    breakpointDecorations = [];
   }
   editorInstance?.dispose();
   editorInstance = null;
@@ -820,6 +919,43 @@ onBeforeUnmount(() => {
   border: 1px solid var(--color-border-strong);
   outline: none;
   color-scheme: dark;
+}
+
+/* B1: chấm đỏ breakpoint trên gutter Monaco */
+.algo-breakpoint-glyph::before {
+  content: '';
+  position: absolute;
+  left: 6px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--color-accent-red, #ef4444);
+  box-shadow: 0 0 6px color-mix(in srgb, var(--color-accent-red, #ef4444) 60%, transparent);
+}
+
+/* B2: chip chọn biến theo dõi */
+.algo-watch-chip {
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: 10px;
+  font-weight: 600;
+  font-family: 'JetBrains Mono', Consolas, monospace;
+  color: var(--color-text-secondary);
+  background: transparent;
+  border: 1px solid var(--color-border-strong);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+.algo-watch-chip:hover {
+  color: var(--color-text-primary);
+  background: var(--color-bg-hover);
+}
+.algo-watch-chip--active {
+  color: var(--color-accent-cyan-light);
+  background: color-mix(in srgb, var(--color-accent-cyan-light) 10%, transparent);
+  border-color: color-mix(in srgb, var(--color-accent-cyan-light) 35%, transparent);
 }
 
 /* Splitpanes dark theme */

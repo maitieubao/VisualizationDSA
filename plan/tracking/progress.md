@@ -2287,3 +2287,14 @@ pm run build SUCCESS |
 | **LessonE2EFlowTests (5 test)** | ✅ CODE DONE | Mo phong hoc vien di xuyen bai khoa mau tren seed THAT: (1) GET lesson published -> codelab payload du testcase (5, 1 an khong lo dap an)/hints free co content/template js; (2) chay judge solution -> pass + submission luu; (3) code bug -> WrongAnswer; (4) CompleteLesson -> XP + progress lesson + module item; (5) complete lan 2 -> xpAwarded 0 (idempotent). Backend 775/775 (+5). |
 | **Cap nhat ho so review** | ✅ CODE DONE | courses-lessons.md 7->9/10 (ke hang da co hang: 7 codelab seed + 5 lesson gan that + 3 lo trinh published + E2E dong vong); lesson-study.md 8->9/10 (noi dung 4 buoc co that); gamification.md 7->8/10 (nguon XP that tu CompleteLesson + badge Sorting Wizard cham duoc). |
 | **ROADMAP** | ✅ CODE DONE | Phase A Content Pipeline: A1 + A2 + A3 XONG (2026-08-11/13). Ke tiep: Phase B Code Debugger. |
+
+## Phase B - Code Debugger (B1-B4) (2026-08-13) - DONE
+
+| Feature | Trang thai | Chi tiet |
+| :-- | :-- | :-- |
+| **B1 Breakpoint** | ✅ CODE DONE | click gutter line number trong Monaco toggle breakpoint (cham do glyph decoration); play tu dong dung tai frame co lineNumber trong breakpoints (stepNext tay van nhay qua); jumpToFrame khi play cung dung; menu "Xoa breakpoint". Store: breakpoints Set + toggleBreakpoint/clearBreakpoints. |
+| **B2 Watch panel** | ✅ CODE DONE | CompilerStepExecutor them `variables` (primitive number/string/boolean, KHONG object/array) vao CanvasStateSnapshot moi frame; store currentVariables + changedVariables (Set ten bien doi so voi frame truoc) + watchList persist localStorage; UI panel Watch: chip chon bien + bang gia tri highlight cyan khi bien doi. |
+| **B3 Instrument closure/template** | ✅ CODE DONE | safeVars da capture closure tu truoc - nay luu them primitive day du; test B3.1 (bien trong ham con makeCounter track duoc) + B3.2 (vong long nhau track du i+j dứt diem). |
+| **B4 Nhan + session code** | ✅ CODE DONE | header doi thanh "Trinh chay tung buoc (JavaScript)" + chip pseudocode; menu "Xuat code" copy clipboard; session code/input persist localStorage (san co) + share URL (san co). |
+
+Files: frontend/src/core/CompilerStepExecutor.ts (+variables), useAlgoPlaygroundStore.ts (breakpoints/watchList/currentVariables/changedVariables/watchedValues), AlgoPlaygroundWorkspace.vue (gutter toggle + decoration + Watch panel + nhan + Xuat code + Xoa breakpoint). Tests: instrumentation +5 (B2.1-2.3, B3.1-3.2), store +9 (B1.1-1.4, B2.1-2.5), workspace +3 B1 (thay AL-026). Frontend 3504/3504 (+16), vue-tsc 0.
