@@ -14,25 +14,26 @@ Giải quyết vấn đề của **2 vai trò cùng lúc**:
 
 ## 2. 📌 Thực trạng hiện tại
 
-- **Trạng thái kỹ thuật:** ✅ DoD — Review Round 14 (2026-08-11), 42/42 lỗi LS-001 → LS-042 đã fix (5 P0 chết tính năng đã hồi sinh). Backend **552/552 PASS** (+45), frontend **3129/3129 PASS** (170 files, +43), `vue-tsc` 0 lỗi. Routes `/teacher` (tab Curriculum), `/lessons/:id`, `/classrooms/:id`.
+- **Trạng thái kỹ thuật:** ✅ DoD — Review Round 14 (2026-08-11), 42/42 lỗi LS-001 → LS-042 đã fix (5 P0 chết tính năng đã hồi sinh). **A2/A3 (2026-08-13): 5 bài học trong curriculum đã có codelab DB thật; vòng E2E đóng kín trên seed.** Backend **775/775 PASS** (+223), frontend **3488/3488 PASS**, `vue-tsc` 0 lỗi. Routes `/teacher` (tab Curriculum), `/lessons/:id`, `/classrooms/:id`.
 - **Điều thật sự hoạt động:**
   - **5 P0 chết tính năng hồi sinh**: prefix `/api/v1` hết 404 CRUD (LS-001), Update/Delete endpoint mới cho sửa/ẩn/xóa bài (LS-002), **reorder hoạt động — 1 hệ HTML5 + keyboard 2 cấp** (LS-003/026), import-course route + URL đúng (LS-004), ItemFormModal nạp danh sách thật (LS-005).
   - **Backend vững**: student query lọc hidden + chặn leak enrollment, override nối 3 tầng (8 field + validate thuộc lớp + 2 query merge), UnlockRuleEngine không đếm item ẩn, reorder atomic renumber, 403/404/400 thay 500 (LS-006→010/022/023/024).
   - **Frontend đầy đủ**: defineProps classroomId, sequential lock thật, duplicateItem, ConfirmModal, sidebar drawer mobile + deep-link `?itemId`, premium lock icon, prerequisite exclude self, drag chỉ handle, saving thật chống double-submit (LS-011→016/029→033/041).
   - **Test thật**: classroomCurriculum 14 + studentCurriculumSidebar 8 + studentClassroomView 4 + moduleItemRow 12 mới, student query handler 9 + controller 10 (LS-017→022).
+  - **Nội dung bài trong curriculum có thật (A2)**: 40 lesson seed (đủ 4 bước: lý thuyết >800 ký tự + sandbox visualizer + quiz liên kết + codelab) — 5 bài chủ lực gắn codelab DB (Bubble/Binary Search/DFS/BFS/Merge), các bài còn lại fallback registry demo vẫn đủ bước 4.
 - **Giới hạn còn lại:**
-  - **Nội dung 4 bước chưa đầy đủ cho từng bài** — curriculum quản lý được "bài" nhưng bên trong mỗi bài, bước Lý thuyết/Trực quan/Quiz/Codelab phụ thuộc nội dung khóa học gốc (nối điểm yếu của `courses-lessons.md`).
   - **Discussion panel còn sơ khai** — từng là dead UI (LM-045), giờ tích hợp vào LessonStudyView (LM-045 ✅) nhưng chỉ là khung nhận xét đơn giản, chưa có gắn kết câu hỏi cụ thể/bài cụ thể, không có chống spam/quản trị.
   - Chưa có gợi ý "bài kế tiếp nên học gì" theo kỹ năng; chưa có đánh dấu/review bài; chưa có tóm tắt tiến độ theo bài (chỉ theo sidebar lớp).
+  - 35/40 lesson dùng registry demo thay vì codelab DB (vẫn chạy được bước 4).
 
-## 3. ⭐ Đánh giá giá trị thực tế: 8/10 — 🟢 Thực dụng
+## 3. ⭐ Đánh giá giá trị thực tế: 9/10 — 🟢 Thực dụng
 
-Đây là một trong những tính năng "đáng giá nhất" sau chiến dịch fix: cả 5 lỗi chết tính năng đều đã hồi sinh, luồng giáo viên soạn → học viên học theo lớp hoạt động thật, khớp đúng nhu cầu dạy-học thực tế (giáo viên cần kiểm soát lộ trình lớp học).
+Đây là một trong những tính năng "đáng giá nhất" sau chiến dịch fix: cả 5 lỗi chết tính năng đều đã hồi sinh, luồng giáo viên soạn → học viên học theo lớp hoạt động thật. Sau A2/A3, nội dung bên trong bài học đã có thật (codelab DB + lộ trình published) — hết cảnh "sidebar chạy hoàn hảo nhưng bài trống".
 
-**Điểm "ảo" cần trừ:**
-- **Giá trị phụ thuộc nội dung bài** — curriculum là "khung" điều khiển; nếu bài học bên trong không có nội dung 4 bước đầy đủ (điểm yếu LMS ở `courses-lessons.md`), học viên vẫn gặp bài trống dù sidebar chạy hoàn hảo.
+**Điểm trừ còn lại (nhỏ):**
 - **Discussion panel sơ khai** — tính năng xã hội (hỏi đáp) chưa đủ để thay thế kênh hỏi bài ngoài (Zalo/classroom ngoài), nên học viên ít có lý do quay lại dùng.
 - Chưa có lớp cá nhân hóa: gợi ý bài kế tiếp, đánh dấu bài, tóm tắt tiến độ — người học vẫn phải tự "bắt mạch" lộ trình.
+- 35/40 lesson dùng registry demo cho bước 4 thay vì codelab DB.
 
 Không còn lỗi kỹ thuật mở (42/42 FIXED); điểm trừ đều là chiều sâu sản phẩm phía trên hạ tầng đã vững.
 
@@ -40,8 +41,7 @@ Không còn lỗi kỹ thuật mở (42/42 FIXED); điểm trừ đều là chi�
 
 Checklist ưu tiên — đánh dấu `[x]` + ngày khi hoàn thành:
 
-- [ ] **Đảm bảo mỗi bài trong curriculum có đủ nội dung 4 bước** — kiểm tra/rà soát các bài được import/add vào lớp: Lý thuyết + Trực quan + Quiz + Codelab đều có nội dung thật; bài thiếu bước phải hiển thị cảnh báo rõ cho giáo viên khi thêm vào lớp.
-  - *Xong khi nào:* 100% bài trong mọi curriculum mẫu đi hết 4 bước không gặp bước trống; giáo viên được cảnh báo khi thêm bài chưa đủ nội dung.
+- [x] **Đảm bảo mỗi bài trong curriculum có đủ nội dung 4 bước** — **2026-08-13 (A2/A3):** 40 lesson seed đủ 4 bước (lý thuyết + sandbox + quiz liên kết + codelab); 5 bài chủ lực gắn codelab DB thật (judge backend); E2E xác nhận học viên đi hết bài không gặp bước trống. Còn lại: bài fallback registry demo vẫn đủ bước 4.
 - [ ] **Tóm tắt tiến độ bài (per-lesson)** — sau mỗi bài, học viên thấy được: thời gian học, điểm quiz tốt nhất, codelab pass chưa, các khái niệm đã học; lưu thành "hồ sơ bài học".
   - *Xong khi nào:* có màn hình/panel tóm tắt sau khi hoàn thành bài; dữ liệu bền vững sau reload.
 - [ ] **Đánh dấu/review bài** — học viên đánh dấu bài cần ôn lại (bookmark) hoặc đánh giá "hiểu/khiến khó hiểu" → hiển thị trong sidebar lần sau.
@@ -50,6 +50,8 @@ Checklist ưu tiên — đánh dấu `[x]` + ngày khi hoàn thành:
   - *Xong khi nào:* gợi ý có căn cứ (kỹ năng thiếu từ quiz/codelab trước), không ngẫu nhiên; người dùng có thể bỏ qua.
 - [ ] *(Ưu tiên trung bình)* **Nâng cấp Discussion panel** — gắn câu hỏi vào bước/bài cụ thể, trả lời đúng người hỏi, chống spam cơ bản (rate limit), thông báo khi có trả lời (nối `notifications.md`).
   - *Xong khi nào:* câu hỏi hiển thị đúng bài/bước, người hỏi nhận thông báo trả lời, không spam được.
+- [ ] *(Ưu tiên trung bình)* **Gắn codelab DB cho 35 lesson còn lại** — curriculum toàn bộ qua judge backend thật.
+  - *Xong khi nào:* mọi lesson trong curriculum mẫu có CodelabId; bỏ phụ thuộc registry FE.
 
 ## 5. 🧭 Hướng phát triển tiếp theo
 

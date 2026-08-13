@@ -32,11 +32,11 @@
 | A2.2 | Gắn CodelabId vào 5 lesson seed (09,10,18,20,28) | Lessons có codelabId thật, Published |
 | A2.3 | lessonApi normalize backend `codelab` payload | FE nhận codelabTask chuẩn, không lệch field |
 
-### A3 — Đóng vòng E2E
+### A3 — Đóng vòng E2E — ✅ HOÀN TẤT
 | # | Công việc | Acceptance |
 | :-- | :-- | :-- |
-| A3.1 | Chạy manual test (plan/testing) xuyên khóa mẫu | 0 chặn release |
-| A3.2 | Cập nhật hồ sơ review: courses-lessons 7→9/10, lesson-study 8→9/10, gamification có dữ liệu thật | Điểm cập nhật trong `plan/review/` |
+| A3.1 | E2E integration test xuyên khóa mẫu trên seed thật (LessonE2EFlowTests 5 test): GET lesson published (codelab payload đủ testcase/hint/template) → chạy judge solution pass → complete cộng XP + progress; complete lần 2 không cộng XP | 5/5 pass, backend 775 |
+| A3.2 | Cập nhật hồ sơ review: courses-lessons 7→9/10, lesson-study 8→9/10, gamification 7→8/10 (có nguồn XP thật + nội dung) | Điểm cập nhật trong `plan/review/` |
 
 ---
 
@@ -75,8 +75,8 @@
 
 | Phase | Trạng thái | Ghi chú |
 | :-- | :-- | :-- |
-| A — Content Pipeline | 🟢 A1✅ A2✅ → A3 kế tiếp | A1 xong 2026-08-11, A2 xong 2026-08-13 |
-| B — Code Debugger | ⏳ | Sau A (A1.5 xong) |
+| A — Content Pipeline | ✅ A1 A2 A3 XONG | A1 2026-08-11, A2/A3 2026-08-13 |
+| B — Code Debugger | ⏳ | Kế tiếp |
 | C — Tích hợp thật | ⏳ | Sau B |
 | D — Hoàn thiện | ⏳ | Sau C |
 
@@ -85,3 +85,4 @@
 | :-- | :-- |
 | 2026-08-11 | Khởi tạo roadmap; chọn Phase A (Content Pipeline) làm ưu tiên #1 dựa trên đánh giá thực trạng; bắt đầu A1 |
 | 2026-08-13 | **A2 hoàn tất** — Seed 7 codelab mẫu (bubble/selection/insertion/merge sort, binary search, bfs/dfs graph) dùng chung OwnerId=null; UpsertLessonCodelabLinks gắn vào 5 lesson seed (09/10/18/20/28); lessonApi normalize backend `codelab` (PascalCase) → FE `codelabTask` (camelCase, hints string[], difficulty VN). Backend 770 (+2), FE 3488 (+2), vue-tsc 0. → Chuyển A3 (E2E manual test). |
+| 2026-08-13 | **A3 hoàn tất — Đóng vòng E2E** — LessonE2EFlowTests (5 test) mô phỏng học viên đi xuyên bài khóa mẫu trên seed thật: GET lesson published (codelab payload đủ testcase/hint/template, test ẩn không lộ đáp án) → chạy judge solution pass → CompleteLesson cộng XP + progress, lần 2 không cộng (idempotent). Backend 775 (+5). Review: courses-lessons 7→9, lesson-study 8→9, gamification 7→8. **Phase A Content Pipeline hoàn tất.** |

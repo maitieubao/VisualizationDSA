@@ -678,3 +678,8 @@
 - Frontend `lessonApi.spec.ts`: +1 test normalize payload backend `codelab` (PascalCase) -> codelabTask chuan FE (description/initialCode/difficulty/testCases camelCase/hints string[]).
 - Frontend `lessonCodelabResolve.spec.ts`: +1 test lesson co codelabId + payload chuan -> store dung codelabTask payload, khong fallback registry.
 - Full: backend 770, frontend 3488, vue-tsc 0.
+
+## Phase A3 - E2E + review scores (2026-08-13) - DONE
+
+- Backend `LessonE2EFlowTests.cs` moi: +5 test dong vong xuyen khoa mau tren seed that (GET lesson published + codelab payload, judge pass/fail, complete XP + idempotent).
+- Review scores: courses-lessons 7->9, lesson-study 8->9, gamification 7->8 (A2/A3 noi dung that + nguon XP that).

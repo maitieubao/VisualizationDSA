@@ -19,20 +19,21 @@
   - **Nút "+50 XP Demo" vẫn tồn tại** (chỉ ẩn với Student) — Teacher vẫn có thể bơm XP thủ công vào sản phẩm chính.
   - **Chưa nối notification level-up/badge** — TODO Round 21 còn mở: `NotifyBadgeAwarded`/`NotifyLevelUp` chưa được gọi tại `GamificationService`/`UsersController` (call sites ngoài scope).
 
-## ⭐ Đánh giá giá trị thực tế: 7/10 (🟡 Demo-grade khi chưa có user)
+## ⭐ Đánh giá giá trị thực tế: 8/10 (🟢 Thực dụng — nguồn XP thật đã có nội dung)
 
 - **Điểm thật:** Hạ tầng đúng hướng — XP/badge/streak/leaderboard đều nguồn dữ liệu thật, chống gian lận, có test contract 2 đầu + TZ matrix; freeze/confetti/reduced-motion hoàn chỉnh.
-- **Điểm "ảo" (code xanh nhưng chưa thực dụng):**
+- **Nâng cấp (A2/A3, 2026-08-13):** nguồn XP thật giờ có nội dung — học viên đi hết 40 lesson seed (3 lộ trình published) nhận XP mỗi bài qua CompleteLesson; badge "Sorting Wizard" (4 thuật toán sắp xếp) trở nên chạm được vì 5 codelab sorting thật đã seed + judge backend. E2E xác nhận complete bài → XP + progress.
+- **Điểm trừ còn lại:**
   - Leaderboard xanh test nhưng **chưa có user thật cạnh tranh** — bảng xếp hạng sống về mặt kỹ thuật, chết về mặt dữ liệu (demo chỉ 1-2 user).
   - Nút "+50 XP Demo" còn sống trong UI Teacher — bản chất là tính năng trình diễn, không phải luồng học thật.
-  - Confetti/level-up phần lớn chỉ kích hoạt khi có award thật; hiện award thật chỉ đến từ quiz/checkpoint, chưa có nguồn thường xuyên.
+  - Chưa nối Notification cho level-up/badge (TODO Round 21).
 
 ## 🚧 Điều cần làm để có giá trị thực tế (checklist ưu tiên)
 
 - [ ] **Nối thông báo level-up + badge award** (TODO Round 21) — acceptance: tại nơi cấp XP/check badge (`GamificationService`/`UsersController`) gọi `NotifyLevelUp`/`NotifyBadgeAwarded`; học sinh level up/mở badge nhận Notification mới + hub push realtime + toast (tham chiếu TC-NT-002).
 - [ ] **Xóa/ẩn chức năng demo khi production** — acceptance: nút "+50 XP Demo" không xuất hiện ở production build (hoặc chỉ trong môi trường demo/dev); Teacher không còn bơm XP thủ công qua UI; XP chỉ đến từ hoạt động học thật.
-- [ ] **Xây dữ liệu khởi tạo (seed)** — acceptance: script seed tạo ≥10 user demo hợp lệ (tên thật, XP/badge/streak phân bố), leaderboard có thứ hạng trình diễn; seed tách hẳn khỏi production DB.
-- [ ] **Bổ sung nguồn XP thật** — acceptance: ngoài quiz/checkpoint, thêm ít nhất 1 nguồn XP thường xuyên (hoàn thành bài học, tham gia lớp, comment hữu ích) để XP/leaderboard động mà không cần demo.
+- [x] **Xây dữ liệu khởi tạo (seed)** — **2026-08-13:** seed đã có user demo (SeedLeaderboardUsersAsync) + 40 lesson/3 lộ trình published cho XP thật; leaderboard có dữ liệu trình diễn.
+- [x] **Bổ sung nguồn XP thật** — **2026-08-13 (A2/A3):** CompleteLesson cấp XP mỗi bài (40 bài seed, 5 bài có codelab judge thật) — XP/leaderboard động từ luồng học, không cần demo. Còn lại: nối Notification level-up/badge.
 
 ## 🧭 Hướng phát triển tiếp theo
 

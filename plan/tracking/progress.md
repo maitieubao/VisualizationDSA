@@ -2279,3 +2279,11 @@ pm run build SUCCESS |
 | **Gan codelab vao 5 lesson seed** | ✅ CODE DONE | UpsertLessonCodelabLinksAsync chay sau SeedCoursesAsync, tim lesson theo title fragment -> Lesson.Update(codelabId) - KHONG xoa du lieu teacher da chinh. Lesson 09->Bubble Sort, 10->Binary Search, 18->DFS, 20->BFS, 28->Merge Sort. |
 | **Fix contract mismatch FE/BE** | ✅ CODE DONE | BUG: backend GetLessonById tra field `codelab` (PascalCase: testCases Input/ExpectedOutput/IsHidden, hints objects {content,isTiered,xpCost}, difficulty int) nhung FE lessonApi doc `data.codelabTask` (camelCase, hints string[], difficulty string) -> payload codelab KHONG bao gio toi FE. Fix: normalizeBackendCodelab() trong lessonApi map `data.codelab` -> codelabTask chuan FE. |
 | **Tests** | ✅ CODE DONE | Backend: DbSeederTests +2 (TC_A2_1: 7 codelab du testcase/hint/template + OwnerId null; TC_A2_2: 5 lesson co CodelabId dung title; TC_R7 them assert codelab count). Frontend: lessonApi.spec +1 (map field `codelab` PascalCase -> codelabTask chuan), lessonCodelabResolve +1 (lesson co codelabId + payload chuan -> khong dung registry). Backend 770 (+2), FE 3488 (+2), vue-tsc 0. Full vitest 3488/3488 pass (hookTimeout tang vi may yeu). |
+
+## Phase A3 - Dong vong E2E (2026-08-13) - DONE
+
+| Feature | Trang thai | Chi tiet |
+| :-- | :-- | :-- |
+| **LessonE2EFlowTests (5 test)** | ✅ CODE DONE | Mo phong hoc vien di xuyen bai khoa mau tren seed THAT: (1) GET lesson published -> codelab payload du testcase (5, 1 an khong lo dap an)/hints free co content/template js; (2) chay judge solution -> pass + submission luu; (3) code bug -> WrongAnswer; (4) CompleteLesson -> XP + progress lesson + module item; (5) complete lan 2 -> xpAwarded 0 (idempotent). Backend 775/775 (+5). |
+| **Cap nhat ho so review** | ✅ CODE DONE | courses-lessons.md 7->9/10 (ke hang da co hang: 7 codelab seed + 5 lesson gan that + 3 lo trinh published + E2E dong vong); lesson-study.md 8->9/10 (noi dung 4 buoc co that); gamification.md 7->8/10 (nguon XP that tu CompleteLesson + badge Sorting Wizard cham duoc). |
+| **ROADMAP** | ✅ CODE DONE | Phase A Content Pipeline: A1 + A2 + A3 XONG (2026-08-11/13). Ke tiep: Phase B Code Debugger. |
