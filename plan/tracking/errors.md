@@ -2754,3 +2754,16 @@ Chi?n d?ch fix cu?i c�ng (Shared / Components / Tests). K?t qu?: frontend **34
 
 - **K?t qu?: frontend 3474/3474 PASS** (197 files, +51: modalA11y 7, markdown 10, theme 11, appHeader 10, toast 12, skeleton 7, apiClient 9...), vue-tsc 0 l?i (s?a 4 cast type apiClient.spec), backend 754/754 kh�ng ??ng.
 - **Ghi ch�: XSS markdown h?t (escape-first + whitelist); ConfirmModal/AppHeader/accordion/dropdown a11y chu?n; theme h?t FOUC; toast/confetti h?t timer leak; 1 ngu?n apiClient + timeout; modal stack ??ng.**
+
+## Phase A2 - Contract mismatch codelab FE/BE (2026-08-13) - FIXED
+
+**Tri?u ch?ng (deployed m?i hi?n):** b?i h?c d� g?n codelabId nhung b??c 4 Lesson Study v?n hi?n th? registry demo / kh�ng hi?n task th?t, k? c? khi backend tr? payload codelab d?y d?.
+
+**Nguy�n nh�n g?c:** kh�ng c� h?p ??ng field name d�ng chung gi?a hai ph�a:
+- Backend `GetLessonById` tr? codelab payload du?i field t�n `codelab` v?i shape PascalCase (testCases Input/ExpectedOutput/IsHidden, hints l� objects {content,isTiered,xpCost}, difficulty l� int).
+- Frontend `lessonApi.fetchLessonDetail` ch? ??c `data.codelabTask` (camelCase, hints string[], difficulty string) - n�n `data.codelab` b? b? qua, `codelabTask ?? null` lu�n null.
+- C? hai ph�a unit test ??u mock theo field m� m�nh t? ??nh nghia n�n test xanh nhung integration kh�ng bao gi? ch?y th?t -> l? h?ng kh�ng b? ph�t hi?n.
+
+**C�ch kh?c ph?c:** th�m `normalizeBackendCodelab()` trong lessonApi: ??c `data.codelabTask ?? normalizeBackendCodelab(data.codelab) ?? null`, map PascalCase->camelCase, hints objects->string[], difficulty int->"C? b?n/Trung b�nh/N�ng cao", entryFunction null->undefined (caller fallback "solution"). Backend gi? nguy�n (kh�ng ph� v? contract test backend).
+
+**B�i h?c:** m?i field tr? v? gi?a BE/FE ph?i ???c ch?t trong test contract hai ph�a (backend test assert field name + FE test d�ng payload m�u d�ng shape th?t c?a backend, kh�ng t? v? shape ri�ng). Flaky: full vitest ch?y song song tr�n m�y y?u hay hook-timeout - ch?y v?i `--hookTimeout=120000` ho?c ri�ng t?ng file.

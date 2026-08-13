@@ -89,6 +89,51 @@ describe('lessonApi — contract giao tiếp backend lessons (LM-018)', () => {
     expect(detail.codelabTask).toBeNull();
   });
 
+  it('fetchLessonDetail: backend trả field `codelab` (PascalCase) → map sang codelabTask chuẩn FE (A2.3)', async () => {
+    fetchMock.mockResolvedValueOnce({ ok: true, json: async () => ({
+      id: 'lesson-cl-2',
+      title: 'Bubble Sort',
+      codelabId: 'cl-2',
+      codelab: {
+        codelabId: 'cl-2',
+        Title: 'Bubble Sort',
+        Description: 'Sắp xếp nổi bọt',
+        InitialCode: 'function solution(arr) { return arr; }',
+        entryFunction: null,
+        timeLimitMs: 1500,
+        Difficulty: 1,
+        testCases: [
+          { Input: '[[5, 2, 9]]', ExpectedOutput: '[2, 5, 9]', IsHidden: false },
+          { Input: '[[1]]', ExpectedOutput: '[1]', IsHidden: true },
+        ],
+        templates: [{ language: 'javascript', starterCode: 'function solution(arr) {}' }],
+        hints: [
+          { content: 'Dùng hai vòng lặp', isTiered: true, xpCost: 0 },
+          { content: 'Đổi chỗ nếu cặp liền kề', isTiered: true, xpCost: 0 },
+        ],
+      },
+    }) });
+
+    const detail = await fetchLessonDetail('lesson-cl-2') as unknown as {
+      codelabId: string;
+      codelabTask: {
+        description: string;
+        initialCode: string;
+        difficulty: string;
+        testCases: { input: string; expectedOutput: string; isHidden: boolean }[];
+        hints: string[];
+      };
+    };
+    expect(detail.codelabId).toBe('cl-2');
+    expect(detail.codelabTask).not.toBeNull();
+    expect(detail.codelabTask.description).toBe('Sắp xếp nổi bọt');
+    expect(detail.codelabTask.initialCode).toContain('function solution');
+    expect(detail.codelabTask.difficulty).toBe('Cơ bản');
+    expect(detail.codelabTask.testCases[0]).toEqual({ input: '[[5, 2, 9]]', expectedOutput: '[2, 5, 9]', isHidden: false });
+    expect(detail.codelabTask.testCases[1].isHidden).toBe(true);
+    expect(detail.codelabTask.hints).toEqual(['Dùng hai vòng lặp', 'Đổi chỗ nếu cặp liền kề']);
+  });
+
   it('saveLessonProgress: POST auth/progress/{lessonId} + payload quizPassed/bestScore/quizScore', async () => {
     fetchMock.mockResolvedValueOnce({ ok: true });
 

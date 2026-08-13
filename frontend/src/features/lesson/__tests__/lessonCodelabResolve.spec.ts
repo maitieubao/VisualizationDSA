@@ -119,4 +119,34 @@ describe('useLessonStore — resolve codelabTask (A1.3 CONTRACT MỚI)', () => {
     expect(store.isLoading).toBe(false);
     expect(store.error).toBeNull();
   });
+
+  it('A2.3.1 lesson có codelabId nhưng payload codelabTask null (backend trả field `codelab`) → store không dùng registry', async () => {
+    // A2: backend trả codelab dưới field `codelab` — lessonApi đã map sang `codelabTask`.
+    // Store nhận payload CHUẨN (codelabTask) là nguồn ưu tiên tuyệt đối, kể cả khi bài
+    // KHÔNG có sandboxConfig demo — chứng minh không fallback registry gây nhầm nội dung.
+    const apiTask: CodeLabTask = {
+      description: 'Task BFS chuẩn hoá từ backend',
+      initialCode: 'function solution(graph, start) { return [start]; }',
+      solution: '',
+      testCases: [{ input: '[[[1, 2], [0], [0]], 0]', expectedOutput: '[0, 1, 2]' }],
+      entryFunction: undefined,
+      hints: ['Dùng queue FIFO'],
+      difficulty: 'Trung bình',
+    };
+    mockedFetchLessonDetail.mockResolvedValueOnce(makeDetail({
+      sandboxType: 'graph',
+      sandboxConfig: '{}',
+      codelabId: 'cl-backend-bfs',
+      codelabTask: apiTask,
+    }) as LessonDetailResponse);
+
+    const store = useLessonStore();
+    await store.loadLesson('backend-lesson-1');
+
+    expect(store.currentLesson?.codelabTask).toEqual(apiTask);
+    expect(store.currentLesson?.codelabTask?.entryFunction).toBeUndefined();
+    expect(store.currentLesson?.codelabTask?.difficulty).toBe('Trung bình');
+    // Lesson codelabTask không được là registry (bài này demo = {} → registry trống).
+    expect(store.currentLesson?.codelabTask?.description).toContain('BFS');
+  });
 });

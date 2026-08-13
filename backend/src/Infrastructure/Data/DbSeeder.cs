@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Text.Json;
 using VisualizationDSA.Domain.Enums;
 using System.Linq;
 using System.Security.Cryptography;
@@ -27,8 +28,320 @@ namespace VisualizationDSA.Infrastructure.Data
             try { await SeedBadgesAsync(); } catch (Exception ex) { Console.WriteLine($"[SeedBadges Error]: {ex.Message}"); }
             try { await SeedLeaderboardUsersAsync(); } catch (Exception ex) { Console.WriteLine($"[SeedUsers Error]: {ex.Message}"); }
             try { await SeedQuizzesAsync(); } catch (Exception ex) { Console.WriteLine($"[SeedQuizzes Error]: {ex.Message}"); }
+            // A2: codelab mẫu dùng chung phải chạy TRƯỚC khi gắn vào lesson (SeedCoursesAsync).
+            try { await SeedSampleCodelabsAsync(); } catch (Exception ex) { Console.WriteLine($"[SeedCodelabs Error]: {ex.Message}"); }
             try { await SeedCoursesAsync(); } catch (Exception ex) { Console.WriteLine($"[SeedCourses Error]: {ex}"); }
+            // A2: gắn codelab mẫu vào bài học seed (upsert theo title — không phá dữ liệu teacher đã chỉnh).
+            try { await UpsertLessonCodelabLinksAsync(); } catch (Exception ex) { Console.WriteLine($"[SeedLessonCodelabLinks Error]: {ex.Message}"); }
             try { await SeedSemanticGraphAsync(); } catch (Exception ex) { Console.WriteLine($"[SeedGraph Error]: {ex.Message}"); }
+        }
+
+        /// <summary>
+        /// A2: 7 codelab mẫu DÙNG CHUNG (OwnerId = null) — teacher tự do gắn vào bài học.
+        /// Upsert theo Title (giữ nguyên nếu DB đã có). Quy ước testcase giống frontend:
+        /// • input = JSON array các tham số entry function, vd "[[1, 3, 5, 7, 9], 7]"
+        /// • expectedOutput = JSON string của kết quả mong đợi.
+        /// Hàm entry chuẩn là `solution` — khớp fallback entryFunction của LessonStepCodeLab.
+        /// Hints XpCost = 0 (miễn phí) — hint trả phí sẽ bị ẩn content ở GET lesson.
+        /// </summary>
+        private async Task SeedSampleCodelabsAsync()
+        {
+            async Task<Codelab?> GetByTitle(string title) =>
+                await _context.Codelabs.FirstOrDefaultAsync(c => c.Title == title && !c.IsDeleted);
+
+            async Task SeedOne(
+                string title, string description, string initialCode,
+                int difficulty, int xpReward, string maxRuntimeMs, string tags,
+                (string input, string expectedOutput, bool hidden)[] testCases,
+                string[] hints)
+            {
+                if (await GetByTitle(title) != null) return;
+
+                var codelab = new Codelab(
+                    title, description, initialCode, difficulty, xpReward,
+                    maxRuntimeMs: maxRuntimeMs == "fast" ? 1500 : 2000,
+                    maxMemoryBytes: 128000000,
+                    allowedLanguages: "javascript",
+                    constraints: "Chỉ hoàn thiện phần thân hàm `solution`, không được đổi tên hàm.",
+                    examples: JsonSerializer.Serialize(new[]
+                    {
+                        new { Input = testCases[0].input, ExpectedOutput = testCases[0].expectedOutput }
+                    }),
+                    tags: tags,
+                    ownerId: null);
+
+                _context.Codelabs.Add(codelab);
+
+                for (var i = 0; i < testCases.Length; i++)
+                {
+                    var (input, expected, hidden) = testCases[i];
+                    _context.CodelabTestCases.Add(new CodelabTestCase(
+                        codelab.Id, input, expected, hidden,
+                        scoreWeight: hidden ? 0 : 20,
+                        orderIndex: i + 1));
+                }
+
+                _context.CodelabTemplates.Add(new CodelabTemplate(
+                    codelab.Id, "javascript", initialCode));
+
+                for (var i = 0; i < hints.Length; i++)
+                {
+                    _context.CodelabHints.Add(new CodelabHint(
+                        codelab.Id, hints[i], isTiered: true, xpCost: 0, orderIndex: i + 1));
+                }
+            }
+
+            await SeedOne(
+                "Bubble Sort",
+                "Hoàn thiện hàm `solution(arr)` trả về mảng đã sắp xếp tăng dần bằng Bubble Sort — so sánh cặp liền kề, phần tử lớn \"nổi\" về cuối.",
+                @"function solution(arr) {
+  const n = arr.length;
+  for (let i = 0; i < n - 1; i++) {
+    let swapped = false;
+    for (let j = 0; j < n - i - 1; j++) {
+      if (arr[j] > arr[j + 1]) {
+        [arr[j], arr[j + 1]] = [arr[j + 1], arr[j]];
+        swapped = true;
+      }
+    }
+    if (!swapped) break;
+  }
+  return arr;
+}",
+                1, 30, "fast", "sorting,bubble-sort",
+                new[]
+                {
+                    ("[[5, 2, 9, 1, 5, 6]]", "[1, 2, 5, 5, 6, 9]", false),
+                    ("[[10, -2, 4, 0]]", "[-2, 0, 4, 10]", false),
+                    ("[[3, 3, 3]]", "[3, 3, 3]", false),
+                    ("[[1]]", "[1]", false),
+                    ("[[]]", "[]", true),
+                },
+                new[]
+                {
+                    "Dùng hai vòng lặp lồng nhau: vòng ngoài chạy 0..n-2, vòng trong so sánh cặp liền kề.",
+                    "Nếu arr[j] > arr[j+1] thì hoán đổi hai phần tử bằng destructuring.",
+                    "Tối ưu: nếu một lượt duyệt không có hoán đổi nào, dừng sớm bằng cờ swapped.",
+                });
+
+            await SeedOne(
+                "Selection Sort",
+                "Hoàn thiện hàm `solution(arr)` trả về mảng đã sắp xếp tăng dần bằng Selection Sort — mỗi lượt chọn phần tử nhỏ nhất đưa về đầu mảng.",
+                @"function solution(arr) {
+  const n = arr.length;
+  for (let i = 0; i < n - 1; i++) {
+    let minIdx = i;
+    for (let j = i + 1; j < n; j++) {
+      if (arr[j] < arr[minIdx]) minIdx = j;
+    }
+    [arr[i], arr[minIdx]] = [arr[minIdx], arr[i]];
+  }
+  return arr;
+}",
+                1, 30, "fast", "sorting,selection-sort",
+                new[]
+                {
+                    ("[[64, 25, 12, 22, 11]]", "[11, 12, 22, 25, 64]", false),
+                    ("[[29, 10, 14, 37, 14]]", "[10, 14, 14, 29, 37]", false),
+                    ("[[2, 1]]", "[1, 2]", false),
+                    ("[[7]]", "[7]", false),
+                    ("[[]]", "[]", true),
+                },
+                new[]
+                {
+                    "Duyệt i từ 0..n-2, coi vị trí đầu dãy con chưa sắp là con trỏ minIdx = i.",
+                    "Quét j từ i+1..n-1, nếu arr[j] < arr[minIdx] thì cập nhật minIdx.",
+                    "Sau vòng trong, hoán đổi arr[i] với arr[minIdx] — phần tử nhỏ nhất đã về đúng chỗ.",
+                });
+
+            await SeedOne(
+                "Insertion Sort",
+                "Hoàn thiện hàm `solution(arr)` trả về mảng đã sắp xếp tăng dần bằng Insertion Sort — chèn từng phần tử vào đúng vị trí trong dãy đã sắp.",
+                @"function solution(arr) {
+  for (let i = 1; i < arr.length; i++) {
+    const key = arr[i];
+    let j = i - 1;
+    while (j >= 0 && arr[j] > key) {
+      arr[j + 1] = arr[j];
+      j--;
+    }
+    arr[j + 1] = key;
+  }
+  return arr;
+}",
+                1, 30, "fast", "sorting,insertion-sort",
+                new[]
+                {
+                    ("[[12, 11, 13, 5, 6]]", "[5, 6, 11, 12, 13]", false),
+                    ("[[5, 2, 4, 6, 1, 3]]", "[1, 2, 3, 4, 5, 6]", false),
+                    ("[[1, 2, 3, 4]]", "[1, 2, 3, 4]", false),
+                    ("[[4, 3, 2, 1]]", "[1, 2, 3, 4]", false),
+                    ("[[9]]", "[9]", true),
+                },
+                new[]
+                {
+                    "Bắt đầu từ i = 1: giữ key = arr[i] làm phần tử đang chèn.",
+                    "Dịch lùi các phần tử lớn hơn key về phải (arr[j+1] = arr[j]) cho tới khi gặp phần tử ≤ key.",
+                    "Chèn key vào vị trí trống vừa tạo — dãy bên trái luôn được sắp xếp.",
+                });
+
+            await SeedOne(
+                "Merge Sort",
+                "Hoàn thiện hàm `solution(arr)` trả về mảng đã sắp xếp tăng dần bằng Merge Sort — chia đôi đệ quy rồi trộn hai nửa đã sắp.",
+                @"function solution(arr) {
+  if (arr.length <= 1) return arr;
+  const mid = Math.floor(arr.length / 2);
+  const left = solution(arr.slice(0, mid));
+  const right = solution(arr.slice(mid));
+  const merged = [];
+  let i = 0, j = 0;
+  while (i < left.length && j < right.length) {
+    if (left[i] <= right[j]) merged.push(left[i++]);
+    else merged.push(right[j++]);
+  }
+  return merged.concat(left.slice(i)).concat(right.slice(j));
+}",
+                2, 50, "fast", "sorting,merge-sort",
+                new[]
+                {
+                    ("[[38, 27, 43, 3, 9, 82, 10]]", "[3, 9, 10, 27, 38, 43, 82]", false),
+                    ("[[5, 2, 9, 1, 7, 6, 3, 8]]", "[1, 2, 3, 5, 6, 7, 8, 9]", false),
+                    ("[[10, -3, 4, 0, -1, 7]]", "[-3, -1, 0, 4, 7, 10]", false),
+                    ("[[1, 2, 3]]", "[1, 2, 3]", false),
+                    ("[[1000, 1, 500, 42, 7, 99, -5, 0]]", "[-5, 0, 1, 7, 42, 99, 500, 1000]", true),
+                },
+                new[]
+                {
+                    "Base case: mảng ≤ 1 phần tử đã sắp xếp — trả về ngay.",
+                    "Chia đôi arr tại mid; gọi đệ quy solution() cho hai nửa.",
+                    "Trộn: so sánh đầu hai nửa, lấy phần tử nhỏ hơn, nối nốt phần còn lại.",
+                });
+
+            await SeedOne(
+                "Binary Search",
+                "Hoàn thiện hàm `solution(arr, target)` trả về chỉ số của `target` trong mảng đã sắp xếp tăng dần, hoặc -1 nếu không tồn tại. Độ phức tạp O(log N).",
+                @"function solution(arr, target) {
+  let lo = 0, hi = arr.length - 1;
+  while (lo <= hi) {
+    const mid = Math.floor((lo + hi) / 2);
+    if (arr[mid] === target) return mid;
+    if (arr[mid] < target) lo = mid + 1;
+    else hi = mid - 1;
+  }
+  return -1;
+}",
+                1, 30, "fast", "searching,binary-search",
+                new[]
+                {
+                    ("[[1, 3, 5, 7, 9], 7]", "3", false),
+                    ("[[1, 3, 5, 7, 9], 4]", "-1", false),
+                    ("[[1, 3, 5, 7, 9], 1]", "0", false),
+                    ("[[1, 3, 5, 7, 9], 9]", "4", false),
+                    ("[[], 5]", "-1", true),
+                },
+                new[]
+                {
+                    "Khởi tạo hai con trỏ lo = 0, hi = arr.length - 1.",
+                    "Tính mid = Math.floor((lo + hi) / 2); nếu arr[mid] < target thì lo = mid + 1, ngược lại hi = mid - 1.",
+                    "Lặp while (lo <= hi) — khi lo vượt hi nghĩa là không tìm thấy, trả về -1.",
+                });
+
+            await SeedOne(
+                "BFS Graph Traversal",
+                "Hoàn thiện hàm `solution(graph, start)` trả về mảng các đỉnh theo thứ tự duyệt BFS (breadth-first) bằng hàng đợi, bắt đầu từ đỉnh `start`. `graph` là danh sách kề [[đỉnh-kề-của-0], [đỉnh-kề-của-1], ...].",
+                @"function solution(graph, start) {
+  const visited = [start];
+  const queue = [start];
+  while (queue.length > 0) {
+    const node = queue.shift();
+    for (const next of graph[node] ?? []) {
+      if (!visited.includes(next)) {
+        visited.push(next);
+        queue.push(next);
+      }
+    }
+  }
+  return visited;
+}",
+                2, 50, "fast", "graph,bfs",
+                new[]
+                {
+                    ("[[[1, 2], [0, 3], [0], [1]], 0]", "[0, 1, 2, 3]", false),
+                    ("[[[1], [2], [0]], 0]", "[0, 1, 2]", false),
+                    ("[[[1, 2, 3], [0], [0], [0]], 0]", "[0, 1, 2, 3]", false),
+                    ("[[[1], [0]], 1]", "[1, 0]", false),
+                    ("[[[1], [2], []], 0]", "[0, 1, 2]", true),
+                },
+                new[]
+                {
+                    "Khởi tạo visited = [start] và queue = [start].",
+                    "Vòng lặp: lấy node đầu hàng đợi, duyệt toàn bộ đỉnh kề graph[node].",
+                    "Đỉnh kề nào chưa được duyệt thì đánh dấu visited và đẩy vào cuối hàng đợi (FIFO).",
+                });
+
+            await SeedOne(
+                "DFS Graph Traversal",
+                "Hoàn thiện hàm `solution(graph, start)` trả về mảng các đỉnh theo thứ tự duyệt DFS (depth-first) đệ quy, bắt đầu từ đỉnh `start`. `graph` là danh sách kề.",
+                @"function solution(graph, start) {
+  const visited = [];
+  function dfs(node) {
+    visited.push(node);
+    for (const next of graph[node] ?? []) {
+      if (!visited.includes(next)) dfs(next);
+    }
+  }
+  dfs(start);
+  return visited;
+}",
+                2, 50, "norm", "graph,dfs",
+                new[]
+                {
+                    ("[[[1, 2], [0, 3], [0], [1]], 0]", "[0, 1, 3, 2]", false),
+                    ("[[[1], [2], [0]], 0]", "[0, 1, 2]", false),
+                    ("[[[1, 2, 3], [0], [0], [0]], 0]", "[0, 1, 2, 3]", false),
+                    ("[[[2], [0], [1]], 0]", "[0, 2, 1]", false),
+                    ("[[[1, 2], [], []], 0]", "[0, 1, 2]", true),
+                },
+                new[]
+                {
+                    "DFS đệ quy: thăm node hiện tại trước, rồi gọi đệ quy cho từng đỉnh kề chưa duyệt.",
+                    "visited phải kiểm tra trước khi gọi đệ quy — nếu thiếu, đồ thị có chu trình sẽ lặp vô hạn.",
+                    "Thứ tự kết quả đi sâu xuống hết nhánh trước khi quay lui sang nhánh khác.",
+                });
+
+            await _context.SaveChangesAsync();
+        }
+
+        /// <summary>
+        /// A2: gắn codelab mẫu vào bài học seed (upsert theo title fragment — idempotent,
+        /// không xóa lessons/courses nên không phá dữ liệu teacher đã chỉnh trên đó).
+        /// </summary>
+        private async Task UpsertLessonCodelabLinksAsync()
+        {
+            var links = new[]
+            {
+                ("Sắp xếp cơ bản", "Bubble Sort"),
+                ("Tìm kiếm: Linear & Binary", "Binary Search"),
+                ("Cây & Duyệt cây", "DFS Graph Traversal"),
+                ("Đồ thị (Graph): biểu diễn", "BFS Graph Traversal"),
+                ("Sắp xếp nâng cao", "Merge Sort"),
+            };
+
+            foreach (var (lessonFragment, codelabTitle) in links)
+            {
+                var lesson = await _context.Lessons
+                    .FirstOrDefaultAsync(l => l.Title.Contains(lessonFragment) && !l.IsDeleted);
+                var codelab = await _context.Codelabs
+                    .FirstOrDefaultAsync(c => c.Title == codelabTitle && !c.IsDeleted);
+                if (lesson == null || codelab == null) continue;
+
+                // Lesson.Update chỉ gán CodelabId khi HasValue — truyền codelab.Id sẽ gắn lại chính xác.
+                lesson.Update(
+                    lesson.Title, lesson.ContentMd, lesson.SandboxType, lesson.SandboxConfig,
+                    lesson.XPReward, codelabId: codelab.Id);
+            }
+
+            await _context.SaveChangesAsync();
         }
 
         private async Task SeedBadgesAsync()

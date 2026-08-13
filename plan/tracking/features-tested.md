@@ -671,3 +671,10 @@
 | Auth frontend (store + API contract + guard + UI) | 22 → 49 (contract API 15, guard mới, register 27, logout/impersonate/fake timers) | ✅ PASS |
 | Full Frontend Suite | 2826 | ✅ PASS (2826/2826, 155 files, +36) |
 | vue-tsc typecheck | 0 | ✅ 0 lỗi |
+
+## Phase A2 - Tests (2026-08-13)
+
+- Backend `DbSeederTests`: +2 test codelab seed (7 codelab, OwnerId null, testcase/hint/template du) + gan lesson-codelab (5 lesson). TC_R7 mo rong kiem tra codelab khong nhan doi khi seed 2 lan.
+- Frontend `lessonApi.spec.ts`: +1 test normalize payload backend `codelab` (PascalCase) -> codelabTask chuan FE (description/initialCode/difficulty/testCases camelCase/hints string[]).
+- Frontend `lessonCodelabResolve.spec.ts`: +1 test lesson co codelabId + payload chuan -> store dung codelabTask payload, khong fallback registry.
+- Full: backend 770, frontend 3488, vue-tsc 0.

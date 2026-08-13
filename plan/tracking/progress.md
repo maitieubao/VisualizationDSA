@@ -2270,3 +2270,12 @@ pm run build SUCCESS |
 | Feature | Trang thai | Chi tiet |
 | :-- | :-- | :-- |
 | **Lesson Authoring Tool** | ✅ CODE DONE | Lesson.CodelabId + PublishStatus (Draft/Private/Published) + migration AddLessonCodelabId; SaveDraftLessonDto/CreateDraftLessonCommand/UpdateLesson nhan codelabId + publishStatus + validate codelab thuoc teacher; GetLessonById tra codelab payload (an dap an hidden + hint tra phi); gate publish theo role; TeacherCourseTab form nang cap: tab Xem truoc markdown an toan, codelab picker, sandboxConfig JSON validate, publish status, nut "Xem truoc nhu hoc vien"; useLessonStore resolve codelabId (fallback registry). FE 3486 (+12), BE 768 (+14) test xanh, vue-tsc 0. |
+
+## Phase A2 - Bien soan 2 khoa mau: seed codelab that + fix contract (2026-08-13)
+
+| Feature | Trang thai | Chi tiet |
+| :-- | :-- | :-- |
+| **Seed 7 codelab mau dung chung** | ✅ CODE DONE | SeedSampleCodelabsAsync trong DbSeeder: Bubble Sort, Selection Sort, Insertion Sort, Merge Sort, Binary Search, BFS/DFS Graph Traversal - OwnerId=null (dung chung cho moi teacher), InitialCode JS ham `solution` (entryFunction null -> FE fallback 'solution'), 5 testcases (1 hidden, JSON array args + JSON expectedOutput), 3 hints XpCost=0 (content hien thi duoc o GET), 1 template javascript. Guard upsert theo title (idempotent, seed 2 lan khong duplicate). |
+| **Gan codelab vao 5 lesson seed** | ✅ CODE DONE | UpsertLessonCodelabLinksAsync chay sau SeedCoursesAsync, tim lesson theo title fragment -> Lesson.Update(codelabId) - KHONG xoa du lieu teacher da chinh. Lesson 09->Bubble Sort, 10->Binary Search, 18->DFS, 20->BFS, 28->Merge Sort. |
+| **Fix contract mismatch FE/BE** | ✅ CODE DONE | BUG: backend GetLessonById tra field `codelab` (PascalCase: testCases Input/ExpectedOutput/IsHidden, hints objects {content,isTiered,xpCost}, difficulty int) nhung FE lessonApi doc `data.codelabTask` (camelCase, hints string[], difficulty string) -> payload codelab KHONG bao gio toi FE. Fix: normalizeBackendCodelab() trong lessonApi map `data.codelab` -> codelabTask chuan FE. |
+| **Tests** | ✅ CODE DONE | Backend: DbSeederTests +2 (TC_A2_1: 7 codelab du testcase/hint/template + OwnerId null; TC_A2_2: 5 lesson co CodelabId dung title; TC_R7 them assert codelab count). Frontend: lessonApi.spec +1 (map field `codelab` PascalCase -> codelabTask chuan), lessonCodelabResolve +1 (lesson co codelabId + payload chuan -> khong dung registry). Backend 770 (+2), FE 3488 (+2), vue-tsc 0. Full vitest 3488/3488 pass (hookTimeout tang vi may yeu). |

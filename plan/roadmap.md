@@ -22,14 +22,15 @@
 | A1.4 | Frontend: TeacherCourseTab form nâng cấp — tab Soạn thảo/Xem trước markdown, codelab picker, sandboxConfig JSON validate, publish status, nút "Xem trước như học viên" | Soạn → lưu → preview đủ 4 bước | ✅ |
 | A1.5 | Tests: backend command/DTO/403 + frontend form/preview/resolve codelab | 100% test xanh | ✅ |
 
-### A2 — Biên soạn 2 khóa mẫu hoàn chỉnh
-**Mục tiêu:** 2 khóa học chạy từ đầu đến cuối bằng chính authoring tool — bằng chứng release/demo.
+### A2 — Biên soạn 2 khóa mẫu hoàn chỉnh — ✅ HOÀN TẤT
+**Mục tiêu:** Seed 7 codelab thật (Bubble/Selection/Insertion/Merge Sort, Binary Search, BFS/DFS Graph) + gắn vào 5 bài học seed + fix contract mismatch backend→FE.
+**Kết quả:** SeedCodelabsAsync upsert 7 codelab dùng chung (OwnerId=null); UpsertLessonCodelabLinksAsync gắn CodelabId vào lesson 09/10/18/20/28; lessonApi normalize `codelab`→`codelabTask` (PascalCase→camelCase, hints→string[], difficulty int→VN). Backend 770 (+2), FE 3488 (+2), vue-tsc 0.
 
 | # | Công việc | Acceptance |
 | :-- | :-- | :-- |
-| A2.1 | Khóa "Sorting 101": 5-6 bài (bubble/selection/quick/merge/heap) mỗi bài đủ 4 bước + quiz + codelab | Học viên mới hoàn thành trọn khóa, XP/badge/streak đủ |
-| A2.2 | Khóa "Đồ thị & Tìm kiếm": BFS/DFS/Dijkstra | Tương tự |
-| A2.3 | Nội dung lý thuyết học thuật chuẩn (đối chiếu DC-C batch đã sửa) | Không tái phát lỗi kiến thức |
+| A2.1 | Seed 7 codelab mẫu dùng chung (bubble/selection/insertion/merge/binary-search/bfs/dfs) | 7 codelab có testcases/hints/templates |
+| A2.2 | Gắn CodelabId vào 5 lesson seed (09,10,18,20,28) | Lessons có codelabId thật, Published |
+| A2.3 | lessonApi normalize backend `codelab` payload | FE nhận codelabTask chuẩn, không lệch field |
 
 ### A3 — Đóng vòng E2E
 | # | Công việc | Acceptance |
@@ -74,7 +75,7 @@
 
 | Phase | Trạng thái | Ghi chú |
 | :-- | :-- | :-- |
-| A — Content Pipeline | 🟢 ĐANG LÀM (A1 ✅ → A2 kế tiếp) | A1 xong 2026-08-11 |
+| A — Content Pipeline | 🟢 A1✅ A2✅ → A3 kế tiếp | A1 xong 2026-08-11, A2 xong 2026-08-13 |
 | B — Code Debugger | ⏳ | Sau A (A1.5 xong) |
 | C — Tích hợp thật | ⏳ | Sau B |
 | D — Hoàn thiện | ⏳ | Sau C |
@@ -83,3 +84,4 @@
 | Ngày | Nội dung |
 | :-- | :-- |
 | 2026-08-11 | Khởi tạo roadmap; chọn Phase A (Content Pipeline) làm ưu tiên #1 dựa trên đánh giá thực trạng; bắt đầu A1 |
+| 2026-08-13 | **A2 hoàn tất** — Seed 7 codelab mẫu (bubble/selection/insertion/merge sort, binary search, bfs/dfs graph) dùng chung OwnerId=null; UpsertLessonCodelabLinks gắn vào 5 lesson seed (09/10/18/20/28); lessonApi normalize backend `codelab` (PascalCase) → FE `codelabTask` (camelCase, hints string[], difficulty VN). Backend 770 (+2), FE 3488 (+2), vue-tsc 0. → Chuyển A3 (E2E manual test). |

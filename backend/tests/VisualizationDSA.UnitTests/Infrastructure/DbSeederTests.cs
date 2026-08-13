@@ -205,13 +205,65 @@ namespace VisualizationDSA.UnitTests.Infrastructure
             await SeedAsync(context);
             var lessonsAfterFirst = await context.Lessons.CountAsync();
             var coursesAfterFirst = await context.Courses.CountAsync();
+            var codelabsAfterFirst = await context.Codelabs.CountAsync();
 
             await SeedAsync(context);
             var lessonsAfterSecond = await context.Lessons.CountAsync();
             var coursesAfterSecond = await context.Courses.CountAsync();
+            var codelabsAfterSecond = await context.Codelabs.CountAsync();
 
             Assert.Equal(lessonsAfterFirst, lessonsAfterSecond);
             Assert.Equal(coursesAfterFirst, coursesAfterSecond);
+            Assert.Equal(codelabsAfterFirst, codelabsAfterSecond);
+        }
+
+        // ═══════════ TC-A2: Codelab mẫu dùng chung + gắn vào lesson ═══════════
+
+        private static readonly string[] ExpectedSampleCodelabTitles =
+        {
+            "Bubble Sort", "Selection Sort", "Insertion Sort", "Merge Sort",
+            "Binary Search", "BFS Graph Traversal", "DFS Graph Traversal",
+        };
+
+        [Fact]
+        public async Task TC_A2_1_Seed_7_Sample_Codelabs_With_TestCases_Hints_Templates()
+        {
+            var context = CreateContext();
+            await SeedAsync(context);
+
+            foreach (var title in ExpectedSampleCodelabTitles)
+            {
+                var codelab = await context.Codelabs
+                    .Include(c => c.TestCases)
+                    .Include(c => c.Hints)
+                    .Include(c => c.Templates)
+                    .FirstOrDefaultAsync(c => c.Title == title);
+                Assert.NotNull(codelab);
+                Assert.Null(codelab!.OwnerId);
+                Assert.True(codelab.TestCases.Count >= 4, $"'{title}' phải có ≥ 4 testcases.");
+                Assert.Contains(codelab.TestCases, t => t.IsHidden);
+                Assert.True(codelab.Hints.Count >= 2, $"'{title}' phải có ≥ 2 hints.");
+                Assert.Contains(codelab.Templates, t => t.Language == "javascript");
+            }
+        }
+
+        [Fact]
+        public async Task TC_A2_2_Lessons_Get_Sample_Codelab_Linked()
+        {
+            var context = CreateContext();
+            await SeedAsync(context);
+
+            var lessonsWithCodelab = await context.Lessons
+                .Where(l => l.CodelabId != null)
+                .Include(l => l.Codelab)
+                .ToListAsync();
+
+            Assert.Equal(5, lessonsWithCodelab.Count);
+            Assert.Contains(lessonsWithCodelab, l => l.Title.Contains("Sắp xếp cơ bản") && l.Codelab!.Title == "Bubble Sort");
+            Assert.Contains(lessonsWithCodelab, l => l.Title.Contains("Tìm kiếm: Linear & Binary") && l.Codelab!.Title == "Binary Search");
+            Assert.Contains(lessonsWithCodelab, l => l.Title.Contains("Cây & Duyệt cây") && l.Codelab!.Title == "DFS Graph Traversal");
+            Assert.Contains(lessonsWithCodelab, l => l.Title.Contains("Đồ thị (Graph): biểu diễn") && l.Codelab!.Title == "BFS Graph Traversal");
+            Assert.Contains(lessonsWithCodelab, l => l.Title.Contains("Sắp xếp nâng cao") && l.Codelab!.Title == "Merge Sort");
         }
     }
 }
