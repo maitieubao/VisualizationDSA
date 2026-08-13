@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Moq;
+using VisualizationDSA.Application.DTOs;
 using VisualizationDSA.Application.Features.Classrooms.Commands.ImportCourseToClassroom;
 using VisualizationDSA.Application.Features.Lessons.Commands.CreateDraftLesson;
 using VisualizationDSA.Application.Services;
@@ -226,10 +227,10 @@ namespace VisualizationDSA.UnitTests.Features
             httpContext.Request.Headers["Authorization"] = $"Bearer {CreateToken(teacherId.ToString())}";
             controller.ControllerContext = new ControllerContext { HttpContext = httpContext };
 
-            var result = await controller.UpdateLesson(lesson.Id, new CreateLessonDto
+            var result = await controller.UpdateLesson(lesson.Id, new SaveDraftLessonDto
             {
                 Title = "Bài", ContentMd = "Nội dung", SandboxType = "dsa", SandboxConfig = "{}",
-                XPReward = 20, OrderIndex = 3, ModuleId = module.Id
+                XPReward = 20, OrderIndex = 3
             });
 
             result.Should().BeOfType<OkObjectResult>();
@@ -260,10 +261,10 @@ namespace VisualizationDSA.UnitTests.Features
             httpContext.Request.Headers["Authorization"] = $"Bearer {CreateToken(teacherId.ToString())}";
             controller.ControllerContext = new ControllerContext { HttpContext = httpContext };
 
-            var result = await controller.UpdateLesson(lesson.Id, new CreateLessonDto
+            var result = await controller.UpdateLesson(lesson.Id, new SaveDraftLessonDto
             {
                 Title = "Bài", ContentMd = "Nội dung", SandboxType = "dsa", SandboxConfig = "{}",
-                XPReward = 20, OrderIndex = 0, ModuleId = module.Id
+                XPReward = 20, OrderIndex = 0
             });
 
             result.Should().BeOfType<OkObjectResult>();

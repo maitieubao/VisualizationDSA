@@ -6,6 +6,8 @@ Tài liệu được tổ chức theo **4 nhóm mục đích rõ ràng** — m�
 plan/
 ├── README.md        ← BẠN ĐANG Ở ĐÂY (bản đồ tổng)
 │
+├── ROADMAP.md       ← 🗺️ NHÓM "KẾ HOẠCH TIẾP THEO" — thứ tự phát triển + trạng thái
+│
 ├── tracking/        ← 📜 NHÓM "ĐÃ XẢY RA" — nhật ký, không phán xét giá trị
 │   │                  (progress.md, errors.md, features-tested.md,
 │   │                   decisions.md, dependencies.md, REVIEW.md,
@@ -31,6 +33,7 @@ plan/
 | "Đã sửa những lỗi nào? Round nào?" | **tracking/** | `errors.md`, `REVIEW.md`, `review-progress.md` |
 | "Tính năng này đang chạy được đến đâu, có thật sự giải quyết vấn đề không?" | **review/** | `review/features/payment.md` |
 | "Nên phát triển gì tiếp theo cho tính năng này?" | **review/** | mục "Hướng phát triển" trong từng hồ sơ |
+| "Kế hoạch tổng thể sắp tới làm gì, đang ở bước nào?" | **ROADMAP.md** | Phase A/B/C/D + trạng thái |
 | "Cách test tính năng trên trình duyệt?" | **testing/** | `MANUAL_TEST.md`, `manual/Auth.md` |
 | "Thiết kế kỹ thuật/API của feature này ra sao?" | **features/** | `deep-decomposition/phase1-.../*.md` |
 

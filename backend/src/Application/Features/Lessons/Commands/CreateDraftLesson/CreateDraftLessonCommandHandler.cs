@@ -32,14 +32,36 @@ namespace VisualizationDSA.Application.Features.Lessons.Commands.CreateDraftLess
             if (course.TeacherId != request.TeacherId)
                 throw new UnauthorizedAccessException("You do not own this course.");
 
-            
+            // A1.1: codelab gắn vào bài phải tồn tại + thuộc teacher sở hữu (OwnerId == teacherId)
+            // hoặc là codelab dùng chung (OwnerId null — seed/legacy). Codelab của teacher khác → 401.
+            if (request.CodelabId.HasValue)
+            {
+                var codelab = await _context.Codelabs
+                    .FirstOrDefaultAsync(c => c.Id == request.CodelabId.Value, cancellationToken);
+                if (codelab == null)
+                    throw new ArgumentException("Codelab not found.");
+                if (codelab.OwnerId != null && codelab.OwnerId != request.TeacherId)
+                    throw new UnauthorizedAccessException("You cannot link a codelab owned by another teacher.");
+            }
+
+            // A1.2: map chuỗi trạng thái authoring sang enum (validator đã chặn giá trị lạ;
+            // parse lại ở handler để chắc chắn khi handler được gọi trực tiếp).
+            var publishStatus = LessonPublishStatus.Draft;
+            if (!string.IsNullOrWhiteSpace(request.PublishStatus)
+                && !Lesson.TryParseAuthorPublishStatus(request.PublishStatus, out publishStatus))
+            {
+                throw new ArgumentException("PublishStatus chỉ nhận một trong: Draft, Private, Published.");
+            }
+
             var lesson = new Lesson(
                 request.Title,
                 request.ContentMd,
                 request.SandboxType,
                 request.SandboxConfig,
                 request.XPReward,
-                request.TeacherId
+                request.TeacherId,
+                request.CodelabId,
+                publishStatus
             );
 
             _context.Lessons.Add(lesson);

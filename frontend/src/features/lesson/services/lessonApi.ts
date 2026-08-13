@@ -1,4 +1,5 @@
 import { useAuthStore } from '../../auth/store/useAuthStore';
+import type { CodeLabTask } from '../types/lesson.types';
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:5055';
 
@@ -54,6 +55,12 @@ export interface LessonDetailResponse {
   status: string;
   lastActiveFrameIndex: number;
   lastScrollPercent: number;
+  /** Id codelab teacher gắn (A1.1) — null khi chưa gắn. */
+  codelabId?: string | null;
+  /** Payload codelab đầy đủ (title/task/testcases) do backend trả kèm (A1.2) — bài không gắn sẽ là null. */
+  codelabTask?: CodeLabTask | null;
+  /** Trạng thái xuất bản bài học (A1.2). */
+  publishStatus?: string;
 }
 
 /** Tải chi tiết bài học từ backend (nội dung, sandbox, quiz liên kết). */
@@ -69,7 +76,14 @@ export async function fetchLessonDetail(lessonId: string): Promise<LessonDetailR
     (error as { status?: number }).status = res.status;
     throw error;
   }
-  return res.json() as Promise<LessonDetailResponse>;
+  const data = await res.json() as LessonDetailResponse;
+  // A1.2: chuẩn hoá field codelab — bài không gắn luôn trả null (không undefined)
+  // để store phân biệt "không gắn" với "backend chưa hỗ trợ".
+  return {
+    ...data,
+    codelabId: data.codelabId ?? null,
+    codelabTask: data.codelabTask ?? null,
+  };
 }
 
 

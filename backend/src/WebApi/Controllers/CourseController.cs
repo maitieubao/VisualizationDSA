@@ -286,6 +286,8 @@ namespace VisualizationDSA.WebApi.Controllers
                     l.SandboxConfig,
                     QuizId = linkedQuizId,
                     l.XPReward,
+                    // A1.1: codelab gắn vào bài — FE dùng để nhận biết bài có bước 4.
+                    l.CodelabId,
                     OrderIndex = item.OrderIndex,
                     status
                 });
@@ -540,7 +542,10 @@ namespace VisualizationDSA.WebApi.Controllers
                 SandboxType = dto.SandboxType,
                 SandboxConfig = dto.SandboxConfig,
                 XPReward = dto.XPReward,
-                OrderIndex = dto.OrderIndex
+                OrderIndex = dto.OrderIndex,
+                // A1.1/A1.2: chuyển codelab + trạng thái xuất bản sang command (handler validate quyền).
+                CodelabId = dto.CodelabId,
+                PublishStatus = dto.PublishStatus
             };
 
             var lessonId = await _mediator.Send(command);
@@ -706,6 +711,10 @@ namespace VisualizationDSA.WebApi.Controllers
         public string SandboxType { get; set; } = string.Empty;
         public string SandboxConfig { get; set; } = "{}";
         public Guid? QuizId { get; set; }
+        // A1.1: codelab gắn vào bài (bước 4 Lesson Study).
+        public Guid? CodelabId { get; set; }
+        // A1.2: trạng thái xuất bản từ authoring tool — Draft/Private/Published.
+        public string PublishStatus { get; set; } = "Draft";
         public Guid? ModuleId { get; set; }
         public int XPReward { get; set; } = 20;
         public int OrderIndex { get; set; }

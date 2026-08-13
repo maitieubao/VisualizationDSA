@@ -18,6 +18,10 @@ export interface LessonMeta {
   sandboxType: string;
   sandboxConfig: string;
   orderIndex: number;
+  /** Id codelab teacher gắn (A1.3) — null khi chưa gắn. */
+  codelabId?: string | null;
+  /** Trạng thái xuất bản bài học (A1.4). */
+  publishStatus?: string;
 }
 
 /** @deprecated Dùng `parseSandboxDemo` từ `utils/sandboxConfig`. */
@@ -252,7 +256,11 @@ export const useLessonStore = defineStore('lessonStudy', () => {
   async function buildLessonFromApi(detail: LessonDetailResponse): Promise<Lesson> {
     const local = LESSONS[detail.id];
     const demo = resolveSandboxDemo(detail.sandboxConfig);
-    const codelabTask = CODELAB_TASK_REGISTRY[demo ?? ''] ?? local?.codelabTask;
+    // A1.3: ưu tiên payload codelab THẬT từ backend (lesson đã gắn codelabId → teacher
+    // hiển thị đúng codelab của mình ở bước 4); ngược lại fallback registry demo như cũ.
+    const codelabTask = detail.codelabTask
+      ?? CODELAB_TASK_REGISTRY[demo ?? '']
+      ?? local?.codelabTask;
 
     let quizQuestions: QuizQuestion[] = local?.quizQuestions ?? [];
     if (detail.quizId) {
@@ -274,6 +282,9 @@ export const useLessonStore = defineStore('lessonStudy', () => {
       theoryContent: detail.contentMd || local?.theoryContent || '',
       quizQuestions,
       codelabTask,
+      // A1.3: lưu codelabId + publishStatus lên Lesson để UI tiện tra cứu.
+      codelabId: detail.codelabId ?? null,
+      publishStatus: detail.publishStatus as Lesson['publishStatus'],
     };
   }
 
@@ -319,6 +330,8 @@ export const useLessonStore = defineStore('lessonStudy', () => {
           sandboxType: detail.sandboxType,
           sandboxConfig: detail.sandboxConfig,
           orderIndex: detail.orderIndex,
+          codelabId: detail.codelabId ?? null,
+          publishStatus: detail.publishStatus,
         };
       } catch (e) {
         console.warn('Không tải được bài học từ server, dùng dữ liệu local:', e);

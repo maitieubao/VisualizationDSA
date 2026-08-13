@@ -4,6 +4,8 @@ using System.Threading.Tasks;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using VisualizationDSA.Application.Interfaces;
+using VisualizationDSA.Domain.Entities;
+using VisualizationDSA.Domain.Enums;
 
 namespace VisualizationDSA.Application.Features.Lessons.Commands.UpdateLesson
 {
@@ -25,7 +27,27 @@ namespace VisualizationDSA.Application.Features.Lessons.Commands.UpdateLesson
             if (lesson.CreatedByTeacherId != request.TeacherId)
                 throw new UnauthorizedAccessException("You do not own this lesson.");
 
-            lesson.Update(request.Title, request.ContentMd, request.SandboxType, request.SandboxConfig, request.XPReward);
+            // A1.1: codelab gắn mới phải thuộc teacher hoặc dùng chung (OwnerId null).
+            if (request.CodelabId.HasValue)
+            {
+                var codelab = await _context.Codelabs
+                    .FirstOrDefaultAsync(c => c.Id == request.CodelabId.Value, cancellationToken);
+                if (codelab == null)
+                    throw new ArgumentException("Codelab not found.");
+                if (codelab.OwnerId != null && codelab.OwnerId != request.TeacherId)
+                    throw new UnauthorizedAccessException("You cannot link a codelab owned by another teacher.");
+            }
+
+            // A1.2: map chuỗi trạng thái authoring (chuỗi rỗng = giữ nguyên trạng thái hiện tại).
+            LessonPublishStatus? publishStatus = null;
+            if (!string.IsNullOrWhiteSpace(request.PublishStatus))
+            {
+                if (!Lesson.TryParseAuthorPublishStatus(request.PublishStatus, out var parsed))
+                    throw new ArgumentException("PublishStatus chỉ nhận một trong: Draft, Private, Published.");
+                publishStatus = parsed;
+            }
+
+            lesson.Update(request.Title, request.ContentMd, request.SandboxType, request.SandboxConfig, request.XPReward, request.CodelabId, publishStatus);
 
             await _context.SaveChangesAsync(cancellationToken);
             return Unit.Value;

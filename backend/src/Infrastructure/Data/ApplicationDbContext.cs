@@ -479,6 +479,11 @@ namespace VisualizationDSA.Infrastructure.Data
                 entity.Property(e => e.Title).IsRequired().HasMaxLength(200);
                 entity.Property(e => e.SandboxType).HasMaxLength(50);
                 
+                // A1.1: FK optional tới Codelabs — codelab xóa (soft) không làm mất bài học.
+                entity.HasOne(e => e.Codelab)
+                      .WithMany()
+                      .HasForeignKey(e => e.CodelabId)
+                      .OnDelete(DeleteBehavior.SetNull);
                 
             });
 

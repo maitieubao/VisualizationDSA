@@ -28,6 +28,11 @@ export function renderMarkdown(md: string): string {
     '<a href="$2" target="_blank" rel="noopener noreferrer">$1</a>'
   );
 
+  // CU-001/A1.4: triệt tiêu triệt để scheme KHÔNG an toàn còn sót dạng [text](scheme:...)
+  // (javascript:, data:...) — không tạo href, giữ nguyên text thuần. Chuỗi "javascript:"
+  // không bao giờ tồn tại trong output (bài học lý thuyết an toàn cả khi preview).
+  html = html.replace(/\[([^\]]+)\]\(([a-z][a-z0-9+.\-]*):[^)\s]*\)/gi, '$1');
+
   const blocks = html.split(/\n\n+/);
   
   const renderedBlocks = blocks.map(block => {

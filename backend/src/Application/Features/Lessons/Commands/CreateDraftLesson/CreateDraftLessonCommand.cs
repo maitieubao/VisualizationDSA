@@ -1,6 +1,7 @@
 using System;
 using FluentValidation;
 using MediatR;
+using VisualizationDSA.Domain.Entities;
 
 namespace VisualizationDSA.Application.Features.Lessons.Commands.CreateDraftLesson
 {
@@ -19,6 +20,12 @@ namespace VisualizationDSA.Application.Features.Lessons.Commands.CreateDraftLess
         // TC-011: quiz liên kết với bài giảng — command tạo thêm ModuleItem loại Quiz
         // ngay sau bài giảng (trước đây frontend gửi quizId nhưng command bỏ rơi field).
         public Guid? QuizId { get; set; }
+
+        // A1.1: codelab gắn vào bài (bước 4 Lesson Study) — phải thuộc teacher hoặc dùng chung.
+        public Guid? CodelabId { get; set; }
+
+        // A1.2: trạng thái xuất bản từ authoring tool — chỉ nhận Draft/Private/Published.
+        public string PublishStatus { get; set; } = "Draft";
     }
 
     public class CreateDraftLessonCommandValidator : AbstractValidator<CreateDraftLessonCommand>
@@ -28,6 +35,11 @@ namespace VisualizationDSA.Application.Features.Lessons.Commands.CreateDraftLess
             RuleFor(x => x.TeacherId).NotEmpty();
             RuleFor(x => x.CourseId).NotEmpty();
             RuleFor(x => x.Title).NotEmpty().MaximumLength(200);
+            // A1.2: chuỗi trạng thái không hợp lệ → validation fail (400 qua pipeline).
+            RuleFor(x => x.PublishStatus)
+                .Must(s => string.IsNullOrWhiteSpace(s)
+                           || Lesson.TryParseAuthorPublishStatus(s, out _))
+                .WithMessage("PublishStatus chỉ nhận một trong: Draft, Private, Published.");
         }
     }
 }

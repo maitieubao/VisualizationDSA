@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
+using VisualizationDSA.Application.DTOs;
 using VisualizationDSA.Domain.Entities;
 using VisualizationDSA.Domain.Enums;
 using VisualizationDSA.Infrastructure.Data;
@@ -35,7 +36,8 @@ namespace VisualizationDSA.WebApi.Controllers
 
         /// <summary>
         /// Gate truy cập dùng chung cho GET và CompleteLesson:
-        /// 1) Bài chưa Published (Draft/PendingReview/...) hoặc course chưa publish chỉ Teacher/Admin/chủ sở hữu.
+        /// 1) Bài chưa Published (Draft/PendingReview/...) hoặc course chưa publish chỉ Teacher sở hữu
+        ///    (chủ sở hữu course) hoặc Admin — LM-059: teacher khác KHÔNG xem draft bài của khóa người khác.
         /// 2) Bài thuộc khóa Premium: mọi user không premium đều bị chặn (kể cả user bị xóa khỏi DB → null).
         /// </summary>
         private async Task<IActionResult?> CheckLessonAccessAsync(Lesson lesson, Course? course)
@@ -50,12 +52,13 @@ namespace VisualizationDSA.WebApi.Controllers
 
             var isPublished = lesson.PublishStatus == LessonPublishStatus.Published
                               && (course == null || course.IsPublished);
-            if (!isPublished && !isTeacherOrAdmin && !isOwner)
+            if (!isPublished && !isOwner && !JwtHelper.IsAdmin(Request))
             {
                 return NotFound(new { error = "LESSON_NOT_FOUND", message = "Không tìm thấy bài học." });
             }
 
-            // Premium: chặn MỌI user không premium (user null — bị xóa — cũng bị chặn).
+            // Premium: chặn MỌI user không premium (user null — bị xóa — cũng bị chặn);
+            // teacher/admin (bất kỳ) được xem bài premium như chế độ duyệt nội dung.
             if (course != null && course.IsPremium && !isTeacherOrAdmin && !isOwner && (user == null || !user.IsPremium))
             {
                 return StatusCode(403, new { error = "PREMIUM_REQUIRED", message = "Khóa học này yêu cầu tài khoản Premium để truy cập." });
@@ -117,6 +120,19 @@ namespace VisualizationDSA.WebApi.Controllers
                 }
             }
 
+            // A1.2: nhúng payload codelab gắn vào bài (bước 4 Lesson Study) — đủ dữ liệu để FE
+            // render editor: đề bài, code khởi tạo, test case, template, gợi ý. Test ẩn giữ bí mật
+            // đáp án (ExpectedOutput rỗng) để học viên không đọc được kết quả mong đợi.
+            Codelab? codelab = null;
+            if (lesson.CodelabId.HasValue)
+            {
+                codelab = await _dbContext.Codelabs
+                    .Include(c => c.TestCases)
+                    .Include(c => c.Templates)
+                    .Include(c => c.Hints)
+                    .FirstOrDefaultAsync(c => c.Id == lesson.CodelabId.Value);
+            }
+
             return Ok(new
             {
                 lesson.Id,
@@ -128,6 +144,45 @@ namespace VisualizationDSA.WebApi.Controllers
                 lesson.SandboxConfig,
                 QuizId = linkedQuizId,
                 lesson.XPReward,
+                // A1.1: codelab gắn vào bài (null = bài không có codelab).
+                lesson.CodelabId,
+                // A1.2: trạng thái xuất bản — FE authoring hiển thị đúng trạng thái form khi mở bài.
+                publishStatus = lesson.PublishStatus.ToString(),
+                // A1.2: payload codelab chi tiết cho bước 4 — null khi không gắn codelab.
+                codelab = codelab == null ? null : new
+                {
+                    codelabId = codelab.Id,
+                    codelab.Title,
+                    codelab.Description,
+                    codelab.InitialCode,
+                    // Backend chưa có field entry function riêng — FE fallback về "solution".
+                    entryFunction = (string?)null,
+                    timeLimitMs = codelab.MaxRuntimeMs,
+                    codelab.Difficulty,
+                    testCases = codelab.TestCases
+                        .OrderBy(tc => tc.OrderIndex)
+                        .Select(tc => new
+                        {
+                            tc.Input,
+                            // Test ẩn (IsHidden) không lộ ExpectedOutput — chống gian lận đáp án.
+                            ExpectedOutput = tc.IsHidden ? string.Empty : tc.ExpectedOutput,
+                            tc.IsHidden
+                        }),
+                    templates = codelab.Templates.Select(t => new
+                    {
+                        language = t.Language,
+                        starterCode = t.BoilerplateCode
+                    }),
+                    // Gợi ý trả phí không lộ nội dung (phải trả XP để mở) — nhất quán với GET codelab.
+                    hints = codelab.Hints
+                        .OrderBy(h => h.OrderIndex)
+                        .Select(h => new
+                        {
+                            content = h.XpCost > 0 ? string.Empty : h.Content,
+                            h.IsTiered,
+                            h.XpCost
+                        })
+                },
                 moduleItem.OrderIndex,
                 status,
                 lastActiveFrameIndex,
@@ -242,7 +297,7 @@ namespace VisualizationDSA.WebApi.Controllers
 
         [HttpPut("{lessonId}")]
         [RequireJwtRole("Teacher,Admin")]
-        public async Task<IActionResult> UpdateLesson(Guid lessonId, [FromBody] CreateLessonDto dto)
+        public async Task<IActionResult> UpdateLesson(Guid lessonId, [FromBody] SaveDraftLessonDto dto)
         {
             var userIdStr = JwtHelper.ExtractSubFromToken(Request);
             if (userIdStr == null || !Guid.TryParse(userIdStr, out var currentUserId)) return Unauthorized();
@@ -257,7 +312,29 @@ namespace VisualizationDSA.WebApi.Controllers
                 return StatusCode(403, new { error = "FORBIDDEN", message = "Bạn không có quyền chỉnh sửa bài học này." });
             }
 
-            lesson.Update(dto.Title, dto.ContentMd, dto.SandboxType, dto.SandboxConfig, dto.XPReward);
+            // A1.2: chuỗi trạng thái xuất bản không hợp lệ → 400 (thay vì lưu sai dữ liệu).
+            LessonPublishStatus? publishStatus = null;
+            if (!string.IsNullOrWhiteSpace(dto.PublishStatus))
+            {
+                if (!Lesson.TryParseAuthorPublishStatus(dto.PublishStatus, out var parsedStatus))
+                    return BadRequest(new { error = "INVALID_PUBLISH_STATUS", message = "PublishStatus chỉ nhận một trong: Draft, Private, Published." });
+                publishStatus = parsedStatus;
+            }
+
+            // A1.1: codelab gắn mới phải thuộc teacher sở hữu hoặc dùng chung (OwnerId null).
+            if (dto.CodelabId.HasValue)
+            {
+                var codelab = await _dbContext.Codelabs.FirstOrDefaultAsync(c => c.Id == dto.CodelabId.Value);
+                if (codelab == null)
+                    return BadRequest(new { error = "CODELAB_NOT_FOUND", message = "Không tìm thấy codelab." });
+                if (codelab.OwnerId != null && codelab.OwnerId != currentUserId && !JwtHelper.IsAdmin(Request))
+                    return StatusCode(403, new { error = "FORBIDDEN", message = "Bạn không thể gắn codelab của teacher khác vào bài học." });
+            }
+
+            lesson.Update(dto.Title, dto.ContentMd, dto.SandboxType, dto.SandboxConfig, dto.XPReward, dto.CodelabId, publishStatus);
+            // A1.1: DTO luôn mang trạng thái đầy đủ — CodelabId null nghĩa là gỡ codelab khỏi bài.
+            if (!dto.CodelabId.HasValue)
+                lesson.DetachCodelab();
             moduleItem.UpdateQuizId(dto.QuizId);
             // TC-023: cùng thang đo với CreateDraftLesson (OrderIndex * 1000) — trước đây update
             // giữ giá trị thô làm module item mới tạo (1000, 2000...) trộn thứ tự với item sửa (1, 2...).

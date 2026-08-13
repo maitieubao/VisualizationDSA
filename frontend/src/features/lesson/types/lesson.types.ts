@@ -27,6 +27,9 @@ export interface CodeLabTask {
   timeLimitMs?: number;
 }
 
+/** Trạng thái xuất bản bài học (A1.4) — khớp SaveDraftLessonDto.publishStatus. */
+export type PublishStatus = 'Draft' | 'Private' | 'Published';
+
 export interface Lesson {
   id: string;
   title: string;
@@ -35,4 +38,8 @@ export interface Lesson {
   theoryContent: string;
   quizQuestions?: QuizQuestion[];
   codelabTask?: CodeLabTask;
+  /** Id codelab do teacher gắn (A1.3) — null khi bài chưa gắn codelab nào. */
+  codelabId?: string | null;
+  /** Trạng thái xuất bản bài học (A1.4). */
+  publishStatus?: PublishStatus;
 }

@@ -62,6 +62,33 @@ describe('lessonApi — contract giao tiếp backend lessons (LM-018)', () => {
     await expect(fetchLessonDetail('missing-lesson')).rejects.toMatchObject({ status: 404 });
   });
 
+  it('fetchLessonDetail: giữ nguyên codelabId + codelabTask từ payload backend (A1.2)', async () => {
+    fetchMock.mockResolvedValueOnce({ ok: true, json: async () => ({
+      id: 'lesson-cl-1',
+      title: 'Bubble Sort',
+      codelabId: 'cl-abc',
+      codelabTask: { description: 'Task gắn thật', initialCode: 'x', solution: 'x', testCases: [] },
+    }) });
+
+    const detail = await fetchLessonDetail('lesson-cl-1') as unknown as {
+      codelabId: string;
+      codelabTask: { description: string } | null;
+    };
+    expect(detail.codelabId).toBe('cl-abc');
+    expect(detail.codelabTask?.description).toBe('Task gắn thật');
+  });
+
+  it('fetchLessonDetail: bài không gắn codelab → chuẩn hoá codelabId null + codelabTask null (A1.2)', async () => {
+    fetchMock.mockResolvedValueOnce({ ok: true, json: async () => ({ id: 'plain-lesson', title: 'Lý thuyết' }) });
+
+    const detail = await fetchLessonDetail('plain-lesson') as unknown as {
+      codelabId: string | null;
+      codelabTask: unknown;
+    };
+    expect(detail.codelabId).toBeNull();
+    expect(detail.codelabTask).toBeNull();
+  });
+
   it('saveLessonProgress: POST auth/progress/{lessonId} + payload quizPassed/bestScore/quizScore', async () => {
     fetchMock.mockResolvedValueOnce({ ok: true });
 

@@ -14,15 +14,18 @@ namespace VisualizationDSA.Domain.Entities
         public int XPReward { get; private set; }
         public DateTime CreatedAt { get; private set; }
         public Guid? CreatedByTeacherId { get; set; }
+        // A1.1: codelab gắn vào bài học (bước 4 Lesson Study) — null = bài không có codelab.
+        public Guid? CodelabId { get; private set; }
         public LessonPublishStatus PublishStatus { get; private set; } = LessonPublishStatus.Draft;
         public bool IsDeleted { get; private set; }
 
         public virtual User? CreatedByTeacher { get; private set; }
+        public virtual Codelab? Codelab { get; private set; }
         public virtual ICollection<UserLessonProgress> Progresses { get; private set; }
 
         private Lesson() { }
 
-        public Lesson(string title, string contentMd, string sandboxType, string sandboxConfig, int xpReward, Guid? createdByTeacherId = null)
+        public Lesson(string title, string contentMd, string sandboxType, string sandboxConfig, int xpReward, Guid? createdByTeacherId = null, Guid? codelabId = null, LessonPublishStatus publishStatus = LessonPublishStatus.Draft)
         {
             Id = Guid.NewGuid();
             Title = string.IsNullOrWhiteSpace(title) ? throw new ArgumentException("Title cannot be empty.", nameof(title)) : title;
@@ -31,14 +34,15 @@ namespace VisualizationDSA.Domain.Entities
             SandboxConfig = string.IsNullOrWhiteSpace(sandboxConfig) ? "{}" : sandboxConfig;
             XPReward = xpReward >= 0 ? xpReward : throw new ArgumentOutOfRangeException(nameof(xpReward), "XP Reward cannot be negative.");
             CreatedByTeacherId = createdByTeacherId;
-            PublishStatus = LessonPublishStatus.Draft;
+            CodelabId = codelabId;
+            PublishStatus = publishStatus;
             CreatedAt = DateTime.UtcNow;
             IsDeleted = false;
 
             Progresses = new HashSet<UserLessonProgress>();
         }
 
-        public void Update(string title, string contentMd, string sandboxType, string sandboxConfig, int xpReward)
+        public void Update(string title, string contentMd, string sandboxType, string sandboxConfig, int xpReward, Guid? codelabId = null, LessonPublishStatus? publishStatus = null)
         {
             if (string.IsNullOrWhiteSpace(title))
                 throw new ArgumentException("Title cannot be empty.", nameof(title));
@@ -50,6 +54,38 @@ namespace VisualizationDSA.Domain.Entities
             SandboxType = string.IsNullOrWhiteSpace(sandboxType) ? "dsa" : sandboxType;
             SandboxConfig = string.IsNullOrWhiteSpace(sandboxConfig) ? "{}" : sandboxConfig;
             XPReward = xpReward;
+            // null = giữ nguyên codelab hiện tại (caller cũ không vô tình gỡ codelab đã gắn).
+            if (codelabId.HasValue)
+                CodelabId = codelabId;
+            if (publishStatus.HasValue)
+                PublishStatus = publishStatus.Value;
+        }
+
+        // A1.1: authoring tool lưu trạng thái đầy đủ — CodelabId null trong DTO nghĩa là gỡ codelab.
+        public void DetachCodelab()
+        {
+            CodelabId = null;
+        }
+
+        // A1.2: authoring tool chỉ cho phép 3 trạng thái Draft/Private/Published —
+        // map chuỗi từ SaveDraftLessonDto sang enum (trả false nếu không hợp lệ → 400).
+        public static bool TryParseAuthorPublishStatus(string? raw, out LessonPublishStatus status)
+        {
+            switch (raw?.Trim())
+            {
+                case "Draft":
+                    status = LessonPublishStatus.Draft;
+                    return true;
+                case "Private":
+                    status = LessonPublishStatus.PrivateToClassroom;
+                    return true;
+                case "Published":
+                    status = LessonPublishStatus.Published;
+                    return true;
+                default:
+                    status = LessonPublishStatus.Draft;
+                    return false;
+            }
         }
 
         public void SubmitForReview()
