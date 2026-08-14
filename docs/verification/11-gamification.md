@@ -1,7 +1,7 @@
 # Báo Cáo Xác Thực — 11. Gamification (XP / Streak / Badge / Leaderboard)
 
 > **Mục đích báo cáo:** Cung cấp bằng chứng để bạn đọc và xác thực lại hệ động lực học tập — đặc biệt nguồn XP thật (A2/A3) + notification level-up/badge (C2).
-> **Ngày báo cáo:** 2026-08-14 · **Điểm giá trị thực tế hiện tại:** 8/10 — Mức: Thực dụng (tăng từ 7/10)
+> **Ngày báo cáo:** 2026-08-14 - **Điểm giá trị thực tế hiện tại:** 8/10 — Mức: Thực dụng (tăng từ 7/10)
 
 ---
 
@@ -26,7 +26,7 @@ Biến tiến trình học thành trải nghiệm có phản hồi liên tục: 
 
 - `backend/tests/.../GamificationServiceTests.cs` — **14 test** (gồm **4 test C2 mới**: level-up notify, không level không notify, badge notify, notification lỗi không phá request)
 - `backend/tests/.../StatelessGamificationControllerTests.cs` + Leaderboard tests
-- E2E: `LessonE2EFlowTests` — complete bài → XP + progress; lần 2 không cộng (idempotent)
+- E2E: `LessonE2EFlowTests` — complete bài -> XP + progress; lần 2 không cộng (idempotent)
 - FE: `gamification-engine/__tests__/*` (9 files)
 - Tổng suite: Backend **788/788**, Frontend **3512/3512**, vue-tsc 0
 
@@ -34,7 +34,7 @@ Biến tiến trình học thành trải nghiệm có phản hồi liên tục: 
 
 | # | Bước | Kỳ vọng |
 | :-- | :-- | :-- |
-| 1 | Đăng nhập student → hoàn thành 1 bài học | XP tăng đúng `lesson.XPReward`; toast level-up nếu đủ XP đổi level (C2) |
+| 1 | Đăng nhập student -> hoàn thành 1 bài học | XP tăng đúng `lesson.XPReward`; toast level-up nếu đủ XP đổi level (C2) |
 | 2 | Gửi lại request complete lần 2 (hoặc bấm lại) | XP KHÔNG cộng lần 2 (idempotent) |
 | 3 | Hoàn thành đủ 4 thuật toán sắp xếp | Badge "Sorting Wizard" mở khóa + notification badge (C2) |
 | 4 | Vào `/gamification` | XP/streak/badge cabinet hiển thị đúng dữ liệu thật |
@@ -49,9 +49,9 @@ Biến tiến trình học thành trải nghiệm có phản hồi liên tục: 
 
 ## 6. [Luu y] Xác thực đặc biệt
 
-- **Bug 1 (đã fix trong review):** trước đây `CompleteLesson` gọi NotifyLevelUpAsync TRƯỚC SaveChanges (toast giả nếu commit fail + trùng khi retry) — đã chuyển vào SAU commit thành công. Kiểm tra: hoàn thành bài cấp XP → chỉ 1 toast, không trùng.
+- **Bug 1 (đã fix trong review):** trước đây `CompleteLesson` gọi NotifyLevelUpAsync TRƯỚC SaveChanges (toast giả nếu commit fail + trùng khi retry) — đã chuyển vào SAU commit thành công. Kiểm tra: hoàn thành bài cấp XP -> chỉ 1 toast, không trùng.
 - **XP không farm:** điểm mấu chốt để luận văn — cap 500 XP/ngày + idempotency.
 
 ---
 
-*Báo cáo dựa trên: `plan/review/features/gamification.md`, `GamificationService.cs`, `LessonController.CompleteLesson`, `GamificationServiceTests.cs`. Xác thực xong → đánh dấu ngày + ký tên.*
+*Báo cáo dựa trên: `plan/review/features/gamification.md`, `GamificationService.cs`, `LessonController.CompleteLesson`, `GamificationServiceTests.cs`. Xác thực xong -> đánh dấu ngày + ký tên.*

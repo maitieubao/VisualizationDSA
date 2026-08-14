@@ -1,7 +1,7 @@
 # Báo Cáo Xác Thực — 05. Algo Playground + Custom Input (Code Debugger)
 
 > **Mục đích báo cáo:** Cung cấp bằng chứng để bạn đọc và xác thực lại Algo Playground — đặc biệt phần **Code Debugger (Phase B)** được thêm mới: breakpoint + watch panel + snapshot biến.
-> **Ngày báo cáo:** 2026-08-14 · **Điểm giá trị thực tế hiện tại:** 9/10 — Mức: Thực dụng (tăng từ 8/10 nhờ Phase B)
+> **Ngày báo cáo:** 2026-08-14 - **Điểm giá trị thực tế hiện tại:** 9/10 — Mức: Thực dụng (tăng từ 8/10 nhờ Phase B)
 
 ---
 
@@ -31,7 +31,7 @@ Sinh viên nhập input tùy ý (mảng, số), bấm Play, xem animation frame-
 - B2.1-B2.5: currentVariables, toggleWatchVariable, watchedValues lọc biến không tồn tại, watchList persist, changedVariables
 
 **Workspace (`AlgoPlaygroundWorkspace.spec.ts`) — 24 test**, gồm:
-- B1.1: click gutter → toggle breakpoint (thay AL-026 cũ)
+- B1.1: click gutter -> toggle breakpoint (thay AL-026 cũ)
 - B1.2: play tự động dừng tại breakpoint
 - B1.3: stepNext tay qua breakpoint
 
@@ -45,13 +45,13 @@ Tổng suite: Frontend **3512/3512**, vue-tsc 0, backend không đụng.
 
 | # | Bước | Kỳ vọng |
 | :-- | :-- | :-- |
-| 1 | Vào `/playground` → chọn Bubble Sort → nhập `5, 3, 8, 4, 2` → Chạy | Animation chạy frame-by-frame, mô tả từng bước |
-| 2 | **Breakpoint:** click số dòng (gutter) ở dòng có vòng lặp trong code | Chấm đỏ hiện ra; bấm Play → tự dừng đúng tại frame của dòng đó |
+| 1 | Vào `/playground` -> chọn Bubble Sort -> nhập `5, 3, 8, 4, 2` -> Chạy | Animation chạy frame-by-frame, mô tả từng bước |
+| 2 | **Breakpoint:** click số dòng (gutter) ở dòng có vòng lặp trong code | Chấm đỏ hiện ra; bấm Play -> tự dừng đúng tại frame của dòng đó |
 | 3 | Click lại chấm đỏ | Breakpoint gỡ bỏ |
-| 4 | **Watch:** bấm nút "Watch" → chọn biến `i`, `j` | Bảng theo dõi hiển thị giá trị; khi step, giá trị đổi + highlight cyan |
+| 4 | **Watch:** bấm nút "Watch" -> chọn biến `i`, `j` | Bảng theo dõi hiển thị giá trị; khi step, giá trị đổi + highlight cyan |
 | 5 | Xem description dòng hiện tại | Hiển thị "Dòng N: ..." + nội dung mô tả |
-| 6 | Menu ⋯ → "Xuất ảnh PNG" | Tải về file `visualization-bubble-sort-step-N.png` |
-| 7 | Menu ⋯ → "Xuất code" | Copy code hiện tại ra clipboard |
+| 6 | Menu ... -> "Xuất ảnh PNG" | Tải về file `visualization-bubble-sort-step-N.png` |
+| 7 | Menu ... -> "Xuất code" | Copy code hiện tại ra clipboard |
 | 8 | Nhập input sai (`1e999`) | Bị chặn với lỗi tiếng Việt rõ ràng, không chạy |
 
 ## 5. Giới hạn còn lại (thừa nhận trong hồ sơ)
@@ -68,4 +68,4 @@ Tổng suite: Frontend **3512/3512**, vue-tsc 0, backend không đụng.
 
 ---
 
-*Báo cáo dựa trên: `plan/review/features/algo-playground.md`, `CompilerStepExecutor.ts`, `useAlgoPlaygroundStore.ts`, `AlgoPlaygroundWorkspace.vue`. Xác thực xong → đánh dấu ngày + ký tên.*
+*Báo cáo dựa trên: `plan/review/features/algo-playground.md`, `CompilerStepExecutor.ts`, `useAlgoPlaygroundStore.ts`, `AlgoPlaygroundWorkspace.vue`. Xác thực xong -> đánh dấu ngày + ký tên.*

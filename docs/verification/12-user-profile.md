@@ -1,7 +1,7 @@
 # Báo Cáo Xác Thực — 12. User Profile
 
 > **Mục đích báo cáo:** Cung cấp bằng chứng để bạn đọc và xác thực lại trang hồ sơ người dùng.
-> **Ngày báo cáo:** 2026-08-14 · **Điểm giá trị thực tế hiện tại:** 8/10 — Mức: Thực dụng (giữ nguyên — không thay đổi trong Phase A→D)
+> **Ngày báo cáo:** 2026-08-14 - **Điểm giá trị thực tế hiện tại:** 8/10 — Mức: Thực dụng (giữ nguyên — không thay đổi trong Phase A->D)
 
 ---
 
@@ -25,19 +25,19 @@ Người dùng xem/cập nhật thông tin cá nhân (nickname, bio, trường),
 
 - Backend: User profile tests (trong `Services/*` + AdminControllerTests user CRUD)
 - Frontend: `profile/__tests__/*` (3 files)
-- Review Round 18: **37/37 lỗi PR-001→037 đã fix**
+- Review Round 18: **37/37 lỗi PR-001->037 đã fix**
 - Tổng suite: Backend **788/788**, Frontend **3512/3512**, vue-tsc 0
 
 ## 4. Các bước xác thực thủ công
 
 | # | Bước | Kỳ vọng |
 | :-- | :-- | :-- |
-| 1 | Đăng nhập → `/profile` | Thông tin cá nhân hiển thị đúng |
-| 2 | Sửa nickname + bio + trường → lưu | Lưu thật; reload vẫn giữ |
+| 1 | Đăng nhập -> `/profile` | Thông tin cá nhân hiển thị đúng |
+| 2 | Sửa nickname + bio + trường -> lưu | Lưu thật; reload vẫn giữ |
 | 3 | Tab Progress | XP/level/streak khớp dữ liệu server |
 | 4 | Tab Badges (trong Progress) | Badge đã mở hiện sáng, chưa mở mờ — đúng dữ liệu |
 | 5 | Tab History | Lịch sử học/quiz hiển thị |
-| 6 | Tab Security → đổi mật khẩu | Đổi được, đăng nhập lại với mật khẩu mới OK |
+| 6 | Tab Security -> đổi mật khẩu | Đổi được, đăng nhập lại với mật khẩu mới OK |
 
 ## 5. Giới hạn còn lại (thừa nhận trong hồ sơ)
 
@@ -50,4 +50,4 @@ Người dùng xem/cập nhật thông tin cá nhân (nickname, bio, trường),
 
 ---
 
-*Báo cáo dựa trên: `plan/review/features/user-profile.md`, `ProfileView.vue` + tabs. Xác thực xong → đánh dấu ngày + ký tên.*
+*Báo cáo dựa trên: `plan/review/features/user-profile.md`, `ProfileView.vue` + tabs. Xác thực xong -> đánh dấu ngày + ký tên.*

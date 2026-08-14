@@ -1,14 +1,14 @@
 # Báo Cáo Xác Thực 16 Tính Năng — VisualizationDSA
 
 > **Mục đích:** Bộ báo cáo chi tiết từng tính năng để **bạn (chủ dự án) đọc và xác thực lại** — mỗi báo cáo gồm: mục đích gốc, bằng chứng code (file:line), bằng chứng test, các bước xác thực thủ công, giới hạn còn lại, và phần "Lưu ý xác thực đặc biệt" (những điểm dễ nhầm / bug đã fix cần kiểm tra lại).
-> **Ngày tạo:** 2026-08-14 · **Trạng thái suite:** Backend 788/788 · Frontend 3512/3512 · vue-tsc 0
+> **Ngày tạo:** 2026-08-14 - **Trạng thái suite:** Backend 788/788 - Frontend 3512/3512 - vue-tsc 0
 
 ## Cách sử dụng
 
 1. Đọc báo cáo của tính năng cần xác thực.
 2. Làm theo bảng **"Các bước xác thực thủ công"** trên browser (hoặc đọc bằng chứng code/test).
 3. Đặc biệt chú ý mục **"[Luu y] Xác thực đặc biệt"** — nơi chỉ ra điểm dễ nhầm hoặc bug đã sửa cần kiểm tra lại bằng tay.
-4. Sau khi xác thực xong → ghi ngày + ký tên vào cuối báo cáo, và cập nhật điểm trong `plan/review/features/*.md`.
+4. Sau khi xác thực xong -> ghi ngày + ký tên vào cuối báo cáo, và cập nhật điểm trong `plan/review/features/*.md`.
 
 ## Danh mục 16 báo cáo
 
@@ -16,7 +16,7 @@
 | :-- | :-- | :-- | :-- | :-- |
 | [01](./01-auth.md) | Auth | 9/10 | Thực dụng | Rotation refresh token (thử dùng lại token cũ) |
 | [02](./02-payment.md) | Payment / Premium | 5/10 | Demo-grade | **C1:** nhãn mô phỏng + lazy-cleanup order; **chưa có cổng thật** |
-| [03](./03-admin-panel.md) | Admin Panel | 9/10 | Thực dụng | **D4:** tab Học tập (tương quan viz→quiz) |
+| [03](./03-admin-panel.md) | Admin Panel | 9/10 | Thực dụng | **D4:** tab Học tập (tương quan viz->quiz) |
 | [04](./04-html-playground.md) | HTML Playground | 8/10 | Thực dụng | Sandbox iframe KHÔNG có allow-same-origin |
 | [05](./05-algo-playground.md) | Algo Playground | 9/10 | Thực dụng | **B:** breakpoint + watch panel + xuất PNG |
 | [06](./06-sorting-visualizer.md) | Sorting Visualizer / DSA Modules | 9/10 | Thực dụng | Ổn định nhất — không đổi |
@@ -43,4 +43,4 @@
 
 - Điểm giá trị thực tế lấy từ `plan/review/features/*.md` (cập nhật 2026-08-13).
 - Số liệu test: `dotnet test` (788) + `npx vitest run` (3512) + `vue-tsc -b` (0) — chạy 2026-08-13.
-- Lịch sử thay đổi Phase A→D: `plan/roadmap.md` + `plan/tracking/progress.md`.
+- Lịch sử thay đổi Phase A->D: `plan/roadmap.md` + `plan/tracking/progress.md`.

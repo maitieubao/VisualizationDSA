@@ -1,7 +1,7 @@
 # Báo Cáo Xác Thực — 04. HTML Playground
 
 > **Mục đích báo cáo:** Cung cấp bằng chứng để bạn đọc và xác thực lại HTML Playground — sandbox viết HTML/CSS/JS chạy an toàn.
-> **Ngày báo cáo:** 2026-08-14 · **Điểm giá trị thực tế hiện tại:** 8/10 — Mức: Thực dụng (giữ nguyên — không thay đổi trong Phase A→D)
+> **Ngày báo cáo:** 2026-08-14 - **Điểm giá trị thực tế hiện tại:** 8/10 — Mức: Thực dụng (giữ nguyên — không thay đổi trong Phase A->D)
 
 ---
 
@@ -35,11 +35,11 @@ Người học cần một nơi thực hành HTML/CSS/JavaScript trực tiếp �
 
 | # | Bước | Kỳ vọng |
 | :-- | :-- | :-- |
-| 1 | Vào `/playground` → chọn demo HTML | Code hiện ra + preview render đúng |
-| 2 | Sửa HTML (vd thêm `<h1>`) → dừng gõ | Preview tự cập nhật sau debounce |
+| 1 | Vào `/playground` -> chọn demo HTML | Code hiện ra + preview render đúng |
+| 2 | Sửa HTML (vd thêm `<h1>`) -> dừng gõ | Preview tự cập nhật sau debounce |
 | 3 | Thêm CSS (vd `body { background: red }`) | Preview đổi màu |
 | 4 | Thêm JS (`document.querySelector('h1').textContent = 'X'`) | Preview thay đổi nội dung |
-| 5 | Chia sẻ URL (copy link có chứa code nén) | Mở link mới → code + preview khôi phục |
+| 5 | Chia sẻ URL (copy link có chứa code nén) | Mở link mới -> code + preview khôi phục |
 | 6 | (Bảo mật) Viết `fetch('http://localhost:5055')` trong JS | Phải bị chặn bởi sandbox iframe — không gọi được API app |
 
 ## 5. Giới hạn còn lại (thừa nhận trong hồ sơ)
@@ -53,4 +53,4 @@ Người học cần một nơi thực hành HTML/CSS/JavaScript trực tiếp �
 
 ---
 
-*Báo cáo dựa trên: `plan/review/features/html-playground.md`, source `features/html-playground/*`. Xác thực xong → đánh dấu ngày + ký tên.*
+*Báo cáo dựa trên: `plan/review/features/html-playground.md`, source `features/html-playground/*`. Xác thực xong -> đánh dấu ngày + ký tên.*

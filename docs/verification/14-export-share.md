@@ -1,13 +1,13 @@
 # Báo Cáo Xác Thực — 14. Export & Share
 
 > **Mục đích báo cáo:** Cung cấp bằng chứng để bạn đọc và xác thực lại export/share — đã chốt chiến lược (C4), kiểm tra PNG/SVG xuất thật.
-> **Ngày báo cáo:** 2026-08-14 · **Điểm giá trị thực tế hiện tại:** 7/10 — Mức: Demo-grade (tăng từ 6/10 nhờ C4)
+> **Ngày báo cáo:** 2026-08-14 - **Điểm giá trị thực tế hiện tại:** 7/10 — Mức: Demo-grade (tăng từ 6/10 nhờ C4)
 
 ---
 
 ## 1. Mục đích (theo tài liệu gốc)
 
-Học viên chạy xong mô phỏng → (1) lưu thành tài liệu PNG/SVG cho báo cáo/đồ án, (2) chia sẻ qua link/QR. **Chiến lược đã chốt (C4):** hướng A — ảnh chất lượng cao cho báo cáo.
+Học viên chạy xong mô phỏng -> (1) lưu thành tài liệu PNG/SVG cho báo cáo/đồ án, (2) chia sẻ qua link/QR. **Chiến lược đã chốt (C4):** hướng A — ảnh chất lượng cao cho báo cáo.
 
 ## 2. Những gì được triển khai (bằng chứng code)
 
@@ -24,19 +24,19 @@ Học viên chạy xong mô phỏng → (1) lưu thành tài liệu PNG/SVG cho 
 
 - `frontend/src/features/export-share/__tests__/` — 9 files
 - `frontend/src/views/export-share/__tests__/shareRestoreViewRouter.spec.ts`
-- Review Round 20: **29/30 lỗi EX-001→030 đã fix** (EX-023 PARTIAL — dead types)
+- Review Round 20: **29/30 lỗi EX-001->030 đã fix** (EX-023 PARTIAL — dead types)
 - Tổng suite: Frontend **3512/3512**, vue-tsc 0
 
 ## 4. Các bước xác thực thủ công
 
 | # | Bước | Kỳ vọng |
 | :-- | :-- | :-- |
-| 1 | Vào `/export-share` → mở 1 workspace (system design demo) | Workspace hiển thị |
-| 2 | Bấm Export → chọn PNG | Tải về ảnh PNG đúng trạng thái workspace, chất lượng tốt |
+| 1 | Vào `/export-share` -> mở 1 workspace (system design demo) | Workspace hiển thị |
+| 2 | Bấm Export -> chọn PNG | Tải về ảnh PNG đúng trạng thái workspace, chất lượng tốt |
 | 3 | Chọn SVG | Tải về file SVG giữ fidelity (font/theme) |
-| 4 | Bấm Share → copy link → mở tab mới vào `/s/...` | Restore snapshot + error state nếu hỏng |
+| 4 | Bấm Share -> copy link -> mở tab mới vào `/s/...` | Restore snapshot + error state nếu hỏng |
 | 5 | Chia sẻ QR (workspace nhỏ) | QR quét ra link hợp lệ |
-| 6 | Vào `/playground` → chạy 1 thuật toán → menu ⋯ → "Xuất ảnh PNG" (C4) | Tải về PNG đúng frame hiện tại |
+| 6 | Vào `/playground` -> chạy 1 thuật toán -> menu ... -> "Xuất ảnh PNG" (C4) | Tải về PNG đúng frame hiện tại |
 
 ## 5. Giới hạn còn lại (thừa nhận trong hồ sơ)
 
@@ -51,4 +51,4 @@ Học viên chạy xong mô phỏng → (1) lưu thành tài liệu PNG/SVG cho 
 
 ---
 
-*Báo cáo dựa trên: `plan/review/features/export-share.md`, source `features/export-share/*`, `AlgoPlaygroundWorkspace.vue`. Xác thực xong → đánh dấu ngày + ký tên.*
+*Báo cáo dựa trên: `plan/review/features/export-share.md`, source `features/export-share/*`, `AlgoPlaygroundWorkspace.vue`. Xác thực xong -> đánh dấu ngày + ký tên.*

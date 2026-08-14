@@ -1,7 +1,7 @@
 # Báo Cáo Xác Thực — 13. Embed Widget
 
 > **Mục đích báo cáo:** Cung cấp bằng chứng để bạn đọc và xác thực lại widget nhúng — đặc biệt phân biệt rõ: code/engine ĐÃ xong, nhưng **verify trên LMS thật CHƯA làm**.
-> **Ngày báo cáo:** 2026-08-14 · **Điểm giá trị thực tế hiện tại:** 5/10 — Mức: Demo-grade (tăng từ 3/10 nhờ C3 docs)
+> **Ngày báo cáo:** 2026-08-14 - **Điểm giá trị thực tế hiện tại:** 5/10 — Mức: Demo-grade (tăng từ 3/10 nhờ C3 docs)
 
 ---
 
@@ -26,7 +26,7 @@ Giáo viên nhúng visualizer vào LMS/website (Moodle, Canvas, blog) — 1 ifra
 ## 3. Bằng chứng test
 
 - `frontend/src/features/embed-widget/__tests__/` — 6 files (EmbedCommunicationBridge 31 test, AutoHeightResizer 19 test, SecureOriginChecker, embedComponents, embedP0Tests, useEmbedConfiguratorStore)
-- Review Round 19: **33/33 lỗi EW-001→033 đã fix**
+- Review Round 19: **33/33 lỗi EW-001->033 đã fix**
 - Tổng suite: Frontend **3512/3512**, vue-tsc 0
 
 ## 4. Các bước xác thực thủ công
@@ -36,7 +36,7 @@ Giáo viên nhúng visualizer vào LMS/website (Moodle, Canvas, blog) — 1 ifra
 | 1 | Vào `/embed` | Configurator hiển thị, chọn thuật toán/theme |
 | 2 | Copy mã iframe | Có `data-embed-widget` + `sandbox="allow-scripts allow-same-origin"` |
 | 3 | Copy host script | Có `querySelector('[data-embed-widget]')` + verify `event.source` + `event.origin` |
-| 4 | Mở `docs/host/sample-host.html` → dán iframe vào "Widget slot" | Log hiển thị `WIDGET_READY` → `HEIGHT_CHANGED` (auto-height) |
+| 4 | Mở `docs/host/sample-host.html` -> dán iframe vào "Widget slot" | Log hiển thị `WIDGET_READY` -> `HEIGHT_CHANGED` (auto-height) |
 | 5 | Bấm nút STEP_FORWARD/PLAY_PAUSE/RESET trên host page | Log xác nhận đã gửi |
 | 6 | (Bảo mật) Gửi message từ origin lạ | Bị từ chối (bridge fail-closed) |
 
@@ -48,8 +48,8 @@ Giáo viên nhúng visualizer vào LMS/website (Moodle, Canvas, blog) — 1 ifra
 
 ## 6. [Luu y] Kết luận xác thực
 
-**Bước cần bạn làm để nâng điểm:** mở `docs/host/sample-host.html` trên browser (từ server, không file://), dán iframe thật, xác nhận log WIDGET_READY + HEIGHT_CHANGED. Nếu OK → ghi chú vào đây, điểm lên 7/10. Sau đó thử nhúng vào Moodle/Canvas thật → 8/10.
+**Bước cần bạn làm để nâng điểm:** mở `docs/host/sample-host.html` trên browser (từ server, không file://), dán iframe thật, xác nhận log WIDGET_READY + HEIGHT_CHANGED. Nếu OK -> ghi chú vào đây, điểm lên 7/10. Sau đó thử nhúng vào Moodle/Canvas thật -> 8/10.
 
 ---
 
-*Báo cáo dựa trên: `plan/review/features/embed-widget.md`, source `features/embed-widget/*`, `docs/host/*`. Xác thực xong → đánh dấu ngày + ký tên.*
+*Báo cáo dựa trên: `plan/review/features/embed-widget.md`, source `features/embed-widget/*`, `docs/host/*`. Xác thực xong -> đánh dấu ngày + ký tên.*

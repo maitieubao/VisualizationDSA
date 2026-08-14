@@ -1,7 +1,7 @@
 # Báo Cáo Xác Thực — 09. Teacher Panel
 
 > **Mục đích báo cáo:** Cung cấp bằng chứng để bạn đọc và xác thực lại Teacher Panel — công cụ làm việc hằng ngày của giảng viên.
-> **Ngày báo cáo:** 2026-08-14 · **Điểm giá trị thực tế hiện tại:** 8/10 — Mức: Thực dụng
+> **Ngày báo cáo:** 2026-08-14 - **Điểm giá trị thực tế hiện tại:** 8/10 — Mức: Thực dụng
 
 ---
 
@@ -31,12 +31,12 @@ Giảng viên soạn nội dung giảng dạy (quiz, codelab, khóa học/bài h
 
 | # | Bước | Kỳ vọng |
 | :-- | :-- | :-- |
-| 1 | Đăng nhập teacher → `/teacher` | Các tab hiển thị |
-| 2 | Tab Quiz → tạo quiz mới (5 câu) → lưu | Quiz lưu thật, chỉ owner sửa/xóa |
-| 3 | Tab Codelab → tạo codelab (template + hint + testcase) → lưu | CRUD hoạt động, dữ liệu lưu DB |
-| 4 | Tab Khóa học → mở 1 bài → đổi nội dung → chọn codelab từ picker → publish "Published" | Lưu thành công; codelab gắn đúng |
+| 1 | Đăng nhập teacher -> `/teacher` | Các tab hiển thị |
+| 2 | Tab Quiz -> tạo quiz mới (5 câu) -> lưu | Quiz lưu thật, chỉ owner sửa/xóa |
+| 3 | Tab Codelab -> tạo codelab (template + hint + testcase) -> lưu | CRUD hoạt động, dữ liệu lưu DB |
+| 4 | Tab Khóa học -> mở 1 bài -> đổi nội dung -> chọn codelab từ picker -> publish "Published" | Lưu thành công; codelab gắn đúng |
 | 5 | Bấm "Xem trước như học viên" | Chuyển `/lessons/{id}` — xem đúng giao diện học viên với codelab đã gắn |
-| 6 | Tab Analytics → xuất Excel | File tải về có loading, dữ liệu đúng |
+| 6 | Tab Analytics -> xuất Excel | File tải về có loading, dữ liệu đúng |
 
 ## 5. Giới hạn còn lại (thừa nhận trong hồ sơ)
 
@@ -46,9 +46,9 @@ Giảng viên soạn nội dung giảng dạy (quiz, codelab, khóa học/bài h
 
 ## 6. [Luu y] Xác thực đặc biệt
 
-- **XSS markdown:** dán `<script>` vào contentMd → tab Xem trước phải hiển thị dạng TEXT (escape-first), không chạy script.
+- **XSS markdown:** dán `<script>` vào contentMd -> tab Xem trước phải hiển thị dạng TEXT (escape-first), không chạy script.
 - **Codelab picker chỉ hiện codelab của teacher** + codelab dùng chung (seed) — codelab teacher khác không xuất hiện.
 
 ---
 
-*Báo cáo dựa trên: `plan/review/features/teacher-panel.md`, `TeacherCourseTab.vue`, `useTeacherApi.ts`. Xác thực xong → đánh dấu ngày + ký tên.*
+*Báo cáo dựa trên: `plan/review/features/teacher-panel.md`, `TeacherCourseTab.vue`, `useTeacherApi.ts`. Xác thực xong -> đánh dấu ngày + ký tên.*

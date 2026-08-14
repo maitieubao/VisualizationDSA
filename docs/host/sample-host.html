@@ -29,7 +29,7 @@
     <li>Chạy app VisualizationDSA ở domain A (vd <code>localhost:5173</code>).</li>
     <li>Mở <code>/#/embed-widget</code> trong app, cấu hình thuật toán, sao chép mã iframe.</li>
     <li>Dán iframe vào <code>&lt;div id="widget-slot"&gt;</code> bên dưới (giữ <code>data-embed-widget</code>).</li>
-    <li>Mở trang này ở domain B (vd file:// hoặc <code>localhost:5500</code>) → xem log cross-origin bên dưới.</li>
+    <li>Mở trang này ở domain B (vd file:// hoặc <code>localhost:5500</code>) -> xem log cross-origin bên dưới.</li>
   </ol>
 
   <h2>2. Widget slot</h2>
@@ -41,11 +41,11 @@
 
   <h2>3. Nút điều khiển host (gửi message vào iframe — chỉ cùng origin mới nhận)</h2>
   <div class="controls">
-    <button onclick="sendToWidget('STEP_FORWARD', { stepIndex: 5 })">STEP_FORWARD → step 5</button>
+    <button onclick="sendToWidget('STEP_FORWARD', { stepIndex: 5 })">STEP_FORWARD -> step 5</button>
     <button onclick="sendToWidget('PLAY_PAUSE', {})">PLAY_PAUSE</button>
     <button onclick="sendToWidget('RESET', {})">RESET</button>
   </div>
-  <div class="log" id="log">// Chờ WIDGET_READY từ iframe…</div>
+  <div class="log" id="log">// Chờ WIDGET_READY từ iframe...</div>
 
   <h2>4. Host integration script (dán vào trang)</h2>
   <pre id="host-script"><!-- host script sẽ được nhét vào đây bằng JS bên dưới --></pre>
@@ -60,19 +60,19 @@
       if (!iframe || event.source !== iframe.contentWindow) return;
       // BẮT BUỘC verify origin — ví dụ dùng đúng origin của app VisualizationDSA.
       const ALLOWED_ORIGIN = 'http://localhost:5173';
-      if (event.origin !== ALLOWED_ORIGIN) { log('⚠️ Từ chối origin lạ: ' + event.origin); return; }
+      if (event.origin !== ALLOWED_ORIGIN) { log('[TU CHOI] origin lạ: ' + event.origin); return; }
       const msg = event.data;
       if (msg?.source !== 'VISUALIZATION_DSA_WIDGET') return;
       if (msg.action === 'WIDGET_READY') {
-        log('✅ WIDGET_READY — widget sẵn sàng (cross-origin OK)');
+        log('[OK] WIDGET_READY — widget sẵn sàng (cross-origin OK)');
       } else if (msg.action === 'HEIGHT_CHANGED' && Number.isFinite(Number(msg.payload?.height))) {
         const h = Math.min(2000, Math.max(100, Number(msg.payload.height)));
         iframe.style.height = h + 'px';
-        log('📏 HEIGHT_CHANGED → ' + h + 'px (auto-height cross-origin)');
+        log('[HEIGHT] HEIGHT_CHANGED -> ' + h + 'px (auto-height cross-origin)');
       } else if (msg.action === 'QUIZ_COMPLETED') {
-        log('🎯 QUIZ_COMPLETED — score: ' + (msg.payload?.quizScore ?? '?'));
+        log('[QUIZ] QUIZ_COMPLETED — score: ' + (msg.payload?.quizScore ?? '?'));
       } else if (msg.action) {
-        log('📨 ' + msg.action + ': ' + JSON.stringify(msg.payload ?? {}));
+        log('[MSG] ' + msg.action + ': ' + JSON.stringify(msg.payload ?? {}));
       }
     });
 
@@ -80,7 +80,7 @@
     function sendToWidget(action, payload) {
       if (!iframe || !iframe.contentWindow) return;
       iframe.contentWindow.postMessage({ source: 'VISUALIZATION_DSA_WIDGET', action, payload }, '*');
-      log('➡️ Đã gửi ' + action);
+      log('[GUI] Đã gửi ' + action);
     }
 
     // ── Hiển thị host script mẫu (chính là đoạn dán vào trang thật) ──

@@ -1,7 +1,7 @@
 # Báo Cáo Xác Thực — 01. Auth (Đăng nhập / Đăng ký / Refresh Token)
 
 > **Mục đích báo cáo:** Cung cấp bằng chứng để bạn (chủ dự án) đọc và xác thực lại tính năng này có thật sự hoạt động như tài liệu mô tả — không phải chỉ "test xanh".
-> **Ngày báo cáo:** 2026-08-14 · **Điểm giá trị thực tế hiện tại:** 9/10 — Mức: Thực dụng (giữ nguyên — không thay đổi trong Phase A→D)
+> **Ngày báo cáo:** 2026-08-14 - **Điểm giá trị thực tế hiện tại:** 9/10 — Mức: Thực dụng (giữ nguyên — không thay đổi trong Phase A->D)
 
 ---
 
@@ -45,9 +45,9 @@ Khách cần tài khoản riêng để hệ thống theo dõi tiến độ, XP, 
 | 1 | Khởi động backend (port 5055) + frontend dev | App mở landing, không crash |
 | 2 | Vào `/dashboard` khi chưa đăng nhập | Redirect về landing (guard chặn) |
 | 3 | Đăng ký tài khoản mới (email + mật khẩu) | Tạo user thành công, tự đăng nhập |
-| 4 | Đăng xuất → đăng nhập lại | Vào được dashboard, dữ liệu cá nhân đúng |
-| 5 | Mở DevTools → Application → LocalStorage, xóa access token nhưng giữ refresh token | Request tiếp theo 401 → auto-refresh → vẫn hoạt động (không bị đá ra) |
-| 6 | Đăng nhập admin → Admin Panel → impersonate 1 student | Banner "Đóng vai" xuất hiện, vào được dashboard như student |
+| 4 | Đăng xuất -> đăng nhập lại | Vào được dashboard, dữ liệu cá nhân đúng |
+| 5 | Mở DevTools -> Application -> LocalStorage, xóa access token nhưng giữ refresh token | Request tiếp theo 401 -> auto-refresh -> vẫn hoạt động (không bị đá ra) |
+| 6 | Đăng nhập admin -> Admin Panel -> impersonate 1 student | Banner "Đóng vai" xuất hiện, vào được dashboard như student |
 | 7 | Bấm "Thoát đóng vai" | Về /admin với quyền admin nguyên vẹn |
 
 ## 5. Giới hạn còn lại (thừa nhận trong hồ sơ)
@@ -60,8 +60,8 @@ Khách cần tài khoản riêng để hệ thống theo dõi tiến độ, XP, 
 ## 6. [Luu y] Xác thực đặc biệt
 
 - **Kiểm tra bảo mật:** refresh token phải KHÔNG dùng lại được (rotation) — thử: đăng nhập, gọi refresh 2 lần với cùng refresh token cũ, lần 2 phải bị từ chối.
-- **Ban user:** đăng nhập user bị admin ban → login phải bị chặn (test AD-004/007 đã cover).
+- **Ban user:** đăng nhập user bị admin ban -> login phải bị chặn (test AD-004/007 đã cover).
 
 ---
 
-*Báo cáo dựa trên: `plan/review/features/auth.md`, test hiện hữu, routes `/`, `/dashboard`. Xác thực xong → đánh dấu ngày + ký tên.*
+*Báo cáo dựa trên: `plan/review/features/auth.md`, test hiện hữu, routes `/`, `/dashboard`. Xác thực xong -> đánh dấu ngày + ký tên.*

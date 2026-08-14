@@ -1,7 +1,7 @@
 # Báo Cáo Xác Thực — 10. Classrooms
 
 > **Mục đích báo cáo:** Cung cấp bằng chứng để bạn đọc và xác thực lại luồng lớp học + notification mới (C2).
-> **Ngày báo cáo:** 2026-08-14 · **Điểm giá trị thực tế hiện tại:** 8/10 — Mức: Thực dụng
+> **Ngày báo cáo:** 2026-08-14 - **Điểm giá trị thực tế hiện tại:** 8/10 — Mức: Thực dụng
 
 ---
 
@@ -17,7 +17,7 @@ Giáo viên tạo lớp, mời học viên (invite code), gom quiz/codelab/lesso
 | Curriculum: module/item CRUD + reorder atomic (RowVersion) + override + import course | `ClassroomCurriculumController.cs` + handlers | [X] |
 | UnlockRuleEngine (prerequisite/sequential/hidden) | Application layer | [X] |
 | **C2: notification "bài mới"** — CreateClassroomModuleItem notify học viên ACTIVE (bỏ item ẩn + học viên bị kick) | `CreateClassroomModuleItemCommandHandler.cs` | [X] MOI |
-| **C2: notification "deadline lớp"** — DeadlineReminderService (BackgroundService, quét mỗi giờ: item DueAt trong 24h tới chưa hoàn thành → nhắc, dedupe ngày) | `backend/src/Infrastructure/Services/DeadlineReminderService.cs` + đăng ký `Program.cs` | [X] MOI |
+| **C2: notification "deadline lớp"** — DeadlineReminderService (BackgroundService, quét mỗi giờ: item DueAt trong 24h tới chưa hoàn thành -> nhắc, dedupe ngày) | `backend/src/Infrastructure/Services/DeadlineReminderService.cs` + đăng ký `Program.cs` | [X] MOI |
 | FE: MyClassrooms / ClassroomStudy / sidebar curriculum | `frontend/src/views/classroom/*` + `features/classroom/*` | [X] |
 | Teacher analytics lớp | `TeacherClassroomAnalytics.vue` | [X] |
 
@@ -32,7 +32,7 @@ Giáo viên tạo lớp, mời học viên (invite code), gom quiz/codelab/lesso
 
 | # | Bước | Kỳ vọng |
 | :-- | :-- | :-- |
-| 1 | Teacher tạo lớp → lấy invite code | Lớp xuất hiện, code hợp lệ |
+| 1 | Teacher tạo lớp -> lấy invite code | Lớp xuất hiện, code hợp lệ |
 | 2 | Student nhập code join | Vào lớp, thấy curriculum |
 | 3 | Teacher thêm 1 bài mới vào lớp | Student nhận notification "Bài mới..." (bell) — C2 |
 | 4 | Teacher đặt DueAt cho item trong 24h tới | Trong vòng 1 giờ (chu kỳ quét), student chưa hoàn thành nhận nhắc deadline |
@@ -53,4 +53,4 @@ Giáo viên tạo lớp, mời học viên (invite code), gom quiz/codelab/lesso
 
 ---
 
-*Báo cáo dựa trên: `plan/review/features/classrooms.md`, `DeadlineReminderService.cs`, `CreateClassroomModuleItemCommandHandler.cs`, classroom tests. Xác thực xong → đánh dấu ngày + ký tên.*
+*Báo cáo dựa trên: `plan/review/features/classrooms.md`, `DeadlineReminderService.cs`, `CreateClassroomModuleItemCommandHandler.cs`, classroom tests. Xác thực xong -> đánh dấu ngày + ký tên.*

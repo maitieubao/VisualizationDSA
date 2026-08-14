@@ -1,4 +1,4 @@
-# 🌐 Embed Widget — Hướng dẫn Tích Hợp vào Trang/LMS Bất Kỳ (Host Guide)
+# Embed Widget — Hướng dẫn Tích Hợp vào Trang/LMS Bất Kỳ (Host Guide)
 
 > C3 (2026-08-13): tài liệu host hoàn chỉnh — người không phải developer làm theo được trong <15 phút.
 > Môi trường verify thật (browser + LMS): xem `docs/host/sample-host.html` để chạy demo trước.
@@ -8,9 +8,9 @@
 ## 1. Dán snippet vào website/LMS
 
 ### Bước 1 — Lấy mã nhúng
-1. Mở app VisualizationDSA → tab **Embed Widget**.
+1. Mở app VisualizationDSA -> tab **Embed Widget**.
 2. Chọn thuật toán, theme, kích thước, bật/tắt VCR.
-3. Bấm **SAO CHÉP MÃ** → bạn có 1 thẻ `<iframe>`.
+3. Bấm **SAO CHÉP MÃ** -> bạn có 1 thẻ `<iframe>`.
 
 ### Bước 2 — Dán vào trang (3 cách)
 
@@ -31,7 +31,7 @@
 1. iframe ở trên (giữ nguyên `data-embed-widget`),
 2. đoạn `<script>` bên dưới (mục 2) — giúp iframe tự co giãn theo nội dung (auto-height).
 
-**Cách C — LMS cụ thể:** Moodle/Canvas → chèn "Khối HTML" / "Trang" → chế độ **HTML/Source** → dán iframe + script (mục 2). KHÔNG dùng trình soạn thảo WYSIWYG (nó sẽ xóa thuộc tính `data-embed-widget`).
+**Cách C — LMS cụ thể:** Moodle/Canvas -> chèn "Khối HTML" / "Trang" -> chế độ **HTML/Source** -> dán iframe + script (mục 2). KHÔNG dùng trình soạn thảo WYSIWYG (nó sẽ xóa thuộc tính `data-embed-widget`).
 
 ---
 
@@ -62,7 +62,7 @@
 </script>
 ```
 
-> ⚠️ Thay `https://visualization-dsa.example.com` bằng domain thật của app (xem `src` trong mã iframe).
+> [Luu y] Thay `https://visualization-dsa.example.com` bằng domain thật của app (xem `src` trong mã iframe).
 
 ---
 
@@ -113,7 +113,7 @@ Widget chỉ tin message từ origin trong allowlist. Cấu hình tại:
 
 1. Mở `docs/host/sample-host.html` bằng trình duyệt (mở từ server, không mở file:// nếu origin strict).
 2. Dán iframe (mục 1) vào khối "Widget slot".
-3. Xem log bên dưới: phải thấy `✅ WIDGET_READY` → sau đó `📏 HEIGHT_CHANGED → ...px` khi widget đổi nội dung.
-4. Bấm nút điều khiển host (STEP_FORWARD/PLAY_PAUSE/RESET) → log xác nhận đã gửi.
+3. Xem log bên dưới: phải thấy `WIDGET_READY` -> sau đó `HEIGHT_CHANGED -> ...px` khi widget đổi nội dung.
+4. Bấm nút điều khiển host (STEP_FORWARD/PLAY_PAUSE/RESET) -> log xác nhận đã gửi.
 
 **Pass = auto-height thay đổi + điều khiển hoạt động xuyên domain.**
