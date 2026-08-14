@@ -2331,3 +2331,9 @@ Files: AdminController.cs (analytics/learning), AdminControllerTests.cs (+2), Ad
 | **D2 i18n san sang** | ✅ CODE DONE | src/shared/i18n/index.ts: messages vi/en (key-based), useI18n() {locale, setLocale, t(key, vars)} - locale mac dinh 'vi' (chuoi giong cu, khong pha test), persist localStorage 'app-locale'. Ap dung cho algo-playground (title, menu, watch panel, run/format...). Test: +6 (default vi, setLocale en persist, restore persist, no crash key thieu, vi/en dong bo). Mo rong dan module khac. |
 
 Files: CreateClassroomModuleItemCommandHandler.cs (+notify), DeadlineReminderService.cs (moi), Program.cs (+hosted), CreateClassroomModuleItemCommandHandlerTests.cs (+2), DeadlineReminderServiceTests.cs (moi +3), docs/host/HOST_GUIDE.md, frontend/src/shared/i18n/index.ts (moi), i18n.spec.ts (moi +6), AlgoPlaygroundWorkspace.vue (i18n). Backend 788/788 (+5), frontend 3512/3512 (+8), vue-tsc 0.
+
+## Bo bao cao xac thuc 16 tinh nang (2026-08-14)
+
+- Tao `docs/verification/README.md` + 16 file bao cao (01-auth → 16-core-ui).
+- Moi bao cao gom: muc dich goc, bang chung code (file:line), bang chung test, cac buoc xac thuc thu cong, gioi han con lai, muc "Luu y xac thuc dac biet" (diem de nham / bug da fix can kiem tra lai).
+- Khong thay doi code - chi tao tai lieu xac thuc de chu du an doc va xac nhan.
