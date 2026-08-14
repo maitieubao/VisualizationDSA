@@ -16,23 +16,23 @@
 - Giới hạn hiện tại:
   - **Chưa có bằng chứng nhúng vào LMS thật nào (Moodle/Canvas)** — engine wire đúng nhưng chưa ai dùng; toàn bộ bằng chứng là test jsdom/unit + tự nhúng vào chính app.
   - **Auto-height cross-origin chưa verify thật** — HEIGHT_CHANGED chỉ được kiểm chứng trong test/resizer pipeline, chưa từng chạy trên host ngoài domain thật với browser thật.
-  - `EMBED_BASE_URL` hardcode production (EW-024) — dev/preview không chứng minh được config đúng môi trường; chưa có tài liệu host hướng dẫn ngoài snippet tự sinh.
+  - `EMBED_BASE_URL` hardcode production (EW-024) — dev/preview không chứng minh được config đúng môi trường. **C3 (2026-08-13)** đã bù: tài liệu host hoàn chỉnh + sample host page (xem dưới).
 
-## ⭐ Đánh giá giá trị thực tế: 3/10 hiện tại (🔴 Hạ tầng chờ)
+## ⭐ Đánh giá giá trị thực tế: 5/10 hiện tại (🟡 Demo-grade)
 
-- **Điểm thật:** Hạ tầng kỹ thuật đã hoàn chỉnh và đúng chuẩn bảo mật — bridge fail-closed, allowlist, shape validate, engine wire, preview thật; là nền tảng tốt để phát triển nhanh.
+- **Điểm thật:** Hạ tầng kỹ thuật đã hoàn chỉnh và đúng chuẩn bảo mật — bridge fail-closed, allowlist, shape validate, engine wire, preview thật; là nền tảng tốt để phát triển nhanh. **C3 (2026-08-13):** `docs/host/HOST_GUIDE.md` (dán snippet 3 cách, host script auto-height + verify origin, điều khiển host, allowlist, bảng xử lý lỗi, checklist verify) + `docs/host/sample-host.html` (trang demo host có nút điều khiển + log cross-origin) — người không phải developer làm theo được <15 phút, tự dán thử được ngay.
 - **Điểm "ảo" (code xanh nhưng chưa thực dụng):**
-  - **Chưa có một LMS thật nào nhúng và dùng được** — tính năng tồn tại trong code/test nhưng zero người dùng thật; không có bằng chứng "dán vào Moodle là chạy".
+  - **Chưa có một LMS thật nào nhúng và dùng được** — tính năng tồn tại trong code/test nhưng zero người dùng thật; không có bằng chứng "dán vào Moodle là chạy" (mục tiêu ban đầu của tính năng).
   - **Auto-height cross-origin chưa được verify thực tế** — phần kỹ thuật khó nhất (browser chặn message, cookie, sandbox của LMS) chưa ai xác nhận bằng tay.
-  - Không có tài liệu host và không có trang demo khách có thể tự dán thử — rào cản áp dụng rất cao.
+  - Rào cản áp dụng đã giảm (có tài liệu + demo) nhưng vẫn cần 1 lần verify thật để chuyển sang Thực dụng.
 
 ## 🚧 Điều cần làm để có giá trị thực tế (checklist ưu tiên)
 
 - [ ] **Test nhúng thật vào 1 LMS** — acceptance: nhúng widget vào Moodle (khối HTML/iframe) hoặc Canvas, chạy TC-EW-004 (WIDGET_READY + điều khiển host) và TC-EW-008 (auto-height cross-origin) trên browser thật; ghi lại kết quả + screenshot làm bằng chứng.
-- [ ] **Viết tài liệu host hướng dẫn** — acceptance: tài liệu gồm (1) dán snippet vào LMS/website bất kỳ, (2) cấu hình allowlist origin, (3) xử lý lỗi thường gặp; người không phải developer làm theo nhúng được trong <15 phút.
+- [x] **Viết tài liệu host hướng dẫn** — **C3 ✅ 2026-08-13** — `docs/host/HOST_GUIDE.md`: dán snippet vào LMS/website bất kỳ, cấu hình allowlist origin, xử lý lỗi thường gặp; người không phải developer làm theo nhúng được trong <15 phút.
 - [ ] **Verify auto-height thực tế cross-origin** — acceptance: trên host ngoài domain thật, chiều cao iframe tự khớp nội dung; resize nhanh không spam message (debounce đúng); không bị browser chặn; ghi lại môi trường test cụ thể.
 - [ ] **Cấu hình EMBED_BASE_URL theo môi trường** (EW-024) — acceptance: dev/preview/production dùng đúng base URL riêng, không hardcode; snippet sinh ra chạy được ở cả 3 môi trường.
-- [ ] **Trang demo + sample host page** — acceptance: 1 trang sample HTML nhúng sẵn widget kèm nút điều khiển để khách dán/xem thử trước khi áp dụng.
+- [x] **Trang demo + sample host page** — **C3 ✅ 2026-08-13** — `docs/host/sample-host.html`: trang sample HTML nhúng sẵn widget kèm nút điều khiển (STEP_FORWARD/PLAY_PAUSE/RESET) + log message cross-origin để khách dán/xem thử trước khi áp dụng.
 
 ## 🧭 Hướng phát triển tiếp theo
 

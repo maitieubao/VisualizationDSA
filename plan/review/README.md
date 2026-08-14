@@ -7,24 +7,29 @@
 
 ## 📇 Danh mục 16 Hồ Sơ
 
-| # | Tính năng | Giá trị thực tế | Mức | File |
+> Cập nhật 2026-08-13 sau Phase A→D (Content Pipeline, Code Debugger, Tích hợp thật, Hoàn thiện):
+> điểm phản ánh MỤC TIÊU ban đầu của từng tính năng đạt được đến đâu + bằng chứng thật (không phải code xanh).
+
+| # | Tính năng | Giá trị thực tế | Mức | Thay đổi từ Phase A-D |
 | :-- | :-- | :-- | :-- | :-- |
-| 1 | Auth | 9/10 — cốt lõi, dùng thật | 🟢 Thực dụng | [auth.md](features/auth.md) |
-| 2 | Payment / Premium | 4/10 — mô phỏng, chưa trả tiền thật | 🟡 Demo-grade | [payment.md](features/payment.md) |
-| 3 | Admin Panel | 9/10 — quản trị thật | 🟢 Thực dụng | [admin.md](features/admin.md) |
-| 4 | HTML Playground | 8/10 — công cụ thực hành thật | 🟢 Thực dụng | [html-playground.md](features/html-playground.md) |
-| 5 | Algo Playground | 8/10 — công cụ thực hành thật | 🟢 Thực dụng | [algo-playground.md](features/algo-playground.md) |
-| 6 | Sorting Visualizer | 9/10 — flagship, dùng thật | 🟢 Thực dụng | [sorting-visualizer.md](features/sorting-visualizer.md) |
-| 7 | Courses & Lessons | 7/10 — đúng luồng, phụ thuộc nội dung | 🟢 Thực dụng (nội dung mỏng) | [courses-lessons.md](features/courses-lessons.md) |
-| 8 | Lesson Study | 8/10 — luồng học đúng | 🟢 Thực dụng | [lesson-study.md](features/lesson-study.md) |
-| 9 | Teacher Panel | 8/10 — công cụ làm việc thật | 🟢 Thực dụng | [teacher-panel.md](features/teacher-panel.md) |
-| 10 | Classrooms | 8/10 — luồng lớp học thật | 🟢 Thực dụng | [classrooms.md](features/classrooms.md) |
-| 11 | Gamification | 7/10 — động lực đúng, cần dữ liệu thật | 🟡 Demo-grade khi chưa có user | [gamification.md](features/gamification.md) |
-| 12 | User Profile | 8/10 — dùng thật | 🟢 Thực dụng | [user-profile.md](features/user-profile.md) |
-| 13 | Embed Widget | 3/10 hiện tại — chưa có LMS nhúng thật | 🔴 Hạ tầng chờ | [embed-widget.md](features/embed-widget.md) |
-| 14 | Export & Share | 6/10 — share là ảnh tĩnh | 🟡 Demo-grade | [export-share.md](features/export-share.md) |
-| 15 | Notifications | 5/10 — hạ tầng tốt, nguồn trigger ít | 🔴 Hạ tầng chờ | [notifications.md](features/notifications.md) |
-| 16 | Core & UI | 9/10 — hạ tầng vững | 🟢 Thực dụng | [core-ui.md](features/core-ui.md) |
+| 1 | Auth | 9/10 — cốt lõi, dùng thật | 🟢 Thực dụng | — |
+| 2 | Payment / Premium | 5/10 — mô phỏng rõ ràng + cleanup, chưa có cổng thật | 🟡 Demo-grade | C1: nhãn mô phỏng + lazy-cleanup order (+1) |
+| 3 | Admin Panel | 9/10 — quản trị thật + analytics học tập | 🟢 Thực dụng | D4: tab Học tập (tương quan viz→quiz) |
+| 4 | HTML Playground | 8/10 — công cụ thực hành thật | 🟢 Thực dụng | — |
+| 5 | Algo Playground | 9/10 — debugger chuẩn (breakpoint + watch) | 🟢 Thực dụng | B1-B4: breakpoint, watch panel, nhãn, xuất PNG (+1) |
+| 6 | Sorting Visualizer | 9/10 — flagship, dùng thật | 🟢 Thực dụng | — |
+| 7 | Courses & Lessons | 9/10 — nội dung thật + E2E đóng vòng | 🟢 Thực dụng | A1-A3: authoring + codelab seed + E2E (+2) |
+| 8 | Lesson Study | 9/10 — luồng học đúng + codelab thật | 🟢 Thực dụng | A2/A3: codelab DB thật (+1) |
+| 9 | Teacher Panel | 8/10 — công cụ làm việc thật | 🟢 Thực dụng | A1.4: form soạn bài + publish workflow |
+| 10 | Classrooms | 8/10 — luồng lớp học thật | 🟢 Thực dụng | C2: notification bài mới + deadline lớp |
+| 11 | Gamification | 8/10 — động lực + nguồn XP/notification thật | 🟢 Thực dụng | A3/C2: XP thật + level-up/badge notify (+1) |
+| 12 | User Profile | 8/10 — dùng thật | 🟢 Thực dụng | — |
+| 13 | Embed Widget | 5/10 — hạ tầng + tài liệu host, chưa verify LMS thật | 🟡 Demo-grade | C3: HOST_GUIDE + sample host page (+2) |
+| 14 | Export & Share | 7/10 — chiến lược chốt: ảnh báo cáo chất lượng cao | 🟡 Demo-grade | C4: quyết định + xuất PNG playground (+1) |
+| 15 | Notifications | 8/10 — 4 nguồn thật (comment/bài mới/deadline/level-up) | 🟢 Thực dụng | C2: 3 nguồn mới + level-up/badge (+3) |
+| 16 | Core & UI | 9/10 — hạ tầng vững | 🟢 Thực dụng | — |
+
+**So với bảng gốc 2026-08-11:** 8/16 tính năng tăng điểm (Courses +2, Lesson Study +1, Gamification +1, Notifications +3, Algo Playground +1, Embed +2, Export +1, Payment +1); 1 tính năng chuyển mức (Notifications 🔴→🟢); tổng 13/16 Thực dụng, 3/16 Demo-grade (Payment, Embed, Export — đều chờ tích hợp/verify bên ngoài), 0/16 Hạ tầng chờ.
 
 ---
 

@@ -18,19 +18,19 @@
   - PM-053 DEFERRED: countdown dùng `setInterval` — tab nền có thể lệch giây (nên chuyển sang `Date.now()`).
   - Chưa có luồng dọn dẹp order quá hạn (cleanup background), chưa có xem trước hóa đơn trước khi chuyển tiền.
 
-## ⭐ Đánh giá giá trị thực tế: 4/10 (🟡 Demo-grade)
+## ⭐ Đánh giá giá trị thực tế: 5/10 (🟡 Demo-grade)
 
-- **Điểm thật:** Luồng checkout UI→QR→polling→cấp quyền chạy đúng với webhook mô phỏng; bảo mật lõi (không cấp premium lậu, idempotency, hết hạn order) đã được chứng minh bằng test 2 đầu.
+- **Điểm thật:** Luồng checkout UI→QR→polling→cấp quyền chạy đúng với webhook mô phỏng; bảo mật lõi (không cấp premium lậu, idempotency, hết hạn order) đã được chứng minh bằng test 2 đầu. **C1 (2026-08-13):** lazy-cleanup order quá hạn (`GetOrderStatusAsync` đánh dấu Expired ngay khi tra cứu — hết tồn đọng order Pending chết); nhãn "Môi trường mô phỏng thanh toán" trên checkout — user không còn bị hiểu lầm là giao dịch thật.
 - **Điểm "ảo" (code xanh nhưng chưa thực dụng):**
   - **Toàn bộ "dòng tiền" là giả** — user thật không thể trả tiền và nhận premium trong production; mọi TC hoàn tất đều đi qua nút mô phỏng dành riêng cho tester.
-  - Nút mua premium trên UI hiển thị như một luồng bán hàng thật, nhưng kết cục thật phụ thuộc webhook giả — nếu user tự trải nghiệm sẽ kẹt ở trạng thái "paying" vô hạn khi chưa có dev can thiệp.
-  - Các con số 472/472 + 2846/2846 chứng minh code đúng spec, KHÔNG chứng minh có doanh thu.
+  - Mục tiêu ban đầu "payment biến sản phẩm thành dịch vụ có doanh thu" chưa đạt — chưa có cổng SePay sandbox/production thật nào được nối.
+  - Các con số test chứng minh code đúng spec, KHÔNG chứng minh có doanh thu.
 
 ## 🚧 Điều cần làm để có giá trị thực tế (checklist ưu tiên)
 
 - [ ] Nối SePay sandbox thật (tạo order → QR → webhook thật) — acceptance: user trả tiền qua QR thật trong sandbox, webhook SePay cấp premium, log giao dịch khớp; production chặn `simulate-webhook`.
-- [ ] Gắn nhãn "Mô phỏng" rõ ràng trên UI nếu chưa nối cổng thật — acceptance: checkout và PremiumGate hiển thị badge/văn bản "Mô phỏng — chưa trả tiền thật" để không gây hiểu lầm.
-- [ ] Luồng dọn dẹp order quá hạn — acceptance: job định kỳ chuyển order quá hạn → `Expired`, không tồn đọng dữ liệu.
+- [x] Gắn nhãn "Mô phỏng" rõ ràng trên UI nếu chưa nối cổng thật — **C1 ✅ 2026-08-13** — checkout hiển thị badge "Môi trường mô phỏng thanh toán — không giao dịch tiền thật".
+- [x] Luồng dọn dẹp order quá hạn — **C1 ✅ 2026-08-13** — lazy-cleanup ngay khi tra cứu trạng thái (order Pending quá hạn → Expired + commit).
 - [ ] Xem trước hóa đơn trước khi chuyển tiền — acceptance: user thấy tên gói, giá, thời hạn, đơn vị thụ hưởng trước khi tạo QR.
 - [ ] Chuyển countdown sang timestamp (đóng PM-053) — acceptance: tab nền/nền foreground không lệch giây hết hạn.
 

@@ -23,7 +23,7 @@
 
 ## ⭐ Đánh giá giá trị thực tế: 8/10 (🟢 Thực dụng)
 
-- **Điểm thật:** Các luồng soạn giảng cốt lõi (quiz, codelab, khóa học, analytics, export Excel) đều đã hoạt động thật với quyền sở hữu và soft-delete an toàn — đây là công cụ làm việc mỗi giảng viên dùng thường xuyên.
+- **Điểm thật:** Các luồng soạn giảng cốt lõi (quiz, codelab, khóa học, analytics, export Excel) đều đã hoạt động thật với quyền sở hữu và soft-delete an toàn — đây là công cụ làm việc mỗi giảng viên dùng thường xuyên. **A1 (2026-08-13):** form soạn bài học nâng cấp — tab Soạn thảo/Xem trước markdown an toàn, codelab picker (danh sách codelab của teacher), sandboxConfig JSON validate inline, publish status (Draft/Private/Published), **nút "Xem trước như học viên"** (router.push /lessons/{id}).
 - **Điểm "ảo" (code xanh nhưng chưa thực dụng):**
   - Import Excel từng là lời hứa "soạn nhanh hàng loạt" nhưng đã bị gỡ — chỉ còn export, một nửa câu chuyện nhập liệu biến mất.
   - Quiz/Codelab Builder vừa hồi sinh nên độ tin cậy UX chưa được kiểm chứng bằng sử dụng dài hạn.
@@ -35,7 +35,7 @@
 - [ ] Gỡ nhánh quiz trùng (TC-031) — acceptance: 1 tab quiz duy nhất, 1 API, 1 thang độ khó, xóa dead code TC-043.
 - [ ] Import nội dung hàng loạt (Excel/JSON) cho quiz + codelab — acceptance: chọn file → validate dòng lỗi cụ thể → import; khôi phục cam kết "soạn nhanh hàng loạt" mà TC-024 đã đánh mất.
 - [ ] Theo dõi sử dụng thật của Quiz/Codelab Builder — acceptance: 2 tuần dùng thật không có P0/P1 mới; trực hóa điểm nghẽn (ví dụ tốc độ lưu câu hỏi, độ dài modal).
-- [ ] Xem trước nội dung như học viên (TC-029 preview thật) — acceptance: bấm "Xem trước" mở được giao diện học viên cho quiz/codelab đang soạn, không phải no-op.
+- [x] Xem trước nội dung như học viên — **A1 ✅ 2026-08-13** — nút "Xem trước như học viên" trên form bài học → router.push(`/lessons/{id}`) mở đúng giao diện học viên; tab Xem trước markdown escape-first (không XSS) ngay trong form soạn thảo.
 
 ## 🧭 Hướng phát triển tiếp theo
 

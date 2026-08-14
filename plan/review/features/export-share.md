@@ -20,19 +20,19 @@
   - **QR giới hạn payload 2500 ký tự** — workspace lớn (nhiều node) không share qua QR được, chỉ qua link dài.
   - EX-023 PARTIAL — dead types giữ do barrel index re-export (nợ kỹ thuật nhỏ).
 
-## ⭐ Đánh giá giá trị thực tế: 6/10 (🟡 Demo-grade)
+## ⭐ Đánh giá giá trị thực tế: 7/10 (🟡 Demo-grade)
 
-- **Điểm thật:** Xuất PNG/SVG chất lượng cho báo cáo là giá trị dùng ngay được; pipeline export đã thật sự lấy đúng trạng thái workspace và cho file tải về mượt.
+- **Điểm thật:** Xuất PNG/SVG chất lượng cho báo cáo là giá trị dùng ngay được; pipeline export đã thật sự lấy đúng trạng thái workspace và cho file tải về mượt. **C4 (2026-08-13):** đã chốt chiến lược **hướng A — "share ảnh chất lượng cao cho báo cáo"**; Algo Playground thêm "Xuất ảnh PNG" (canvas.toDataURL + tên file theo demo+bước) — sinh viên lấy ảnh minh họa thuật toán cho đồ án/luận văn ngay trong luồng học.
 - **Điểm "ảo" (code xanh nhưng chưa thực dụng):**
-  - **Link share là ảnh tĩnh, không phải workspace sống** — người nhận link không học/không tương tác được với thuật toán, "chia sẻ phòng lab" thực chất là "chia sẻ hình chụp" — đẹp để demo, chưa phải công cụ học cùng.
+  - **Link share là ảnh tĩnh, không phải workspace sống** — người nhận link không học/không tương tác được với thuật toán, "chia sẻ phòng lab" thực chất là "chia sẻ hình chụp" — đẹp để demo, chưa phải công cụ học cùng (đã chốt chấp nhận theo hướng A).
   - QR dùng được nhưng payload giới hạn 2500 ký tự → workspace thật (nhiều node) thường phải dùng link dài, QR chỉ hiệu quả cho workspace nhỏ.
   - Toàn bộ vòng đời export/share nằm ở frontend, không có backend lưu trữ — link sống bằng query param, dễ hỏng khi thay đổi encode/version.
 
 ## 🚧 Điều cần làm để có giá trị thực tế (checklist ưu tiên)
 
-- [ ] **Quyết định chiến lược chia sẻ** (quyết định sản phẩm, trước khi code) — acceptance: chốt 1 trong 2 hướng — (A) "share ảnh chất lượng cao cho báo cáo" hay (B) "share workspace tương tác /s/ live"; mọi phát triển tiếp theo bám theo hướng đã chốt.
-- [ ] Nếu chọn (A): PNG/SVG chất lượng in ấn — acceptance: scale ≥ 3x tuỳ chọn, màu/theme khớp, tên file chuẩn (thuật toán + ngày); trạng thái snapshot trên /s/ chỉ là ảnh — làm đẹp và ghi rõ nhãn "ảnh chia sẻ".
-- [ ] Nếu chọn (B): /s/ live workspace — acceptance: mở link → workspace TƯƠNG TÁC thật (play/step/đổi tốc độ) với state khôi phục; bỏ bước nhảy /export-share trung gian hoặc tự động chuyển.
+- [x] **Quyết định chiến lược chia sẻ** — **C4 ✅ 2026-08-13** — đã chốt hướng (A) "share ảnh chất lượng cao cho báo cáo" (phù hợp sinh viên làm đồ án); mọi phát triển tiếp theo bám theo hướng này.
+- [x] Nếu chọn (A): PNG/SVG chất lượng in ấn — **C4 ✅ 2026-08-13** — Algo Playground "Xuất ảnh PNG" (tên file chuẩn `visualization-{demo}-step-{n}.png`); system design đã có pipeline export PNG/SVG 3x. Còn: ghi nhãn "ảnh chia sẻ" trên /s/ snapshot.
+- [ ] Nếu chọn (B) sau này: /s/ live workspace — acceptance: mở link → workspace TƯƠNG TÁC thật (play/step/đổi tốc độ) với state khôi phục; bỏ bước nhảy /export-share trung gian hoặc tự động chuyển.
 - [ ] Export đa trang (nhiều bước thuật toán) — acceptance: chọn khoảng bước → xuất PNG từng bước (tài liệu hướng dẫn từng frame) hoặc 1 trang SVG ghép.
 - [ ] Nâng giới hạn payload: backend lưu trữ state ngắn hạn (id → payload) — acceptance: link ngắn `/s/<id>` không phụ thuộc query param, QR nhỏ gọn, hết giới hạn 2500.
 

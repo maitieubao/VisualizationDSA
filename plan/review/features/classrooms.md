@@ -22,17 +22,17 @@
 
 ## ⭐ Đánh giá giá trị thực tế: 8/10 (🟢 Thực dụng)
 
-- **Điểm thật:** Toàn bộ vòng đời lớp học (tạo → mời → học → theo dõi → kick/rời) đã chạy thật, 2 P0 chết tính năng (validator mâu thuẫn, URL 404) đã hồi sinh; score không bị gian lận client-side — đây là luồng lớp học thực dụng, có thể dùng ngay.
+- **Điểm thật:** Toàn bộ vòng đời lớp học (tạo → mời → học → theo dõi → kick/rời) đã chạy thật, 2 P0 chết tính năng (validator mâu thuẫn, URL 404) đã hồi sinh; score không bị gian lận client-side — đây là luồng lớp học thực dụng, có thể dùng ngay. **C2 (2026-08-13):** notification "bài mới" + "deadline lớp" (DeadlineReminderService) — học viên được nhắc đúng lúc thay vì tự theo dõi.
 - **Điểm "ảo" (code xanh nhưng chưa thực dụng):**
-  - Không có deadline/assignment nghĩa là "hoàn thành bài" chỉ là tự nguyện — phần thưởng của LMS (đúng hạn, điểm tổng kết) chưa tồn tại.
+  - Deadline đã có field `DueAt` + nhắc nhở nhưng **chưa có chặn nộp/ghi nhận trễ sau hạn** — "hoàn thành bài" về mặt hành vi vẫn là tự nguyện.
   - Analytics dù đúng số liệu nhưng chưa kéo theo hành động giáo viên (xếp loại, nhắc học viên, chấm điểm) — "đẹp nhưng chưa sinh việc".
 
 ## 🚧 Điều cần làm để có giá trị thực tế (checklist ưu tiên)
 
-- [ ] Bài tập có hạn nộp (deadline per assignment) — acceptance: giáo viên đặt hạn nộp cho item; sau hạn chặn nộp/ghi nhận trễ; học viên thấy đếm ngược.
+- [ ] Bài tập có hạn nộp (deadline per assignment) — acceptance: giáo viên đặt hạn nộp cho item; sau hạn chặn nộp/ghi nhận trễ; học viên thấy đếm ngược. *(C2 đã có nhắc deadline trong 24h — còn thiếu phần chặn nộp trễ.)*
 - [ ] Bảng điểm tổng hợp theo học viên — acceptance: tổng hợp best attempt các quiz/codelab trong lớp thành điểm tổng kết + xếp hạng, dùng score server-side đã có.
 - [ ] Export điểm lớp (Excel/CSV) — acceptance: giáo viên tải bảng điểm lớp với cột điểm từng item + điểm tổng; nối với TC-032 pattern loading.
-- [ ] Thông báo trong lớp (bài mới / deadline sắp đến) — acceptance: push notification qua nguồn trigger đã có (Notifications NT-*), gắn classroomId.
+- [x] Thông báo trong lớp (bài mới / deadline sắp đến) — **C2 ✅ 2026-08-13** — bài mới: CreateClassroomModuleItem notify học viên active; deadline: DeadlineReminderService quét mỗi giờ (DueAt trong 24h, chưa hoàn thành → nhắc, dedupe ngày).
 - [ ] Analytics tĩnh → hành động (danh sách học viên trễ) — acceptance: giáo viên 1 click lọc "chưa hoàn thành bài X" và nhìn thấy học viên cần nhắc.
 
 ## 🧭 Hướng phát triển tiếp theo

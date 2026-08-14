@@ -7,7 +7,7 @@
 
 ## 📌 Thực trạng hiện tại
 
-- Trạng thái kỹ thuật: ✅ DoD — Review Round 9 (AD-001→060; **58/60 lỗi đã fix**, AD-024/AD-044 PARTIAL), backend 507/507 + frontend 2866/2866 pass, `vue-tsc -b` 0 lỗi.
+- Trạng thái kỹ thuật: ✅ DoD — Review Round 9 (AD-001→060; **58/60 lỗi đã fix**, AD-024/AD-044 PARTIAL), **D4 (2026-08-13):** thêm tab "Học tập" (learning analytics), backend **788/788** + frontend **3512/3512** pass, `vue-tsc -b` 0 lỗi.
 - Đang hoạt động thật:
   - Quản lý user: phân trang 10/trang, search debounce 300ms + AbortController, tạo user mới (201 + validate role), đổi role/demote admin mất quyền ngay (đối chiếu role DB), toggle premium đối chiếu order Pending (409), reset mật khẩu có rate limit, ban/unban ghi audit, bảo vệ admin cuối cùng.
   - Impersonate Student: token đủ `iss`/`aud`, mọi API 200, banner "Đóng vai", thoát về `/admin` + quyền admin nguyên vẹn, chặn impersonate Admin/Teacher.
@@ -18,11 +18,11 @@
   - **AD-024/AD-044 PARTIAL:** row actions vẫn dùng native `confirm()`, impersonate fetch tại component (test pin hành vi 1-click) — chưa chuẩn ConfirmDialog/startImpersonating.
   - Audit log chưa có bộ filter/search nâng cao (lọc theo action/actor/khoảng thời gian).
   - Impersonate chưa có log phiên (ai đóng vai ai, lúc nào, trong bao lâu).
-  - Chưa có bulk actions (ban/xóa hàng loạt) và admin analytics theo thời gian.
+  - Chưa có bulk actions (ban/xóa hàng loạt). **D4 (2026-08-13)** đã bổ sung 1 phần analytics (tab Học tập — xem dưới).
 
 ## ⭐ Đánh giá giá trị thực tế: 9/10 (🟢 Thực dụng)
 
-- **Điểm thật:** Mọi thao tác quản trị dùng hằng ngày (ban, demote, reset mật khẩu, tạo user, impersonate, xem audit, chẩn đoán) đều hoạt động thật với dữ liệu thật và được bảo vệ đúng — Admin Panel là công cụ vận hành, không phải màn hình trình diễn.
+- **Điểm thật:** Mọi thao tác quản trị dùng hằng ngày (ban, demote, reset mật khẩu, tạo user, impersonate, xem audit, chẩn đoán) đều hoạt động thật với dữ liệu thật và được bảo vệ đúng — Admin Panel là công cụ vận hành, không phải màn hình trình diễn. **D4 (2026-08-13):** tab "Học tập" — `GET /admin/analytics/learning` (per-lesson learners/% xem viz/% làm quiz/% pass quiz/% pass codelab/% hoàn thành + overall + **tương quan "xem visualizer → pass quiz"**) — admin/giao viên thấy bằng chứng hiệu quả học tập, phục vụ luận văn.
 - **Điểm "ảo" (code xanh nhưng chưa thực dụng):**
   - Audit log có search nhưng chưa có filter UI nâng cao — khi log lớn, admin phải gõ từ khóa thủ công thay vì lọc theo action/ngày.
   - Impersonate chưa có log phiên — không thể trả lời "admin nào đã đóng vai học viên X".

@@ -12,9 +12,11 @@ Giải quyết vấn đề của **sinh viên học cấu trúc dữ liệu & gi
 
 ## 2. 📌 Thực trạng hiện tại
 
-- **Trạng thái kỹ thuật:** ✅ DoD — Review Round 11 (2026-08-11), 48/49 lỗi AL-001 → AL-049 đã fix (AL-042 PARTIAL — dead code test-pin, không ảnh hưởng hành vi). Frontend **2942/2942 PASS** (161 files, +31), `vue-tsc` 0 lỗi, backend không đụng. Route `/playground` mode Algo, chạy thuần client (worker compile).
+- **Trạng thái kỹ thuật:** ✅ DoD — Review Round 11 (2026-08-11), 48/49 lỗi AL-001 → AL-049 đã fix (AL-042 PARTIAL — dead code test-pin, không ảnh hưởng hành vi). **Phase B (2026-08-13):** B1-B4 Code Debugger — breakpoint + watch panel + snapshot biến primitive. Frontend **3512/3512 PASS**, `vue-tsc` 0 lỗi, backend không đụng. Route `/playground` mode Algo, chạy thuần client (worker compile).
 - **Điều thật sự hoạt động:**
   - **Playback không còn race**: Play→compile→auto-play hoạt động (watcher frames theo store), runSeq++ + pendingPlay reset hết stale frames, setInput invalidate → Play luôn phát frames MỚI (AL-003/004/005/019).
+  - **Breakpoint (B1)**: click gutter Monaco toggle breakpoint (chấm đỏ glyph + hover message), play tự động dừng tại frame có lineNumber ∈ breakpoints, stepNext tay vẫn nhảy qua, menu "Xóa breakpoint".
+  - **Watch panel (B2/B3)**: executor snapshot biến primitive (number/string/boolean — không object/array) mỗi frame; watchList persist localStorage; bảng biến highlight cyan khi giá trị đổi; instrument closure + vòng lặp lồng nhau track đủ từng biến.
   - **KeepAlive sạch**: rời tab/mode không còn phím tắt ẩn, engine pause khi deactivate, đồng bộ khi quay lại (AL-001/002).
   - **Custom Input an toàn**: requestId + AbortController hết race 2 request, "Xóa Trắng" disabled khi đang tải, Esc chỉ đóng dropdown không xóa textarea (AL-006/015).
   - **Parser chặt**: chặn Infinity/1e999, chặn input rỗng, translator tiếng Việt +4 case hay gặp, lỗi compile reset isPlaying — không còn nút Play "treo" (AL-010/011/012/013/044).
@@ -26,16 +28,16 @@ Giải quyết vấn đề của **sinh viên học cấu trúc dữ liệu & gi
   - 1 engine thuật toán = 1 animation engine riêng — mở rộng thuật toán mới tốn công nhân đôi logic.
   - AL-042 PARTIAL: dead code `setLimit` giữ vì test pin (đã ghi nhận, không tác động hành vi).
 
-## 3. ⭐ Đánh giá giá trị thực tế: 8/10 — 🟢 Thực dụng
+## 3. ⭐ Đánh giá giá trị thực tế: 9/10 — 🟢 Thực dụng
 
-Công cụ thực hành thật: sinh viên tự nhập input, điều khiển playback, thấy lỗi rõ ràng. Đây là lõi học thuật của sản phẩm — đúng nhu cầu sinh viên học thuật toán.
+Công cụ thực hành thật: sinh viên tự nhập input, điều khiển playback, thấy lỗi rõ ràng. **Phase B (2026-08-13)** nâng thành debugger chuẩn: **breakpoint** (click gutter đặt điểm dừng, play tự dừng tại dòng), **Watch panel** (theo dõi biến primitive theo frame, highlight biến đổi, watch list persist), instrument closure/vòng lặp lồng nhau dứt điểm, nhãn đúng bản chất "Trình chạy từng bước", xuất ảnh PNG cho báo cáo — đúng mục tiêu "biến khái niệm trừu tượng thành hình ảnh có thể điều khiển được".
 
-**Điểm "ảo" cần trừ:**
-- **Chỉ có thuật toán sorting** — sinh viên học tree/graph/DP (phần khó nhất của môn DSA) không dùng được công cụ này; cũng giới hạn cả use-case cho Sorting Visualizer khiến 2 tính năng bị trùng vai.
+**Điểm "ảo" cần trừ (nhỏ hơn trước):**
+- **Chỉ có thuật toán sorting/searching** — sinh viên học tree/graph/DP (phần khó nhất của môn DSA) không dùng được công cụ này.
 - **Parser hạn chế dạng input phức tạp** — "custom input" hiện mới là "custom mảng số", chưa phải custom mọi dạng input mà thuật toán cần.
-- Chưa có chế độ **so sánh thuật toán** hay **bài tập có mục tiêu** — đây là những gì biến playground thành công cụ học (chứ không chỉ là đồ chơi xem animation).
+- Chưa có chế độ **so sánh thuật toán** hay **bài tập có mục tiêu** — các bước tiếp theo để playground thành công cụ học (chứ không chỉ là đồ chơi xem animation).
 
-Chất lượng kỹ thuật không có lỗi mở đáng kể; điểm trừ nằm ở phạm vi thuật toán và chiều sâu học tập.
+Chất lượng kỹ thuật không có lỗi mở đáng kể; điểm trừ nằm ở phạm vi thuật toán và chiều sâu học tập (đã giảm nhờ debugger).
 
 ## 4. 🚧 Điều cần làm để có giá trị thực tế
 
@@ -45,6 +47,7 @@ Checklist ưu tiên — đánh dấu `[x]` + ngày khi hoàn thành:
   - *Xong khi nào:* 3 dạng input mới nêu trên nhập và chạy được, sai cú pháp báo lỗi rõ, không vẽ NaN/méo.
 - [ ] **Thêm ít nhất 1 engine ngoài sorting** — ví dụ Binary Search tree hoặc graph (Dijkstra) tái sử dụng engine đã có ở Interactive Playground nếu khả thi.
   - *Xong khi nào:* chọn thuật toán → nhập input → playback có frame + caption mô tả bước; phủ được ≥ 1 thuật toán không phải sorting.
+- [x] **Nhãn đúng bản chất + debugger chuẩn (B1-B4)** — **Phase B ✅ 2026-08-13** — breakpoint click gutter + auto-pause; watch panel biến primitive; nhãn "Trình chạy từng bước (JavaScript)" + chip pseudocode; xuất code/ảnh PNG. Biến playground từ "xem animation" thành "công cụ debug/hiểu từng biến".
 - [ ] **Chế độ so sánh thuật toán** — chạy cùng input qua 2+ thuật toán, xem số bước/so sánh/hoán đổi cạnh nhau.
   - *Xong khi nào:* 2 animation chạy song song (hoặc bảng thống kê) cùng input; số liệu (bước, swaps, compares) đúng với frame thực tế.
 - [ ] **Bài tập mục tiêu (giới hạn bước tối ưu)** — sinh input mẫu + yêu cầu "sắp xếp trong tối đa X bước" để sinh viên tự chọn chiến lược; chấm đạt/không đạt.

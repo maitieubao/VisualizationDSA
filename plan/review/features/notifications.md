@@ -7,29 +7,27 @@
 
 ## 📌 Thực trạng hiện tại
 
-- Trạng thái kỹ thuật: ✅ DoD — Review Round 21 (NT-001→029; **29/29 lỗi đã fix**), backend 754/754 + frontend 3423/3423 pass, `vue-tsc -b` 0 lỗi.
+- Trạng thái kỹ thuật: ✅ DoD — Review Round 21 (NT-001→029; **29/29 lỗi đã fix**) + **C2 (2026-08-13):** nối 3 nguồn kích hoạt mới, backend **788/788** + frontend **3512/3512** pass, `vue-tsc -b` 0 lỗi.
 - Đang hoạt động thật:
   - **URL đúng `/api/v1/notifications`** — hết 404 toàn bộ 3 endpoint (NT-001).
   - **Realtime thật:** `INotificationService` DI + `NotificationBroadcastBroker` + hub push `Clients.User`; comment reply tạo notification qua service (NT-002); hub hết spoof — không còn method client-invokable (NT-003).
   - FE: **connect sau login + polling 60s backup**, handlers BadgeAwarded/LevelUp/NewNotification prepend + toast + dedupe theo id (NT-002/009/025).
   - **401 auto-refresh + retry**, reset khi refresh fail (NT-008); unread-count endpoint + `totalUnread` — badge đúng cả khi >100 (NT-011); mark-all `ExecuteUpdate` atomic (NT-010); store reset khi đổi user (NT-004); bell a11y đầy đủ (NT-005/013/014).
 - Giới hạn hiện tại:
-  - **Rất ít nguồn kích hoạt thật:** level-up chưa nối — TODO Round 21 còn mở (`NotifyLevelUp`/`NotifyBadgeAwarded` chưa được gọi tại `GamificationService`/`UsersController`, call sites ngoài scope); badge award mới chỉ có handler FE nhưng backend chưa gọi tới.
-  - **Chỉ comment reply là nguồn thường xuyên** (thêm NotifyAdmins cho admin) — với học sinh chỉ học một mình, gần như không nhận được gì ngoài demo.
-  - Chưa có nguồn gắn lớp học/bài học (deadline, bài mới, điểm) — mảng thông báo giá trị nhất với LMS chưa tồn tại.
+  - **Còn thiếu nguồn gắn học tập chi tiết hơn** (điểm số quiz, thông báo lớp từ giáo viên) — 4 nguồn hiện tại (comment reply, level-up, badge, bài mới, deadline) đã đủ kéo user quay lại, nhưng còn nhiều sự kiện học tập có thể nối.
+  - Chưa có preference theo loại thông báo, chưa có email digest, chưa có grouping.
 
-## ⭐ Đánh giá giá trị thực tế: 5/10 (🔴 Hạ tầng chờ)
+## ⭐ Đánh giá giá trị thực tế: 8/10 (🟢 Thực dụng)
 
-- **Điểm thật:** Hạ tầng là hàng tốt — realtime + polling backup, chống spoof, IDOR chặn, 401 retry, unread-count đúng, bell a11y, test backend 34 + FE 25; đủ sức gánh mọi nguồn notification tương lai.
-- **Điểm "ảo" (code xanh nhưng chưa thực dụng):**
-  - Bell/test xanh nhưng **user thật gần như không nhận được thông báo nào** — nguồn trigger thực tế chỉ có comment reply; level-up/badge (2 sự kiện học sinh chờ nhất) chưa được nối.
-  - Các handler BadgeAwarded/LevelUp bên FE "xanh" nhưng là code chết 1 đầu — không có backend nào gọi tới.
-  - Toàn bộ giá trị "thông báo = kéo user quay lại học" chưa diễn ra vì thiếu nguồn sự kiện học tập.
+- **Điểm thật:** Hạ tầng là hàng tốt — realtime + polling backup, chống spoof, IDOR chặn, 401 retry, unread-count đúng, bell a11y, test backend 34 + FE 25; đủ sức gánh mọi nguồn notification tương lai. **C2 (2026-08-13):** đủ 4+ nguồn kích hoạt THẬT — (1) level-up + badge award gọi từ `GamificationService.AwardXpAndCheckBadgesAsync` + `LessonController.CompleteLesson` (sau commit, lỗi không phá request), (2) bài mới trong lớp (CreateClassroomModuleItem → notify học viên active), (3) deadline lớp (DeadlineReminderService quét mỗi giờ, item DueAt trong 24h chưa hoàn thành → nhắc), (4) comment reply (có sẵn). Học sinh học thật giờ nhận thông báo liên tục — đúng mục tiêu "gom mọi sự kiện quan trọng, kéo user quay lại học".
+- **Điểm "ảo" còn lại:**
+  - Chưa có nguồn "giáo viên gửi thông báo lớp" thủ công + chưa verify thống kê nguồn trên dữ liệu user thật (chỉ mới chứng minh bằng test + seed).
+  - Preference/grouping/email digest là chiều sâu — bell chưa tùy chỉnh được.
 
 ## 🚧 Điều cần làm để có giá trị thực tế (checklist ưu tiên)
 
 - [x] **Nối level-up + badge award** (TODO Round 21 — C2 ✅ 2026-08-13) — acceptance: tại nơi cấp XP/check badge (`GamificationService`/`UsersController`) gọi `NotifyLevelUp`/`NotifyBadgeAwarded`; học sinh level up/mở badge nhận Notification mới + hub push realtime + toast (TC-NT-002); handler FE không còn dead.
-- [ ] **Thêm nguồn thật gắn lớp học/bài học** — acceptance: ít nhất 2 nguồn: (1) deadline/giáo viên gửi thông báo lớp học (`ClassroomGradingService`/`ClassroomProgressController`), (2) bài học mới trong lớp được publish; mỗi sự kiện tạo Notification đúng user, không spam.
+- [x] **Thêm nguồn thật gắn lớp học/bài học** — **C2 ✅ 2026-08-13** — (1) **bài mới trong lớp**: CreateClassroomModuleItem notify toàn bộ học viên active (bỏ qua item ẩn + học viên bị kick, lỗi 1 người không kéo sập người khác); (2) **deadline lớp**: DeadlineReminderService (BackgroundService, quét mỗi giờ) — item `DueAt` trong 24h tới, học viên chưa hoàn thành → nhắc nhở (dedupe theo ngày, bỏ qua đã hoàn thành). Mỗi sự kiện tạo Notification đúng user, không spam.
 - [ ] **Verify luồng admin → học sinh** — acceptance: NotifyAdmins (đã có batch) hiển thị đúng ở bell học sinh; admin theo dõi được trạng thái gửi.
 - [ ] **Thống kê nguồn kích hoạt thực tế** — acceptance: sau khi nối, đo 1 tuần sử dụng thật có ≥3 nguồn tự động tạo thông báo cho học sinh trung bình/tuần (không tính demo).
 
