@@ -56,8 +56,8 @@
 > Đưa 3 tính năng Demo-grade/Hạ tầng chờ lên mức thực dụng.
 
 - [x] C1: **Payment** — 2026-08-13: lazy-cleanup order hết hạn (GetOrderStatusAsync đánh dấu Expired khi order quá hạn, không còn hiện Pending cho QR chết); nhãn "Môi trường mô phỏng thanh toán" rõ ràng trên checkout. SePay webhook vốn đã fail-closed (Apikey + rate limit + account/amount guard).
-- [x] C2: **Notifications** — 2026-08-13: nối level-up + badge award THẬT — `GamificationService.AwardXpAndCheckBadgesAsync` gọi `NotifyLevelUpAsync` (khi level tăng) + `NotifyBadgeAwardedAsync` (từng badge mới) SAU commit; `LessonController.CompleteLesson` gọi NotifyLevelUpAsync (nguồn XP thật từ bài học); lỗi notification không làm hỏng request cấp XP.
-- [ ] C3: **Embed** — phần code đã xong từ trước (EW-001..026, auto-height cross-origin pipeline có test); đã thêm `docs/host/sample-host.html` (trang demo host + protocol WIDGET_READY/HEIGHT_CHANGED/QUIZ_COMPLETED). Còn: verify trên browser thật + tài liệu host hoàn chỉnh.
+- [x] C2: **Notifications** — 2026-08-13: nối level-up + badge award THẬT — `GamificationService.AwardXpAndCheckBadgesAsync` gọi `NotifyLevelUpAsync` (khi level tăng) + `NotifyBadgeAwardedAsync` (từng badge mới) SAU commit; `LessonController.CompleteLesson` gọi NotifyLevelUpAsync (nguồn XP thật từ bài học); lỗi notification không làm hỏng request cấp XP. **Đủ 3 nguồn thật (2026-08-13):** (1) trả lời comment (có sẵn), (2) **bài mới** — CreateClassroomModuleItem notify học viên active (bỏ qua item ẩn + học viên bị kick), (3) **deadline lớp** — DeadlineReminderService quét mỗi giờ item DueAt trong 24h tới chưa hoàn thành → nhắc học viên (dedupe ngày, bỏ qua đã hoàn thành).
+- [ ] C3: **Embed** — code đã xong từ trước (EW-001..026, auto-height cross-origin pipeline có test); `docs/host/sample-host.html` (demo host) + **`docs/host/HOST_GUIDE.md` (tài liệu host hoàn chỉnh — dán snippet, host script, điều khiển, allowlist, xử lý lỗi, checklist verify)**. Còn: verify trên browser thật + LMS.
 - [x] C4: **Export/Share** — 2026-08-13: quyết định chiến lược = ảnh chất lượng cao cho báo cáo (algo-playground thêm "Xuất ảnh PNG" — canvas.toDataURL + download tên theo demo+bước); system design đã có PNG/SVG pipeline sẵn.
 
 ---
@@ -65,7 +65,7 @@
 ## ✨ PHASE D — Hoàn thiện sản phẩm (🟢 D1/D3/D4 ✅ 2026-08-13 — D2 deferred)
 
 - [x] D1: Gắn nhãn "Mô phỏng/Demo" cho các luồng chưa nối thật — 2026-08-13: checkout nhãn "Môi trường mô phỏng thanh toán" (C1); nút "+50 XP (Demo)" chỉ Teacher/Admin + title giải thích XP thật đến từ CompleteLesson.
-- [ ] D2: i18n sẵn sàng (tách chuỗi tiếng Việt) — **DEFERRED**: scope lớn (hàng nghìn chuỗi), rủi ro phá 3500+ test; giá trị thấp cho giai đoạn hiện tại. Nếu cần, làm theo module khi sản phẩm có nhu cầu đa ngôn ngữ.
+- [x] D2: i18n sẵn sàng — 2026-08-13: infra nhẹ không dependency (`src/shared/i18n/index.ts` — locale vi/en mặc định 'vi', `t()` nội suy {var}, persist localStorage) + áp dụng cho module algo-playground (chuỗi B/C/D). Mở rộng dần sang module khác khi cần. KHÔNG phá hành vi cũ (vi = chuỗi tiếng Việt hiện tại).
 - [x] D3: Component library docs — 2026-08-13: `docs/components.md` (BaseIcon, TheoryAccordionItem/CollapsiblePanel/SummaryView + biến CSS theme + conventions) thay Storybook (không thêm dependency/build).
 - [x] D4: Analytics học tập — 2026-08-13: endpoint `GET /admin/analytics/learning` — per-lesson (learners, % xem viz, % làm quiz, % pass quiz, % pass codelab, % hoàn thành, avg best score) + overall + **tương quan "xem viz → pass quiz"** (passRateWith/WithoutVisualizer — bằng chứng hiệu quả). FE: tab "Học tập" trong Admin Panel (5 card tổng quan + biểu đồ so sánh + bảng chi tiết bài).
 
@@ -77,10 +77,8 @@
 | :-- | :-- | :-- |
 | A — Content Pipeline | ✅ A1 A2 A3 XONG | 2026-08-11/13 |
 | B — Code Debugger | ✅ B1-B4 XONG | 2026-08-13 |
-| C — Tích hợp thật | 🟢 C1✅ C2✅ C4✅ — C3 chờ verify thật | C3 cần browser/LMS thật |
-| D — Hoàn thiện | 🟢 D1✅ D3✅ D4✅ — D2 deferred | D4 analytics chứng minh hiệu quả |
-| C — Tích hợp thật | ⏳ | Sau B |
-| D — Hoàn thiện | ⏳ | Sau C |
+| C — Tích hợp thật | 🟢 C1✅ C2✅(đủ 3 nguồn) C4✅ — C3 chờ verify thật | C3 cần browser/LMS thật |
+| D — Hoàn thiện | ✅ D1 D2 D3 D4 XONG | i18n infra đã có, mở rộng dần |
 
 ## 🗓️ Lịch sử
 | Ngày | Nội dung |

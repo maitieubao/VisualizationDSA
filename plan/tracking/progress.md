@@ -2320,3 +2320,14 @@ Files: PaymentService.cs (lazy-cleanup), GamificationService.cs (+INotificationS
 | **D2 i18n** | ❌ DEFERRED | Scope qua lon (hang nghin chuoi), rui ro pha 3500+ test, gia tri thap giai doan nay. |
 
 Files: AdminController.cs (analytics/learning), AdminControllerTests.cs (+2), AdminPanelView.vue (tab Hoc tap), AdminLearningTab.vue (moi), GamificationWorkspace.vue (nhan Demo), docs/components.md. Backend 783/783 (+2), frontend 3504/3504, vue-tsc 0.
+
+## Phan con thieu - C2 3 nguon, C3 docs, D2 i18n (2026-08-13) - DONE
+
+| Feature | Trang thai | Chi tiet |
+| :-- | :-- | :-- |
+| **C2 nguon "bai moi"** | ✅ CODE DONE | CreateClassroomModuleItemCommandHandler + INotificationService (optional): sau khi tao item, notify tat ca hoc vien ACTIVE trong lop (bo qua item IsHidden/IsHiddenForStudent, hoc vien bi kick). Loi notification khong lam hong tao item. Tests: +2 (notify 2 active + skip kick; khong notify khi item an). |
+| **C2 nguon "deadline lop"** | ✅ CODE DONE | DeadlineReminderService (BackgroundService, moi gio): quet ClassroomModuleItem co DueAt trong [now, now+24h], chua bi xoa/an, -> notify hoc vien ACTIVE chua hoan thanh (dedupe StudentId|ItemId|ngay, PruneSentToday 20k). Dang ky AddHostedService trong Program.cs. Tests: +3 (notify incomplete + skip completed; ngoai 24h khong notify; dedupe 2 lan chay 1 notify). |
+| **C3 tai lieu host** | ✅ CODE DONE | docs/host/HOST_GUIDE.md: dan snippet iframe 3 cach (iframe / iframe+script / LMS HTML source), host integration script auto-height + verify origin, dieu khien tu host (PLAY_PAUSE/STEP_FORWARD/RESET), cau hinh allowlist, bang xu ly loi thuong gap, checklist kiem tra nhanh. |
+| **D2 i18n san sang** | ✅ CODE DONE | src/shared/i18n/index.ts: messages vi/en (key-based), useI18n() {locale, setLocale, t(key, vars)} - locale mac dinh 'vi' (chuoi giong cu, khong pha test), persist localStorage 'app-locale'. Ap dung cho algo-playground (title, menu, watch panel, run/format...). Test: +6 (default vi, setLocale en persist, restore persist, no crash key thieu, vi/en dong bo). Mo rong dan module khac. |
+
+Files: CreateClassroomModuleItemCommandHandler.cs (+notify), DeadlineReminderService.cs (moi), Program.cs (+hosted), CreateClassroomModuleItemCommandHandlerTests.cs (+2), DeadlineReminderServiceTests.cs (moi +3), docs/host/HOST_GUIDE.md, frontend/src/shared/i18n/index.ts (moi), i18n.spec.ts (moi +6), AlgoPlaygroundWorkspace.vue (i18n). Backend 788/788 (+5), frontend 3512/3512 (+8), vue-tsc 0.

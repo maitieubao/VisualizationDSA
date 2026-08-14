@@ -703,3 +703,10 @@
 - Backend `AdminControllerTests`: +2 (GetLearningAnalytics stats dung: 2 learners, 50% viz, 50% pass quiz, 100% pass khi co viz vs 0% khong viz; khong progress -> 0 khong loi).
 - Frontend: admin panel tests giu nguyen (tab moi khong pha); gamification text "+50 XP (Demo)" khong test assert cu nao pha.
 - Full: backend 783/783 (+2), frontend 3504/3504, vue-tsc 0.
+
+## Phan con thieu - Tests (2026-08-13)
+
+- Backend `CreateClassroomModuleItemCommandHandlerTests`: +2 (bai moi notify active students, khong notify khi item an).
+- Backend `DeadlineReminderServiceTests` (moi): +3 (deadline 24h notify incomplete skip completed; ngoai 24h khong notify; dedupe 2 lan 1 notify).
+- Frontend `shared/i18n/__tests__/i18n.spec.ts` (moi): +6 (default vi, setLocale en + persist, restore persist, noi suy, fallback key, vi/en dong bo).
+- Full: backend 788/788 (+5), frontend 3512/3512 (+8), vue-tsc 0.

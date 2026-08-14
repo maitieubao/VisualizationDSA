@@ -57,18 +57,18 @@
       </button>
       <div v-if="showMoreMenu" class="fixed inset-0 z-20" @click="showMoreMenu = false"></div>
       <div v-if="showMoreMenu" class="fixed z-30 w-44 rounded-lg bg-surface/95 border border-surface/70 shadow-xl py-1" :style="moreMenuStyle">
-        <button class="algo-menu-item" @click="menuAction('hooks')"><BaseIcon name="info" class="w-3.5 h-3.5 inline mr-2 align-middle" />Hooks</button>
-        <button class="algo-menu-item" @click="menuAction('restore')"><BaseIcon name="refresh-cw" class="w-3.5 h-3.5 inline mr-2 align-middle" />Code mẫu</button>
+        <button class="algo-menu-item" @click="menuAction('hooks')"><BaseIcon name="info" class="w-3.5 h-3.5 inline mr-2 align-middle" />{{ t('playground.menu.hooks') }}</button>
+        <button class="algo-menu-item" @click="menuAction('restore')"><BaseIcon name="refresh-cw" class="w-3.5 h-3.5 inline mr-2 align-middle" />{{ t('playground.menu.restore') }}</button>
         <button class="algo-menu-item" @click="menuAction('export')">
-          <BaseIcon :name="exportCopied ? 'check' : 'download'" class="w-3.5 h-3.5 inline mr-2 align-middle" />{{ exportCopied ? 'Đã chép' : 'Xuất code' }}
+          <BaseIcon :name="exportCopied ? 'check' : 'download'" class="w-3.5 h-3.5 inline mr-2 align-middle" />{{ exportCopied ? t('playground.exportCopied') : t('playground.menu.exportCode') }}
         </button>
-        <button class="algo-menu-item" @click="menuAction('exportPng')" title="Lưu canvas visualization thành ảnh PNG (báo cáo)">
-          <BaseIcon name="image" class="w-3.5 h-3.5 inline mr-2 align-middle" />Xuất ảnh PNG
+        <button class="algo-menu-item" @click="menuAction('exportPng')" :title="t('playground.exportPngTip')">
+          <BaseIcon name="image" class="w-3.5 h-3.5 inline mr-2 align-middle" />{{ t('playground.menu.exportPng') }}
         </button>
         <button class="algo-menu-item" @click="menuAction('share')">
-          <BaseIcon :name="shareCopied ? 'check' : 'link'" class="w-3.5 h-3.5 inline mr-2 align-middle" />{{ shareCopied ? 'Đã chép' : 'Chia sẻ' }}
+          <BaseIcon :name="shareCopied ? 'check' : 'link'" class="w-3.5 h-3.5 inline mr-2 align-middle" />{{ shareCopied ? t('playground.exportCopied') : t('playground.menu.share') }}
         </button>
-        <button class="algo-menu-item" @click="menuAction('breakpoints')"><BaseIcon name="x-circle" class="w-3.5 h-3.5 inline mr-2 align-middle" />Xóa breakpoint</button>
+        <button class="algo-menu-item" @click="menuAction('breakpoints')"><BaseIcon name="x-circle" class="w-3.5 h-3.5 inline mr-2 align-middle" />{{ t('playground.menu.breakpoints') }}</button>
       </div>
 
       <!-- Hooks popover (đặt trong toolbar → định vị theo toolbar, không lệch khi wrap — AL-043) -->
@@ -80,8 +80,8 @@
     <!-- Thanh header gộp: Code | Visual -->
     <div class="shrink-0 px-3 py-1 border-b border-surface/70 bg-surface/30 flex items-center justify-between text-[10px] font-semibold text-text-secondary uppercase tracking-wide">
       <span class="flex items-center gap-2 min-w-0">
-        <span>Trình chạy từng bước (JavaScript)</span>
-        <span class="demo-chip" title="Pseudocode + biến theo từng dòng">pseudocode</span>
+        <span>{{ t('playground.title') }}</span>
+        <span class="demo-chip" title="Pseudocode + biến theo từng dòng">{{ t('playground.pseudocodeChip') }}</span>
         <button class="algo-mini-btn" :title="editorCollapsed ? 'Hiện editor' : 'Ẩn editor để mở rộng canvas'" @click="editorCollapsed = !editorCollapsed">
           <BaseIcon :name="editorCollapsed ? 'eye' : 'x'" class="w-3 h-3" />
         </button>
@@ -211,18 +211,18 @@
           </span>
         </div>
         <button class="algo-mini-btn shrink-0" :class="{ 'algo-btn-active': showWatch }" title="Theo dõi biến (Watch)" @click="showWatch = !showWatch">
-          <BaseIcon name="eye" class="w-3 h-3 inline mr-1 align-middle" />Watch
+          <BaseIcon name="eye" class="w-3 h-3 inline mr-1 align-middle" />{{ t('playground.watchBtn') }}
         </button>
         <button class="algo-mini-btn shrink-0" :class="{ 'algo-btn-active': showTrace }" @click="showTrace = !showTrace">
-          <BaseIcon name="clipboard-list" class="w-3 h-3 inline mr-1 align-middle" />Lịch sử ({{ store.traceLogs.length }})
+          <BaseIcon name="clipboard-list" class="w-3 h-3 inline mr-1 align-middle" />{{ t('playground.traceBtn') }} ({{ store.traceLogs.length }})
         </button>
       </div>
 
       <!-- B2: Watch panel — biến primitive theo dõi, highlight biến thay đổi -->
       <div v-if="showWatch" class="mt-2 max-h-40 overflow-auto rounded-lg bg-surface/60 border border-surface/70 px-3 py-2">
         <div class="flex items-center justify-between gap-2 mb-1.5">
-          <p class="text-[10px] font-semibold text-text-secondary uppercase tracking-wide">Watch — biến primitive (click biến để ghim/ẩn)</p>
-          <button class="algo-mini-btn" @click="store.clearWatchList()" title="Xóa danh sách theo dõi">Xóa</button>
+          <p class="text-[10px] font-semibold text-text-secondary uppercase tracking-wide">{{ t('playground.watchPanel') }}</p>
+          <button class="algo-mini-btn" @click="store.clearWatchList()" title="Xóa danh sách theo dõi">{{ t('playground.watchClear') }}</button>
         </div>
         <div class="flex flex-wrap gap-1.5 mb-2">
           <button
@@ -236,7 +236,7 @@
           </button>
         </div>
         <p v-if="store.watchedValues.length === 0" class="text-[10px] text-text-secondary italic">
-          Chưa có biến được ghim — chọn biến phía trên để theo dõi.
+          {{ t('playground.watchEmpty') }}
         </p>
         <table v-else class="w-full text-[11px] font-mono">
           <tbody>
@@ -288,8 +288,12 @@ import { disposeCompileWorker } from '../../../core/compileWorker';
 import { playgroundAlgoDemos, getAlgoDemo, generateDemoInput, HOOKS_HINT } from '../engine/playgroundAlgoDemos';
 import { PseudocodeSyncer } from '../../algorithm-sandbox/engine/PseudocodeSyncer';
 import { useThemeStore } from '../../../shared/store/useThemeStore';
+import { useI18n } from '../../../shared/i18n';
 
 const props = defineProps<{ demoId?: string }>();
+
+// D2: i18n sẵn sàng — locale mặc định 'vi' (chuỗi giữ nguyên tiếng Việt như cũ).
+const { t } = useI18n();
 
 const PLAYBACK_SPEEDS: readonly number[] = [0.25, 0.5, 1, 1.5, 2, 3, 4];
 

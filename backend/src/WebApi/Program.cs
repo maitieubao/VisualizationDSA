@@ -227,6 +227,9 @@ builder.Services.AddScoped<IAuditEventService, AuditEventService>();
 // real-time chết 2 đầu. Đăng ký scoped (dùng chung ApplicationDbContext scoped).
 builder.Services.AddScoped<INotificationService, NotificationService>();
 
+// C2: background service nhắc deadline lớp học (quét mỗi giờ — item DueAt trong 24h tới).
+builder.Services.AddHostedService<DeadlineReminderService>();
+
 
 builder.Services.Configure<JudgeOptions>(builder.Configuration.GetSection(JudgeOptions.SectionName));
 builder.Services.AddHttpClient<PistonCodeJudgeService>((sp, client) =>
