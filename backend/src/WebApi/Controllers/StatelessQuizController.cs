@@ -91,8 +91,11 @@ namespace VisualizationDSA.WebApi.Controllers
             // QZ-003: đáp án chỉ trả khi client CHỦ ĐỘNG yêu cầu withAnswers=true (lesson flow thật sự,
             // teacher/admin sửa quiz). Workspace (mặc định false) không nhận CorrectIndex/Explanation
             // → không lộ đáp án trước khi nộp; submit vẫn chấm server-side (backend giữ đáp án).
+            // SEC-2026-08-14: withAnswers=true với STUDENT chỉ có hiệu lực khi user ĐÃ NỘP BÀI
+            // (có QuizAttempt) — chặn gian lận đọc đáp án trước khi nộp qua DevTools.
             var authenticated = JwtHelper.RequireToken(Request) == null;
-            var includeAnswers = authenticated && withAnswers;
+            var isTeacherOrAdmin = JwtHelper.IsTeacherOrAdmin(Request);
+            Guid.TryParse(JwtHelper.ExtractSubFromToken(Request), out var currentUid);
 
             // DB là nguồn chính (seed + quiz giảng viên tạo); bank chỉ là fallback khi DB down.
             // Parse Guid trước để tránh phụ thuộc cách EF translate Id.ToString() trên SQLite.
@@ -102,6 +105,9 @@ namespace VisualizationDSA.WebApi.Controllers
 
             if (dbQuiz != null)
             {
+                var includeAnswers = withAnswers && (isTeacherOrAdmin ||
+                    (authenticated && currentUid != Guid.Empty &&
+                     await _dbContext.QuizAttempts.AnyAsync(a => a.UserId == currentUid && a.QuizId == dbQuiz.Id)));
                 return Ok(new StatelessQuizPublicDto
                 {
                     Id = dbQuiz.Id.ToString(),
@@ -132,6 +138,9 @@ namespace VisualizationDSA.WebApi.Controllers
             var quiz = _quizBank.GetQuizById(quizId);
             if (quiz != null)
             {
+                var includeAnswers = withAnswers && (isTeacherOrAdmin ||
+                    (authenticated && currentUid != Guid.Empty &&
+                     await _dbContext.QuizAttempts.AnyAsync(a => a.UserId == currentUid && a.QuizKey == quizId)));
                 return Ok(ToPublicDto(quiz, includeAnswers));
             }
 
@@ -175,14 +184,32 @@ namespace VisualizationDSA.WebApi.Controllers
         public async Task<IActionResult> GetByTopic(string topic, [FromQuery] bool withAnswers = false)
         {
             // QZ-003: cùng chính sách ẩn đáp án như GetById — mặc định false.
+            // SEC-2026-08-14: student chỉ nhận đáp án khi ĐÃ NỘP BÀI quiz tương ứng (có QuizAttempt).
             var authenticated = JwtHelper.RequireToken(Request) == null;
-            var includeAnswers = authenticated && withAnswers;
+            var isTeacherOrAdmin = JwtHelper.IsTeacherOrAdmin(Request);
+            Guid.TryParse(JwtHelper.ExtractSubFromToken(Request), out var currentUid);
 
             var dbQuizzes = await _dbContext.Quizzes
                 .Include(q => q.Questions)
                 .Where(q => q.Topic == topic)
                 .ToListAsync();
             var bankQuizzes = _quizBank.GetQuizzesByTopic(topic);
+
+            var userAttemptedQuizIds = currentUid == Guid.Empty
+                ? new HashSet<Guid>()
+                : (await _dbContext.QuizAttempts
+                    .Where(a => a.UserId == currentUid)
+                    .ToListAsync())
+                    .Where(a => a.QuizId.HasValue)
+                    .Select(a => a.QuizId!.Value)
+                    .ToHashSet();
+            var userAttemptedQuizKeys = currentUid == Guid.Empty
+                ? new HashSet<string>()
+                : (await _dbContext.QuizAttempts
+                    .Where(a => a.UserId == currentUid && a.QuizId == null && a.QuizKey != null)
+                    .Select(a => a.QuizKey!)
+                    .ToListAsync())
+                    .ToHashSet(StringComparer.Ordinal);
 
             // Dedupe theo Title (DB thắng) — tránh card trùng khi teacher tạo quiz trùng tên bank.
             var all = dbQuizzes
@@ -194,7 +221,7 @@ namespace VisualizationDSA.WebApi.Controllers
                     Difficulty = DifficultyToLabel(q.Difficulty),
                     XpReward = q.XPReward,
                     Questions = q.Questions
-                        .Select(question => includeAnswers
+                        .Select(question => withAnswers && (isTeacherOrAdmin || (authenticated && userAttemptedQuizIds.Contains(q.Id)))
                             ? new StatelessQuestionPublicDto
                             {
                                 Id = question.Id.ToString(),
@@ -211,7 +238,7 @@ namespace VisualizationDSA.WebApi.Controllers
                             })
                         .ToList()
                 })
-                .Concat(bankQuizzes.Select(q => ToPublicDto(q, includeAnswers)))
+                .Concat(bankQuizzes.Select(q => ToPublicDto(q, withAnswers && (isTeacherOrAdmin || (authenticated && userAttemptedQuizKeys.Contains(q.Id))))))
                 .GroupBy(q => q.Title, StringComparer.OrdinalIgnoreCase)
                 .Select(g => g.First());
 

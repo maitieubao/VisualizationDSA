@@ -19,6 +19,8 @@ namespace VisualizationDSA.Application.Features.Codelabs.Commands
 
     public class UpdateHintCommand : IRequest
     {
+        // SEC-2026-08-14: CodelabId bắt buộc — chống IDOR cross-codelab.
+        public Guid CodelabId { get; set; }
         public Guid HintId { get; set; }
         public string Content { get; set; } = string.Empty;
         public bool IsTiered { get; set; }
@@ -60,7 +62,7 @@ namespace VisualizationDSA.Application.Features.Codelabs.Commands
         public async Task Handle(UpdateHintCommand request, CancellationToken cancellationToken)
         {
             var hint = await _context.CodelabHints
-                .FirstOrDefaultAsync(h => h.Id == request.HintId, cancellationToken)
+                .FirstOrDefaultAsync(h => h.Id == request.HintId && h.CodelabId == request.CodelabId, cancellationToken)
                 ?? throw new ArgumentException("Hint not found.");
 
             hint.Update(request.Content, request.IsTiered, request.XpCost, request.OrderIndex);

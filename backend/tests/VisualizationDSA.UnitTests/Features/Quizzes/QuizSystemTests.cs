@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Security.Cryptography;
@@ -323,6 +323,10 @@ namespace VisualizationDSA.UnitTests.Features.Quizzes
             var user = CreateUser(ctx);
             var quiz = CreateDbQuiz(ctx, "Quiz lesson", questionCount: 3);
             var controller = CreateController(ctx, user.Id.ToString());
+
+            // SEC-2026-08-14: hoc vien chi nhan dap an khi DA NOP BAI (co QuizAttempt).
+            ctx.QuizAttempts.Add(new QuizAttempt(user.Id, quiz.Id, new[] { 0, 0, 0 }, 3, 3));
+            await ctx.SaveChangesAsync();
 
             var dto = ReadPublicQuiz(await controller.GetById(quiz.Id.ToString(), withAnswers: true));
 

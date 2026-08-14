@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Text.Json;
 using System.Threading.Tasks;
@@ -36,15 +36,27 @@ namespace VisualizationDSA.UnitTests.Services
             TestJwtBuilder.EnsureConfigured();
         }
 
-        private static (UsersController Controller, Mock<IUnitOfWork> Uow, Mock<IGamificationService> Gam) Create(string role = "Student")
+        // SEC-2026-08-14: me/xp chỉ Teacher/Admin — default role test là Teacher
+        // (Student bị 403, có test riêng SyncXP_StudentRole_Returns403).
+        private static (UsersController Controller, Mock<IUnitOfWork> Uow, Mock<IGamificationService> Gam) Create(string role = "Teacher", Guid? userId = null)
         {
             var uow = new Mock<IUnitOfWork>();
             var gam = new Mock<IGamificationService>();
             gam.Setup(g => g.AwardXpAndCheckBadgesAsync(It.IsAny<Guid>(), It.IsAny<int>(), It.IsAny<string>(), It.IsAny<string?>()))
                .ReturnsAsync(new XpAwardResult { TotalXp = 100, CurrentLevel = 2 });
             var controller = new UsersController(uow.Object, gam.Object);
-            SetAuthHeader(controller, Guid.NewGuid().ToString(), role);
+            SetAuthHeader(controller, (userId ?? Guid.NewGuid()).ToString(), role);
             return (controller, uow, gam);
+        }
+
+        /// <summary>
+        /// SEC-2026-08-14: verify XP cho reason "Hoàn thành Quiz:" cần QuizAttempt của chính user.
+        /// </summary>
+        private static void SetupQuizEvidence(Mock<IUnitOfWork> uow, Guid userId)
+        {
+            var attempt = new QuizAttempt(userId, "heap-sort", "Heap Sort", new[] { 0 }, 1, 1);
+            uow.Setup(u => u.QuizAttempts.FindAsync(It.IsAny<System.Linq.Expressions.Expression<Func<QuizAttempt, bool>>>()))
+                .ReturnsAsync(new List<QuizAttempt> { attempt });
         }
 
         private static void SetAuthHeader(UsersController controller, string sub, string role)
@@ -95,7 +107,9 @@ namespace VisualizationDSA.UnitTests.Services
         public async Task SyncXP_LessonDynamicReasonPrefix_Returns200()
         {
             // Luồng bài học gửi reason động chứa tên bài — tiền tố hợp lệ phải được chấp nhận.
-            var (controller, _, gam) = Create();
+            // SEC-2026-08-14: me/xp khóa với Student — chỉ Teacher/Admin được dùng.
+            var userId = Guid.NewGuid();
+            var (controller, _, gam) = Create(role: "Teacher", userId: userId);
 
             var result = await controller.SyncXP(new XPAwardRequest { Amount = 100, Reason = "Hoàn thành Quiz: Heap Sort" });
             result.Should().BeOfType<OkObjectResult>();
@@ -105,10 +119,24 @@ namespace VisualizationDSA.UnitTests.Services
         [Fact]
         public async Task SyncXP_CodelabDynamicReasonPrefix_Returns200()
         {
-            var (controller, _, _) = Create();
+            // SEC-2026-08-14: me/xp khóa với Student — chỉ Teacher/Admin được dùng.
+            var userId = Guid.NewGuid();
+            var (controller, _, _) = Create(role: "Teacher", userId: userId);
 
             var result = await controller.SyncXP(new XPAwardRequest { Amount = 20, Reason = "Hoàn thành CodeLab: Merge Sort" });
             result.Should().BeOfType<OkObjectResult>();
+        }
+
+        [Fact]
+        public async Task SyncXP_StudentRole_Returns403()
+        {
+            // SEC-2026-08-14: học viên không được tự cộng XP qua me/xp — 403.
+            var (controller, _, gam) = Create(role: "Student");
+
+            var result = await controller.SyncXP(new XPAwardRequest { Amount = 20, Reason = "Hoàn thành Quiz: Heap Sort" });
+            var forbidden = result.Should().BeOfType<ObjectResult>().Subject;
+            forbidden.StatusCode.Should().Be(StatusCodes.Status403Forbidden);
+            gam.Verify(g => g.AwardXpAndCheckBadgesAsync(It.IsAny<Guid>(), It.IsAny<int>(), It.IsAny<string>(), It.IsAny<string?>()), Times.Never);
         }
 
         // ── GM-001t: hạn mức XP/ngày + rate limit ─────────────────────────────
@@ -191,7 +219,7 @@ namespace VisualizationDSA.UnitTests.Services
             db.Users.Add(user);
             await db.SaveChangesAsync();
 
-            SetAuthHeader(controller, user.Id.ToString(), "Student");
+            SetAuthHeader(controller, user.Id.ToString(), "Teacher");
 
             var request = new XPAwardRequest { Amount = 30, Reason = "quiz-complete" };
             controller.Request.Headers["Idempotency-Key"] = "sync-abc-123";
@@ -218,7 +246,7 @@ namespace VisualizationDSA.UnitTests.Services
             db.Users.Add(user);
             await db.SaveChangesAsync();
 
-            SetAuthHeader(controller, user.Id.ToString(), "Student");
+            SetAuthHeader(controller, user.Id.ToString(), "Teacher");
             var request = new XPAwardRequest { Amount = 20, Reason = "quiz-complete" };
 
             controller.Request.Headers["Idempotency-Key"] = "key-1";
@@ -274,7 +302,7 @@ namespace VisualizationDSA.UnitTests.Services
             db.UserBadges.Add(userBadge);
             await db.SaveChangesAsync();
 
-            SetAuthHeader(controller, user.Id.ToString(), "Student");
+            SetAuthHeader(controller, user.Id.ToString(), "Teacher");
 
             var result = await controller.GetMyBadges();
             var ok = result.Result.Should().BeOfType<OkObjectResult>().Subject;
@@ -321,7 +349,7 @@ namespace VisualizationDSA.UnitTests.Services
             db.UserBadges.Add(new UserBadge(user.Id, badge.Id));
             await db.SaveChangesAsync();
 
-            SetAuthHeader(controller, user.Id.ToString(), "Student");
+            SetAuthHeader(controller, user.Id.ToString(), "Teacher");
 
             var result = await controller.GetMyProgress();
             var ok = result.Result.Should().BeOfType<OkObjectResult>().Subject;

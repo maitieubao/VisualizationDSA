@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -57,6 +57,7 @@ namespace VisualizationDSA.UnitTests.Features.Codelabs
             var handler = new UpdateTestCaseCommandHandler(db);
             await handler.Handle(new UpdateTestCaseCommand
             {
+                CodelabId = codelab.Id,
                 TestCaseId = testCase.Id,
                 Input = "9 9",
                 ExpectedOutput = "18",
@@ -190,6 +191,7 @@ namespace VisualizationDSA.UnitTests.Features.Codelabs
             var handler = new UpdateTemplateCommandHandler(db);
             await handler.Handle(new UpdateTemplateCommand
             {
+                CodelabId = codelab.Id,
                 TemplateId = template.Id,
                 Language = "csharp",
                 StarterCode = "class Program {}"
@@ -310,6 +312,7 @@ namespace VisualizationDSA.UnitTests.Features.Codelabs
             var handler = new UpdateHintCommandHandler(db);
             await handler.Handle(new UpdateHintCommand
             {
+                CodelabId = codelab.Id,
                 HintId = hint.Id,
                 Content = "new hint",
                 IsTiered = true,

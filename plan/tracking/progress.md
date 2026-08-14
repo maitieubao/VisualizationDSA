@@ -2337,3 +2337,11 @@ Files: CreateClassroomModuleItemCommandHandler.cs (+notify), DeadlineReminderSer
 - Tao `docs/verification/README.md` + 16 file bao cao (01-auth → 16-core-ui).
 - Moi bao cao gom: muc dich goc, bang chung code (file:line), bang chung test, cac buoc xac thuc thu cong, gioi han con lai, muc "Luu y xac thuc dac biet" (diem de nham / bug da fix can kiem tra lai).
 - Khong thay doi code - chi tao tai lieu xac thuc de chu du an doc va xac nhan.
+
+## Review tong hop 2026-08-14 - bao mat + deadcode (DONE)
+
+- **4 loi bao mat FIXED**: (1) quiz answer leak withAnswers=true -> student phai co QuizAttempt; (2) IDOR codelab Update child -> them CodelabId check; (3) self-XP award -> award-xp verify bang chung hoan thanh, me/xp khoa Student; (4) DiagnosticsController -> bo lo environment + gate simulate-error Development.
+- **Blocker test FIXED**: polyfill CSS.escape trong vitest.setup.ts.
+- **Deadcode don**: 6 controllers backend + 3 item frontend (giu core engine + feature co consumer).
+- Tests: backend 789 (+1), frontend 3491, vue-tsc 0.
+- Chi tiet: plan/tracking/errors.md.

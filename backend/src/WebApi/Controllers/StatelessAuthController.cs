@@ -704,6 +704,31 @@ namespace VisualizationDSA.WebApi.Controllers
             if (string.IsNullOrEmpty(id))
                 return Unauthorized(new { error = "UNAUTHORIZED", message = "Không xác định được người dùng." });
 
+            // SEC-2026-08-14: server VERIFY bằng chứng hoàn thành cho reason Quiz/CodeLab —
+            // chặn tự cộng XP bằng cách đoán reason (lesson flow đã lưu progress TRƯỚC khi award).
+            if (Guid.TryParse(id, out var verifyUid) && verifyUid != Guid.Empty)
+            {
+                var reasonTrim = request.Reason.Trim();
+                if (reasonTrim.StartsWith("Hoàn thành Quiz:", StringComparison.Ordinal))
+                {
+                    var quizTitle = reasonTrim["Hoàn thành Quiz:".Length..].Trim();
+                    var hasQuizEvidence = await _dbContext.QuizAttempts.AnyAsync(a =>
+                        a.UserId == verifyUid && a.QuizTitle == quizTitle);
+                    var hasLessonQuizEvidence = await _dbContext.UserLessonProgresses.AnyAsync(p =>
+                        p.UserId == verifyUid && p.Lesson.Title == quizTitle && p.BestScore >= 60);
+                    if (!hasQuizEvidence && !hasLessonQuizEvidence)
+                        return BadRequest(new { error = "XP_NOT_VERIFIED", message = "Chưa có bằng chứng hoàn thành quiz — không thể cộng XP." });
+                }
+                else if (reasonTrim.StartsWith("Hoàn thành CodeLab:", StringComparison.Ordinal))
+                {
+                    var lessonTitle = reasonTrim["Hoàn thành CodeLab:".Length..].Trim();
+                    var hasCodelabEvidence = await _dbContext.UserLessonProgresses.AnyAsync(p =>
+                        p.UserId == verifyUid && p.Lesson.Title == lessonTitle && p.CodelabCompleted);
+                    if (!hasCodelabEvidence)
+                        return BadRequest(new { error = "XP_NOT_VERIFIED", message = "Chưa có bằng chứng hoàn thành codelab — không thể cộng XP." });
+                }
+            }
+
             try
             {
                 // Kiểm tra user tồn tại TRƯỚC khi đếm hạn mức — không trừ quota cho award thất bại.

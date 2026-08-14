@@ -17,6 +17,8 @@ namespace VisualizationDSA.Application.Features.Codelabs.Commands
 
     public class UpdateTemplateCommand : IRequest
     {
+        // SEC-2026-08-14: CodelabId bắt buộc — chống IDOR cross-codelab.
+        public Guid CodelabId { get; set; }
         public Guid TemplateId { get; set; }
         public string Language { get; set; } = string.Empty;
         public string StarterCode { get; set; } = string.Empty;
@@ -56,7 +58,7 @@ namespace VisualizationDSA.Application.Features.Codelabs.Commands
         public async Task Handle(UpdateTemplateCommand request, CancellationToken cancellationToken)
         {
             var template = await _context.CodelabTemplates
-                .FirstOrDefaultAsync(t => t.Id == request.TemplateId, cancellationToken)
+                .FirstOrDefaultAsync(t => t.Id == request.TemplateId && t.CodelabId == request.CodelabId, cancellationToken)
                 ?? throw new ArgumentException("Template not found.");
 
             template.Update(request.Language, request.StarterCode);

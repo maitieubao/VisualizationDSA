@@ -2777,3 +2777,28 @@ Chi?n d?ch fix cu?i c�ng (Shared / Components / Tests). K?t qu?: frontend **34
 **C�ch kh?c ph?c:** hidden test v?i expectedOutput r?ng -> d�nh pass + note "Test ?n - verify ph�a m�y ch? (server judge)". Hidden test C� expectedOutput (registry demo) v?n du?c verify nhu cu. Test m?i +2 (lessonCodelabFlow A2.3-fix).
 
 **Cleanup (B1, AlgoPlaygroundWorkspace):** b? direct call syncBreakpointDecorations trong onMouseDown (watcher store.breakpoints d� lo) - tr�nh deltaDecorations 2 l?n.
+
+## Review tong hop 2026-08-14 - 4 loi bao mat + blocker test + deadcode (FIXED)
+
+**Nguon:** Review 3 explore agent doi chieu PROJECT_DETAILS.md + DATN_ERRORS.md + code that.
+
+### 1. Blocker test harness (FIXED)
+- `CSS.escape` undefined trong jsdom -> StudentCurriculumSidebar.vue:340 nem TypeError, lam sap nhieu test file khong lien quan. Fix: polyfill trong `frontend/vitest.setup.ts` (theo spec MDN). Frontend suite xanh lai: 3491/3491.
+
+### 2. Bao mat (4 loi FIXED)
+| ID | Loi | Cach fix |
+| :-- | :-- | :-- |
+| SEC-1 | Le dap an quiz: `withAnswers=true` chi check token, Student doc duoc CorrectIndex/Explanation truoc khi nop (StatelessQuizController GetById + GetByTopic) | Student chi nhan dap an khi DA NOP (co QuizAttempt QuizId/QuizKey match); Teacher/Admin van duoc |
+| SEC-2 | IDOR cross-codelab: UpdateTestCase/Template/Hint lookup theo child id, KHONG check CodelabId -> teacher A sua child cua codelab B | Them `CodelabId` vao 3 Update commands (bat buoc) + handler filter `ChildId == request.CodelabId`; controller gan CodelabId tu route |
+| SEC-3 | Tu cong XP: StatelessAuthController.award-xp + UsersController.me/xp chi can token, client tu khai amount/reason | award-xp (lesson flow): server VERIFY bang chung (QuizAttempt hoac UserLessonProgress.BestScore>=60 / CodelabCompleted). me/xp (legacy, 0 consumer production): KHOA Student - chi Teacher/Admin (dong bo GM-024) |
+| SEC-4 | DiagnosticsController: health lo ASPNETCORE_ENVIRONMENT + simulate-error public cho phep ep server nem loi | Bo truong environment khoi health; simulate-error chi Development (production 404) |
+
+### 3. Deadcode da don
+- **Backend 6 controllers xoa** (0 consumer FE + 0 test reference): OOPController, SystemDesignController, LessonReviewController, CodelabsController (legacy), GamificationController (legacy), ConceptsController (chi co semantic-graph endpoint dead).
+- **Frontend xoa**: WebTransportClient.ts, WebGpuPipeline.ts, features/concept-sandbox/ (meta test house).
+- **GIU lai (co consumer/test/core)**: AuthController + QuizzesController + PaymentsController (con FE van goi); CoreAnimationEngine (core engine - Quy tac 1); VisualizationPlayer/e-lecture/custom-input (feature Phase 1 co PRD - can quyet dinh san pham); algorithmApi/AnimPseudoCodePanel/PremiumGate/code-editor (con test phu thuoc).
+
+### 4. Con lai (da ghi nhan, can session rieng)
+TC-041 (P1), AD-024/044 (P2), AU-045 (P3), EC-016/023/026/037, PS-007 (P1), DC-021, PM-053, AL-042, LM-058, EX-023, DP-004 - xem review goc.
+
+Tests: backend 789/789 (+1 SyncXP_StudentRole_Returns403), frontend 3491/3491 (giam 21 do xoa dead), vue-tsc 0.

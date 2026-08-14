@@ -152,6 +152,8 @@ namespace VisualizationDSA.WebApi.Controllers
         {
             var (block, _) = await GetCurrentUserAndCheckAsync(id);
             if (block != null) return block;
+            // SEC-2026-08-14: gắn CodelabId từ route — handler filter child theo codelab (chống IDOR).
+            command.CodelabId = id;
             command.TestCaseId = testCaseId;
             await _mediator.Send(command);
             return Ok(new { id = testCaseId });
@@ -184,6 +186,8 @@ namespace VisualizationDSA.WebApi.Controllers
         {
             var (block, _) = await GetCurrentUserAndCheckAsync(id);
             if (block != null) return block;
+            // SEC-2026-08-14: gắn CodelabId từ route — chống IDOR cross-codelab.
+            command.CodelabId = id;
             command.TemplateId = templateId;
             await _mediator.Send(command);
             return Ok(new { id = templateId });
@@ -216,6 +220,8 @@ namespace VisualizationDSA.WebApi.Controllers
         {
             var (block, _) = await GetCurrentUserAndCheckAsync(id);
             if (block != null) return block;
+            // SEC-2026-08-14: gắn CodelabId từ route — chống IDOR cross-codelab.
+            command.CodelabId = id;
             command.HintId = hintId;
             await _mediator.Send(command);
             return Ok(new { id = hintId });

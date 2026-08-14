@@ -20,6 +20,9 @@ namespace VisualizationDSA.Application.Features.Codelabs.Commands
 
     public class UpdateTestCaseCommand : IRequest
     {
+        // SEC-2026-08-14: CodelabId bắt buộc — handler filter child theo codelab đang xét
+        // (chống IDOR: teacher A sửa testcase của codelab B).
+        public Guid CodelabId { get; set; }
         public Guid TestCaseId { get; set; }
         public string Input { get; set; } = string.Empty;
         public string ExpectedOutput { get; set; } = string.Empty;
@@ -63,7 +66,7 @@ namespace VisualizationDSA.Application.Features.Codelabs.Commands
         public async Task Handle(UpdateTestCaseCommand request, CancellationToken cancellationToken)
         {
             var testCase = await _context.CodelabTestCases
-                .FirstOrDefaultAsync(tc => tc.Id == request.TestCaseId, cancellationToken)
+                .FirstOrDefaultAsync(tc => tc.Id == request.TestCaseId && tc.CodelabId == request.CodelabId, cancellationToken)
                 ?? throw new ArgumentException("Test case not found.");
 
             testCase.Update(request.Input, request.ExpectedOutput, request.IsHidden, request.ScoreWeight, request.OrderIndex);

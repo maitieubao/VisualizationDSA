@@ -33,3 +33,15 @@ if (typeof globalThis.localStorage === 'undefined') {
 if (typeof globalThis.sessionStorage === 'undefined') {
   (globalThis as Record<string, unknown>).sessionStorage = new MemoryStorage();
 }
+
+// Review 2026-08-14: jsdom KHÔNG cài CSS.escape — component dùng
+// `CSS.escape(itemId)` (StudentCurriculumSidebar.vue) ném TypeError trong test
+// làm sập nhiều file không liên quan. Polyfill theo spec của MDN (đủ cho
+// selector attribute trong test: escape mọi ký tự đặc biệt về dạng hex).
+if (typeof globalThis.CSS === 'undefined') {
+  (globalThis as Record<string, unknown>).CSS = {} as CSS;
+}
+if (typeof (globalThis.CSS as { escape?: unknown }).escape !== 'function') {
+  (globalThis.CSS as { escape: (value: string) => string }).escape = (value: string): string =>
+    String(value).replace(/[^a-zA-Z0-9_-]/g, (ch) => `\\${ch.codePointAt(0)!.toString(16)} `);
+}

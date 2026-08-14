@@ -108,6 +108,16 @@ namespace VisualizationDSA.WebApi.Controllers
             if (userId == null)
                 return Unauthorized(new { error = "UNAUTHORIZED", message = "Không xác định được người dùng." });
 
+            // SEC-2026-08-14: endpoint này KHÔNG còn consumer production (lesson flow dùng
+            // /concepts/auth/award-xp có verify bằng chứng) — khóa với Student, chỉ Teacher/Admin
+            // được dùng (đồng bộ role-check với StatelessGamificationController.award-xp — GM-024).
+            if (!JwtHelper.IsTeacherOrAdmin(Request))
+                return StatusCode(StatusCodes.Status403Forbidden, new
+                {
+                    error = "XP_FORBIDDEN",
+                    message = "XP chỉ được cấp qua hoạt động học tập thật (hoàn thành bài/quiz/codelab)."
+                });
+
             // AD-012: cap amount (≤ 50) — số XP gửi lên bị kẹp, không tự ý cộng lớn.
             var amount = Math.Clamp(request.Amount, 1, MaxXpPerSync);
 
