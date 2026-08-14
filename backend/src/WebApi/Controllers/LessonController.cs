@@ -223,6 +223,7 @@ namespace VisualizationDSA.WebApi.Controllers
                     .FirstOrDefaultAsync(p => p.UserId == userId && p.LessonId == lessonId);
 
                 bool firstTime = false;
+                int oldLevel = 0;
                 if (progress == null)
                 {
                     progress = new UserLessonProgress(userId, lessonId, "Completed");
@@ -239,23 +240,9 @@ namespace VisualizationDSA.WebApi.Controllers
                 if (firstTime)
                 {
                     // C2: ghi nhận level TRƯỚC khi cộng XP — phát hiện level-up sau commit.
-                    var oldLevel = user.CurrentLevel;
+                    oldLevel = user.CurrentLevel;
                     user.AwardXP(lesson.XPReward);
                     user.RecordActivity();
-
-                    // C2: thông báo level-up SAU khi XP đã commit (toast gamification realtime).
-                    if (_notificationService != null && user.CurrentLevel > oldLevel)
-                    {
-                        try
-                        {
-                            await _notificationService.NotifyLevelUpAsync(
-                                userId, user.Username, oldLevel, user.CurrentLevel, user.TotalXP);
-                        }
-                        catch (Exception ex)
-                        {
-                            Serilog.Log.Warning(ex, "Không gửi được notification level-up khi hoàn thành bài {LessonId}.", lessonId);
-                        }
-                    }
                 }
 
                 var moduleItems = await _dbContext.ModuleItems
@@ -288,6 +275,22 @@ namespace VisualizationDSA.WebApi.Controllers
                 try
                 {
                     await _dbContext.SaveChangesAsync();
+
+                    // C2: thông báo level-up SAU khi XP đã COMMIT thành công (không gửi nếu
+                    // SaveChanges thất bại/race retry — tránh toast giả khi XP chưa được lưu).
+                    if (firstTime && _notificationService != null && user.CurrentLevel > oldLevel)
+                    {
+                        try
+                        {
+                            await _notificationService.NotifyLevelUpAsync(
+                                userId, user.Username, oldLevel, user.CurrentLevel, user.TotalXP);
+                        }
+                        catch (Exception ex)
+                        {
+                            Serilog.Log.Warning(ex, "Không gửi được notification level-up khi hoàn thành bài {LessonId}.", lessonId);
+                        }
+                    }
+
                     return Ok(new
                     {
                         message = "Đã hoàn thành bài học thành công!",

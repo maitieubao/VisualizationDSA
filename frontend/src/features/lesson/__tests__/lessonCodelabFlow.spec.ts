@@ -63,6 +63,29 @@ describe('executeCodelab — chạy code thật', () => {
     expect(hidden!.input).toBe('[[]]');
   });
 
+  it('A2.3-fix: hidden testcase backend CHE expectedOutput (rỗng) → đánh pass (server judge lo)', () => {
+    // Codelab seed: backend trả test ẩn với ExpectedOutput rỗng (chống gian lận) —
+    // client không verify được → không chặn hoàn thành bài.
+    const result = executeCodelab(BUBBLE_SOLUTION, [
+      { input: '[[5, 2, 9, 1]]', expectedOutput: '[1, 2, 5, 9]' },
+      { input: '[[]]', expectedOutput: '', isHidden: true },
+    ], 'bubbleSort');
+    expect(result.results.length).toBe(2);
+    expect(result.results[0].passed).toBe(true);
+    expect(result.results[1].isHidden).toBe(true);
+    expect(result.results[1].passed).toBe(true);
+    expect(result.results[1].note).toContain('máy chủ');
+  });
+
+  it('A2.3-fix: hidden test CÓ expectedOutput (registry demo) vẫn được verify như cũ', () => {
+    // Registry demo (CODELAB_TASK_REGISTRY) để expectedOutput đầy đủ → vẫn chạy so sánh thật.
+    const result = executeCodelab('function bubbleSort(arr) { return [999]; }', [
+      { input: '[[]]', expectedOutput: '[]', isHidden: true },
+    ], 'bubbleSort');
+    expect(result.results[0].isHidden).toBe(true);
+    expect(result.results[0].passed).toBe(false);
+  });
+
   it('TC-A4.3b: multi-arg — binarySearch với mảng + target', () => {
     const code = `function binarySearch(arr, target) {
       let lo = 0, hi = arr.length - 1;

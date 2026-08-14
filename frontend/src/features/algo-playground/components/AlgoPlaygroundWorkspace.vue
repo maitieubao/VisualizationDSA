@@ -711,11 +711,11 @@ onMounted(() => {
       });
       editorInstance.onMouseDown((e) => {
         // B1: click gutter line number → toggle breakpoint (chuẩn debugger).
+        // Decoration tự đồng bộ qua watcher store.breakpoints.
         if (e.target && e.target.type === monaco.editor.MouseTargetType.GUTTER_LINE_NUMBERS) {
           const line = e.target.position?.lineNumber ?? 0;
           if (line > 0) {
             store.toggleBreakpoint(line);
-            syncBreakpointDecorations();
           }
         }
       });

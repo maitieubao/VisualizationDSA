@@ -2767,3 +2767,13 @@ Chi?n d?ch fix cu?i c�ng (Shared / Components / Tests). K?t qu?: frontend **34
 **C�ch kh?c ph?c:** th�m `normalizeBackendCodelab()` trong lessonApi: ??c `data.codelabTask ?? normalizeBackendCodelab(data.codelab) ?? null`, map PascalCase->camelCase, hints objects->string[], difficulty int->"C? b?n/Trung b�nh/N�ng cao", entryFunction null->undefined (caller fallback "solution"). Backend gi? nguy�n (kh�ng ph� v? contract test backend).
 
 **B�i h?c:** m?i field tr? v? gi?a BE/FE ph?i ???c ch?t trong test contract hai ph�a (backend test assert field name + FE test d�ng payload m�u d�ng shape th?t c?a backend, kh�ng t? v? shape ri�ng). Flaky: full vitest ch?y song song tr�n m�y y?u hay hook-timeout - ch?y v?i `--hookTimeout=120000` ho?c ri�ng t?ng file.
+
+## Review batch A2-D (2026-08-13) - 2 bug FIXED + 1 cleanup
+
+**Bug 1 (C2, LessonController.CompleteLesson):** NotifyLevelUpAsync du?c g?i TRU?C SaveChangesAsync (trong if(firstTime)) - tr�i v?i design "sau commit". N?u SaveChanges fail (DbUpdateException race retry) ho?c l?i kh�c, toast level-up du?c g?i d� XP chua luu; retry s? g?i notification 2 l?n cho 1 XP.
+**C�ch kh?c ph?c:** chuy?n g?i notification v�o trong try{} SAU SaveChangesAsync thanh c�ng, ch? khi firstTime && level tang. Test E2E CompleteLesson v?n xanh.
+
+**Bug 2 (A2.3, codelabExecutor.executeCodelab):** hidden testcase backend CHE ExpectedOutput (tr? "") - client so s�nh normalizeOutput(actual) vs "" => hidden test LU�N fail => codelab seed (7 codelab, m?i codelab 1 test ?n) kh�ng bao gi? ho�n th�nh du?c ? b??c 4.
+**C�ch kh?c ph?c:** hidden test v?i expectedOutput r?ng -> d�nh pass + note "Test ?n - verify ph�a m�y ch? (server judge)". Hidden test C� expectedOutput (registry demo) v?n du?c verify nhu cu. Test m?i +2 (lessonCodelabFlow A2.3-fix).
+
+**Cleanup (B1, AlgoPlaygroundWorkspace):** b? direct call syncBreakpointDecorations trong onMouseDown (watcher store.breakpoints d� lo) - tr�nh deltaDecorations 2 l?n.

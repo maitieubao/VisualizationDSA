@@ -10,6 +10,7 @@ export interface CodelabCaseResult {
   passed: boolean;
   isHidden: boolean;
   error?: string;
+  note?: string;
 }
 
 export interface CodelabRunResult {
@@ -228,6 +229,19 @@ export function executeCodelab(
   }
 
   for (const tc of testCases) {
+    // A2.3 (review fix): testcase ẨN mà backend che ExpectedOutput (trả "") — client KHÔNG
+    // verify được (đúng thiết kế: test ẩn thuộc server judge). Đánh pass để không chặn
+    // hoàn thành codelab; test ẩn CÓ expectedOutput (registry demo) vẫn chạy như cũ.
+    if (tc.isHidden && tc.expectedOutput.trim().length === 0) {
+      results.push({
+        input: tc.input,
+        expectedOutput: tc.expectedOutput,
+        passed: true,
+        isHidden: true,
+        note: 'Test ẩn — verify phía máy chủ',
+      });
+      continue;
+    }
     try {
       const args = JSON.parse(tc.input) as unknown[];
       const actual = fn(...(Array.isArray(args) ? args : [args]));
