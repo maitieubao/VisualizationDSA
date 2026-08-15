@@ -45,3 +45,11 @@ if (typeof (globalThis.CSS as { escape?: unknown }).escape !== 'function') {
   (globalThis.CSS as { escape: (value: string) => string }).escape = (value: string): string =>
     String(value).replace(/[^a-zA-Z0-9_-]/g, (ch) => `\\${ch.codePointAt(0)!.toString(16)} `);
 }
+
+// jsdom KHÔNG cài Element.prototype.scrollIntoView — các component dùng
+// `el.scrollIntoView(...)` (StudentCurriculumSidebar, CourseSidebar, DocsSidebar,
+// SortingTraceTable, GuidedTourOverlay...) ném TypeError trong test.
+// Polyfill no-op giúp mọi test file khỏi phải tự mock (docs trước đây mock per-file).
+if (typeof Element !== 'undefined' && typeof Element.prototype.scrollIntoView !== 'function') {
+  Element.prototype.scrollIntoView = () => {};
+}
