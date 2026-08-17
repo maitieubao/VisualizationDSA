@@ -51,6 +51,10 @@ namespace VisualizationDSA.Domain.Engine
         public string Email { get; set; } = string.Empty;
         public string Username { get; set; } = string.Empty;
         public string Password { get; set; } = string.Empty;
+
+        // F3 (FR-1.8): cờ đăng ký làm giảng viên — true → Role = "PendingTeacher" (chờ admin duyệt).
+        // Mặc định false (Student) để không đổi hành vi client cũ.
+        public bool IsTeacher { get; set; }
     }
 
     public class StatelessLoginRequest

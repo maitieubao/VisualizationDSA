@@ -14,7 +14,7 @@
           :class="{ active: mode === 'algo' }"
           @click="switchMode('algo')"
         >
-          <BaseIcon name="puzzle" class="w-3.5 h-3.5 inline mr-1 align-middle" />Thuật toán tương tác
+          <BaseIcon name="algo-sorting" class="w-3.5 h-3.5 inline mr-1 align-middle" />Thuật toán tương tác
         </button>
       </div>
       <span v-if="mode === 'algo'" class="text-[10px] text-text-secondary hidden md:block">
@@ -124,7 +124,7 @@ watch(
   background: var(--color-bg-hover);
 }
 .mode-toggle-btn.active {
-  color: var(--color-accent-yellow-light);
-  background: color-mix(in srgb, var(--color-accent-yellow) 14%, transparent);
+  color: var(--color-accent-primary);
+  background: color-mix(in srgb, var(--color-accent-primary) 14%, transparent);
 }
 </style>

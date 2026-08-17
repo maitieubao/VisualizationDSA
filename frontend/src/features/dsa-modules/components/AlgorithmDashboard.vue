@@ -459,6 +459,15 @@ onBeforeUnmount(() => {
   font-size: 0.85rem;
 }
 
+/* SVG thô trong getCategoryIcon không có kích thước — thiếu class này icon
+   rơi về kích thước auto (hàng trăm px) làm vỡ layout danh mục */
+.dash-section__icon-svg {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+  color: var(--color-text-muted);
+}
+
 .dash-section__title {
   font-size: 0.8rem;
   font-weight: 600;

@@ -358,6 +358,7 @@ background: var(--color-bg-hover);
 .role-badge--admin { background: color-mix(in srgb, var(--color-accent-red) 15%, transparent); color: var(--color-accent-red); }
 .role-badge--teacher { background: color-mix(in srgb, var(--color-accent-purple) 15%, transparent); color: var(--color-accent-primary); }
 .role-badge--student { background: color-mix(in srgb, var(--color-accent-cyan) 15%, transparent); color: var(--color-accent-primary); }
+.role-badge--pendingteacher { background: color-mix(in srgb, var(--color-accent-yellow) 20%, transparent); color: var(--color-accent-yellow); }
 
 
 .td-title {

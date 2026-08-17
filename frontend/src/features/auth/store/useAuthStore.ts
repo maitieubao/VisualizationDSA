@@ -251,10 +251,10 @@ export const useAuthStore = defineStore('auth', () => {
     } finally { loginLoading.value = false; }
   }
 
-  async function statelessRegister(email: string, username: string, password: string): Promise<void> {
+  async function statelessRegister(email: string, username: string, password: string, isTeacher = false): Promise<void> {
     registerLoading.value = true; authError.value = null;
     try {
-      const response = await statelessAuthApi.register(email, username, password);
+      const response = await statelessAuthApi.register(email, username, password, isTeacher);
       _applyStatelessAuth(response);
     } catch (err: unknown) {
       authError.value = err instanceof Error ? err.message : 'Đăng ký thất bại.';

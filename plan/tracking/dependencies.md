@@ -54,3 +54,17 @@ Tài liệu này đặc tả chi tiết danh mục thư viện công nghệ, cá
 *   **Monaco Sandbox Security:** Phải cô lập Monaco Editor trong chế độ chặn nhấp chuột select văn bản (read-only pointer blockers) khi chạy VCR playback để bảo toàn dòng code.
 | **@babel/parser** | `^7.29.3` | AST Parsing | Instrumentation mới của `CompilerStepExecutor` (thay regex hoist) — trước đây chỉ là transitive dependency, nay import trực tiếp nên khai báo tường minh. |
 | **@babel/types** | `^7.29.0` | AST Types | Kiểu `Node` cho `instrumentAst` (scope-aware walker). |
+
+---
+
+## 5. Phụ Thuộc E2E Testing (Selenium Suite — thêm 2026-08-16)
+
+| Tên | Phiên bản | Vị trí | Vai trò |
+| :--- | :--- | :--- | :--- |
+| **selenium** | `>=4.20` | `e2e/requirements.txt` (Python) | Điều khiển Chrome headless chạy bộ E2E 16 tính năng theo `plan/testing/manual/*.md` |
+| **pytest** | `>=8.0` | `e2e/requirements.txt` | Test runner + marker p0/p1/p2 theo manual docs |
+| **requests** | `>=2.31` | `e2e/requirements.txt` | Gọi API phụ trợ (simulate-webhook, ban/premium) không thao tác được qua UI |
+
+Lý do chọn Selenium (Python) thay vì Playwright: tận dụng Chrome có sẵn trên máy dev,
+Selenium Manager tự tải driver, tách biệt hoàn toàn khỏi build frontend (không thêm
+dependency vào `package.json`). Bộ suite nằm tại `e2e/`, chạy `python -m pytest` trong thư mục đó.

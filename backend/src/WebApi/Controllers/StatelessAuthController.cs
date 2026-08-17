@@ -125,11 +125,14 @@ namespace VisualizationDSA.WebApi.Controllers
                 if (emailExists)
                     return BadRequest(new { error = "REGISTRATION_FAILED", message = "Đăng ký không thành công. Vui lòng kiểm tra lại thông tin." });
 
+                // F3 (FR-1.8): đăng ký giảng viên → role PendingTeacher (chờ admin duyệt), mặc định Student.
+                var targetRole = request.IsTeacher ? "PendingTeacher" : "Student";
+
                 // VALIDATE TRƯỚC (in-memory strategy ném ArgumentException khi trùng/không hợp lệ)
                 // — KHÔNG ghi DB trước khi validate.
                 var tempId = Guid.NewGuid().ToString();
                 var response = _authStrategy.Register(request, tempId);
-                response.User.Role = "Student";
+                response.User.Role = targetRole;
                 // Token refresh đầu trỏ tempId sẽ bị bỏ — revoke ngay để không dangle 30 ngày.
                 _authStrategy.Logout(response.RefreshToken);
 
@@ -138,6 +141,8 @@ namespace VisualizationDSA.WebApi.Controllers
                 try
                 {
                     var dbUser = new User(request.Email, request.Username, HashPassword(request.Password));
+                    if (request.IsTeacher)
+                        dbUser.SetPendingTeacherRole();
                     _dbContext.Users.Add(dbUser);
                     await _dbContext.SaveChangesAsync();
                     dbUserId = dbUser.Id;
@@ -168,7 +173,7 @@ namespace VisualizationDSA.WebApi.Controllers
                         Email = request.Email,
                         Password = request.Password
                     });
-                    response.User.Role = "Student";
+                    response.User.Role = targetRole;
                 }
                 else
                 {
@@ -232,6 +237,18 @@ namespace VisualizationDSA.WebApi.Controllers
                 }
 
                 var response = _authStrategy.Login(request);
+
+                // F3 (FR-1.8): chặn tài khoản chờ duyệt giảng viên — không cho login tới khi admin duyệt.
+                // (check SAU verify mật khẩu, đồng bộ với pattern check ban để chống user enumeration.)
+                if (dbUser != null && dbUser.Role == "PendingTeacher")
+                {
+                    _authStrategy.Logout(response.RefreshToken);
+                    return StatusCode(StatusCodes.Status403Forbidden, new
+                    {
+                        error = "TEACHER_PENDING",
+                        message = "Tài khoản giảng viên của bạn đang chờ quản trị viên phê duyệt."
+                    });
+                }
 
                 // Check ban SAU khi verify mật khẩu — trả 401 chung chống enumeration
                 // (trước đây trả 403 ACCOUNT_BANNED trước verify → phân biệt được email tồn tại).

@@ -305,24 +305,17 @@ export class CompilerStepExecutor {
 
     
     const commit = (partial: Partial<CanvasStateSnapshot>, description: string): void => {
-      const lastFrame = frames[frames.length - 1];
-      if (lastFrame && lastFrame.lineNumber === currentLine) {
-        lastFrame.description = description;
-        lastFrame.canvasStateSnapshot = {
-          ...lastFrame.canvasStateSnapshot,
+      frames.push({
+        stepIndex: frames.length,
+        lineNumber: currentLine,
+        description,
+        canvasStateSnapshot: {
+          ...buildBaseSnapshot(),
           ...partial,
-        };
-      } else {
-        frames.push({
-          stepIndex: frames.length,
-          lineNumber: currentLine,
-          description,
-          canvasStateSnapshot: {
-            ...buildBaseSnapshot(),
-            ...partial,
-          },
-        });
-      }
+          loopVariables: { ...state.vars },
+          variables: { ...state.allVars },
+        },
+      });
     };
 
     
@@ -340,29 +333,11 @@ export class CompilerStepExecutor {
           loopVars[name] = val;
           allVars[name] = val;
         } else if (typeof val === 'string' || typeof val === 'boolean') {
-          // B2: biến string/boolean hiển thị ở Watch Panel (không vào loopVariables — canvas cũ).
           allVars[name] = val;
         }
       }
       state.vars = loopVars;
       state.allVars = allVars;
-
-      const trackDesc = `Đang chạy dòng ${lineNum}`;
-      const lastFrame = frames[frames.length - 1];
-      if (lastFrame && lastFrame.lineNumber === lineNum && lastFrame.description === trackDesc) {
-        lastFrame.canvasStateSnapshot = {
-          ...lastFrame.canvasStateSnapshot,
-          loopVariables: { ...loopVars },
-          variables: { ...allVars },
-        };
-        return;
-      }
-      frames.push({
-        stepIndex: frames.length,
-        lineNumber: lineNum,
-        description: trackDesc,
-        canvasStateSnapshot: buildBaseSnapshot(),
-      });
     };
 
     let loopIterations = 0;
@@ -570,9 +545,19 @@ export class CompilerStepExecutor {
       commit({ activeDigitPlace: place }, `Sắp xếp theo hàng chữ số ${place}`);
     };
 
-    const setBuckets = (buckets: number[][]) => {
+    const setArrayElement = (idx: number, val: number) => {
+      if (typeof idx !== 'number' || typeof val !== 'number') return;
+      if (idx < 0 || idx >= state.array.length) return;
+      inSwap = true;
+      state.array[idx] = val;
+      inSwap = false;
+    };
+
+    const setBuckets = (buckets: number[][], silent = false) => {
       state.buckets = buckets.map(b => [...b]);
-      commit({ radixBuckets: state.buckets.map(b => [...b]), bucketSortBuckets: state.buckets.map(b => [...b]) }, `Cập nhật ${buckets.length} xô`);
+      if (!silent) {
+        commit({ radixBuckets: state.buckets.map(b => [...b]), bucketSortBuckets: state.buckets.map(b => [...b]) }, `Cập nhật ${buckets.length} xô`);
+      }
     };
 
     const setBucketPhase = (phase: 'distribute' | 'collect' | 'sort') => {
@@ -699,6 +684,7 @@ export class CompilerStepExecutor {
       'setCountingPhase',
       'setOutputs',
       'setDigitPlace',
+      'setArrayElement',
       'setBuckets',
       'setBucketPhase',
       'setActiveBucket',
@@ -745,6 +731,7 @@ export class CompilerStepExecutor {
       setCountingPhase,
       setOutputs,
       setDigitPlace,
+      setArrayElement,
       setBuckets,
       setBucketPhase,
       setActiveBucket,

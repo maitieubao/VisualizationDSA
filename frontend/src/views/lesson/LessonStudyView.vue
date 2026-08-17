@@ -134,6 +134,14 @@
             :codelab-task="lessonStore.currentLesson.codelabTask"
             @completeLesson="onLessonComplete"
           />
+
+          <!-- Practice Ladder (F8/FR-4.11, FR-4.3) — 3 bậc: Quiz → Lab → CodeLab. -->
+          <div class="px-4 pb-4">
+            <LadderPanel
+              :lesson-id="lessonId"
+              @go-codelab="lessonStore.goToStep(4)"
+            />
+          </div>
         </template>
       </main>
 
@@ -157,6 +165,16 @@
         >
           <BaseIcon name="message-circle" class="w-3.5 h-3.5" />
           <span>Thảo luận</span>
+        </button>
+
+        <!-- Ghi chú bài học (F5/FR-2.6) -->
+        <button
+          @click="showNotes = true"
+          aria-label="Mở ghi chú bài học"
+          class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold text-text-secondary hover:text-text-primary hover:bg-bg-hover transition-all cursor-pointer"
+        >
+          <BaseIcon name="edit" class="w-3.5 h-3.5" />
+          <span>Ghi chú</span>
         </button>
 
         <div class="flex items-center gap-2">
@@ -210,6 +228,33 @@
       </div>
     </Transition>
 
+    <!-- Ghi chú bài học (F5/FR-2.6) — side panel bên phải, autosave 1 giây. -->
+    <Transition name="slide-right">
+      <div
+        v-if="showNotes && lessonStore.currentLesson"
+        class="fixed inset-y-0 right-0 z-40 w-[92vw] sm:w-96 bg-bg-secondary border-l border-border-subtle shadow-2xl flex flex-col"
+        role="complementary"
+        aria-label="Ghi chú bài học"
+      >
+        <div class="flex items-center justify-between px-4 py-3 border-b border-border-subtle shrink-0">
+          <span class="text-xs font-bold text-text-primary flex items-center gap-2">
+            <BaseIcon name="edit" class="w-4 h-4 text-accent" />
+            Ghi chú bài học
+          </span>
+          <button
+            @click="showNotes = false"
+            aria-label="Đóng ghi chú"
+            class="p-1 rounded-md hover:bg-bg-hover text-text-muted transition-colors cursor-pointer"
+          >
+            <BaseIcon name="x" class="w-4 h-4" />
+          </button>
+        </div>
+        <div class="flex-1 min-h-0 overflow-y-auto p-3">
+          <LessonNotesPanel :lesson-id="lessonId" />
+        </div>
+      </div>
+    </Transition>
+
     <!-- Completion Modal -->
     <LessonCompletionModal
       :show="showCompletionModal"
@@ -236,6 +281,8 @@ import LessonStepQuiz from './components/LessonStepQuiz.vue';
 import LessonStepCodeLab from './components/LessonStepCodeLab.vue';
 import LessonCompletionModal from './LessonCompletionModal.vue';
 import LessonDiscussionPanel from './LessonDiscussionPanel.vue';
+import LessonNotesPanel from '../../features/lesson/components/LessonNotesPanel.vue';
+import LadderPanel from '../../features/ladder/components/LadderPanel.vue';
 import { resolveLessonRoute } from '../../features/courses/utils/courseAccess';
 import { useLessonStore } from '../../features/lesson/store/useLessonStore';
 import { useCourseNavigation } from '../../features/courses/composables/useCourseNavigation';
@@ -248,6 +295,7 @@ const nav = useCourseNavigation();
 
 const showCompletionModal = ref(false);
 const showDiscussion = ref(false);
+const showNotes = ref(false);
 const nextLessonId = ref<string | null>(null);
 const isMobile = ref(window.innerWidth < 1024);
 

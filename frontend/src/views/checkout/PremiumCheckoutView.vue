@@ -141,8 +141,22 @@ onMounted(() => {
   paymentStore.resetCheckout();
   if (authStore.isAuthenticated) {
     paymentStore.loadPremiumStatus();
+    void restorePaymentOnMount();
   }
 });
+
+// PM-008: sau refresh, khôi phục order Pending từ backend và chạy lại đồng hồ
+// đếm ngược theo thời gian còn lại thật của order (không reset về 15:00).
+async function restorePaymentOnMount(): Promise<void> {
+  await paymentStore.restoreActiveOrder();
+  if (paymentStore.checkoutState === 'paying') {
+    const order = paymentStore.currentOrder;
+    const rawExpiresAt = order && (order as { expiresAt?: string }).expiresAt;
+    const expiresAt = rawExpiresAt ? new Date(rawExpiresAt).getTime() : 0;
+    const remaining = expiresAt > 0 ? Math.max(1, Math.round((expiresAt - Date.now()) / 1000)) : 900;
+    startTimer(Math.min(remaining, 900));
+  }
+}
 
 // PM-050: chuyển focus về heading/panel mới mỗi khi checkoutState đổi
 watch(

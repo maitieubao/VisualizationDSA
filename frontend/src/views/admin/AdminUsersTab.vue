@@ -42,7 +42,11 @@
               </td>
                <td>
                  <!-- AD-015/AD-023: admin cuối (totalAdmins từ API) bị khóa đổi vai trò -->
-                 <select :value="u.role" class="inline-select" @change="changeUserRole(u.id, $event)" :disabled="isRowBusy(u.id) || (u.role === 'Admin' && isLastAdmin(u))">
+                 <!-- F3 (FR-1.8): PendingTeacher hiển thị badge riêng + nút duyệt/từ chối thay cho select. -->
+                 <template v-if="u.role === 'PendingTeacher'">
+                   <span class="role-badge role-badge--pendingteacher">Chờ duyệt GV</span>
+                 </template>
+                 <select v-else :value="u.role" class="inline-select" @change="changeUserRole(u.id, $event)" :disabled="isRowBusy(u.id) || (u.role === 'Admin' && isLastAdmin(u))">
                    <option value="Student">Học viên</option>
                    <option value="Teacher">Giảng viên</option>
                    <option value="Admin">Quản trị viên</option>
@@ -58,6 +62,11 @@
               <td><span class="level-badge">Lv.{{ u.currentLevel }}</span></td>
               <td>{{ u.totalXP }} XP</td>
               <td class="flex flex-wrap gap-1.5 items-center">
+                <!-- F3 (FR-1.8): nút duyệt/từ chối giảng viên đang chờ. -->
+                <template v-if="u.role === 'PendingTeacher'">
+                  <button class="btn-audit-detail" :disabled="isRowBusy(u.id)" @click="approvePendingTeacher(u.id)" title="Duyệt giảng viên"><BaseIcon name="check" style="width:13px;height:13px" /> Duyệt</button>
+                  <button class="ban-btn ban-btn--banned" :disabled="isRowBusy(u.id)" @click="rejectPendingTeacher(u.id)" title="Từ chối giảng viên"><BaseIcon name="close" style="width:13px;height:13px" /> Từ chối</button>
+                </template>
                 <!-- AD-049: "showUserAudit" → "Xem chi tiết" -->
                 <button class="btn-audit-detail" :disabled="isRowBusy(u.id)" @click="showUserDetail(u)" title="Xem chi tiết"><BaseIcon name="clipboard-list" style="width:13px;height:13px" /> Xem chi tiết</button>
                 <button class="ban-btn" :class="u.isActive !== false ? 'ban-btn--active' : 'ban-btn--banned'" :disabled="isRowBusy(u.id) || isLastAdmin(u)" @click="toggleUserBan(u.id, u.isActive !== false)" title="Khóa/mở khóa">
@@ -265,6 +274,39 @@ function onSearch(): void {
 }
 
 function changePage(page: number): void { if (page < 1 || page > totalPages.value) return; void loadUsers(page); }
+
+// F3 (FR-1.8): duyệt/từ chối giảng viên đang chờ — tái dùng PUT users/{id}/role có sẵn.
+async function approvePendingTeacher(userId: string): Promise<void> {
+  await setPendingTeacherRole(userId, 'Teacher');
+}
+
+async function rejectPendingTeacher(userId: string): Promise<void> {
+  await setPendingTeacherRole(userId, 'Student');
+}
+
+async function setPendingTeacherRole(userId: string, targetRole: 'Teacher' | 'Student'): Promise<void> {
+  if (isRowBusy(userId)) return;
+  const u = usersList.value.find(user => user.id === userId);
+  const actionLabel = targetRole === 'Teacher' ? 'duyệt' : 'từ chối';
+  if (!confirm(`Bạn có chắc chắn muốn ${actionLabel} tài khoản giảng viên ${u?.email || userId}?`)) return;
+  await runRowAction(userId, 'role', async () => {
+    try {
+      const res = await safeRequest(`${BASE_URL}/api/v1/concepts/admin/users/${userId}/role`, { method: 'PUT', headers: getAuthHeaders(), body: JSON.stringify({ role: targetRole }) });
+      if (res.ok) {
+        pushLog('INFO', `Đã ${actionLabel} giảng viên ${userId}`);
+        toastStore.success(targetRole === 'Teacher' ? 'Đã duyệt tài khoản giảng viên.' : 'Đã từ chối tài khoản giảng viên.');
+        await loadUsers(currentPage.value);
+      } else {
+        const err = await res.json().catch(() => null) as { message?: string } | null;
+        toastStore.error(err?.message || `Lỗi ${actionLabel} tài khoản.`);
+        await loadUsers(currentPage.value);
+      }
+    } catch {
+      toastStore.error('Lỗi kết nối khi xử lý tài khoản giảng viên.');
+      await loadUsers(currentPage.value);
+    }
+  });
+}
 
 async function changeUserRole(userId: string, event: Event): Promise<void> {
   if (isRowBusy(userId)) return;

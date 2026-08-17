@@ -102,13 +102,14 @@ describe('CompilerStepExecutor instrumentation (Babel AST)', () => {
   });
 
   it('B2.3: variables cập nhật theo từng dòng thực thi (biến đổi giữa các frame)', () => {
-    const code = `let x = 0;\nx = x + 1;\nx = x + 5;\nlog("x=" + x);`;
+    const code = `let x = 0;\ncompare(0, 1);\nx = x + 1;\ncompare(0, 1);\nx = x + 5;\ncompare(0, 1);`;
     const frames = compile(code, [1, 2]);
     const xValues = new Set<number>();
     for (const f of frames) {
       const x = f.canvasStateSnapshot.variables?.x;
       if (typeof x === 'number') xValues.add(x);
     }
+    expect(xValues.has(0)).toBe(true);
     expect(xValues.has(1)).toBe(true);
     expect(xValues.has(6)).toBe(true);
   });
@@ -116,7 +117,7 @@ describe('CompilerStepExecutor instrumentation (Babel AST)', () => {
   // ── B3: instrument closure/template — biến trong hàm con + vòng lặp lồng nhau ──
 
   it('B3.1: biến trong closure (hàm con) được track primitive', () => {
-    const code = `function makeCounter() {\n  let total = 0;\n  return function step() {\n    total = total + 1;\n    return total;\n  };\n}\nconst c = makeCounter();\nlet r1 = c();\nlet r2 = c();\nlog("r=" + r1 + "," + r2);`;
+    const code = `function makeCounter() {\n  let total = 0;\n  return function step() {\n    total = total + 1;\n    compare(0, 1);\n    return total;\n  };\n}\nconst c = makeCounter();\nlet r1 = c();\nlet r2 = c();`;
     const frames = compile(code, [1, 2, 3]);
     const totals = new Set<number>();
     for (const f of frames) {

@@ -126,6 +126,15 @@ describe('playgroundAlgoDemos', () => {
     expect(allVarNames.has('p')).toBe(true);
   });
 
+  it('quick-sort push partition ranges vào stack (ngăn xếp tường minh hiển thị) + mảng cuối đã sắp xếp', () => {
+    const demo = getAlgoDemo('quick-sort')!;
+    const options = AlgoInputParser.parse(demo.defaultInput, demo.inputKind);
+    const frames = CompilerStepExecutor.compileAlgorithm(demo.code, [], { ...options, fallbackToRegex: false });
+    const final = frames[frames.length - 1].canvasStateSnapshot;
+    expect(final.array).toEqual([...(options.array ?? [])].sort((a, b) => a - b));
+    expect(frames.some(f => (f.canvasStateSnapshot.stackIds ?? []).length > 0)).toBe(true);
+  });
+
   it('heap-sort frames expose heap size n for the heap tree overlay', () => {
     const demo = getAlgoDemo('heap-sort')!;
     const options = AlgoInputParser.parse(demo.defaultInput, demo.inputKind);
@@ -159,17 +168,17 @@ describe('playgroundAlgoDemos', () => {
     expect(hasBuckets).toBe(true);
   });
 
-  it('bucket-sort feeds real bucket data and rejects out-of-range input', () => {
+  it('bucket-sort feeds real bucket data and handles natural numbers', () => {
     const demo = getAlgoDemo('bucket-sort')!;
     const goodOptions = AlgoInputParser.parse(demo.defaultInput, demo.inputKind);
     const frames = CompilerStepExecutor.compileAlgorithm(demo.code, [], { ...goodOptions, fallbackToRegex: false });
     const snapshots = frames.map(f => f.canvasStateSnapshot);
     expect(snapshots.some(s => (s.bucketSortBuckets?.flat().length ?? 0) > 0)).toBe(true);
 
-    const badOptions = AlgoInputParser.parse('5, 3, 8, 1', demo.inputKind);
-    expect(() =>
-      CompilerStepExecutor.compileAlgorithm(demo.code, [], { ...badOptions, fallbackToRegex: false })
-    ).toThrow(/\[0, 1\)/);
+    const customOptions = AlgoInputParser.parse('5, 3, 8, 1, 9, 2', demo.inputKind);
+    const customFrames = CompilerStepExecutor.compileAlgorithm(demo.code, [], { ...customOptions, fallbackToRegex: false });
+    const finalSnap = customFrames[customFrames.length - 1].canvasStateSnapshot;
+    expect(finalSnap.array).toEqual([1, 2, 3, 5, 8, 9]);
   });
 
   it('binary-search rejects unsorted input with a clear error', () => {
@@ -275,11 +284,11 @@ describe('playgroundAlgoDemos', () => {
   });
 
   it('generateDemoInput produces valid input per demo kind', () => {
-    // bucket-sort: giá trị trong [0, 1)
+    // bucket-sort: natural numbers
     const bucket = generateDemoInput('bucket-sort');
     for (const v of AlgoInputParser.parse(bucket, 'array').array ?? []) {
-      expect(v).toBeGreaterThanOrEqual(0);
-      expect(v).toBeLessThan(1);
+      expect(v).toBeGreaterThanOrEqual(1);
+      expect(v).toBeLessThanOrEqual(99);
     }
     // binary-search: mảng đã sắp xếp
     const bsValues = AlgoInputParser.parse(generateDemoInput('binary-search'), 'array').array ?? [];

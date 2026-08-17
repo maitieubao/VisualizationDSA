@@ -51,6 +51,16 @@ namespace VisualizationDSA.Infrastructure.Data
         public DbSet<QuizXpGrant> QuizXpGrants { get; set; }
         public DbSet<CodelabSubmission> CodelabSubmissions { get; set; }
 
+        // Gap Closure F5/F6/F7/F8/F9 — các bảng mới (migration GapF567/GapF8/GapF9).
+        public DbSet<LessonNote> LessonNotes { get; set; }
+        public DbSet<Favorite> Favorites { get; set; }
+        public DbSet<SystemSetting> SystemSettings { get; set; }
+        public DbSet<StageProgress> StageProgresses { get; set; }
+        public DbSet<LearningPath> LearningPaths { get; set; }
+        public DbSet<LearningPathNode> LearningPathNodes { get; set; }
+        public DbSet<UserNodeProgress> UserNodeProgresses { get; set; }
+        public DbSet<NodeSession> NodeSessions { get; set; }
+
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -279,6 +289,114 @@ namespace VisualizationDSA.Infrastructure.Data
             {
                 entity.HasIndex(e => new { e.UserId, e.QuizKey }).IsUnique();
             });
+
+            // F5 (FR-2.6): ghi chú bài học — mỗi user 1 ghi chú mỗi bài.
+            modelBuilder.Entity<LessonNote>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+                entity.HasIndex(e => new { e.UserId, e.LessonId }).IsUnique();
+                entity.HasIndex(e => e.LessonId);
+                entity.Property(e => e.ContentHtml).IsRequired();
+                entity.HasOne(e => e.User)
+                      .WithMany()
+                      .HasForeignKey(e => e.UserId)
+                      .OnDelete(DeleteBehavior.Cascade);
+                entity.HasOne(e => e.Lesson)
+                      .WithMany()
+                      .HasForeignKey(e => e.LessonId)
+                      .OnDelete(DeleteBehavior.Cascade);
+            });
+
+            // F6 (FR-3.10): yêu thích mô phỏng — mỗi user 1 lần mỗi simulation.
+            modelBuilder.Entity<Favorite>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+                entity.HasIndex(e => new { e.UserId, e.SimulationKey }).IsUnique();
+                entity.Property(e => e.SimulationKey).IsRequired().HasMaxLength(120);
+                entity.HasOne(e => e.User)
+                      .WithMany()
+                      .HasForeignKey(e => e.UserId)
+                      .OnDelete(DeleteBehavior.Cascade);
+            });
+
+            // F7 (FR-6.2): cấu hình hệ thống key-value.
+            modelBuilder.Entity<SystemSetting>(entity =>
+            {
+                entity.HasKey(e => e.Key);
+                entity.Property(e => e.Key).HasMaxLength(150);
+                entity.Property(e => e.Value).IsRequired();
+                entity.Property(e => e.Description).HasMaxLength(500);
+            });
+
+            // F8 (FR-4.11, FR-4.3): Practice Ladder — unique (UserId, LessonId, Stage).
+            modelBuilder.Entity<StageProgress>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+                entity.HasIndex(e => new { e.UserId, e.LessonId, e.Stage }).IsUnique();
+                entity.HasIndex(e => e.LessonId);
+                entity.HasOne(e => e.User)
+                      .WithMany()
+                      .HasForeignKey(e => e.UserId)
+                      .OnDelete(DeleteBehavior.Cascade);
+                entity.HasOne(e => e.Lesson)
+                      .WithMany()
+                      .HasForeignKey(e => e.LessonId)
+                      .OnDelete(DeleteBehavior.Cascade);
+            });
+
+            // F9 (FR-2.10, FR-10.1): Learning Path + Tim.
+            modelBuilder.Entity<LearningPath>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+                entity.Property(e => e.Title).IsRequired().HasMaxLength(200);
+            });
+
+            modelBuilder.Entity<LearningPathNode>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+                entity.HasIndex(e => new { e.LearningPathId, e.OrderIndex }).IsUnique();
+                entity.HasIndex(e => e.LessonId);
+                entity.Property(e => e.Title).IsRequired().HasMaxLength(200);
+                entity.HasOne(e => e.LearningPath)
+                      .WithMany(p => p.Nodes)
+                      .HasForeignKey(e => e.LearningPathId)
+                      .OnDelete(DeleteBehavior.Cascade);
+                entity.HasOne(e => e.Lesson)
+                      .WithMany()
+                      .HasForeignKey(e => e.LessonId)
+                      .OnDelete(DeleteBehavior.SetNull);
+            });
+
+            modelBuilder.Entity<UserNodeProgress>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+                entity.HasIndex(e => new { e.UserId, e.NodeId }).IsUnique();
+                entity.HasIndex(e => e.NodeId);
+                entity.HasOne(e => e.User)
+                      .WithMany()
+                      .HasForeignKey(e => e.UserId)
+                      .OnDelete(DeleteBehavior.Cascade);
+                entity.HasOne(e => e.Node)
+                      .WithMany()
+                      .HasForeignKey(e => e.NodeId)
+                      .OnDelete(DeleteBehavior.Cascade);
+            });
+
+            modelBuilder.Entity<NodeSession>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+                entity.HasIndex(e => new { e.UserId, e.NodeId }).IsUnique();
+                entity.HasIndex(e => e.NodeId);
+                entity.HasOne(e => e.User)
+                      .WithMany()
+                      .HasForeignKey(e => e.UserId)
+                      .OnDelete(DeleteBehavior.Cascade);
+                entity.HasOne(e => e.Node)
+                      .WithMany()
+                      .HasForeignKey(e => e.NodeId)
+                      .OnDelete(DeleteBehavior.Cascade);
+            });
+
             base.OnModelCreating(modelBuilder);
 
             
@@ -297,6 +415,10 @@ namespace VisualizationDSA.Infrastructure.Data
                 
                 entity.Property(e => e.LastActivityDate).IsRequired(false);
                 entity.Property(e => e.Role).IsRequired().HasMaxLength(20).HasDefaultValue("Student");
+                // F9 (FR-10.1): Tim (hearts).
+                entity.Property(e => e.Hearts).HasDefaultValue(10);
+                entity.Property(e => e.HeartsMax).HasDefaultValue(10);
+                entity.Property(e => e.LastHeartAt).IsRequired(false);
                 if (!Database.IsSqlite())
                 {
                     entity.Property<uint>("xmin")

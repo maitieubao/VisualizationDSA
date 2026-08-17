@@ -184,6 +184,7 @@
   - Tests: **useAlgoAnimation.spec 11 test + algoCanvasHelpers.spec 10 test MỚI** (AL-008/009); 5 test pass giả → mount thật (AL-007); engine edge tests (AL-029), pendingPlay + replay (AL-028), isSiftSwap (AL-030), MergeSort draw asserts (AL-032), demo ids từ Object.keys (AL-047)
 - **Còn lại:** AL-042 PARTIAL — setLimit dead code giữ vì test pin
 - **Bằng chứng:** frontend **2942/2942 PASS** (161 files, +31), `vue-tsc` 0 lỗi, backend 507/507 (không đụng)
+- **Ghi chú 2026-08-16 (UI Compaction):** Thêm AL-050/051/052 — auto-collapse editor trên mobile, drawer VCR thu gọn được (v-show), persist editorCollapsed (`algo-playground:ui`). +3 test, full suite 3502/3502 PASS, `vue-tsc` CLEAN. Chi tiết: `plan/tracking/progress.md` Phase 2.18.1.
 
 ## 17. 📊 Sorting Visualizer — ✅ FIXED (44/44)
 

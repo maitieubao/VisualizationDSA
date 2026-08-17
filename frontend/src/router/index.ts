@@ -57,9 +57,11 @@ router.beforeEach((to, from, next) => {
     const requiredRole = to.meta.requiresRole as string;
     const userRole = authStore.userRole;
 
+    // F3 (FR-1.8): PendingTeacher chưa được duyệt — không có quyền Teacher/Admin.
     const hasAccess =
-      userRole === requiredRole ||
-      (requiredRole === 'Teacher' && userRole === 'Admin');
+      userRole !== 'PendingTeacher' &&
+      (userRole === requiredRole ||
+        (requiredRole === 'Teacher' && userRole === 'Admin'));
 
     if (!hasAccess) {
       return next({ name: 'dashboard' });

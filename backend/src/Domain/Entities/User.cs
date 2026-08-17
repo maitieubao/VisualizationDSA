@@ -38,6 +38,11 @@ namespace VisualizationDSA.Domain.Entities
         
         public DateTime? LastActivityDate { get; private set; }
 
+        // F9 (FR-10.1): Tim (hearts) — hồi 1 tim mỗi 30 phút, tối đa HeartsMax.
+        public int       Hearts          { get; private set; }
+        public int       HeartsMax       { get; private set; }
+        public DateTime? LastHeartAt     { get; private set; }
+
         
         public virtual ICollection<UserBadge>         UserBadges         { get; private set; }
         public virtual ICollection<QuizAttempt>       QuizAttempts       { get; private set; }
@@ -59,6 +64,8 @@ namespace VisualizationDSA.Domain.Entities
             IsPremium    = false;
             Role         = "Student";
             IsActive     = true;
+            Hearts       = 10;
+            HeartsMax    = 10;
 
             UserBadges         = new List<UserBadge>();
             QuizAttempts       = new List<QuizAttempt>();
@@ -113,6 +120,40 @@ namespace VisualizationDSA.Domain.Entities
             _updateStreak();
         }
 
+        // F9 (FR-10.1): Tim hồi theo giờ SERVER — 1 tim mỗi 30 phút, tối đa HeartsMax.
+        // Gọi trước khi đọc Hearts để giá trị luôn phản ánh thời gian thực đã qua.
+        public const int HeartRegenIntervalMinutes = 30;
+
+        public void RegenHearts(DateTime now)
+        {
+            if (Hearts >= HeartsMax) return;
+
+            if (!LastHeartAt.HasValue)
+            {
+                Hearts = HeartsMax;
+                return;
+            }
+
+            var elapsedMinutes = (now - LastHeartAt.Value).TotalMinutes;
+            if (elapsedMinutes <= 0) return;
+
+            var gained = (int)(elapsedMinutes / HeartRegenIntervalMinutes);
+            if (gained > 0)
+            {
+                Hearts = Math.Min(HeartsMax, Hearts + gained);
+                LastHeartAt = LastHeartAt.Value.AddMinutes(gained * HeartRegenIntervalMinutes);
+            }
+        }
+
+        /// <summary>Trừ 1 tim — trả false khi không còn tim (atomic guard nằm ở DB).</summary>
+        public bool TryConsumeHeart()
+        {
+            if (Hearts <= 0) return false;
+            Hearts -= 1;
+            LastHeartAt = DateTime.UtcNow;
+            return true;
+        }
+
         // PR-001/PR-015: cập nhật hồ sơ cá nhân VÀO DB (controller gọi SaveChanges sau đó) —
         // trước đây chỉ sửa in-memory qua strategy, restart/EvictIdleUsers mất sạch username/bio.
         public void UpdateProfile(string? username, string? nickname, string? bio, string? university, string? avatarUrl)
@@ -136,6 +177,15 @@ namespace VisualizationDSA.Domain.Entities
         {
             if (role == "Student" || role == "Teacher" || role == "Admin")
                 Role = role;
+        }
+
+        /// <summary>
+        /// F3 (FR-1.8): đặt role PendingTeacher cho user đăng ký làm giảng viên (chờ admin duyệt).
+        /// KHÔNG dùng SetRole thường vì đó chỉ nhận Student/Teacher/Admin.
+        /// </summary>
+        public void SetPendingTeacherRole()
+        {
+            Role = "PendingTeacher";
         }
 
         

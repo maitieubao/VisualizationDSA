@@ -44,6 +44,12 @@
               <p v-if="confirmError" class="form-field-error" role="alert">{{ confirmError }}</p>
             </div>
 
+            <!-- F3 (FR-1.8): đăng ký giảng viên → chờ Admin duyệt. -->
+            <label v-if="isRegisterMode" class="form-checkbox" for="auth-is-teacher">
+              <input id="auth-is-teacher" v-model="isTeacher" type="checkbox" class="form-checkbox__input" />
+              <span class="form-checkbox__label">Tôi là giảng viên (tài khoản sẽ chờ quản trị viên phê duyệt)</span>
+            </label>
+
             <button type="submit" :disabled="isSubmitting" class="form-submit">
               <span v-if="isSubmitting">Đang xử lý...</span>
               <span v-else>{{ isRegisterMode ? 'Đăng ký' : 'Đăng nhập' }}</span>
@@ -84,6 +90,7 @@ const username = ref('');
 const password = ref('');
 const confirmPassword = ref('');
 const isRegisterMode = ref(false);
+const isTeacher = ref(false);
 const confirmError = ref<string | null>(null);
 
 const emailInputEl = ref<HTMLInputElement | null>(null);
@@ -113,6 +120,7 @@ function resetForm(): void {
   password.value = '';
   confirmPassword.value = '';
   confirmError.value = null;
+  isTeacher.value = false;
 }
 
 function closeModal(): void {
@@ -212,7 +220,7 @@ async function handleSubmit(): Promise<void> {
   if (!validateConfirmPassword()) return;
   try {
     if (isRegisterMode.value) {
-      await authStore.statelessRegister(email.value, username.value, password.value);
+      await authStore.statelessRegister(email.value, username.value, password.value, isTeacher.value);
     } else {
       await authStore.statelessLogin(email.value, password.value);
     }

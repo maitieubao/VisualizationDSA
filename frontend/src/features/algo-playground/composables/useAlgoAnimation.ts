@@ -1,12 +1,12 @@
 import { ref, watch, onMounted, onBeforeUnmount, type Ref } from 'vue';
-import { SortingAnimationEngine } from '../engine/SortingAnimationEngine';
+import { AlgoAnimationEngine } from '../engine/AlgoAnimationEngine';
 import type { useAlgoPlaygroundStore } from '../store/useAlgoPlaygroundStore';
 
 export function useAlgoAnimation(
   canvasRef: Ref<HTMLCanvasElement | null>,
   store: ReturnType<typeof useAlgoPlaygroundStore>,
 ) {
-  const engine = new SortingAnimationEngine();
+  const engine = new AlgoAnimationEngine();
   const isReady = ref(false);
 
   function syncSnapshots(): void {

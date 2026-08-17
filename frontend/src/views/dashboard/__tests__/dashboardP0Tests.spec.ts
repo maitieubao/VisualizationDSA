@@ -72,7 +72,8 @@ describe('DashboardView', () => {
     const wrapper = mountWithAuth(DashboardView);
     await flushPromises();
     const cards = wrapper.findAll('.stat-card');
-    expect(cards.length).toBe(4);
+    // F9: card thứ 5 là Tim học tập (hearts) — test tên giữ nguyên vì lịch sử, assert 5.
+    expect(cards.length).toBe(5);
   });
 
   it('shows 4 quickstart steps', async () => {

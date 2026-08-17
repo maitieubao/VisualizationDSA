@@ -206,8 +206,9 @@ namespace VisualizationDSA.WebApi.Controllers
             if (string.IsNullOrWhiteSpace(userId)) return;
 
             var email = userId == "demo-user-001" ? "demo@visualizationdsa.dev" : userId;
-            var dbUser = await _dbContext.Users
-                .FirstOrDefaultAsync(u => u.Email == email || u.Id.ToString() == userId);
+            var dbUser = Guid.TryParse(userId, out var parsedId)
+                ? await _dbContext.Users.FirstOrDefaultAsync(u => u.Email == email || u.Id == parsedId)
+                : await _dbContext.Users.FirstOrDefaultAsync(u => u.Email == email);
             if (dbUser == null)
                 throw new KeyNotFoundException("Người dùng không tồn tại trong hệ thống.");
 

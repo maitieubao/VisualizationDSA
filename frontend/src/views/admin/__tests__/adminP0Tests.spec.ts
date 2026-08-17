@@ -87,6 +87,7 @@ const ADMIN_ALLOWED_URL_PARTS: readonly string[] = [
   '/api/v1/concepts/admin/quizzes',
   '/api/v1/concepts/admin/audit-logs',
   '/api/v1/concepts/quiz/',
+  '/api/v1/admin/settings',
   '/health',
   '/api/v1/diagnostics/health',
 ];

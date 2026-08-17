@@ -1,46 +1,28 @@
 <template>
   <div class="flex flex-col w-full h-full overflow-hidden" data-tour-id="algo-playground">
-    <!-- Toolbar (gộp: select + chips + input + Chạy + menu ⋯) -->
-    <div class="relative flex items-center gap-2 px-3 py-1.5 border-b border-surface/70 bg-surface/40 shrink-0 flex-wrap">
-      <div class="flex items-center gap-1.5 min-w-0">
-        <select
-          class="algo-demo-select"
-          aria-label="Chọn thuật toán mẫu"
-          :title="currentDemo?.description"
-          :value="store.demoId ?? ''"
-          @change="onSelectDemo"
-        >
-          <optgroup v-for="group in demoGroups" :key="group.value" :label="group.label">
-            <option v-for="demo in group.items" :key="demo.id" :value="demo.id">
-              {{ demo.title }}
-            </option>
-          </optgroup>
-        </select>
-        <span v-if="currentDemo?.complexity" class="demo-chip" title="Độ phức tạp thời gian"><BaseIcon name="timer" class="w-3 h-3 inline mr-1 align-middle" />{{ currentDemo.complexity }}</span>
-        <span v-if="currentDemo?.space" class="demo-chip" title="Độ phức tạp bộ nhớ"><BaseIcon name="database" class="w-3 h-3 inline mr-1 align-middle" />{{ currentDemo.space }}</span>
-      </div>
+    <!-- Ultra-thin toolbar: select + input + run -->
+    <div class="relative flex items-center gap-2 px-3 py-1 border-b bg-surface shrink-0">
+      <select
+        class="algo-demo-select"
+        aria-label="Chọn thuật toán mẫu"
+        :title="currentDemo?.description"
+        :value="store.demoId ?? ''"
+        @change="onSelectDemo"
+      >
+        <optgroup v-for="group in demoGroups" :key="group.value" :label="group.label">
+          <option v-for="demo in group.items" :key="demo.id" :value="demo.id">
+            {{ demo.title }}
+          </option>
+        </optgroup>
+      </select>
 
-      <div class="flex items-center gap-1.5 bg-surface/60 border border-surface rounded-lg px-2 py-1 min-w-[200px] flex-1 md:flex-none">
-        <span class="text-[10px] font-semibold text-text-secondary uppercase shrink-0">Input</span>
-        <input
-          class="algo-input"
-          :value="store.inputRaw"
-          placeholder="Nhập dữ liệu (phân cách bằng dấu phẩy)"
-          @change="onInputChange"
-          @keydown.enter="onInputChange"
-        />
-        <button class="algo-icon-btn" title="Sinh dữ liệu ngẫu nhiên" aria-label="Sinh dữ liệu ngẫu nhiên" @click="onRandomInput">
-          <BaseIcon name="dice" class="w-3.5 h-3.5" />
-        </button>
-        <span
-          v-if="inputHintVisible"
-          class="text-[10px] font-mono shrink-0"
-          :class="store.inputValidation.valid ? 'text-emerald-400' : 'text-red-400'"
-          :title="store.inputValidation.valid ? '' : store.inputValidation.message"
-        >
-          <BaseIcon :name="store.inputValidation.valid ? 'check' : 'x'" class="w-3 h-3 inline mr-0.5 align-middle" />{{ store.inputValidation.message }}
-        </span>
-      </div>
+      <input
+        class="algo-input flex-1 min-w-0"
+        :value="store.inputRaw"
+        placeholder="Dữ liệu (phẩy phân cách)"
+        @change="onInputChange"
+        @keydown.enter="onInputChange"
+      />
 
       <button
         class="algo-btn algo-btn-primary"
@@ -48,16 +30,16 @@
         :class="{ 'algo-btn-disabled': store.isCompiling || !store.inputValidation.valid }"
         @click="store.run()"
       >
-        <BaseIcon v-if="store.isCompiling" name="spinner" class="w-3.5 h-3.5 inline mr-1 animate-spin" /><BaseIcon v-else name="play" class="w-3.5 h-3.5 inline mr-1" />{{ store.isCompiling ? 'Đang chạy…' : 'Chạy' }}
+        <BaseIcon v-if="store.isCompiling" name="spinner" class="w-3.5 h-3.5 inline mr-1 animate-spin" /><BaseIcon v-else name="play" class="w-3.5 h-3.5 inline mr-1" />{{ store.isCompiling ? '…' : 'Chạy' }}
       </button>
 
-      <!-- Menu ⋯: hành động phụ -->
-      <button ref="moreMenuBtn" class="algo-btn algo-btn-icon" title="Thêm" aria-label="Menu thêm" @click="toggleMoreMenu">
+      <!-- Menu⋯ + hooks + export -->
+      <button ref="moreMenuBtn" class="algo-btn algo-btn-icon" title="Thêm (menu)" aria-label="Menu thêm" @click="toggleMoreMenu">
         <BaseIcon name="list" class="w-4 h-4" />
       </button>
       <div v-if="showMoreMenu" class="fixed inset-0 z-20" @click="showMoreMenu = false"></div>
-      <div v-if="showMoreMenu" class="fixed z-30 w-44 rounded-lg bg-surface/95 border border-surface/70 shadow-xl py-1" :style="moreMenuStyle">
-        <button class="algo-menu-item" @click="menuAction('hooks')"><BaseIcon name="info" class="w-3.5 h-3.5 inline mr-2 align-middle" />{{ t('playground.menu.hooks') }}</button>
+      <div v-if="showMoreMenu" class="fixed z-30 w-44 rounded-lg bg-surface border border-surface shadow-xl py-1" :style="moreMenuStyle">
+        <button class="algo-menu-item" @click="menuAction('hooks')"><BaseIcon name="algo-compare" class="w-3.5 h-3.5 inline mr-2 align-middle" />{{ t('playground.menu.hooks') }}</button>
         <button class="algo-menu-item" @click="menuAction('restore')"><BaseIcon name="refresh-cw" class="w-3.5 h-3.5 inline mr-2 align-middle" />{{ t('playground.menu.restore') }}</button>
         <button class="algo-menu-item" @click="menuAction('export')">
           <BaseIcon :name="exportCopied ? 'check' : 'download'" class="w-3.5 h-3.5 inline mr-2 align-middle" />{{ exportCopied ? t('playground.exportCopied') : t('playground.menu.exportCode') }}
@@ -70,31 +52,16 @@
         </button>
         <button class="algo-menu-item" @click="menuAction('breakpoints')"><BaseIcon name="x-circle" class="w-3.5 h-3.5 inline mr-2 align-middle" />{{ t('playground.menu.breakpoints') }}</button>
       </div>
-
-      <!-- Hooks popover (đặt trong toolbar → định vị theo toolbar, không lệch khi wrap — AL-043) -->
-      <div v-if="showHooks" class="absolute left-2 right-2 top-[calc(100%+4px)] z-30 max-h-48 overflow-auto rounded-lg bg-surface/95 border border-surface/70 shadow-xl px-3 py-2">
+      <div v-if="showHooks" class="hooks-panel absolute left-2 right-2 top-[calc(100%+4px)] z-30 max-h-48 overflow-auto rounded-lg bg-surface border shadow-xl px-3 py-2" @click.stop>
+        <div class="flex items-center justify-between mb-2">
+          <span class="text-[10px] font-bold text-text-primary uppercase tracking-wider">Hooks Reference</span>
+          <button class="algo-btn algo-btn-icon !w-5 !h-5" @click="showHooks = false"><BaseIcon name="x" class="w-3 h-3" /></button>
+        </div>
         <pre class="text-[10px] font-mono text-text-secondary whitespace-pre-wrap leading-relaxed">{{ HOOKS_HINT }}</pre>
       </div>
     </div>
 
-    <!-- Thanh header gộp: Code | Visual -->
-    <div class="shrink-0 px-3 py-1 border-b border-surface/70 bg-surface/30 flex items-center justify-between text-[10px] font-semibold text-text-secondary uppercase tracking-wide">
-      <span class="flex items-center gap-2 min-w-0">
-        <span>{{ t('playground.title') }}</span>
-        <span class="demo-chip" title="Pseudocode + biến theo từng dòng">{{ t('playground.pseudocodeChip') }}</span>
-        <button class="algo-mini-btn" :title="editorCollapsed ? 'Hiện editor' : 'Ẩn editor để mở rộng canvas'" @click="editorCollapsed = !editorCollapsed">
-          <BaseIcon :name="editorCollapsed ? 'eye' : 'x'" class="w-3 h-3" />
-        </button>
-        <button class="algo-mini-btn" title="Định dạng lại code" @click="onFormat"><BaseIcon name="refresh-cw" class="w-3 h-3 inline mr-1 align-middle" />Format</button>
-      </span>
-      <span class="flex items-center gap-2 shrink-0">
-        <span>Visualization — {{ renderModeLabel }}</span>
-        <span v-if="store.totalFrames > 0" class="text-accent">Bước {{ store.currentIndex + 1 }}/{{ store.totalFrames }}</span>
-        <button class="algo-mini-btn" title="Toàn màn hình" aria-label="Toàn màn hình" @click="toggleFullscreen"><BaseIcon :name="isFullscreen ? 'minimize-2' : 'maximize-2'" class="w-3 h-3" /></button>
-      </span>
-    </div>
-
-    <!-- Main: Editor + Canvas (splitpanes, responsive) -->
+    <!-- Canvas (full area, editor hidden by default) -->
     <Splitpanes
       class="custom-splitpanes flex-1 min-h-0"
       :class="{ 'hide-splitter': editorCollapsed }"
@@ -104,7 +71,7 @@
       <Pane :size="editorCollapsed ? 0 : 42" :min-size="editorCollapsed ? 0 : 25">
         <div v-show="!editorCollapsed" class="flex flex-col w-full h-full min-w-0">
           <div v-if="editorLoadError" class="flex-1 flex flex-col items-center justify-center gap-3 p-6 text-center">
-            <BaseIcon name="warning" class="w-8 h-8 text-accent-yellow" />
+            <BaseIcon name="warning" class="w-8 h-8 text-accent-red" />
             <p class="text-xs font-semibold text-text-primary">Không thể tải Monaco Editor</p>
             <p class="text-[10px] text-text-secondary">Hãy reload lại trang.</p>
             <button class="algo-btn algo-btn-primary" @click="reloadPage">Tải lại trang (F5)</button>
@@ -123,17 +90,28 @@
               v-if="store.totalFrames === 0 && !store.isCompiling && !store.compileError"
               class="absolute inset-0 flex flex-col items-center justify-center gap-3 pointer-events-none"
             >
-              <BaseIcon name="puzzle" class="w-10 h-10 opacity-40" />
-              <p class="text-sm text-text-secondary">Chọn demo và bấm <span class="text-accent font-semibold">Chạy</span> để xem từng bước.</p>
+              <BaseIcon name="algo-sorting" class="w-10 h-10 opacity-40" />
+              <p class="text-sm text-text-secondary">Chọn demo và bấm <span class="text-accent font-semibold">Chạy</span>.</p>
             </div>
 
             <!-- Compile overlay -->
             <div
               v-if="store.isCompiling"
-              class="absolute inset-0 flex items-center justify-center bg-surface/50 backdrop-blur-[1px] pointer-events-none"
+              class="absolute inset-0 flex items-center justify-center bg-surface pointer-events-none"
             >
-              <div class="flex items-center gap-2 px-4 py-2 rounded-lg bg-surface/80 border border-surface text-xs text-text-primary">
+              <div class="flex items-center gap-2 px-4 py-2 rounded-lg bg-surface border border-surface text-xs text-text-primary">
                 <BaseIcon name="spinner" class="w-3.5 h-3.5 animate-spin" /> Đang biên dịch…
+              </div>
+            </div>
+
+            <!-- Step description overlay (bottom-left) -->
+            <div
+              v-if="store.totalFrames > 0 && store.currentDescription"
+              class="absolute bottom-2 left-2 right-2 pointer-events-none z-10"
+            >
+              <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-surface border backdrop-blur-sm max-w-full">
+                <span class="text-[10px] font-mono font-bold text-accent shrink-0">Bước {{ store.currentIndex + 1 }}:</span>
+                <span class="text-[11px] text-text-primary truncate">{{ store.currentDescription }}</span>
               </div>
             </div>
           </div>
@@ -141,131 +119,52 @@
       </Pane>
     </Splitpanes>
 
-    <!-- VCR + Trace -->
-    <div class="shrink-0 border-t border-surface/70 bg-surface/40 px-3 py-2">
-      <div v-if="store.compileError" class="mb-2 px-3 py-2 rounded-lg bg-red-500/10 border border-red-500/30 text-xs text-red-400">
-        LỖI: {{ store.compileError }}
+    <!-- Minimal VCR bar (always visible, no collapse) -->
+    <div class="shrink-0 border-t bg-surface px-3 py-1.5 flex items-center gap-2">
+      <div class="flex items-center gap-0.5" role="group" aria-label="Điều khiển phát lại">
+        <button class="algo-btn algo-btn-icon" title="Bước lùi (Left)" :disabled="store.totalFrames === 0" @click="anim.onStepPrev()"><BaseIcon name="algo-swap" class="w-3.5 h-3.5" /></button>
+        <button class="algo-btn algo-btn-icon algo-btn-play" title="Phát / Tạm dừng (Space)" aria-label="Phát hoặc tạm dừng" @click="store.togglePlay()">
+          <BaseIcon :name="store.isPlaying ? 'pause' : 'play'" class="w-3.5 h-3.5" />
+        </button>
+        <button class="algo-btn algo-btn-icon" title="Bước tới (Right)" :disabled="store.totalFrames === 0" @click="anim.onStepNext()"><BaseIcon name="algo-pointer" class="w-3.5 h-3.5" /></button>
       </div>
 
-      <div class="flex items-center gap-3">
-        <div class="flex items-center gap-1" role="group" aria-label="Điều khiển phát lại">
-          <button class="algo-btn algo-btn-icon" title="Bước lùi (Left)" aria-label="Bước lùi" :disabled="store.totalFrames === 0" @click="anim.onStepPrev()"><BaseIcon name="step-backward" class="w-4 h-4" /></button>
-          <button class="algo-btn algo-btn-icon algo-btn-play" title="Phát / Tạm dừng (Space)" aria-label="Phát hoặc tạm dừng" @click="store.togglePlay()">
-            <BaseIcon :name="store.isPlaying ? 'pause' : 'play'" class="w-4 h-4" />
-          </button>
-          <button class="algo-btn algo-btn-icon" title="Bước tới (Right)" aria-label="Bước tới" :disabled="store.totalFrames === 0" @click="anim.onStepNext()"><BaseIcon name="step-forward" class="w-4 h-4" /></button>
-          <button class="algo-btn algo-btn-icon" title="Đến cuối (Shift+Right hoặc End)" aria-label="Đến cuối" :disabled="store.totalFrames === 0" @click="onJumpToEnd"><BaseIcon name="skip-forward" class="w-4 h-4" /></button>
-          <button class="algo-btn algo-btn-icon" title="Về đầu (Home)" aria-label="Về đầu" :disabled="store.totalFrames === 0" @click="anim.onReset()"><BaseIcon name="skip-backward" class="w-4 h-4" /></button>
-        </div>
-
-        <div class="relative flex-1" @mousemove="onScrubberHover" @mouseleave="hoverFrame = null">
-          <input
-            class="w-full accent-amber-400"
-            type="range"
-            min="0"
-            :max="Math.max(0, store.totalFrames - 1)"
-            :value="store.currentIndex"
-            :disabled="store.totalFrames === 0"
-            :title="store.totalFrames > 0 ? `Bước ${store.currentIndex + 1}/${store.totalFrames}` : 'Chưa có dữ liệu'"
-            aria-label="Thanh tiến trình các bước"
-            @input="onScrub"
-          />
-          <!-- Marker các bước quan trọng (swap / tìm thấy) -->
-          <div v-if="store.notableSteps.length > 0" class="absolute inset-x-1 -bottom-1.5 h-1.5 pointer-events-none">
-            <span
-              v-for="m in markerPositions"
-              :key="m.index"
-              class="scrubber-marker absolute w-1 h-1 rounded-full bg-amber-400/80"
-              :style="{ left: m.pct + '%' }"
-            ></span>
-          </div>
-          <!-- Tooltip preview khi hover -->
-          <div
-            v-if="hoverFrame"
-            class="absolute -top-9 -translate-x-1/2 pointer-events-none z-20 px-2 py-1 rounded-md bg-surface/95 border border-surface/70 text-[10px] text-text-primary whitespace-nowrap max-w-[70%] overflow-hidden text-ellipsis"
-            :style="{ left: hoverPct + '%' }"
-          >
-            Bước {{ hoverFrame.index + 1 }}: {{ hoverFrame.description }}
-          </div>
-        </div>
-
-        <select class="algo-speed" :value="store.playbackSpeed" @change="onSpeedChange" aria-label="Tốc độ phát lại">
-          <option v-for="speed in PLAYBACK_SPEEDS" :key="speed" :value="speed">{{ speed }}x</option>
-        </select>
-      </div>
-
-      <div class="mt-2 flex items-start gap-3">
-        <div class="flex-1 text-xs text-text-secondary leading-relaxed min-h-[20px]">
-          <span v-if="store.currentFrame" class="text-text-primary font-medium">
-            {{ store.currentFrame.lineNumber > 0 ? `Dòng ${store.currentFrame.lineNumber}: ` : '' }}
-          </span>
-          <span class="text-cyan-300/90" v-html="parseEmojiToSvg(escapeHtmlText(store.currentDescription))"></span>
-        </div>
-        <div v-if="store.currentFrame && hasLoopVariables" class="shrink-0 flex flex-wrap gap-1 justify-end max-w-[40%]">
+      <div class="relative flex-1" @mousemove="onScrubberHover" @mouseleave="hoverFrame = null">
+        <input
+          class="w-full accent-primary"
+          type="range"
+          min="0"
+          :max="Math.max(0, store.totalFrames - 1)"
+          :value="store.currentIndex"
+          :disabled="store.totalFrames === 0"
+          :title="store.totalFrames > 0 ? `Bước ${store.currentIndex + 1}/${store.totalFrames}` : 'Chưa có dữ liệu'"
+          aria-label="Thanh tiến trình"
+          @input="onScrub"
+        />
+        <div v-if="store.notableSteps.length > 0" class="absolute inset-x-1 -bottom-1.5 h-1.5 pointer-events-none">
           <span
-            v-for="(value, name) in store.currentFrame.canvasStateSnapshot.loopVariables"
-            :key="name"
-            class="px-2 py-0.5 rounded-md bg-amber-400/10 border border-amber-400/30 text-amber-300 text-[10px] font-mono"
-          >
-            {{ name }} = {{ value }}
-          </span>
+            v-for="m in markerPositions"
+            :key="m.index"
+            class="absolute w-1 h-1 rounded-full"
+            :style="{ left: m.pct + '%', background: 'var(--color-accent-primary)', opacity: 0.8 }"
+          ></span>
         </div>
-        <button class="algo-mini-btn shrink-0" :class="{ 'algo-btn-active': showWatch }" title="Theo dõi biến (Watch)" @click="showWatch = !showWatch">
-          <BaseIcon name="eye" class="w-3 h-3 inline mr-1 align-middle" />{{ t('playground.watchBtn') }}
-        </button>
-        <button class="algo-mini-btn shrink-0" :class="{ 'algo-btn-active': showTrace }" @click="showTrace = !showTrace">
-          <BaseIcon name="clipboard-list" class="w-3 h-3 inline mr-1 align-middle" />{{ t('playground.traceBtn') }} ({{ store.traceLogs.length }})
-        </button>
-      </div>
-
-      <!-- B2: Watch panel — biến primitive theo dõi, highlight biến thay đổi -->
-      <div v-if="showWatch" class="mt-2 max-h-40 overflow-auto rounded-lg bg-surface/60 border border-surface/70 px-3 py-2">
-        <div class="flex items-center justify-between gap-2 mb-1.5">
-          <p class="text-[10px] font-semibold text-text-secondary uppercase tracking-wide">{{ t('playground.watchPanel') }}</p>
-          <button class="algo-mini-btn" @click="store.clearWatchList()" title="Xóa danh sách theo dõi">{{ t('playground.watchClear') }}</button>
-        </div>
-        <div class="flex flex-wrap gap-1.5 mb-2">
-          <button
-            v-for="name in availableVariableNames"
-            :key="name"
-            class="algo-watch-chip"
-            :class="{ 'algo-watch-chip--active': store.watchList.includes(name) }"
-            @click="store.toggleWatchVariable(name)"
-          >
-            {{ name }}
-          </button>
-        </div>
-        <p v-if="store.watchedValues.length === 0" class="text-[10px] text-text-secondary italic">
-          {{ t('playground.watchEmpty') }}
-        </p>
-        <table v-else class="w-full text-[11px] font-mono">
-          <tbody>
-            <tr v-for="item in store.watchedValues" :key="item.name">
-              <td class="py-0.5 pr-3 text-text-secondary">{{ item.name }}</td>
-              <td class="py-0.5">
-                <span class="px-2 py-0.5 rounded-md font-semibold" :class="item.changed ? 'bg-cyan-400/15 border border-cyan-400/40 text-cyan-300' : 'bg-bg-secondary border border-border-subtle text-text-primary'">
-                  {{ formatValue(item.value) }}
-                </span>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-
-      <!-- Trace history -->
-      <div ref="traceScrollEl" v-if="showTrace" class="mt-2 max-h-40 overflow-auto rounded-lg bg-surface/60 border border-surface/70 px-3 py-2">
-        <p v-if="store.traceLogs.length === 0" class="text-[10px] text-text-secondary">
-          Chưa có sự kiện — bấm Chạy để bắt đầu theo dõi.
-        </p>
-        <p
-          v-for="(log, i) in store.traceLogs"
-          :key="i"
-          class="text-[10px] font-mono text-text-secondary leading-relaxed"
-          :class="{ 'text-text-primary': i === store.traceLogs.length - 1 }"
+        <div
+          v-if="hoverFrame"
+          class="absolute -top-8 -translate-x-1/2 pointer-events-none z-20 px-2 py-1 rounded bg-surface border text-[10px] text-text-primary whitespace-nowrap max-w-[70%] overflow-hidden text-ellipsis"
+          :style="{ left: hoverPct + '%' }"
         >
-          {{ log }}
-        </p>
+          {{ hoverFrame.index + 1 }}: {{ hoverFrame.description }}
+        </div>
       </div>
+
+      <select class="algo-speed" :value="store.playbackSpeed" @change="onSpeedChange" aria-label="Tốc độ phát lại">
+        <option v-for="speed in PLAYBACK_SPEEDS" :key="speed" :value="speed">{{ speed }}x</option>
+      </select>
+
+      <span v-if="store.totalFrames > 0" class="text-[10px] font-mono text-text-secondary shrink-0 tabular-nums">
+        {{ store.currentIndex + 1 }}/{{ store.totalFrames }}
+      </span>
     </div>
   </div>
 </template>
@@ -289,6 +188,7 @@ import { playgroundAlgoDemos, getAlgoDemo, generateDemoInput, HOOKS_HINT } from 
 import { PseudocodeSyncer } from '../../algorithm-sandbox/engine/PseudocodeSyncer';
 import { useThemeStore } from '../../../shared/store/useThemeStore';
 import { useI18n } from '../../../shared/i18n';
+import { useToastStore } from '../../../composables/useToast';
 
 const props = defineProps<{ demoId?: string }>();
 
@@ -312,6 +212,7 @@ interface MonacoWorkerEnvironment {
 
 const store = useAlgoPlaygroundStore();
 const themeStore = useThemeStore();
+const toastStore = useToastStore();
 const route = useRoute();
 const monacoTheme = computed(() => (themeStore.currentTheme === 'light' ? 'vs' : 'vs-dark'));
 
@@ -325,6 +226,8 @@ const showTrace = ref(false);
 const showWatch = ref(false);
 const showMoreMenu = ref(false);
 const editorCollapsed = ref(false);
+// AL-051: drawer điều khiển (VCR + Watch + Trace) thu gọn được — nhường không gian canvas
+const bottomCollapsed = ref(false);
 const shareCopied = ref(false);
 const exportCopied = ref(false);
 const hoverFrame = ref<{ index: number; description: string } | null>(null);
@@ -357,12 +260,17 @@ function toggleMoreMenu(): void {
 function menuAction(action: 'hooks' | 'restore' | 'share' | 'export' | 'exportPng' | 'breakpoints'): void {
   showMoreMenu.value = false;
   if (action === 'hooks') showHooks.value = !showHooks.value;
-  else if (action === 'restore') onRestoreCode();
+  else if (action === 'restore') {
+    onRestoreCode();
+    toastStore.success('Đã khôi phục code mẫu');
+  }
   else if (action === 'export') onExportCode();
   else if (action === 'exportPng') onExportPng();
   else if (action === 'breakpoints') {
+    const count = store.breakpoints.length;
     store.clearBreakpoints();
     syncBreakpointDecorations();
+    toastStore.info(count > 0 ? `Đã xóa ${count} breakpoint` : 'Không có breakpoint nào');
   }
   else onShare();
 }
@@ -373,7 +281,10 @@ function menuAction(action: 'hooks' | 'restore' | 'share' | 'export' | 'exportPn
  */
 function onExportPng(): void {
   const canvas = canvasEl.value;
-  if (!canvas || store.totalFrames === 0) return;
+  if (!canvas || store.totalFrames === 0) {
+    toastStore.warning('Chưa có nội dung để xuất');
+    return;
+  }
   const url = canvas.toDataURL('image/png');
   const a = document.createElement('a');
   a.href = url;
@@ -381,12 +292,14 @@ function onExportPng(): void {
   document.body.appendChild(a);
   a.click();
   document.body.removeChild(a);
+  toastStore.success('Đã tải ảnh PNG');
 }
 
 /** B4: xuất code hiện tại ra clipboard (nối luồng Export/Share). */
 function onExportCode(): void {
   const copy = () => {
     exportCopied.value = true;
+    toastStore.success('Đã sao chép code vào clipboard');
     window.setTimeout(() => { exportCopied.value = false; }, 2000);
   };
   if (navigator.clipboard?.writeText) {
@@ -518,6 +431,7 @@ function onShare(): void {
   const shareUrl = url.toString();
   const copy = () => {
     shareCopied.value = true;
+    toastStore.success('Đã sao chép link chia sẻ');
     window.setTimeout(() => { shareCopied.value = false; }, 2000);
   };
   if (navigator.clipboard?.writeText) {
@@ -632,6 +546,12 @@ function onKeydown(event: KeyboardEvent): void {
       event.preventDefault();
       onJumpToEnd();
       break;
+    case 'KeyE':
+      if (event.ctrlKey || event.metaKey) {
+        event.preventDefault();
+        editorCollapsed.value = !editorCollapsed.value;
+      }
+      break;
     default:
       break;
   }
@@ -669,6 +589,29 @@ function syncEngineSnapshots(): void {
   );
 }
 
+// ── AL-052: persist trạng thái UI (editorCollapsed) — key riêng, không đụng
+// `algo-playground:state` (code/input) mà playgroundP2Tests pin. ──
+const UI_STORAGE_KEY = 'algo-playground:ui';
+
+function loadUiState(): boolean {
+  try {
+    const raw = localStorage.getItem(UI_STORAGE_KEY);
+    if (!raw) return false;
+    const parsed = JSON.parse(raw) as { editorCollapsed?: boolean };
+    return parsed.editorCollapsed === true;
+  } catch {
+    return false;
+  }
+}
+
+function saveUiState(): void {
+  try {
+    localStorage.setItem(UI_STORAGE_KEY, JSON.stringify({ editorCollapsed: editorCollapsed.value }));
+  } catch {
+    // localStorage không khả dụng — bỏ qua
+  }
+}
+
 onMounted(() => {
   if (!store.code) {
     store.loadDemo(props.demoId && playgroundAlgoDemos[props.demoId] ? props.demoId : 'bubble-sort');
@@ -680,8 +623,20 @@ onMounted(() => {
   if (typeof window.matchMedia === 'function') {
     mediaQuery = window.matchMedia('(max-width: 768px)');
     isStacked.value = mediaQuery.matches;
-    onMediaChange = (e: MediaQueryListEvent): void => { isStacked.value = e.matches; };
+    // AL-050: khi chuyển sang màn hình hẹp bất kỳ lúc nào → tự thu gọn editor
+    // (canvas full width); quay lại desktop → giữ nguyên lựa chọn người dùng.
+    onMediaChange = (e: MediaQueryListEvent): void => {
+      isStacked.value = e.matches;
+      if (e.matches) editorCollapsed.value = true;
+    };
     mediaQuery.addEventListener('change', onMediaChange);
+  }
+  // AL-050: màn hình hẹp → tự thu gọn editor ngay khi mount để canvas full width;
+  // màn hình rộng → khôi phục lựa chọn người dùng đã persist (AL-052).
+  if (isStacked.value) {
+    editorCollapsed.value = true;
+  } else {
+    editorCollapsed.value = loadUiState();
   }
 
   // Vẽ lại canvas khi container đổi kích thước (phải tạo trong onMounted — canvas chưa bind ở setup)
@@ -733,6 +688,8 @@ onMounted(() => {
 watch(() => monacoTheme.value, (theme) => {
   if (editorInstance) monaco.editor.setTheme(theme);
 });
+// AL-052: ghi trạng thái thu gọn editor mỗi khi đổi
+watch(editorCollapsed, saveUiState);
 watch(() => store.currentLineNumber, syncLineToEditor, { immediate: true });
 watch(() => store.breakpoints, syncBreakpointDecorations, { immediate: true });
 watch(
@@ -763,6 +720,24 @@ watch(() => store.traceLogs.length, () => {
   });
 });
 
+// Click-outside handler for hooks panel
+let hooksClickOutsideHandler: ((e: MouseEvent) => void) | null = null;
+watch(showHooks, (open) => {
+  if (hooksClickOutsideHandler) {
+    document.removeEventListener('click', hooksClickOutsideHandler);
+    hooksClickOutsideHandler = null;
+  }
+  if (open) {
+    hooksClickOutsideHandler = (e: MouseEvent) => {
+      const target = e.target as HTMLElement;
+      if (!target.closest('.hooks-panel')) {
+        showHooks.value = false;
+      }
+    };
+    setTimeout(() => document.addEventListener('click', hooksClickOutsideHandler!), 0);
+  }
+});
+
 // AL-001 + AL-002: KeepAlive deactivate → gỡ phím tắt window + dừng engine rAF;
 // activate → đăng ký lại phím tắt + đồng bộ snapshot + phát lại theo store.isPlaying.
 onDeactivated(() => {
@@ -783,6 +758,10 @@ onActivated(() => {
 });
 
 onBeforeUnmount(() => {
+  if (hooksClickOutsideHandler) {
+    document.removeEventListener('click', hooksClickOutsideHandler);
+    hooksClickOutsideHandler = null;
+  }
   if (mediaQuery && onMediaChange) mediaQuery.removeEventListener('change', onMediaChange);
   mediaQuery = null;
   onMediaChange = null;
@@ -805,7 +784,7 @@ onBeforeUnmount(() => {
 
 <style scoped>
 .algo-demo-select {
-  max-width: 240px;
+  max-width: 176px;
   padding: 6px 10px;
   border-radius: 8px;
   font-size: 12px;
@@ -815,7 +794,7 @@ onBeforeUnmount(() => {
   border: 1px solid var(--color-border-strong);
   outline: none;
   cursor: pointer;
-  accent-color: var(--color-accent-yellow);
+  accent-color: var(--color-accent-primary);
   color-scheme: dark;
 }
 
@@ -865,18 +844,18 @@ onBeforeUnmount(() => {
 }
 
 .algo-btn-active {
-  background: color-mix(in srgb, var(--color-accent-yellow) 14%, transparent);
-  border-color: color-mix(in srgb, var(--color-accent-yellow) 40%, transparent);
-  color: var(--color-accent-yellow);
+  background: color-mix(in srgb, var(--color-accent-primary) 14%, transparent);
+  border-color: color-mix(in srgb, var(--color-accent-primary) 40%, transparent);
+  color: var(--color-accent-primary);
 }
 
 .algo-btn-primary {
-  background: color-mix(in srgb, var(--color-accent-yellow) 15%, transparent);
-  border-color: color-mix(in srgb, var(--color-accent-yellow) 40%, transparent);
-  color: var(--color-accent-yellow);
+  background: color-mix(in srgb, var(--color-accent-primary) 15%, transparent);
+  border-color: color-mix(in srgb, var(--color-accent-primary) 40%, transparent);
+  color: var(--color-accent-primary);
 }
 .algo-btn-primary:hover {
-  background: color-mix(in srgb, var(--color-accent-yellow) 28%, transparent);
+  background: color-mix(in srgb, var(--color-accent-primary) 28%, transparent);
 }
 
 .algo-btn-disabled {
@@ -991,7 +970,7 @@ onBeforeUnmount(() => {
   transition: background 0.15s ease;
 }
 .custom-splitpanes :deep(.splitpanes__splitter:hover) {
-  background: color-mix(in srgb, var(--color-accent-yellow) 40%, transparent);
+  background: color-mix(in srgb, var(--color-accent-primary) 40%, transparent);
 }
 /* Ẩn splitter khi editor bị thu gọn */
 .custom-splitpanes.hide-splitter :deep(.splitpanes__splitter) {

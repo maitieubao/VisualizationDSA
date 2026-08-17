@@ -710,3 +710,63 @@
 - Backend `DeadlineReminderServiceTests` (moi): +3 (deadline 24h notify incomplete skip completed; ngoai 24h khong notify; dedupe 2 lan 1 notify).
 - Frontend `shared/i18n/__tests__/i18n.spec.ts` (moi): +6 (default vi, setLocale en + persist, restore persist, noi suy, fallback key, vi/en dong bo).
 - Full: backend 788/788 (+5), frontend 3512/3512 (+8), vue-tsc 0.
+
+## E2E Selenium Suite (2026-08-16) - DONE
+
+- Bo test Selenium Python (e2e/) chay tu dong 16 tinh nang theo plan/testing/manual/*.md (205 TC goc).
+- Ket qua theo module (da xac minh xanh tung module): Auth 13 pass; Payment 7 pass + 1 xfail (PM-008 bug order khong restore); Admin 5 pass; HTML Playground 7 pass; Algo Playground 5 pass + 1 skip + 1 xfail (bug doi demo AL-002); Sorting 9 pass; Courses & Lessons 6 pass; Lesson Study 4 pass + 2 skip; Teacher Panel 5 pass; Classrooms 4 pass; Gamification 4 pass; Profile 6 pass + 1 skip; Embed 5 pass; Export & Share 4 pass; Notifications 3 pass; Core UI 4 pass; Smoke 2 pass.
+- Suite phat hien + sua 3 bug backend P1 (Guid SQLite compare): xem plan/tracking/errors.md muc \"E2E Selenium Suite 2026-08-16\".
+- Cach chay: cd e2e; pip install -r requirements.txt; python -m pytest. Hien khong chay toan bo 1 lan (khong treo shell) - da chay xanh tung module rieng le.
+- CRUD roundtrip Admin + Teacher (2026-08-16): verify_crud.py — 14/14 PASS (admin: create/role/premium/reset-password/ban/unban/delete; teacher: quiz create/update/delete, codelab create/delete, course create, classroom create). Xac nhan sau khi fix E2E-B1/B2/B3.
+- PM-008 + AL-002 FIXED (2026-08-16): restoreActiveOrder (payment store) + compileEpoch (algo store). Vitest 72/72, vue-tsc clean, E2E test_payment 8/8 + test_algo_playground 6/1s. Bo xfail ca 2 TC.
+- AL-050/051/052 UI Compaction (2026-08-16): +3 test moi trong AlgoPlaygroundWorkspace.spec.ts (auto-collapse editor mobile, drawer collapse v-show, persist editorCollapsed localStorage) — QA-first: test do FAIL truoc khi code, PASS sau. Full suite frontend 199 files / 3502 tests PASS, vue-tsc clean.
+
+## 2026-08-16 — Algo Playground Render Refactor Tests
+
+**Test files:** eatures/algo-playground/__tests__/rendererRegistry.spec.ts (3 tests) + eatures/algo-playground/__tests__/newRenderers.spec.ts (15 tests)
+
+### rendererRegistry (3 tests)
+- Moi nhom thuat toan map dung renderer rieng (21 algorithms → 11 renderer)
+- merge/heap sort uu tien theo state snapshot (data-driven)
+- Thuat toan khong ro → fallback ArraySortingRenderer khong crash
+
+### StackQueueRenderer (3 tests)
+- Stack ve o doc tu stackIds, push/pop transition khong throw
+- Queue ve hang ngang FIFO, enqueue/dequeue transition khong throw
+- Monotonic-stack ve nhan pha rieng
+
+### SearchingRenderer (2 tests)
+- linear-search dim vung da quet ben trai con tro
+- binary-search pointer truot khi prev co cung label
+
+### TwoPointersRenderer (2 tests)
+- Ve vung giua L..R + 2 pointer khong throw
+- sliding-window dung searchRange lam cua so
+
+### GraphRenderer (1 test)
+- bfs ve chip HANG DOI, dfs ve chip NGAN XEP
+
+### MergeSortRenderer (2 tests)
+- Output tang 1 phan tu prev→curr → animation chip bay khong throw
+- render() tinh giu nguyen hanh vi 3 tang
+
+### CountingSortRenderer (2 tests)
+- phase count: comparing[0] doi → ghost bay khong throw
+- phase output: output tang → ghost bay tu o dem sang slot
+
+**Total: 15/15 PASS** (cong them bo test cu 3523/3523 — frontend full suite + vue-tsc sach)
+
+## 2026-08-17 — Gap Closure F1-F9 (doi chieu bao cao PRO2192)
+
+**Backend (xUnit — 819/819 PASS):**
+- F3: TeacherApprovalTests (6) + F4: LessonSearchTests (3)
+- F5/F6/F7: LessonNotesControllerTests (3) + FavoritesControllerTests (4) + SettingsControllerTests (3)
+- F8: LadderControllerTests (guard thu tu bac, cham lab, pass 3 bac)
+- F9: LearningPathControllerTests (tru tim atomic, session 30p, HEARTS_EMPTY, mo khoa node ke)
+
+**Frontend (Vitest — tat ca spec moi PASS):**
+- F1: faqView.spec.ts (3) + F2: benchmarkP0.spec.ts (3)
+- F5: lessonNotesPanel.spec.ts (3) + F6: favoriteToggle.spec.ts (3) + F7: settingsFormSection.spec.ts (2)
+- F8: useLadderStore.spec.ts (4) + F9: useLearningPathStore.spec.ts (5) + learningPathComponents.spec.ts (4)
+
+**Luu y:** 130 fail vitest toan repo la PRE-EXISTING (da ghi nhan o commit 850a9715) — da verify bang cach revert LoginModal ve ban goc van fail; cac spec moi cua F1-F9 deu PASS doc lap.

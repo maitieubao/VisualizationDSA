@@ -597,7 +597,9 @@ edirect: '/'.
 ### S�a L�i 176: T�i L�i Trang (F5) Lu�n B� Vng Ra Landing Page (ERR_ROUTER_F5_AUTH_RACE)
 *   **M� t�:** ang � trong b�i h�c (LessonView) ho�c Dashboard, ng��i d�ng �n F5 th� lu�n b� �y ra ngo�i trang ch� \/landing\, m�c d� tr�ng th�i ng nh�p (token) v�n c�n trong localStorage.
 *   **M� L�i:** ERR_ROUTER_F5_AUTH_RACE
-*   **Nguy�n nh�n g�c:** Race condition (b�t �ng b�) trong Vue SPA. Tr�nh �nh tuy�n \outer\ kh�i ch�y v� �nh gi� guard \equiresAuth\ ngay l�p t�c tr��c khi \uthStore.init()\ k�p kh�i ph�c l�i tr�ng th�i Token t� localStorage (ph�i �c qua Promise), d�n �n vi�c router ngh) ng��i d�ng ch�a ng nh�p.
+*   **Nguy�n nh�n g�c:** Race condition (b�t �ng b�) trong Vue SPA. Tr�nh �nh tuy�n \
+outer\ kh�i ch�y v� �nh gi� guard \
+equiresAuth\ ngay l�p t�c tr��c khi \uthStore.init()\ k�p kh�i ph�c l�i tr�ng th�i Token t� localStorage (ph�i �c qua Promise), d�n �n vi�c router ngh) ng��i d�ng ch�a ng nh�p.
 *   **C�ch kh�c ph�c:** Trong \main.ts\, k�m h�m kh�ng g�i \pp.use(router)\ cho �n khi \uthStore.init()\ � ho�n t�t kh�i ph�c tr�ng th�i v�o b� nh�.
 
 ### Bug: S�n ch�i �? th? b? m�n h?nh h�?ng d?n che khu?t v� kh�ng th? t?t
@@ -609,7 +611,8 @@ edirect: '/'.
 - **C�ch kh?c ph?c:** C?p nh?t LessonStudyView.vue, n�ng z-index c?a thanh Drawer l�n z-[2000] v� l?p n?n m? overlay l�n z-[1999] �? lu�n hi?n th? cao nh?t.
 
 ### Bug: N�t tr? gi�p (?) AI kh�ng hi?n th? tour h�?ng d?n trong kho� h?c �? th?
-- **Nguy�n nh�n:** N�t HelpButton m?c �?nh g?i k?ch b?n AI d?a tr�n URL hi?n t?i (oute.path). Khi ? trong kho� h?c, URL l� d?ng /courses/:id/lessons/:id ch? kh�ng ph?i l� /graph. Trong khi ��, k?ch b?n h�?ng d?n l?i ��ng k? d�?i key /graph ? useGuidedTourStore, d?n �?n vi?c h? th?ng kh�ng t?m th?y k?ch b?n t��ng ?ng �? ch?y.
+- **Nguy�n nh�n:** N�t HelpButton m?c �?nh g?i k?ch b?n AI d?a tr�n URL hi?n t?i (
+oute.path). Khi ? trong kho� h?c, URL l� d?ng /courses/:id/lessons/:id ch? kh�ng ph?i l� /graph. Trong khi ��, k?ch b?n h�?ng d?n l?i ��ng k? d�?i key /graph ? useGuidedTourStore, d?n �?n vi?c h? th?ng kh�ng t?m th?y k?ch b?n t��ng ?ng �? ch?y.
 - **C�ch kh?c ph?c:** C?p nh?t file GraphView.vue truy?n c?ng tham s? 	our-key=/graph` cho component <HelpButton /> �? n� lu�n n?p ��ng k?ch b?n h�?ng d?n b?t k? URL b�n ngo�i l� g?.
 
 ### Bug: N?i dung h�?ng d?n AI (Guided Tour) kh�ng kh?p v?i t�n g?i c�ng c? tr�n UI
@@ -1620,7 +1623,8 @@ px vue-tsc --noEmit exit code 0 (toan bo type check pass).
 | 413 | PS-017 (P2): in operator trong scriptLoader -> hasPseudocodeScript('toString') true, loadPseudocodeScript('constructor') crash | Thay bang Object.hasOwn(registry, id) o ca 2 ham | FIXED |
 | 414 | PS-021 (P2): usePseudocodeStore hardcode useAnimationStore() | Them indAnimationStore(store)/unbindAnimationStore() (module-level binder; KHONG dung tham so setup store vi pinia 2.3+ goi setup({action}) chiem cho tham so); default giu useAnimationStore() | FIXED |
 | 415 | PS-022 (P2): pause() goi 2 lan trong snap helpers | Bo ca 2 nimStore.pause() (goToFrame da pause); interface AnimationStoreSync ghi hop dong goToFrame tu pause | FIXED |
-| 416 | PS-023 (P2): scriptLoader khong validate cau truc script khi dang ky | alidatePseudocodeScript + egisterPseudocodeScript fail-fast (throw + console.error): languages non-empty, language hop le, lines non-empty, lineNumber duong & duy nhat, text/logicalId non-empty; registry duyet qua register | FIXED |
+| 416 | PS-023 (P2): scriptLoader khong validate cau truc script khi dang ky | alidatePseudocodeScript + 
+egisterPseudocodeScript fail-fast (throw + console.error): languages non-empty, language hop le, lines non-empty, lineNumber duong & duy nhat, text/logicalId non-empty; registry duyet qua register | FIXED |
 | 417 | PS-011 (P2): Nhieu dong cung logicalId -> chi dong dau sang (Java 5,6,7 SWAP_STEP; Python/JS 2 dong FUNC_DECL) | Chon huong ENGINE TRA DANH SACH (it pha vo test nhat): them PseudocodeSyncEngine.getPhysicalLineNumbers tra toan bo line khop + store expose ctivePhysicalLineNumbers: number[] (giu ctivePhysicalLineNumber first-match de tuong thich); TODO agent component: MultilingualCodePanel chuyen sang danh sach de ca 3 dong Java cung sang | FIXED (phan engine/store; con TODO component) |
 | 418 | PS-010 (P2): INNER_LOOP khong bao gio duoc emit (phan dsa-modules sortingGenerators.ts) | Dummy generator animation-engine + backend da emit INNER_LOOP dau moi vong j (agent khac fix); sortingGenerators.ts (dsa-modules) van chua gan activeLogicalLineId - TODO agent dsa-modules (da ghi comment trong bubble-sort.pseudocode.ts) | TODO (agent khac) |
 | 419 | PS-009/PS-024 (P2): temp trong frame swap sai + OUTER_LOOP phat cuoi pass | Da fix o animation-engine/services/algorithmApi.ts + sortingGenerators.ts + backend (agent khac) - xac nhan nhin code 2026-08-10 | FIXED (agent khac) |
@@ -2802,3 +2806,46 @@ Chi?n d?ch fix cu?i c�ng (Shared / Components / Tests). K?t qu?: frontend **34
 TC-041 (P1), AD-024/044 (P2), AU-045 (P3), EC-016/023/026/037, PS-007 (P1), DC-021, PM-053, AL-042, LM-058, EX-023, DP-004 - xem review goc.
 
 Tests: backend 789/789 (+1 SyncXP_StudentRole_Returns403), frontend 3491/3491 (giam 21 do xoa dead), vue-tsc 0.
+
+## E2E Selenium Suite 2026-08-16 - 3 bug backend P1 (FIXED) + 2 bug san pham (ghi nhan)
+
+**Nguon:** Viet bo test Selenium (e2e/) theo plan/testing/manual/*.md (16 tinh nang). Chay tren Chrome headless + backend Development. Phat hien va sua 3 bug backend that, ghi nhan 2 bug san pham.
+
+### Bug backend da FIXED (nguyen nhan chung: Guid TEXT trong SQLite so sanh sai)
+
+| Bug | Mo ta | Cach khac phuc |
+| :-- | :-- | :-- |
+| E2E-B1 (P1) | StatelessPaymentController.PersistPremiumToDbAsync dung u.Id.ToString() == userId - token sub lowercase vs SQLite TEXT uppercase -> simulate-webhook tra 404 \"Nguoi dung khong ton tai\" -> luong checkout vo, KHONG cap premium DB | Guid.TryParse + so sanh strong-typed (da them o buoc dau); email branch van la fallback |
+| E2E-B2 (P1) | AdminController 8 endpoint (UpdateUserRole, TogglePremium, DeleteUser, ResetPassword, DeleteQuiz x2, BanUser, ImpersonateUser) dung Id.ToString() == id - SQLite TEXT case-sensitive + Guid parameter lowercase -> lookup luon null. He qua: impersonate 404, ban/premium/reset KHONG persist DB (chi in-memory) | Chuyen het sang u.Id.ToString().ToLower() == id.ToLowerInvariant() |
+| E2E-B3 (P1) | Impersonate van 404 sau E2E-B2: route id UPPERCASE (SQLite TEXT) nhung in-memory strategy key theo Guid lowercase -> GetProfile(id) nem KeyNotFoundException ngoai try/catch -> 404 toan cuc | Gan lai id = dbUser.Id.ToString() (canonical lowercase) ngay sau lookup DB thanh cong |
+
+**Xac minh:** 	est_admin.py 5/5 pass (impersonate, stop, ban+unban, teacher bi chan, audit), 	est_payment.py 7/8 pass (1 xfail da ghi nhan ben duoi), role-change API 200 dung user.
+
+### Bug san pham da FIXED (2026-08-16)
+
+| ID | Mo ta | Cach khac phuc |
+| :-- | :-- | :-- |
+| E2E-P1 (PM-008) | Payment: refresh trang khi order dang Pending -> checkout roi idle, mat order (manual PM-008/PM-012/PM-029) | usePaymentStore.restoreActiveOrder(): doc transactions log -> tim order con Pending (khong Completed/Expired) -> getOrderStatus -> restore 'paying' + polling; bo qua order qua han (expiresAt). PremiumCheckoutView.onMounted goi restore + dong ho dem nguoc theo thoi gian con lai THAT cua order. Unit test +6 (paymentP2Tests describe PM-008) |
+| E2E-P2 (AL-002) | Algo Playground: doi demo qua <select> lam vo workspace - nut "Chay" ket "Dang chay..." vinh vien | Nguyen nhan: Monaco setValue -> onDidChangeModelContent -> store.invalidate() bump runSeq -> compile dang chay bi discard ma finally khong clear isCompiling. Fix: them compileEpoch - loadDemo/invalidate bump epoch + tu clear isCompiling; finally chi clear khi epoch == compileEpoch. Unit test +2 (useAlgoPlaygroundStore AL-002) |
+
+**Xac minh:** vitest 72/72 (2 file lien quan), vue-tsc clean, E2E test_payment 8/8 + test_algo_playground 6 pass/1 skip (bo xfail ca 2).
+
+### Ket qua suite (chay theo module, moi module doc lap)
+
+95 PASS / 5 SKIP / 0 XFAIL (tong 100 test) - chi tiet e2e/README.md + plan/tracking/features-tested.md muc moi.
+
+## Fix mui ten khong lo trong Bucket/Counting Sort (2026-08-16)
+
+**Mo ta:** BucketOutput.vue + CountingOutput.vue dung <BaseIcon name=\"arrow-right\" class=\"inline-arr\"> nhung khong dinh nghia CSS .inline-arr - BaseIcon khong co kich thuoc mac dinh nen SVG roi ve 300x150px -> mui ten khong lo chi phai lam vo giao dien.
+
+**Cach khac phuc:** them class .inline-arr (10x10px, vertical-align -1px, mau text-muted) vao style scoped cua ca 2 component.
+
+**Xac minh:** do getBoundingClientRect thuc te = 10x10 (truoc 300x150); vue-tsc 0 loi; E2E test_sorting 9/9 pass.
+
+## Fix icon khong lo trong DSA Dashboard search (2026-08-16)
+
+**Mo ta:** AlgorithmDashboard.vue render SVG danh muc (getCategoryIcon) voi class .dash-section__icon-svg nhung khong dinh nghia CSS kich thuoc - SVG tho khong width/height -> render 874x874px lam vo layout danh muc DSA.
+
+**Cach khac phuc:** them .dash-section__icon-svg (16x16px, flex-shrink 0, mau text-muted) vao style scoped.
+
+**Xac minh:** do getBoundingClientRect thuc te = 16x16 (truoc 874x874); vue-tsc 0 loi; dsaP0Tests 38/38 pass.

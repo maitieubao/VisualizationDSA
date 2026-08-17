@@ -233,6 +233,10 @@ export const useAlgoPlaygroundStore = defineStore('algo-playground', () => {
     if (!demo) return;
     // AL-004: đổi demo giữa lúc compile → hủy kết quả cũ + không auto-play bất ngờ
     runSeq++;
+    // AL-002: hủy compile đang chạy — nếu không, request cũ hoàn tất với seq cũ
+    // sẽ bị discard mà finally không clear isCompiling → nút Chạy kẹt "Đang chạy…".
+    compileEpoch++;
+    isCompiling.value = false;
     pendingPlayAfterCompile = false;
     demoId.value = demo.id;
     code.value = demo.code;
@@ -257,6 +261,10 @@ export const useAlgoPlaygroundStore = defineStore('algo-playground', () => {
   function invalidate(): void {
     // AL-004: code/input đã đổi → hủy mọi kết quả compile cũ đang chờ
     runSeq++;
+    // AL-002: báo compile đang chạy là "đã hủy" — request cũ hoàn tất sẽ không
+    // clear isCompiling nữa, ta tự clear ngay để nút Chạy không kẹt vĩnh viễn.
+    compileEpoch++;
+    isCompiling.value = false;
     pendingPlayAfterCompile = false;
     frames.value = [];
     currentIndex.value = 0;
@@ -272,6 +280,9 @@ export const useAlgoPlaygroundStore = defineStore('algo-playground', () => {
   // Nếu worker không khả dụng (môi trường test/SSR), fallback về đồng bộ.
   let runSeq = 0;
   let pendingPlayAfterCompile = false;
+  // AL-002: epoch của lần compile hiện tại — chỉ lần compile mới nhất được phép
+  // clear isCompiling; invalidate/loadDemo bump epoch để hủy compile cũ.
+  let compileEpoch = 0;
 
   /** Chữ ký trạng thái (demo + code + input) — tránh auto-run trùng lặp khi remount (AL-045). */
   const autoRunSignature = ref<string>('');
@@ -282,6 +293,7 @@ export const useAlgoPlaygroundStore = defineStore('algo-playground', () => {
 
   async function runAsync(): Promise<void> {
     const seq = ++runSeq;
+    const epoch = ++compileEpoch;
     // AL-019: dừng playback NGAY đầu compile — engine không advance frames cũ trong nền
     isPlaying.value = false;
     currentIndex.value = 0;
@@ -317,7 +329,9 @@ export const useAlgoPlaygroundStore = defineStore('algo-playground', () => {
       frames.value = [];
       currentIndex.value = 0;
     } finally {
-      if (seq === runSeq) isCompiling.value = false;
+      // AL-002: chỉ compile mới nhất được clear spinner — compile bị invalidate/loadDemo
+      // hủy giữa chừng không được phép (invalidate đã tự clear isCompiling).
+      if (epoch === compileEpoch) isCompiling.value = false;
     }
   }
 

@@ -25,13 +25,15 @@ export const APP_TABS: readonly (TabGroup | TabItem)[] = [
       { id: 'sorting',     path: '/sorting',     name: 'Sắp xếp' },
       { id: 'graph',       path: '/graph',       name: 'Đồ thị' },
       { id: 'code-ide',    path: '/code-ide',    name: 'Gỡ lỗi Code' },
-      { id: 'playground',  path: '/playground',  name: 'Playground' }
+      { id: 'playground',  path: '/playground',  name: 'Playground' },
+      { id: 'benchmark',   path: '/benchmark',   name: 'Đo điểm chuẩn' }
     ]
   },
   {
     groupName: 'Khái niệm',
     items: [
-      { id: 'docs',      path: '/docs',      name: 'Tài liệu tham khảo' }
+      { id: 'docs', path: '/docs', name: 'Tài liệu tham khảo' },
+      { id: 'faq',  path: '/faq',  name: 'Trợ giúp' }
     ]
   },
   {

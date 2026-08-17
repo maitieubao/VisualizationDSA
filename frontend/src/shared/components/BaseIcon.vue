@@ -640,6 +640,41 @@
       <path d="M9 14h6" />
       <path d="M12 11v6" />
     </g>
+    <g v-else-if="name === 'algo-sorting'">
+      <rect x="3" y="14" width="4" height="8" rx="1" />
+      <rect x="10" y="8" width="4" height="14" rx="1" />
+      <rect x="17" y="4" width="4" height="18" rx="1" />
+      <path d="M5 11l-2-3 2-3" stroke-width="1.5" />
+      <path d="M19 1l-2 3 2 3" stroke-width="1.5" />
+    </g>
+    <g v-else-if="name === 'algo-search'">
+      <circle cx="10" cy="10" r="7" />
+      <line x1="15" y1="15" x2="21" y2="21" stroke-width="2.5" />
+      <path d="M8 10h4M10 8v4" stroke-width="1.5" />
+    </g>
+    <g v-else-if="name === 'algo-compare'">
+      <rect x="2" y="6" width="8" height="12" rx="2" />
+      <rect x="14" y="6" width="8" height="12" rx="2" />
+      <path d="M10 12h4" stroke-width="2" />
+      <circle cx="6" cy="12" r="1.5" fill="currentColor" />
+      <circle cx="18" cy="12" r="1.5" fill="currentColor" />
+    </g>
+    <g v-else-if="name === 'algo-swap'">
+      <path d="M4 8h12l-4-4" />
+      <path d="M20 16H8l4 4" />
+      <rect x="4" y="14" width="6" height="6" rx="1" />
+      <rect x="14" y="4" width="6" height="6" rx="1" />
+    </g>
+    <g v-else-if="name === 'algo-pointer'">
+      <path d="M12 2v14" stroke-width="2.5" />
+      <path d="M8 12l4 4 4-4" />
+      <circle cx="12" cy="22" r="2" fill="currentColor" />
+    </g>
+    <g v-else-if="name === 'algo-pivot'">
+      <circle cx="12" cy="12" r="9" />
+      <circle cx="12" cy="12" r="4" fill="currentColor" />
+      <path d="M12 3v2M12 19v2M3 12h2M19 12h2" stroke-width="1.5" />
+    </g>
     <g v-else-if="name === 'rocket'">
       <path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z" />
       <path d="m12 15-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2z" />

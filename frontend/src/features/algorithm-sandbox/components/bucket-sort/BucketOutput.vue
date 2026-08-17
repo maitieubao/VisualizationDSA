@@ -24,6 +24,8 @@ function outputStyle(item: BucketItem, index: number) { const c = stableColor(it
 .bucket-section { min-width: 0; padding: 11px 12px 12px; background: var(--color-bg-secondary); border: 1px solid var(--color-border-subtle); border-radius: var(--radius-lg); }
 .bucket-heading { display: flex; justify-content: space-between; gap: 10px; margin-bottom: 9px; color: var(--color-text-secondary); font: 700 10px var(--font-mono); letter-spacing: .08em; }
 .bucket-heading small { color: var(--color-text-muted); font: 400 10px var(--font-mono); letter-spacing: 0; }
+/* BaseIcon không có kích thước mặc định — thiếu class này icon rơi về 300x150px làm vỡ layout */
+.inline-arr { width: 10px; height: 10px; vertical-align: -1px; color: var(--color-text-muted); }
 .bucket-output { display: grid; align-items: end; gap: clamp(4px, 1vw, 10px); min-height: 86px; }
 .output-item { display: flex; min-width: 0; flex-direction: column; align-items: center; }
 .output-value, .output-placeholder { display: flex; width: 100%; max-width: 70px; min-height: 40px; align-items: center; justify-content: center; border: 1px solid; border-radius: var(--radius-md); font: 800 clamp(11px, 1.8vw, 14px) var(--font-mono); transition: .3s ease; }

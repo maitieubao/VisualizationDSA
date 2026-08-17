@@ -6,6 +6,11 @@
       v-bind="rendererProps"
     />
 
+    <!-- Yêu thích mô phỏng (F6/FR-3.10) -->
+    <div class="absolute top-3 right-4 z-10 pointer-events-auto">
+      <FavoriteToggle :simulation-key="algoStore.currentAlgorithm?.id ?? ''" />
+    </div>
+
     
     <div
       v-if="currentFrame"
@@ -49,6 +54,7 @@ import BoxArrayRenderer from './renderers/BoxArrayRenderer.vue';
 import TreeRenderer from './renderers/TreeRenderer.vue';
 import TubeRenderer from './renderers/TubeRenderer.vue';
 import GraphRenderer from './renderers/GraphRenderer.vue';
+import FavoriteToggle from './FavoriteToggle.vue';
 
 const animStore = useAnimationStore();
 const algoStore = useAlgorithmStore();

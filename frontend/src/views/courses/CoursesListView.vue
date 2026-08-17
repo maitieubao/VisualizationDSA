@@ -34,6 +34,11 @@
       @update:searchQuery="courseStore.setSearchQuery"
     />
 
+    <!-- F4 (FR-2.5): tìm kiếm bài học toàn hệ thống (debounce 300ms). -->
+    <div class="mt-4 max-w-md">
+      <LessonSearchBar />
+    </div>
+
     <div class="flex items-center gap-3 mt-4 relative">
       <label for="course-sort" class="text-xs text-text-muted font-semibold uppercase tracking-wider">Sắp xếp</label>
       <div class="relative flex-1 sm:w-auto">
@@ -116,6 +121,7 @@ import { useCourseStore } from '../../features/courses/store/useCourseStore';
 import { courseApi } from '../../services/courseApi';
 import CourseCard from '../../features/courses/components/CourseCard.vue';
 import CourseFilter from '../../features/courses/components/CourseFilter.vue';
+import LessonSearchBar from '../../features/lesson/components/LessonSearchBar.vue';
 
 const authStore = useAuthStore();
 const courseStore = useCourseStore();

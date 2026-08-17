@@ -51,7 +51,7 @@ namespace Infrastructure.Migrations
 
                     b.HasIndex("CreatedAt");
 
-                    b.ToTable("AuditLogs");
+                    b.ToTable("AuditLogs", (string)null);
                 });
 
             modelBuilder.Entity("VisualizationDSA.Domain.Entities.Badge", b =>
@@ -89,7 +89,7 @@ namespace Infrastructure.Migrations
                     b.HasIndex("Name")
                         .IsUnique();
 
-                    b.ToTable("Badges");
+                    b.ToTable("Badges", (string)null);
                 });
 
             modelBuilder.Entity("VisualizationDSA.Domain.Entities.Classroom", b =>
@@ -135,7 +135,7 @@ namespace Infrastructure.Migrations
 
                     b.HasIndex("OwnerTeacherId");
 
-                    b.ToTable("Classrooms");
+                    b.ToTable("Classrooms", (string)null);
                 });
 
             modelBuilder.Entity("VisualizationDSA.Domain.Entities.ClassroomAnnouncement", b =>
@@ -182,7 +182,7 @@ namespace Infrastructure.Migrations
 
                     b.HasIndex("ClassroomId", "PublishedAt");
 
-                    b.ToTable("ClassroomAnnouncements");
+                    b.ToTable("ClassroomAnnouncements", (string)null);
                 });
 
             modelBuilder.Entity("VisualizationDSA.Domain.Entities.ClassroomEnrollment", b =>
@@ -219,7 +219,7 @@ namespace Infrastructure.Migrations
                     b.HasIndex("ClassroomId", "StudentId")
                         .IsUnique();
 
-                    b.ToTable("ClassroomEnrollments");
+                    b.ToTable("ClassroomEnrollments", (string)null);
                 });
 
             modelBuilder.Entity("VisualizationDSA.Domain.Entities.ClassroomLesson", b =>
@@ -249,7 +249,7 @@ namespace Infrastructure.Migrations
 
                     b.HasIndex("LessonId");
 
-                    b.ToTable("ClassroomLessons");
+                    b.ToTable("ClassroomLessons", (string)null);
                 });
 
             modelBuilder.Entity("VisualizationDSA.Domain.Entities.ClassroomModule", b =>
@@ -296,7 +296,7 @@ namespace Infrastructure.Migrations
                     b.HasIndex("ClassroomId", "OrderIndex")
                         .IsUnique();
 
-                    b.ToTable("ClassroomModules");
+                    b.ToTable("ClassroomModules", (string)null);
                 });
 
             modelBuilder.Entity("VisualizationDSA.Domain.Entities.ClassroomModuleItem", b =>
@@ -378,7 +378,7 @@ namespace Infrastructure.Migrations
                     b.HasIndex("ModuleId", "OrderIndex")
                         .IsUnique();
 
-                    b.ToTable("ClassroomModuleItems", t =>
+                    b.ToTable("ClassroomModuleItems", null, t =>
                         {
                             t.HasCheckConstraint("CK_ClassroomModuleItem_OneReference", "(\"LessonId\" IS NOT NULL AND \"QuizId\" IS NULL AND \"CodelabId\" IS NULL) OR (\"LessonId\" IS NULL AND \"QuizId\" IS NOT NULL AND \"CodelabId\" IS NULL) OR (\"LessonId\" IS NULL AND \"QuizId\" IS NULL AND \"CodelabId\" IS NOT NULL)");
                         });
@@ -424,7 +424,7 @@ namespace Infrastructure.Migrations
                     b.HasIndex("ClassroomId", "ModuleItemId")
                         .IsUnique();
 
-                    b.ToTable("ClassroomModuleItemOverrides");
+                    b.ToTable("ClassroomModuleItemOverrides", (string)null);
                 });
 
             modelBuilder.Entity("VisualizationDSA.Domain.Entities.ClassroomQuiz", b =>
@@ -457,7 +457,7 @@ namespace Infrastructure.Migrations
 
                     b.HasIndex("QuizId");
 
-                    b.ToTable("ClassroomQuizzes");
+                    b.ToTable("ClassroomQuizzes", (string)null);
                 });
 
             modelBuilder.Entity("VisualizationDSA.Domain.Entities.ClassroomQuizAttempt", b =>
@@ -490,7 +490,7 @@ namespace Infrastructure.Migrations
 
                     b.HasIndex("StudentId");
 
-                    b.ToTable("ClassroomQuizAttempts");
+                    b.ToTable("ClassroomQuizAttempts", (string)null);
                 });
 
             modelBuilder.Entity("VisualizationDSA.Domain.Entities.Codelab", b =>
@@ -547,7 +547,7 @@ namespace Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Codelabs");
+                    b.ToTable("Codelabs", (string)null);
                 });
 
             modelBuilder.Entity("VisualizationDSA.Domain.Entities.CodelabHint", b =>
@@ -576,7 +576,7 @@ namespace Infrastructure.Migrations
 
                     b.HasIndex("CodelabId");
 
-                    b.ToTable("CodelabHints");
+                    b.ToTable("CodelabHints", (string)null);
                 });
 
             modelBuilder.Entity("VisualizationDSA.Domain.Entities.CodelabHintReveal", b =>
@@ -601,7 +601,7 @@ namespace Infrastructure.Migrations
                     b.HasIndex("UserId", "CodelabHintId")
                         .IsUnique();
 
-                    b.ToTable("CodelabHintReveals");
+                    b.ToTable("CodelabHintReveals", (string)null);
                 });
 
             modelBuilder.Entity("VisualizationDSA.Domain.Entities.CodelabSubmission", b =>
@@ -665,7 +665,7 @@ namespace Infrastructure.Migrations
                     b.HasIndex("UserId", "CodelabId", "CreatedAt")
                         .IsDescending(false, false, true);
 
-                    b.ToTable("CodelabSubmissions");
+                    b.ToTable("CodelabSubmissions", (string)null);
                 });
 
             modelBuilder.Entity("VisualizationDSA.Domain.Entities.CodelabTemplate", b =>
@@ -689,7 +689,7 @@ namespace Infrastructure.Migrations
 
                     b.HasIndex("CodelabId");
 
-                    b.ToTable("CodelabTemplates");
+                    b.ToTable("CodelabTemplates", (string)null);
                 });
 
             modelBuilder.Entity("VisualizationDSA.Domain.Entities.CodelabTestCase", b =>
@@ -722,7 +722,7 @@ namespace Infrastructure.Migrations
 
                     b.HasIndex("CodelabId");
 
-                    b.ToTable("CodelabTestCases");
+                    b.ToTable("CodelabTestCases", (string)null);
                 });
 
             modelBuilder.Entity("VisualizationDSA.Domain.Entities.Course", b =>
@@ -771,7 +771,7 @@ namespace Infrastructure.Migrations
 
                     b.HasIndex("TeacherId");
 
-                    b.ToTable("Courses");
+                    b.ToTable("Courses", (string)null);
                 });
 
             modelBuilder.Entity("VisualizationDSA.Domain.Entities.CourseModule", b =>
@@ -803,7 +803,35 @@ namespace Infrastructure.Migrations
                     b.HasIndex("CourseId", "OrderIndex")
                         .IsUnique();
 
-                    b.ToTable("CourseModules");
+                    b.ToTable("CourseModules", (string)null);
+                });
+
+            modelBuilder.Entity("VisualizationDSA.Domain.Entities.Favorite", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("InputJson")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("SimulationKey")
+                        .IsRequired()
+                        .HasMaxLength(120)
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId", "SimulationKey")
+                        .IsUnique();
+
+                    b.ToTable("Favorites", (string)null);
                 });
 
             modelBuilder.Entity("VisualizationDSA.Domain.Entities.KnowledgeEdge", b =>
@@ -840,7 +868,62 @@ namespace Infrastructure.Migrations
                     b.HasIndex("SourceNodeId", "TargetNodeId", "RelationType")
                         .IsUnique();
 
-                    b.ToTable("KnowledgeEdges");
+                    b.ToTable("KnowledgeEdges", (string)null);
+                });
+
+            modelBuilder.Entity("VisualizationDSA.Domain.Entities.LearningPath", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Description")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("LearningPaths", (string)null);
+                });
+
+            modelBuilder.Entity("VisualizationDSA.Domain.Entities.LearningPathNode", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid>("LearningPathId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid?>("LessonId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("OrderIndex")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("LessonId");
+
+                    b.HasIndex("LearningPathId", "OrderIndex")
+                        .IsUnique();
+
+                    b.ToTable("LearningPathNodes", (string)null);
                 });
 
             modelBuilder.Entity("VisualizationDSA.Domain.Entities.LearningProgress", b =>
@@ -867,7 +950,7 @@ namespace Infrastructure.Migrations
                     b.HasIndex("UserId", "ModuleId")
                         .IsUnique();
 
-                    b.ToTable("LearningProgresses");
+                    b.ToTable("LearningProgresses", (string)null);
                 });
 
             modelBuilder.Entity("VisualizationDSA.Domain.Entities.Lesson", b =>
@@ -918,7 +1001,7 @@ namespace Infrastructure.Migrations
 
                     b.HasIndex("CreatedByTeacherId");
 
-                    b.ToTable("Lessons");
+                    b.ToTable("Lessons", (string)null);
                 });
 
             modelBuilder.Entity("VisualizationDSA.Domain.Entities.LessonComment", b =>
@@ -961,7 +1044,36 @@ namespace Infrastructure.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("LessonComments");
+                    b.ToTable("LessonComments", (string)null);
+                });
+
+            modelBuilder.Entity("VisualizationDSA.Domain.Entities.LessonNote", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("ContentHtml")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid>("LessonId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("LessonId");
+
+                    b.HasIndex("UserId", "LessonId")
+                        .IsUnique();
+
+                    b.ToTable("LessonNotes", (string)null);
                 });
 
             modelBuilder.Entity("VisualizationDSA.Domain.Entities.LessonReview", b =>
@@ -994,7 +1106,7 @@ namespace Infrastructure.Migrations
 
                     b.HasIndex("ReviewerAdminId");
 
-                    b.ToTable("LessonReviews");
+                    b.ToTable("LessonReviews", (string)null);
                 });
 
             modelBuilder.Entity("VisualizationDSA.Domain.Entities.LessonTheoryArticle", b =>
@@ -1015,7 +1127,7 @@ namespace Infrastructure.Migrations
 
                     b.HasIndex("TheoryArticleId");
 
-                    b.ToTable("LessonTheoryArticles");
+                    b.ToTable("LessonTheoryArticles", (string)null);
                 });
 
             modelBuilder.Entity("VisualizationDSA.Domain.Entities.ModuleItem", b =>
@@ -1066,10 +1178,38 @@ namespace Infrastructure.Migrations
                     b.HasIndex("ModuleId", "OrderIndex")
                         .IsUnique();
 
-                    b.ToTable("ModuleItems", t =>
+                    b.ToTable("ModuleItems", null, t =>
                         {
                             t.HasCheckConstraint("CK_ModuleItem_OneReference", "(\"LessonId\" IS NOT NULL AND \"QuizId\" IS NULL AND \"CodelabId\" IS NULL) OR (\"LessonId\" IS NULL AND \"QuizId\" IS NOT NULL AND \"CodelabId\" IS NULL) OR (\"LessonId\" IS NULL AND \"QuizId\" IS NULL AND \"CodelabId\" IS NOT NULL)");
                         });
+                });
+
+            modelBuilder.Entity("VisualizationDSA.Domain.Entities.NodeSession", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("ExpiresAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid>("NodeId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("StartedAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("NodeId");
+
+                    b.HasIndex("UserId", "NodeId")
+                        .IsUnique();
+
+                    b.ToTable("NodeSessions", (string)null);
                 });
 
             modelBuilder.Entity("VisualizationDSA.Domain.Entities.Notification", b =>
@@ -1103,7 +1243,7 @@ namespace Infrastructure.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("Notifications");
+                    b.ToTable("Notifications", (string)null);
                 });
 
             modelBuilder.Entity("VisualizationDSA.Domain.Entities.Order", b =>
@@ -1154,7 +1294,7 @@ namespace Infrastructure.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("Orders");
+                    b.ToTable("Orders", (string)null);
                 });
 
             modelBuilder.Entity("VisualizationDSA.Domain.Entities.Quiz", b =>
@@ -1193,7 +1333,7 @@ namespace Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Quizzes");
+                    b.ToTable("Quizzes", (string)null);
                 });
 
             modelBuilder.Entity("VisualizationDSA.Domain.Entities.QuizAttempt", b =>
@@ -1238,7 +1378,7 @@ namespace Infrastructure.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("QuizAttempts");
+                    b.ToTable("QuizAttempts", (string)null);
                 });
 
             modelBuilder.Entity("VisualizationDSA.Domain.Entities.QuizQuestion", b =>
@@ -1270,7 +1410,7 @@ namespace Infrastructure.Migrations
 
                     b.HasIndex("QuizId");
 
-                    b.ToTable("QuizQuestions");
+                    b.ToTable("QuizQuestions", (string)null);
                 });
 
             modelBuilder.Entity("VisualizationDSA.Domain.Entities.QuizXpGrant", b =>
@@ -1294,7 +1434,7 @@ namespace Infrastructure.Migrations
                     b.HasIndex("UserId", "QuizKey")
                         .IsUnique();
 
-                    b.ToTable("QuizXpGrants");
+                    b.ToTable("QuizXpGrants", (string)null);
                 });
 
             modelBuilder.Entity("VisualizationDSA.Domain.Entities.RefreshToken", b =>
@@ -1329,7 +1469,7 @@ namespace Infrastructure.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("RefreshTokens");
+                    b.ToTable("RefreshTokens", (string)null);
                 });
 
             modelBuilder.Entity("VisualizationDSA.Domain.Entities.SemanticConceptNode", b =>
@@ -1377,7 +1517,44 @@ namespace Infrastructure.Migrations
                     b.HasIndex("ConceptKey")
                         .IsUnique();
 
-                    b.ToTable("SemanticConceptNodes");
+                    b.ToTable("SemanticConceptNodes", (string)null);
+                });
+
+            modelBuilder.Entity("VisualizationDSA.Domain.Entities.StageProgress", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT");
+
+                    b.Property<int?>("BestScore")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<Guid>("LessonId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime?>("PassedAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("Stage")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("LessonId");
+
+                    b.HasIndex("UserId", "LessonId", "Stage")
+                        .IsUnique();
+
+                    b.ToTable("StageProgresses", (string)null);
                 });
 
             modelBuilder.Entity("VisualizationDSA.Domain.Entities.SystemAuditEventStream", b =>
@@ -1429,7 +1606,32 @@ namespace Infrastructure.Migrations
 
                     b.HasIndex("UserId", "OccurredAt");
 
-                    b.ToTable("SystemAuditEventStreams");
+                    b.ToTable("SystemAuditEventStreams", (string)null);
+                });
+
+            modelBuilder.Entity("VisualizationDSA.Domain.Entities.SystemSetting", b =>
+                {
+                    b.Property<string>("Key")
+                        .HasMaxLength(150)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(500)
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid?>("UpdatedBy")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Value")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Key");
+
+                    b.ToTable("SystemSettings", (string)null);
                 });
 
             modelBuilder.Entity("VisualizationDSA.Domain.Entities.TheoryArticle", b =>
@@ -1497,7 +1699,7 @@ namespace Infrastructure.Migrations
                     b.HasIndex("Slug")
                         .IsUnique();
 
-                    b.ToTable("TheoryArticles");
+                    b.ToTable("TheoryArticles", (string)null);
                 });
 
             modelBuilder.Entity("VisualizationDSA.Domain.Entities.TheoryArticleVersion", b =>
@@ -1532,7 +1734,7 @@ namespace Infrastructure.Migrations
 
                     b.HasIndex("ChangedByUserId");
 
-                    b.ToTable("TheoryArticleVersions");
+                    b.ToTable("TheoryArticleVersions", (string)null);
                 });
 
             modelBuilder.Entity("VisualizationDSA.Domain.Entities.User", b =>
@@ -1560,6 +1762,16 @@ namespace Infrastructure.Migrations
                         .HasMaxLength(255)
                         .HasColumnType("TEXT");
 
+                    b.Property<int>("Hearts")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER")
+                        .HasDefaultValue(10);
+
+                    b.Property<int>("HeartsMax")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER")
+                        .HasDefaultValue(10);
+
                     b.Property<bool>("IsActive")
                         .HasColumnType("INTEGER");
 
@@ -1567,6 +1779,9 @@ namespace Infrastructure.Migrations
                         .HasColumnType("INTEGER");
 
                     b.Property<DateTime?>("LastActivityDate")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime?>("LastHeartAt")
                         .HasColumnType("TEXT");
 
                     b.Property<DateTime?>("LastLoginAt")
@@ -1614,7 +1829,7 @@ namespace Infrastructure.Migrations
                     b.HasIndex("Username")
                         .IsUnique();
 
-                    b.ToTable("Users");
+                    b.ToTable("Users", (string)null);
                 });
 
             modelBuilder.Entity("VisualizationDSA.Domain.Entities.UserBadge", b =>
@@ -1639,7 +1854,7 @@ namespace Infrastructure.Migrations
                     b.HasIndex("UserId", "BadgeId")
                         .IsUnique();
 
-                    b.ToTable("UserBadges");
+                    b.ToTable("UserBadges", (string)null);
                 });
 
             modelBuilder.Entity("VisualizationDSA.Domain.Entities.UserLessonProgress", b =>
@@ -1689,7 +1904,7 @@ namespace Infrastructure.Migrations
 
                     b.HasIndex("LessonId");
 
-                    b.ToTable("UserLessonProgresses");
+                    b.ToTable("UserLessonProgresses", (string)null);
                 });
 
             modelBuilder.Entity("VisualizationDSA.Domain.Entities.UserModuleItemProgress", b =>
@@ -1736,7 +1951,47 @@ namespace Infrastructure.Migrations
 
                     b.HasIndex("ModuleItemId");
 
-                    b.ToTable("UserModuleItemProgresses");
+                    b.ToTable("UserModuleItemProgresses", (string)null);
+                });
+
+            modelBuilder.Entity("VisualizationDSA.Domain.Entities.UserNodeProgress", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid>("NodeId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<int?>("NodeScore")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<DateTime?>("PassedAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("Stars")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<DateTime?>("UnlockedAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("NodeId");
+
+                    b.HasIndex("UserId", "NodeId")
+                        .IsUnique();
+
+                    b.ToTable("UserNodeProgresses", (string)null);
                 });
 
             modelBuilder.Entity("VisualizationDSA.Domain.Entities.Classroom", b =>
@@ -1993,6 +2248,17 @@ namespace Infrastructure.Migrations
                     b.Navigation("Course");
                 });
 
+            modelBuilder.Entity("VisualizationDSA.Domain.Entities.Favorite", b =>
+                {
+                    b.HasOne("VisualizationDSA.Domain.Entities.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("VisualizationDSA.Domain.Entities.KnowledgeEdge", b =>
                 {
                     b.HasOne("VisualizationDSA.Domain.Entities.SemanticConceptNode", "SourceNode")
@@ -2010,6 +2276,24 @@ namespace Infrastructure.Migrations
                     b.Navigation("SourceNode");
 
                     b.Navigation("TargetNode");
+                });
+
+            modelBuilder.Entity("VisualizationDSA.Domain.Entities.LearningPathNode", b =>
+                {
+                    b.HasOne("VisualizationDSA.Domain.Entities.LearningPath", "LearningPath")
+                        .WithMany("Nodes")
+                        .HasForeignKey("LearningPathId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("VisualizationDSA.Domain.Entities.Lesson", "Lesson")
+                        .WithMany()
+                        .HasForeignKey("LessonId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.Navigation("LearningPath");
+
+                    b.Navigation("Lesson");
                 });
 
             modelBuilder.Entity("VisualizationDSA.Domain.Entities.LearningProgress", b =>
@@ -2061,6 +2345,25 @@ namespace Infrastructure.Migrations
                     b.Navigation("Lesson");
 
                     b.Navigation("ParentComment");
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("VisualizationDSA.Domain.Entities.LessonNote", b =>
+                {
+                    b.HasOne("VisualizationDSA.Domain.Entities.Lesson", "Lesson")
+                        .WithMany()
+                        .HasForeignKey("LessonId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("VisualizationDSA.Domain.Entities.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Lesson");
 
                     b.Navigation("User");
                 });
@@ -2130,6 +2433,25 @@ namespace Infrastructure.Migrations
                     b.Navigation("Quiz");
                 });
 
+            modelBuilder.Entity("VisualizationDSA.Domain.Entities.NodeSession", b =>
+                {
+                    b.HasOne("VisualizationDSA.Domain.Entities.LearningPathNode", "Node")
+                        .WithMany()
+                        .HasForeignKey("NodeId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("VisualizationDSA.Domain.Entities.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Node");
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("VisualizationDSA.Domain.Entities.Notification", b =>
                 {
                     b.HasOne("VisualizationDSA.Domain.Entities.User", "User")
@@ -2185,6 +2507,25 @@ namespace Infrastructure.Migrations
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("VisualizationDSA.Domain.Entities.StageProgress", b =>
+                {
+                    b.HasOne("VisualizationDSA.Domain.Entities.Lesson", "Lesson")
+                        .WithMany()
+                        .HasForeignKey("LessonId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("VisualizationDSA.Domain.Entities.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Lesson");
 
                     b.Navigation("User");
                 });
@@ -2276,6 +2617,25 @@ namespace Infrastructure.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("VisualizationDSA.Domain.Entities.UserNodeProgress", b =>
+                {
+                    b.HasOne("VisualizationDSA.Domain.Entities.LearningPathNode", "Node")
+                        .WithMany()
+                        .HasForeignKey("NodeId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("VisualizationDSA.Domain.Entities.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Node");
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("VisualizationDSA.Domain.Entities.Badge", b =>
                 {
                     b.Navigation("UserBadges");
@@ -2325,6 +2685,11 @@ namespace Infrastructure.Migrations
             modelBuilder.Entity("VisualizationDSA.Domain.Entities.CourseModule", b =>
                 {
                     b.Navigation("Items");
+                });
+
+            modelBuilder.Entity("VisualizationDSA.Domain.Entities.LearningPath", b =>
+                {
+                    b.Navigation("Nodes");
                 });
 
             modelBuilder.Entity("VisualizationDSA.Domain.Entities.Lesson", b =>

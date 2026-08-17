@@ -100,11 +100,11 @@ function authHeaders(): HeadersInit {
 
 
 export const statelessAuthApi = {
-  async register(email: string, username: string, password: string): Promise<StatelessAuthResponse> {
+  async register(email: string, username: string, password: string, isTeacher = false): Promise<StatelessAuthResponse> {
     const res = await fetch(`${BASE_URL}/api/v1/concepts/auth/register`, {
       method: 'POST',
       headers: JSON_HEADERS,
-      body: JSON.stringify({ email, username, password }),
+      body: JSON.stringify({ email, username, password, isTeacher }),
     });
     return handleResponse<StatelessAuthResponse>(res);
   },

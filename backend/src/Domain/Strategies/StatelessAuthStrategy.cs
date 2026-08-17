@@ -154,7 +154,8 @@ namespace VisualizationDSA.Domain.Strategies
                 CurrentLevel = 1,
                 StreakDays = 0,
                 IsPremium = false,
-                Role = "Student",
+                // F3 (FR-1.8): đăng ký giảng viên → chờ duyệt; mặc định Student.
+                Role = request.IsTeacher ? "PendingTeacher" : "Student",
                 CreatedAt = DateTime.UtcNow,
                 LastLoginAt = DateTime.UtcNow,
                 LastAccessAt = DateTime.UtcNow,

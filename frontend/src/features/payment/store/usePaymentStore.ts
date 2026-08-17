@@ -243,6 +243,47 @@ export const usePaymentStore = defineStore('payment', () => {
     paymentError.value = null;
   }
 
+  // PM-008: Khôi phục order đang chờ sau khi refresh trang — trước đây store chỉ
+  // giữ order trong bộ nhớ nên F5 làm user rơi về idle và "mất" hóa đơn vừa tạo
+  // (QR vẫn còn hiệu lực 15 phút). Dữ liệu nguồn: transactions log của backend.
+  async function restoreActiveOrder(): Promise<void> {
+    if (isPremium.value) return; // đã premium không cần khôi phục order
+    if (checkoutState.value !== 'idle' || currentOrder.value) return;
+    if (!authStore.isAuthenticated) return;
+
+    try {
+      if (authStore.isStatelessMode) {
+        const txns = await statelessPaymentApi.getTransactions();
+        // Gom theo orderId: order còn Pending = có CHECKOUT_CREATED (Pending)
+        // và chưa có WEBHOOK_CONFIRMED (Completed) / WEBHOOK_REJECTED_EXPIRED (Expired).
+        const byOrder = new Map<string, string[]>();
+        for (const t of txns) {
+          const list = byOrder.get(t.orderId) ?? [];
+          list.push(t.status);
+          byOrder.set(t.orderId, list);
+        }
+        const pendingId = [...byOrder.keys()].find((oid) => {
+          const st = byOrder.get(oid) ?? [];
+          return st.includes('Pending') && !st.includes('Completed') && !st.includes('Expired');
+        });
+        if (!pendingId) return;
+
+        const order = await fetchOrderStatus(pendingId);
+        // Không khôi phục order đã quá hạn (QR hết hiệu lực → idle để tạo mới).
+        const expiresAt = (order as StatelessOrderDto).expiresAt;
+        if (expiresAt && new Date(expiresAt).getTime() <= Date.now()) return;
+        if (order.status !== 'Pending') return;
+
+        currentOrder.value = order;
+        checkoutState.value = 'paying';
+        startPolling();
+      }
+      // classic mode không có endpoint liệt kê order của user — giữ idle (hành vi cũ).
+    } catch {
+      // Lỗi khôi phục (mạng/401) → giữ idle, không làm vỡ view checkout.
+    }
+  }
+
   // PM-022: Reset toàn bộ trạng thái payment khi phiên auth thay đổi
   // (login/logout/đổi user) — tránh premiumStatus/currentOrder/config của user cũ
   // lộ sang phiên mới. View watch isAuthenticated/userId rồi gọi action này.
@@ -262,6 +303,6 @@ export const usePaymentStore = defineStore('payment', () => {
     currentOrder, paymentConfig, premiumStatus, isLoading, paymentError, checkoutState,
     isPremium, premiumPrice,
     loadConfig, loadPremiumStatus, startCheckout, verifyPayment,
-    simulatePaymentSuccess, resetCheckout, resetOnAuthChange,
+    simulatePaymentSuccess, resetCheckout, resetOnAuthChange, restoreActiveOrder,
   };
 });

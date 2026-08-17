@@ -143,6 +143,7 @@ vi.mock('../../auth/store/useAuthStore', () => {
 });
 
 import { usePaymentStore } from '../store/usePaymentStore';
+import { statelessPaymentApi } from '../services/statelessPaymentApi';
 import PremiumMarketingCard from '../components/PremiumMarketingCard.vue';
 import CheckoutSuccessScreen from '../components/CheckoutSuccessScreen.vue';
 import PremiumGate from '../components/PremiumGate.vue';
@@ -653,6 +654,128 @@ describe('Payment — P2 Tests', () => {
       const { formattedTime: ft2, startTimer: st2 } = usePaymentTimer(65);
       st2(65);
       expect(ft2.value).toBe('01:05');
+    });
+  });
+
+  describe('PM-008 (P1): restoreActiveOrder — khôi phục order Pending sau refresh', () => {
+    let activeStore: ReturnType<typeof usePaymentStore> | null = null;
+
+    beforeEach(() => {
+      setActivePinia(createPinia());
+      vi.clearAllMocks();
+      activeStore = null;
+    });
+
+    afterEach(() => {
+      // restore khởi động polling interval — phải dừng để không leak timer trong test
+      activeStore?.resetCheckout();
+      activeStore = null;
+    });
+
+    function mockTransactions(entries: Array<{ orderId: string; status: string }>): void {
+      vi.mocked(statelessPaymentApi.getTransactions).mockResolvedValueOnce(
+        entries as never,
+      );
+    }
+
+    it('order Pending trong transaction log → khôi phục về paying', async () => {
+      const store = usePaymentStore();
+      activeStore = store;
+      vi.mocked(statelessPaymentApi.getOrderStatus).mockResolvedValueOnce({
+        id: 'order-restored-1',
+        userId: 'user-789',
+        paymentCode: 'PAY_RESTORED',
+        amount: 199000,
+        status: 'Pending',
+        createdAt: new Date().toISOString(),
+        completedAt: null,
+        bankId: 'MBBank',
+        bankAccount: '123456789',
+        accountName: 'VISUALIZATION DSA',
+        qrUrl: 'data:image/png;base64,restored',
+      } as never);
+      mockTransactions([
+        { orderId: 'order-restored-1', status: 'Pending' },
+      ]);
+
+      await store.restoreActiveOrder();
+
+      expect(store.checkoutState).toBe('paying');
+      expect(store.currentOrder?.id).toBe('order-restored-1');
+    });
+
+    it('transaction đã Completed → không khôi phục (giữ idle)', async () => {
+      const store = usePaymentStore();
+      activeStore = store;
+      mockTransactions([
+        { orderId: 'order-done-1', status: 'Pending' },
+        { orderId: 'order-done-1', status: 'Completed' },
+      ]);
+
+      await store.restoreActiveOrder();
+
+      expect(store.checkoutState).toBe('idle');
+      expect(store.currentOrder).toBeNull();
+    });
+
+    it('transaction đã Expired → không khôi phục', async () => {
+      const store = usePaymentStore();
+      activeStore = store;
+      mockTransactions([
+        { orderId: 'order-expired-1', status: 'Pending' },
+        { orderId: 'order-expired-1', status: 'Expired' },
+      ]);
+
+      await store.restoreActiveOrder();
+
+      expect(store.checkoutState).toBe('idle');
+    });
+
+    it('order đã hết hạn (expiresAt quá khứ) → bỏ qua', async () => {
+      const store = usePaymentStore();
+      activeStore = store;
+      vi.mocked(statelessPaymentApi.getOrderStatus).mockResolvedValueOnce({
+        id: 'order-old-1',
+        userId: 'user-789',
+        paymentCode: 'PAY_OLD',
+        amount: 199000,
+        status: 'Pending',
+        createdAt: new Date(Date.now() - 3600_000).toISOString(),
+        expiresAt: new Date(Date.now() - 1000).toISOString(),
+        completedAt: null,
+        bankId: 'MBBank',
+        bankAccount: '123456789',
+        accountName: 'VISUALIZATION DSA',
+        qrUrl: 'data:image/png;base64,old',
+      } as never);
+      mockTransactions([
+        { orderId: 'order-old-1', status: 'Pending' },
+      ]);
+
+      await store.restoreActiveOrder();
+
+      expect(store.checkoutState).toBe('idle');
+    });
+
+    it('getTransactions lỗi → giữ idle, không ném lỗi ra view', async () => {
+      const store = usePaymentStore();
+      activeStore = store;
+      vi.mocked(statelessPaymentApi.getTransactions).mockRejectedValueOnce(
+        new Error('mạng lỗi'),
+      );
+
+      await expect(store.restoreActiveOrder()).resolves.toBeUndefined();
+      expect(store.checkoutState).toBe('idle');
+    });
+
+    it('không có transaction nào → giữ idle', async () => {
+      const store = usePaymentStore();
+      activeStore = store;
+      mockTransactions([]);
+
+      await store.restoreActiveOrder();
+
+      expect(store.checkoutState).toBe('idle');
     });
   });
 });

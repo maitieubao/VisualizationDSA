@@ -202,6 +202,41 @@ namespace VisualizationDSA.WebApi.Controllers
         
         
         
+        // F3 (FR-1.8): liệt kê user theo role (ví dụ ?role=PendingTeacher) để AdminUsersTab
+        // duyệt/từ chối tài khoản giảng viên đang chờ. Không có role → trả toàn bộ user.
+        // Route "users/by-role" (không phải "users") vì TeacherController đã chiếm GET /admin/users.
+        [HttpGet("users/by-role")]
+        public async Task<IActionResult> GetUsers([FromQuery] string? role = null)
+        {
+            var query = _dbContext.Users.AsNoTracking().AsQueryable();
+
+            if (!string.IsNullOrWhiteSpace(role))
+            {
+                var cleanRole = role.Trim();
+                query = query.Where(u => u.Role == cleanRole);
+            }
+
+            var users = await query
+                .OrderByDescending(u => u.CreatedAt)
+                .Select(u => new
+                {
+                    id        = u.Id.ToString(),
+                    u.Email,
+                    u.Username,
+                    u.Role,
+                    u.IsPremium,
+                    u.TotalXP,
+                    u.CurrentLevel,
+                    u.StreakDays,
+                    isActive  = u.IsActive,
+                    createdAt = u.CreatedAt,
+                    lastLogin = u.LastLoginAt
+                })
+                .ToListAsync();
+
+            return Ok(users);
+        }
+
         [HttpPut("users/{id}/role")]
         public async Task<IActionResult> UpdateUserRole(string id, [FromBody] UpdateRoleRequest request)
         {
@@ -209,7 +244,8 @@ namespace VisualizationDSA.WebApi.Controllers
             if (request.Role != "Student" && request.Role != "Teacher" && request.Role != "Admin")
                 return BadRequest(new { error = "INVALID_ROLE", message = "Role phải là Student, Teacher hoặc Admin." });
 
-            var user = await _dbContext.Users.FirstOrDefaultAsync(u => u.Id.ToString() == id);
+            var user = await _dbContext.Users.FirstOrDefaultAsync(
+        u => u.Id.ToString().ToLower() == id.ToLowerInvariant());
             if (user == null)
                 return NotFound(new { error = "USER_NOT_FOUND" });
 
@@ -231,6 +267,9 @@ namespace VisualizationDSA.WebApi.Controllers
                     return Conflict(new { error = "LAST_ADMIN_PROTECTED", message = "Không thể thay đổi vai trò của admin cuối cùng trong hệ thống." });
             }
 
+            // F3 (FR-1.8): duyệt/từ chối tài khoản PendingTeacher qua endpoint sẵn có.
+            // Duyệt = "Teacher", từ chối = "Student". SetRole KHÔNG nhận PendingTeacher nên
+            // admin không thể đặt nhầm tài khoản về trạng thái chờ (an toàn 1 chiều).
             user.SetRole(request.Role);
             await _dbContext.SaveChangesAsync();
             
@@ -240,7 +279,11 @@ namespace VisualizationDSA.WebApi.Controllers
             
             if (Guid.TryParse(id, out var targetGuid))
             {
-                await LogAdminAction("UpdateUserRole", targetGuid, $"Đổi vai trò của {user.Username} từ {oldRole} sang {request.Role}.");
+                // F3: ghi rõ khi hành động là duyệt/từ chối giảng viên để audit dễ truy vết.
+                var action = oldRole == "PendingTeacher" && request.Role == "Teacher" ? "ApproveTeacher"
+                    : oldRole == "PendingTeacher" && request.Role == "Student" ? "RejectTeacher"
+                    : "UpdateUserRole";
+                await LogAdminAction(action, targetGuid, $"Đổi vai trò của {user.Username} từ {oldRole} sang {request.Role}.");
             }
 
             return Ok(new { message = $"Đã đổi role của {user.Email} thành {request.Role}.", userId = id, newRole = request.Role });
@@ -254,7 +297,8 @@ namespace VisualizationDSA.WebApi.Controllers
         public async Task<IActionResult> TogglePremium(string id, [FromBody] TogglePremiumRequest request)
         {
 
-            var user = await _dbContext.Users.FirstOrDefaultAsync(u => u.Id.ToString() == id);
+            var user = await _dbContext.Users.FirstOrDefaultAsync(
+        u => u.Id.ToString().ToLower() == id.ToLowerInvariant());
             if (user == null)
                 return NotFound(new { error = "USER_NOT_FOUND" });
 
@@ -377,7 +421,8 @@ namespace VisualizationDSA.WebApi.Controllers
         [HttpDelete("users/{id}")]
         public async Task<IActionResult> DeleteUser(string id)
         {
-            var user = await _dbContext.Users.FirstOrDefaultAsync(u => u.Id.ToString() == id);
+            var user = await _dbContext.Users.FirstOrDefaultAsync(
+        u => u.Id.ToString().ToLower() == id.ToLowerInvariant());
             if (user == null)
             {
                 return NotFound(new { error = "USER_NOT_FOUND", message = "Không tìm thấy người dùng." });
@@ -459,7 +504,8 @@ namespace VisualizationDSA.WebApi.Controllers
                 return BadRequest(new { error = "INVALID_PASSWORD", message = "Mật khẩu mới phải có tối thiểu 8 ký tự." });
             }
 
-            var user = await _dbContext.Users.FirstOrDefaultAsync(u => u.Id.ToString() == id);
+            var user = await _dbContext.Users.FirstOrDefaultAsync(
+        u => u.Id.ToString().ToLower() == id.ToLowerInvariant());
             if (user == null)
             {
                 return NotFound(new { error = "USER_NOT_FOUND", message = "Không tìm thấy người dùng." });
@@ -540,13 +586,14 @@ namespace VisualizationDSA.WebApi.Controllers
         public async Task<IActionResult> DeleteQuiz(string id)
         {
 
-            var quiz = await _dbContext.Quizzes.FirstOrDefaultAsync(q => q.Id.ToString() == id);
+            var quiz = await _dbContext.Quizzes.FirstOrDefaultAsync(
+        q => q.Id.ToString().ToLower() == id.ToLowerInvariant());
             if (quiz == null)
                 return NotFound(new { error = "QUIZ_NOT_FOUND" });
 
             // A4-GUARD: Ngăn xóa quiz nếu đang được tham chiếu trong ModuleItems (cả Course và Classroom).
             var referencingCourseItems = await _dbContext.ModuleItems
-                .Where(m => m.QuizId.ToString() == id && !m.IsDeleted)
+                .Where(m => m.QuizId.ToString().ToLower() == id.ToLowerInvariant() && !m.IsDeleted)
                 .Select(m => m.Module.Course.Title)
                 .Distinct()
                 .ToListAsync();
@@ -671,7 +718,8 @@ namespace VisualizationDSA.WebApi.Controllers
         public async Task<IActionResult> BanUser(string id, [FromBody] BanUserRequest request)
         {
 
-            var user = await _dbContext.Users.FirstOrDefaultAsync(u => u.Id.ToString() == id);
+            var user = await _dbContext.Users.FirstOrDefaultAsync(
+        u => u.Id.ToString().ToLower() == id.ToLowerInvariant());
             if (user == null)
                 return NotFound(new { error = "USER_NOT_FOUND" });
 
@@ -744,9 +792,15 @@ namespace VisualizationDSA.WebApi.Controllers
             bool isPremium;
 
             
-            var dbUser = await _dbContext.Users.FirstOrDefaultAsync(u => u.Id.ToString() == id);
+            // ERR-216 pattern: SQLite stores Guids as BLOBs — u.Id.ToString() never matches
+            // the hex string from the client. Parse the Guid and compare strongly-typed.
+            var dbUser = await _dbContext.Users.FirstOrDefaultAsync(
+                u => u.Id.ToString().ToLower() == id.ToLowerInvariant());
             if (dbUser != null)
             {
+                // Canonical id (lowercase Guid) — the in-memory strategy keys users by it;
+                // the raw route id may be uppercase (SQLite TEXT) and miss the dictionary.
+                id = dbUser.Id.ToString();
                 
                 _authStrategy.EnsureUserInMemory(
                     dbUser.Id.ToString(),

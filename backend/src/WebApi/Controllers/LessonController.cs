@@ -69,6 +69,38 @@ namespace VisualizationDSA.WebApi.Controllers
             return null;
         }
 
+        // F4 (FR-2.5): tìm kiếm bài học theo Title (case-insensitive, Contains).
+        // search null/trắng → trả đủ danh sách (hành vi cũ không đổi). Endpoint mở (không yêu cầu
+        // role) vì danh sách bài published dùng chung cho cả người dùng chưa đăng nhập.
+        [HttpGet]
+        public async Task<IActionResult> SearchLessons([FromQuery] string? search = null)
+        {
+            var query = _dbContext.Lessons
+                .Where(l => !l.IsDeleted)
+                .AsQueryable();
+
+            if (!string.IsNullOrWhiteSpace(search))
+            {
+                var cleanSearch = search.Trim().ToLower();
+                query = query.Where(l => l.Title.ToLower().Contains(cleanSearch));
+            }
+
+            var lessons = await query
+                .OrderBy(l => l.Title)
+                .Select(l => new
+                {
+                    id = l.Id.ToString(),
+                    l.Title,
+                    l.SandboxType,
+                    l.XPReward,
+                    publishStatus = l.PublishStatus.ToString(),
+                    l.CreatedAt
+                })
+                .ToListAsync();
+
+            return Ok(lessons);
+        }
+
         [HttpGet("{id}")]
         [RequireJwtRole]
         public async Task<IActionResult> GetLessonById(Guid id)

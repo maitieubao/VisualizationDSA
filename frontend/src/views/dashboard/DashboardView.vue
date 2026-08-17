@@ -54,6 +54,12 @@
           <span class="stat-card__label">Streak ngày</span>
         </div>
       </div>
+      <div class="stat-card">
+        <div class="stat-card__body stat-card__body--wide">
+          <HeartsWidget />
+          <span class="stat-card__label">Tim học tập</span>
+        </div>
+      </div>
     </div>
 
     <div class="dashboard__grid">
@@ -121,6 +127,19 @@
         <SkillRadarChart />
       </div>
 
+      <!-- F9 (FR-2.10): bản đồ Learning Path — card hiển thị lộ trình đầu tiên có sẵn. -->
+      <div class="dash-card learning-path-card">
+        <h3 class="dash-card__title">Lộ trình học</h3>
+        <LearningPathMap
+          v-for="path in visibleLearningPaths"
+          :key="path.id"
+          :path-id="path.id"
+        />
+        <p v-if="visibleLearningPaths.length === 0" class="learning-path-empty">
+          Chưa có lộ trình học nào.
+        </p>
+      </div>
+
       <div class="dash-card badges-card">
         <h3 class="dash-card__title">Huy hiệu đã mở</h3>
         <div class="badges-grid">
@@ -160,6 +179,9 @@
         </div>
       </div>
     </div>
+
+    <!-- F9 (FR-10.1): modal hết tim — hiển thị khi store đánh dấu heartsEmpty. -->
+    <HeartsEmptyModal v-model="heartsEmptyOpen" />
   </div>
 </template>
 
@@ -172,16 +194,33 @@ import { useGuidedTourStore } from '../../features/guided-tour/store/useGuidedTo
 import { useUserProgressStore } from '../../features/user-progress/store/useUserProgressStore';
 import { useCourseStore } from '../../features/courses/store/useCourseStore';
 import SkillRadarChart from '../../features/user-progress/components/SkillRadarChart.vue';
+import LearningPathMap from '../../features/learning-path/components/LearningPathMap.vue';
+import HeartsWidget from '../../features/learning-path/components/HeartsWidget.vue';
+import HeartsEmptyModal from '../../features/learning-path/components/HeartsEmptyModal.vue';
+import { useLearningPathStore } from '../../features/learning-path/store/useLearningPathStore';
 
 const authStore = useAuthStore();
 const tourStore = useGuidedTourStore();
 const progressStore = useUserProgressStore();
 const courseStore = useCourseStore();
+const learningPathStore = useLearningPathStore();
 const router = useRouter();
 
 onMounted(() => {
   if (courseStore.courses.length === 0) courseStore.loadCourses();
   if (progressStore.completedModuleIds.length === 0) progressStore.initFromServer();
+  // F9: tải danh sách lộ trình để hiển thị bản đồ trên dashboard.
+  if (learningPathStore.paths.length === 0) learningPathStore.loadPaths();
+});
+
+const visibleLearningPaths = computed(() => learningPathStore.paths.slice(0, 2));
+
+// F9: đồng bộ modal hết tim với store (enter node trả 403 HEARTS_EMPTY → heartsEmpty=true).
+const heartsEmptyOpen = computed({
+  get: () => learningPathStore.heartsEmpty,
+  set: (value: boolean) => {
+    if (!value) learningPathStore.dismissHeartsEmpty();
+  },
 });
 
 const initials = computed(() => {

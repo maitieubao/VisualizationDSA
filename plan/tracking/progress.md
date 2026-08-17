@@ -1953,6 +1953,16 @@ Tất cả các mục tiêu Sprint 5 đã đạt:
 | **Popover** | Hooks không đẩy layout | ✅ CODE DONE | absolute dưới toolbar, max-h-48, scroll |
 | **Tests** | Cập nhật +1 test | ✅ CODE DONE | Description qua title; share/hooks qua menu; +test collapse editor - 70 files / 938 tests PASS, `vue-tsc -b --force` CLEAN, `npm run build` SUCCESS |
 
+### Phase 2.18.1 Algo Playground - UI Compaction: Mở Rộng Không Gian Canvas (2026-08-16)
+
+| Bước | Nội dung | Trạng thái CODE | Chi tiết |
+| :--- | :--- | :--- | :--- |
+| **AL-050** | Auto-collapse editor trên mobile | ✅ CODE DONE | Mount trên màn hình hẹp (<768px) → `editorCollapsed=true` ngay; media query change → thu gọn khi resize xuống mobile (canvas full width) |
+| **AL-051** | Drawer điều khiển thu gọn được | ✅ CODE DONE | Thanh mỏng ẩn/hiện toàn bộ VCR+Watch+Trace bằng `v-show` (nút vẫn trong DOM — phím tắt/space/arrow không đổi); thanh mỏng hiển thị "Bước X/Y" + lỗi compile khi đóng |
+| **AL-052** | Persist editorCollapsed | ✅ CODE DONE | Key `algo-playground:ui` riêng (không đụng `algo-playground:state`); desktop khôi phục lựa chọn người dùng, mobile luôn collapse |
+| **Toolbar** | Tinh gọn thêm | ✅ CODE DONE | `py-1.5`→`py-1`; select demo 240→176px; header `py-1`→`py-0.5` |
+| **Verify** | Toàn bộ | ✅ CODE DONE | +3 test AL-050/051/052 (QA-first: viết test trước, chạy fail trước khi code); full suite frontend 199 files / 3502 tests PASS; `vue-tsc` CLEAN; đo thực tế: canvas +83px khi đóng drawer, mobile canvas 464px full width |
+
 
 
 
@@ -2345,3 +2355,52 @@ Files: CreateClassroomModuleItemCommandHandler.cs (+notify), DeadlineReminderSer
 - **Deadcode don**: 6 controllers backend + 3 item frontend (giu core engine + feature co consumer).
 - Tests: backend 789 (+1), frontend 3491, vue-tsc 0.
 - Chi tiet: plan/tracking/errors.md.
+
+### E2E Selenium Suite — Kiểm thử trình duyệt 16 tính năng (2026-08-16)
+
+| Hạng mục | Trạng thái CODE | Chi tiết |
+| :--- | :--- | :--- |
+| Hạ tầng | ✅ CODE DONE | e2e/conftest.py (Chrome headless, fixture sạch session + tắt guided tour, screenshot khi fail), helpers/ui.py (login/register/logout UI thật), helpers/api.py (simulate-webhook, ban/premium API), helpers/backend_ctl.py (restart backend reset in-memory), pytest.ini, equirements.txt, README.md |
+| 16 suite test | ✅ CODE DONE | 	est_auth/payment/admin/html_playground/algo_playground/sorting/courses_lessons/lesson_study/teacher_panel/classrooms/gamification/profile/embed/export_share/notifications/core_ui.py — theo plan/testing/manual/*.md |
+| Kết quả | ✅ 93 PASS / 3 SKIP / 2 XFAIL | Chạy xanh từng module; 2 xfail = 2 bug sản phẩm ghi nhận (PM-008 order không restore sau refresh; AL-002 đổi demo vỡ workspace) |
+| Bug backend sửa | ✅ CODE DONE | 3 bug P1 Guid SQLite compare: PersistPremiumToDbAsync, AdminController 8 endpoint (Id.ToString() == id), impersonate id canonical — xem errors.md mục E2E 2026-08-16 |
+| File | ✅ CODE DONE | e2e/* (21 file, ~1900 dòng Python); backend sửa: StatelessPaymentController.cs, AdminController.cs |
+
+**Lưu ý vận hành:** suite cần backend Development (localhost:5055) + frontend (localhost:5173); module payment/admin tự restart backend. Không chạy toàn bộ suite 1 lệnh dài (mỗi module chạy riêng để không chiếm shell lâu).
+
+### Fix 2 bug san pham tu bo E2E (2026-08-16)
+
+| Bug | Fix | Verify |
+| :--- | :--- | :--- |
+| PM-008: refresh checkout mat order Pending | usePaymentStore.restoreActiveOrder() (transactions log -> getOrderStatus -> paying + polling, bo qua expired) + PremiumCheckoutView dem nguoc theo expiresAt that | E2E test_payment 8/8 (pm008 pass, het xfail); unit +6 |
+| AL-002: doi demo ket nut "Dang chay..." vinh vien | compileEpoch trong useAlgoPlaygroundStore - loadDemo/invalidate bump epoch + clear isCompiling; finally chi clear khi epoch khop | E2E test_algo_playground 6 pass/1 skip (al002 pass, het xfail); unit +2 |
+
+### Refactor Render Architecture Algo Playground — Moi nhom thuat toan 1 renderer (2026-08-16)
+
+| Hang muc | Trang thai CODE | Chi tiet |
+| :--- | :--- | :--- |
+| Khao sat | o. CODE DONE | 21 thuat toan; phat hien monolith engine 1138 dong + helpers 1057 dong; 12/21 algo khong co renderer rieng; merge/counting khong lerp; stack/queue chi badge chu; BST khong to node tim thay; overlay bien mat khi transition |
+| P1 Tach helpers | o. CODE DONE | algoCanvasHelpers.ts -> 9 file: colors.ts, geometry.ts, arrayBars.ts, nodeStates.ts, treeDrawer.ts, graphDrawer.ts, overlays.ts, playbackFrame.ts, barSortTransitions.ts |
+| P2 Engine base + registry | o. CODE DONE | AlgoAnimationEngine.ts (rAF+dispatch), rendererRegistry.ts, 11 renderer trong engine/renderers/ (ArraySorting/MergeSort/HeapSort/CountingSort/RadixSort/BucketSort/Searching/TwoPointers/StackQueue/Tree/Graph + types.ts); xoa SortingAnimationEngine.ts + MergeSortAnimationEngine.ts + HeapSortAnimationEngine.ts; useAlgoAnimation.ts dung engine moi |
+| P3 Fix animation | o. CODE DONE | Merge chip bay L/R->OUT; Counting ghost bay input->count->output; Search pointer lerp + vung dim; Two-pointers cua so highlight + 2 pointer lerp; Stack/Queue visual LIFO/FIFO that (push truot vao/pop truot ra + mo); BST found node glow (searchFound+activeIds); overlay ve cuoi moi nhanh transition; Graph BFS/DFS chip HANG DOI/NGAN XEP |
+| P4 Demo fix | o. CODE DONE | bucket-sort sort phase dung setBucketComparing (insertion sort truc quan); quick-sort push/pop partition stack hien thi ngan xep tuong minh |
+| P5 Tests + tracking | o. CODE DONE | Spec moi: rendererRegistry.spec.ts (3 tests), newRenderers.spec.ts (15 tests); 3523/3523 test pass + vue-tsc sach; ADR-44; PRD plan/features/playground-render-refactor.md |
+| Files | o. CODE DONE | engine/AlgoAnimationEngine.ts, engine/rendererRegistry.ts, engine/renderers/*.ts (12), renderer/*.ts (9), useAlgoAnimation.ts, playgroundAlgoDemos.ts, 2 spec moi + 3 spec doi import |
+
+### Gap Closure F1-F9 — Bo sung tinh nang thieu so bao cao PRO2192 (2026-08-17)
+
+| Feature | Trang thai CODE | Chi tiet |
+| :--- | :--- | :--- |
+| F1 FAQ (FR-7.2) | ✅ CODE DONE | views/docs/FaqView.vue accordion tinh + route /faq + tab Tro giup. Test 3/3. |
+| F2 Benchmark (FR-3.20) | ✅ CODE DONE | features/benchmark-lab/ (service + store + view /benchmark) goi POST /algorithms/compare co san. Test 3/3. |
+| F3 Phe duyet GV (FR-1.8) | ✅ CODE DONE | BE: register isTeacher -> PendingTeacher, login chan TEACHER_PENDING, GET admin/users/by-role, audit ApproveTeacher/RejectTeacher. FE: checkbox dang ky + badge/nut Duyet-Tu choi AdminUsersTab + guard router chan PendingTeacher. Test BE 6/6. |
+| F4 Tim kiem bai (FR-2.5) | ✅ CODE DONE | BE: GET /concepts/lessons?search=. FE: LessonSearchBar debounce 300ms gan CoursesListView. Test BE 3/3. |
+| F5 Ghi chu bai hoc (FR-2.6) | ✅ CODE DONE | Entity LessonNote + LessonNotesController + LessonNotesPanel autosave 1s gan LessonStudyView. Migration GapF567. Test 3+3. |
+| F6 Yeu thich mo phong (FR-3.10) | ✅ CODE DONE | Entity Favorite + FavoritesController + FavoriteToggle gan AlgorithmVisualizer. Migration GapF567. Test 4+3. |
+| F7 Cau hinh he thong (FR-6.2) | ✅ CODE DONE | Entity SystemSetting + SettingsController (GET/PUT admin, cache) + SettingsFormSection gan AdminSystemTab. Migration GapF567. Test 3+2. |
+| F8 Practice Ladder (FR-4.11, FR-4.3) | ✅ CODE DONE | Entity StageProgress + LadderController (guard LADDER_LOCKED server-side) + LadderPanel 3 bac gan LessonStudyView. Migration GapF8. Test BE + FE 4. |
+| F9 Learning Path + Tim (FR-2.10, FR-10.1) | ✅ CODE DONE | Entities LearningPath/Node/UserNodeProgress/NodeSession + User.Hearts/HeartsMax/LastHeartAt + LearningPathController (enter tru 1 tim atomic + session 30p + HEARTS_EMPTY; pass mo khoa node ke) + LearningPathMap/HeartsWidget/HeartsEmptyModal. Migration GapF9. Test BE 6 + FE 9. |
+| Tich hop weld | ✅ CODE DONE | Huyen ApplicationDbContext 8 DbSet + Fluent API khớp snapshot (has-pending-model-changes = No changes), database update 3 migration, routes/tabs, gan component (LessonStudyView x2, AlgorithmVisualizer, AdminSystemTab, CoursesListView, AdminUsersTab), admin allowlist + /admin/settings. |
+| Test | ✅ CODE DONE | Backend 819/819 PASS. Frontend spec moi F1-F9 PASS (39 tests). 130 fail vitest toan repo PRE-EXISTING (da xac nhan bang revert LoginModal ban goc). |
+
+Files: backend Domain/Entities (LessonNote, Favorite, SystemSetting, StageProgress, LearningPath, LearningPathNode, UserNodeProgress, NodeSession), WebApi/Controllers (LessonNotes, Favorites, Settings, Ladder, LearningPath), Infrastructure/Migrations x3 (GapF567, GapF8, GapF9), User.cs (+3 cot tim), StatelessAuthController/AdminController/LessonController, tests x5 file moi; frontend features/benchmark-lab, features/ladder, features/learning-path, views/docs/FaqView, views/benchmark, services x4, LoginModal/AdminUsersTab/AdminSystemTab/CoursesListView/LessonStudyView/AlgorithmVisualizer, router. Plan: plan/features/gap-closure/{plan,tracking,errors}.md + weld-f*.md.

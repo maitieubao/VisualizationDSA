@@ -30,10 +30,41 @@ namespace VisualizationDSA.Infrastructure.Data
             try { await SeedQuizzesAsync(); } catch (Exception ex) { Console.WriteLine($"[SeedQuizzes Error]: {ex.Message}"); }
             // A2: codelab mẫu dùng chung phải chạy TRƯỚC khi gắn vào lesson (SeedCoursesAsync).
             try { await SeedSampleCodelabsAsync(); } catch (Exception ex) { Console.WriteLine($"[SeedCodelabs Error]: {ex.Message}"); }
-            try { await SeedCoursesAsync(); } catch (Exception ex) { Console.WriteLine($"[SeedCourses Error]: {ex}"); }
+            try { await SeedCoursesAsync(); } catch (Exception ex) { Console.WriteLine($"[SeedCourses Error]: {ex.Message}"); }
+            // F9 (FR-2.10): lộ trình học mẫu — chạy SAU SeedCoursesAsync để gắn lessonId thật.
+            try { await SeedLearningPathAsync(); } catch (Exception ex) { Console.WriteLine($"[SeedLearningPath Error]: {ex.Message}"); }
             // A2: gắn codelab mẫu vào bài học seed (upsert theo title — không phá dữ liệu teacher đã chỉnh).
             try { await UpsertLessonCodelabLinksAsync(); } catch (Exception ex) { Console.WriteLine($"[SeedLessonCodelabLinks Error]: {ex.Message}"); }
             try { await SeedSemanticGraphAsync(); } catch (Exception ex) { Console.WriteLine($"[SeedGraph Error]: {ex.Message}"); }
+        }
+
+        /// <summary>
+        /// F9 (FR-2.10): seed 1 lộ trình mẫu "Lộ trình DSA cơ bản" gồm 3 node gắn 3 bài học
+        /// đầu tiên trong DB. Upsert theo Title — không phá lộ trình người dùng đã học.
+        /// </summary>
+        private async Task SeedLearningPathAsync()
+        {
+            if (await _context.Set<LearningPath>().AnyAsync(p => p.Title == "Lộ trình DSA cơ bản"))
+                return;
+
+            var lessons = await _context.Lessons
+                .Where(l => !l.IsDeleted)
+                .OrderBy(l => l.CreatedAt)
+                .Take(3)
+                .ToListAsync();
+            if (lessons.Count == 0) return;
+
+            var path = new LearningPath("Lộ trình DSA cơ bản", "Học tuần tự các chủ đề DSA từ cơ bản đến nâng cao.");
+            _context.Set<LearningPath>().Add(path);
+            await _context.SaveChangesAsync();
+
+            var nodeTitles = new[] { "Nhập môn — Khái niệm nền tảng", "Mảng & thuật toán cơ bản", "Cấu trúc dữ liệu cốt lõi" };
+            for (var i = 0; i < lessons.Count; i++)
+            {
+                _context.Set<LearningPathNode>().Add(
+                    new LearningPathNode(path.Id, i + 1, nodeTitles[i], lessons[i].Id));
+            }
+            await _context.SaveChangesAsync();
         }
 
         /// <summary>

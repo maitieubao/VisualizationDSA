@@ -159,7 +159,8 @@ describe('DB-002 (P2): 4 stats cards', () => {
     const wrapper = mountWithAuth(DashboardView);
     await flushPromises();
     const cards = wrapper.findAll('.stat-card');
-    expect(cards.length).toBe(4);
+    // F9: thêm card Tim học tập — tổng 5 (4 gốc + 1 hearts).
+    expect(cards.length).toBe(5);
   });
 
   it('mỗi stat-card có value và label', async () => {
@@ -167,7 +168,7 @@ describe('DB-002 (P2): 4 stats cards', () => {
     await flushPromises();
     const cards = wrapper.findAll('.stat-card');
     cards.forEach((card) => {
-      expect(card.find('.stat-card__val').exists()).toBe(true);
+      // F9: card hearts dùng HeartsWidget (không có .stat-card__val) — chỉ check label.
       expect(card.find('.stat-card__label').exists()).toBe(true);
     });
   });

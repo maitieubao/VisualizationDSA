@@ -790,3 +790,15 @@ TEST-APPEND-OK
   2. `compileWorker.ts` viáº¿t láº¡i theo map `pendingRequests: Map<number, {resolve, reject, timer}>` vá»›i 1 handler gÃ¡n Ä‘Ãºng 1 láº§n; **giá»¯ nguyÃªn API public** (`compileInWorker`, `disposeCompileWorker`, `COMPILE_TIMEOUT_MS`) â€” vcr-player + algo-playground khÃ´ng Ä‘á»•i lá»i gá»i; khÃ´ng terminate worker dÃ¹ng chung.
 - **Há»‡ quáº£:** Há»c viÃªn khÃ´ng thá»ƒ exfil dá»¯ liá»‡u qua worker; 2 request Ä‘á»“ng thá»i khÃ´ng rÆ¡i response.
 - **Files:** `WorkerLifecycleCoordinator.ts`, `core/compileWorker.ts`, `plan/tracking/decisions.md` (ADR nÃ y).
+
+## ADR-44: Renderer Registry Per-Algorithm-Group cho Algo Playground (2026-08-16)
+
+- **V?n d?:** Toàn b? 21 thu?t toán c?a Algo Playground render qua monolith `SortingAnimationEngine.ts` (1138 dòng) + `algoCanvasHelpers.ts` (1057 dòng); 12/21 thu?t toán (search, two-pointers, stack/queue, tree, graph) dùng chung pipeline generic không mô t? dúng tính ch?t (stack/queue ch? là badge ch?, BST không tô node tìm th?y, pointer search nh?y cóc, overlay bi?n m?t khi transition, merge/counting không lerp).
+- **Quy?t d?nh:**
+  1. Tách render layer theo nhóm thu?t toán: `engine/renderers/` g?m 11 file renderer (ArraySorting, MergeSort, HeapSort, CountingSort, RadixSort, BucketSort, Searching, TwoPointers, StackQueue, Tree, Graph) cùng interface `AlgoRenderer` (`types.ts`).
+  2. Lõi engine duy nh?t `AlgoAnimationEngine.ts` ch? gi? rAF loop + snapshot + transition detection + dispatch qua `rendererRegistry.ts` (map algorithmId ? renderer, uu tiên data-driven theo snapshot: mergeState/heapState).
+  3. Tách `algoCanvasHelpers.ts` ? 9 file nh? trong `renderer/` (colors, geometry, arrayBars, nodeStates, treeDrawer, graphDrawer, overlays, playbackFrame, barSortTransitions).
+  4. Fix animation theo nhóm: merge chip bay L/R?OUT, counting ghost bay input?count?output, pointer search lerp + vùng dim, two-pointers c?a s? highlight, stack/queue visual LIFO/FIFO th?t v?i push/pop animation, BST found node glow (dùng searchFound + activeIds vì demo g?i `found(-1)`), overlay v? cu?i M?I nhánh transition.
+  5. Demo fix: bucket-sort sort phase dùng `setBucketComparing` (insertion sort tr?c quan); quick-sort push/pop partition stack hi?n th? ngan x?p tu?ng minh.
+- **H? qu?:** Thêm nhóm thu?t toán m?i = 1 file renderer + 1 dòng registry (Open-Closed — AGENTS.md Quy t?c 1). M?i nhóm mô t? dúng tính ch?t thu?t toán v?i animation mu?t. Xóa 3 file engine monolith cu.
+- **Files:** `engine/AlgoAnimationEngine.ts`, `engine/rendererRegistry.ts`, `engine/renderers/*.ts` (11 file), `renderer/*.ts` (9 file), `useAlgoAnimation.ts`, `playgroundAlgoDemos.ts` (bucket/quick demo), specs m?i `rendererRegistry.spec.ts` + `newRenderers.spec.ts`, `plan/features/playground-render-refactor.md`.

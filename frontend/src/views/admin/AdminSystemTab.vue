@@ -49,6 +49,8 @@
             <input type="checkbox" class="setting-checkbox" disabled title="Sắp có — tính năng tùy chỉnh này đang phát triển" />
           </div>
         </div>
+        <!-- Cấu hình hệ thống động (F7/FR-6.2) — lưu DB, áp dụng ngay không restart. -->
+        <SettingsFormSection />
       </div>
     </div>
   </section>
@@ -58,6 +60,7 @@
 import { ref, onMounted, onBeforeUnmount } from 'vue';
 import { useAdminApi } from './useAdminApi';
 import { useToastStore } from '../../composables/useToast';
+import SettingsFormSection from './components/SettingsFormSection.vue';
 
 const { BASE_URL, getAuthHeaders, pushLog } = useAdminApi();
 const toastStore = useToastStore();

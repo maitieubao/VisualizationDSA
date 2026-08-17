@@ -155,8 +155,10 @@ for (let i = 1; i < array.length; i++) {
     defaultInput: '10, 80, 30, 90, 40, 50, 70',
     code: `// Quick Sort (khử đệ quy bằng ngăn xếp tường minh)
 const stack = [[0, array.length - 1]];
+push("0.." + (array.length - 1));
 while (stack.length > 0) {
   const top = stack.pop();
+  pop(top[0] + ".." + top[1]);
   const low = top[0];
   const high = top[1];
   if (low >= high) {
@@ -178,6 +180,12 @@ while (stack.length > 0) {
   highlight(p);
   stack.push([low, p - 1]);
   stack.push([p + 1, high]);
+  if (p + 1 <= high) {
+    push((p + 1) + ".." + high);
+  }
+  if (low <= p - 1) {
+    push(low + ".." + (p - 1));
+  }
 }`,
   }),
 
@@ -356,24 +364,19 @@ while (Math.floor(max / exp) > 0) {
   for (let i = 0; i < array.length; i++) {
     const digit = Math.floor((array[i] + offset) / exp) % 10;
     buckets[digit].push(array[i]);
-    setBuckets(buckets);
+    setBuckets(buckets, true);
     compare(i, digit);
   }
   setBucketPhase("collect");
-  const output = [];
+  let pos = 0;
   for (let b = 0; b < 10; b++) {
     while (buckets[b].length > 0) {
-      output.push(buckets[b].shift());
+      setArrayElement(pos, buckets[b].shift());
+      setBuckets(buckets, true);
+      compare(pos, b);
+      pos++;
     }
   }
-  for (let i = 0; i < array.length; i++) {
-    array[i] = output[i];
-    highlight(i);
-  }
-  for (let b = 0; b < 10; b++) {
-    buckets[b] = [];
-  }
-  setBuckets(buckets);
   exp = exp * 10;
 }`,
   }),
@@ -381,55 +384,64 @@ while (Math.floor(max / exp) > 0) {
   'bucket-sort': register({
     id: 'bucket-sort',
     title: 'Bucket Sort',
-    description: 'Sắp xếp theo xô — phân tán số thập phân [0, 1) vào các xô rồi sắp trong từng xô.',
+    description: 'Sắp xếp theo xô — phân tán số nguyên vào các xô theo khoảng giá trị, sắp trong từng xô rồi gộp lại.',
     category: 'sorting',
     inputKind: 'array',
-    defaultInput: '0.78, 0.17, 0.39, 0.26, 0.72, 0.94, 0.21, 0.12, 0.23, 0.68',
-    code: `// Bucket Sort: dành cho số thập phân từ 0 đến nhỏ hơn 1
-for (let i = 0; i < array.length; i++) {
-  if (array[i] < 0 || array[i] >= 1) {
-    throw new Error("Bucket Sort yêu cầu mọi giá trị trong [0, 1) — ví dụ: 0.78, 0.17, 0.39");
-  }
-}
+    defaultInput: '29, 25, 3, 47, 13, 88, 12, 56, 34, 71',
+    code: `// Bucket Sort: phân tán số nguyên vào n xô theo khoảng giá trị
 const n = array.length;
-if (n === 0) {
-  return;
+if (n === 0) { return; }
+let maxVal = array[0];
+for (let i = 1; i < n; i++) {
+  if (array[i] > maxVal) { maxVal = array[i]; }
 }
 const buckets = new Array(n);
+for (let i = 0; i < n; i++) { buckets[i] = []; }
+const rangeSize = (maxVal + 1) / n;
+const labels = [];
 for (let i = 0; i < n; i++) {
-  buckets[i] = [];
+  const lo = Math.round(i * rangeSize);
+  const hi = Math.round((i + 1) * rangeSize) - 1;
+  labels.push("[" + lo + ".." + hi + "]");
 }
+setRangeLabels(labels);
 setBucketPhase("distribute");
 setBuckets(buckets);
 for (let i = 0; i < n; i++) {
-  const idx = Math.min(Math.floor(array[i] * n), n - 1);
+  const idx = Math.min(Math.floor(array[i] / rangeSize), n - 1);
   buckets[idx].push(array[i]);
-  setBuckets(buckets);
   setActiveBucket(idx);
+  setBuckets(buckets, true);
   compare(i, idx);
 }
-const labels = [];
-for (let i = 0; i < n; i++) {
-  const lo = i / n;
-  const hi = (i + 1) / n;
-  labels.push("[" + lo.toFixed(2) + ".." + hi.toFixed(2) + ")");
-}
-setRangeLabels(labels);
 setBucketPhase("sort");
+for (let i = 0; i < n; i++) {
+  setActiveBucket(i);
+  const b = buckets[i];
+  for (let j = 1; j < b.length; j++) {
+    const key = b[j];
+    let k = j - 1;
+    while (k >= 0 && b[k] > key) {
+      setBucketComparing(k, k + 1);
+      b[k + 1] = b[k];
+      k = k - 1;
+    }
+    b[k + 1] = key;
+    setBuckets(buckets, true);
+  }
+  setBuckets(buckets);
+}
+setBucketPhase("collect");
 let pos = 0;
 for (let i = 0; i < n; i++) {
   setActiveBucket(i);
-  buckets[i].sort(function (a, b) { return a - b; });
   for (let j = 0; j < buckets[i].length; j++) {
-    if (j > 0) {
-      setBucketComparing(j - 1, j);
-    }
-    array[pos] = buckets[i][j];
-    highlight(pos);
+    setArrayElement(pos, buckets[i][j]);
+    setBuckets(buckets, true);
+    compare(pos, i);
     pos++;
   }
-}
-setBucketPhase("collect");`,
+}`,
   }),
 
   'linear-search': register({
@@ -903,12 +915,6 @@ export function generateDemoInput(demoId: string): string {
       return edges.join(', ');
     }
     default: {
-      if (demoId === 'bucket-sort') {
-        const n = rand(6, 10);
-        const values: string[] = [];
-        for (let i = 0; i < n; i++) values.push((Math.random() * 0.98 + 0.01).toFixed(2));
-        return values.join(', ');
-      }
       const n = rand(5, 12);
       const minV = demoId === 'counting-sort' ? 0 : 1;
       const maxV = demoId === 'counting-sort' || demoId === 'radix-sort' ? 30 : 99;

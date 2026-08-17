@@ -179,6 +179,60 @@ describe('useAlgoPlaygroundStore', () => {
     expect(store.totalFrames).toBe(0);
   });
 
+  it('AL-002: loadDemo giữa lúc compile → isCompiling được clear ngay, không kẹt nút Chạy', async () => {
+    const store = useAlgoPlaygroundStore();
+    store.loadDemo('bubble-sort');
+    const realImpl = vi.mocked(compileInWorker).getMockImplementation()!;
+    let resolveSlow!: (frames: PlaybackFrame[]) => void;
+    vi.mocked(compileInWorker).mockImplementationOnce(
+      () => new Promise<PlaybackFrame[]>((res) => { resolveSlow = res; }),
+    );
+
+    store.run(); // compile chậm bắt đầu
+    await nextTick();
+    expect(store.isCompiling).toBe(true);
+
+    store.loadDemo('selection-sort'); // user đổi demo giữa chừng
+    expect(store.isCompiling).toBe(false);
+    expect(store.demoId).toBe('selection-sort');
+
+    resolveSlow([]); // request cũ hoàn tất muộn → bị discard
+    await nextTick();
+    await nextTick();
+    expect(store.isCompiling).toBe(false);
+    expect(store.totalFrames).toBe(0);
+
+    vi.mocked(compileInWorker).mockImplementation(realImpl);
+    await store.run(); // run mới vẫn chạy bình thường
+    await nextTick();
+    expect(store.totalFrames).toBeGreaterThan(0);
+    expect(store.isCompiling).toBe(false);
+  });
+
+  it('AL-002: invalidate giữa lúc compile → isCompiling được clear ngay', async () => {
+    const store = useAlgoPlaygroundStore();
+    store.loadDemo('bubble-sort');
+    const realImpl = vi.mocked(compileInWorker).getMockImplementation()!;
+    let resolveSlow!: (frames: PlaybackFrame[]) => void;
+    vi.mocked(compileInWorker).mockImplementationOnce(
+      () => new Promise<PlaybackFrame[]>((res) => { resolveSlow = res; }),
+    );
+
+    store.run();
+    await nextTick();
+    expect(store.isCompiling).toBe(true);
+
+    store.invalidate(); // sửa input giữa lúc compile
+    expect(store.isCompiling).toBe(false);
+
+    resolveSlow([]);
+    await nextTick();
+    await nextTick();
+    expect(store.isCompiling).toBe(false);
+
+    vi.mocked(compileInWorker).mockImplementation(realImpl);
+  });
+
   it('AL-028: play trước compile → auto-play khi frames về (pendingPlayAfterCompile)', async () => {
     const store = useAlgoPlaygroundStore();
     store.loadDemo('bubble-sort');
